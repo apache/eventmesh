@@ -29,10 +29,10 @@ import org.apache.eventmesh.common.protocol.grpc.cloudevents.CloudEventBatch;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshCloudEventUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtoSupport;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
-import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
-import org.apache.eventmesh.common.utils.ThreadUtils;
+import org.apache.eventmesh.common.util.IPUtils;
+import org.apache.eventmesh.common.util.JsonUtils;
+import org.apache.eventmesh.common.util.RandomStringUtils;
+import org.apache.eventmesh.common.util.ThreadUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.config;
 
-import static org.apache.eventmesh.common.utils.ReflectUtils.lookUpFieldByParentClass;
+import static org.apache.eventmesh.common.util.ReflectUtils.lookUpFieldByParentClass;
 
 import org.apache.commons.lang3.StringUtils;
 

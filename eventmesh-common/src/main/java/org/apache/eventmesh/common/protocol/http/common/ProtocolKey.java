@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.common.protocol.http.common;
 
-import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.ThreadUtils;
+import org.apache.eventmesh.common.util.IPUtils;
+import org.apache.eventmesh.common.util.ThreadUtils;
 
 public class ProtocolKey {
 

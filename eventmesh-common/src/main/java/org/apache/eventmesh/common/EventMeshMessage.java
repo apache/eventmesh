@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common;
 
+import org.apache.eventmesh.common.Internal;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +30,13 @@ import lombok.Data;
  */
 @Builder
 @Data
+/**
+ * @deprecated since 1.13.0; for removal. Use one of:
+ * <ul>
+ *   <li>{@link org.apache.eventmesh.common.wire.EventMeshFrame} (preferred, runtime/SDK)</li>
+ *   <li>{@link org.apache.eventmesh.common.protocol.tcp.EventMeshMessage} (legacy TCP bridge)</li>
+ * </ul>
+ */
 public class EventMeshMessage {
 
     private String bizSeqNo;

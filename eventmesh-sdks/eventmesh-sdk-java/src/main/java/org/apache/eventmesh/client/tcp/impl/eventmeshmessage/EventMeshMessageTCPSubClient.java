@@ -32,7 +32,7 @@ import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.util.JsonUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 

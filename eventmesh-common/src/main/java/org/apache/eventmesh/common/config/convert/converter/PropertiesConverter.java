@@ -20,7 +20,7 @@ package org.apache.eventmesh.common.config.convert.converter;
 import org.apache.eventmesh.common.config.ConfigField;
 import org.apache.eventmesh.common.config.convert.ConvertInfo;
 import org.apache.eventmesh.common.config.convert.ConvertValue;
-import org.apache.eventmesh.common.utils.PropertiesUtils;
+import org.apache.eventmesh.common.util.PropertiesUtils;
 
 import org.apache.commons.lang3.StringUtils;
 

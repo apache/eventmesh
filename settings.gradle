@@ -45,6 +45,7 @@ String jdkVersion = "${jdk}"
 
 // ===== 新架构 (eventmesh-runtime) + 最小依赖 + 兼容/connector 子树 =====
 include 'eventmesh-runtime'
+include 'eventmesh-architecture-guard'
 include 'eventmesh-common'
 include 'eventmesh-spi'
 
