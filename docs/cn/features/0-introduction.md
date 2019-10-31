@@ -1,15 +1,15 @@
-## DeFiBus(Decentralized Financial Message Bus) -- 分布式金融级消息总线
+# DeFiBus
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 **DeFiBus=RPC+MQ，是基于开源消息中间件打造的安全可靠的分布式金融级消息总线。DeFibus不仅提供了RPC同步调用，还提供了MQ的异步事件通知、事件组播和广播等常用服务调用和消息模式，同时增加了应用多中心多活、服务就近、灰度发布等分布式场景下的高可用能力。在对于机器故障的容错能力方面的增强，也让消息总线的服务更加稳定可靠，为业务提供7x24的服务。**
 
 ### 整体架构  
 <div align=center>
 
-![architecture1](./docs/images/features/a-distributing-architecture-in-financial.png)
+![architecture1](../../../docs/images/features/a-distributing-architecture-in-financial.png)
 
 </div>
 
-![architecture2](./docs/images/features/architecture-p1.png)
+![architecture2](../../../docs/images/features/architecture-p1.png)
   
 DeFiBus主要包括以下几个组件（模块）：  
 
@@ -31,11 +31,12 @@ Topic按照如下格式来命名：
 [区域代码]-[服务唯一ID]
 ```
 
-比如，余额查询服务的服务ID为20190001表示，部署在“A10”这个区域，那么该服务在A10区域的Topic就命名为“A10-20190001”。
+比如，余额查询服务的服务ID为20190001表示，部署在“A10”这个区域，那么该服务在A10区域的Topic就命名为“A10-20190001”。Topic的命名规则
+
 
 ### 特性列表:
 * [RPC调用：即“Request-Reply”模式，支持系统间的同步调用](docs/cn/features/1-request-response-call.md)
-* [消息发布/订阅：消息的发布和订阅](docs/cn/features/9-publish-type.md)
+* 消息发布/订阅：消息的发布和订阅
 * [灰度发布：服务级别的灰度发布](docs/cn/features/2-dark-launch.md)
 * [熔断机制：应用实例级别的熔断](docs/cn/features/3-circuit-break-mechanism.md)
 * [服务就近：就近进行服务的请求和响应，减少跨区调用](docs/cn/features/4-invoke-service-nearby.md)
@@ -46,44 +47,3 @@ Topic按照如下格式来命名：
 * 服务代理：HTTP及多语言的代理(后续开源)
 * 服务治理：服务元数据的管理(后续开源)
 * 平滑升级：平滑升级、平滑扩容(后续开源)
-
-### 产品对比
-
-| 产品名称 | Kafka | RocketMQ | DeFiBus |
-| --- | --- | --- | --- |
-| 客户端SDK| Java，Scala etc. | Java，C++， Go | Java |
-| 定时消息 | 不支持 | 支持 | 支持 |
-| 批量消息 | 通过异步生产者支持 | 通过同步模式支持，避免消息丢失 | 同RocketMQ |
-| 广播消息 | 不支持 | 支持 | 支持 |
-| 消息过滤 | 支持，可以试用Kafka Streams来过滤消息 | 支持，使用基于SQL92的属性过滤表达式 | 同RocketMQ |
-| 服务器端触发重新发送 | 不支持 | 支持 | 支持 |
-| 消息存储 | 高性能的文件存储 | 高性能和低延迟的文件存储 | 同RocketMQ |
-| 消息追溯 | 支持通过消息偏移追溯 | 支持通过时间戳和消息偏移追溯 | 同RocketMQ |
-| 高可用性和故障切换 | 需要ZooKeeper服务器来支持 | 主从模式，不需要其他组件 | 应用多活，应用部署在多个数据中心；增加了隔离机制提高容错性 |
-| 配置复杂度 | 使用key-value键值对进行配置，可通过文件或者程序参数配置 | 开箱即用，用户只需关注少量配置参数 | 同RocketMQ |
-| 管理工具 | 可通过终端命令展示核心指标 | 可通过web界面或者终端命令展示核心指标 | 同RocketMQ |
-| 服务代理 | 支持 | 不支持 | 支持，提供HTTP接入方式 |
-| 灰度发布 | 不支持 | 不支持 | 支持服务级别的灰度发布 |
-| 服务就近 | 不支持 | 不支持 | 支持，减少跨区调用，降低网络时延 |
-| 熔断机制 | 不支持 | 不支持 | 支持应用实例级别的熔断 |
-| 动态扩缩队列 | 不支持 | 不支持 | 支持，队列数目自适应应用实例数量 |
-| Request-Reply同步调用 | 不支持 | 不支持（4.5版本） | 支持 |
-
-
-## Quick Start
-DeFiBus的安装部署流程请参考：[《DeFiBus使用指引》](docs/cn/quickstart.md)   
-examples模块中提供了最佳实践样例：[defibus-examples](defibus-examples)
-
-## License
-Copyright (C) 2015-2019 Webank Group Holding Limited
-
-## Contacts
-微信/QQ群：
-
-![wechat_qr](./docs/images/wechat_helper.png)
-
-![qqgroup_qr](./docs/images/qqgroup-crcode.png)
-
-钉钉群: 23372793
-
-邮箱: defibus.users@webank.com
