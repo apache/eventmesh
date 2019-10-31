@@ -1,0 +1,280 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import java.util.concurrent.TimeUnit
+
+buildscript {
+    repositories {
+        maven {
+            url "https://maven.aliyun.com/repository/public"
+        }
+    }
+
+    dependencies {
+        classpath("net.sourceforge.pmd:pmd-java:5.4.1")
+        classpath("com.puppycrawl.tools:checkstyle:6.16.1")
+        classpath("com.google.code.findbugs:findbugs:3.0.1")
+    }
+}
+
+allprojects {
+    apply plugin: 'java'
+
+    clean.doFirst {
+        delete 'build'
+        delete 'dist'
+    }
+
+    if (project.findProperty("snapshot") instanceof String) {
+        if (project.property("snapshot").toBoolean())
+            version = version + "-SNAPSHOT"
+    }
+}
+
+task tar(overwrite: true, type: Tar) {
+    extension = 'tar.gz'
+    compression = Compression.GZIP
+    archiveName = project.name + '_' + project.version + '.' + extension
+    destinationDir = new File(projectDir, 'build')
+    into('/') {
+        from 'dist'
+    }
+}
+
+task zip(overwrite: true, type: Zip) {
+    extension = 'zip'
+    archiveName = project.name + '.' + project.version + '.' + extension
+    destinationDir = new File(projectDir, 'build')
+    into('/') {
+        from 'dist'
+    }
+}
+
+subprojects {
+    apply plugin: "java"
+    apply plugin: "maven"
+    apply plugin: "eclipse"
+    apply plugin: "idea"
+    apply plugin: "project-reports"
+    apply plugin: "jacoco"
+    apply plugin: "checkstyle"
+    apply plugin: "pmd"
+    apply plugin: "findbugs"
+
+    [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+
+    compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+
+    jacoco {
+        toolVersion = "0.7.7.201606060606"
+        reportsDir = file("$buildDir/reports/jacoco")
+    }
+
+    checkstyle {
+        checkstyle.toolVersion = "6.19"
+        ignoreFailures = true
+        sourceSets = [sourceSets.main]
+        configFile = 'conf/checkstyle.xml' as File
+    }
+
+    findbugs {
+        ignoreFailures = true
+        findbugsTest.enabled = false
+        sourceSets = [sourceSets.main]
+    }
+
+    tasks.withType(FindBugs) {
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
+    }
+
+    tasks.withType(Pmd) {
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
+    }
+
+    pmd {
+        ignoreFailures = true
+        pmdTest.enabled = false
+        sourceSets = [sourceSets.main]
+        ruleSets = [
+            'java-basic',
+            'java-braces',
+            'java-clone',
+            'java-codesize',
+            'java-comments',
+            'java-controversial',
+            'java-coupling',
+            'java-design',
+            'java-empty',
+            'java-finalizers',
+            'java-imports',
+            'java-optimizations',
+            'java-strictexception',
+            'java-strings',
+            'java-typeresolution',
+            'java-unnecessary',
+            'java-unusedcode'
+        ]
+    }
+
+    task jacocoAllTestReport(type: JacocoReport, dependsOn: ["test"]) {
+        sourceSets sourceSets.main
+        executionData files("$buildDir/jacoco/jacocoTest.exec")
+    }
+
+    List junit = [
+        "junit:junit:4.12"
+    ]
+
+    List apache_commons = [
+        "org.apache.commons:commons-collections4:4.1",
+        "commons-beanutils:commons-beanutils:1.9.3",
+        "org.apache.commons:commons-lang3:3.6",
+        "commons-codec:commons-codec:1.10"
+
+    ]
+
+    List logback = [
+        "org.slf4j:slf4j-api:1.7.25"
+    ]
+
+    List guava = [
+        "com.google.guava:guava:20.0"
+    ]
+
+    List fastjson = [
+        "com.alibaba:fastjson:1.2.29"
+    ]
+
+    List common_io = [
+        "commons-io:commons-io:2.4"
+    ]
+
+    List assertj = [
+        "org.assertj:assertj-core:2.6.0"
+    ]
+
+    List mock = [
+//        "org.mockito:mockito-core:1.10.19",
+"org.mockito:mockito-core:2.23.0",
+"org.powermock:powermock-module-junit4:2.0.2",
+"org.powermock:powermock-api-mockito2:2.0.2",
+    ]
+
+    dependencies {
+        compile apache_commons, guava, logback, fastjson, common_io
+        testCompile apache_commons, guava, logback, fastjson, common_io, junit, assertj, mock
+        runtime apache_commons, guava, logback, fastjson, common_io
+    }
+
+    jar {
+        manifest {
+            attributes("Specification-Version": project.version,
+                "Specification-Vendor": "WeBank, Inc.",
+                "Specification-Title": project.name,
+                "Implementation-Version": project.version,
+                "Implementation-Vendor": "WeBank, Inc.",
+                "Implementation-Title": project.name,
+                "Build-Jdk": project.findProperty("jdk")
+            )
+        }
+    }
+
+    task dist(dependsOn: ['jar']) {
+        doFirst {
+            new File(projectDir, '../dist/bin').mkdirs()
+            new File(projectDir, '../dist/apps').mkdirs()
+            new File(projectDir, '../dist/conf').mkdirs()
+            new File(projectDir, '../dist/lib').mkdirs()
+        }
+
+        doLast {
+            copy {
+                into('../dist/apps/')
+                from project.jar.getArchivePath()
+            }
+            copy {
+                into '../dist/lib'
+                from project.configurations.runtime
+                exclude '**/*.properties*'
+                exclude '**/*testng*.jar'
+                exclude '**/*powermock*.jar'
+                exclude '**/*mockito*.jar'
+                exclude '**/*junit*.jar'
+                exclude '**/*jacoco*.jar'
+                exclude '**/*log4j2.xml*'
+                exclude '**/spring-boot-devtools*.jar'
+                exclude '**/mumble-sdk-test*.jar'
+                exclude '**/defibus*.jar'
+                exclude 'logback-classic-1.0.13.jar'
+                exclude 'logback-core-1.0.13.jar'
+                exclude 'slf4j-api-1.7.5.jar'
+                exclude 'slf4j-api-1.7.12.jar'
+                exclude 'commons-collections-3.2.2.jar'
+            }
+
+            copy {
+                into '../dist/bin'
+                from '../script'
+            }
+
+            copy {
+                into '../dist/conf'
+                from '../conf/'
+            }
+        }
+    }
+
+    javadoc {
+        source = sourceSets.main.java
+        classpath = configurations.compile
+        destinationDir = reporting.file("javadoc")
+    }
+
+    task packageJavadoc(type: Jar, dependsOn: ['javadoc']) {
+        from project.javadoc.destinationDir
+        classifier = 'javadoc'
+    }
+
+    task packageSources(type: Jar) {
+        from project.sourceSets.main.allSource
+        classifier = 'sources'  // either here or in artifacts block
+    }
+
+    artifacts {
+        archives jar
+        archives packageJavadoc
+        archives packageSources
+    }
+
+    repositories {
+        maven { url "https://maven.aliyun.com/repository/public" }
+        mavenCentral()
+    }
+
+    configurations.all {
+        resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
+        resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
+    }
+
+}
+

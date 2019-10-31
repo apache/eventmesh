@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<configuration debug="false" scan="true" scanPeriod="60 seconds" packagingData="false">
+
+    <appender name="SyncDefaultAppender"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>../logs/filtersrv_default.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>../logs/otherdays/filtersrv_default-%d{yyyy-MM-dd}.%i.log
+            </fileNamePattern>
+            <maxFileSize>128MB</maxFileSize>
+            <maxHistory>24</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyy-MM-dd HH:mm:ss:SSS,GMT+8} %p %t - %m%n</pattern>
+            <charset class="java.nio.charset.Charset">UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="DefaultAppender" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>10</discardingThreshold>
+        <queueSize>256</queueSize>
+        <appender-ref ref="SyncDefaultAppender"/>
+    </appender>
+
+    <appender name="SyncRocketmqFiltersrvAppender"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>../logs/filtersrv.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>../logs/otherdays/filtersrv.%i.log
+            </fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>5</maxIndex>
+        </rollingPolicy>
+        <triggeringPolicy
+            class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>100MB</maxFileSize>
+        </triggeringPolicy>
+        <encoder>
+            <pattern>%d{yyy-MM-dd HH:mm:ss:SSS,GMT+8} %p %t - %m%n</pattern>
+            <charset class="java.nio.charset.Charset">UTF-8</charset>
+        </encoder>
+    </appender>
+
+
+    <appender name="RocketmqFiltersrvAppender" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>10</discardingThreshold>
+        <queueSize>256</queueSize>
+        <appender-ref ref="SyncRocketmqFiltersrvAppender"/>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyy-MM-dd HH:mm:ss:SSS,GMT+8} %p %t - %m%n</pattern>
+            <charset class="java.nio.charset.Charset">UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <logger name="RocketmqFiltersrv" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="RocketmqFiltersrvAppender"/>
+    </logger>
+
+    <logger name="RocketmqCommon" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="RocketmqFiltersrvAppender"/>
+    </logger>
+
+    <logger name="RocketmqRemoting" additivity="false">
+        <level value="INFO"/>
+        <appender-ref ref="RocketmqFiltersrvAppender"/>
+    </logger>
+
+    <root>
+        <level value="INFO"/>
+        <appender-ref ref="DefaultAppender"/>
+    </root>
+</configuration>
