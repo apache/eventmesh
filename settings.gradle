@@ -20,6 +20,6 @@ String jdkVersion = "${jdk}"
 if (jdkVersion.equals('1.7')) {
     include 'defibus-common', 'defibus-client', 'defibus-tools'
 } else {
-    include 'defibus-common', 'defibus-client', 'defibus-tools', 'defibus-broker', 'defibus-namesrv', 'defibus-test', 'defibus-examples'
+    include 'defibus-common', 'defibus-client', 'defibus-tools', 'defibus-broker', 'defibus-namesrv',  'defibus-examples'
 }
 

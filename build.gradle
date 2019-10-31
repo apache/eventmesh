@@ -162,7 +162,7 @@ subprojects {
     ]
 
     List fastjson = [
-        "com.alibaba:fastjson:1.2.29"
+        "com.alibaba:fastjson:1.2.61"
     ]
 
     List common_io = [
@@ -225,10 +225,7 @@ subprojects {
                 exclude '**/spring-boot-devtools*.jar'
                 exclude '**/mumble-sdk-test*.jar'
                 exclude '**/defibus*.jar'
-                exclude 'logback-classic-1.0.13.jar'
-                exclude 'logback-core-1.0.13.jar'
-                exclude 'slf4j-api-1.7.5.jar'
-                exclude 'slf4j-api-1.7.12.jar'
+                exclude '*log4j*.jar'
                 exclude 'commons-collections-3.2.2.jar'
             }
 
