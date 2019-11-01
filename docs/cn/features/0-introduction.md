@@ -1,15 +1,15 @@
-## DeFiBus(Decentralized Financial Message Bus) -- 分布式金融级消息总线
+# DeFiBus
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-**DeFiBus=RPC+MQ，是基于开源消息中间件打造的安全可控的分布式金融级消息总线。DeFibus不仅提供了RPC同步调用，还提供了MQ的异步事件通知、事件组播和广播等常用服务调用和消息模式，同时增加了应用多中心多活、服务就近、灰度发布等分布式场景下的高可用能力。在对于机器故障的容错能力方面的增强，也让消息总线的服务更加稳定可靠，为业务提供7x24的服务。**
+**DeFiBus=RPC+MQ，是基于开源消息中间件打造的安全可靠的分布式金融级消息总线。DeFibus不仅提供了RPC同步调用，还提供了MQ的异步事件通知、事件组播和广播等常用服务调用和消息模式，同时增加了应用多中心多活、服务就近、灰度发布等分布式场景下的高可用能力。在对于机器故障的容错能力方面的增强，也让消息总线的服务更加稳定可靠，为业务提供7x24的服务。**
 
 ### 整体架构  
 <div align=center>
 
-![architecture1](./docs/images/features/a-distributing-architecture-in-financial.png)
+![architecture1](../../../docs/images/features/a-distributing-architecture-in-financial.png)
 
 </div>
 
-![architecture2](./docs/images/features/architecture-p1.png)
+![architecture2](../../../docs/images/features/architecture-p1.png)
   
 DeFiBus主要包括以下几个组件（模块）：  
 
@@ -31,14 +31,14 @@ Topic按照如下格式来命名：
 [区域代码]-[服务唯一ID]
 ```
 
-比如，余额查询服务的服务ID为20190001表示，部署在“A10”这个区域，那么该服务在A10区域的Topic就命名为“A10-20190001”。
+比如，余额查询服务的服务ID为20190001表示，部署在“A10”这个区域，那么该服务在A10区域的Topic就命名为“A10-20190001”。Topic的命名规则
+
 
 ### 特性列表:
 * [RPC调用：即“Request-Reply”模式，支持系统间的同步调用](docs/cn/features/1-request-response-call.md)
-* [消息发布/订阅：消息的发布和订阅](docs/cn/features/9-publish-type.md)
+* 消息发布/订阅：消息的发布和订阅
 * [灰度发布：服务级别的灰度发布](docs/cn/features/2-dark-launch.md)
 * [熔断机制：应用实例级别的熔断](docs/cn/features/3-circuit-break-mechanism.md)
-* [流量控制：队列级别的限流]
 * [服务就近：就近进行服务的请求和响应，减少跨区调用](docs/cn/features/4-invoke-service-nearby.md)
 * [应用多活：应用多中心多活](docs/cn/features/5-multi-active.md)
 * [动态扩缩队列 ：自适应应用实例数量，动态调整队列个数](docs/cn/features/6-dynamic-adjust-queue.md)
@@ -47,23 +47,3 @@ Topic按照如下格式来命名：
 * 服务代理：HTTP及多语言的代理(后续开源)
 * 服务治理：服务元数据的管理(后续开源)
 * 平滑升级：平滑升级、平滑扩容(后续开源)
-
-
-
-## Quick Start
-DeFiBus的安装部署流程请参考：[《DeFiBus使用指引》](docs/cn/quickstart.md)   
-examples模块中提供了最佳实践样例：[defibus-examples](defibus-examples)
-
-## License
-Copyright (C) 2015-2019 Webank Group Holding Limited
-
-## Contacts
-微信/QQ群：
-
-![wechat_qr](./docs/images/wechat_helper.png)
-
-![qqgroup_qr](./docs/images/qqgroup-crcode.png)
-
-钉钉群: 23372793
-
-邮箱: defibus.users@webank.com
