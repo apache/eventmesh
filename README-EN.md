@@ -62,5 +62,3 @@ WeChat & QQ group：
 ![qqgroup_qr](./docs/images/qqgroup-crcode.png)
 
 DingDing group: 23372793
-
-Email: defibus.users@webank.com
