@@ -66,4 +66,3 @@ Copyright (C) 2015-2019 Webank Group Holding Limited
 
 钉钉群: 23372793
 
-邮箱: defibus.users@webank.com
