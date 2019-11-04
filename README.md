@@ -55,7 +55,7 @@ DeFiBus的安装部署流程请参考：[《DeFiBus使用指引》](docs/cn/quic
 examples模块中提供了最佳实践样例：[defibus-examples](defibus-examples)
 
 ## License
-DeFiBus is licensed under Apache License.
+DeFiBus is licensed under [Apache License](https://github.com/WeBankFinTech/DeFiBus/blob/master/LICENSE).
 
 非常感谢以下项目对开源做出的贡献
 * [RocketMQ](https://github.com/apache/rocketmq)
