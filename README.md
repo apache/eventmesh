@@ -38,7 +38,7 @@ Topic按照如下格式来命名：
 * [消息发布/订阅：消息的发布和订阅](docs/cn/features/9-publish-type.md)
 * [灰度发布：服务级别的灰度发布](docs/cn/features/2-dark-launch.md)
 * [熔断机制：应用实例级别的熔断](docs/cn/features/3-circuit-break-mechanism.md)
-* [流量控制：队列级别的限流]()
+* [流量控制：队列级别的限流](docs/cn/features/10-flow-control.md)
 * [服务就近：就近进行服务的请求和响应，减少跨区调用](docs/cn/features/4-invoke-service-nearby.md)
 * [应用多活：应用多中心多活](docs/cn/features/5-multi-active.md)
 * [动态扩缩队列 ：自适应应用实例数量，动态调整队列个数](docs/cn/features/6-dynamic-adjust-queue.md)
