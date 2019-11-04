@@ -36,9 +36,10 @@ For example, the service ID of the balance query service is 20190001, and it is 
 
 ## 特性列表:
 * [Request-Reply call：support sync invocation between systems](docs/cn/features/1-request-response-call.md)
-* Pub/Sub：message publish and subscrbe
+* [Pub/Sub：message publish and subscrbe](docs/cn/features/9-publish-type.md)
 * [Dark launch：support dark launch at level of topic](docs/cn/features/2-dark-launch.md)
 * [Circuit break mechainsm: circuit break at level of client instance](docs/cn/features/3-circuit-break-mechanism.md)
+* [flow control:limit flow at the level of queue](docs/cn/features/10-flow-control.md)
 * [Service nearby：invoke service nearby, reducing invocation cross region](docs/cn/features/4-invoke-service-nearby.md)
 * [Multi active：multi active of application among multi region or idc](docs/cn/features/5-multi-active.md)
 * [Dynamic expand/shrink queue：expand/shrink queue number according to alive instance adaptive](docs/cn/features/6-dynamic-adjust-queue.md)
