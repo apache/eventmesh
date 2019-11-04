@@ -60,6 +60,7 @@ DeFiBus is licensed under [Apache License](https://github.com/WeBankFinTech/DeFi
 WeChat & QQ group：
 
 ![wechat_qr](./docs/images/wechat_helper.png)
+
 ![qqgroup_qr](./docs/images/qqgroup-crcode.png)
 
 DingDing group: 23372793
