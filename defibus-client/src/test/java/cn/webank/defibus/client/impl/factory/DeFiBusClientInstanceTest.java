@@ -43,85 +43,85 @@ import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+//@RunWith(MockitoJUnitRunner.class)
 public class DeFiBusClientInstanceTest {
-    private DeFiBusClientInstance deFiBusClientInstance = DeFiBusClientManager.getInstance().getAndCreateDeFiBusClientInstance(new ClientConfig(), DeFiBusClientHookFactory.createRPCHook(null));
-    private String topic = "FooBar";
-    private String group = "FooBarGroup";
-
-    @Mock
-    private DeFiBusClientAPIImpl deFiBusClientAPI;
-
-    @Test
-    public void testFindConsumerIdList() throws InterruptedException, MQBrokerException, RemotingTimeoutException, RemotingSendRequestException, RemotingConnectException {
-        List<String> cidList = new ArrayList<>();
-        cidList.add("client-1");
-        cidList.add("client-2");
-        cidList.add("client-3");
-
-        ReflectUtil.setSimpleProperty(MQClientInstance.class, deFiBusClientInstance, "mQClientAPIImpl", deFiBusClientAPI);
-        ReflectUtil.setSimpleProperty(DeFiBusClientInstance.class, deFiBusClientInstance, "deFiClientAPI", deFiBusClientAPI);
-
-        deFiBusClientInstance.getTopicRouteTable().put(topic, createRouteData());
-
-        when(deFiBusClientAPI.getConsumerIdListByGroupAndTopic(anyString(), anyString(), anyString(), anyLong())).thenReturn(cidList);
-        assertThat(cidList).isEqualTo(deFiBusClientInstance.findConsumerIdList(topic, group));
-    }
-
-    @Test
-    public void testFindConsumerIdList_retry() throws InterruptedException, MQBrokerException, RemotingTimeoutException, RemotingSendRequestException, RemotingConnectException {
-        List<String> cidList = new ArrayList<>();
-        cidList.add("client-1");
-        cidList.add("client-2");
-        cidList.add("client-3");
-
-        ReflectUtil.setSimpleProperty(MQClientInstance.class, deFiBusClientInstance, "mQClientAPIImpl", deFiBusClientAPI);
-        ReflectUtil.setSimpleProperty(DeFiBusClientInstance.class, deFiBusClientInstance, "deFiClientAPI", deFiBusClientAPI);
-
-        deFiBusClientInstance.getTopicRouteTable().put(topic, createRouteData());
-        when(deFiBusClientAPI.getConsumerIdListByGroupAndTopic(anyString(), anyString(), anyString(), anyLong())).thenReturn(null).thenReturn(cidList);
-        assertThat(cidList).isEqualTo(deFiBusClientInstance.findConsumerIdList(topic, group));
-    }
-
-    public static TopicRouteData createRouteData() {
-        TopicRouteData topicRouteData = new TopicRouteData();
-        List<BrokerData> brokerDataList = new ArrayList<>();
-
-        BrokerData brokerDataA = new BrokerData();
-        brokerDataA.setBrokerName("Broker-A");
-        brokerDataA.setCluster("Cluster-A");
-        HashMap<Long, String> addr = new HashMap<>();
-        addr.put(0L, "127.0.0.1:10911");
-        brokerDataA.setBrokerAddrs(addr);
-        brokerDataList.add(brokerDataA);
-
-        BrokerData brokerDataB = new BrokerData();
-        brokerDataB.setBrokerName("Broker-B");
-        brokerDataB.setCluster("Cluster-B");
-        HashMap<Long, String> addrB = new HashMap<>();
-        addrB.put(0L, "127.0.0.2:10911");
-        brokerDataB.setBrokerAddrs(addrB);
-        brokerDataList.add(brokerDataB);
-
-        topicRouteData.setBrokerDatas(brokerDataList);
-
-        QueueData queueData = new QueueData();
-        queueData.setBrokerName("Broker-A");
-        queueData.setReadQueueNums(3);
-        queueData.setWriteQueueNums(3);
-        queueData.setPerm(6);
-
-        QueueData queueDataB = new QueueData();
-        queueDataB.setBrokerName("Broker-B");
-        queueDataB.setReadQueueNums(3);
-        queueDataB.setWriteQueueNums(3);
-        queueDataB.setPerm(6);
-
-        List<QueueData> queueDataList = new ArrayList<>();
-        queueDataList.add(queueData);
-        queueDataList.add(queueDataB);
-        topicRouteData.setQueueDatas(queueDataList);
-
-        return topicRouteData;
-    }
+//    private DeFiBusClientInstance deFiBusClientInstance = DeFiBusClientManager.getInstance().getAndCreateDeFiBusClientInstance(new ClientConfig(), DeFiBusClientHookFactory.createRPCHook(null));
+//    private String topic = "FooBar";
+//    private String group = "FooBarGroup";
+//
+//    @Mock
+//    private DeFiBusClientAPIImpl deFiBusClientAPI;
+//
+//    @Test
+//    public void testFindConsumerIdList() throws InterruptedException, MQBrokerException, RemotingTimeoutException, RemotingSendRequestException, RemotingConnectException {
+//        List<String> cidList = new ArrayList<>();
+//        cidList.add("client-1");
+//        cidList.add("client-2");
+//        cidList.add("client-3");
+//
+//        ReflectUtil.setSimpleProperty(MQClientInstance.class, deFiBusClientInstance, "mQClientAPIImpl", deFiBusClientAPI);
+//        ReflectUtil.setSimpleProperty(DeFiBusClientInstance.class, deFiBusClientInstance, "deFiClientAPI", deFiBusClientAPI);
+//
+//        deFiBusClientInstance.getTopicRouteTable().put(topic, createRouteData());
+//
+//        when(deFiBusClientAPI.getConsumerIdListByGroupAndTopic(anyString(), anyString(), anyString(), anyLong())).thenReturn(cidList);
+//        assertThat(cidList).isEqualTo(deFiBusClientInstance.findConsumerIdList(topic, group));
+//    }
+//
+//    @Test
+//    public void testFindConsumerIdList_retry() throws InterruptedException, MQBrokerException, RemotingTimeoutException, RemotingSendRequestException, RemotingConnectException {
+//        List<String> cidList = new ArrayList<>();
+//        cidList.add("client-1");
+//        cidList.add("client-2");
+//        cidList.add("client-3");
+//
+//        ReflectUtil.setSimpleProperty(MQClientInstance.class, deFiBusClientInstance, "mQClientAPIImpl", deFiBusClientAPI);
+//        ReflectUtil.setSimpleProperty(DeFiBusClientInstance.class, deFiBusClientInstance, "deFiClientAPI", deFiBusClientAPI);
+//
+//        deFiBusClientInstance.getTopicRouteTable().put(topic, createRouteData());
+//        when(deFiBusClientAPI.getConsumerIdListByGroupAndTopic(anyString(), anyString(), anyString(), anyLong())).thenReturn(null).thenReturn(cidList);
+//        assertThat(cidList).isEqualTo(deFiBusClientInstance.findConsumerIdList(topic, group));
+//    }
+//
+//    public static TopicRouteData createRouteData() {
+//        TopicRouteData topicRouteData = new TopicRouteData();
+//        List<BrokerData> brokerDataList = new ArrayList<>();
+//
+//        BrokerData brokerDataA = new BrokerData();
+//        brokerDataA.setBrokerName("Broker-A");
+//        brokerDataA.setCluster("Cluster-A");
+//        HashMap<Long, String> addr = new HashMap<>();
+//        addr.put(0L, "127.0.0.1:10911");
+//        brokerDataA.setBrokerAddrs(addr);
+//        brokerDataList.add(brokerDataA);
+//
+//        BrokerData brokerDataB = new BrokerData();
+//        brokerDataB.setBrokerName("Broker-B");
+//        brokerDataB.setCluster("Cluster-B");
+//        HashMap<Long, String> addrB = new HashMap<>();
+//        addrB.put(0L, "127.0.0.2:10911");
+//        brokerDataB.setBrokerAddrs(addrB);
+//        brokerDataList.add(brokerDataB);
+//
+//        topicRouteData.setBrokerDatas(brokerDataList);
+//
+//        QueueData queueData = new QueueData();
+//        queueData.setBrokerName("Broker-A");
+//        queueData.setReadQueueNums(3);
+//        queueData.setWriteQueueNums(3);
+//        queueData.setPerm(6);
+//
+//        QueueData queueDataB = new QueueData();
+//        queueDataB.setBrokerName("Broker-B");
+//        queueDataB.setReadQueueNums(3);
+//        queueDataB.setWriteQueueNums(3);
+//        queueDataB.setPerm(6);
+//
+//        List<QueueData> queueDataList = new ArrayList<>();
+//        queueDataList.add(queueData);
+//        queueDataList.add(queueDataB);
+//        topicRouteData.setQueueDatas(queueDataList);
+//
+//        return topicRouteData;
+//    }
 }
