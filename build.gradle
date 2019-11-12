@@ -22,12 +22,16 @@ buildscript {
         maven {
             url "https://maven.aliyun.com/repository/public"
         }
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
 
     dependencies {
         classpath("net.sourceforge.pmd:pmd-java:5.4.1")
         classpath("com.puppycrawl.tools:checkstyle:6.16.1")
         classpath("com.google.code.findbugs:findbugs:3.0.1")
+        classpath("gradle.plugin.com.github.kt3k.coveralls:coveralls-gradle-plugin:2.8.4")
     }
 }
 
@@ -74,6 +78,7 @@ subprojects {
     apply plugin: "checkstyle"
     apply plugin: "pmd"
     apply plugin: "findbugs"
+    apply plugin: "com.github.kt3k.coveralls"
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
@@ -138,7 +143,15 @@ subprojects {
 
     task jacocoAllTestReport(type: JacocoReport, dependsOn: ["test"]) {
         sourceSets sourceSets.main
-        executionData files("$buildDir/jacoco/jacocoTest.exec")
+        executionData files("$buildDir/jacoco/test.exec")
+        reports {
+            html.enabled = true // human readable
+            xml.enabled = true // required by coveralls
+        }
+    }
+
+    coveralls{
+        jacocoReportPath="${buildDir}/reports/jacoco/jacocoAllTestReport/jacocoAllTestReport.xml"
     }
 
     List junit = [
