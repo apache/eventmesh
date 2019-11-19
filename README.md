@@ -70,7 +70,7 @@ DeFiBus is licensed under [Apache License](https://github.com/WeBankFinTech/DeFi
 * [Netty](https://github.com/netty/netty)
 
 ## 动态
-在[Wiki](https://github.com/WeBankFinTech/DeFiBus/wiki)上汇总了相关动态和咨询，[点此处前往查看](https://github.com/WeBankFinTech/DeFiBus/wiki)
+在[ Wiki ](https://github.com/WeBankFinTech/DeFiBus/wiki)上汇总了相关动态和资讯，[点此处前往查看](https://github.com/WeBankFinTech/DeFiBus/wiki)
 
 ## Contacts
 微信/QQ群：
