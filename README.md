@@ -77,7 +77,4 @@ DeFiBus is licensed under [Apache License](https://github.com/WeBankFinTech/DeFi
 
 ![wechat_qr](./docs/images/wechat_helper.png)
 
-![qqgroup_qr](./docs/images/qqgroup-crcode.png)
-
-钉钉群: 23372793
 
