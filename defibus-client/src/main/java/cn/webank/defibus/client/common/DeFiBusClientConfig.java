@@ -58,6 +58,8 @@ public class DeFiBusClientConfig {
     private long pullTimeDelayMillsWhenFlowControl = 50;
     private long pullTimeDelayMillsWhenSuspend = 500;
 
+    private int minMqNumWhenSendLocal = 1;
+
     public String getProducerGroup() {
         return producerGroup;
     }
@@ -270,6 +272,14 @@ public class DeFiBusClientConfig {
         this.pullTimeDelayMillsWhenSuspend = pullTimeDelayMillsWhenSuspend;
     }
 
+    public int getMinMqNumWhenSendLocal() {
+        return minMqNumWhenSendLocal;
+    }
+
+    public void setMinMqNumWhenSendLocal(int minMqNumWhenSendLocal) {
+        this.minMqNumWhenSendLocal = minMqNumWhenSendLocal;
+    }
+
     @Override public String toString() {
         return "DeFiBusClientConfig{" +
             "producerGroup='" + producerGroup + '\'' +
@@ -299,6 +309,7 @@ public class DeFiBusClientConfig {
             ", pullTimeDelayMillsWhenExcept=" + pullTimeDelayMillsWhenExcept +
             ", pullTimeDelayMillsWhenFlowControl=" + pullTimeDelayMillsWhenFlowControl +
             ", pullTimeDelayMillsWhenSuspend=" + pullTimeDelayMillsWhenSuspend +
+            ", minMqNumWhenSendLocal=" + minMqNumWhenSendLocal +
             '}';
     }
 }
