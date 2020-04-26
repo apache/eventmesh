@@ -23,9 +23,9 @@
     This configuration file was written by the eclipse-cs plugin configuration editor
 -->
 <!--
-    Checkstyle-Configuration: Mumble Checks
+    Checkstyle-Configuration: DeFiBus Checks
     Description: 
-Checkstyle configuration that checks the WeBank Mumble Team coding convertions.
+Checkstyle configuration that checks the DeFiBus Team coding convertions.
 -->
 <module name="Checker">
     <property name="severity" value="warning"/>
