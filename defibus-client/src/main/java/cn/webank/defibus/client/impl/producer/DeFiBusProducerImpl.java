@@ -70,7 +70,8 @@ public class DeFiBusProducerImpl {
     public DeFiBusProducerImpl(DeFiBusProducer deFiBusProducer, DeFiBusClientConfig deFiBusClientConfig,
         DeFiBusClientInstance deFiBusClientInstance) {
         this.deFiBusProducer = deFiBusProducer;
-        this.messageQueueSelector = new HealthyMessageQueueSelector(new MessageQueueHealthManager(deFiBusClientConfig.getQueueIsolateTimeMillis()));
+        this.messageQueueSelector = new HealthyMessageQueueSelector(new MessageQueueHealthManager(deFiBusClientConfig.getQueueIsolateTimeMillis()),
+                deFiBusClientConfig.getMinMqNumWhenSendLocal());
 
         executorService = deFiBusClientInstance.getExecutorService();
         scheduledExecutorService = deFiBusClientInstance.getScheduledExecutorService();
