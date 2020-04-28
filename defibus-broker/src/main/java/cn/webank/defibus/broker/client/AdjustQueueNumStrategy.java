@@ -17,9 +17,6 @@
 
 package cn.webank.defibus.broker.client;
 
-import cn.webank.defibus.broker.DeFiBrokerController;
-import cn.webank.defibus.common.DeFiBusConstant;
-import io.netty.channel.Channel;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -27,6 +24,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+
+import io.netty.channel.Channel;
+
 import org.apache.rocketmq.broker.client.ConsumerGroupInfo;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.TopicConfig;
@@ -35,6 +35,9 @@ import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.store.config.BrokerRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import cn.webank.defibus.broker.DeFiBrokerController;
+import cn.webank.defibus.common.DeFiBusConstant;
 
 public class AdjustQueueNumStrategy {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
@@ -114,7 +117,7 @@ public class AdjustQueueNumStrategy {
                             log.info("try adjust read queue size to {} for [{}], prev: {}, {}", adjustReadQueueSize, topic, topicConfig.getReadQueueNums(), mode);
                             if (adjustReadQueueSize < topicConfig.getWriteQueueNums()) {
                                 log.info("adjust read queues to {} for [{}] fail. read queue size can't less than write queue size[{}]. {}",
-                                    adjustReadQueueSize, topic, topicConfig.getWriteQueueNums(), mode);
+                                        adjustReadQueueSize, topic, topicConfig.getWriteQueueNums(), mode);
                                 return;
                             }
                             boolean canAdjustReadQueueSize = isCanAdjustReadQueueSize(topic, adjustReadQueueSize);
@@ -182,7 +185,7 @@ public class AdjustQueueNumStrategy {
                                 notifyWhenTopicConfigChange(topic);
                             } else {
                                 log.info("adjust write queues to {} for [{}] fail. target write queue size can't less than 0 or greater than read queue size[{}]. mode: {}",
-                                    adjustWriteQueueSize, topic, topicConfig.getReadQueueNums(), mode);
+                                        adjustWriteQueueSize, topic, topicConfig.getReadQueueNums(), mode);
                             }
                         } else {
                             log.info("no need to adjust write queue size for [{}]. now [w:{}/r:{}]. {}", topic, topicConfig.getWriteQueueNums(), topicConfig.getReadQueueNums(), mode);
@@ -243,10 +246,10 @@ public class AdjustQueueNumStrategy {
             public boolean test(String cid) {
                 String[] cidArr = cid.split(DeFiBusConstant.INSTANCE_NAME_SEPERATER);
                 if (cidArr.length > 2) {
-                    String idc = cidArr[cidArr.length-1];
+                    String idc = cidArr[cidArr.length - 1];
                     String clusterName = deFiBrokerController.getBrokerConfig().getBrokerClusterName();
                     if (clusterName.toUpperCase().startsWith(idc) ||
-                        idc.startsWith(clusterName.toUpperCase())) {
+                            idc.startsWith(clusterName.toUpperCase())) {
                         return true;
                     }
                 }
@@ -328,7 +331,7 @@ public class AdjustQueueNumStrategy {
             long ackOffset = deFiBrokerController.getConsumeQueueManager().queryOffset(group, topic, queueId);
             if (ackOffset < maxOffset) {
                 log.info("not finish consume message for topic: {} by group : {}, queueId: {}, ackOffset: {}, maxOffset: {}",
-                    topic, group, queueId, ackOffset, maxOffset);
+                        topic, group, queueId, ackOffset, maxOffset);
                 return false;
             }
         }
