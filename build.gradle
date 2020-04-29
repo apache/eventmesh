@@ -22,21 +22,24 @@ buildscript {
         maven {
             url "https://maven.aliyun.com/repository/public"
         }
+
         maven {
             url "https://plugins.gradle.org/m2/"
         }
+
     }
 
     dependencies {
-        classpath("net.sourceforge.pmd:pmd-java:5.4.1")
-        classpath("com.puppycrawl.tools:checkstyle:6.16.1")
-        classpath("com.google.code.findbugs:findbugs:3.0.1")
-        classpath("gradle.plugin.com.github.kt3k.coveralls:coveralls-gradle-plugin:2.8.4")
+        //classpath("net.sourceforge.pmd:pmd-java:5.4.1")
+        //classpath("com.puppycrawl.tools:checkstyle:6.16.1")
+        classpath("gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.0.7")
+        classpath('com.github.spotbugs:spotbugs:4.0.0')
     }
 }
 
 allprojects {
     apply plugin: 'java'
+
 
     clean.doFirst {
         delete 'build'
@@ -49,7 +52,7 @@ allprojects {
     }
 }
 
-task tar(overwrite: true, type: Tar) {
+task tar(type: Tar) {
     extension = 'tar.gz'
     compression = Compression.GZIP
     archiveName = project.name + '_' + project.version + '.' + extension
@@ -59,7 +62,7 @@ task tar(overwrite: true, type: Tar) {
     }
 }
 
-task zip(overwrite: true, type: Zip) {
+task zip(type: Zip) {
     extension = 'zip'
     archiveName = project.name + '.' + project.version + '.' + extension
     destinationDir = new File(projectDir, 'build')
@@ -69,7 +72,8 @@ task zip(overwrite: true, type: Zip) {
 }
 
 subprojects {
-    apply plugin: "java"
+
+
     apply plugin: "maven"
     apply plugin: "eclipse"
     apply plugin: "idea"
@@ -77,32 +81,66 @@ subprojects {
     apply plugin: "jacoco"
     apply plugin: "checkstyle"
     apply plugin: "pmd"
-    apply plugin: "findbugs"
-    apply plugin: "com.github.kt3k.coveralls"
+    apply plugin: 'com.github.spotbugs'
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
     compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 
     jacoco {
-        toolVersion = "0.7.7.201606060606"
+        toolVersion = "0.8.5"
         reportsDir = file("$buildDir/reports/jacoco")
     }
 
+    jacocoTestReport {
+//        sourceSets sourceSets.main
+//        executionData files("$buildDir/jacoco/jacocoTest.exec")
+
+        reports {
+            xml.enabled false
+            csv.enabled false
+            html.destination file("${buildDir}/reports/jacoco")
+        }
+    }
+
     checkstyle {
-        checkstyle.toolVersion = "6.19"
+        toolVersion = "8.32"
         ignoreFailures = true
         sourceSets = [sourceSets.main]
         configFile = 'conf/checkstyle.xml' as File
+        showViolations true
     }
 
-    findbugs {
+    tasks.withType(Checkstyle) {
+        reports {
+            xml.enabled false
+            html.enabled true
+        }
+    }
+
+    spotbugs {
+        toolVersion = '4.0.2'
         ignoreFailures = true
-        findbugsTest.enabled = false
-        sourceSets = [sourceSets.main]
+        effort = "default"
+        reportLevel = "default"
+        showProgress = true
     }
 
-    tasks.withType(FindBugs) {
+//    tasks.withType(com.github.spotbugs.SpotBugsTask) {
+//        sourceDirs = [sourceSets.main]
+//        reports {
+//            xml.enabled = false
+//            html.enabled = true
+//        }
+//    }
+    spotbugsMain {
+        reports {
+            xml.enabled = false
+            html.enabled = true
+        }
+    }
+
+    spotbugsTest {
         reports {
             xml.enabled = false
             html.enabled = true
@@ -116,43 +154,16 @@ subprojects {
         }
     }
 
+
     pmd {
+        consoleOutput = true
+        toolVersion = "6.23.0"
+        rulePriority = 5
+        ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
         ignoreFailures = true
-        pmdTest.enabled = false
-        sourceSets = [sourceSets.main]
-        ruleSets = [
-            'java-basic',
-            'java-braces',
-            'java-clone',
-            'java-codesize',
-            'java-comments',
-            'java-controversial',
-            'java-coupling',
-            'java-design',
-            'java-empty',
-            'java-finalizers',
-            'java-imports',
-            'java-optimizations',
-            'java-strictexception',
-            'java-strings',
-            'java-typeresolution',
-            'java-unnecessary',
-            'java-unusedcode'
-        ]
     }
 
-    task jacocoAllTestReport(type: JacocoReport, dependsOn: ["test"]) {
-        sourceSets sourceSets.main
-        executionData files("$buildDir/jacoco/test.exec")
-        reports {
-            html.enabled = true // human readable
-            xml.enabled = true // required by coveralls
-        }
-    }
 
-    coveralls{
-        jacocoReportPath="${buildDir}/reports/jacoco/jacocoAllTestReport/jacocoAllTestReport.xml"
-    }
 
     List junit = [
         "junit:junit:4.12"
