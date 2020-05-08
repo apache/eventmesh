@@ -84,7 +84,8 @@ public class AdjustQueueNumStrategy {
 
             case DECREASE_QUEUE_NUM:
                 adjustWriteQueueNumByConsumerCount(topic, 0, scaleType);
-                long delayTimeMillis = deFiBrokerController.getDeFiBusBrokerConfig().getScaleQueueSizeDelayTimeMinute() * 60 * 1000;
+                long delayTimeMinutes = Math.min(deFiBrokerController.getDeFiBusBrokerConfig().getScaleQueueSizeDelayTimeMinute(), 10);
+                long delayTimeMillis = delayTimeMinutes * 60 * 1000;
                 adjustReadQueueNumByConsumerCount(topic, delayTimeMillis, scaleType);
                 break;
         }
