@@ -98,7 +98,7 @@ public class AdjustQueueNumStrategy {
             public void run() {
                 TopicConfig topicConfig = deFiBrokerController.getTopicConfigManager().getTopicConfigTable().get(topic);
                 if (topicConfig != null) {
-                    synchronized (topicConfig.getTopicName()) {
+                    synchronized (topicConfig) {
 
                         //query again to ensure it's newest
                         topicConfig = deFiBrokerController.getTopicConfigManager().getTopicConfigTable().get(topic);
@@ -161,7 +161,7 @@ public class AdjustQueueNumStrategy {
             public void run() {
                 TopicConfig topicConfig = deFiBrokerController.getTopicConfigManager().getTopicConfigTable().get(topic);
                 if (topicConfig != null) {
-                    synchronized (topicConfig.getTopicName()) {
+                    synchronized (topicConfig) {
 
                         //query again to ensure it's newest
                         topicConfig = deFiBrokerController.getTopicConfigManager().getTopicConfigTable().get(topic);
