@@ -36,6 +36,16 @@ In other words, an ‘event mesh’ is:
 * environment agnostic (can be deployed anywhere); and,
 * dynamic.
 
+This diagram shows the architecture of EventMesh
+![architecture2](./docs/images/eventmesh.png)
+
+Key components:
+* eventmesh-broker:
+* eventmesh-sdk:
+* eventmesh-router:
+* eventmesh-governance:
+* eventmesh-acl:
+
 ## Contacts
 微信/QQ群：
 
