@@ -22,6 +22,7 @@ Service mesh connects microservices in cloud environments – Kubernetes only to
 Event mesh connects not only microservices but also legacy applications, cloud-native services, devices, and data sources/sinks and these can operate both in cloud and non-cloud environments. An event mesh can connect any event source to any event handler.
 
 This diagram shows where an event mesh fits in an application stack relative to other technologies such as service mesh.
+![architecture1](./docs/images/D-1_service-mesh-vs-event-mesh-1.png)
 
 ## What are the core capabilities of an event mesh?
 The generic capabilities of an event mesh:
