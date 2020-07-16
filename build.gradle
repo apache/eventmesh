@@ -186,7 +186,7 @@ subprojects {
     ]
 
     List fastjson = [
-        "com.alibaba:fastjson:1.2.61"
+        "com.alibaba:fastjson:1.2.71"
     ]
 
     List common_io = [
