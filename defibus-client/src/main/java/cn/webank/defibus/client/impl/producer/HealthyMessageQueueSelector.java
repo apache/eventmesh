@@ -38,11 +38,13 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
     private static final Logger LOGGER = LoggerFactory.getLogger(HealthyMessageQueueSelector.class);
     private final ConcurrentHashMap<String, AtomicInteger> topicSendIndex = new ConcurrentHashMap<>();
     private final MessageQueueHealthManager messageQueueHealthManager;
+    private int minMqCountWhenSendLocal = 1;
     private Map<String, Boolean> sendNearbyMapping = new HashMap<>();
     private Set<String> localBrokers = new HashSet<String>();
 
-    public HealthyMessageQueueSelector(MessageQueueHealthManager messageQueueHealthManager) {
+    public HealthyMessageQueueSelector(MessageQueueHealthManager messageQueueHealthManager, int minMqCountWhenSendLocal) {
         this.messageQueueHealthManager = messageQueueHealthManager;
+        this.minMqCountWhenSendLocal = minMqCountWhenSendLocal;
     }
 
     @Override
@@ -60,7 +62,14 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
         if (pub2local) {
             List<MessageQueue> localMQs = new ArrayList<>();
             List<MessageQueue> remoteMqs = new ArrayList<>();
-            separateLocalAndRemoteMQs(mqs, localBrokers, localMQs, remoteMqs);
+            HashMap<String, Integer> localBrokerMQCount = separateLocalAndRemoteMQs(mqs, localBrokers, localMQs, remoteMqs);
+
+            for (String brokerName : localBrokerMQCount.keySet()) {
+                //if MQ num less than threshold, send msg to all broker
+                if (localBrokerMQCount.get(brokerName) <= minMqCountWhenSendLocal) {
+                    localMQs.addAll(remoteMqs);
+                }
+            }
 
             //try select a mq from local idc first
             MessageQueue candidate = selectMessageQueue(localMQs, lastOne, msg);
@@ -124,7 +133,7 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
     }
 
     private MessageQueue selectMessageQueue(List<MessageQueue> mqs, MessageQueue lastOneSelected,
-                                            Message msg) {
+        Message msg) {
         boolean isRetry = (lastOneSelected != null);
         List<MessageQueue> candidateMqs = mqs;
         if (isRetry) {
@@ -157,20 +166,26 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
         return result;
     }
 
-    private void separateLocalAndRemoteMQs(List<MessageQueue> mqs, Set<String> localBrokers,
-                                           List<MessageQueue> localMQs, List<MessageQueue> remoteMQs) {
+    private HashMap<String, Integer> separateLocalAndRemoteMQs(List<MessageQueue> mqs, Set<String> localBrokers,
+        List<MessageQueue> localMQs, List<MessageQueue> remoteMQs) {
         if (localMQs == null)
             localMQs = new ArrayList<>();
         if (remoteMQs == null)
             remoteMQs = new ArrayList<>();
-
+        HashMap<String, Integer> brokerMQCount = new HashMap<>();
         for (MessageQueue mq : mqs) {
             if (localBrokers.contains(mq.getBrokerName())) {
                 localMQs.add(mq);
+                Integer count = brokerMQCount.get(mq.getBrokerName());
+                if (count == null) {
+                    count = 0;
+                }
+                brokerMQCount.put(mq.getBrokerName(), count+1);
             } else {
                 remoteMQs.add(mq);
             }
         }
+        return brokerMQCount;
     }
 
     public MessageQueueHealthManager getMessageQueueHealthManager() {
