@@ -40,11 +40,12 @@ This diagram shows the architecture of EventMesh
 ![architecture2](./docs/images/eventmesh.png)
 
 Key components:
-* eventmesh-eventbroker:
-* eventmesh-sdk:
-* eventmesh-router:
-* eventmesh-governance:
-* eventmesh-acl:
+* eventmesh-eventbroker:an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
+* eventmesh-sdk:support for popular open standard protocols and APIs, including REST/HTTP, AMQP, MQTT, Websocket and JMS, gRPC etc.
+* eventmesh-router:automatically routes events between applications and services connected to seperate event brokers
+* eventmesh-governance:governace layer for event producers and consumers
+* eventmesh-acl:security at various level of authentication, authorization and topic/channel access control
+* event-store:the store layer of Event-Mesh which implemented with DeFiBus(custom develop on RocketMQ) by default. We wish the store layeris a general solution and can use any store implement such as kafka, redis etc.
 
 ## Contacts
 微信/QQ群：
