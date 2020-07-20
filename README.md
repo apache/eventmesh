@@ -45,13 +45,13 @@ Key components(open source soon):
 * eventmesh-router:automatically routes events between applications and services connected to seperate event brokers
 * eventmesh-governance:governace layer for event producers and consumers
 * eventmesh-acl:security at various level of authentication, authorization and topic/channel access control
-* eventmesh-store:the store layer of Event-Mesh which implemented with DeFiBus(based on RocketMQ) or RocketMQ by default. We wish the store layeris a general solution and can use any store implement such as kafka, redis etc.
+* eventmesh-store:the store layer of Event-Mesh which implemented with DeFiBus(based on RocketMQ in financial scenario) or RocketMQ by default. We wish the store layeris a general solution and can use any store implement such as kafka, redis etc.
 
 ## Quick Start
 Coming soon...
 
 ## License
-DeFiBus is licensed under [Apache License](https://github.com/WeBankFinTech/DeFiBus/blob/master/LICENSE).
+EventMesh is licensed under [Apache License](https://github.com/WeBankFinTech/DeFiBus/blob/master/LICENSE).
 
 ## Contacts
 WeChat group：
