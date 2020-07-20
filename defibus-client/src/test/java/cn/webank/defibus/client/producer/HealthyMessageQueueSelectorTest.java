@@ -45,7 +45,7 @@ public class HealthyMessageQueueSelectorTest {
 //        PowerMockito.when(producerImplMock.getLocalBrokers()).thenReturn(locBrokers);
 
         MessageQueueHealthManager manager = new MessageQueueHealthManager(60 * 1000);
-        HealthyMessageQueueSelector selector = new HealthyMessageQueueSelector(manager);
+        HealthyMessageQueueSelector selector = new HealthyMessageQueueSelector(manager, 1);
         selector.setLocalBrokers(locBrokers);
 
         List<MessageQueue> mqs = new ArrayList<>();
@@ -65,7 +65,7 @@ public class HealthyMessageQueueSelectorTest {
         locBrokers.add("localIDC");
 
         MessageQueueHealthManager manager = new MessageQueueHealthManager(60 * 1000);
-        HealthyMessageQueueSelector selector = new HealthyMessageQueueSelector(manager);
+        HealthyMessageQueueSelector selector = new HealthyMessageQueueSelector(manager, 1);
         selector.setLocalBrokers(locBrokers);
 
         List<MessageQueue> mqs = new ArrayList<>();
@@ -92,7 +92,7 @@ public class HealthyMessageQueueSelectorTest {
         locBrokers.add("localIDC");
 
         MessageQueueHealthManager manager = new MessageQueueHealthManager(60 * 1000);
-        HealthyMessageQueueSelector selector = new HealthyMessageQueueSelector(manager);
+        HealthyMessageQueueSelector selector = new HealthyMessageQueueSelector(manager, 1);
         selector.setLocalBrokers(locBrokers);
 
         List<MessageQueue> mqs = new ArrayList<>();
@@ -122,7 +122,7 @@ public class HealthyMessageQueueSelectorTest {
         localBrokers.add(localBrokerName);
 
         MessageQueueHealthManager manager = new MessageQueueHealthManager(60 * 1000);
-        HealthyMessageQueueSelector selector = new HealthyMessageQueueSelector(manager);
+        HealthyMessageQueueSelector selector = new HealthyMessageQueueSelector(manager, 1);
         selector.setLocalBrokers(localBrokers);
 
         //construct mq data
@@ -193,7 +193,7 @@ public class HealthyMessageQueueSelectorTest {
         }
 
         MessageQueueHealthManager manager = new MessageQueueHealthManager(60 * 1000);
-        HealthyMessageQueueSelector selector = new HealthyMessageQueueSelector(manager);
+        HealthyMessageQueueSelector selector = new HealthyMessageQueueSelector(manager, 1);
         selector.setLocalBrokers(localBrokers);
 
         //construct mq data
