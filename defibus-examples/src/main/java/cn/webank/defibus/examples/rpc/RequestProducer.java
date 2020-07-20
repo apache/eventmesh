@@ -62,6 +62,10 @@ public class RequestProducer {
             logger.warn("{}", e);
         } catch (MQBrokerException e) {
             logger.warn("{}", e);
+        } catch (Exception e) {
+            logger.warn("{}", e);
+        } finally {
+            deFiBusProducer.shutdown();
         }
     }
 }
