@@ -81,13 +81,7 @@ public class ResponseConsumer {
                                         logger.info("reply fail. {}", msg.toString(), e);
                                     }
                                 });
-                            } catch (InterruptedException e) {
-                                logger.warn("{}", e);
-                            } catch (RemotingException e) {
-                                logger.warn("{}", e);
-                            } catch (MQClientException e) {
-                                logger.warn("{}", e);
-                            } catch (MQBrokerException e) {
+                            } catch (InterruptedException | RemotingException | MQClientException | MQBrokerException e) {
                                 logger.warn("{}", e);
                             }
                         }

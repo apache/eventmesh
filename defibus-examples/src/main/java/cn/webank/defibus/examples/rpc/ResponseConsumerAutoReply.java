@@ -45,9 +45,8 @@ public class ResponseConsumerAutoReply {
                 //1. biz handle logic
 
                 //2. create reply content
-                String replyContent = "A reply message content";
 
-                return replyContent;
+                return "A reply message content";
             }
         });
         try {
