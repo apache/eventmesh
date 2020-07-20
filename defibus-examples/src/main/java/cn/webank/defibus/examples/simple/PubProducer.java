@@ -47,6 +47,8 @@ public class PubProducer {
             logger.warn("{}", e);
         } catch (InterruptedException e) {
             logger.warn("{}", e);
+        } finally {
+            deFiBusProducer.shutdown();
         }
     }
 }
