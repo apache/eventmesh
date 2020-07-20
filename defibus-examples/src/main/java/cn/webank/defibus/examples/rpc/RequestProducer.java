@@ -54,13 +54,7 @@ public class RequestProducer {
             } else {
                 logger.info("request success. cost: {}ms. reply msg: {}", cost, reply);
             }
-        } catch (MQClientException e) {
-            logger.warn("{}", e);
-        } catch (RemotingException e) {
-            logger.warn("{}", e);
-        } catch (InterruptedException e) {
-            logger.warn("{}", e);
-        } catch (MQBrokerException e) {
+        } catch (MQClientException | RemotingException | InterruptedException | MQBrokerException e) {
             logger.warn("{}", e);
         } catch (Exception e) {
             logger.warn("{}", e);
