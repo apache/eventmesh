@@ -17,13 +17,8 @@
 
 package cn.webank.defibus.examples.rpc;
 
-import cn.webank.defibus.client.common.DeFiBusClientConfig;
-import cn.webank.defibus.client.common.DeFiBusClientUtil;
-import cn.webank.defibus.common.DeFiBusConstant;
-import cn.webank.defibus.consumer.DeFiBusMessageListenerConcurrently;
-import cn.webank.defibus.consumer.DeFiBusPushConsumer;
-import cn.webank.defibus.producer.DeFiBusProducer;
 import java.util.List;
+
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.exception.MQBrokerException;
@@ -36,64 +31,78 @@ import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.webank.defibus.client.common.DeFiBusClientConfig;
+import cn.webank.defibus.client.common.DeFiBusClientUtil;
+import cn.webank.defibus.common.DeFiBusConstant;
+import cn.webank.defibus.consumer.DeFiBusMessageListenerConcurrently;
+import cn.webank.defibus.consumer.DeFiBusPushConsumer;
+import cn.webank.defibus.producer.DeFiBusProducer;
+
 public class ResponseConsumer {
     private static final Logger logger = LoggerFactory.getLogger(ResponseConsumer.class);
 
     public static void main(String[] args) throws MQClientException {
-        String topic = "RequestTopic";
-        DeFiBusClientConfig deFiBusClientConfig = new DeFiBusClientConfig();
+        DeFiBusPushConsumer deFiBusPushConsumer = null;
+        try {
+            String topic = "RequestTopic";
+            DeFiBusClientConfig deFiBusClientConfig = new DeFiBusClientConfig();
 
-        deFiBusClientConfig.setConsumerGroup("Your-group-name");
-        deFiBusClientConfig.setPullBatchSize(32);
-        deFiBusClientConfig.setThreadPoolCoreSize(12);
-        deFiBusClientConfig.setClusterPrefix("XL");
+            deFiBusClientConfig.setConsumerGroup("Your-group-name");
+            deFiBusClientConfig.setPullBatchSize(32);
+            deFiBusClientConfig.setThreadPoolCoreSize(12);
+            deFiBusClientConfig.setClusterPrefix("XL");
 
-        DeFiBusProducer deFiBusProducer = new DeFiBusProducer(deFiBusClientConfig);
-        deFiBusProducer.setNamesrvAddr("127.0.0.1:9876");
-        deFiBusProducer.start();
+            DeFiBusProducer deFiBusProducer = new DeFiBusProducer(deFiBusClientConfig);
+            deFiBusProducer.setNamesrvAddr("127.0.0.1:9876");
+            deFiBusProducer.start();
 
-        DeFiBusPushConsumer deFiBusPushConsumer = new DeFiBusPushConsumer(deFiBusClientConfig);
-        deFiBusPushConsumer.setNamesrvAddr("127.0.0.1:9876");
-        deFiBusPushConsumer.registerMessageListener(new DeFiBusMessageListenerConcurrently() {
-            @Override
-            public ConsumeConcurrentlyStatus handleMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
-                for (MessageExt msg : msgs) {
-                    String uniqueId = msg.getUserProperty(DeFiBusConstant.PROPERTY_RR_REQUEST_ID);
-                    if (uniqueId == null) {
-                        logger.info("REQUEST_ID is null from the request msg, will not reply this constant...");
-                    } else {
-                        try {
-                            logger.info("begin handle: " + msg.toString());
+            deFiBusPushConsumer = new DeFiBusPushConsumer(deFiBusClientConfig);
+            deFiBusPushConsumer.setNamesrvAddr("127.0.0.1:9876");
+            deFiBusPushConsumer.registerMessageListener(new DeFiBusMessageListenerConcurrently() {
+                @Override
+                public ConsumeConcurrentlyStatus handleMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
+                    for (MessageExt msg : msgs) {
+                        String uniqueId = msg.getUserProperty(DeFiBusConstant.PROPERTY_RR_REQUEST_ID);
+                        if (uniqueId == null) {
+                            logger.info("REQUEST_ID is null from the request msg, will not reply this constant...");
+                        } else {
+                            try {
+                                logger.info("begin handle: " + msg.toString());
 
-                            Message replyMsg = DeFiBusClientUtil.createReplyMessage(msg, ("I am replying content").getBytes());
-                            deFiBusProducer.reply(replyMsg, new SendCallback() {
-                                @Override
-                                public void onSuccess(SendResult sendResult) {
-                                    logger.info("reply success. {}", msg.toString());
-                                }
+                                Message replyMsg = DeFiBusClientUtil.createReplyMessage(msg, ("I am replying content").getBytes());
+                                deFiBusProducer.reply(replyMsg, new SendCallback() {
+                                    @Override
+                                    public void onSuccess(SendResult sendResult) {
+                                        logger.info("reply success. {}", msg.toString());
+                                    }
 
-                                @Override
-                                public void onException(Throwable e) {
-                                    logger.info("reply fail. {}", msg.toString(), e);
-                                }
-                            });
-                        } catch (InterruptedException e) {
-                            logger.warn("{}", e);
-                        } catch (RemotingException e) {
-                            logger.warn("{}", e);
-                        } catch (MQClientException e) {
-                            logger.warn("{}", e);
-                        } catch (MQBrokerException e) {
-                            logger.warn("{}", e);
+                                    @Override
+                                    public void onException(Throwable e) {
+                                        logger.info("reply fail. {}", msg.toString(), e);
+                                    }
+                                });
+                            } catch (InterruptedException e) {
+                                logger.warn("{}", e);
+                            } catch (RemotingException e) {
+                                logger.warn("{}", e);
+                            } catch (MQClientException e) {
+                                logger.warn("{}", e);
+                            } catch (MQBrokerException e) {
+                                logger.warn("{}", e);
+                            }
                         }
+
                     }
-
+                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 }
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-            }
-        });
+            });
 
-        deFiBusPushConsumer.subscribe(topic);
-        deFiBusPushConsumer.start();
+            deFiBusPushConsumer.subscribe(topic);
+            deFiBusPushConsumer.start();
+        } finally {
+            if (deFiBusPushConsumer != null) {
+                deFiBusPushConsumer.shutdown();
+            }
+        }
     }
 }

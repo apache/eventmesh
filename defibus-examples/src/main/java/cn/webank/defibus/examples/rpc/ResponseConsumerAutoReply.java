@@ -17,15 +17,16 @@
 
 package cn.webank.defibus.examples.rpc;
 
-import cn.webank.defibus.client.common.DeFiBusClientConfig;
-import cn.webank.defibus.consumer.DeFiBusMessageListenerConcurrentlyWithReply;
-import cn.webank.defibus.consumer.DeFiBusPushConsumer;
-import cn.webank.defibus.producer.DeFiBusProducer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
+
+import cn.webank.defibus.client.common.DeFiBusClientConfig;
+import cn.webank.defibus.consumer.DeFiBusMessageListenerConcurrentlyWithReply;
+import cn.webank.defibus.consumer.DeFiBusPushConsumer;
+import cn.webank.defibus.producer.DeFiBusProducer;
 
 /**
  * the example of responder with auto reply
@@ -55,6 +56,8 @@ public class ResponseConsumerAutoReply {
             deFiBusPushConsumer.start();
         } catch (MQClientException e) {
             e.printStackTrace();
+        } finally {
+            deFiBusProducer.shutdown();
         }
     }
 }
