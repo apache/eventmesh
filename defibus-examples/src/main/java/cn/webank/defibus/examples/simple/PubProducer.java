@@ -41,12 +41,10 @@ public class PubProducer {
         Message msg = new Message(topic, content.getBytes());
         try {
             deFiBusProducer.publish(msg);
-        } catch (MQClientException e) {
+        } catch (MQClientException | RemotingException | InterruptedException e) {
             logger.warn("{}", e);
-        } catch (RemotingException e) {
-            logger.warn("{}", e);
-        } catch (InterruptedException e) {
-            logger.warn("{}", e);
+        } finally {
+            deFiBusProducer.shutdown();
         }
     }
 }
