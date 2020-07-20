@@ -17,11 +17,8 @@
 
 package cn.webank.defibus.examples.simple;
 
-import cn.webank.defibus.client.common.DeFiBusClientConfig;
-import cn.webank.defibus.consumer.DeFiBusMessageListenerConcurrently;
-import cn.webank.defibus.consumer.DeFiBusPushConsumer;
-import cn.webank.defibus.producer.DeFiBusProducer;
 import java.util.List;
+
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -29,34 +26,46 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.webank.defibus.client.common.DeFiBusClientConfig;
+import cn.webank.defibus.consumer.DeFiBusMessageListenerConcurrently;
+import cn.webank.defibus.consumer.DeFiBusPushConsumer;
+import cn.webank.defibus.producer.DeFiBusProducer;
+
 public class SubConsumer {
     private static final Logger logger = LoggerFactory.getLogger(SubConsumer.class);
 
     public static void main(String[] args) throws MQClientException {
-        String topic = "PublishTopic";
-        DeFiBusClientConfig deFiBusClientConfig = new DeFiBusClientConfig();
-        deFiBusClientConfig.setConsumerGroup("Your-group-name");
-        deFiBusClientConfig.setPullBatchSize(32);
-        deFiBusClientConfig.setThreadPoolCoreSize(12);
-        deFiBusClientConfig.setClusterPrefix("XL");
+        DeFiBusPushConsumer deFiBusPushConsumer = null;
+        try {
+            String topic = "PublishTopic";
+            DeFiBusClientConfig deFiBusClientConfig = new DeFiBusClientConfig();
+            deFiBusClientConfig.setConsumerGroup("Your-group-name");
+            deFiBusClientConfig.setPullBatchSize(32);
+            deFiBusClientConfig.setThreadPoolCoreSize(12);
+            deFiBusClientConfig.setClusterPrefix("XL");
 
-        DeFiBusProducer deFiBusProducer = new DeFiBusProducer(deFiBusClientConfig);
-        deFiBusProducer.setNamesrvAddr("127.0.0.1:9876");
-        deFiBusProducer.start();
+            DeFiBusProducer deFiBusProducer = new DeFiBusProducer(deFiBusClientConfig);
+            deFiBusProducer.setNamesrvAddr("127.0.0.1:9876");
+            deFiBusProducer.start();
 
-        DeFiBusPushConsumer deFiBusPushConsumer = new DeFiBusPushConsumer(deFiBusClientConfig);
-        deFiBusPushConsumer.setNamesrvAddr("127.0.0.1:9876");
-        deFiBusPushConsumer.registerMessageListener(new DeFiBusMessageListenerConcurrently() {
-            @Override
-            public ConsumeConcurrentlyStatus handleMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
-                for (MessageExt msg : msgs) {
-                    logger.info("begin handle: " + msg.toString());
+            deFiBusPushConsumer = new DeFiBusPushConsumer(deFiBusClientConfig);
+            deFiBusPushConsumer.setNamesrvAddr("127.0.0.1:9876");
+            deFiBusPushConsumer.registerMessageListener(new DeFiBusMessageListenerConcurrently() {
+                @Override
+                public ConsumeConcurrentlyStatus handleMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
+                    for (MessageExt msg : msgs) {
+                        logger.info("begin handle: " + msg.toString());
+                    }
+                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 }
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-            }
-        });
+            });
 
-        deFiBusPushConsumer.subscribe(topic);
-        deFiBusPushConsumer.start();
+            deFiBusPushConsumer.subscribe(topic);
+            deFiBusPushConsumer.start();
+        } finally {
+            if (deFiBusPushConsumer != null) {
+                deFiBusPushConsumer.shutdown();
+            }
+        }
     }
 }
