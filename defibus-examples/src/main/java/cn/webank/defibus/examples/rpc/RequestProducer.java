@@ -54,14 +54,12 @@ public class RequestProducer {
             } else {
                 logger.info("request success. cost: {}ms. reply msg: {}", cost, reply);
             }
-        } catch (MQClientException e) {
+        } catch (MQClientException | RemotingException | InterruptedException | MQBrokerException e) {
             logger.warn("{}", e);
-        } catch (RemotingException e) {
+        } catch (Exception e) {
             logger.warn("{}", e);
-        } catch (InterruptedException e) {
-            logger.warn("{}", e);
-        } catch (MQBrokerException e) {
-            logger.warn("{}", e);
+        } finally {
+            deFiBusProducer.shutdown();
         }
     }
 }
