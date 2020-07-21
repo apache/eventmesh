@@ -66,6 +66,11 @@ public class DeFiBusProducer {
         this.deFiBusClientConfig = deFiBusClientConfig;
     }
 
+    /**
+     * start the producer which will begin to connect with the broker. A producer MUST call this method before sending any message
+     * If the producer has been already started, nothing will happen.
+     * @throws MQClientException
+     */
     public void start() throws MQClientException {
         if (isStart.compareAndSet(false, true)) {
             try {
