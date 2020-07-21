@@ -15,23 +15,13 @@
  * limitations under the License.
  */
 
-package cn.webank.defibus.namesrv;
+package cn.webank.defibus.tools.admin;
 
-import org.apache.rocketmq.namesrv.NamesrvStartup;
+import org.apache.rocketmq.remoting.RPCHook;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 
-public class DeFiBusNamesrvStartup {
-    private static final String DEFAULT_ROCKETMQ_HOME_PATH = ".";
-
-    //init default rocketmq home path.
-    public static void initRocketMQHomePath() {
-        String rocketmqHome = System.getProperty(MixAll.ROCKETMQ_HOME_PROPERTY, System.getenv(MixAll.ROCKETMQ_HOME_ENV));
-        if (StringUtils.isBlank(rocketmqHome)) {
-            System.setProperty(MixAll.ROCKETMQ_HOME_PROPERTY, DEFAULT_ROCKETMQ_HOME_PATH);
-        }
-    }
-
-    public static void main(String[] args) {
-        initRocketMQHomePath();
-        NamesrvStartup.main0(args);
+public class DeFiBusAdminExt extends DefaultMQAdminExt {
+    public DeFiBusAdminExt(RPCHook rpcHook, long timeoutMillis) {
+        super(rpcHook, timeoutMillis);
     }
 }
