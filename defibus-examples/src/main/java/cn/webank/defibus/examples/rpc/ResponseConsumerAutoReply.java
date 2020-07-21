@@ -58,5 +58,14 @@ public class ResponseConsumerAutoReply {
         } finally {
             deFiBusProducer.shutdown();
         }
+
+        //shutdown the consumer when application exits.
+        Runtime.getRuntime().addShutdownHook(new Thread(){
+            @Override
+            public void run() {
+                deFiBusPushConsumer.shutdown();
+            }
+        });
+
     }
 }
