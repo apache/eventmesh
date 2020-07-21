@@ -20,6 +20,7 @@ package cn.webank.defibus.namesrv;
 import org.apache.rocketmq.namesrv.NamesrvStartup;
 
 public class DeFiBusNamesrvStartup {
+
     private static final String DEFAULT_ROCKETMQ_HOME_PATH = ".";
 
     //init default rocketmq home path.
@@ -30,8 +31,8 @@ public class DeFiBusNamesrvStartup {
         }
     }
 
+
     public static void main(String[] args) {
-        initRocketMQHomePath();
         NamesrvStartup.main0(args);
     }
 }
