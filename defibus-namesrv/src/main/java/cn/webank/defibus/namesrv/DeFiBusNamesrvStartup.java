@@ -24,7 +24,7 @@ import org.apache.rocketmq.namesrv.NamesrvStartup;
 public class DeFiBusNamesrvStartup {
     private static final String DEFAULT_ROCKETMQ_HOME_PATH = ".";
 
-    //init default rocketmq home path.
+    //init default rocketmq home path
     public static void initRocketMQHomePath() {
         String rocketmqHome = System.getProperty(MixAll.ROCKETMQ_HOME_PROPERTY, System.getenv(MixAll.ROCKETMQ_HOME_ENV));
         if (StringUtils.isBlank(rocketmqHome)) {
