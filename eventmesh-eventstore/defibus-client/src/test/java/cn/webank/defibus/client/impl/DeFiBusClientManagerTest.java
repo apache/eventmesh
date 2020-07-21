@@ -17,13 +17,6 @@
 
 package cn.webank.defibus.client.impl;
 
-import cn.webank.defibus.client.DeFiBusClientManager;
-import cn.webank.defibus.client.impl.factory.DeFiBusClientInstance;
-import org.apache.rocketmq.client.ClientConfig;
-import org.apache.rocketmq.remoting.RPCHook;
-import org.apache.rocketmq.remoting.protocol.RemotingCommand;
-import org.junit.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeFiBusClientManagerTest {
