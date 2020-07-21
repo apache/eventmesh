@@ -27,4 +27,5 @@ include 'eventmesh-governance'
 include 'eventmesh-router'
 include 'eventmesh-acl'
 include 'eventmesh-eventstore'
+include 'eventmesh-sdk'
 
