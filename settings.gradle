@@ -15,11 +15,16 @@
  * limitations under the License.
  */
 
-rootProject.name = 'DeFiBus'
+rootProject.name = 'EventMesh'
 String jdkVersion = "${jdk}"
 if (jdkVersion.equals('1.7')) {
     include 'defibus-common', 'defibus-client', 'defibus-tools'
 } else {
     include 'defibus-common', 'defibus-client', 'defibus-tools', 'defibus-broker', 'defibus-namesrv',  'defibus-examples'
 }
+include 'eventmesh-eventbroker'
+include 'eventmesh-governance'
+include 'eventmesh-router'
+include 'eventmesh-acl'
+include 'eventmesh-eventstore'
 
