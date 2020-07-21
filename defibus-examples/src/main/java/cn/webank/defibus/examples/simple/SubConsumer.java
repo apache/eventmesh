@@ -35,37 +35,39 @@ public class SubConsumer {
     private static final Logger logger = LoggerFactory.getLogger(SubConsumer.class);
 
     public static void main(String[] args) throws MQClientException {
-        DeFiBusPushConsumer deFiBusPushConsumer = null;
-        try {
-            String topic = "PublishTopic";
-            DeFiBusClientConfig deFiBusClientConfig = new DeFiBusClientConfig();
-            deFiBusClientConfig.setConsumerGroup("Your-group-name");
-            deFiBusClientConfig.setPullBatchSize(32);
-            deFiBusClientConfig.setThreadPoolCoreSize(12);
-            deFiBusClientConfig.setClusterPrefix("XL");
+        String topic = "PublishTopic";
+        DeFiBusClientConfig deFiBusClientConfig = new DeFiBusClientConfig();
+        deFiBusClientConfig.setConsumerGroup("Your-group-name");
+        deFiBusClientConfig.setPullBatchSize(32);
+        deFiBusClientConfig.setThreadPoolCoreSize(12);
+        deFiBusClientConfig.setClusterPrefix("XL");
 
-            DeFiBusProducer deFiBusProducer = new DeFiBusProducer(deFiBusClientConfig);
-            deFiBusProducer.setNamesrvAddr("127.0.0.1:9876");
-            deFiBusProducer.start();
+        DeFiBusProducer deFiBusProducer = new DeFiBusProducer(deFiBusClientConfig);
+        deFiBusProducer.setNamesrvAddr("127.0.0.1:9876");
+        deFiBusProducer.start();
 
-            deFiBusPushConsumer = new DeFiBusPushConsumer(deFiBusClientConfig);
-            deFiBusPushConsumer.setNamesrvAddr("127.0.0.1:9876");
-            deFiBusPushConsumer.registerMessageListener(new DeFiBusMessageListenerConcurrently() {
-                @Override
-                public ConsumeConcurrentlyStatus handleMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
-                    for (MessageExt msg : msgs) {
-                        logger.info("begin handle: " + msg.toString());
-                    }
-                    return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+        DeFiBusPushConsumer deFiBusPushConsumer = new DeFiBusPushConsumer(deFiBusClientConfig);
+        deFiBusPushConsumer.setNamesrvAddr("127.0.0.1:9876");
+        deFiBusPushConsumer.registerMessageListener(new DeFiBusMessageListenerConcurrently() {
+            @Override
+            public ConsumeConcurrentlyStatus handleMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
+                for (MessageExt msg : msgs) {
+                    logger.info("begin handle: " + msg.toString());
                 }
-            });
+                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+            }
+        });
 
-            deFiBusPushConsumer.subscribe(topic);
-            deFiBusPushConsumer.start();
-        } finally {
-            if (deFiBusPushConsumer != null) {
+        deFiBusPushConsumer.subscribe(topic);
+        deFiBusPushConsumer.start();
+
+        //shutdown the consumer when application exits.
+        Runtime.getRuntime().addShutdownHook(new Thread(){
+            @Override
+            public void run() {
                 deFiBusPushConsumer.shutdown();
             }
-        }
+        });
+
     }
 }

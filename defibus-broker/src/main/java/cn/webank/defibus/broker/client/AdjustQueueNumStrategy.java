@@ -84,7 +84,8 @@ public class AdjustQueueNumStrategy {
 
             case DECREASE_QUEUE_NUM:
                 adjustWriteQueueNumByConsumerCount(topic, 0, scaleType);
-                long delayTimeMillis = deFiBrokerController.getDeFiBusBrokerConfig().getScaleQueueSizeDelayTimeMinute() * 60 * 1000;
+                long delayTimeMinutes = Math.min(deFiBrokerController.getDeFiBusBrokerConfig().getScaleQueueSizeDelayTimeMinute(), 10);
+                long delayTimeMillis = delayTimeMinutes * 60 * 1000;
                 adjustReadQueueNumByConsumerCount(topic, delayTimeMillis, scaleType);
                 break;
         }
@@ -98,7 +99,7 @@ public class AdjustQueueNumStrategy {
             public void run() {
                 TopicConfig topicConfig = deFiBrokerController.getTopicConfigManager().getTopicConfigTable().get(topic);
                 if (topicConfig != null) {
-                    synchronized (topicConfig.getTopicName()) {
+                    synchronized (topicConfig) {
 
                         //query again to ensure it's newest
                         topicConfig = deFiBrokerController.getTopicConfigManager().getTopicConfigTable().get(topic);
@@ -161,7 +162,7 @@ public class AdjustQueueNumStrategy {
             public void run() {
                 TopicConfig topicConfig = deFiBrokerController.getTopicConfigManager().getTopicConfigTable().get(topic);
                 if (topicConfig != null) {
-                    synchronized (topicConfig.getTopicName()) {
+                    synchronized (topicConfig) {
 
                         //query again to ensure it's newest
                         topicConfig = deFiBrokerController.getTopicConfigManager().getTopicConfigTable().get(topic);

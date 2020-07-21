@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.collections4.MapUtils;
@@ -35,15 +36,15 @@ import org.slf4j.LoggerFactory;
 
 public class HealthyMessageQueueSelector implements MessageQueueSelector {
     private static final Logger LOGGER = LoggerFactory.getLogger(HealthyMessageQueueSelector.class);
-    private final AtomicInteger sendWhichQueue = new AtomicInteger(0);
-    private final AtomicInteger sendWhichLocalQueue = new AtomicInteger(0);
-    private final AtomicInteger sendWhichRemoteQueue = new AtomicInteger(0);
+    private final ConcurrentHashMap<String, AtomicInteger> topicSendIndex = new ConcurrentHashMap<>();
     private final MessageQueueHealthManager messageQueueHealthManager;
+    private int minMqCountWhenSendLocal = 1;
     private Map<String, Boolean> sendNearbyMapping = new HashMap<>();
     private Set<String> localBrokers = new HashSet<String>();
 
-    public HealthyMessageQueueSelector(MessageQueueHealthManager messageQueueHealthManager) {
+    public HealthyMessageQueueSelector(MessageQueueHealthManager messageQueueHealthManager, int minMqCountWhenSendLocal) {
         this.messageQueueHealthManager = messageQueueHealthManager;
+        this.minMqCountWhenSendLocal = minMqCountWhenSendLocal;
     }
 
     @Override
@@ -61,10 +62,17 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
         if (pub2local) {
             List<MessageQueue> localMQs = new ArrayList<>();
             List<MessageQueue> remoteMqs = new ArrayList<>();
-            separateLocalAndRemoteMQs(mqs, localBrokers, localMQs, remoteMqs);
+            HashMap<String, Integer> localBrokerMQCount = separateLocalAndRemoteMQs(mqs, localBrokers, localMQs, remoteMqs);
+
+            for (String brokerName : localBrokerMQCount.keySet()) {
+                //if MQ num less than threshold, send msg to all broker
+                if (localBrokerMQCount.get(brokerName) <= minMqCountWhenSendLocal) {
+                    localMQs.addAll(remoteMqs);
+                }
+            }
 
             //try select a mq from local idc first
-            MessageQueue candidate = selectMessageQueue(localMQs, sendWhichLocalQueue, lastOne, msg);
+            MessageQueue candidate = selectMessageQueue(localMQs, lastOne, msg);
             if (candidate != null) {
                 ((AtomicReference<MessageQueue>) selectedResultRef).set(candidate);
                 LOGGER.debug("select local mq [{}], {}", candidate.toString(), msg);
@@ -72,7 +80,7 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
             }
 
             //try select a mq from other idc if cannot select one from local idc
-            candidate = selectMessageQueue(remoteMqs, sendWhichRemoteQueue, lastOne, msg);
+            candidate = selectMessageQueue(remoteMqs, lastOne, msg);
             if (candidate != null) {
                 ((AtomicReference<MessageQueue>) selectedResultRef).set(candidate);
                 LOGGER.debug("select remote mq [{}], {}", candidate.toString(), msg);
@@ -80,7 +88,7 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
             }
         } else {
             //try select a mq from all mqs
-            MessageQueue candidate = selectMessageQueue(mqs, sendWhichQueue, lastOne, msg);
+            MessageQueue candidate = selectMessageQueue(mqs, lastOne, msg);
             if (candidate != null) {
                 ((AtomicReference<MessageQueue>) selectedResultRef).set(candidate);
                 LOGGER.debug("select global mq [{}], {}", candidate.toString(), msg);
@@ -90,7 +98,8 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
 
         //try select a mq which is not isolated if no mq satisfy all limits
         for (int j = 0; j < mqs.size(); j++) {
-            int pos = Math.abs(sendWhichQueue.getAndIncrement()) % mqs.size();
+            int index = this.getSendIndex(msg.getTopic());
+            int pos = Math.abs(index) % mqs.size();
             MessageQueue candidate = mqs.get(pos);
             if (isQueueHealthy(candidate)) {
                 ((AtomicReference<MessageQueue>) selectedResultRef).set(candidate);
@@ -102,7 +111,8 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
         //in case of retry, still try select a mq from another broker if all mq isolated
         if (lastOne != null) {
             for (int j = 0; j < mqs.size(); j++) {
-                int pos = Math.abs(sendWhichQueue.getAndIncrement()) % mqs.size();
+                int index = this.getSendIndex(msg.getTopic());
+                int pos = Math.abs(index) % mqs.size();
                 MessageQueue candidate = mqs.get(pos);
                 if (!lastOne.getBrokerName().equals(candidate.getBrokerName())) {
                     ((AtomicReference<MessageQueue>) selectedResultRef).set(candidate);
@@ -113,7 +123,8 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
         }
 
         //select a mq from all mqs anyway if no mq satisfy any limits
-        int pos = Math.abs(sendWhichQueue.getAndIncrement()) % mqs.size();
+        int index = this.getSendIndex(msg.getTopic());
+        int pos = Math.abs(index) % mqs.size();
         MessageQueue candidate = mqs.get(pos);
         ((AtomicReference<MessageQueue>) selectedResultRef).set(candidate);
         LOGGER.debug("select any mq [{}], {}", candidate.toString(), msg);
@@ -121,7 +132,7 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
 
     }
 
-    private MessageQueue selectMessageQueue(List<MessageQueue> mqs, AtomicInteger index, MessageQueue lastOneSelected,
+    private MessageQueue selectMessageQueue(List<MessageQueue> mqs, MessageQueue lastOneSelected,
         Message msg) {
         boolean isRetry = (lastOneSelected != null);
         List<MessageQueue> candidateMqs = mqs;
@@ -129,7 +140,8 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
             candidateMqs = filterMqsByBrokerName(mqs, lastOneSelected.getBrokerName());
         }
         for (int i = 0; i < candidateMqs.size(); i++) {
-            int pos = Math.abs(index.getAndIncrement()) % candidateMqs.size();
+            int index = this.getSendIndex(msg.getTopic());
+            int pos = Math.abs(index) % candidateMqs.size();
             MessageQueue candidate = candidateMqs.get(pos);
             if (isQueueHealthy(candidate)) {
                 return candidate;
@@ -154,20 +166,26 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
         return result;
     }
 
-    private void separateLocalAndRemoteMQs(List<MessageQueue> mqs, Set<String> localBrokers,
+    private HashMap<String, Integer> separateLocalAndRemoteMQs(List<MessageQueue> mqs, Set<String> localBrokers,
         List<MessageQueue> localMQs, List<MessageQueue> remoteMQs) {
         if (localMQs == null)
             localMQs = new ArrayList<>();
         if (remoteMQs == null)
             remoteMQs = new ArrayList<>();
-
+        HashMap<String, Integer> brokerMQCount = new HashMap<>();
         for (MessageQueue mq : mqs) {
             if (localBrokers.contains(mq.getBrokerName())) {
                 localMQs.add(mq);
+                Integer count = brokerMQCount.get(mq.getBrokerName());
+                if (count == null) {
+                    count = 0;
+                }
+                brokerMQCount.put(mq.getBrokerName(), count+1);
             } else {
                 remoteMQs.add(mq);
             }
         }
+        return brokerMQCount;
     }
 
     public MessageQueueHealthManager getMessageQueueHealthManager() {
@@ -184,5 +202,19 @@ public class HealthyMessageQueueSelector implements MessageQueueSelector {
 
     public void setLocalBrokers(Set<String> localBrokers) {
         this.localBrokers = localBrokers;
+    }
+
+    private int getSendIndex(String topic) {
+        AtomicInteger index = topicSendIndex.get(topic);
+        if (index == null) {
+            topicSendIndex.putIfAbsent(topic, new AtomicInteger(0));
+            index = topicSendIndex.get(topic);
+        }
+        int result = Math.abs(index.getAndIncrement());
+        if (result < 0) {
+            index.set(0);
+            result = index.getAndIncrement();
+        }
+        return result;
     }
 }
