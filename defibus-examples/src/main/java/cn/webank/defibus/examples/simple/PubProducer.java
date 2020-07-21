@@ -41,13 +41,10 @@ public class PubProducer {
         Message msg = new Message(topic, content.getBytes());
         try {
             deFiBusProducer.publish(msg);
-        } catch (MQClientException e) {
-            logger.warn("{}", e);
-        } catch (RemotingException e) {
-            logger.warn("{}", e);
-        } catch (InterruptedException e) {
+        } catch (MQClientException | RemotingException | InterruptedException e) {
             logger.warn("{}", e);
         } finally {
+            // normally , we only shutdown DeFiBusProducer when the application exits. In this sample, we shutdown the producer when message is sent.
             deFiBusProducer.shutdown();
         }
     }
