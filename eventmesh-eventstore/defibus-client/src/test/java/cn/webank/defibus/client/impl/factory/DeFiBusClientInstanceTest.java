@@ -17,31 +17,7 @@
 
 package cn.webank.defibus.client.impl.factory;
 
-import cn.webank.defibus.client.DeFiBusClientManager;
-import cn.webank.defibus.client.impl.DeFiBusClientAPIImpl;
-import cn.webank.defibus.client.impl.hook.DeFiBusClientHookFactory;
-import cn.webank.defibus.common.util.ReflectUtil;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import org.apache.rocketmq.client.ClientConfig;
-import org.apache.rocketmq.client.exception.MQBrokerException;
-import org.apache.rocketmq.client.impl.factory.MQClientInstance;
-import org.apache.rocketmq.common.protocol.route.BrokerData;
-import org.apache.rocketmq.common.protocol.route.QueueData;
-import org.apache.rocketmq.common.protocol.route.TopicRouteData;
-import org.apache.rocketmq.remoting.exception.RemotingConnectException;
-import org.apache.rocketmq.remoting.exception.RemotingSendRequestException;
-import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
 
 //@RunWith(MockitoJUnitRunner.class)
 public class DeFiBusClientInstanceTest {
