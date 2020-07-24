@@ -28,12 +28,15 @@ Key components:
 ## Quick Start
 Coming soon...
 
+## Contributing
+Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.
+
+You can start with the issues labeled with good first issue.
+
 ## License
-EventMesh is licensed under [Apache License](https://github.com/WeBankFinTech/DeFiBus/blob/master/LICENSE).
+[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation
 
 ## Contacts
-WeChat group：
 
-![wechat_qr](./docs/images/wechat_helper.png)
 
 
