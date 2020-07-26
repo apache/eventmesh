@@ -34,6 +34,6 @@ EventMesh is licensed under [Apache License](https://github.com/WeBankFinTech/De
 ## Contacts
 WeChat group：
 
-![wechat_qr](./docs/images/wechat_helper.png)
+![wechat_qr](./docs/images/mesh-helper.png)
 
 
