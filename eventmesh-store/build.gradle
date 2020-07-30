@@ -297,5 +297,18 @@ subprojects {
         resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
     }
 
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                snapshotRepository(url: 'file://D:\\LocalRepo') {
+                    authentication(userName: 'Your user name', password: 'Your password')
+                }
+                repository(url: 'file://D:\\LocalRepo') {
+                    authentication(userName: 'Your user name', password: 'Your password')
+                }
+            }
+        }
+    }
+
 }
 
