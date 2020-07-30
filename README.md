@@ -41,6 +41,6 @@ You can start with the issues labeled with good first issue.
 ## Contacts
 WeChat group：
 
-![wechat_qr](./docs/images/mesh-helper.jpg)
+![wechat_qr](./docs/images/mesh-helper.png)
 
 
