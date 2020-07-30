@@ -1,9 +1,0 @@
--------------------------VERSION 1.0.0-----------------------------
-1. implement of sync-request producer.
-2. dark launch
-3. circuit breaker mechanism
-4. invoke service nearby
-5. (tong cheng duo huo)
-6. dynamic adjust queue
-7. isolation mechanism
-8. fault tolerant

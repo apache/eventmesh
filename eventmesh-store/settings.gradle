@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
+rootProject.name = 'eventmesh-store'
 String jdkVersion = "${jdk}"
 if (jdkVersion.equals('1.7')) {
     include 'defibus-common', 'defibus-client', 'defibus-tools'
