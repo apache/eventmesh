@@ -79,7 +79,7 @@ subprojects {
     apply plugin: "idea"
     apply plugin: "project-reports"
     apply plugin: "jacoco"
-    apply plugin: "checkstyle"
+//    apply plugin: "checkstyle"
     apply plugin: "pmd"
     apply plugin: 'com.github.spotbugs'
 
@@ -103,20 +103,20 @@ subprojects {
         }
     }
 
-    checkstyle {
-        toolVersion = "8.32"
-        ignoreFailures = true
-        sourceSets = [sourceSets.main]
-        configFile = 'conf/checkstyle.xml' as File
-        showViolations true
-    }
-
-    tasks.withType(Checkstyle) {
-        reports {
-            xml.enabled false
-            html.enabled true
-        }
-    }
+//    checkstyle {
+//        toolVersion = "8.32"
+//        ignoreFailures = true
+//        sourceSets = [sourceSets.main]
+//        configFile = '../style/codeStyle.xml' as File
+//        showViolations true
+//    }
+//
+//    tasks.withType(Checkstyle) {
+//        reports {
+//            xml.enabled false
+//            html.enabled true
+//        }
+//    }
 
     spotbugs {
         toolVersion = '4.0.2'

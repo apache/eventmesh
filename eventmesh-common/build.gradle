@@ -34,12 +34,11 @@ if (project.findProperty("snapshot") instanceof String) {
 }
 
 repositories {
-//    maven {
-//        mavenCentral()
-//    }
+    mavenLocal()
     maven {
         url "https://maven.aliyun.com/repository/public"
     }
+    mavenCentral()
 }
 
 List fastjson = [
@@ -70,8 +69,8 @@ List netty = [
 ]
 
 List defibus = [
-        "org.apache.rocketmq:rocketmq-client:4.7.0",
-        "org.apache.rocketmq:rocketmq-common:4.7.0"
+        "cn.webank.defibus:defibus-client:$defibus_version",
+        "cn.webank.defibus:defibus-common:$defibus_version"
 ]
 
 dependencies {
