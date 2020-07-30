@@ -34,8 +34,11 @@ if (project.findProperty("snapshot") instanceof String) {
 }
 
 repositories {
+//    maven {
+//        mavenCentral()
+//    }
     maven {
-        mavenCentral()
+        url "https://maven.aliyun.com/repository/public"
     }
 }
 
@@ -67,8 +70,8 @@ List netty = [
 ]
 
 List defibus = [
-        "com.webank.defibus:defibus-client:$defibus_version",
-        "com.webank.defibus:defibus-common:$defibus_version"
+        "org.apache.rocketmq:rocketmq-client:4.7.0",
+        "org.apache.rocketmq:rocketmq-common:4.7.0"
 ]
 
 dependencies {
