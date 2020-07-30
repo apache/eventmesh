@@ -25,8 +25,11 @@ apply plugin: "idea"
 sourceCompatibility = 1.8
 
 repositories {
+//    maven {
+//        mavenCentral()
+//    }
     maven {
-        mavenCentral()
+        url "https://maven.aliyun.com/repository/public"
     }
 }
 
@@ -36,8 +39,8 @@ if (project.findProperty("env") instanceof String) {
 }
 
 List defibus = [
-        "com.webank.defibus:defibus-client:$defibus_version",
-        "com.webank.defibus:defibus-common:$defibus_version"
+//        "com.webank.defibus:defibus-client:$defibus_version",
+//        "com.webank.defibus:defibus-common:$defibus_version"
 ]
 
 List junit = [
@@ -70,79 +73,79 @@ dependencies {
     testCompile defibus, metrics, log4j2, sl4j, junit
 }
 
-configurations.all {
-    resolutionStrategy {
-        force 'io.netty:netty-all:4.1.36.Final'
-        force 'com.alibaba:fastjson:1.2.68'
-        force 'com.fasterxml.jackson.core:jackson-databind:2.10.0'
-        force 'com.fasterxml.jackson.core:jackson-core:2.10.0'
-        force 'com.fasterxml.jackson.core:jackson-annotations:2.10.0'
-    }
+//configurations.all {
+//    resolutionStrategy {
+//        force 'io.netty:netty-all:4.1.36.Final'
+//        force 'com.alibaba:fastjson:1.2.68'
+//        force 'com.fasterxml.jackson.core:jackson-databind:2.10.0'
+//        force 'com.fasterxml.jackson.core:jackson-core:2.10.0'
+//        force 'com.fasterxml.jackson.core:jackson-annotations:2.10.0'
+//    }
+//
+//    resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
+//    resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
+//
+//    exclude group:'io.netty',module:'netty-tcnative-boringssl-static'
+//
+//}
+//
+//tasks.withType(JavaCompile) {
+//    options.encoding = "UTF-8"
+//}
+//
+//clean.doFirst {
+//    delete 'build'
+//    delete 'dist'
+//}
+//
+//def versionString = project.version
+//if (project.findProperty("buildNo") instanceof String) {
+//    versionString = project.version + '_' + project.property("buildNo")
+//}
 
-    resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
-    resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
-
-    exclude group:'io.netty',module:'netty-tcnative-boringssl-static'
-
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-}
-
-clean.doFirst {
-    delete 'build'
-    delete 'dist'
-}
-
-def versionString = project.version
-if (project.findProperty("buildNo") instanceof String) {
-    versionString = project.version + '_' + project.property("buildNo")
-}
-
-task tar(overwrite: true, type: Tar, dependsOn: ['clean', 'jar']) {
-    extension = 'tar.gz'
-    compression = Compression.GZIP
-    archiveName = project.name + '_' + versionString + '.' + extension
-    destinationDir = new File(projectDir, 'dist')
-
-    into(project.name + '/apps/') { from project.jar.getArchivePath() }
-    into(project.name + '/bin/') { from 'bin' }
-    into(project.name + '/lib') {
-        from project.configurations.runtime
-        exclude '**/*.properties*'
-        exclude '**/*testng*.jar'
-        exclude '**/*powermock*.jar'
-        exclude '**/*mockito*.jar'
-        exclude '**/*junit*.jar'
-        exclude '**/*jacoco*.jar'
-        exclude '**/*log4j2.xml*'
-        exclude '**/spring-boot-devtools*.jar'
-    }
-
-    into(project.name + '/env/') {
-        from "conf"
-        exclude '*.properties*'
-        exclude '*.xml*'
-        exclude '*.env*'
-    }
-
-    into(project.name + '/conf/') {
-        from "conf/$env/"
-    }
-
-    into(project.name + '/scripts/') { from "scripts" }
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-//            snapshotRepository(url: 'Your target repo address') {
-//                authentication(userName: 'Your user name', password: 'Your password')
-//            }
-//            repository(url: 'Your target repo address') {
-//                authentication(userName: 'Your user name', password: 'Your password')
-//            }
-        }
-    }
-}
+//task tar(overwrite: true, type: Tar, dependsOn: ['clean', 'jar']) {
+//    extension = 'tar.gz'
+//    compression = Compression.GZIP
+//    archiveName = project.name + '_' + versionString + '.' + extension
+//    destinationDir = new File(projectDir, 'dist')
+//
+//    into(project.name + '/apps/') { from project.jar.getArchivePath() }
+//    into(project.name + '/bin/') { from 'bin' }
+//    into(project.name + '/lib') {
+//        from project.configurations.runtime
+//        exclude '**/*.properties*'
+//        exclude '**/*testng*.jar'
+//        exclude '**/*powermock*.jar'
+//        exclude '**/*mockito*.jar'
+//        exclude '**/*junit*.jar'
+//        exclude '**/*jacoco*.jar'
+//        exclude '**/*log4j2.xml*'
+//        exclude '**/spring-boot-devtools*.jar'
+//    }
+//
+//    into(project.name + '/env/') {
+//        from "conf"
+//        exclude '*.properties*'
+//        exclude '*.xml*'
+//        exclude '*.env*'
+//    }
+//
+//    into(project.name + '/conf/') {
+//        from "conf/$env/"
+//    }
+//
+//    into(project.name + '/scripts/') { from "scripts" }
+//}
+//
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+////            snapshotRepository(url: 'Your target repo address') {
+////                authentication(userName: 'Your user name', password: 'Your password')
+////            }
+////            repository(url: 'Your target repo address') {
+////                authentication(userName: 'Your user name', password: 'Your password')
+////            }
+//        }
+//    }
+//}
