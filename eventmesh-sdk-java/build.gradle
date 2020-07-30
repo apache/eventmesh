@@ -34,8 +34,11 @@ if (project.findProperty("snapshot") instanceof String) {
 }
 
 repositories {
+//    maven {
+//        mavenCentral()
+//    }
     maven {
-        mavenCentral()
+        url "https://maven.aliyun.com/repository/public"
     }
 }
 
