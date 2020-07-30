@@ -1,0 +1,82 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'java'
+apply plugin: "maven"
+apply plugin: "eclipse"
+apply plugin: "idea"
+
+if (project.findProperty("jdk") == "1.7") {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+} else {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    version = version + "-jdk8"
+}
+
+if (project.findProperty("snapshot") instanceof String) {
+    if (project.property("snapshot").toBoolean()) version = version + "-SNAPSHOT"
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url "https://maven.aliyun.com/repository/public"
+    }
+    mavenCentral()
+}
+
+List proxy_common = [
+        "cn.webank.proxy:defibus-proxy-common:$proxy_common_version"
+]
+
+List log4j2 = [
+        "org.apache.logging.log4j:log4j-api:2.8.2",
+        "org.apache.logging.log4j:log4j-core:2.8.2",
+        "org.apache.logging.log4j:log4j-slf4j-impl:2.8.2",
+        "org.apache.logging.log4j:log4j-web:2.8.2",
+        "com.lmax:disruptor:3.2.0"
+]
+
+List sl4j = [
+        "org.slf4j:slf4j-api:1.7.25"
+]
+
+dependencies {
+    compile log4j2, sl4j
+    testCompile log4j2, sl4j
+    compile project(":eventmesh-common")
+    testCompile project(":eventmesh-common")
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+//            snapshotRepository(url: 'Your target repo address') {
+//                authentication(userName: 'Your user name', password: 'Your password')
+//            }
+//            repository(url: 'Your target repo address') {
+//                authentication(userName: 'Your user name', password: 'Your password')
+//            }
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
