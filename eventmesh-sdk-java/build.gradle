@@ -34,12 +34,11 @@ if (project.findProperty("snapshot") instanceof String) {
 }
 
 repositories {
-//    maven {
-//        mavenCentral()
-//    }
+    mavenLocal()
     maven {
         url "https://maven.aliyun.com/repository/public"
     }
+    mavenCentral()
 }
 
 List proxy_common = [

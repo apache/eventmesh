@@ -25,12 +25,11 @@ apply plugin: "idea"
 sourceCompatibility = 1.8
 
 repositories {
-//    maven {
-//        mavenCentral()
-//    }
+    mavenLocal()
     maven {
         url "https://maven.aliyun.com/repository/public"
     }
+    mavenCentral()
 }
 
 def env = 'dev'
@@ -39,8 +38,8 @@ if (project.findProperty("env") instanceof String) {
 }
 
 List defibus = [
-//        "com.webank.defibus:defibus-client:$defibus_version",
-//        "com.webank.defibus:defibus-common:$defibus_version"
+        "cn.webank.defibus:defibus-client:$defibus_version",
+        "cn.webank.defibus:defibus-common:$defibus_version"
 ]
 
 List junit = [
