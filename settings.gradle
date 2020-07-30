@@ -23,4 +23,5 @@ include 'eventmesh-registry'
 include 'eventmesh-acl'
 include 'eventmesh-store'
 include 'eventmesh-sdk-java'
+include 'eventmesh-common'
 
