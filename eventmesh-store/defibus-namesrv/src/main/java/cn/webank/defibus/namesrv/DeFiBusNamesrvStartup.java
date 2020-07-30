@@ -18,6 +18,8 @@
 package cn.webank.defibus.namesrv;
 
 import org.apache.rocketmq.namesrv.NamesrvStartup;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.common.MixAll;
 
 public class DeFiBusNamesrvStartup {
 
