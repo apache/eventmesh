@@ -69,8 +69,8 @@ List netty = [
 ]
 
 List defibus = [
-        "cn.webank.defibus:defibus-client:$defibus_version",
-        "cn.webank.defibus:defibus-common:$defibus_version"
+        "com.webank.defibus:defibus-client:$defibus_version",
+        "com.webank.defibus:defibus-common:$defibus_version"
 ]
 
 dependencies {
