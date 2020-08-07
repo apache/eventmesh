@@ -1,21 +1,20 @@
 [![Build Status](https://www.travis-ci.org/WeBankFinTech/DeFiBus.svg?branch=master)](https://www.travis-ci.org/WeBankFinTech/EventMesh) [![Coverage Status](https://coveralls.io/repos/github/WeBankFinTech/DeFiBus/badge.svg?branch=master)](https://coveralls.io/github/WeBankFinTech/EventMesh?branch=master)
 
-## What is an Event Mesh?
-This diagram shows where an event mesh fits in an application stack relative to other technologies such as service mesh:
+## What is Event Mesh?
+This figure shows the positioning of the event grid relative to other similar technologies (such as service grid) in the application framework
 ![architecture1](docs/images/eventmesh-define.png)
 
-An event mesh is a configurable and dynamic infrastructure layer for distributing events among decoupled applications, cloud services and devices. It enables event communications to be governed, flexible, reliable and fast. An event mesh is created and enabled through a network of interconnected event meshers.
-
+Event grid is a dynamic plug-in basic service layer used to distribute events among decoupled applications, cloud services and devices. It enables the communication of events to be supervised and governed, and the communication of events is flexible, reliable and fast.
 ## What are the core capabilities of an event mesh?
 This diagram shows the architecture of EventMesh:
 ![architecture2](docs/images/eventmesh-arch.png)
 
-An event mesh allows events from one application to be dynamically routed and received by any other application no matter where these applications are deployed (no cloud, private cloud, public cloud). 
-The generic capabilities of an event mesh:
-* inherently ‘event-driven;’
-* created by connecting event meshers;
-* environment agnostic (can be deployed anywhere); and,
-* dynamic.
+The event grid allows events from one application to be dynamically routed to any other application.
+General functions of the event grid:
+* Essentially "event driven";
+* Event can be governanced;
+* Dynamic routing;
+* Cloud native
 
 Key components:
 * eventmesh-emesher : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
