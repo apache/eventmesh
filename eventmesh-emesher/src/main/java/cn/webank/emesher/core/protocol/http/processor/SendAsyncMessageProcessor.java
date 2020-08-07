@@ -77,7 +77,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                         proxyHTTPServer.getProxyConfiguration().proxyRegion,
                         proxyHTTPServer.getProxyConfiguration().proxyDCN, proxyHTTPServer.getProxyConfiguration().proxyIDC);
 
-        //HEADER校验
+        //validate header
         if (StringUtils.isBlank(sendMessageRequestHeader.getIdc())
                 || StringUtils.isBlank(sendMessageRequestHeader.getDcn())
                 || StringUtils.isBlank(sendMessageRequestHeader.getPid())
@@ -90,13 +90,13 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        //BODY校验
+        //validate body
         if (StringUtils.isBlank(sendMessageRequestBody.getBizSeqNo())
                 || StringUtils.isBlank(sendMessageRequestBody.getUniqueId())
                 || StringUtils.isBlank(sendMessageRequestBody.getTopic())
                 || StringUtils.isBlank(sendMessageRequestBody.getContent())
                 || (StringUtils.isBlank(sendMessageRequestBody.getTtl()))) {
-            //同步消息的TTL不能为空
+            //sync message TTL can't be empty
             responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getErrMsg()));
