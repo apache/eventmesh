@@ -11,10 +11,10 @@ This diagram shows the architecture of EventMesh:
 
 The event grid allows events from one application to be dynamically routed to any other application.
 General functions of the event grid:
-*Essentially "event driven";
-*Event can be governanced;
-*Dynamic routing;
-*Cloud native
+* Essentially "event driven";
+* Event can be governanced;
+* Dynamic routing;
+* Cloud native
 
 Key components:
 * eventmesh-emesher : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
