@@ -92,11 +92,11 @@ public class CommonConfiguration {
         }
 
         String proxyConfigCenterAddrStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CONFIGCENTER);
-        Preconditions.checkState(StringUtils.isNotEmpty(proxyConfigCenterAddrStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CONFIGCENTER));
+//        Preconditions.checkState(StringUtils.isNotEmpty(proxyConfigCenterAddrStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CONFIGCENTER));
         configCenterAddr = StringUtils.trim(proxyConfigCenterAddrStr);
 
         String namesrvAddrStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_NAMESRV_ADDR);
-        Preconditions.checkState(StringUtils.isNotEmpty(proxyConfigCenterAddrStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_NAMESRV_ADDR));
+        Preconditions.checkState(StringUtils.isNotEmpty(namesrvAddrStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_NAMESRV_ADDR));
         namesrvAddr = StringUtils.trim(namesrvAddrStr);
 
         String consumeThreadPoolMinStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MIN);

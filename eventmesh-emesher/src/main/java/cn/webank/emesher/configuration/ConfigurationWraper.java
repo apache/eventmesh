@@ -62,6 +62,7 @@ public class ConfigurationWraper {
 
     private void load() {
         try {
+            logger.info("loading config: {}", file);
             properties.load(new BufferedReader(new FileReader(
                     new File(file))));
         } catch (IOException e) {
