@@ -58,7 +58,7 @@ public class SyncRequestInstance {
         String threads = args[4];
 
         if (StringUtils.isBlank(confCenterAddr)) {
-            confCenterAddr = "http://172.22.1.82:8090";
+            confCenterAddr = "http://127.0.0.1:8090";
         }
 
         if (StringUtils.isBlank(proxyIPPort)) {
@@ -75,7 +75,7 @@ public class SyncRequestInstance {
 
         LiteClientConfig weMQProxyClientConfig = new LiteClientConfig();
         weMQProxyClientConfig.setRegistryEnabled(false)
-                .setRegistryAddr("http://172.22.1.82:8090")
+                .setRegistryAddr("http://127.0.0.1:8090")
                 .setLiteProxyAddr("127.0.0.1:10105")
                 .setEnv("A")
                 .setRegion("SZ")
@@ -96,19 +96,7 @@ public class SyncRequestInstance {
                         long startTime = System.currentTimeMillis();
                         LiteMessage liteMessage = new LiteMessage();
                         liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
-                                .setContent("{\"appHeaderContent\":\"{\\\"extFields\\\":{}}\"," +
-                                        "\"appHeaderName\":\"cn.webank.rmb.message.AppHeader\",\"body\":\"{\\\"key\\\":\\\"nanoxiong\\\"}\"," +
-                                        "\"correlationId\":\"#JAVA\",\"createTime\":1566378251260,\"deliveryTimes\":1," +
-                                        "\"destinationContent\":\"{\\\"anyDCN\\\":false,\\\"dcnNo\\\":\\\"FT0\\\",\\\"name\\\":\\\"FT0/e/10010000/01/1\\\",\\\"organizationId\\\":\\\"99996\\\"," +
-                                        "\\\"organizationIdInputFlag\\\":1,\\\"scenario\\\":\\\"01\\\",\\\"serviceOrEventId\\\":\\\"10010000\\\",\\\"type\\\":\\\"se\\\"}\"," +
-                                        "\"duplicated\":false,\"errorCode\":\"\",\"replyToContent\":\"null\",\"resent\":false,\"syn\":false," +
-                                        "\"sysHeaderContent\":\"{\\\"apiType\\\":1,\\\"bizSeqNo\\\":\\\"13263386761525211049779105006348\\\"," +
-                                        "\\\"consumerDCN\\\":\\\"FT0\\\",\\\"consumerId\\\":\\\"1001\\\",\\\"consumerSeqNo\\\":\\\"74601315176162031765354323451864\\\"," +
-                                        "\\\"consumerSvrId\\\":\\\"10.35.0.32\\\",\\\"contentLength\\\":19,\\\"extFields\\\":{\\\"req_ip\\\":\\\"10.35.0.32\\\",\\\"req_sys\\\":\\\"1001\\\"," +
-                                        "\\\"req_dcn\\\":\\\"FT0\\\",\\\"MSG_FROM\\\":\\\"WeMQ\\\"},\\\"messageType\\\":3,\\\"orgSvrId\\\":\\\"10.35.0.32\\\",\\\"orgSysId\\\":\\\"1001\\\"," +
-                                        "\\\"organizationId\\\":\\\"99996\\\",\\\"receiveMode\\\":1,\\\"rmbVersion\\\":\\\"2.1.3\\\",\\\"sendTimestamp\\\":1566378255141," +
-                                        "\\\"solCorrelationId\\\":\\\"#JAVA\\\",\\\"tranTimestamp\\\":1566378251088," +
-                                        "\\\"uniqueId\\\":\\\"w/f06e3842-c926-4ad3-b5a6-55bef5e5c708\\\",\\\"version\\\":\\\"1.0.0\\\"}\",\"timeToLive\":4000}")
+                                .setContent("contentStr with special protocal")
                                 .setTopic(topic)
                                 .setUniqueId(RandomStringUtils.randomNumeric(30));
 
