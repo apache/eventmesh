@@ -27,7 +27,7 @@ Key components:
 ## Quick Start
 1. Build and deploy eventmesh-store, see instruction ['eventmesh-store quickstart'](docs/en/instructions/eventmesh-store-quickstart.md) 
 2. Build adn deploy eventmesh-emesher, see instruction ['eventmesh-emesher quickstart'](docs/en/instructions/eventmesh-emesher-quickstart.md).
-3. Run eventmesh-sdk-java demo. 
+3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md). 
 
 ## Contributing
 Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.
