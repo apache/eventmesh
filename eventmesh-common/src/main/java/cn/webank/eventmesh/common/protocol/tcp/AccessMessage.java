@@ -64,8 +64,7 @@ public class AccessMessage {
         return "AccessMessage{" +
                 "topic='" + topic + '\'' +
                 ", properties=" + properties +
+                ", body='" + body + '\'' +
                 '}';
     }
-
-
 }
