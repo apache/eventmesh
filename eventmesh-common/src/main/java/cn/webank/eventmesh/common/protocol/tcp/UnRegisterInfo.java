@@ -60,10 +60,10 @@ public class UnRegisterInfo {
 
     @Override
     public String toString() {
-        return "RegisterInfo{" +
-                "serviceId=" + serviceId +
-                "instanceId=" + instanceId +
-                "topicList=" + topicList +
+        return "UnRegisterInfo{" +
+                "serviceId='" + serviceId + '\'' +
+                ", instanceId='" + instanceId + '\'' +
+                ", topicList=" + topicList +
                 '}';
     }
 }
