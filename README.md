@@ -1,7 +1,7 @@
 [![Build Status](https://www.travis-ci.org/WeBankFinTech/DeFiBus.svg?branch=master)](https://www.travis-ci.org/WeBankFinTech/EventMesh) [![Coverage Status](https://coveralls.io/repos/github/WeBankFinTech/DeFiBus/badge.svg?branch=master)](https://coveralls.io/github/WeBankFinTech/EventMesh?branch=master)
 
 ## What is Event Mesh?
-This figure shows the positioning of the event grid relative to other similar technologies (such as service grid) in the application framework
+This figure shows the positioning of the event mesh relative to other similar technologies (such as service mesh) in the application framework
 ![architecture1](docs/images/eventmesh-define.png)
 
 Event grid is a dynamic plug-in basic service layer used to distribute events among decoupled applications, cloud services and devices. It enables the communication of events to be supervised and governed, and the communication of events is flexible, reliable and fast.
