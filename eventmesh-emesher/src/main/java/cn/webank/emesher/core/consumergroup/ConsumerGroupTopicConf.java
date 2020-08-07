@@ -36,12 +36,12 @@ public class ConsumerGroupTopicConf {
     private String topic;
 
     /**
-     * PUSH的URL
+     * PUSH URL
      */
     private Map<String /** IDC*/, List<String> /** IDC内URL列表*/> idcUrls = Maps.newConcurrentMap();
 
     /**
-     * IDC 无关的全量URL
+     * ALL IDC URLs
      */
     private Set<String> urls = Sets.newConcurrentHashSet();
 
