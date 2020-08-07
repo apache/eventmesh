@@ -199,9 +199,9 @@ subprojects {
 
     List mock = [
 //        "org.mockito:mockito-core:1.10.19",
-"org.mockito:mockito-core:2.23.0",
-"org.powermock:powermock-module-junit4:2.0.2",
-"org.powermock:powermock-api-mockito2:2.0.2",
+        "org.mockito:mockito-core:2.23.0",
+        "org.powermock:powermock-module-junit4:2.0.2",
+        "org.powermock:powermock-api-mockito2:2.0.2",
     ]
 
     dependencies {
@@ -226,8 +226,10 @@ subprojects {
     task dist(dependsOn: ['jar']) {
         doFirst {
             new File(projectDir, '../dist/bin').mkdirs()
+            new File(projectDir, '../dist/bin/emesher').mkdirs()
             new File(projectDir, '../dist/apps').mkdirs()
             new File(projectDir, '../dist/conf').mkdirs()
+            new File(projectDir, '../dist/conf/emesher').mkdirs()
             new File(projectDir, '../dist/lib').mkdirs()
         }
 
@@ -248,7 +250,7 @@ subprojects {
                 exclude '**/*log4j2.xml*'
                 exclude '**/spring-boot-devtools*.jar'
                 exclude '**/mumble-sdk-test*.jar'
-                exclude '**/defibus*.jar'
+//                exclude '**/defibus*.jar'
                 exclude '*log4j*.jar'
                 exclude 'commons-collections-3.2.2.jar'
             }
@@ -259,8 +261,18 @@ subprojects {
             }
 
             copy {
+                into '../dist/bin/emesher'
+                from '../eventmesh-emesher/scripts'
+            }
+
+            copy {
                 into '../dist/conf'
                 from '../conf/'
+            }
+
+            copy {
+                into '../dist/conf/emesher'
+                from '../eventmesh-emesher/conf/'
             }
         }
     }
