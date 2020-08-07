@@ -57,7 +57,6 @@ public class ProxyStartup {
         }catch (Throwable e){
             logger.error("Proxy start fail.", e);
             e.printStackTrace();
-//            System.exit(1);
         }
 
     }

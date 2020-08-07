@@ -66,7 +66,7 @@ public class ConsumerManager {
     }
 
     /**
-     * 新增消费者
+     * add consumer
      *
      * @param consumerGroup
      * @param consumerGroupConfig
@@ -80,7 +80,7 @@ public class ConsumerManager {
     }
 
     /**
-     * 重启消费者DeleteOnExitHook
+     * restart consumer
      */
     public synchronized void restartConsumer(String consumerGroup, ConsumerGroupConf consumerGroupConfig) throws Exception {
         ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
@@ -88,7 +88,7 @@ public class ConsumerManager {
     }
 
     /**
-     * 重启消费者
+     * get consumer
      */
     public ConsumerGroupManager getConsumer(String consumerGroup) throws Exception {
         ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
@@ -96,7 +96,7 @@ public class ConsumerManager {
     }
 
     /**
-     * 删除消费者
+     * delete consumer
      *
      * @param consumerGroup
      */
