@@ -52,7 +52,6 @@ public class ProxyTcp2Client {
             msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(), "graceful normal quit from access",
                     null));
 
-            //session.write2Client(msg);
             ProxyTCPServer.scheduler.submit(new Runnable() {
                 @Override
                 public void run() {

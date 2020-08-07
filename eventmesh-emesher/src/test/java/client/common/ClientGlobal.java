@@ -26,9 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.TimeZone;
 
-/**
- * Created by v_wbyzhong on 2018/9/28.
- */
+
 public class ClientGlobal {
 
     private static Logger logger = LoggerFactory.getLogger(ClientGlobal.class);
