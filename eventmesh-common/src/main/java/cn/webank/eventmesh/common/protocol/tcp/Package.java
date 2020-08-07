@@ -52,11 +52,9 @@ public class Package {
 
     @Override
     public String toString() {
-        return "Message{" +
+        return "Package{" +
                 "header=" + header +
                 ", body=" + body +
                 '}';
     }
-
-
 }
