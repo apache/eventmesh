@@ -25,8 +25,8 @@ Key components:
 * eventmesh-store : the store layer of Event-Mesh which implemented with [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)(based on RocketMQ in financial scenario) or RocketMQ by default. We wish the store layeris a general solution and can use any store implement such as kafka, redis ,blockchain etc.
 
 ## Quick Start
-1. Build eventmesh-store to your own local maven repository first, because eventmesh depends on defibus as store layer by default. 
-2. Build eventmesh-emesher and start it by sh bin/start.sh.
+1. Build and deploy eventmesh-store, see instruction ['eventmesh-store quickstart'](docs/en/instructions/eventmesh-store-quickstart.md) 
+2. Build adn deploy eventmesh-emesher, see instruction ['eventmesh-emesher quickstart'](docs/en/instructions/eventmesh-emesher-quickstart.md).
 3. Run eventmesh-sdk-java demo. 
 
 ## Contributing
