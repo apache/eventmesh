@@ -21,9 +21,7 @@ import client.hook.ReceiveMsgHook;
 import cn.webank.eventmesh.common.protocol.tcp.Package;
 import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
 
-/**
- * Created by v_wbyzhong 2018/09/28
- */
+
 public interface PubClient {
 
     void init() throws Exception;

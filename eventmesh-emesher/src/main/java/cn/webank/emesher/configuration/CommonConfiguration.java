@@ -92,7 +92,6 @@ public class CommonConfiguration {
         }
 
         String proxyConfigCenterAddrStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CONFIGCENTER);
-//        Preconditions.checkState(StringUtils.isNotEmpty(proxyConfigCenterAddrStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CONFIGCENTER));
         configCenterAddr = StringUtils.trim(proxyConfigCenterAddrStr);
 
         String namesrvAddrStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_NAMESRV_ADDR);
@@ -159,18 +158,6 @@ public class CommonConfiguration {
             rebalanceInterval = Integer.valueOf(clientRebalanceIntervalIntervalStr);
         }
 
-
-//        String proxyRegisterIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_REGISTER_INTERVAL);
-//        if(StringUtils.isNotEmpty(proxyRegisterIntervalStr)){
-//            Preconditions.checkState(StringUtils.isNumeric(proxyRegisterIntervalStr), String.format("%s error", ConfKeys.KEYS_PROXY_SERVER_REGISTER_INTERVAL));
-//            proxyRegisterIntervalInMills = Integer.valueOf(StringUtils.deleteWhitespace(proxyRegisterIntervalStr));
-//        }
-//
-//        String proxyFetchRegistryAddrIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_FETCH_REGISTRY_ADDR_INTERVAL);
-//        if(StringUtils.isNotEmpty(proxyFetchRegistryAddrIntervalStr)) {
-//            Preconditions.checkState(StringUtils.isNumeric(proxyFetchRegistryAddrIntervalStr), String.format("%s error", ConfKeys.KEYS_PROXY_SERVER_FETCH_REGISTRY_ADDR_INTERVAL));
-//            proxyFetchRegistryAddrInterval = Integer.valueOf(StringUtils.deleteWhitespace(proxyFetchRegistryAddrIntervalStr));
-//        }
     }
 
     static class ConfKeys {
