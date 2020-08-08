@@ -83,11 +83,10 @@ public class RegRequestBody extends Body {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("regRequestBody={")
-                .append("clientType=").append(clientType).append(",")
-                .append("endPoint=").append(endPoint)
-                .append("}");
-        return sb.toString();
+        return "regRequestBody{" +
+                "clientType='" + clientType + '\'' +
+                ", endPoint='" + endPoint + '\'' +
+                ", topics=" + topics +
+                '}';
     }
 }
