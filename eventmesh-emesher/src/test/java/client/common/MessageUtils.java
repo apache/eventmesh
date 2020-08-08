@@ -139,41 +139,6 @@ public class MessageUtils {
         return msg;
     }
 
-//    public static Package sysLog() {
-//        Package msg = new Package();
-//        msg.setHeader(new Header(SYS_LOG_TO_LOGSERVER, 0, null, null));
-//        SysLog log = new SysLog();
-//        log.setId("839232");
-//        log.setLevel(Level.debug);
-//        log.setLogType(LogType.sys.toString());
-//        log.setLang(Language.c.toString());
-//        log.setConsumerId("5982");
-//        log.setContent("test");
-//        log.setProcessId(5176);
-//        log.setLogName("test");
-//        log.setConsumerSvrId("dsi");
-//        msg.setBody(log);
-//        return msg;
-//    }
-
-//    public static Package traceLog() {
-//        Package msg = new Package();
-//        msg.setHeader(new Header(TRACE_LOG_TO_LOGSERVER, 0, null, null));
-//        RmbTraceLog log = new RmbTraceLog();
-//        log.setLevel(Level.debug);
-//        log.setLang(Language.c.toString());
-//        log.setModel("model");
-//        log.setRetMsg("retMsg");
-//        log.setRetCode("retCode");
-//        log.setLogTimestamp(System.currentTimeMillis());
-//        log.setLogPoint(LogPoint.LOG_REQ);
-//        Map<String, String> extFields = new HashMap<String, String>();
-//        extFields.put("key", "value");
-//        log.setExtFields(extFields);
-//        msg.setBody(log);
-//        return msg;
-//    }
-
     public static UserAgent generatePubClient() {
         UserAgent user = new UserAgent();
         user.setDcn("AC0");
