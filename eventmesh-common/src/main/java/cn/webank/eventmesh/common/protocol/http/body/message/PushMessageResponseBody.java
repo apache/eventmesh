@@ -68,7 +68,7 @@ public class PushMessageResponseBody extends Body {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("sendMessageResponseBody={")
+        sb.append("pushMessageResponseBody={")
                 .append("retCode=").append(retCode).append(",")
                 .append("retMsg=").append(retMsg).append(",")
                 .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT)).append("}");
