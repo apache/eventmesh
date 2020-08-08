@@ -239,7 +239,7 @@ public class ClientGroupWrapper {
         MessageClientIDSetter.createUniqID();
         defibusProducer = new DeFiBusProducer(wcc);
         defibusProducer.getDefaultMQProducer().setVipChannelEnabled(false);
-        defibusProducer.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//设置实例名称
+        defibusProducer.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//set instance name
         defibusProducer.getDefaultMQProducer().setCompressMsgBodyOverHowmuch(1024 * 2);
 
         defibusProducer.start();
