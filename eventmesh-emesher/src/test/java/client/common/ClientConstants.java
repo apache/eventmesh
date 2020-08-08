@@ -17,15 +17,13 @@
 
 package client.common;
 
-/**
- * Created by v_wbyzhong on 2018/9/28.
- */
+
 public interface ClientConstants {
 
     /**
-     * CLIENT端心跳间隔事件
+     * CLIENT HEART BEAT TIME
      */
-    int HEATBEAT = 1000 * 60;
+    int HEARTBEAT = 1000 * 60;
 
     long DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
 
