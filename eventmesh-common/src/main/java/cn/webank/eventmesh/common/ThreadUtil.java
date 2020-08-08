@@ -21,6 +21,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class ThreadUtil {
 
+    private static volatile long currentPID = -1;
+
     public static void randomSleep(int min, int max) throws Exception {
         // nextInt is normally exclusive of the top value, so add 1 to make it inclusive
         int random = ThreadLocalRandom.current().nextInt(min, max + 1);
@@ -32,16 +34,22 @@ public class ThreadUtil {
         randomSleep(1, max);
     }
 
+    /**
+     * get current process id only once.
+     * @return
+     */
     public static long getPID() {
+        if (currentPID >= 0) {
+            return currentPID;
+        }
         String processName = java.lang.management.ManagementFactory.getRuntimeMXBean().getName();
         if (processName != null && processName.length() > 0) {
             try {
-                return Long.parseLong(processName.split("@")[0]);
+                currentPID= Long.parseLong(processName.split("@")[0]);
             } catch (Exception e) {
                 return 0;
             }
         }
-
         return 0;
     }
 }
