@@ -67,7 +67,7 @@ public class ProxyConstants {
     public static final String REQ_LEAVE_TIMESTAMP = "req_leave_timestamp";
     public static final String REQ_ARRIVE_TIMESTAMP = "req_arrive_timestamp";
 
-    //默认TTL 4 小时
+    //default TTL 4 hours
     public static final Integer DEFAULT_MSG_TTL_MILLS = 14400000;
 
     public static final int DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;

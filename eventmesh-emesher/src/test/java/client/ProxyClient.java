@@ -47,9 +47,5 @@ public interface ProxyClient {
 
     void registerSubBusiHandler(ReceiveMsgHook handler) throws Exception;
 
-//    void sysLog() throws Exception;
-//
-//    void traceLog() throws Exception;
-
     void goodbye() throws Exception;
 }
