@@ -92,7 +92,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        //BODY校验
+        //validate body
         if (StringUtils.isBlank(replyMessageRequestBody.getBizSeqNo())
                 || StringUtils.isBlank(replyMessageRequestBody.getUniqueId())
                 || StringUtils.isBlank(replyMessageRequestBody.getContent())) {

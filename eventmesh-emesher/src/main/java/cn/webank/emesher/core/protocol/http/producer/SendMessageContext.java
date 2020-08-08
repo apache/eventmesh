@@ -114,7 +114,7 @@ public class SendMessageContext extends RetryContext {
             return false;
         }
 
-        if (retryTimes > 0) { //只给一次重试机会
+        if (retryTimes > 0) { //retry once
             return false;
         }
 

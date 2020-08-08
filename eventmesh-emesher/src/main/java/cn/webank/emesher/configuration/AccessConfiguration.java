@@ -184,15 +184,6 @@ public class AccessConfiguration extends CommonConfiguration {
             proxyTcpMsgRetryQueueSize = Integer.valueOf(StringUtils.deleteWhitespace(proxyTcpMsgRetryQueueSizeStr));
         }
 
-//        String proxyTcpMonitorImsInterfaceStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_MONITOR_IMS_INTERFACE);
-//        Preconditions.checkState(StringUtils.isNotEmpty(proxyTcpMonitorImsInterfaceStr), String.format("%s error", ConfKeys.KEYS_PROXY_SERVER_MONITOR_IMS_INTERFACE));
-//        proxyTcpMonitorImsInterface = StringUtils.trim(proxyTcpMonitorImsInterfaceStr);
-//
-//        String accessMonitorImsEnabledStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_MONITOR_IMS_ENABLED);
-//        if (StringUtils.isNotEmpty(accessMonitorImsEnabledStr)) {
-//            proxyTcpMonitorImsEnabled = Boolean.valueOf(StringUtils.deleteWhitespace(accessMonitorImsEnabledStr));
-//        }
-
         String proxyTcpRebalanceIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_TCP_REBALANCE_INTERVAL);
         if (StringUtils.isNotEmpty(proxyTcpRebalanceIntervalStr)) {
             Preconditions.checkState(StringUtils.isNumeric(proxyTcpRebalanceIntervalStr),
@@ -211,10 +202,6 @@ public class AccessConfiguration extends CommonConfiguration {
         if (StringUtils.isNotEmpty(proxyTcpSendBackEnabledStr)) {
             proxyTcpSendBackEnabled = Boolean.valueOf(StringUtils.deleteWhitespace(proxyTcpSendBackEnabledStr));
         }
-
-//        String proxyTcpSendBackMaxTimesStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_TCP_SEND_BACK_MAX_TIMES);
-//        Preconditions.checkState(StringUtils.isNotEmpty(proxyTcpSendBackMaxTimesStr) && StringUtils.isNumeric(proxyTcpSendBackMaxTimesStr), String.format("%s error", ConfKeys.KEYS_PROXY_TCP_SEND_BACK_MAX_TIMES));
-//        proxyTcpSendBackMaxTimes = Integer.valueOf(StringUtils.deleteWhitespace(proxyTcpSendBackMaxTimesStr));
 
         String proxyTcpPushFailIsolateTimeInMillsStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_PUSH_FAIL_ISOLATE_TIME);
         if(StringUtils.isNotEmpty(proxyTcpPushFailIsolateTimeInMillsStr)) {
