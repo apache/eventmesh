@@ -27,6 +27,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class IPUtil {
 
@@ -82,7 +84,7 @@ public class IPUtil {
             // prefer ipv4
             if (!ipv4Result.isEmpty()) {
                 for (String ip : ipv4Result) {
-                    if (ip.startsWith("127.0") || ip.startsWith("192.168")) {
+                    if (ip.startsWith("127.0") || ip.startsWith("192.168") || !isValidIPV4Address(ip)) {
                         continue;
                     }
 
@@ -103,6 +105,34 @@ public class IPUtil {
         }
 
         return null;
+    }
+
+    public static boolean isValidIPV4Address(String ip)
+    {
+
+        // Regex for digit from 0 to 255.
+        String zeroTo255
+                = "(\\d{1,2}|(0|1)\\"
+                + "d{2}|2[0-4]\\d|25[0-5])";
+
+        String regex
+                = zeroTo255 + "\\."
+                + zeroTo255 + "\\."
+                + zeroTo255 + "\\."
+                + zeroTo255;
+
+        // Compile the ReGex
+        Pattern p = Pattern.compile(regex);
+
+        // If the IP address is empty, return false
+        if (ip == null) {
+            return false;
+        }
+
+        Matcher m = p.matcher(ip);
+
+        // Return if the IP address matched the ReGex
+        return m.matches();
     }
 
     private static void getIpResult(ArrayList<String> ipv4Result, ArrayList<String> ipv6Result,
