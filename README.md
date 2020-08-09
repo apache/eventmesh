@@ -1,7 +1,7 @@
 [![Build Status](https://www.travis-ci.org/WeBankFinTech/DeFiBus.svg?branch=master)](https://www.travis-ci.org/WeBankFinTech/EventMesh) [![Coverage Status](https://coveralls.io/repos/github/WeBankFinTech/DeFiBus/badge.svg?branch=master)](https://coveralls.io/github/WeBankFinTech/EventMesh?branch=master)
 
 ## What is Event Mesh?
-This figure shows the positioning of the event mesh relative to other similar technologies (such as service mesh) in the application framework
+This figure shows the positioning of the event mesh relative to other similar technologies (such as service mesh) in the application framework.
 ![architecture1](docs/images/eventmesh-define.png)
 
 Event Mesh is a dynamic plug-in cloud-native basic service layer used to decouple the application and middleware layer. It provides flexible, reliable and fast event distribution, and can be managed.
@@ -24,8 +24,8 @@ Key components:
 * eventmesh-store : the store layer of Event-Mesh which implemented with [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)(based on RocketMQ in financial scenario) or RocketMQ by default. We wish the store layeris a general solution and can use any store implement such as kafka, redis ,blockchain etc.
 
 ## Quick Start
-1. Build and deploy eventmesh-store, see instruction ['eventmesh-store quickstart'](docs/en/instructions/eventmesh-store-quickstart.md) 
-2. Build adn deploy eventmesh-emesher, see instruction ['eventmesh-emesher quickstart'](docs/en/instructions/eventmesh-emesher-quickstart.md).
+1. Build and deploy eventmesh-store, see instruction ['eventmesh-store quickstart'](docs/en/instructions/eventmesh-store-quickstart.md) .
+2. Build and deploy eventmesh-emesher, see instruction ['eventmesh-emesher quickstart'](docs/en/instructions/eventmesh-emesher-quickstart.md).
 3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md). 
 
 ## Contributing
