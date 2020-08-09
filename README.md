@@ -4,15 +4,14 @@
 This figure shows the positioning of the event mesh relative to other similar technologies (such as service mesh) in the application framework
 ![architecture1](docs/images/eventmesh-define.png)
 
-Event grid is a dynamic plug-in basic service layer used to distribute events among decoupled applications, cloud services and devices. It enables the communication of events to be supervised and governed, and the communication of events is flexible, reliable and fast.
-## What are the core capabilities of an event mesh?
+Event Mesh is a dynamic plug-in cloud-native basic service layer used to decouple the application and middleware layer. It provides flexible, reliable and fast event distribution, and can be managed.
 This diagram shows the architecture of EventMesh:
 ![architecture2](docs/images/eventmesh-arch.png)
 
-The event grid allows events from one application to be dynamically routed to any other application.
+The event mesh allows events from one application to be dynamically routed to any other application.
 General functions of the event grid:
-* Essentially "event driven";
-* Event can be governanced;
+* Event driven;
+* Event governance;
 * Dynamic routing;
 * Cloud native
 
