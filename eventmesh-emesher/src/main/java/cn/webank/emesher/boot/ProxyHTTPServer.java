@@ -77,13 +77,10 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
 
     public ThreadPoolExecutor clientManageExecutor;
 
-    public ThreadPoolExecutor rmbTraceUploader;
-
     public ThreadPoolExecutor adminExecutor;
 
     public void shutdownThreadPool() throws Exception {
         batchMsgExecutor.shutdown();
-        rmbTraceUploader.shutdown();
         adminExecutor.shutdown();
         clientManageExecutor.shutdown();
         sendMsgExecutor.shutdown();
@@ -112,10 +109,6 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
         BlockingQueue<Runnable> adminThreadPoolQueue = new LinkedBlockingQueue<Runnable>(50);
         adminExecutor = ThreadPoolFactory.createThreadPoolExecutor(proxyConfiguration.proxyServerAdminThreadNum,
                 proxyConfiguration.proxyServerAdminThreadNum, adminThreadPoolQueue, "proxy-admin-",true);
-
-        BlockingQueue<Runnable> rmbTraceLogThreadPoolQueue = new LinkedBlockingQueue<Runnable>(50);
-        rmbTraceUploader = ThreadPoolFactory.createThreadPoolExecutor(proxyConfiguration.proxyServerAdminThreadNum,
-                proxyConfiguration.proxyServerAdminThreadNum, rmbTraceLogThreadPoolQueue, "proxy-tracelog-",true);
 
         BlockingQueue<Runnable> replyMessageThreadPoolQueue = new LinkedBlockingQueue<Runnable>(100);
         replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(proxyConfiguration.proxyServerReplyMsgThreadNum,
@@ -248,9 +241,5 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
 
     public HttpRetryer getHttpRetryer() {
         return httpRetryer;
-    }
-
-    public ThreadPoolExecutor getRmbTraceUploader() {
-        return rmbTraceUploader;
     }
 }
