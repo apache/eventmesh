@@ -27,8 +27,6 @@ public enum RequestCode {
 
     MSG_SEND_ASYNC(104, "单条发送异步消息"),
 
-    MSG_TRACE_LOG(103, "日志上报"),
-
     HTTP_PUSH_CLIENT_ASYNC(105, "PUSH CLIENT BY HTTP POST"),
 
     HTTP_PUSH_CLIENT_SYNC(106, "PUSH CLIENT BY HTTP POST"),
