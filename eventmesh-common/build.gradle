@@ -42,13 +42,13 @@ repositories {
 }
 
 List fastjson = [
-        "com.alibaba:fastjson:1.2.68"
+        "com.alibaba:fastjson:1.2.71"
 ]
 
 List jackson = [
-        'com.fasterxml.jackson.core:jackson-databind:2.10.0',
-        'com.fasterxml.jackson.core:jackson-core:2.10.0',
-        'com.fasterxml.jackson.core:jackson-annotations:2.10.0'
+        'com.fasterxml.jackson.core:jackson-databind:2.11.0',
+        'com.fasterxml.jackson.core:jackson-core:2.11.0',
+        'com.fasterxml.jackson.core:jackson-annotations:2.11.0'
 ]
 
 List apache_commons = [
@@ -65,7 +65,7 @@ List guava = [
 ]
 
 List netty = [
-        "io.netty:netty-all:4.1.44.Final"
+        "io.netty:netty-all:4.1.49.Final"
 ]
 
 List defibus = [
