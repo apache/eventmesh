@@ -47,15 +47,15 @@ List junit = [
 ]
 
 List log4j2 = [
-    "org.apache.logging.log4j:log4j-api:2.8.2",
-    "org.apache.logging.log4j:log4j-core:2.8.2",
-    "org.apache.logging.log4j:log4j-slf4j-impl:2.8.2",
-    "org.apache.logging.log4j:log4j-web:2.8.2",
-    "com.lmax:disruptor:3.2.0"
+    "org.apache.logging.log4j:log4j-api:2.13.3",
+    "org.apache.logging.log4j:log4j-core:2.13.3",
+    "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
+    "org.apache.logging.log4j:log4j-web:2.13.3",
+    "com.lmax:disruptor:3.4.2"
 ]
 
 List sl4j = [
-    "org.slf4j:slf4j-api:1.7.25"
+    "org.slf4j:slf4j-api:1.7.30"
 ]
 
 List metrics = [
