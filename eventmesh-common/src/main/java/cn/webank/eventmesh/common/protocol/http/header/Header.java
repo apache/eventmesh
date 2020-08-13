@@ -25,7 +25,6 @@ import cn.webank.eventmesh.common.protocol.http.header.client.UnRegRequestHeader
 import cn.webank.eventmesh.common.protocol.http.header.message.PushMessageRequestHeader;
 import cn.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
 import cn.webank.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
-import cn.webank.eventmesh.common.protocol.http.header.message.RMBTraceLogRequestHeader;
 import cn.webank.eventmesh.common.protocol.http.header.message.ReplyMessageRequestHeader;
 import cn.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
 
@@ -58,8 +57,6 @@ public abstract class Header {
             return ReplyMessageRequestHeader.buildHeader(originalMap);
         } else if (String.valueOf(RequestCode.ADMIN_SHUTDOWN.getRequestCode()).equals(requestCode)) {
             return BaseRequestHeader.buildHeader(originalMap);
-        } else if(String.valueOf(RequestCode.MSG_TRACE_LOG.getRequestCode()).equals(requestCode)) {
-            return RMBTraceLogRequestHeader.buildHeader(originalMap);
         } else {
             throw new Exception();
         }
