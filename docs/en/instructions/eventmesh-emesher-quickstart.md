@@ -5,7 +5,6 @@
 64bit OS, Linux/Unix is recommended;
 64bit JDK 1.8+;
 Gradle at least 5.6;
-4g+ free disk for eventmesh-store server
 ```
 
 ### download and build with sources
@@ -25,7 +24,7 @@ You will get **eventmesh-emesher_1.0.0.tar.gz** in directory /* YOUR DEPLOY PATH
 ### Deployment
 
 - deploy eventmesn-emesher  
-**NOTICE**: To setup an emesher, you need to deploy eventmesh-store firstly.
+**NOTICE**: To setup an emesher, you need to deploy firstly.
 ```$xslt
 upload eventmesh-emesher_1.0.0.tar.gz
 tar -zxvf eventmesh-emesher_1.0.0.tar.gz

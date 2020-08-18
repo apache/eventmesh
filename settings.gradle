@@ -18,10 +18,7 @@
 rootProject.name = 'EventMesh'
 String jdkVersion = "${jdk}"
 include 'eventmesh-emesher'
-include 'eventmesh-governance'
 include 'eventmesh-registry'
-include 'eventmesh-acl'
-include 'eventmesh-store'
 include 'eventmesh-sdk-java'
 include 'eventmesh-common'
 
