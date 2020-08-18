@@ -111,11 +111,11 @@ public class MessageTransferTask extends AbstractTask {
         if (cmd.equals(RESPONSE_TO_SERVER)) {
             accessMessage.getProperties().put(ProxyConstants.RSP_C2PROXY_TIMESTAMP, String.valueOf(startTime));
             accessMessage.getProperties().put(ProxyConstants.RSP_PROXY2MQ_TIMESTAMP, String.valueOf(sendTime));
-            accessMessage.getProperties().put(ProxyConstants.RSP_SEND_PROXY_IP, ProxyUtil.getLocalAddr());
+            accessMessage.getProperties().put(ProxyConstants.RSP_SEND_PROXY_IP, proxyTCPServer.getAccessConfiguration().proxyServerIp);
         } else {
             accessMessage.getProperties().put(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(startTime));
             accessMessage.getProperties().put(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(sendTime));
-            accessMessage.getProperties().put(ProxyConstants.REQ_SEND_PROXY_IP, ProxyUtil.getLocalAddr());
+            accessMessage.getProperties().put(ProxyConstants.REQ_SEND_PROXY_IP, proxyTCPServer.getAccessConfiguration().proxyServerIp);
         }
     }
 
