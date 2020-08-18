@@ -7,13 +7,11 @@
 Gradle at least 5.6;
 ```
 
-### download and build with sources
-
+### download sources
 download source code from [https://github.com/WeBankFinTech/EventMesh](https://github.com/WeBankFinTech/EventMesh)  
-You will get 'EventMesh-master.zip'  
+You will get **EventMesh-master.zip**
   
-
-**build eventmesh-emesher**
+### build sources
 ```$xslt
 unzip EventMesh-master.zip
 cd /*YOUR DEPLOY PATH*/EventMesh-master/eventmesh-emesher
@@ -22,9 +20,7 @@ gradle clean tar -x test
 You will get **eventmesh-emesher_1.0.0.tar.gz** in directory /* YOUR DEPLOY PATH */EventMesh-master/eventmesh-emesher/dist
 
 ### Deployment
-
 - deploy eventmesn-emesher  
-**NOTICE**: To setup an emesher, you need to deploy firstly.
 ```$xslt
 upload eventmesh-emesher_1.0.0.tar.gz
 tar -zxvf eventmesh-emesher_1.0.0.tar.gz
