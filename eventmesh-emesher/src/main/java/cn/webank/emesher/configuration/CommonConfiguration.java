@@ -17,6 +17,7 @@
 
 package cn.webank.emesher.configuration;
 
+import cn.webank.emesher.util.ProxyUtil;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,6 +47,7 @@ public class CommonConfiguration {
     public Integer rebalanceInterval = 20 * 1000;
     public Integer proxyRegisterIntervalInMills = 10 * 1000;
     public Integer proxyFetchRegistryAddrInterval = 10 * 1000;
+    public String proxyServerIp = null;
     protected ConfigurationWraper configurationWraper;
 
     public CommonConfiguration(ConfigurationWraper configurationWraper) {
@@ -158,6 +160,10 @@ public class CommonConfiguration {
             rebalanceInterval = Integer.valueOf(clientRebalanceIntervalIntervalStr);
         }
 
+        proxyServerIp = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_HOST_IP);
+        if(StringUtils.isBlank(proxyServerIp)) {
+            proxyServerIp = ProxyUtil.getLocalAddr();
+        }
     }
 
     static class ConfKeys {
@@ -204,6 +210,8 @@ public class CommonConfiguration {
         public static String KEYS_PROXY_DEFIBUS_CLIENT_HEARTBEAT_BROKER_INTERVEL = "proxy.server.defibus.client.heartbeatBrokerInterval";
 
         public static String KEYS_PROXY_DEFIBUS_CLIENT_REBALANCE_INTERVEL = "proxy.server.defibus.client.rebalanceInterval";
+
+        public static String KEYS_PROXY_SERVER_HOST_IP = "proxy.server.hostIp";
 
         public static String KEYS_PROXY_SERVER_REGISTER_INTERVAL = "proxy.server.registry.registerIntervalInMills";
 
