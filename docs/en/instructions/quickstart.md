@@ -13,7 +13,8 @@ download source code from [https://github.com/WeBankFinTech/EventMesh](https://g
 You will get 'EventMesh-master.zip'  
 To setup an eventmesh, you need to deploy the following components at least: eventmesh-emesher.  
 
-**Step 1.** prepare the rocketmq/defibus runtime
+**Step 1.** prepare eventmesh-store runtime
+Read more [here](./eventmesh-store-quickstart.md)
 
 **Step 2.** build eventmesh-emesher
 ```$xslt
