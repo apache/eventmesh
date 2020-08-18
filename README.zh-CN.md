@@ -27,8 +27,10 @@ Event Mesh的一般功能:
 * eventmesh-registry：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理emesher
 
 ## 快速开始
-1.构建并部署eventmesh-emesher，请参见说明['eventmesh-emesher quickstart'](docs/cn/instructions/eventmesh-emesher-quickstart.zh-CN.md)
-2.运行eventmesh-sdk-java演示，请参见说明['eventmesh-sdk-java quickstart'](docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
+1. 构建并部署eventmesh-store([DefiBus](https://github.com/WeBankFinTech/DeFiBus))
+   请参见说明['eventmesh-store quickstart'](docs/cn/instructions/eventmesh-store-quickstart.zh-CN.md)
+2. 构建并部署eventmesh-emesher，请参见说明['eventmesh-emesher quickstart'](docs/cn/instructions/eventmesh-emesher-quickstart.zh-CN.md)
+3. 运行eventmesh-sdk-java演示，请参见说明['eventmesh-sdk-java quickstart'](docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
 
 ## 贡献
 永远欢迎捐款！请参阅[贡献](CONTRIBUTING.zh-CN.md)了解详细指南
