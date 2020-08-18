@@ -3,6 +3,8 @@
 [![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/WeBankFinTech/EventMesh/releases)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
+[点我查看中文版](README.zh-CN.md)
+
 ## What is Event Mesh?
 This figure shows the positioning of the event mesh relative to other similar technologies (such as service mesh) in the application framework.
 ![architecture1](docs/images/eventmesh-define.png)
@@ -27,8 +29,10 @@ Key components:
 * eventmesh-registry : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-emesher
 
 ## Quick Start
-1. Build and deploy eventmesh-emesher, see instruction ['eventmesh-emesher quickstart'](docs/en/instructions/eventmesh-emesher-quickstart.md).
-2. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md). 
+1. Build and deploy eventmesh-store([DefiBus](https://github.com/WeBankFinTech/DeFiBus)), 
+   see instruction ['eventmesh-store quickstart'](docs/en/instructions/eventmesh-store-quickstart.md).
+2. Build and deploy eventmesh-emesher, see instruction ['eventmesh-emesher quickstart'](docs/en/instructions/eventmesh-emesher-quickstart.md).
+3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md). 
 
 ## Contributing
 Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines
