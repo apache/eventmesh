@@ -9,6 +9,12 @@
 This figure shows the positioning of the event mesh relative to other similar technologies (such as service mesh) in the application framework.
 ![architecture1](docs/images/eventmesh-define.png)
 
+Overview of EventMesh:
+![architecture1](docs/images/eventmesh-overview.png)
+
+Landscape of EventMesh:
+![architecture1](docs/images/eventmesh-landscape.png)
+
 Event Mesh is a dynamic plug-in cloud-native basic service layer used to decouple the application and middleware layer. It provides flexible, reliable and fast event distribution, and can be managed.
 This diagram shows the architecture of EventMesh:
 ![architecture2](docs/images/eventmesh-arch.png)
@@ -21,7 +27,7 @@ General functions of the event grid:
 * Cloud native
 
 Dependent components:
-* defibus : a distributed messaging platform with low latency, high performance and reliability, flexible scalability. [DefiBus](https://github.com/WeBankFinTech/DeFiBus)
+* DeFiBus : a distributed messaging platform with low latency, high performance and reliability, flexible scalability. [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)
 
 Key components:
 * eventmesh-emesher : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
@@ -29,8 +35,8 @@ Key components:
 * eventmesh-registry : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-emesher
 
 ## Quick Start
-1. Build and deploy eventmesh-store([DefiBus](https://github.com/WeBankFinTech/DeFiBus)), 
-   see instruction ['eventmesh-store quickstart'](docs/en/instructions/eventmesh-store-quickstart.md).
+1. Build and deploy event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus)), 
+   see instruction ['event-store quickstart'](docs/en/instructions/eventmesh-store-quickstart.md).
 2. Build and deploy eventmesh-emesher, see instruction ['eventmesh-emesher quickstart'](docs/en/instructions/eventmesh-emesher-quickstart.md).
 3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md). 
 
