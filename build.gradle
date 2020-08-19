@@ -177,7 +177,7 @@ subprojects {
 
     ]
 
-    List logback = [
+    List log = [
             "org.slf4j:slf4j-api:1.7.30"
     ]
 
@@ -205,9 +205,9 @@ subprojects {
     ]
 
     dependencies {
-        compile apache_commons, guava, logback, fastjson, common_io
-        testCompile apache_commons, guava, logback, fastjson, common_io, junit, assertj, mock
-        runtime apache_commons, guava, logback, fastjson, common_io
+        compile apache_commons, guava, log, fastjson, common_io
+        testCompile apache_commons, guava, log, fastjson, common_io, junit, assertj, mock
+        runtime apache_commons, guava, log, fastjson, common_io
     }
 
     jar {
