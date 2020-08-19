@@ -86,7 +86,6 @@ public class ClientManageController {
             throws IOException {
         Map<String, Object> parameters = new HashMap<>();
         if ("post".equalsIgnoreCase(exchange.getRequestMethod())) {
-            //parameters = (Map<String, Object>)exchange.getAttribute("parameters");
             InputStreamReader isr =
                     new InputStreamReader(exchange.getRequestBody(),"utf-8");
             BufferedReader br = new BufferedReader(isr);
@@ -186,7 +185,7 @@ public class ClientManageController {
     }
 
     /**
-     * 根据子系统号和DCN打印客户端信息
+     * print clientInfo by subsys and dcn
      *
      * @return
      */
@@ -233,7 +232,7 @@ public class ClientManageController {
 
 
     /**
-     * 根据topic查询监听客户端
+     * query client subscription by topic
      *
      */
     class ShowListenClientByTopicHandler implements HttpHandler{
@@ -282,7 +281,7 @@ public class ClientManageController {
 
 
     /**
-     * 剔除该proxy上接入的所有C 客户端
+     * remove all clients accessed by proxy
      *
      * @return
      */
@@ -333,7 +332,7 @@ public class ClientManageController {
     }
 
     /**
-     * IP，PORT 来剔除C客户端
+     * remove c client by ip and port
      *
      * @return
      */
@@ -399,7 +398,7 @@ public class ClientManageController {
 
 
     /**
-     * 按DCN和SUBSYSTEMID来剔除C客户端
+     * remove c client by dcn and susysId
      *
      * @return
      */
@@ -465,7 +464,7 @@ public class ClientManageController {
     }
 
     /**
-     * 子系统重定向，for 子系统和DCN
+     * redirect subsystem for subsys and dcn
      *
      * @return
      */
@@ -536,7 +535,7 @@ public class ClientManageController {
     }
     
     /**
-     * 子系统重定向，for path
+     * redirect subsystem for path
      *
      * @return
      */
@@ -605,7 +604,7 @@ public class ClientManageController {
     }
 
     /**
-     * 子系统重定向，for ip和port
+     * redirect subsystem for ip and port
      *
      * @return
      */
