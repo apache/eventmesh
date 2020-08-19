@@ -85,6 +85,6 @@ proxy=$2
 topic=$3
 packetsize=$4
 
-ASYNC_RR_REQ_MAIN=cn.webank.emesher.client.sdkdemo.AsyncSyncRequestInstance
+ASYNC_RR_REQ_MAIN=com.webank.emesher.client.sdkdemo.AsyncSyncRequestInstance
 $JAVA $JAVA_OPT -classpath ${PROXY_HOME}/conf:${PROXY_HOME}/lib/*:${PROXY_HOME}/apps/* $ASYNC_RR_REQ_MAIN $conf $proxy $topic $packetsize >> ${PROXY_LOG_HOME}/proxy-client.out 2>&1 &
 exit 0

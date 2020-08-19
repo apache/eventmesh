@@ -17,14 +17,14 @@
 
 package client.common;
 
-import cn.webank.emesher.constants.ProxyConstants;
-import cn.webank.eventmesh.common.protocol.tcp.AccessMessage;
-import cn.webank.eventmesh.common.protocol.tcp.Command;
-import cn.webank.eventmesh.common.protocol.tcp.Header;
-import cn.webank.eventmesh.common.protocol.tcp.Package;
-import cn.webank.eventmesh.common.protocol.tcp.RedirectInfo;
-import cn.webank.eventmesh.common.protocol.tcp.Subscription;
-import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
+import com.webank.emesher.constants.ProxyConstants;
+import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.Command;
+import com.webank.eventmesh.common.protocol.tcp.Header;
+import com.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.RedirectInfo;
+import com.webank.eventmesh.common.protocol.tcp.Subscription;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
