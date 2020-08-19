@@ -17,7 +17,7 @@ This diagram shows the architecture of EventMesh:
 ![architecture2](docs/images/eventmesh-arch.png)
 
 The event mesh allows events from one application to be dynamically routed to any other application.
-General functions of the event grid:
+General functions of the event mesh:
 * Event driven;
 * Event governance;
 * Dynamic routing;
