@@ -31,7 +31,6 @@ public class CommonConfiguration {
     public String sysID = "5477";
 
 
-    public String configCenterAddr = "";
     public String namesrvAddr = "";
     public String clientUserName = "username";
     public String clientPass = "user@123";
@@ -92,9 +91,6 @@ public class CommonConfiguration {
         if (StringUtils.isNotBlank(clientPassStr)) {
             clientPass = StringUtils.trim(clientPassStr);
         }
-
-        String proxyConfigCenterAddrStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CONFIGCENTER);
-        configCenterAddr = StringUtils.trim(proxyConfigCenterAddrStr);
 
         String namesrvAddrStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_NAMESRV_ADDR);
         Preconditions.checkState(StringUtils.isNotEmpty(namesrvAddrStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_NAMESRV_ADDR));
@@ -180,10 +176,6 @@ public class CommonConfiguration {
         public static String KEYS_PROXY_SERVER_CLUSTER = "proxy.server.cluster";
 
         public static String KEYS_PROXY_SERVER_NAME = "proxy.server.name";
-
-        public static String KEYS_PROXY_DEFIBUS_SERVICECENTER = "proxy.server.defibus.serviceCenter";
-
-        public static String KEYS_PROXY_DEFIBUS_CONFIGCENTER = "proxy.server.defibus.configCenter";
 
         public static String KEYS_PROXY_DEFIBUS_NAMESRV_ADDR = "proxy.server.defibus.namesrvAddr";
 
