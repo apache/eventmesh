@@ -90,7 +90,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                 } catch (Exception e) {
                 }
             }
-        }, ClientConstants.HEATBEAT, ClientConstants.HEATBEAT, TimeUnit.MILLISECONDS);
+        }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
 
     public void goodbye() throws Exception {
