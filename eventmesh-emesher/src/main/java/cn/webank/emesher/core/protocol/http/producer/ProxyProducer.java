@@ -90,11 +90,7 @@ public class ProxyProducer {
         wcc.setHeartbeatBrokerInterval(proxyConfiguration.heartbeatBrokerInterval);
         wcc.setProducerGroup(ProxyConstants.PRODUCER_GROUP_NAME_PREFIX + producerGroupConfig.getGroupName());
 
-        if (StringUtils.isEmpty(proxyConfiguration.namesrvAddr)) {
-            wcc.setWsAddr(ProxyUtil.buildCCAddr(proxyConfiguration.configCenterAddr, proxyConfiguration.proxyIDC));
-        } else {
-            wcc.setNamesrvAddr(proxyConfiguration.namesrvAddr);
-        }
+        wcc.setNamesrvAddr(proxyConfiguration.namesrvAddr);
 
         MessageClientIDSetter.createUniqID();
         defibusProducer = new DeFiBusProducer(wcc);
