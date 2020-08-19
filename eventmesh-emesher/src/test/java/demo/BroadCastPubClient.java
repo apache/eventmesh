@@ -21,7 +21,7 @@ import client.common.ClientConstants;
 import client.common.MessageUtils;
 import client.common.UserAgentUtils;
 import client.impl.PubClientImpl;
-import cn.webank.eventmesh.common.ThreadUtil;
+import com.webank.eventmesh.common.ThreadUtil;
 
 public class BroadCastPubClient {
     public static void main(String[] args) throws Exception {
