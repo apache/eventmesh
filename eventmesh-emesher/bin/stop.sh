@@ -20,7 +20,7 @@ function get_pid {
 			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "cn.webank.emesher.boot.ProxyStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
 			#在Linux服务器上要求尽可能精确识别进程
-			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep $PROXY_HOME | grep -i "cn.webank.emesher.boot.ProxyStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $PROXY_HOME | grep -i "cn.webank.emesher.boot.ProxyStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		fi
 	fi
 	echo "$ppid";
