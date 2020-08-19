@@ -4,7 +4,7 @@
 ```
 64bit OS, Linux/Unix is recommended;
 64bit JDK 1.8+;
-Gradle at least 5.6;
+Gradle at least 5.6, eg 5.6.*
 ```
 
 ### Deploy eventmesh-store
