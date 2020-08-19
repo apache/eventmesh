@@ -7,7 +7,6 @@
 > Eventmesh-sdk-java supports  the protocol  of HTTP and TCP.  
 
 
-
 ###  1. TCP DEMO
 
 #### Sync msg 

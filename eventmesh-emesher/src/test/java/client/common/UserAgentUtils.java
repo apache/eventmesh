@@ -27,8 +27,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class UserAgentUtils {
     public static UserAgent createPubUserAgent() {
         UserAgent userAgent = new UserAgent();
-        //userAgent.setEnv("A");
-        //userAgent.setUnack(12);
         userAgent.setSubsystem("5023");
         userAgent.setDcn("AC0");
         userAgent.setPid(32893);
@@ -58,9 +56,6 @@ public class UserAgentUtils {
 
     public static UserAgent createSubUserAgent() {
         UserAgent userAgent = new UserAgent();
-        //userAgent.setEnv("A");
-        //userAgent.setIdc("A");
-        //userAgent.setUnack(12);
         userAgent.setSubsystem("5243");
         userAgent.setDcn("WAC");
         userAgent.setPid(UtilAll.getPid());

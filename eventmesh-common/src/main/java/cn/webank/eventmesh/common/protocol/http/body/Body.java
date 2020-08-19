@@ -23,7 +23,6 @@ import cn.webank.eventmesh.common.protocol.http.body.client.UnRegRequestBody;
 import cn.webank.eventmesh.common.protocol.http.common.RequestCode;
 import cn.webank.eventmesh.common.protocol.http.body.client.RegRequestBody;
 import cn.webank.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
-import cn.webank.eventmesh.common.protocol.http.body.message.RMBTraceLogRequestBody;
 import cn.webank.eventmesh.common.protocol.http.body.message.ReplyMessageRequestBody;
 import cn.webank.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody;
 import cn.webank.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
@@ -58,8 +57,6 @@ public abstract class Body {
             return ReplyMessageRequestBody.buildBody(originalMap);
         } else if (String.valueOf(RequestCode.ADMIN_SHUTDOWN.getRequestCode()).equals(requestCode)) {
             return BaseRequestBody.buildBody(originalMap);
-        } else if (String.valueOf(RequestCode.MSG_TRACE_LOG.getRequestCode()).equals(requestCode)) {
-            return RMBTraceLogRequestBody.buildBody(originalMap);
         } else {
             throw new Exception();
         }
