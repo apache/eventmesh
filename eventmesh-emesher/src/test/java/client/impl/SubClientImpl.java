@@ -102,7 +102,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 } catch (Exception e) {
                 }
             }
-        }, ClientConstants.HEATBEAT, ClientConstants.HEATBEAT, TimeUnit.MILLISECONDS);
+        }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
 
     public Package goodbye() throws Exception {
