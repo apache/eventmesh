@@ -17,8 +17,8 @@
 
 package client.common;
 
-import cn.webank.emesher.constants.ProxyConstants;
-import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
+import com.webank.emesher.constants.ProxyConstants;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
 

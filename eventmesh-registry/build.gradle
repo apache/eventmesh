@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 
-group 'cn.webank.defibus'
+group 'com.webank.defibus'
 version '1.0.0'
 
 repositories {

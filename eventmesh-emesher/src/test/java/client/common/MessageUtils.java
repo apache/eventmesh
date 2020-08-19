@@ -17,12 +17,12 @@
 
 package client.common;
 
-import cn.webank.eventmesh.common.protocol.tcp.AccessMessage;
-import cn.webank.eventmesh.common.protocol.tcp.Command;
-import cn.webank.eventmesh.common.protocol.tcp.Header;
-import cn.webank.eventmesh.common.protocol.tcp.Package;
-import cn.webank.eventmesh.common.protocol.tcp.Subscription;
-import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
+import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.Command;
+import com.webank.eventmesh.common.protocol.tcp.Header;
+import com.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.Subscription;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 
 import java.util.ArrayList;
 import java.util.List;
