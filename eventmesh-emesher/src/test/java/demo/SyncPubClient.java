@@ -20,8 +20,8 @@ package demo;
 import client.common.MessageUtils;
 import client.common.UserAgentUtils;
 import client.impl.PubClientImpl;
-import cn.webank.eventmesh.common.protocol.tcp.AccessMessage;
-import cn.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.Package;
 
 public class SyncPubClient {
     public static void main(String[] args) throws Exception {
