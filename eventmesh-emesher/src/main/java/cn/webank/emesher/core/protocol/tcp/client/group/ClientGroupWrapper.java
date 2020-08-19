@@ -230,11 +230,7 @@ public class ClientGroupWrapper {
         DeFiBusClientConfig wcc = new DeFiBusClientConfig();
         wcc.setClusterPrefix(accessConfiguration.proxyIDC);
         wcc.setProducerGroup(ProxyUtil.buildClientProducerGroup(sysId, dcn));
-        if (StringUtils.isEmpty(accessConfiguration.namesrvAddr)) {
-            wcc.setWsAddr(ProxyUtil.buildCCAddr(accessConfiguration.configCenterAddr));
-        } else {
-            wcc.setNamesrvAddr(accessConfiguration.namesrvAddr);
-        }
+        wcc.setNamesrvAddr(accessConfiguration.namesrvAddr);
 
         MessageClientIDSetter.createUniqID();
         defibusProducer = new DeFiBusProducer(wcc);
@@ -378,11 +374,7 @@ public class ClientGroupWrapper {
             wcc.setConsumerGroup(ProxyUtil.buildPersistentClientConsumerGroup(sysId, dcn));
         }
 
-        if (StringUtils.isEmpty(accessConfiguration.namesrvAddr)) {
-            wcc.setWsAddr(ProxyUtil.buildCCAddr(accessConfiguration.configCenterAddr));
-        } else {
-            wcc.setNamesrvAddr(accessConfiguration.namesrvAddr);
-        }
+        wcc.setNamesrvAddr(accessConfiguration.namesrvAddr);
 
         return wcc;
     }

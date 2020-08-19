@@ -44,10 +44,6 @@ public class AccessConfiguration extends CommonConfiguration {
 
     public int proxyTcpGlobalScheduler = 5;
 
-    public int proxyTcpTraceLogExecutorPoolSize = 5;
-
-    public int proxyTcpCcUpdateExecutorPoolSize = 2;
-
     public int proxyTcpTaskHandleExecutorPoolSize = Runtime.getRuntime().availableProcessors();
 
     public int proxyTcpSessionExpiredInMills = 60000;
@@ -123,20 +119,6 @@ public class AccessConfiguration extends CommonConfiguration {
             Preconditions.checkState(StringUtils.isNumeric(proxyTcpGlobalSchedulerStr),
                     String.format("%s error", ConfKeys.KEYS_PROXY_SERVER_GLOBAL_SCHEDULER));
             proxyTcpGlobalScheduler = Integer.valueOf(StringUtils.deleteWhitespace(proxyTcpGlobalSchedulerStr));
-        }
-
-        String proxyTcpTraceLogExecutorPoolSizeStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_TCP_TRACE_LOG_POOL_SIZE);
-        if(StringUtils.isNotEmpty(proxyTcpTraceLogExecutorPoolSizeStr)){
-            Preconditions.checkState(StringUtils.isNumeric(proxyTcpTraceLogExecutorPoolSizeStr),
-                    String.format("%s error", ConfKeys.KEYS_PROXY_SERVER_TCP_TRACE_LOG_POOL_SIZE));
-            proxyTcpTraceLogExecutorPoolSize = Integer.valueOf(StringUtils.deleteWhitespace(proxyTcpTraceLogExecutorPoolSizeStr));
-        }
-
-        String proxyTcpCcUpdateExecutorPoolSizeStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_TCP_CC_UPDATE_POOL_SIZE);
-        if(StringUtils.isNotEmpty(proxyTcpCcUpdateExecutorPoolSizeStr)){
-            Preconditions.checkState(StringUtils.isNumeric(proxyTcpCcUpdateExecutorPoolSizeStr),
-                    String.format("%s error", ConfKeys.KEYS_PROXY_SERVER_TCP_CC_UPDATE_POOL_SIZE));
-            proxyTcpCcUpdateExecutorPoolSize = Integer.valueOf(StringUtils.deleteWhitespace(proxyTcpCcUpdateExecutorPoolSizeStr));
         }
 
         String proxyTcpTaskHandleExecutorPoolSizeStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_TCP_TASK_HANDLE_POOL_SIZE);
@@ -234,9 +216,6 @@ public class AccessConfiguration extends CommonConfiguration {
         public static String KEYS_PROXY_SERVER_MSG_REQ_NUM_PER_SECONDS = "proxy.server.tcp.msgReqnumPerSecond";
         public static String KEYS_PROXY_SERVER_TCP_REBALANCE_INTERVAL = "proxy.server.tcp.RebalanceIntervalInMills";
         public static String KEYS_PROXY_SERVER_GLOBAL_SCHEDULER = "proxy.server.global.scheduler";
-        public static String KEYS_PROXY_SERVER_GLOBAL_ASYNC = "proxy.server.global.async";
-        public static String KEYS_PROXY_SERVER_TCP_TRACE_LOG_POOL_SIZE = "proxy.server.tcp.traceLogExecutorPoolSize";
-        public static String KEYS_PROXY_SERVER_TCP_CC_UPDATE_POOL_SIZE = "proxy.server.tcp.ccUpdateExecutorPoolSize";
         public static String KEYS_PROXY_SERVER_TCP_TASK_HANDLE_POOL_SIZE = "proxy.server.tcp.taskHandleExecutorPoolSize";
         public static String KEYS_PROXY_SERVER_SESSION_EXPIRED_TIME = "proxy.server.session.expiredInMills";
         public static String KEYS_PROXY_SERVER_SESSION_UPSTREAM_BUFFER_SIZE = "proxy.server.session.upstreamBufferSize";
@@ -244,12 +223,9 @@ public class AccessConfiguration extends CommonConfiguration {
         public static String KEYS_PROXY_SERVER_RETRY_PUSH_RETRY_TIMES = "proxy.server.retry.pushRetryTimes";
         public static String KEYS_PROXY_SERVER_RETRY_PUSH_RETRY_DELAY = "proxy.server.retry.pushRetryDelayInMills";
         public static String KEYS_PROXY_SERVER_RETRY_PUSH_RETRY_QUEUE_SIZE = "proxy.server.retry.pushRetryQueueSize";
-        public static String KEYS_PROXY_SERVER_MONITOR_IMS_INTERFACE = "proxy.server.monitor.imsInterfaceName";
-        public static String KEYS_PROXY_SERVER_MONITOR_IMS_ENABLED = "proxy.server.monitor.imsEnabled";
         public static String KEYS_PROXY_SERVER_ADMIN_HTTP_PORT = "proxy.server.admin.http.port";
         public static String KEYS_PROXY_TCP_SERVER_ENABLED = "proxy.server.tcp.enabled";
         public static String KEYS_PROXY_TCP_SEND_BACK_ENABLED = "proxy.server.tcp.sendBack.enabled";
-        public static String KEYS_PROXY_TCP_SEND_BACK_MAX_TIMES = "proxy.server.tcp.sendBack.maxTimes";
         public static String KEYS_PROXY_SERVER_PUSH_FAIL_ISOLATE_TIME = "proxy.server.tcp.pushFailIsolateTimeInMills";
         public static String KEYS_PROXY_TCP_DOWNSTREAM_MAP_SIZE = "proxy.server.tcp.downstreamMapSize";
     }
