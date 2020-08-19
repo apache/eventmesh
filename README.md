@@ -31,7 +31,7 @@ Dependent components:
 
 Key components:
 * eventmesh-emesher : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
-* eventmesh-sdk-java : support for popular open standard protocols and APIs, including REST/HTTP, AMQP, MQTT, Websocket and JMS, gRPC etc.
+* eventmesh-sdk-java : currently supports HTTP and TCP protocols, and will support AMQP, MQTT, Websocket and JMS, gRPC etc. in the future
 * eventmesh-registry : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-emesher
 
 ## Quick Start
