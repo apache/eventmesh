@@ -102,6 +102,15 @@ public class SessionPusher {
         } finally {
             session.getClientGroupWrapper().get().getProxyTcpMonitor().getProxy2clientMsgNum().incrementAndGet();
             pushContext.deliveredMsgCount();
+
+            //avoid ack arrives to server prior to callback of the method writeAndFlush,may cause ack problem
+            List<MessageExt> msgExts = new ArrayList<MessageExt>();
+            msgExts.add(downStreamMsgContext.msgExt);
+            pushContext.unAckMsg(downStreamMsgContext.seq,
+                    msgExts,
+                    downStreamMsgContext.consumeConcurrentlyContext,
+                    downStreamMsgContext.consumer);
+
             session.getContext().writeAndFlush(pkg).addListener(
                     new ChannelFutureListener() {
                         @Override
@@ -109,6 +118,9 @@ public class SessionPusher {
                             if (!future.isSuccess()) {
                                 logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, msg:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, downStreamMsgContext.msgExt);
                                 pushContext.deliverFailMsgCount();
+
+                                //push msg failed, remove the msg from unackMap
+                                pushContext.getUnAckMsg().remove(downStreamMsgContext.seq);
 
                                 //how long to isolate client when push fail
                                 long isolateTime = System.currentTimeMillis() + session.getAccessConfiguration().proxyTcpPushFailIsolateTimeInMills;
@@ -122,12 +134,6 @@ public class SessionPusher {
                             } else {
                                 pushContext.deliveredMsgCount();
                                 logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,downStreamMsgContext.retryTimes, ProxyUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
-                                List<MessageExt> msgExts = new ArrayList<MessageExt>();
-                                msgExts.add(downStreamMsgContext.msgExt);
-                                pushContext.unAckMsg(downStreamMsgContext.seq,
-                                        msgExts,
-                                        downStreamMsgContext.consumeConcurrentlyContext,
-                                        downStreamMsgContext.consumer);
 
                                 session.getClientGroupWrapper().get().getDownstreamMap().remove(downStreamMsgContext.seq);
                                 if(session.isIsolated()){
