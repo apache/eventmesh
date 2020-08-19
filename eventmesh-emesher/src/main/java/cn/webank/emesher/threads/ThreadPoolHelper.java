@@ -71,8 +71,6 @@ public class ThreadPoolHelper {
         printState(consumeMessageExecutor);
         printState((ThreadPoolExecutor) ProxyTCPServer.taskHandleExecutorService);
         printState((ThreadPoolExecutor) ProxyTCPServer.scheduler);
-        printState((ThreadPoolExecutor) ProxyTCPServer.traceLogExecutor);
-        printState((ThreadPoolExecutor) ProxyTCPServer.configCenterUpdateScheduler);
     }
 
     public static void printState(ThreadPoolExecutor scheduledExecutorService) {
