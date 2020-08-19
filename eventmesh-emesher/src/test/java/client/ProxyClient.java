@@ -18,7 +18,7 @@
 package client;
 
 import client.hook.ReceiveMsgHook;
-import cn.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.Package;
 public interface ProxyClient {
 
     Package rr(Package msg, long timeout) throws Exception;

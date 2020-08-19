@@ -16,7 +16,7 @@
  */
 package org.apache.rocketmq.client.impl.consumer;
 
-import cn.webank.emesher.threads.ThreadPoolHelper;
+import com.webank.emesher.threads.ThreadPoolHelper;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;

@@ -86,6 +86,6 @@ topic=$3
 packetsize=$4
 threads=$5
 
-SYNC_REQ_MAIN=cn.webank.emesher.client.sdkdemo.SyncRequestInstance
+SYNC_REQ_MAIN=com.webank.emesher.client.sdkdemo.SyncRequestInstance
 $JAVA $JAVA_OPT -classpath ${PROXY_HOME}/conf:${PROXY_HOME}/lib/*:${PROXY_HOME}/apps/* $SYNC_REQ_MAIN $conf $proxy $topic $packetsize $threads >> ${PROXY_LOG_HOME}/proxy-client.out 2>&1 &
 exit 0

@@ -16,7 +16,7 @@
  */
 package org.apache.rocketmq.remoting.netty;
 
-import cn.webank.emesher.threads.ThreadPoolHelper;
+import com.webank.emesher.threads.ThreadPoolHelper;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
