@@ -23,10 +23,6 @@ public class ProxyConstants {
 
     public static final String PROTOCOL_TCP = "tcp";
 
-    public static final String HTTP_DOMAIN_NAME = "proxy-" + PROTOCOL_HTTP;
-
-    public static final String TCP_DOMAIN_NAME = "proxy-" + PROTOCOL_TCP;
-
     public static final String BROADCAST_PREFIX = "broadcast-";
 
     public final static String CONSUMER_GROUP_NAME_PREFIX = "ConsumerGroup-";
@@ -34,14 +30,6 @@ public class ProxyConstants {
     public final static String PRODUCER_GROUP_NAME_PREFIX = "ProducerGroup-";
 
     public static final String DEFAULT_CHARSET = "UTF-8";
-
-    public static final String IP_PORT_SEPARATOR = ":";
-
-    public static final String HTTP_PROTOCOL_PREFIX = "http://";
-
-    public static final String PROXY_SERVICE_PREFIX = "proxy-server-";
-
-    public static final String REGEX_VALIDATE_FOR_ENDPOINTS = "^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,6};)*(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,6})$";
 
     public static final String PROXY_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
@@ -60,12 +48,6 @@ public class ProxyConstants {
     public static final String REQ_RECEIVE_PROXY_IP = "req_receive_proxy_ip";
     public static final String RSP_SEND_PROXY_IP = "rsp_send_proxy_ip";
     public static final String RSP_RECEIVE_PROXY_IP = "rsp_receive_proxy_ip";
-
-    //add for mss-trace
-    public static final String REQ_BORN_TIMESTAMP = "req_born_timestamp";
-    public static final String REQ_STORE_TIMESTAMP = "req_store_timestamp";
-    public static final String REQ_LEAVE_TIMESTAMP = "req_leave_timestamp";
-    public static final String REQ_ARRIVE_TIMESTAMP = "req_arrive_timestamp";
 
     //default TTL 4 hours
     public static final Integer DEFAULT_MSG_TTL_MILLS = 14400000;

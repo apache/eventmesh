@@ -65,10 +65,6 @@ public class ProxyTCPServer extends AbstractRemotingServer {
 
     public static ScheduledExecutorService scheduler;
 
-    public static ExecutorService traceLogExecutor;
-
-    public static ScheduledExecutorService configCenterUpdateScheduler;
-
     public static ExecutorService taskHandleExecutorService;
 
     public ScheduledFuture<?> tcpRegisterTask;
@@ -208,16 +204,10 @@ public class ProxyTCPServer extends AbstractRemotingServer {
 
         scheduler = ThreadPoolFactory.createScheduledExecutor(accessConfiguration.proxyTcpGlobalScheduler, new ProxyThreadFactoryImpl("proxy-tcp-scheduler", true));
 
-        traceLogExecutor = ThreadPoolFactory.createThreadPoolExecutor(accessConfiguration.proxyTcpTraceLogExecutorPoolSize, accessConfiguration.proxyTcpTraceLogExecutorPoolSize, new LinkedBlockingQueue<Runnable>(10000), new ProxyThreadFactoryImpl("proxy-tcp-trace", true));
-
-        configCenterUpdateScheduler = ThreadPoolFactory.createScheduledExecutor(accessConfiguration.proxyTcpCcUpdateExecutorPoolSize, new ProxyThreadFactoryImpl("proxy-tcp-cc-update",true));
-
         taskHandleExecutorService = ThreadPoolFactory.createThreadPoolExecutor(accessConfiguration.proxyTcpTaskHandleExecutorPoolSize, accessConfiguration.proxyTcpTaskHandleExecutorPoolSize, new LinkedBlockingQueue<Runnable>(10000), new ProxyThreadFactoryImpl("proxy-tcp-task-handle", true));;
     }
 
     private void shutdownThreadPool(){
-        traceLogExecutor.shutdown();
-        configCenterUpdateScheduler.shutdown();
         scheduler.shutdown();
         taskHandleExecutorService.shutdown();
 
