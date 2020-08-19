@@ -22,7 +22,7 @@ sh runadmin.sh updateTopic  -c ${ClusterName} -t ${topic} -n ${namesrvAddr}
 * start consumer ,subscribe topic in previous step. 
 
 ```
-Run the main method of cn.webank.eventmesh.client.tcp.demo.SyncResponse
+Run the main method of SyncResponse
 ```
 
 
@@ -30,7 +30,7 @@ Run the main method of cn.webank.eventmesh.client.tcp.demo.SyncResponse
 * start producer, send message
 
 ```
-Run the main method of cn.webank.eventmesh.client.tcp.demo.SyncRequest
+Run the main method of SyncRequest
 ```
 
 
@@ -48,7 +48,7 @@ sh runadmin.sh updateTopic  -c ${ClusterName} -t ${topic} -n ${namesrvAddr}
 - start consumer ,subscribe topic in previous step. 
 
 ```
-Run the main method of cn.webank.eventmesh.client.tcp.demo.AsyncSubscribe
+Run the main method of AsyncSubscribe
 ```
 
 
@@ -56,7 +56,7 @@ Run the main method of cn.webank.eventmesh.client.tcp.demo.AsyncSubscribe
 start producer, send  message
 
 ```
-Run the main method of cn.webank.eventmesh.client.tcp.demo.AsyncPublish
+Run the main method of AsyncPublish
 ```
 
 
@@ -74,7 +74,7 @@ sh runadmin.sh updateTopic  -c ${ClusterName} -t ${topic} -n ${namesrvAddr}
 - start consumer ,subscribe topic in previous step. 
 
 ```
-Run the main method of cn.webank.eventmesh.client.tcp.demo.AsyncSubscribeBroadcast
+Run the main method of AsyncSubscribeBroadcast
 ```
 
 
@@ -82,7 +82,7 @@ Run the main method of cn.webank.eventmesh.client.tcp.demo.AsyncSubscribeBroadca
 * start producer, send broadcast message
 
 ```
-Run the main method of cn.webank.eventmesh.client.tcp.demo.AsyncPublishBroadcast
+Run the main method of AsyncPublishBroadcast
 ```
 
 ### 2. HTTP DEMO
@@ -98,7 +98,7 @@ Run the main method of cn.webank.eventmesh.client.tcp.demo.AsyncPublishBroadcast
 > send msg ,producer need waiting until receive the response msg of consumer
 
 ```
-Run the main method of cn.webank.eventmesh.client.http.demo.SyncRequestInstance
+Run the main method of SyncRequestInstance
 ```
 
 
@@ -106,7 +106,7 @@ Run the main method of cn.webank.eventmesh.client.http.demo.SyncRequestInstance
 > send msg,producer handles the reponse msg in callback
 
 ```
-Run the main method ofcn.webank.eventmesh.client.http.demo.AsyncSyncRequestInstance
+Run the main method of com.webank.eventmesh.client.http.demo.AsyncSyncRequestInstance
 ```
 
 
@@ -114,6 +114,6 @@ Run the main method ofcn.webank.eventmesh.client.http.demo.AsyncSyncRequestInsta
 #### Async msg
 
 ```
-Run the main method of cn.webank.eventmesh.client.http.demo.AsyncPublishInstance
+Run the main method of AsyncPublishInstance
 ```
 
