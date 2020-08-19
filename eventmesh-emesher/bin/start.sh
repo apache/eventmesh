@@ -59,7 +59,7 @@ function get_pid {
 			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "cn.webank.emesher.boot.ProxyStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
 			#在Linux服务器上要求尽可能精确识别进程
-			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep $PROXY_HOME | grep -i "cn.webank.emesher.boot.ProxyStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $PROXY_HOME | grep -i "cn.webank.emesher.boot.ProxyStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		fi
 	fi
 	echo "$ppid";
@@ -116,8 +116,8 @@ export JAVA_HOME
 #JAVA_OPT="${JAVA_OPT} -server -Xms2048M -Xmx4096M -Xmn2048m -XX:SurvivorRatio=4"
 JAVA_OPT=`cat ${PROXY_HOME}/conf/server.env | grep APP_START_JVM_OPTION::: | awk -F ':::' {'print $2'}`
 JAVA_OPT="${JAVA_OPT} -XX:+UseG1GC -XX:G1HeapRegionSize=16m -XX:G1ReservePercent=25 -XX:InitiatingHeapOccupancyPercent=30 -XX:SoftRefLRUPolicyMSPerMB=0 -XX:SurvivorRatio=8 -XX:MaxGCPauseMillis=50"
-JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:/dev/shm/proxy_gc_%p.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy"
-JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/data/app/proxy/logs -XX:ErrorFile=/data/app/proxy/logs/hs_err_%p.log"
+JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${PROXY_HOME}/logs/proxy_gc_%p.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy"
+JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${PROXY_HOME}/logs -XX:ErrorFile=${PROXY_HOME}/logs/hs_err_%p.log"
 JAVA_OPT="${JAVA_OPT} -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=30m"
 JAVA_OPT="${JAVA_OPT} -XX:-OmitStackTraceInFastThrow"
 JAVA_OPT="${JAVA_OPT} -XX:+AlwaysPreTouch"
