@@ -7,9 +7,6 @@
 该图显示了Event Mesh相对于应用程序框架中其他类似技术(例如Service Mesh)的定位.
 ![architecture1](docs/images/eventmesh-define.png)
 
-EventMesh的概览:
-![architecture1](docs/images/eventmesh-overview.png)
-
 EventMesh的功能全景:
 ![architecture1](docs/images/eventmesh-landscape.png)
 
