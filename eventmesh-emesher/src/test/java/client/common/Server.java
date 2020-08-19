@@ -17,8 +17,8 @@
 
 package client.common;
 
-import cn.webank.emesher.boot.ProxyServer;
-import cn.webank.emesher.configuration.ProxyConfiguration;
+import com.webank.emesher.boot.ProxyServer;
+import com.webank.emesher.configuration.ProxyConfiguration;
 
 public class Server {
 

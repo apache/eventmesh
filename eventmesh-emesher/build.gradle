@@ -32,11 +32,6 @@ repositories {
     mavenCentral()
 }
 
-//def env = 'dev'
-//if (project.findProperty("env") instanceof String) {
-//    env = project.property("env")
-//}
-
 List defibus = [
     "com.webank.defibus:defibus-client:$defibus_version",
     "com.webank.defibus:defibus-common:$defibus_version"
@@ -82,7 +77,7 @@ if (project.findProperty("buildNo") instanceof String) {
     versionString = project.version + '_' + project.property("buildNo")
 }
 
-task tar(overwrite: true, type: Tar, dependsOn: ['clean', 'jar']) {
+task tar(type: Tar, dependsOn: ['clean', 'jar']) {
     extension = 'tar.gz'
     compression = Compression.GZIP
     archiveName = project.name + '_' + versionString + '.' + extension

@@ -22,7 +22,7 @@ sh runadmin.sh updateTopic -c $ {ClusterName} -t $ {topic} -n $ {namesrvAddr}
 *启动消费者，订阅上一步骤已经创建的Topic
 
 ```
-运行cn.webank.eventmesh.client.tcp.demo.SyncResponse的主要方法
+运行com.webank.eventmesh.client.tcp.demo.SyncResponse的主要方法
 ```
 
 
@@ -30,7 +30,7 @@ sh runadmin.sh updateTopic -c $ {ClusterName} -t $ {topic} -n $ {namesrvAddr}
 启动发送端，发送消息
 
 ```
-运行cn.webank.eventmesh.client.tcp.demo.SyncRequest的主要方法
+运行com.webank.eventmesh.client.tcp.demo.SyncRequest的主要方法
 ```
 
 
@@ -48,7 +48,7 @@ sh runadmin.sh updateTopic -c $ {ClusterName} -t $ {topic} -n $ {namesrvAddr}
 - 启动消费者，订阅上一步骤已经创建的Topic
 
 ```
-运行cn.webank.eventmesh.client.tcp.demo.AsyncSubscribe的主要方法
+运行com.webank.eventmesh.client.tcp.demo.AsyncSubscribe的主要方法
 ```
 
 
@@ -56,7 +56,7 @@ sh runadmin.sh updateTopic -c $ {ClusterName} -t $ {topic} -n $ {namesrvAddr}
 启动发送端，发送消息
 
 ```
-运行cn.webank.eventmesh.client.tcp.demo.AsyncPublish的主要方法
+运行com.webank.eventmesh.client.tcp.demo.AsyncPublish的主要方法
 ```
 
 
@@ -74,7 +74,7 @@ sh runadmin.sh updateTopic -c $ {ClusterName} -t $ {topic} -n $ {namesrvAddr}
 - 启动消费端，订阅上一步骤已经创建的Topic
 
 ```
-运行cn.webank.eventmesh.client.tcp.demo.AsyncSubscribeBroadcast的主要方法
+运行com.webank.eventmesh.client.tcp.demo.AsyncSubscribeBroadcast的主要方法
 ```
 
 
@@ -82,7 +82,7 @@ sh runadmin.sh updateTopic -c $ {ClusterName} -t $ {topic} -n $ {namesrvAddr}
 *启动发送端，发送广播消息
 
 ```
-运行cn.webank.eventmesh.client.tcp.demo.AsyncPublishBroadcast的主要方法
+运行com.webank.eventmesh.client.tcp.demo.AsyncPublishBroadcast的主要方法
 ```
 
 ### 2. HTTP演示
@@ -98,7 +98,7 @@ sh runadmin.sh updateTopic -c $ {ClusterName} -t $ {topic} -n $ {namesrvAddr}
 >发送消息，生产者需要等到收到用户的响应消息
 
 ```
-运行cn.webank.eventmesh.client.http.demo.SyncRequestInstance的主要方法
+运行com.webank.eventmesh.client.http.demo.SyncRequestInstance的主要方法
 ```
 
 
@@ -106,7 +106,7 @@ sh runadmin.sh updateTopic -c $ {ClusterName} -t $ {topic} -n $ {namesrvAddr}
 >发送消息，生产者在回调中处理响应消息
 
 ```
-运行cn.webank.eventmesh.client.http.demo.AsyncSyncRequestInstance的主要方法
+运行com.webank.eventmesh.client.http.demo.AsyncSyncRequestInstance的主要方法
 ```
 
 
@@ -114,5 +114,5 @@ sh runadmin.sh updateTopic -c $ {ClusterName} -t $ {topic} -n $ {namesrvAddr}
 ####异步消息
 
 ```
-运行cn.webank.eventmesh.client.http.demo.AsyncPublishInstance的主要方法
+运行com.webank.eventmesh.client.http.demo.AsyncPublishInstance的主要方法
 ```
