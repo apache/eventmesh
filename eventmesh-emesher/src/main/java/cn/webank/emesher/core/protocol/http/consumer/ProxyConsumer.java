@@ -101,12 +101,8 @@ public class ProxyConsumer extends DeFiBusMessageListenerConcurrently {
             wcc.setConsumerGroup(ProxyConstants.CONSUMER_GROUP_NAME_PREFIX + consumerGroupConf.getConsumerGroup());
         }
 
-        if (StringUtils.isEmpty(proxyHTTPServer.getProxyConfiguration().namesrvAddr)) {
-            wcc.setWsAddr(ProxyUtil.buildCCAddr(proxyHTTPServer.getProxyConfiguration().configCenterAddr,
-                    proxyHTTPServer.getProxyConfiguration().proxyIDC));
-        } else {
-            wcc.setNamesrvAddr(proxyHTTPServer.getProxyConfiguration().namesrvAddr);
-        }
+        wcc.setNamesrvAddr(proxyHTTPServer.getProxyConfiguration().namesrvAddr);
+
         return wcc;
     }
 
