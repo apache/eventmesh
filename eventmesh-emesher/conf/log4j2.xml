@@ -64,11 +64,11 @@
             <AppenderRef ref="console"/>
         </AsyncLogger>
 
-        <AsyncLogger name="cn.webank.emesher" level="debug" additivity="false" includeLocation="true">
+        <AsyncLogger name="com.webank.emesher" level="debug" additivity="false" includeLocation="true">
             <AppenderRef ref="console"/>
         </AsyncLogger>
 
-        <AsyncLogger name="cn.webank.defibus" level="debug" additivity="false" includeLocation="true">
+        <AsyncLogger name="com.webank.defibus" level="debug" additivity="false" includeLocation="true">
             <AppenderRef ref="console"/>
         </AsyncLogger>
 

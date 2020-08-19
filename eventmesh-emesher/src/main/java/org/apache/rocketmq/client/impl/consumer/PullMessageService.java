@@ -16,7 +16,7 @@
  */
 package org.apache.rocketmq.client.impl.consumer;
 
-import cn.webank.emesher.threads.ThreadPoolHelper;
+import com.webank.emesher.threads.ThreadPoolHelper;
 import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import org.apache.rocketmq.client.log.ClientLogger;
 import org.apache.rocketmq.common.ServiceThread;
