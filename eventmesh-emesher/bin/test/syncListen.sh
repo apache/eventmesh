@@ -84,6 +84,6 @@ proxy=$1
 topic=$2
 threads=$3
 
-SYNC_LISTEN_MAIN=cn.webank.emesher.sdk.demo.InstanceSyncListenner
+SYNC_LISTEN_MAIN=com.webank.emesher.sdk.demo.InstanceSyncListenner
 $JAVA $JAVA_OPT -classpath ${PROXY_HOME}/conf:${PROXY_HOME}/lib/*:${PROXY_HOME}/apps/* $SYNC_LISTEN_MAIN $proxy $topic $threads >> ${PROXY_LOG_HOME}/proxy-sdk.out 2>&1 &
 exit 0
