@@ -32,10 +32,10 @@ repositories {
     mavenCentral()
 }
 
-def env = 'dev'
-if (project.findProperty("env") instanceof String) {
-    env = project.property("env")
-}
+//def env = 'dev'
+//if (project.findProperty("env") instanceof String) {
+//    env = project.property("env")
+//}
 
 List defibus = [
     "com.webank.defibus:defibus-client:$defibus_version",
@@ -72,26 +72,6 @@ dependencies {
     testCompile defibus, metrics, log4j2, sl4j, junit
 }
 
-//configurations.all {
-//    resolutionStrategy {
-//        force 'io.netty:netty-all:4.1.36.Final'
-//        force 'com.alibaba:fastjson:1.2.68'
-//        force 'com.fasterxml.jackson.core:jackson-databind:2.10.0'
-//        force 'com.fasterxml.jackson.core:jackson-core:2.10.0'
-//        force 'com.fasterxml.jackson.core:jackson-annotations:2.10.0'
-//    }
-//
-//    resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
-//    resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
-//
-//    exclude group:'io.netty',module:'netty-tcnative-boringssl-static'
-//
-//}
-//
-//tasks.withType(JavaCompile) {
-//    options.encoding = "UTF-8"
-//}
-//
 clean.doFirst {
     delete 'build'
     delete 'dist'
@@ -137,15 +117,15 @@ task tar(overwrite: true, type: Tar, dependsOn: ['clean', 'jar']) {
     }
 }
 
-//uploadArchives {
-//    repositories {
-//        mavenDeployer {
-////            snapshotRepository(url: 'Your target repo address') {
-////                authentication(userName: 'Your user name', password: 'Your password')
-////            }
-////            repository(url: 'Your target repo address') {
-////                authentication(userName: 'Your user name', password: 'Your password')
-////            }
-//        }
-//    }
-//}
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            snapshotRepository(url: 'Your target repo address') {
+                authentication(userName: 'Your user name', password: 'Your password')
+            }
+            repository(url: 'Your target repo address') {
+                authentication(userName: 'Your user name', password: 'Your password')
+            }
+        }
+    }
+}
