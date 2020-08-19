@@ -21,9 +21,7 @@ import client.hook.ReceiveMsgHook;
 import cn.webank.eventmesh.common.protocol.tcp.Package;
 import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
 
-/**
- * Created by v_wbyzhong on 2018/9/28.
- */
+
 public interface SubClient {
     void init() throws Exception;
 
@@ -49,7 +47,4 @@ public interface SubClient {
 
     Package goodbye() throws Exception;
 
-//    void sysLog() throws Exception;
-//
-//    void traceLog() throws Exception;
 }

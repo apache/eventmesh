@@ -239,7 +239,7 @@ public class ClientGroupWrapper {
         MessageClientIDSetter.createUniqID();
         defibusProducer = new DeFiBusProducer(wcc);
         defibusProducer.getDefaultMQProducer().setVipChannelEnabled(false);
-        defibusProducer.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//设置实例名称
+        defibusProducer.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//set instance name
         defibusProducer.getDefaultMQProducer().setCompressMsgBodyOverHowmuch(1024 * 2);
 
         defibusProducer.start();
@@ -408,7 +408,7 @@ public class ClientGroupWrapper {
             proxyTcpMonitor.getMq2proxyMsgNum().incrementAndGet();
             String topic = msg.getTopic();
             msg.putUserProperty(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-            msg.putUserProperty(ProxyConstants.REQ_RECEIVE_PROXY_IP, ProxyUtil.getLocalAddr());
+            msg.putUserProperty(ProxyConstants.REQ_RECEIVE_PROXY_IP, accessConfiguration.proxyServerIp);
             msg.putUserProperty(ProxyConstants.BORN_TIMESTAMP, String.valueOf(msg.getBornTimestamp()));
             msg.putUserProperty(ProxyConstants.STORE_TIMESTAMP, String.valueOf(msg.getStoreTimestamp()));
 
@@ -496,7 +496,7 @@ public class ClientGroupWrapper {
                 String topic = msg.getTopic();
 
                 msg.putUserProperty(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                msg.putUserProperty(ProxyConstants.REQ_RECEIVE_PROXY_IP, ProxyUtil.getLocalAddr());
+                msg.putUserProperty(ProxyConstants.REQ_RECEIVE_PROXY_IP, accessConfiguration.proxyServerIp);
                 msg.putUserProperty(ProxyConstants.BORN_TIMESTAMP, String.valueOf(msg.getBornTimestamp()));
                 msg.putUserProperty(ProxyConstants.STORE_TIMESTAMP, String.valueOf(msg.getStoreTimestamp()));
 

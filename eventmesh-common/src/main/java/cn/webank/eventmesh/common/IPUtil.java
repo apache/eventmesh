@@ -27,17 +27,21 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class IPUtil {
 
     public static String getLocalAddress() {
-        //获取docker宿主机ip
+        // if the progress works under docker environment
+        // return the host ip about this docker located from environment value
         String dockerHostIp = System.getenv("webank_docker_host_ip");
         if (dockerHostIp != null && !"".equals(dockerHostIp))
             return dockerHostIp;
+
         //priority of networkInterface when generating client ip
         String priority = System.getProperty("networkInterface.priority", "eth0<eth1<bond1");
-//        LOGGER.info("networkInterface.priority: {}", priority);
+
         ArrayList<String> preferList = new ArrayList<String>();
         for (String eth : priority.split("<")) {
             preferList.add(eth);
@@ -48,13 +52,12 @@ public class IPUtil {
             Enumeration<NetworkInterface> enumeration1 = NetworkInterface.getNetworkInterfaces();
             while (enumeration1.hasMoreElements()) {
                 final NetworkInterface networkInterface = enumeration1.nextElement();
-//                LOGGER.debug("networkInterface:{}", networkInterface);
-
                 if (!preferList.contains(networkInterface.getName())) {
                     continue;
                 } else if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
                 }
+
                 //get the networkInterface that has higher priority
                 else if (preferList.indexOf(networkInterface.getName())
                         > preferList.indexOf(preferNetworkInterface.getName())) {
@@ -67,11 +70,9 @@ public class IPUtil {
             ArrayList<String> ipv6Result = new ArrayList<String>();
 
             if (preferNetworkInterface != null) {
-//                LOGGER.info("use preferNetworkInterface:{}", preferNetworkInterface);
                 final Enumeration<InetAddress> en = preferNetworkInterface.getInetAddresses();
                 getIpResult(ipv4Result, ipv6Result, en);
             } else {
-//                LOGGER.info("no preferNetworkInterface");
                 Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
                 while (enumeration.hasMoreElements()) {
                     final NetworkInterface networkInterface = enumeration.nextElement();
@@ -83,7 +84,7 @@ public class IPUtil {
             // prefer ipv4
             if (!ipv4Result.isEmpty()) {
                 for (String ip : ipv4Result) {
-                    if (ip.startsWith("127.0") || ip.startsWith("192.168")) {
+                    if (ip.startsWith("127.0") || ip.startsWith("192.168") || !isValidIPV4Address(ip)) {
                         continue;
                     }
 
@@ -104,6 +105,34 @@ public class IPUtil {
         }
 
         return null;
+    }
+
+    public static boolean isValidIPV4Address(String ip)
+    {
+
+        // Regex for digit from 0 to 255.
+        String zeroTo255
+                = "(\\d{1,2}|(0|1)\\"
+                + "d{2}|2[0-4]\\d|25[0-5])";
+
+        String regex
+                = zeroTo255 + "\\."
+                + zeroTo255 + "\\."
+                + zeroTo255 + "\\."
+                + zeroTo255;
+
+        // Compile the ReGex
+        Pattern p = Pattern.compile(regex);
+
+        // If the IP address is empty, return false
+        if (ip == null) {
+            return false;
+        }
+
+        Matcher m = p.matcher(ip);
+
+        // Return if the IP address matched the ReGex
+        return m.matches();
     }
 
     private static void getIpResult(ArrayList<String> ipv4Result, ArrayList<String> ipv6Result,

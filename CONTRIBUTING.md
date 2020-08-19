@@ -32,7 +32,7 @@ Here are the workflow for contributors:
 7. Create a pull request
 
 Please follow [the pull request template](./.github/PULL_REQUEST_TEMPLATE.md).
-Please make sure the PR has a corresponding issue.
+Please make sure the PR has a corresponding issue. [GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
 
 After creating a PR, one or more reviewers will be assigned to the pull request.
 The reviewers will review the code.
