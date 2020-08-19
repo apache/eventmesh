@@ -9,9 +9,6 @@
 This figure shows the positioning of the event mesh relative to other similar technologies (such as service mesh) in the application framework.
 ![architecture1](docs/images/eventmesh-define.png)
 
-Overview of EventMesh:
-![architecture1](docs/images/eventmesh-overview.png)
-
 Landscape of EventMesh:
 ![architecture1](docs/images/eventmesh-landscape.png)
 
