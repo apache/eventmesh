@@ -127,7 +127,7 @@ public class SessionSender {
                             .getStoreTimestamp()));
                 }
                 msg.putUserProperty(ProxyConstants.RSP_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                msg.putUserProperty(ProxyConstants.RSP_RECEIVE_PROXY_IP, ProxyUtil.getLocalAddr());
+                msg.putUserProperty(ProxyConstants.RSP_RECEIVE_PROXY_IP, session.getAccessConfiguration().proxyServerIp);
                 session.getClientGroupWrapper().get().getProxyTcpMonitor().getMq2proxyMsgNum().incrementAndGet();
 
                 Command cmd;
