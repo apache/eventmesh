@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.client.impl.consumer;
 
-import cn.webank.defibus.consumer.DeFiBusMessageListenerConcurrentlyOnce;
+import com.webank.defibus.consumer.DeFiBusMessageListenerConcurrentlyOnce;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.common.message.MessageExt;
