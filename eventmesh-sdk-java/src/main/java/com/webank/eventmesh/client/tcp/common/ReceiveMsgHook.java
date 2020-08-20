@@ -19,10 +19,7 @@ package com.webank.eventmesh.client.tcp.common;
 
 import io.netty.channel.ChannelHandlerContext;
 import com.webank.eventmesh.common.protocol.tcp.Package;
-/**
- * Created by nanoxiong on 2017/4/26.
- * 业务回调钩子, 这是针对所有类型的消息都会进行的回调
- */
+
 public interface ReceiveMsgHook {
     void handle(Package msg, ChannelHandlerContext ctx);
 }
