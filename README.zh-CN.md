@@ -46,5 +46,4 @@ Event Mesh的一般功能:
 
 ## 联系人
 微信群:
-
 ![wechat_qr](docs/images/mesh-helper.png)
