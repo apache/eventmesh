@@ -21,9 +21,6 @@ package com.webank.eventmesh.client.tcp;
 import com.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 
-/**
- * Created by nanoxiong on 2017/4/26.
- */
 public interface SimpleSubClient {
      void init() throws Exception;
 
