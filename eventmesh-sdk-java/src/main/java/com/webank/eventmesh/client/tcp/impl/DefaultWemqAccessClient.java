@@ -27,10 +27,6 @@ import com.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 
-/**
- * Created by nanoxiong on 2017/5/24.
- * C 客户端的模拟器
- */
 public class DefaultWemqAccessClient implements WemqAccessClient {
     protected UserAgent agent;
     private String accessHost;

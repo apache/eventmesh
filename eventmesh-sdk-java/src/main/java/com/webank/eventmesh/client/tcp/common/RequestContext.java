@@ -22,9 +22,6 @@ import org.slf4j.LoggerFactory;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * Created by nanoxiong on 2017/4/26.
- */
 public class RequestContext {
 
     private static Logger logger = LoggerFactory.getLogger(RequestContext.class);
