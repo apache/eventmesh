@@ -77,7 +77,7 @@ if (project.findProperty("buildNo") instanceof String) {
     versionString = project.version + '_' + project.property("buildNo")
 }
 
-task zip(type: Zip) {
+task zip(type: Zip, dependsOn: ['clean', 'jar']) {
     extension = 'zip'
     archiveName = project.name + '_' + versionString + '.' + extension
     destinationDir = new File(projectDir, 'dist')

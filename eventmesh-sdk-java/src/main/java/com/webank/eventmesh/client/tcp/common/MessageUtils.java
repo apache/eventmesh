@@ -26,10 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * MessageUtil
- *
- */
 public class MessageUtils {
     private static final int seqLength = 10;
 
