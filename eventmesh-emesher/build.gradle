@@ -77,6 +77,40 @@ if (project.findProperty("buildNo") instanceof String) {
     versionString = project.version + '_' + project.property("buildNo")
 }
 
+task zip(type: Zip) {
+    extension = 'zip'
+    archiveName = project.name + '_' + versionString + '.' + extension
+    destinationDir = new File(projectDir, 'dist')
+
+    into('apps') {
+        from project.jar.getArchivePath()
+    }
+
+    into('bin') {
+        from 'bin'
+    }
+
+    into('conf') {
+        from "conf"
+    }
+
+    into('lib') {
+        from project.configurations.runtime
+        exclude '**/*.properties*'
+        exclude '**/*testng*.jar'
+        exclude '**/*powermock*.jar'
+        exclude '**/*mockito*.jar'
+        exclude '**/*junit*.jar'
+        exclude '**/*jacoco*.jar'
+        exclude '**/*log4j2.xml*'
+        exclude '**/spring-boot-devtools*.jar'
+    }
+
+    into('scripts') {
+        from "scripts"
+    }
+}
+
 task tar(type: Tar, dependsOn: ['clean', 'jar']) {
     extension = 'tar.gz'
     compression = Compression.GZIP
