@@ -23,10 +23,10 @@ import client.common.MessageUtils;
 import client.common.RequestContext;
 import client.common.TCPClient;
 import client.hook.ReceiveMsgHook;
-import cn.webank.eventmesh.common.protocol.tcp.Command;
-import cn.webank.eventmesh.common.protocol.tcp.OPStatus;
-import cn.webank.eventmesh.common.protocol.tcp.Package;
-import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
+import com.webank.eventmesh.common.protocol.tcp.Command;
+import com.webank.eventmesh.common.protocol.tcp.OPStatus;
+import com.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -90,7 +90,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                 } catch (Exception e) {
                 }
             }
-        }, ClientConstants.HEATBEAT, ClientConstants.HEATBEAT, TimeUnit.MILLISECONDS);
+        }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
 
     public void goodbye() throws Exception {

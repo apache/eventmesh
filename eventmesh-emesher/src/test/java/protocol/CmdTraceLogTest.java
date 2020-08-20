@@ -22,7 +22,7 @@ import client.common.Server;
 import client.common.UserAgentUtils;
 import client.hook.ReceiveMsgHook;
 import client.impl.SubClientImpl;
-import cn.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
 import org.junit.AfterClass;
 import org.junit.Assert;
