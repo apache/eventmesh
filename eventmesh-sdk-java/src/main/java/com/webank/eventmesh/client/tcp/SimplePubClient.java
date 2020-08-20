@@ -23,10 +23,6 @@ import com.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 
-/**
- *
- * Created by nanoxiong on 2017/4/26.
- */
 public interface SimplePubClient {
 
     void init() throws Exception;
