@@ -18,10 +18,6 @@
 package com.webank.eventmesh.client.tcp.common;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 
-/**
- * Created by nanoxiong on 2017/5/30.
- * 异步RR回调 ，只针对RR
- */
 public interface AsyncRRCallback {
     void callback(Package msg);
 }
