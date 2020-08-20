@@ -38,9 +38,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 
-/**
- * Created by nanoxiong on 2017/4/26.
- */
 public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
