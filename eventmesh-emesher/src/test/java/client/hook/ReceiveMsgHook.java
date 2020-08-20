@@ -17,7 +17,7 @@
 
 package client.hook;
 
-import cn.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
 /**
  * 业务回调钩子, 这是针对所有类型的消息都会进行的回调

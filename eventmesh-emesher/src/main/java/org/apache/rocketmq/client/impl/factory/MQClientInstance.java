@@ -16,7 +16,7 @@
  */
 package org.apache.rocketmq.client.impl.factory;
 
-import cn.webank.emesher.threads.ThreadPoolHelper;
+import com.webank.emesher.threads.ThreadPoolHelper;
 import org.apache.rocketmq.client.ClientConfig;
 import org.apache.rocketmq.client.admin.MQAdminExtInner;
 import org.apache.rocketmq.client.exception.MQBrokerException;

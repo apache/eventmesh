@@ -21,8 +21,8 @@ import client.common.ClientConstants;
 import client.common.MessageUtils;
 import client.hook.ReceiveMsgHook;
 import client.impl.SubClientImpl;
-import cn.webank.eventmesh.common.protocol.tcp.Command;
-import cn.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.Command;
+import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
 
 public class SyncSubClient {

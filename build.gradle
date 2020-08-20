@@ -177,12 +177,12 @@ subprojects {
 
     ]
 
-    List logback = [
-            "org.slf4j:slf4j-api:1.7.25"
+    List log = [
+            "org.slf4j:slf4j-api:1.7.30"
     ]
 
     List guava = [
-            "com.google.guava:guava:20.0"
+            "com.google.guava:guava:29.0-jre"
     ]
 
     List fastjson = [
@@ -205,9 +205,9 @@ subprojects {
     ]
 
     dependencies {
-        compile apache_commons, guava, logback, fastjson, common_io
-        testCompile apache_commons, guava, logback, fastjson, common_io, junit, assertj, mock
-        runtime apache_commons, guava, logback, fastjson, common_io
+        compile apache_commons, guava, log, fastjson, common_io
+        testCompile apache_commons, guava, log, fastjson, common_io, junit, assertj, mock
+        runtime apache_commons, guava, log, fastjson, common_io
     }
 
     jar {
