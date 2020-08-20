@@ -17,9 +17,6 @@
 
 package com.webank.eventmesh.client.tcp.common;
 
-/**
- * Created by nanoxiong on 2017/6/8.
- */
 public class WemqAccessCommon {
     /**
      * 打印线程池状态的间隔时间

@@ -73,6 +73,26 @@ uploadArchives {
     }
 }
 
+task zip(type: Zip, dependsOn: ['clean', 'jar']) {
+    extension = 'zip'
+    archiveName = project.name + '_' + version + '.' + extension
+    destinationDir = new File(projectDir, 'dist')
+
+    into("/") {
+        from project.jar.getArchivePath()
+    }
+}
+
+task tar(type: Tar, dependsOn: ['clean', 'jar']) {
+    extension = 'tar.gz'
+    compression = Compression.GZIP
+    archiveName = project.name + '_' + version + '.' + extension
+    destinationDir = new File(projectDir, 'dist')
+    into("/") {
+        from project.jar.getArchivePath()
+    }
+}
+
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
