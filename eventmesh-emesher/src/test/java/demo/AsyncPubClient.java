@@ -22,8 +22,8 @@ import client.common.MessageUtils;
 import client.common.UserAgentUtils;
 import client.hook.ReceiveMsgHook;
 import client.impl.PubClientImpl;
-import cn.webank.eventmesh.common.ThreadUtil;
-import cn.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.ThreadUtil;
+import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
 
 public class AsyncPubClient {

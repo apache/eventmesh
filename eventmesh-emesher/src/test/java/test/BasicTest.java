@@ -25,8 +25,8 @@ import client.hook.ReceiveMsgHook;
 import client.impl.ProxyClientImpl;
 import client.impl.PubClientImpl;
 import client.impl.SubClientImpl;
-import cn.webank.eventmesh.common.protocol.tcp.AccessMessage;
-import cn.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
 import org.junit.Test;
 

@@ -32,11 +32,6 @@ repositories {
     mavenCentral()
 }
 
-def env = 'dev'
-if (project.findProperty("env") instanceof String) {
-    env = project.property("env")
-}
-
 List defibus = [
     "com.webank.defibus:defibus-client:$defibus_version",
     "com.webank.defibus:defibus-common:$defibus_version"
@@ -47,15 +42,15 @@ List junit = [
 ]
 
 List log4j2 = [
-    "org.apache.logging.log4j:log4j-api:2.8.2",
-    "org.apache.logging.log4j:log4j-core:2.8.2",
-    "org.apache.logging.log4j:log4j-slf4j-impl:2.8.2",
-    "org.apache.logging.log4j:log4j-web:2.8.2",
-    "com.lmax:disruptor:3.2.0"
+    "org.apache.logging.log4j:log4j-api:2.13.3",
+    "org.apache.logging.log4j:log4j-core:2.13.3",
+    "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
+    "org.apache.logging.log4j:log4j-web:2.13.3",
+    "com.lmax:disruptor:3.4.2"
 ]
 
 List sl4j = [
-    "org.slf4j:slf4j-api:1.7.25"
+    "org.slf4j:slf4j-api:1.7.30"
 ]
 
 List metrics = [
@@ -72,26 +67,6 @@ dependencies {
     testCompile defibus, metrics, log4j2, sl4j, junit
 }
 
-//configurations.all {
-//    resolutionStrategy {
-//        force 'io.netty:netty-all:4.1.36.Final'
-//        force 'com.alibaba:fastjson:1.2.68'
-//        force 'com.fasterxml.jackson.core:jackson-databind:2.10.0'
-//        force 'com.fasterxml.jackson.core:jackson-core:2.10.0'
-//        force 'com.fasterxml.jackson.core:jackson-annotations:2.10.0'
-//    }
-//
-//    resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
-//    resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
-//
-//    exclude group:'io.netty',module:'netty-tcnative-boringssl-static'
-//
-//}
-//
-//tasks.withType(JavaCompile) {
-//    options.encoding = "UTF-8"
-//}
-//
 clean.doFirst {
     delete 'build'
     delete 'dist'
@@ -102,7 +77,7 @@ if (project.findProperty("buildNo") instanceof String) {
     versionString = project.version + '_' + project.property("buildNo")
 }
 
-task tar(overwrite: true, type: Tar, dependsOn: ['clean', 'jar']) {
+task tar(type: Tar, dependsOn: ['clean', 'jar']) {
     extension = 'tar.gz'
     compression = Compression.GZIP
     archiveName = project.name + '_' + versionString + '.' + extension
@@ -137,15 +112,15 @@ task tar(overwrite: true, type: Tar, dependsOn: ['clean', 'jar']) {
     }
 }
 
-//uploadArchives {
-//    repositories {
-//        mavenDeployer {
-////            snapshotRepository(url: 'Your target repo address') {
-////                authentication(userName: 'Your user name', password: 'Your password')
-////            }
-////            repository(url: 'Your target repo address') {
-////                authentication(userName: 'Your user name', password: 'Your password')
-////            }
-//        }
-//    }
-//}
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            snapshotRepository(url: 'Your target repo address') {
+                authentication(userName: 'Your user name', password: 'Your password')
+            }
+            repository(url: 'Your target repo address') {
+                authentication(userName: 'Your user name', password: 'Your password')
+            }
+        }
+    }
+}

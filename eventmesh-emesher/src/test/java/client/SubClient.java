@@ -18,8 +18,8 @@
 package client;
 
 import client.hook.ReceiveMsgHook;
-import cn.webank.eventmesh.common.protocol.tcp.Package;
-import cn.webank.eventmesh.common.protocol.tcp.UserAgent;
+import com.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 
 
 public interface SubClient {
