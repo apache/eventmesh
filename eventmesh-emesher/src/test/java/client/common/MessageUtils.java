@@ -200,7 +200,7 @@ public class MessageUtils {
     public static AccessMessage generateAsyncEventMsg(String topic, int i) {
         AccessMessage msg = new AccessMessage();
         msg.setTopic(topic);
-        msg.getProperties().put("REPLY_TO", "127.0.0.1@ProducerGroup-producerPool-9-access#V1_4_0#CI");
+        msg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         msg.getProperties().put("TTL", "30000");
         msg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
         msg.setBody("testAsyncMessage" + i);
