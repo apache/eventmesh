@@ -93,7 +93,7 @@ public class AccessTestUtils {
     private static AccessMessage generateAsyncRRWemqMsg() {
         AccessMessage wemqMsg = new AccessMessage();
         wemqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
-        wemqMsg.getProperties().put("REPLY_TO", "127.0.0.1@ProducerGroup-producerPool-9-access#V1_4_0#CI");
+        wemqMsg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         wemqMsg.getProperties().put("TTL", "300000");
         wemqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
         wemqMsg.setBody("testAsyncRR");
@@ -103,7 +103,7 @@ public class AccessTestUtils {
     private static AccessMessage generateAsyncEventWemqMsg() {
         AccessMessage wemqMsg = new AccessMessage();
         wemqMsg.setTopic(TOPIC_PRX_WQ2ClientUniCast);
-        wemqMsg.getProperties().put("REPLY_TO", "127.0.0.1@ProducerGroup-producerPool-9-access#V1_4_0#CI");
+        wemqMsg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         wemqMsg.getProperties().put("TTL", "30000");
         wemqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
         wemqMsg.setBody("testAsyncMessage");
@@ -113,7 +113,7 @@ public class AccessTestUtils {
     private static AccessMessage generateBroadcastWemqMsg() {
         AccessMessage wemqMsg = new AccessMessage();
         wemqMsg.setTopic(TOPIC_PRX_WQ2ClientBroadCast);
-        wemqMsg.getProperties().put("REPLY_TO", "127.0.0.1@ProducerGroup-producerPool-9-access#V1_4_0#CI");
+        wemqMsg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         wemqMsg.getProperties().put("TTL", "30000");
         wemqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
         wemqMsg.setBody("testAsyncMessage");
