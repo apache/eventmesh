@@ -59,7 +59,7 @@ public abstract class TCPClient implements Closeable {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected String host = "127.0.0.1";
+    protected String host = "10.255.34.120";
 
     protected int port = 10000;
 
