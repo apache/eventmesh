@@ -85,7 +85,7 @@ uploadArchives {
                 authentication(userName: 'Your user name', password: 'Your password')
             }
             repository(url: 'Your target repo address') {
-                authentication(userName: 'deployment', password: 'deployment123')
+                authentication(userName: 'Your user name', password: 'Your password')
             }
         }
     }
