@@ -50,9 +50,9 @@ public class LiteClientConfig {
 
     private String sys;
 
-    private String userName = "wemq";
+    private String userName = "userName";
 
-    private String password = "wemq@123";
+    private String password = "password";
 
     public int getConsumeThreadMax() {
         return consumeThreadMax;
