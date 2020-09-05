@@ -26,12 +26,6 @@ public class LiteClientConfig {
 
     private String forwardAgents = "127.0.0.1:3128";
 
-    private boolean registryEnabled = Boolean.FALSE;
-
-    private String registryAddr = "http://127.0.0.1:8090";
-
-    private int registryFetchIntervel = 30000;
-
     private int consumeThreadCore = 2;
 
     private int consumeThreadMax = 5;
@@ -171,46 +165,11 @@ public class LiteClientConfig {
         return this;
     }
 
-    public boolean isRegistryEnabled() {
-        return registryEnabled;
-    }
-
-    public LiteClientConfig setRegistryEnabled(boolean registryEnabled) {
-        this.registryEnabled = registryEnabled;
-        return this;
-    }
-
-    public String getRegistryAddr() {
-        return registryAddr;
-    }
-
-    public LiteClientConfig setRegistryAddr(String registryAddr) {
-        this.registryAddr = registryAddr;
-        return this;
-    }
-
-    public int getRegistryFetchIntervel() {
-        return registryFetchIntervel;
-    }
-
-    public LiteClientConfig setRegistryFetchIntervel(int registryFetchIntervel) {
-        this.registryFetchIntervel = registryFetchIntervel;
-        return this;
-    }
-
-    public void validate() throws IllegalStateException {
-        Preconditions.checkState((registryEnabled && StringUtils.isNotBlank(registryAddr))
-                || (!registryEnabled && StringUtils.isNotBlank(liteProxyAddr)), "liteClientConfig[registryEnabled/registryAddr/liteServerAddr] invalid");
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("liteClientConfig={")
                 .append("liteProxyAddr=").append(liteProxyAddr).append(",")
-                .append("registryEnabled=").append(registryEnabled).append(",")
-                .append("registryAddr=").append(registryAddr).append(",")
-                .append("registryFetchIntervel=").append(registryFetchIntervel).append(",")
                 .append("consumeThreadCore=").append(consumeThreadCore).append(",")
                 .append("consumeThreadMax=").append(consumeThreadMax).append(",")
                 .append("env=").append(env).append(",")
