@@ -69,23 +69,10 @@ public abstract class AbstractLiteClient {
     }
 
     public void start() throws ProxyException {
-        if (!liteClientConfig.isRegistryEnabled()) {
-            String servers = liteClientConfig.getLiteProxyAddr();
-            regionsMap = process(servers);
-            return;
+        regionsMap = process(liteClientConfig.getLiteProxyAddr());
+        if(regionsMap == null || regionsMap.size() < 1){
+            throw new ProxyException("liteProxyAddr param illegal,please check");
         }
-
-        regionsMap = process(loadProxyServers());
-        scheduledExecutor.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    regionsMap = process(loadProxyServers());
-                } catch (ProxyException lse) {
-                    logger.error("load proxy server err", lse);
-                }
-            }
-        }, 0, liteClientConfig.getRegistryFetchIntervel(), TimeUnit.MILLISECONDS);
 
         if (StringUtils.isNotBlank(liteClientConfig.getForwardAgents())) {
             for (String forwardAgent : liteClientConfig.getForwardAgents().split(";")) {
@@ -94,19 +81,6 @@ public abstract class AbstractLiteClient {
                 forwardAgentList.add(new HttpHost(host, Integer.valueOf(port), "http"));
             }
         }
-    }
-
-    public String loadProxyServers() throws ProxyException {
-        RequestParam requestParam = new RequestParam(HttpMethod.GET);
-        String servers = "";
-        try {
-            servers = HttpUtil.get(wpcli,
-                    String.format("%s/%s", liteClientConfig.getRegistryAddr(), PROXY_SERVER_KEY)
-                    , requestParam);
-        } catch (Exception ex) {
-            throw new ProxyException("load proxy server err", ex);
-        }
-        return servers;
     }
 
     private Map process(String format) {

@@ -61,6 +61,7 @@ public class LiteProducer extends AbstractLiteClient {
 
     public void start() throws ProxyException {
         Preconditions.checkState(liteClientConfig != null, "liteClientConfig can't be null");
+        Preconditions.checkState(liteClientConfig.getLiteProxyAddr() != null, "liteClientConfig.liteServerAddr can't be null");
         if(started.get()) {
             return;
         }
