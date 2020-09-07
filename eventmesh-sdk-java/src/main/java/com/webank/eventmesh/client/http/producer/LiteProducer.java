@@ -44,7 +44,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LiteProducer extends AbstractLiteClient {
@@ -97,7 +96,6 @@ public class LiteProducer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, liteClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
                 .addHeader(ProtocolKey.ClientInstanceKey.DCN, liteClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
@@ -115,13 +113,10 @@ public class LiteProducer extends AbstractLiteClient {
                 .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
         long startTime = System.currentTimeMillis();
-        String targetRegion =
-                MapUtils.getObject(message.getProp(), Constants.TARGET_PROXY_REGION, Constants.CONSTANTS_DEFAULT_REGION_KEY);
-        String target = getCurrProxy(targetRegion);
+        String target = selectProxy();
         String res = "";
         try {
             res = HttpUtil.post(httpClient, target, requestParam);
-//            res = HttpUtil.post(httpClient, getAvailablesForwardAgent(), target, requestParam);
         } catch (Exception ex) {
             throw new ProxyException(ex);
         }
@@ -140,12 +135,11 @@ public class LiteProducer extends AbstractLiteClient {
         }
     }
 
-    public String getCurrProxy(String targetRegion) {
-        List<String> availableServers = getAvailableServers(targetRegion);
-        if (CollectionUtils.isEmpty(availableServers)) {
+    public String selectProxy() {
+        if (CollectionUtils.isEmpty(proxyServerList)) {
             return null;
         }
-        return Constants.HTTP_PROTOCOL_PREFIX + availableServers.get(RandomUtils.nextInt(0, availableServers.size()));
+        return Constants.HTTP_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
     }
 
     public LiteMessage request(LiteMessage message, long timeout) throws ProxyException {
@@ -159,7 +153,6 @@ public class LiteProducer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, liteClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
                 .addHeader(ProtocolKey.ClientInstanceKey.DCN, liteClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
@@ -177,12 +170,9 @@ public class LiteProducer extends AbstractLiteClient {
                 .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
         long startTime = System.currentTimeMillis();
-        String targetRegion =
-                MapUtils.getObject(message.getProp(), Constants.TARGET_PROXY_REGION, Constants.CONSTANTS_DEFAULT_REGION_KEY);
-        String target = getCurrProxy(targetRegion);
+        String target = selectProxy();
         String res = "";
         try {
-            //res = HttpUtil.post(httpClient, getAvailablesForwardAgent(), target, requestParam);
             res = HttpUtil.post(httpClient, target, requestParam);
         } catch (Exception ex) {
             throw new ProxyException(ex);
@@ -218,7 +208,6 @@ public class LiteProducer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, liteClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
                 .addHeader(ProtocolKey.ClientInstanceKey.DCN, liteClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
@@ -236,11 +225,8 @@ public class LiteProducer extends AbstractLiteClient {
                 .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
         long startTime = System.currentTimeMillis();
-        String targetRegion =
-                MapUtils.getObject(message.getProp(), Constants.TARGET_PROXY_REGION, Constants.CONSTANTS_DEFAULT_REGION_KEY);
-        String target = getCurrProxy(targetRegion);
+        String target = selectProxy();
         try {
-//            HttpUtil.post(httpClient, getAvailablesForwardAgent(), target, requestParam, new RRCallbackResponseHandlerAdapter(message, rrCallback, timeout));
             HttpUtil.post(httpClient, null, target, requestParam, new RRCallbackResponseHandlerAdapter(message, rrCallback, timeout));
         } catch (Exception ex) {
             throw new ProxyException(ex);

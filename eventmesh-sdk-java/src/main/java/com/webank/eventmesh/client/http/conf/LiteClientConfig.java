@@ -17,22 +17,15 @@
 
 package com.webank.eventmesh.client.http.conf;
 
-import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.StringUtils;
-
 public class LiteClientConfig {
 
     private String liteProxyAddr = "127.0.0.1:10105";
-
-    private String forwardAgents = "127.0.0.1:3128";
 
     private int consumeThreadCore = 2;
 
     private int consumeThreadMax = 5;
 
     private String env;
-
-    private String region;
 
     private String idc;
 
@@ -57,15 +50,6 @@ public class LiteClientConfig {
         return this;
     }
 
-    public String getForwardAgents() {
-        return forwardAgents;
-    }
-
-    public LiteClientConfig setForwardAgents(String forwardAgents) {
-        this.forwardAgents = forwardAgents;
-        return this;
-    }
-
     public int getConsumeThreadCore() {
         return consumeThreadCore;
     }
@@ -81,15 +65,6 @@ public class LiteClientConfig {
 
     public LiteClientConfig setEnv(String env) {
         this.env = env;
-        return this;
-    }
-
-    public String getRegion() {
-        return region;
-    }
-
-    public LiteClientConfig setRegion(String region) {
-        this.region = region;
         return this;
     }
 
@@ -173,7 +148,6 @@ public class LiteClientConfig {
                 .append("consumeThreadCore=").append(consumeThreadCore).append(",")
                 .append("consumeThreadMax=").append(consumeThreadMax).append(",")
                 .append("env=").append(env).append(",")
-                .append("region=").append(region).append(",")
                 .append("idc=").append(idc).append(",")
                 .append("dcn=").append(dcn).append(",")
                 .append("ip=").append(ip).append(",")

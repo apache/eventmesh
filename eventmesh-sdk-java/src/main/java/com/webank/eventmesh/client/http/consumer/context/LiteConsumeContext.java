@@ -26,8 +26,6 @@ public class LiteConsumeContext {
 
     private String proxyEnv;
 
-    private String proxyRegion;
-
     private String proxyIdc;
 
     private String proxyCluster;
@@ -40,12 +38,11 @@ public class LiteConsumeContext {
     private long createTime = System.currentTimeMillis();
 
     public LiteConsumeContext(String proxyIp, String proxyEnv,
-                              String proxyIdc, String proxyRegion,
+                              String proxyIdc,
                               String proxyCluster, String proxyDcn) {
         this.proxyIp = proxyIp;
         this.proxyEnv = proxyEnv;
         this.proxyIdc = proxyIdc;
-        this.proxyRegion = proxyRegion;
         this.proxyCluster = proxyCluster;
         this.proxyDcn = proxyDcn;
 
@@ -91,14 +88,6 @@ public class LiteConsumeContext {
         this.proxyDcn = proxyDcn;
     }
 
-    public String getProxyRegion() {
-        return proxyRegion;
-    }
-
-    public void setProxyRegion(String proxyRegion) {
-        this.proxyRegion = proxyRegion;
-    }
-
     public int getRetryTimes() {
         return retryTimes;
     }
@@ -113,7 +102,6 @@ public class LiteConsumeContext {
         sb.append("liteConsumeContext={")
                 .append("proxyIp=").append(proxyIp).append(",")
                 .append("proxyEnv=").append(proxyEnv).append(",")
-                .append("proxyRegion=").append(proxyRegion).append(",")
                 .append("proxyIdc=").append(proxyIdc).append(",")
                 .append("proxyCluster=").append(proxyCluster).append(",")
                 .append("proxyDcn=").append(proxyDcn).append(",")
