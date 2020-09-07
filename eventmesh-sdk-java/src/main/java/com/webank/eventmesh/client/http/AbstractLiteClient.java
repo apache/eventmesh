@@ -51,15 +51,11 @@ public abstract class AbstractLiteClient {
 
     private String PROXY_SERVER_KEY = "proxyIpList";
 
-    public static final String REGEX_VALIDATE_FOR_RPOXY_4_REGION =
-            "^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}\\|[0-9a-zA-Z]{1,15};)*(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}\\|[0-9a-zA-Z]{1,15})$";
-
     public static final String REGEX_VALIDATE_FOR_RPOXY_DEFAULT =
             "^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5};)*(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5})$";
 
-    public Map<String, List<String>> regionsMap = Maps.newConcurrentMap();
 
-    public List<HttpHost> forwardAgentList = Lists.newArrayList();
+    public List<String> proxyServerList = Lists.newArrayList();
 
     private static ScheduledExecutorService scheduledExecutor =
             ThreadPoolFactory.createSingleScheduledExecutor("proxy-fetcher-");
@@ -69,54 +65,24 @@ public abstract class AbstractLiteClient {
     }
 
     public void start() throws ProxyException {
-        regionsMap = process(liteClientConfig.getLiteProxyAddr());
-        if(regionsMap == null || regionsMap.size() < 1){
+        proxyServerList = process(liteClientConfig.getLiteProxyAddr());
+        if(proxyServerList == null || proxyServerList.size() < 1){
             throw new ProxyException("liteProxyAddr param illegal,please check");
-        }
-
-        if (StringUtils.isNotBlank(liteClientConfig.getForwardAgents())) {
-            for (String forwardAgent : liteClientConfig.getForwardAgents().split(";")) {
-                String host = StringUtils.split(forwardAgent, ":")[0];
-                String port = StringUtils.split(forwardAgent, ":")[1];
-                forwardAgentList.add(new HttpHost(host, Integer.valueOf(port), "http"));
-            }
         }
     }
 
-    private Map process(String format) {
-        if (format.matches(REGEX_VALIDATE_FOR_RPOXY_4_REGION)) {
-            Map<String, List<String>> tmp = Maps.newConcurrentMap();
-            if (StringUtils.isNotBlank(format)) {
-                String[] serversArr = StringUtils.split(format, ";");
-                for (String sin : serversArr) {
-                    String ser = StringUtils.trim(StringUtils.split(sin, "|")[0]);
-                    String region = StringUtils.trim(StringUtils.split(sin, "|")[1]);
-                    if (tmp.containsKey(region)) {
-                        tmp.get(region).add(ser);
-                    } else {
-                        List<String> list = new ArrayList<>();
-                        list.add(ser);
-                        tmp.put(region, list);
-                    }
-                }
-            }
-            return tmp;
-        }
+    private List process(String format) {
+        List<String> list = Lists.newArrayList();
+        if (StringUtils.isNotBlank(format) && format.matches(REGEX_VALIDATE_FOR_RPOXY_DEFAULT)) {
 
-        if (format.matches(REGEX_VALIDATE_FOR_RPOXY_DEFAULT)) {
-            List<String> list = Lists.newArrayList();
-            if (StringUtils.isNotBlank(format)) {
-                String[] serversArr = StringUtils.split(format, ";");
-                if (ArrayUtils.isNotEmpty(serversArr)) {
-                    for (String server : serversArr) {
-                        list.add(server);
-                    }
+            String[] serversArr = StringUtils.split(format, ";");
+            if (ArrayUtils.isNotEmpty(serversArr)) {
+                for (String server : serversArr) {
+                    list.add(server);
                 }
             }
 
-            Map tmp = Maps.newConcurrentMap();
-            tmp.put(Constants.CONSTANTS_DEFAULT_REGION_KEY, list);
-            return tmp;
+            return list;
         }
 
         logger.error("servers is bad format, servers:{}", format);
@@ -125,18 +91,6 @@ public abstract class AbstractLiteClient {
 
     public LiteClientConfig getLiteClientConfig() {
         return liteClientConfig;
-    }
-
-    public List<String> getAvailableServers(String region) {
-        if (regionsMap.containsKey(region)) {
-            return regionsMap.get(region);
-        }
-
-        return regionsMap.get(Constants.CONSTANTS_DEFAULT_REGION_KEY);
-    }
-
-    public HttpHost getAvailablesForwardAgent() {
-        return forwardAgentList.get(RandomUtils.nextInt(0, forwardAgentList.size()));
     }
 
     public void shutdown() throws Exception {
