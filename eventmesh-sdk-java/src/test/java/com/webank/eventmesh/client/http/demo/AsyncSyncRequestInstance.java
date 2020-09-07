@@ -30,7 +30,6 @@ public class AsyncSyncRequestInstance {
             LiteClientConfig weMQProxyClientConfig = new LiteClientConfig();
             weMQProxyClientConfig.setLiteProxyAddr(proxyIPPort)
                     .setEnv("env")
-                    .setRegion("region")
                     .setIdc("idc")
                     .setDcn("dcn")
                     .setIp(IPUtil.getLocalAddress())
