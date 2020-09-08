@@ -237,6 +237,7 @@ public class RemotingServer {
 
                 final LiteConsumeContext proxyConsumeContext = new LiteConsumeContext(pushMessageRequestHeader.getProxyIp(),
                         pushMessageRequestHeader.getProxyEnv(), pushMessageRequestHeader.getProxyIdc(),
+                        pushMessageRequestHeader.getProxyRegion(),
                         pushMessageRequestHeader.getProxyCluster(), pushMessageRequestHeader.getProxyDcn());
 
                 final LiteMessage liteMessage = new LiteMessage(pushMessageRequestBody.getBizSeqNo(), pushMessageRequestBody.getUniqueId(),
