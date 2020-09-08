@@ -17,20 +17,9 @@
 
 package com.webank.eventmesh.client.http.conf;
 
-import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.StringUtils;
-
 public class LiteClientConfig {
 
     private String liteProxyAddr = "127.0.0.1:10105";
-
-    private String forwardAgents = "127.0.0.1:3128";
-
-    private boolean registryEnabled = Boolean.FALSE;
-
-    private String registryAddr = "http://127.0.0.1:8090";
-
-    private int registryFetchIntervel = 30000;
 
     private int consumeThreadCore = 2;
 
@@ -60,15 +49,6 @@ public class LiteClientConfig {
 
     public LiteClientConfig setConsumeThreadMax(int consumeThreadMax) {
         this.consumeThreadMax = consumeThreadMax;
-        return this;
-    }
-
-    public String getForwardAgents() {
-        return forwardAgents;
-    }
-
-    public LiteClientConfig setForwardAgents(String forwardAgents) {
-        this.forwardAgents = forwardAgents;
         return this;
     }
 
@@ -171,46 +151,11 @@ public class LiteClientConfig {
         return this;
     }
 
-    public boolean isRegistryEnabled() {
-        return registryEnabled;
-    }
-
-    public LiteClientConfig setRegistryEnabled(boolean registryEnabled) {
-        this.registryEnabled = registryEnabled;
-        return this;
-    }
-
-    public String getRegistryAddr() {
-        return registryAddr;
-    }
-
-    public LiteClientConfig setRegistryAddr(String registryAddr) {
-        this.registryAddr = registryAddr;
-        return this;
-    }
-
-    public int getRegistryFetchIntervel() {
-        return registryFetchIntervel;
-    }
-
-    public LiteClientConfig setRegistryFetchIntervel(int registryFetchIntervel) {
-        this.registryFetchIntervel = registryFetchIntervel;
-        return this;
-    }
-
-    public void validate() throws IllegalStateException {
-        Preconditions.checkState((registryEnabled && StringUtils.isNotBlank(registryAddr))
-                || (!registryEnabled && StringUtils.isNotBlank(liteProxyAddr)), "liteClientConfig[registryEnabled/registryAddr/liteServerAddr] invalid");
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("liteClientConfig={")
                 .append("liteProxyAddr=").append(liteProxyAddr).append(",")
-                .append("registryEnabled=").append(registryEnabled).append(",")
-                .append("registryAddr=").append(registryAddr).append(",")
-                .append("registryFetchIntervel=").append(registryFetchIntervel).append(",")
                 .append("consumeThreadCore=").append(consumeThreadCore).append(",")
                 .append("consumeThreadMax=").append(consumeThreadMax).append(",")
                 .append("env=").append(env).append(",")
