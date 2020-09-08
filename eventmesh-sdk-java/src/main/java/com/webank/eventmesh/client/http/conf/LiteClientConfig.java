@@ -27,6 +27,8 @@ public class LiteClientConfig {
 
     private String env;
 
+    private String region;
+
     private String idc;
 
     private String dcn;
@@ -65,6 +67,15 @@ public class LiteClientConfig {
 
     public LiteClientConfig setEnv(String env) {
         this.env = env;
+        return this;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public LiteClientConfig setRegion(String region) {
+        this.region = region;
         return this;
     }
 
@@ -148,6 +159,7 @@ public class LiteClientConfig {
                 .append("consumeThreadCore=").append(consumeThreadCore).append(",")
                 .append("consumeThreadMax=").append(consumeThreadMax).append(",")
                 .append("env=").append(env).append(",")
+                .append("region=").append(region).append(",")
                 .append("idc=").append(idc).append(",")
                 .append("dcn=").append(dcn).append(",")
                 .append("ip=").append(ip).append(",")
