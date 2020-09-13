@@ -18,28 +18,16 @@
 package com.webank.eventmesh.client.http;
 
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
-import com.webank.eventmesh.client.http.http.HttpUtil;
-import com.webank.eventmesh.client.http.http.RequestParam;
-import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.common.ProxyException;
-import com.webank.eventmesh.common.ThreadPoolFactory;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractLiteClient {
 
@@ -49,16 +37,10 @@ public abstract class AbstractLiteClient {
 
     public LiteClientConfig liteClientConfig;
 
-    private String PROXY_SERVER_KEY = "proxyIpList";
-
     public static final String REGEX_VALIDATE_FOR_RPOXY_DEFAULT =
             "^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5};)*(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5})$";
 
-
     public List<String> proxyServerList = Lists.newArrayList();
-
-    private static ScheduledExecutorService scheduledExecutor =
-            ThreadPoolFactory.createSingleScheduledExecutor("proxy-fetcher-");
 
     public AbstractLiteClient(LiteClientConfig liteClientConfig) {
         this.liteClientConfig = liteClientConfig;
@@ -94,6 +76,6 @@ public abstract class AbstractLiteClient {
     }
 
     public void shutdown() throws Exception {
-        scheduledExecutor.shutdown();
+        logger.info("AbstractLiteClient shutdown");
     }
 }
