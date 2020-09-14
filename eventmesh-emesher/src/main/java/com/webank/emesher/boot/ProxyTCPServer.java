@@ -17,7 +17,7 @@
 
 package com.webank.emesher.boot;
 
-import com.webank.eventmesh.common.protocol.tcp.codec.Codec;
+import com.google.common.util.concurrent.RateLimiter;
 import com.webank.emesher.admin.controller.ClientManageController;
 import com.webank.emesher.configuration.AccessConfiguration;
 import com.webank.emesher.core.protocol.tcp.client.ProxyTcpConnectionHandler;
@@ -25,18 +25,13 @@ import com.webank.emesher.core.protocol.tcp.client.ProxyTcpExceptionHandler;
 import com.webank.emesher.core.protocol.tcp.client.ProxyTcpMessageDispatcher;
 import com.webank.emesher.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import com.webank.emesher.core.protocol.tcp.client.session.push.retry.ProxyTcpRetryer;
-import com.webank.eventmesh.common.ThreadPoolFactory;
 import com.webank.emesher.metrics.tcp.ProxyTcpMonitor;
-import com.webank.emesher.threads.ProxyThreadFactoryImpl;
-import com.webank.emesher.threads.ThreadPoolHelper;
-import com.google.common.util.concurrent.RateLimiter;
+import com.webank.emesher.util.ProxyThreadFactoryImpl;
+import com.webank.eventmesh.common.ThreadPoolFactory;
+import com.webank.eventmesh.common.protocol.tcp.codec.Codec;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.AdaptiveRecvByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
@@ -210,18 +205,6 @@ public class ProxyTCPServer extends AbstractRemotingServer {
     private void shutdownThreadPool(){
         scheduler.shutdown();
         taskHandleExecutorService.shutdown();
-
-        ThreadPoolHelper.shutdownNettyClientSelector();
-        ThreadPoolHelper.shutdownNettyClientWorkerThread();
-        ThreadPoolHelper.shutdownMQClientInstanceExecutorService();
-        ThreadPoolHelper.shutdownSharedScheduledExecutorService();
-        ThreadPoolHelper.shutdownRebalanceImplExecutorService();
-        ThreadPoolHelper.shutdownRebalanceServiceExecutorService();
-        ThreadPoolHelper.shutdownPullMessageServiceExecutorService();
-        ThreadPoolHelper.shutdownPullMessageRetryServiceExecutorService();
-        ThreadPoolHelper.shutdownExecutorService();
-        ThreadPoolHelper.shutdownConsumeMessageExecutor();
-        ThreadPoolHelper.shutdownProducerCheckExecutorService();
     }
 
     private GlobalTrafficShapingHandler newGTSHandler() {
