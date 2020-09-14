@@ -26,7 +26,7 @@ import com.webank.eventmesh.common.Constants;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyContext;
+import com.webank.emesher.patch.ProxyConsumeConcurrentlyContext;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,7 @@ public class HandleMsgContext {
 
     private long createTime = System.currentTimeMillis();
 
-    private ConsumeMessageConcurrentlyContext context;
+    private ConsumeConcurrentlyContext context;
 
     private ConsumerGroupConf consumerGroupConfig;
 
@@ -76,7 +76,7 @@ public class HandleMsgContext {
         this.proxyConsumer = proxyConsumer;
         this.topic = topic;
         this.msg = msg;
-        this.context = (ConsumeMessageConcurrentlyContext)context;
+        this.context = (ProxyConsumeConcurrentlyContext) context;
         this.consumerGroupConfig = consumerGroupConfig;
         this.proxyHTTPServer = proxyHTTPServer;
         this.bizSeqNo = bizSeqNo;
@@ -164,7 +164,7 @@ public class HandleMsgContext {
         return context;
     }
 
-    public void setContext(ConsumeMessageConcurrentlyContext context) {
+    public void setContext(ProxyConsumeConcurrentlyContext context) {
         this.context = context;
     }
 
@@ -188,7 +188,7 @@ public class HandleMsgContext {
                         msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
                         msg.getQueueId(), msg.getQueueOffset());
             }
-            proxyConsumer.updateOffset(topic, Arrays.asList(msg), context);
+            proxyConsumer.updateOffset(topic, Arrays.asList(msg), (ProxyConsumeConcurrentlyContext) context);
         }
     }
 
