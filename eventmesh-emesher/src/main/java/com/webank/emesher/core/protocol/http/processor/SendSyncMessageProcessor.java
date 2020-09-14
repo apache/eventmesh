@@ -136,7 +136,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             rocketMQMsg.putUserProperty(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
             rocketMQMsg.setKeys(sendMessageRequestBody.getBizSeqNo());
             rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO,
-                    proxyProducer.getDefibusProducer().getDefaultMQProducer().buildMQClientId());
+                    proxyProducer.getMqProducerWrapper().getDefaultMQProducer().buildMQClientId());
 
             if (messageLogger.isDebugEnabled()) {
                 messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", sendMessageRequestBody.getBizSeqNo(),

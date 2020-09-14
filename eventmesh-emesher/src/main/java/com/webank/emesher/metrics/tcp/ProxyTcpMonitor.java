@@ -22,7 +22,6 @@ import com.webank.emesher.constants.ProxyConstants;
 import com.webank.emesher.core.protocol.tcp.client.ProxyTcpConnectionHandler;
 import com.webank.emesher.core.protocol.tcp.client.session.Session;
 import com.webank.emesher.metrics.MonitorMetricConstants;
-import com.webank.emesher.threads.ThreadPoolHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,7 +135,7 @@ public class ProxyTcpMonitor {
         monitorThreadPoolTask = proxyTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                ThreadPoolHelper.printThreadPoolState();
+//                ThreadPoolHelper.printThreadPoolState();
                 proxyTCPServer.getProxyTcpRetryer().printRetryThreadPoolState();
 
                 //monitor retry queue size

@@ -17,8 +17,8 @@
 
 package com.webank.emesher.configuration;
 
-import com.webank.emesher.util.ProxyUtil;
 import com.google.common.base.Preconditions;
+import com.webank.emesher.util.ProxyUtil;
 import org.apache.commons.lang3.StringUtils;
 
 public class CommonConfiguration {

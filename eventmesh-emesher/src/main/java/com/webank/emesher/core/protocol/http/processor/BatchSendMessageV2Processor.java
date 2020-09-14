@@ -110,13 +110,13 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         String producerGroup = ProxyUtil.buildClientGroup(sendMessageBatchV2RequestHeader.getSys(),
                 sendMessageBatchV2RequestHeader.getDcn());
         ProxyProducer batchProxyProducer = proxyHTTPServer.getProducerManager().getProxyProducer(producerGroup);
-        batchProxyProducer.getDefibusProducer().getDeFiBusClientConfig().setRetryTimesWhenSendFailed(0);
-        batchProxyProducer.getDefibusProducer().getDeFiBusClientConfig().setRetryTimesWhenSendAsyncFailed(0);
-        batchProxyProducer.getDefibusProducer().getDeFiBusClientConfig().setPollNameServerInterval(60000);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendFailed(0);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendAsyncFailed(0);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setPollNameServerInterval(60000);
 
-        batchProxyProducer.getDefibusProducer().getDefaultMQProducer().getDefaultMQProducerImpl().getmQClientFactory()
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().getDefaultMQProducerImpl().getmQClientFactory()
                 .getNettyClientConfig().setClientAsyncSemaphoreValue(proxyHTTPServer.getProxyConfiguration().proxyServerAsyncAccumulationThreshold);
-        batchProxyProducer.getDefibusProducer().getDefaultMQProducer().setCompressMsgBodyOverHowmuch(10);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setCompressMsgBodyOverHowmuch(10);
         if (!batchProxyProducer.getStarted().get()) {
             responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchV2ResponseHeader,
