@@ -119,12 +119,12 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 sendMessageBatchRequestHeader.getDcn());
         ProxyProducer batchProxyProducer = proxyHTTPServer.getProducerManager().getProxyProducer(producerGroup);
 
-        batchProxyProducer.getDefibusProducer().getDeFiBusClientConfig().setRetryTimesWhenSendFailed(0);
-        batchProxyProducer.getDefibusProducer().getDeFiBusClientConfig().setRetryTimesWhenSendAsyncFailed(0);
-        batchProxyProducer.getDefibusProducer().getDeFiBusClientConfig().setPollNameServerInterval(60000);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendFailed(0);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendAsyncFailed(0);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setPollNameServerInterval(60000);
 
-        batchProxyProducer.getDefibusProducer().getDefaultMQProducer().setCompressMsgBodyOverHowmuch(10);
-        batchProxyProducer.getDefibusProducer().getDefaultMQProducer().getDefaultMQProducerImpl().getmQClientFactory()
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setCompressMsgBodyOverHowmuch(10);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().getDefaultMQProducerImpl().getmQClientFactory()
                 .getNettyClientConfig()
                 .setClientAsyncSemaphoreValue(proxyHTTPServer.getProxyConfiguration().proxyServerAsyncAccumulationThreshold);
 
@@ -193,7 +193,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 try {
                     msgBatch = MessageBatch.generateFromList(batchMsgs);
                     for (Message message : msgBatch) {
-                        Validators.checkMessage(message, batchProxyProducer.getDefibusProducer().getDefaultMQProducer());
+                        Validators.checkMessage(message, batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer());
                         MessageClientIDSetter.setUniqID(message);
                     }
                     msgBatch.setBody(msgBatch.encode());

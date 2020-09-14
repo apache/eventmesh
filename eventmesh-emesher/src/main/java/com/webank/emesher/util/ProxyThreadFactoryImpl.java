@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.webank.emesher.threads;
+package com.webank.emesher.util;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;

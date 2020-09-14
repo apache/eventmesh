@@ -17,19 +17,16 @@
 
 package com.webank.emesher.core.protocol.http.producer;
 
-import com.webank.defibus.client.common.DeFiBusClientConfig;
 import com.webank.defibus.client.impl.producer.RRCallback;
-import com.webank.defibus.producer.DeFiBusProducer;
 import com.webank.emesher.configuration.ProxyConfiguration;
-import com.webank.emesher.constants.ProxyConstants;
+import com.webank.emesher.core.plugin.MQProducerWrapper;
 import com.webank.emesher.core.consumergroup.ProducerGroupConf;
-import com.webank.eventmesh.common.ThreadUtil;
 import com.webank.emesher.util.ProxyUtil;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.exception.RequestTimeoutException;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.message.MessageClientIDSetter;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,43 +54,35 @@ public class ProxyProducer {
     protected ProxyConfiguration proxyConfiguration;
 
     public void send(SendMessageContext sendMsgContext, SendCallback sendCallback) throws Exception {
-        defibusProducer.publish(sendMsgContext.getMsg(), sendCallback);
+        mqProducerWrapper.send(sendMsgContext.getMsg(), sendCallback);
     }
 
     public void request(SendMessageContext sendMsgContext, SendCallback sendCallback, RRCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        defibusProducer.request(sendMsgContext.getMsg(), sendCallback, rrCallback, timeout);
+        mqProducerWrapper.request(sendMsgContext.getMsg(), sendCallback, rrCallback, timeout);
     }
 
-    public Message request(SendMessageContext sendMessageContext, long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        return defibusProducer.request(sendMessageContext.getMsg(), timeout);
+    public Message request(SendMessageContext sendMessageContext, long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException, RequestTimeoutException {
+        return mqProducerWrapper.request(sendMessageContext.getMsg(), timeout);
     }
 
     public boolean reply(final SendMessageContext sendMsgContext, final SendCallback sendCallback) throws Exception {
-        defibusProducer.reply(sendMsgContext.getMsg(), sendCallback);
+        mqProducerWrapper.reply(sendMsgContext.getMsg(), sendCallback);
         return true;
     }
 
-    protected DeFiBusProducer defibusProducer;
+    protected MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
 
-    public DeFiBusProducer getDefibusProducer() {
-        return defibusProducer;
+    public MQProducerWrapper getMqProducerWrapper() {
+        return mqProducerWrapper;
     }
 
     public synchronized void init(ProxyConfiguration proxyConfiguration, ProducerGroupConf producerGroupConfig) {
         this.producerGroupConfig = producerGroupConfig;
         this.proxyConfiguration = proxyConfiguration;
-        DeFiBusClientConfig wcc = new DeFiBusClientConfig();
-        wcc.setClusterPrefix(proxyConfiguration.proxyIDC);
-        wcc.setPollNameServerInterval(proxyConfiguration.pollNameServerInteval);
-        wcc.setHeartbeatBrokerInterval(proxyConfiguration.heartbeatBrokerInterval);
-        wcc.setProducerGroup(ProxyConstants.PRODUCER_GROUP_NAME_PREFIX + producerGroupConfig.getGroupName());
-
-        wcc.setNamesrvAddr(proxyConfiguration.namesrvAddr);
-
-        MessageClientIDSetter.createUniqID();
-        defibusProducer = new DeFiBusProducer(wcc);
-        inited.compareAndSet(false, true);
+        mqProducerWrapper.init(proxyConfiguration, producerGroupConfig.getGroupName());
+        mqProducerWrapper.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyClientID(producerGroupConfig.getGroupName(),
+                proxyConfiguration.proxyRegion, proxyConfiguration.proxyCluster));
         logger.info("ProxyProducer [{}] inited.............", producerGroupConfig.getGroupName());
     }
 
@@ -102,14 +91,8 @@ public class ProxyProducer {
         if (started.get()) {
             return;
         }
-        defibusProducer.getDefaultMQProducer().setVipChannelEnabled(false);
-        defibusProducer.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyClientID(producerGroupConfig.getGroupName(),
-                proxyConfiguration.proxyRegion, proxyConfiguration.proxyCluster));
-        defibusProducer.getDefaultMQProducer().setCompressMsgBodyOverHowmuch(2 * 1024);
-        defibusProducer.start();
-        started.compareAndSet(false, true);
-        ThreadUtil.randomSleep(500);
-        defibusProducer.getDefaultMQProducer().getDefaultMQProducerImpl().getmQClientFactory().updateTopicRouteInfoFromNameServer();
+
+        mqProducerWrapper.start();
         logger.info("ProxyProducer [{}] started.............", producerGroupConfig.getGroupName());
     }
 
@@ -121,7 +104,7 @@ public class ProxyProducer {
         if (!started.get()) {
             return;
         }
-        defibusProducer.shutdown();
+        mqProducerWrapper.shutdown();
         inited.compareAndSet(true, false);
         started.compareAndSet(true, false);
         logger.info("ProxyProducer [{}] shutdown.............", producerGroupConfig.getGroupName());
