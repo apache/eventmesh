@@ -146,7 +146,7 @@ public class ClientGroupWrapper {
         return true;
     }
 
-    private MQProducerWrapper mqProducerWrapper;
+    private MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
 
     public MQProducerWrapper getMqProducerWrapper() {
         return mqProducerWrapper;
@@ -426,7 +426,7 @@ public class ClientGroupWrapper {
         if(inited4Broadcast.get()){
             return;
         }
-        persistentMsgConsumer.init(true, accessConfiguration, groupName);
+        broadCastMsgConsumer.init(true, accessConfiguration, groupName);
         broadCastMsgConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
             @Override
             public ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ProxyConsumeConcurrentlyContext context) {

@@ -83,6 +83,7 @@ public class ProxyProducer {
         mqProducerWrapper.init(proxyConfiguration, producerGroupConfig.getGroupName());
         mqProducerWrapper.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyClientID(producerGroupConfig.getGroupName(),
                 proxyConfiguration.proxyRegion, proxyConfiguration.proxyCluster));
+        inited.compareAndSet(false, true);
         logger.info("ProxyProducer [{}] inited.............", producerGroupConfig.getGroupName());
     }
 
@@ -93,6 +94,7 @@ public class ProxyProducer {
         }
 
         mqProducerWrapper.start();
+        started.compareAndSet(false, true);
         logger.info("ProxyProducer [{}] started.............", producerGroupConfig.getGroupName());
     }
 
