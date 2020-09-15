@@ -40,6 +40,7 @@ import org.apache.rocketmq.client.Validators;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageAccessor;
 import org.apache.rocketmq.common.message.MessageBatch;
 import org.apache.rocketmq.common.message.MessageClientIDSetter;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
@@ -158,7 +159,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                     rocketMQMsg = new Message(msg.topic, msg.tag, msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
                 }
                 rocketMQMsg.putUserProperty(DeFiBusConstant.KEY, DeFiBusConstant.PERSISTENT);
-                rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL, msg.ttl);
+                MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, msg.ttl);
                 msgList.add(rocketMQMsg);
                 if (topicBatchMessageMappings.containsKey(msg.topic)) {
                     topicBatchMessageMappings.get(msg.topic).add(rocketMQMsg);
