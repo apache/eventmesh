@@ -150,7 +150,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             MessageAccessor.putProperty(rocketMQMsg, MessageConst.PROPERTY_CORRELATION_ID, rocketMQMsg.getProperty(DeFiBusConstant.PROPERTY_RR_REQUEST_ID));
             MessageAccessor.putProperty(rocketMQMsg, MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT, rocketMQMsg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO));
 
-            rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL, String.valueOf(ProxyConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS));
+            MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, String.valueOf(ProxyConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS));
             rocketMQMsg.getProperties().put(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
             if (messageLogger.isDebugEnabled()) {
                 messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", replyMessageRequestBody.getBizSeqNo(),

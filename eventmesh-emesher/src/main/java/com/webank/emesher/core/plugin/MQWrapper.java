@@ -12,7 +12,9 @@ public abstract class MQWrapper {
     public static final String useRocketConf = System.getProperty(ProxyConstants.USE_ROCKET_PROPERTIES, System.getenv(ProxyConstants.USE_ROCKET_ENV));
 
     static {
-        useRocket = StringUtils.isNotBlank(useRocketConf) && Boolean.valueOf(useRocket);
+        if (StringUtils.isNotBlank(useRocketConf)) {
+            useRocket = Boolean.valueOf(useRocketConf);
+        }
     }
 
     public AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
