@@ -19,9 +19,9 @@ package com.webank.emesher.constants;
 
 public class ProxyConstants {
 
-    public static final String USE_ROCKET_PROPERTIES = "useRocket";
+    public static final String EVENT_STORE_PROPERTIES = "eventstore";
 
-    public static final String USE_ROCKET_ENV = "USE_ROCKET";
+    public static final String EVENT_STORE_ENV = "EVENT_STORE";
 
     public static final String PROTOCOL_HTTP = "http";
 

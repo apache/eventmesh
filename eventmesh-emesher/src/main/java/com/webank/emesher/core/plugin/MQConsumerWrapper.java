@@ -37,7 +37,7 @@ public class MQConsumerWrapper extends MQWrapper {
     protected DeFiMeshMQConsumerImpl deFiConsumerImpl;
 
     public void setInstanceName(String instanceName) {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             rmqConsumerImpl.setInstanceName(instanceName);
             return;
         }
@@ -46,7 +46,7 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public void subscribe(String topic) throws Exception {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             rmqConsumerImpl.subscribe(topic);
             return;
         }
@@ -54,7 +54,7 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public void unsubscribe(String topic) throws Exception {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             rmqConsumerImpl.unsubscribe(topic);
             return;
         }
@@ -62,7 +62,7 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public boolean isPause() {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             return rmqConsumerImpl.isPause();
         }
 
@@ -70,7 +70,7 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public void pause() {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             rmqConsumerImpl.pause();
             return;
         }
@@ -80,7 +80,7 @@ public class MQConsumerWrapper extends MQWrapper {
 
     public synchronized void init(boolean isBroadcast, CommonConfiguration commonConfiguration,
                                   String consumerGroup) throws Exception {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             rmqConsumerImpl = new RMQMeshMQConsumerImpl();
             rmqConsumerImpl.init(isBroadcast, commonConfiguration, consumerGroup);
             inited.compareAndSet(false, true);
@@ -93,7 +93,7 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public synchronized void start() throws Exception {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             rmqConsumerImpl.start();
             started.compareAndSet(false, true);
             return;
@@ -105,7 +105,7 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public synchronized void shutdown() throws Exception {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             rmqConsumerImpl.shutdown();
             inited.compareAndSet(false, true);
             started.compareAndSet(false, true);
@@ -118,7 +118,7 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently) {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             rmqConsumerImpl.registerMessageListener(messageListenerConcurrently);
             return;
         }
@@ -126,7 +126,7 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext proxyConsumeConcurrentlyContext) {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             rmqConsumerImpl.updateOffset(msgs, proxyConsumeConcurrentlyContext);
             return;
         }
