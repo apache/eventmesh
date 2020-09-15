@@ -7,20 +7,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class MQWrapper {
 
-    public static boolean useRocket = Boolean.FALSE;
+    public static final String EVENT_STORE_ROCKETMQ = "rocketmq";
 
-    public static final String useRocketConf = System.getProperty(ProxyConstants.USE_ROCKET_PROPERTIES, System.getenv(ProxyConstants.USE_ROCKET_ENV));
+    public static final String EVENT_STORE_DEFIBUS = "defibus";
+
+    public static String CURRENT_EVENT_STORE = EVENT_STORE_DEFIBUS;
+
+    public static final String EVENT_STORE_CONF = System.getProperty(ProxyConstants.EVENT_STORE_PROPERTIES, System.getenv(ProxyConstants.EVENT_STORE_ENV));
 
     static {
-        if (StringUtils.isNotBlank(useRocketConf)) {
-            useRocket = Boolean.valueOf(useRocketConf);
+        if (StringUtils.isNotBlank(EVENT_STORE_CONF)) {
+            CURRENT_EVENT_STORE = EVENT_STORE_CONF;
         }
     }
 
     public AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
 
     public AtomicBoolean inited = new AtomicBoolean(Boolean.FALSE);
-
-
 
 }
