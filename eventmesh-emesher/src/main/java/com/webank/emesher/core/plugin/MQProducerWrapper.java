@@ -53,7 +53,7 @@ public class MQProducerWrapper extends MQWrapper {
             return;
         }
 
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             defaultMQProducer = new DefaultMQProducer(ProxyConstants.PRODUCER_GROUP_NAME_PREFIX + producerGroup);
             defaultMQProducer.setHeartbeatBrokerInterval(commonConfiguration.heartbeatBrokerInterval);
             defaultMQProducer.setPollNameServerInterval(commonConfiguration.pollNameServerInteval);
@@ -82,7 +82,7 @@ public class MQProducerWrapper extends MQWrapper {
             return;
         }
 
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             defaultMQProducer.start();
             ThreadUtil.randomSleep(500);
             defaultMQProducer.getDefaultMQProducerImpl().getmQClientFactory().updateTopicRouteInfoFromNameServer();
@@ -104,7 +104,7 @@ public class MQProducerWrapper extends MQWrapper {
             return;
         }
 
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             defaultMQProducer.shutdown();
         } else {
             defibusProducer.shutdown();
@@ -115,7 +115,7 @@ public class MQProducerWrapper extends MQWrapper {
     }
 
     public void send(Message message, SendCallback sendCallback) throws Exception {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             defaultMQProducer.send(message, sendCallback);
             return;
         }
@@ -124,7 +124,7 @@ public class MQProducerWrapper extends MQWrapper {
 
     public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             defaultMQProducer.request(message, new RequestCallback() {
                 @Override
                 public void onSuccess(Message message) {
@@ -142,7 +142,7 @@ public class MQProducerWrapper extends MQWrapper {
     }
 
     public Message request(Message message, long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException, RequestTimeoutException {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             return defaultMQProducer.request(message, timeout);
         }
 
@@ -150,7 +150,7 @@ public class MQProducerWrapper extends MQWrapper {
     }
 
     public boolean reply(final Message message, final SendCallback sendCallback) throws Exception {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             defaultMQProducer.send(message, sendCallback);
             return true;
         }
@@ -159,7 +159,7 @@ public class MQProducerWrapper extends MQWrapper {
     }
 
     public DefaultMQProducer getDefaultMQProducer() {
-        if (useRocket) {
+        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
             return defaultMQProducer;
         }
 

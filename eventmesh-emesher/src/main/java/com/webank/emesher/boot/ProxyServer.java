@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 public class ProxyServer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
+
     public ProxyHTTPServer proxyHTTPServer;
 
     private ProxyTCPServer proxyTCPServer;
@@ -52,8 +53,8 @@ public class ProxyServer {
             proxyTCPServer.init();
         }
 
-        String useRocket = System.getProperty(ProxyConstants.USE_ROCKET_PROPERTIES, System.getenv(ProxyConstants.USE_ROCKET_ENV));
-        logger.info("useRocket : {}", useRocket);
+        String eventstore = System.getProperty(ProxyConstants.EVENT_STORE_PROPERTIES, System.getenv(ProxyConstants.EVENT_STORE_ENV));
+        logger.info("eventstore : {}", eventstore);
         logger.info("load custom {} class for proxy", ConsumeMessageConcurrentlyService.class.getCanonicalName());
 
         serviceState = ServiceState.INITED;
