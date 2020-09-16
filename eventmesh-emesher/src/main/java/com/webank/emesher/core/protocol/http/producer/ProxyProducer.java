@@ -19,12 +19,11 @@ package com.webank.emesher.core.protocol.http.producer;
 
 import com.webank.defibus.client.impl.producer.RRCallback;
 import com.webank.emesher.configuration.ProxyConfiguration;
-import com.webank.emesher.core.plugin.MQProducerWrapper;
 import com.webank.emesher.core.consumergroup.ProducerGroupConf;
+import com.webank.emesher.core.plugin.MQProducerWrapper;
 import com.webank.emesher.util.ProxyUtil;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.exception.RequestTimeoutException;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.exception.RemotingException;
@@ -62,7 +61,7 @@ public class ProxyProducer {
         mqProducerWrapper.request(sendMsgContext.getMsg(), sendCallback, rrCallback, timeout);
     }
 
-    public Message request(SendMessageContext sendMessageContext, long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException, RequestTimeoutException {
+    public Message request(SendMessageContext sendMessageContext, long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         return mqProducerWrapper.request(sendMessageContext.getMsg(), timeout);
     }
 
