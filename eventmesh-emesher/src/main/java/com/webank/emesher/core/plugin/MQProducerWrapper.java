@@ -22,20 +22,13 @@ import com.webank.defibus.client.impl.producer.RRCallback;
 import com.webank.defibus.producer.DeFiBusProducer;
 import com.webank.emesher.configuration.CommonConfiguration;
 import com.webank.emesher.constants.ProxyConstants;
-import com.webank.emesher.util.ProxyUtil;
 import com.webank.eventmesh.common.ThreadUtil;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.exception.RequestTimeoutException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.RequestCallback;
 import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.utils.MessageUtil;
-import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.message.MessageAccessor;
 import org.apache.rocketmq.common.message.MessageClientIDSetter;
-import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,25 +118,28 @@ public class MQProducerWrapper extends MQWrapper {
     public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            defaultMQProducer.request(message, new RequestCallback() {
-                @Override
-                public void onSuccess(Message message) {
-                    rrCallback.onSuccess(message);
-                }
-
-                @Override
-                public void onException(Throwable e) {
-                    rrCallback.onException(e);
-                }
-            }, timeout);
+            //1.1.0 not support rr
+//            defaultMQProducer.request(message, new RequestCallback() {
+//                @Override
+//                public void onSuccess(Message message) {
+//                    rrCallback.onSuccess(message);
+//                }
+//
+//                @Override
+//                public void onException(Throwable e) {
+//                    rrCallback.onException(e);
+//                }
+//            }, timeout);
             return;
         }
         defibusProducer.request(message, sendCallback, rrCallback, timeout);
     }
 
-    public Message request(Message message, long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException, RequestTimeoutException {
+    public Message request(Message message, long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            return defaultMQProducer.request(message, timeout);
+            //1.1.0 not support rr
+//            return defaultMQProducer.request(message, timeout);
+            throw new UnsupportedOperationException("not support request-reply mode when eventstore=rocketmq");
         }
 
         return defibusProducer.request(message, timeout);
@@ -151,8 +147,9 @@ public class MQProducerWrapper extends MQWrapper {
 
     public boolean reply(final Message message, final SendCallback sendCallback) throws Exception {
         if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            defaultMQProducer.send(message, sendCallback);
-            return true;
+//            defaultMQProducer.send(message, sendCallback);
+//            return true;
+            throw new UnsupportedOperationException("not support request-reply mode when eventstore=rocketmq");
         }
         defibusProducer.reply(message, sendCallback);
         return true;

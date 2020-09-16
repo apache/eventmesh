@@ -70,7 +70,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                 1000 * 60,
                 TimeUnit.MILLISECONDS,
                 this.consumeRequestQueue,
-                new ThreadFactoryImpl("ConsumeMessageThread_" + consumerGroup));
+                new ThreadFactoryImpl("ConsumeMessageThread_" + consumerGroup + "_"));
 
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ConsumeMessageScheduledThread_"));
         this.cleanExpireMsgExecutors = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("CleanExpireMsgScheduledThread_"));
@@ -95,12 +95,12 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
         }
     }
 
-    @Override
-    public void shutdown(long awaitTerminateMillis) {
-        this.scheduledExecutorService.shutdown();
-        this.consumeExecutor.shutdown();
-        this.cleanExpireMsgExecutors.shutdown();
-    }
+//    @Override
+//    public void shutdown(long awaitTerminateMillis) {
+//        this.scheduledExecutorService.shutdown();
+//        this.consumeExecutor.shutdown();
+//        this.cleanExpireMsgExecutors.shutdown();
+//    }
 
     public void shutdown() {
         this.scheduledExecutorService.shutdown();
