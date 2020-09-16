@@ -145,10 +145,10 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                 rocketMQMsg.putUserProperty(entry.getKey(), entry.getValue());
             }
 
-            //for rocketmq
-            MessageAccessor.putProperty(rocketMQMsg, MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
-            MessageAccessor.putProperty(rocketMQMsg, MessageConst.PROPERTY_CORRELATION_ID, rocketMQMsg.getProperty(DeFiBusConstant.PROPERTY_RR_REQUEST_ID));
-            MessageAccessor.putProperty(rocketMQMsg, MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT, rocketMQMsg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO));
+//            //for rocketmq support
+//            MessageAccessor.putProperty(rocketMQMsg, MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
+//            MessageAccessor.putProperty(rocketMQMsg, MessageConst.PROPERTY_CORRELATION_ID, rocketMQMsg.getProperty(DeFiBusConstant.PROPERTY_RR_REQUEST_ID));
+//            MessageAccessor.putProperty(rocketMQMsg, MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT, rocketMQMsg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO));
 
             MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, String.valueOf(ProxyConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS));
             rocketMQMsg.getProperties().put(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
