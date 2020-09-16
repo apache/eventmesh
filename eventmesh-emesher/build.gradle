@@ -60,15 +60,11 @@ List metrics = [
     "io.dropwizard.metrics:metrics-json:4.1.0"
 ]
 
-List rocketmq = [
-        "org.apache.rocketmq:rocketmq-client:$rocketmq_version"
-]
-
 dependencies {
     compile project(":eventmesh-common")
     testCompile project(":eventmesh-common")
-    compile defibus, metrics, log4j2, sl4j, rocketmq
-    testCompile defibus, metrics, log4j2, sl4j, junit, rocketmq
+    compile defibus, metrics, log4j2, sl4j
+    testCompile defibus, metrics, log4j2, sl4j, junit
 }
 
 clean.doFirst {
