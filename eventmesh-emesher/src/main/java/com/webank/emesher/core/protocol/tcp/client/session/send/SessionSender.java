@@ -30,7 +30,10 @@ import com.webank.emesher.util.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageAccessor;
+import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +94,12 @@ public class SessionSender {
                         replyTopic = cluster + "-" + replyTopic;
                         msg.setTopic(replyTopic);
                     }
+
+//                    //for rocketmq support
+//                    MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
+//                    MessageAccessor.putProperty(msg, MessageConst.PROPERTY_CORRELATION_ID, msg.getProperty(DeFiBusConstant.PROPERTY_RR_REQUEST_ID));
+//                    MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT, msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO));
+
                     upStreamMsgContext = new UpStreamMsgContext(header.getSeq(), session, msg);
                     session.getClientGroupWrapper().get().reply(upStreamMsgContext);
                     upstreamBuff.release();
