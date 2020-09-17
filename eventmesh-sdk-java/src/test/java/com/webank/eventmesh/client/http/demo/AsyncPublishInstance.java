@@ -15,42 +15,30 @@ public class AsyncPublishInstance {
     public static Logger logger = LoggerFactory.getLogger(AsyncPublishInstance.class);
 
     public static void main(String[] args) throws Exception {
-        String confCenterAddr = args[0];
-        String proxyIPPort = args[1];
-        String topic = args[2];
-        String packetSize = args[3];
 
-        if (StringUtils.isBlank(confCenterAddr)) {
-            confCenterAddr = "http://127.0.0.1:8090";
-        }
+        LiteProducer liteProducer = null;
+        try{
+            String proxyIPPort = args[0];
 
-        if (StringUtils.isBlank(topic)) {
-            topic = "topic-async-test";
-        }
+            String topic = args[1];
 
-        if (StringUtils.isBlank(proxyIPPort)) {
-            proxyIPPort = "127.0.0.1:10105";
-        }
+            if (StringUtils.isBlank(proxyIPPort)) {
+                // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
+                proxyIPPort = "127.0.0.1:10105";
+            }
 
-        if (StringUtils.isBlank(packetSize)) {
-            packetSize = "1000";
-        }
+            LiteClientConfig weMQProxyClientConfig = new LiteClientConfig();
+            weMQProxyClientConfig.setLiteProxyAddr(proxyIPPort)
+                    .setEnv("env")
+                    .setIdc("idc")
+                    .setDcn("dcn")
+                    .setIp(IPUtil.getLocalAddress())
+                    .setSys("1234")
+                    .setPid(String.valueOf(ThreadUtil.getPID()));
 
-        LiteClientConfig weMQProxyClientConfig = new LiteClientConfig();
-        weMQProxyClientConfig.setRegistryEnabled(false)
-                .setRegistryAddr("http://127.0.0.1:8090")
-                .setLiteProxyAddr("127.0.0.1:10105")
-                .setEnv("A")
-                .setRegion("SZ")
-                .setIdc("FT")
-                .setDcn("AA0")
-                .setIp(IPUtil.getLocalAddress())
-                .setSys("5147")
-                .setPid(String.valueOf(ThreadUtil.getPID()))
-                .setLiteProxyAddr(proxyIPPort);
-        LiteProducer liteProducer = new LiteProducer(weMQProxyClientConfig);
-        liteProducer.start();
-        for (int i = 1; i < 10; i++) {
+            liteProducer = new LiteProducer(weMQProxyClientConfig);
+            liteProducer.start();
+
             LiteMessage liteMessage = new LiteMessage();
             liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
                     .setContent("contentStr with special protocal")
@@ -61,7 +49,17 @@ public class AsyncPublishInstance {
             boolean flag = liteProducer.publish(liteMessage);
             Thread.sleep(1000);
             logger.info("publish result , {}", flag);
+        }catch (Exception e){
+            logger.warn("publish msg failed", e);
+        }
+
+        try{
+            Thread.sleep(30000);
+            if(liteProducer != null){
+                liteProducer.shutdown();
+            }
+        }catch (Exception e1){
+            logger.warn("producer shutdown exception", e1);
         }
     }
-
 }

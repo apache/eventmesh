@@ -25,27 +25,21 @@ import com.webank.emesher.core.protocol.tcp.client.session.Session;
 import com.webank.emesher.core.protocol.tcp.client.session.SessionState;
 import com.webank.emesher.core.protocol.tcp.client.session.push.ClientAckContext;
 import com.webank.emesher.core.protocol.tcp.client.session.push.DownStreamMsgContext;
+import com.webank.emesher.util.ProxyUtil;
 import com.webank.eventmesh.common.ThreadUtil;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
-import com.webank.emesher.util.ProxyUtil;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -139,7 +133,7 @@ public class ClientSessionGroupMapping {
         sessionLogger.info("session|close|succeed|user={}", session.getClient());
     }
 
-    private void closeSession(Session session){
+    private void closeSession(Session session) throws Exception {
         final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(session.getContext().channel());
         if (SessionState.CLOSED == session.getSessionState()) {
             logger.info("session has been closed, addr:{}", remoteAddress);
@@ -219,7 +213,7 @@ public class ClientSessionGroupMapping {
         session.setSessionState(SessionState.RUNNING);
     }
 
-    private void initClientGroupConsumser(ClientGroupWrapper cgw) throws MQClientException {
+    private void initClientGroupConsumser(ClientGroupWrapper cgw) throws Exception {
         if (!cgw.producerStarted.get()) {
             cgw.startClientGroupProducer();
         }
@@ -257,14 +251,14 @@ public class ClientSessionGroupMapping {
         }
     }
 
-    private void cleanClientGroupWrapperByCloseSub(Session session){
+    private void cleanClientGroupWrapperByCloseSub(Session session) throws Exception {
         cleanSubscriptionInSession(session);
         session.getClientGroupWrapper().get().removeGroupConsumerSession(session);
         handleUnackMsgsInSession(session);
         cleanClientGroupWrapperCommon(session);
     }
 
-    private void cleanClientGroupWrapperByClosePub(Session session){
+    private void cleanClientGroupWrapperByClosePub(Session session) throws Exception {
         session.getClientGroupWrapper().get().removeGroupProducerSession(session);
         cleanClientGroupWrapperCommon(session);
     }
@@ -274,7 +268,7 @@ public class ClientSessionGroupMapping {
      *
      * @param session
      */
-    private void cleanSubscriptionInSession(Session session){
+    private void cleanSubscriptionInSession(Session session) throws Exception {
         for (String topic : session.getSessionContext().subscribeTopics.values()) {
             session.getClientGroupWrapper().get().removeSubscription(topic, session);
             if (!session.getClientGroupWrapper().get().hasSubscription(topic)) {
@@ -308,7 +302,7 @@ public class ClientSessionGroupMapping {
         }
     }
 
-    private void cleanClientGroupWrapperCommon(Session session){
+    private void cleanClientGroupWrapperCommon(Session session) throws Exception {
         logger.info("GroupConsumerSessions size:{}", session.getClientGroupWrapper().get().getGroupConsumerSessions().size());
         if (session.getClientGroupWrapper().get().getGroupConsumerSessions().size() == 0) {
             shutdownClientGroupConsumer(session);
@@ -325,7 +319,7 @@ public class ClientSessionGroupMapping {
         }
     }
 
-    private void shutdownClientGroupConsumer(Session session){
+    private void shutdownClientGroupConsumer(Session session) throws Exception {
         if (session.getClientGroupWrapper().get().started4Broadcast.get() == Boolean.TRUE) {
             session.getClientGroupWrapper().get().shutdownBroadCastConsumer();
         }
@@ -336,7 +330,7 @@ public class ClientSessionGroupMapping {
     }
 
 
-    private void shutdownClientGroupProducer(Session session){
+    private void shutdownClientGroupProducer(Session session) throws Exception {
         if (session.getClientGroupWrapper().get().producerStarted.get() == Boolean.TRUE) {
             session.getClientGroupWrapper().get().shutdownProducer();
         }
