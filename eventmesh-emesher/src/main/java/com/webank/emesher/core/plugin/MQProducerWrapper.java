@@ -118,6 +118,7 @@ public class MQProducerWrapper extends MQWrapper {
     public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
+            throw new UnsupportedOperationException("not support request-reply mode when eventstore=rocketmq");
             //1.1.0 not support rr
 //            defaultMQProducer.request(message, new RequestCallback() {
 //                @Override
@@ -130,7 +131,7 @@ public class MQProducerWrapper extends MQWrapper {
 //                    rrCallback.onException(e);
 //                }
 //            }, timeout);
-            return;
+//            return;
         }
         defibusProducer.request(message, sendCallback, rrCallback, timeout);
     }
