@@ -20,12 +20,15 @@ package com.webank.emesher.boot;
 import com.webank.emesher.common.ServiceState;
 import com.webank.emesher.configuration.AccessConfiguration;
 import com.webank.emesher.configuration.ProxyConfiguration;
+import com.webank.emesher.constants.ProxyConstants;
+import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ProxyServer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
+
     public ProxyHTTPServer proxyHTTPServer;
 
     private ProxyTCPServer proxyTCPServer;
@@ -49,6 +52,11 @@ public class ProxyServer {
         if (accessConfiguration.proxyTcpServerEnabled) {
             proxyTCPServer.init();
         }
+
+        String eventstore = System.getProperty(ProxyConstants.EVENT_STORE_PROPERTIES, System.getenv(ProxyConstants.EVENT_STORE_ENV));
+        logger.info("eventstore : {}", eventstore);
+        logger.info("load custom {} class for proxy", ConsumeMessageConcurrentlyService.class.getCanonicalName());
+
         serviceState = ServiceState.INITED;
         logger.info("server state:{}",serviceState);
     }
