@@ -38,6 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageAccessor;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,13 +111,13 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         String producerGroup = ProxyUtil.buildClientGroup(sendMessageBatchV2RequestHeader.getSys(),
                 sendMessageBatchV2RequestHeader.getDcn());
         ProxyProducer batchProxyProducer = proxyHTTPServer.getProducerManager().getProxyProducer(producerGroup);
-        batchProxyProducer.getDefibusProducer().getDeFiBusClientConfig().setRetryTimesWhenSendFailed(0);
-        batchProxyProducer.getDefibusProducer().getDeFiBusClientConfig().setRetryTimesWhenSendAsyncFailed(0);
-        batchProxyProducer.getDefibusProducer().getDeFiBusClientConfig().setPollNameServerInterval(60000);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendFailed(0);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendAsyncFailed(0);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setPollNameServerInterval(60000);
 
-        batchProxyProducer.getDefibusProducer().getDefaultMQProducer().getDefaultMQProducerImpl().getmQClientFactory()
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().getDefaultMQProducerImpl().getmQClientFactory()
                 .getNettyClientConfig().setClientAsyncSemaphoreValue(proxyHTTPServer.getProxyConfiguration().proxyServerAsyncAccumulationThreshold);
-        batchProxyProducer.getDefibusProducer().getDefaultMQProducer().setCompressMsgBodyOverHowmuch(10);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setCompressMsgBodyOverHowmuch(10);
         if (!batchProxyProducer.getStarted().get()) {
             responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchV2ResponseHeader,
@@ -141,7 +142,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                         sendMessageBatchV2RequestBody.getMsg().getBytes(ProxyConstants.DEFAULT_CHARSET));
             }
             rocketMQMsg.putUserProperty(DeFiBusConstant.KEY, DeFiBusConstant.PERSISTENT);
-            rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL, sendMessageBatchV2RequestBody.getTtl());
+            MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, sendMessageBatchV2RequestBody.getTtl());
 
             if (batchMessageLogger.isDebugEnabled()) {
                 batchMessageLogger.debug("msg2MQMsg suc, topic:{}, msg:{}", sendMessageBatchV2RequestBody.getTopic(), sendMessageBatchV2RequestBody.getMsg());
