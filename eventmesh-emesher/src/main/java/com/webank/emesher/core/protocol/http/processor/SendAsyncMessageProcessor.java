@@ -41,6 +41,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageAccessor;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +133,9 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             }
 
             rocketMQMsg.putUserProperty(DeFiBusConstant.KEY, DeFiBusConstant.PERSISTENT);
-            rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL, ttl);
+            // new rocketmq client can't support put DeFiBusConstant.PROPERTY_MESSAGE_TTL
+//            rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL, ttl);
+            MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, ttl);
             rocketMQMsg.putUserProperty(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
             rocketMQMsg.putUserProperty(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
             rocketMQMsg.setKeys(sendMessageRequestBody.getBizSeqNo());

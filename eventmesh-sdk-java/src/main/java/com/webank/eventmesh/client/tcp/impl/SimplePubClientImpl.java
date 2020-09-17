@@ -165,12 +165,12 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
             logger.info("SimplePubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader(), msg);
-            if (callback != null) {
-                callback.handle(msg, ctx);
-            }
 
             Command cmd = msg.getHeader().getCommand();
             if (cmd == Command.RESPONSE_TO_CLIENT) {
+                if (callback != null) {
+                    callback.handle(msg, ctx);
+                }
                 Package pkg = MessageUtils.responseToClientAck(msg);
                 send(pkg);
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
