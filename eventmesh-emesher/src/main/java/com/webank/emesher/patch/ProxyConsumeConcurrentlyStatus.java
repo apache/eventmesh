@@ -15,29 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.client.impl.consumer;
+package com.webank.emesher.patch;
 
-import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
-import org.apache.rocketmq.common.message.MessageQueue;
-
-public class ConsumeMessageConcurrentlyContext extends ConsumeConcurrentlyContext {
-    private final ProcessQueue processQueue;
-    private boolean manualAck = true;
-
-    public ConsumeMessageConcurrentlyContext(MessageQueue messageQueue, ProcessQueue processQueue) {
-        super(messageQueue);
-        this.processQueue = processQueue;
-    }
-
-    public ProcessQueue getProcessQueue() {
-        return processQueue;
-    }
-
-    public boolean isManualAck() {
-        return manualAck;
-    }
-
-    public void setManualAck(boolean manualAck) {
-        this.manualAck = manualAck;
-    }
+public enum ProxyConsumeConcurrentlyStatus {
+    /**
+     * Success consumption
+     */
+    CONSUME_SUCCESS,
+    /**
+     * Failure consumption,later try to consume
+     */
+    RECONSUME_LATER,
+    /**
+     * Success consumption but ack later manually
+     */
+    CONSUME_FINISH;
 }

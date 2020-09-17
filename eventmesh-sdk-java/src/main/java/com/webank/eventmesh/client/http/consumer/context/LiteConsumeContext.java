@@ -26,9 +26,9 @@ public class LiteConsumeContext {
 
     private String proxyEnv;
 
-    private String proxyRegion;
-
     private String proxyIdc;
+
+    private String proxyRegion;
 
     private String proxyCluster;
 
@@ -40,7 +40,7 @@ public class LiteConsumeContext {
     private long createTime = System.currentTimeMillis();
 
     public LiteConsumeContext(String proxyIp, String proxyEnv,
-                              String proxyIdc, String proxyRegion,
+                              String proxyIdc,String proxyRegion,
                               String proxyCluster, String proxyDcn) {
         this.proxyIp = proxyIp;
         this.proxyEnv = proxyEnv;
@@ -75,6 +75,14 @@ public class LiteConsumeContext {
         this.proxyIdc = proxyIdc;
     }
 
+    public String getProxyRegion() {
+        return proxyRegion;
+    }
+
+    public void setProxyRegion(String proxyRegion) {
+        this.proxyRegion = proxyRegion;
+    }
+
     public String getProxyCluster() {
         return proxyCluster;
     }
@@ -89,14 +97,6 @@ public class LiteConsumeContext {
 
     public void setProxyDcn(String proxyDcn) {
         this.proxyDcn = proxyDcn;
-    }
-
-    public String getProxyRegion() {
-        return proxyRegion;
-    }
-
-    public void setProxyRegion(String proxyRegion) {
-        this.proxyRegion = proxyRegion;
     }
 
     public int getRetryTimes() {

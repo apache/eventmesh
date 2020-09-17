@@ -18,14 +18,12 @@
 package com.webank.emesher.core.protocol.tcp.client.session.push;
 
 import com.webank.defibus.common.DeFiBusConstant;
-import com.webank.defibus.consumer.DeFiBusPushConsumer;
 import com.webank.emesher.constants.ProxyConstants;
+import com.webank.emesher.core.plugin.MQConsumerWrapper;
 import com.webank.emesher.core.protocol.tcp.client.session.Session;
 import com.webank.emesher.util.ServerGlobal;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyContext;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
+import com.webank.emesher.patch.ProxyConsumeConcurrentlyContext;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,9 +43,9 @@ public class DownStreamMsgContext implements Delayed {
 
     public Session session;
 
-    public ConsumeMessageConcurrentlyContext consumeConcurrentlyContext;
+    public ProxyConsumeConcurrentlyContext consumeConcurrentlyContext;
 
-    public DeFiBusPushConsumer consumer;
+    public MQConsumerWrapper consumer;
 
     public int retryTimes;
 
@@ -61,7 +59,7 @@ public class DownStreamMsgContext implements Delayed {
 
     public boolean msgFromOtherProxy;
 
-    public DownStreamMsgContext(MessageExt msgExt, Session session, DeFiBusPushConsumer consumer, ConsumeMessageConcurrentlyContext consumeConcurrentlyContext, boolean msgFromOtherProxy) {
+    public DownStreamMsgContext(MessageExt msgExt, Session session, MQConsumerWrapper consumer, ProxyConsumeConcurrentlyContext consumeConcurrentlyContext, boolean msgFromOtherProxy) {
         this.seq = String.valueOf(ServerGlobal.getInstance().getMsgCounter().incrementAndGet());
         this.msgExt = msgExt;
         this.session = session;
@@ -83,8 +81,9 @@ public class DownStreamMsgContext implements Delayed {
         if (consumer != null && consumeConcurrentlyContext != null && msgExt != null) {
             List<MessageExt> msgs = new ArrayList<MessageExt>();
             msgs.add(msgExt);
-            ConsumeMessageService consumeMessageService = consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
-            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, consumeConcurrentlyContext);
+            consumer.updateOffset(msgs, consumeConcurrentlyContext);
+//            ConsumeMessageService consumeMessageService = consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
+//            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, consumeConcurrentlyContext);
             logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getTopic(), msgs.get(0).getKeys());
         }else{
             logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",consumer == null, consumeConcurrentlyContext == null, msgExt == null);
@@ -101,8 +100,8 @@ public class DownStreamMsgContext implements Delayed {
                 ",seq=" + seq +
                 ",client=" + session.getClient() +
                 ",retryTimes=" + retryTimes +
-                ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
-                ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
+                ",consumer=" + consumer +
+//  todo              ",consumerGroup=" + consumer.getClass().getConsumerGroup() +
                 ",topic=" + msgExt.getTopic() +
                 ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) +
                 ",executeTime=" + DateFormatUtils.format(executeTime, ProxyConstants.DATE_FORMAT) +
