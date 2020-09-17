@@ -19,9 +19,10 @@ package com.webank.emesher.core.protocol.tcp.client.session.push;
 
 import com.webank.defibus.consumer.DeFiBusPushConsumer;
 import com.webank.emesher.constants.ProxyConstants;
+import com.webank.emesher.core.plugin.MQConsumerWrapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyContext;
+import com.webank.emesher.patch.ProxyConsumeConcurrentlyContext;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +59,7 @@ public class PushContext {
         deliverFailMsgsCount.incrementAndGet();
     }
 
-    public void unAckMsg(String seq, List<MessageExt> msg, ConsumeMessageConcurrentlyContext context, DeFiBusPushConsumer consumer) {
+    public void unAckMsg(String seq, List<MessageExt> msg, ProxyConsumeConcurrentlyContext context, MQConsumerWrapper consumer) {
         ClientAckContext ackContext = new ClientAckContext(seq,context, msg, consumer);
         unAckMsg.put(seq, ackContext);
         logger.info("put msg in unAckMsg,seq:{},unAckMsgSize:{}", seq, getTotalUnackMsgs());

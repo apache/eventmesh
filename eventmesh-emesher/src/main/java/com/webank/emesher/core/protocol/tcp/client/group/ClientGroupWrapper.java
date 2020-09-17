@@ -17,46 +17,38 @@
 
 package com.webank.emesher.core.protocol.tcp.client.group;
 
+import com.alibaba.fastjson.JSON;
 import com.webank.defibus.client.common.DeFiBusClientConfig;
 import com.webank.defibus.client.impl.producer.RRCallback;
-import com.webank.defibus.consumer.DeFiBusPushConsumer;
-import com.webank.defibus.producer.DeFiBusProducer;
 import com.webank.emesher.boot.ProxyTCPServer;
 import com.webank.emesher.configuration.AccessConfiguration;
 import com.webank.emesher.constants.ProxyConstants;
+import com.webank.emesher.core.plugin.MQConsumerWrapper;
+import com.webank.emesher.core.plugin.MQProducerWrapper;
 import com.webank.emesher.core.protocol.tcp.client.group.dispatch.DownstreamDispatchStrategy;
 import com.webank.emesher.core.protocol.tcp.client.session.Session;
 import com.webank.emesher.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import com.webank.emesher.core.protocol.tcp.client.session.push.retry.ProxyTcpRetryer;
 import com.webank.emesher.core.protocol.tcp.client.session.send.UpStreamMsgContext;
 import com.webank.emesher.metrics.tcp.ProxyTcpMonitor;
+import com.webank.emesher.patch.ProxyConsumeConcurrentlyContext;
+import com.webank.emesher.patch.ProxyConsumeConcurrentlyStatus;
+import com.webank.emesher.patch.ProxyMessageListenerConcurrently;
 import com.webank.emesher.util.ProxyUtil;
-import com.alibaba.fastjson.JSON;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyContext;
-import org.apache.rocketmq.client.impl.consumer.ProxyConsumeConcurrentlyStatus;
-import org.apache.rocketmq.client.impl.consumer.ProxyMessageListenerConcurrentlyOnce;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.common.MixAll;
-import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
-import org.apache.rocketmq.common.message.MessageClientIDSetter;
 import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.common.utils.HttpTinyClient;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -96,13 +88,9 @@ public class ClientGroupWrapper {
 
     public AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
 
-    private DeFiBusClientConfig clientConfig4Clustering;
+    private MQConsumerWrapper persistentMsgConsumer = new MQConsumerWrapper();
 
-    private DeFiBusPushConsumer persistentMsgConsumer;
-
-    private DeFiBusClientConfig clientConfig4Broadcasting;
-
-    private DeFiBusPushConsumer broadCastMsgConsumer;
+    private MQConsumerWrapper broadCastMsgConsumer = new MQConsumerWrapper();
 
     private ConcurrentHashMap<String, Set<Session>> topic2sessionInGroupMapping = new ConcurrentHashMap<String, Set<Session>>();
 
@@ -133,17 +121,17 @@ public class ClientGroupWrapper {
     }
 
     public boolean send(UpStreamMsgContext upStreamMsgContext, SendCallback sendCallback) throws Exception {
-        defibusProducer.publish(upStreamMsgContext.getMsg(), sendCallback);
+        mqProducerWrapper.send(upStreamMsgContext.getMsg(), sendCallback);
         return true;
     }
 
     public void request(UpStreamMsgContext upStreamMsgContext, SendCallback sendCallback, RRCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        defibusProducer.request(upStreamMsgContext.getMsg(), sendCallback, rrCallback, timeout);
+        mqProducerWrapper.request(upStreamMsgContext.getMsg(), sendCallback, rrCallback, timeout);
     }
 
     public boolean reply(UpStreamMsgContext upStreamMsgContext) throws Exception {
-        defibusProducer.reply(upStreamMsgContext.getMsg(), new SendCallback() {
+        mqProducerWrapper.reply(upStreamMsgContext.getMsg(), new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
 
@@ -158,10 +146,10 @@ public class ClientGroupWrapper {
         return true;
     }
 
-    private DeFiBusProducer defibusProducer;
+    private MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
 
-    public DeFiBusProducer getDefibusProducer() {
-        return defibusProducer;
+    public MQProducerWrapper getMqProducerWrapper() {
+        return mqProducerWrapper;
     }
 
     public boolean addSubscription(String topic, Session session) throws Exception {
@@ -223,31 +211,23 @@ public class ClientGroupWrapper {
         return r;
     }
 
-    public synchronized void startClientGroupProducer() throws MQClientException {
+    public synchronized void startClientGroupProducer() throws Exception {
         if (producerStarted.get()) {
             return;
         }
-        DeFiBusClientConfig wcc = new DeFiBusClientConfig();
-        wcc.setClusterPrefix(accessConfiguration.proxyIDC);
-        wcc.setProducerGroup(ProxyUtil.buildClientProducerGroup(sysId, dcn));
-        wcc.setNamesrvAddr(accessConfiguration.namesrvAddr);
 
-        MessageClientIDSetter.createUniqID();
-        defibusProducer = new DeFiBusProducer(wcc);
-        defibusProducer.getDefaultMQProducer().setVipChannelEnabled(false);
-        defibusProducer.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//set instance name
-        defibusProducer.getDefaultMQProducer().setCompressMsgBodyOverHowmuch(1024 * 2);
-
-        defibusProducer.start();
+        mqProducerWrapper.init(accessConfiguration , groupName);
+        mqProducerWrapper.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//set instance name
+        mqProducerWrapper.start();
         producerStarted.compareAndSet(false, true);
-        logger.info("starting producer success, group:{} clientConfig:{}", groupName, wcc);
+        logger.info("starting producer success, group:{}", groupName);
     }
 
-    public synchronized void shutdownProducer() {
+    public synchronized void shutdownProducer() throws Exception {
         if (!producerStarted.get()) {
             return;
         }
-        defibusProducer.shutdown();
+        mqProducerWrapper.shutdown();
         producerStarted.compareAndSet(true, false);
         logger.info("shutdown producer success for group:{}", groupName);
     }
@@ -358,41 +338,17 @@ public class ClientGroupWrapper {
         return r;
     }
 
-    private DeFiBusClientConfig initDefibusClientConfig(boolean broadcast) {
-        DeFiBusClientConfig wcc = new DeFiBusClientConfig();
-        wcc.setPubWindowSize(accessConfiguration.pubWindow);
-        wcc.setAckWindowSize(accessConfiguration.ackWindow);
-        wcc.setThreadPoolCoreSize(accessConfiguration.consumeThreadMin);
-        wcc.setThreadPoolMaxSize(accessConfiguration.consumeThreadMax);
-        wcc.setPullBatchSize(accessConfiguration.pullBatchSize);
-        wcc.setClusterPrefix(accessConfiguration.proxyIDC);
-
-        wcc.setConsumeTimeout(accessConfiguration.consumeTimeout);
-        if (broadcast) {
-            wcc.setConsumerGroup(ProxyUtil.buildBroadcastClientConsumerGroup(sysId, dcn));
-        } else {
-            wcc.setConsumerGroup(ProxyUtil.buildPersistentClientConsumerGroup(sysId, dcn));
-        }
-
-        wcc.setNamesrvAddr(accessConfiguration.namesrvAddr);
-
-        return wcc;
-    }
-
-    public synchronized void initClientGroupPersistentConsumer() {
+    public synchronized void initClientGroupPersistentConsumer() throws Exception {
         if(inited4Persistent.get()){
             return;
         }
-        clientConfig4Clustering = initDefibusClientConfig(false);
-        persistentMsgConsumer = new DeFiBusPushConsumer(clientConfig4Clustering);
-        persistentMsgConsumer.getDefaultMQPushConsumer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "SUB", accessConfiguration.proxyCluster));
-        persistentMsgConsumer.getDefaultMQPushConsumer().setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
-        persistentMsgConsumer.getDefaultMQPushConsumer().setMessageModel(MessageModel.CLUSTERING);
-        persistentMsgConsumer.getDefaultMQPushConsumer().setNamesrvAddr(clientConfig4Clustering.getNamesrvAddr());
-        persistentMsgConsumer.registerMessageListener(new ProxyMessageListenerConcurrentlyOnce() {
+
+        persistentMsgConsumer.init(false, accessConfiguration, groupName);
+        persistentMsgConsumer.setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "SUB", accessConfiguration.proxyCluster));
+        persistentMsgConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
 
             @Override
-            public ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ConsumeMessageConcurrentlyContext context) {
+            public ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ProxyConsumeConcurrentlyContext context) {
 
             if (msg == null)
                 return ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS;
@@ -432,7 +388,7 @@ public class ClientGroupWrapper {
             }
 
             DownStreamMsgContext downStreamMsgContext =
-                    new DownStreamMsgContext(msg, session, persistentMsgConsumer, (ConsumeMessageConcurrentlyContext)context, false);
+                    new DownStreamMsgContext(msg, session, persistentMsgConsumer, (ProxyConsumeConcurrentlyContext)context, false);
 
             if(downstreamMap.size() < proxyTCPServer.getAccessConfiguration().proxyTcpDownStreamMapSize){
                 downstreamMap.putIfAbsent(downStreamMsgContext.seq, downStreamMsgContext);
@@ -454,32 +410,26 @@ public class ClientGroupWrapper {
             }
         });
         inited4Persistent.compareAndSet(false, true);
-        logger.info("init persistentMsgConsumer success, group:{} persistentMsgConsumerMQClientConfig:{}", groupName, clientConfig4Clustering);
+        logger.info("init persistentMsgConsumer success, group:{}", groupName);
     }
 
-    public synchronized void startClientGroupPersistentConsumer() throws MQClientException {
+    public synchronized void startClientGroupPersistentConsumer() throws Exception {
         if (started4Persistent.get()) {
             return;
         }
         persistentMsgConsumer.start();
-        persistentMsgConsumer.getDefaultMQPushConsumer().unsubscribe(MixAll.getRetryTopic(clientConfig4Clustering.getConsumerGroup()));
         started4Persistent.compareAndSet(false, true);
         logger.info("starting persistentMsgConsumer success, group:{}", groupName);
     }
 
-    public synchronized void initClientGroupBroadcastConsumer() {
+    public synchronized void initClientGroupBroadcastConsumer() throws Exception {
         if(inited4Broadcast.get()){
             return;
         }
-        clientConfig4Broadcasting = initDefibusClientConfig(true);
-        broadCastMsgConsumer = new DeFiBusPushConsumer(clientConfig4Broadcasting);
-        broadCastMsgConsumer.getDefaultMQPushConsumer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "SUB", accessConfiguration.proxyCluster));
-        broadCastMsgConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
-        broadCastMsgConsumer.getDefaultMQPushConsumer().setMessageModel(MessageModel.BROADCASTING);
-        broadCastMsgConsumer.setNamesrvAddr(clientConfig4Broadcasting.getNamesrvAddr());
-        broadCastMsgConsumer.registerMessageListener(new ProxyMessageListenerConcurrentlyOnce() {
+        broadCastMsgConsumer.init(true, accessConfiguration, groupName);
+        broadCastMsgConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
             @Override
-            public ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ConsumeMessageConcurrentlyContext context) {
+            public ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ProxyConsumeConcurrentlyContext context) {
                 if (msg == null)
                     return ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 
@@ -529,15 +479,14 @@ public class ClientGroupWrapper {
             }
         });
         inited4Broadcast.compareAndSet(false, true);
-        logger.info("init broadCastMsgConsumer success, group:{} broadcastMsgConsumerMQClientConfig:{}", groupName, clientConfig4Broadcasting);
+        logger.info("init broadCastMsgConsumer success, group:{}", groupName);
     }
 
-    public synchronized void startClientGroupBroadcastConsumer() throws MQClientException{
+    public synchronized void startClientGroupBroadcastConsumer() throws Exception{
         if (started4Broadcast.get()) {
             return;
         }
         broadCastMsgConsumer.start();
-        broadCastMsgConsumer.getDefaultMQPushConsumer().unsubscribe(MixAll.getRetryTopic(clientConfig4Broadcasting.getConsumerGroup()));
         started4Broadcast.compareAndSet(false, true);
         logger.info("starting broadCastMsgConsumer success, group:{}", groupName);
     }
@@ -550,7 +499,7 @@ public class ClientGroupWrapper {
         }
     }
 
-    public void unsubscribe(String topic) {
+    public void unsubscribe(String topic) throws Exception {
         if (ProxyUtil.isBroadcast(topic)) {
             broadCastMsgConsumer.unsubscribe(topic);
         } else {
@@ -558,7 +507,7 @@ public class ClientGroupWrapper {
         }
     }
 
-    public synchronized void shutdownBroadCastConsumer() {
+    public synchronized void shutdownBroadCastConsumer() throws Exception {
         if (started4Broadcast.get()) {
             broadCastMsgConsumer.shutdown();
             logger.info("broadcast consumer group:{} shutdown...", groupName);
@@ -566,10 +515,9 @@ public class ClientGroupWrapper {
         started4Broadcast.compareAndSet(true, false);
         inited4Broadcast.compareAndSet(true, false);
         broadCastMsgConsumer = null;
-        clientConfig4Broadcasting = null;
     }
 
-    public synchronized void shutdownPersistentConsumer() {
+    public synchronized void shutdownPersistentConsumer() throws Exception {
 
         if (started4Persistent.get()) {
             persistentMsgConsumer.shutdown();
@@ -578,7 +526,6 @@ public class ClientGroupWrapper {
         started4Persistent.compareAndSet(true, false);
         inited4Persistent.compareAndSet(true,false);
         persistentMsgConsumer = null;
-        clientConfig4Clustering = null;
     }
 
     public Set<Session> getGroupConsumerSessions() {
@@ -677,7 +624,7 @@ public class ClientGroupWrapper {
         }
     }
 
-    public DeFiBusPushConsumer getPersistentMsgConsumer() {
+    public MQConsumerWrapper getPersistentMsgConsumer() {
         return persistentMsgConsumer;
     }
 

@@ -85,7 +85,7 @@ public class MessageTransferTask extends AbstractTask {
                 addTimestamp(accessMessage, cmd, sendTime);
                 if (cmd.equals(Command.REQUEST_TO_SERVER)) {
                     accessMessage.getProperties().put(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO, session.getClientGroupWrapper()
-                            .get().getDefibusProducer().getDefaultMQProducer().buildMQClientId());
+                            .get().getMqProducerWrapper().getDefaultMQProducer().buildMQClientId());
                 }
 
                 sendStatus = session.upstreamMsg(pkg.getHeader(), ProxyUtil.decodeMessage(accessMessage), createSendCallback(replyCmd, taskExecuteTime, accessMessage), startTime, taskExecuteTime);
