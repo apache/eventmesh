@@ -22,8 +22,7 @@ import com.webank.defibus.common.message.DeFiBusMessageConst;
 import com.webank.emesher.boot.ProxyTCPServer;
 import com.webank.emesher.core.protocol.tcp.client.session.Session;
 import com.webank.emesher.core.protocol.tcp.client.session.push.DownStreamMsgContext;
-import com.webank.emesher.threads.ProxyThreadFactoryImpl;
-import com.webank.emesher.threads.ThreadPoolHelper;
+import com.webank.emesher.util.ProxyThreadFactoryImpl;
 import com.webank.emesher.util.ProxyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
@@ -203,11 +202,12 @@ public class ProxyTcpRetryer {
         List<MessageExt> msgExts = new ArrayList<MessageExt>();
         msgExts.add(downStreamMsgContext.msgExt);
         logger.warn("proxyAckMsg topic:{}, seq:{}, bizSeq:{}",downStreamMsgContext.msgExt.getTopic(), downStreamMsgContext.seq, downStreamMsgContext.msgExt.getKeys());
-        ConsumeMessageService consumeMessageService = downStreamMsgContext.consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
-        ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);
+        downStreamMsgContext.consumer.updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);
+//        ConsumeMessageService consumeMessageService = downStreamMsgContext.consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
+//        ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);
     }
 
     public void printRetryThreadPoolState(){
-        ThreadPoolHelper.printState(pool);
+//        ThreadPoolHelper.printState(pool);
     }
 }
