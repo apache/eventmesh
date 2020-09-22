@@ -22,6 +22,7 @@ Event Mesh的一般功能:
 
 依赖部件：
 * DeFiBus：具有低延迟，高性能和可靠性，和灵活可伸缩性的分布式消息传递平台 [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)
+* RocketMQ
 
 关键部件：
 * eventmesh-emesher：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
