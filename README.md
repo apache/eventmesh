@@ -31,6 +31,24 @@ Key components:
 * eventmesh-sdk-java : currently supports HTTP and TCP protocols, and will support gRPC in the future
 * eventmesh-registry : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-emesher
 
+## RoadMap
+| version | feature |
+| ----    | ----    |
+| v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
+| v1.1.0  |Support rocketmq as eventstore|
+| v1.2.0  |Support transaction event|
+| v1.3.0  |Support Plug-in architectur|
+|         |Support Event Sourcing|
+|         |Support Event orchestration|
+|         |Support Dashboard|
+|         |Support Event governance|
+|         |Support Nacos as a event router|
+|         |Support Promethus|
+|         |Support Skywalking|
+|         |Support Spiffe|
+|         |Support gRPC|
+|         |Support c/go/python/nodejs SDK|
+
 ## Quick Start
 1. Build and deploy event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus)), 
    see instruction ['event-store quickstart'](docs/en/instructions/eventmesh-store-quickstart.md).
