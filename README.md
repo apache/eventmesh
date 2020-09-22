@@ -42,7 +42,7 @@ Key components:
 |         |Support Event orchestration|
 |         |Support Dashboard|
 |         |Support Event governance|
-|         |Support Nacos as a event router|
+|         |Support Nacos as an event router|
 |         |Support Promethus|
 |         |Support Skywalking|
 |         |Support Spiffe|
