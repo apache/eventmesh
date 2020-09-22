@@ -29,6 +29,24 @@ Event Mesh的一般功能:
 * eventmesh-sdk-java：当前支持HTTP和TCP协议，未来会支持gRPC等
 * eventmesh-registry：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理emesher
 
+## RoadMap
+| version | feature |
+| ----    | ----    |
+| v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
+| v1.1.0  |Support rocketmq as eventstore|
+| v1.2.0  |Support transaction event|
+| v1.3.0  |Support Plug-in architectur|
+|         |Support Event Sourcing|
+|         |Support Event orchestration|
+|         |Support Dashboard|
+|         |Support Event governance|
+|         |Support Nacos as a event router|
+|         |Support Promethus|
+|         |Support Skywalking|
+|         |Support Spiffe|
+|         |Support gRPC|
+|         |Support c/go/python/nodejs SDK|
+
 ## 快速开始
 1. 构建并部署event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus))
    请参见说明['event-store quickstart.zh-CN'](docs/cn/instructions/eventmesh-store-quickstart.zh-CN.md)
