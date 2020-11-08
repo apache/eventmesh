@@ -31,6 +31,8 @@ public class Constants {
 
     public static final String HTTP_PROTOCOL_PREFIX = "http://";
 
+    public static final String HTTPS_PROTOCOL_PREFIX = "https://";
+
     public static final int DEFAULT_HTTP_TIME_OUT = 3000;
 
     public static final String PROXY_MESSAGE_CONST_TTL = "ttl";
