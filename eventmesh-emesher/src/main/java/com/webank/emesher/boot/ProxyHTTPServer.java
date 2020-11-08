@@ -43,7 +43,7 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
 
     public ProxyHTTPServer(ProxyServer proxyServer,
                            ProxyConfiguration proxyConfiguration) {
-        super(proxyConfiguration.httpServerPort);
+        super(proxyConfiguration.httpServerPort, proxyConfiguration.proxyServerUseTls);
         this.proxyServer = proxyServer;
         this.proxyConfiguration = proxyConfiguration;
     }

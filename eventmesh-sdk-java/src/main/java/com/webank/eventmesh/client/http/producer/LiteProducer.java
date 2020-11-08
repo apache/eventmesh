@@ -22,6 +22,7 @@ import com.webank.eventmesh.client.http.ProxyRetObj;
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.http.HttpUtil;
 import com.webank.eventmesh.client.http.http.RequestParam;
+import com.webank.eventmesh.client.http.ssl.MyX509TrustManager;
 import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.common.LiteMessage;
 import com.webank.eventmesh.common.ProxyException;
@@ -35,15 +36,25 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.base.Preconditions;
 import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LiteProducer extends AbstractLiteClient {
@@ -54,6 +65,9 @@ public class LiteProducer extends AbstractLiteClient {
 
     public LiteProducer(LiteClientConfig liteClientConfig) {
         super(liteClientConfig);
+        if(liteClientConfig.isUseTls()){
+            setHttpClient();
+        }
     }
 
     private AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
@@ -140,7 +154,11 @@ public class LiteProducer extends AbstractLiteClient {
         if (CollectionUtils.isEmpty(proxyServerList)) {
             return null;
         }
-        return Constants.HTTP_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
+        if(liteClientConfig.isUseTls()){
+            return Constants.HTTPS_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
+        }else{
+            return Constants.HTTP_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
+        }
     }
 
     public LiteMessage request(LiteMessage message, long timeout) throws ProxyException {
@@ -237,6 +255,24 @@ public class LiteProducer extends AbstractLiteClient {
 
         if(logger.isDebugEnabled()) {
             logger.debug("publish sync message by async, target:{}, cost:{}, message:{}", target, System.currentTimeMillis() - startTime, message);
+        }
+    }
+
+    public static void setHttpClient() {
+        SSLContext sslContext = null;
+        try {
+            String protocol = System.getProperty("ssl.client.protocol", "TLSv1.1");
+            TrustManager[] tm = new TrustManager[] { new MyX509TrustManager() };
+            sslContext = SSLContext.getInstance(protocol);
+            sslContext.init(null, tm, new SecureRandom());
+            httpClient = HttpClients.custom().setSslcontext(sslContext)
+                    .setHostnameVerifier(SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER).build();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
