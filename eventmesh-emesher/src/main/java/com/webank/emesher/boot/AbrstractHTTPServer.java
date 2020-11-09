@@ -38,6 +38,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.*;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.apache.commons.collections4.MapUtils;
@@ -47,6 +48,8 @@ import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +70,8 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
 
     private AtomicBoolean started = new AtomicBoolean(false);
 
+    private boolean useTLS;
+
     public ThreadPoolExecutor asyncContextCompleteHandler =
             ThreadPoolFactory.createThreadPoolExecutor(10, 10, "proxy-http-asyncContext-");
 
@@ -77,8 +82,9 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
     protected HashMap<Integer/* request code */, Pair<HttpRequestProcessor, ThreadPoolExecutor>> processorTable =
             new HashMap<Integer, Pair<HttpRequestProcessor, ThreadPoolExecutor>>(64);
 
-    public AbrstractHTTPServer(int port) {
+    public AbrstractHTTPServer(int port, boolean useTLS) {
         this.port = port;
+        this.useTLS = useTLS;
     }
 
     public Map<String, Object> parseHTTPHeader(HttpRequest fullReq) {
@@ -126,18 +132,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
             ServerBootstrap b = new ServerBootstrap();
             b.group(this.bossGroup, this.workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        public void initChannel(SocketChannel ch)
-                                throws Exception {
-                            ch.pipeline()
-                                    .addLast(new HttpRequestDecoder(),
-                                            new HttpResponseEncoder(),
-                                            new HttpConnectionHandler(),
-                                            new HttpObjectAggregator(Integer.MAX_VALUE),
-                                            new HTTPHandler());
-                        }
-                    }).childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
+                    .childHandler(new HttpsServerInitializer(SSLContextFactory.getSslContext())).childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
             try {
                 logger.info("HTTPServer[port={}] started......", this.port);
                 ChannelFuture future = b.bind(this.port).sync();
@@ -387,6 +382,32 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
             }
 
             ctx.fireUserEventTriggered(evt);
+        }
+    }
+
+    class HttpsServerInitializer extends ChannelInitializer<SocketChannel> {
+
+        private SSLContext sslContext;
+
+        public HttpsServerInitializer(SSLContext sslContext) {
+            this.sslContext = sslContext;
+        }
+
+        @Override
+        protected void initChannel(SocketChannel channel) throws Exception {
+            ChannelPipeline pipeline = channel.pipeline();
+
+
+            if(sslContext != null && useTLS){
+                SSLEngine sslEngine = sslContext.createSSLEngine();
+                sslEngine.setUseClientMode(false);
+                pipeline.addFirst("ssl", new SslHandler(sslEngine));
+            }
+            pipeline.addLast(new HttpRequestDecoder(),
+                    new HttpResponseEncoder(),
+                    new HttpConnectionHandler(),
+                    new HttpObjectAggregator(Integer.MAX_VALUE),
+                    new HTTPHandler());
         }
     }
 }
