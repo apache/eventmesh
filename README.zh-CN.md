@@ -34,6 +34,7 @@ Event Mesh的一般功能:
 | ----    | ----    |
 | v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
 | v1.1.0  |Support rocketmq as eventstore|
+| v1.1.1  |Support https|
 | v1.2.0  |Support transaction event|
 | v1.3.0  |Support Plug-in architectur|
 |         |Support Event Sourcing|
