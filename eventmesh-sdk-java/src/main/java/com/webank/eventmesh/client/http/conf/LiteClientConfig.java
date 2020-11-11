@@ -43,6 +43,8 @@ public class LiteClientConfig {
 
     private String password = "password";
 
+    private boolean useTls = false;
+
     public int getConsumeThreadMax() {
         return consumeThreadMax;
     }
@@ -151,6 +153,14 @@ public class LiteClientConfig {
         return this;
     }
 
+    public boolean isUseTls() {
+        return useTls;
+    }
+
+    public void setUseTls(boolean useTls) {
+        this.useTls = useTls;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -166,7 +176,8 @@ public class LiteClientConfig {
                 .append("pid=").append(pid).append(",")
                 .append("sys=").append(sys).append(",")
                 .append("userName=").append(userName).append(",")
-                .append("password=").append(password).append("}");
+                .append("password=").append(password).append(",")
+                .append("useTls=").append(useTls).append("}");
         return sb.toString();
     }
 }
