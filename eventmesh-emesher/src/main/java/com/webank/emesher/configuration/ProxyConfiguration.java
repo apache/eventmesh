@@ -63,6 +63,8 @@ public class ProxyConfiguration extends CommonConfiguration {
 
     public boolean proxyServerConsumerEnabled = false;
 
+    public boolean proxyServerUseTls = false;
+
     public ProxyConfiguration(ConfigurationWraper configurationWraper){
         super(configurationWraper);
     }
@@ -168,6 +170,11 @@ public class ProxyConfiguration extends CommonConfiguration {
         if (StringUtils.isNotEmpty(proxyServerRetryThreadNumStr) && StringUtils.isNumeric(proxyServerRetryThreadNumStr)) {
             proxyServerRetryThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(proxyServerRetryThreadNumStr));
         }
+
+        String proxyServerUseTlsStr = configurationWraper.getProp(ConfKeys.KEY_PROXY_HTTPS_ENABLED);
+        if (StringUtils.isNotEmpty(proxyServerUseTlsStr)) {
+            proxyServerUseTls = Boolean.valueOf(StringUtils.deleteWhitespace(proxyServerUseTlsStr));
+        }
     }
 
     static class ConfKeys{
@@ -212,5 +219,6 @@ public class ProxyConfiguration extends CommonConfiguration {
 
         public static String KEY_PROXY_CONSUMER_ENABLED = "proxy.server.consumer.enabled";
 
+        public static String KEY_PROXY_HTTPS_ENABLED = "proxy.server.useTls.enabled";
     }
 }
