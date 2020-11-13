@@ -55,6 +55,6 @@ jobs:
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
-          GITHUB_TOKEN: ${{ secrets.EVENTMESH_WEBSITE }}
+          GITHUB_TOKEN: ${{ secrets.EVENTMESH }}
           BRANCH: gh-pages 
           FOLDER: docs/.vuepress/dist # The folder the action should deploy.
