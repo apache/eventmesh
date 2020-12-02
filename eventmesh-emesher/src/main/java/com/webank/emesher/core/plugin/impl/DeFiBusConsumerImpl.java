@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class DeFiMeshMQConsumerImpl implements MeshMQConsumer {
+public class DeFiBusConsumerImpl implements MeshMQConsumer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -43,6 +43,7 @@ public class DeFiMeshMQConsumerImpl implements MeshMQConsumer {
 
     private DeFiBusPushConsumer deFiBusPushConsumer;
 
+    @Override
     public synchronized void init(boolean isBroadcast, CommonConfiguration commonConfiguration,
                                   String consumerGroup) throws Exception {
         DeFiBusClientConfig wcc = new DeFiBusClientConfig();
@@ -70,10 +71,12 @@ public class DeFiMeshMQConsumerImpl implements MeshMQConsumer {
         }
     }
 
+    @Override
     public void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently) {
         deFiBusPushConsumer.registerMessageListener(messageListenerConcurrently);
     }
 
+    @Override
     public synchronized void start() throws Exception {
         ThreadUtil.randomSleep(50);
         if (deFiBusPushConsumer.getDefaultMQPushConsumer().getMessageListener() == null) {
@@ -84,30 +87,37 @@ public class DeFiMeshMQConsumerImpl implements MeshMQConsumer {
         deFiBusPushConsumer.getDefaultMQPushConsumer().unsubscribe(MixAll.getRetryTopic(deFiBusPushConsumer.getDefaultMQPushConsumer().getConsumerGroup()));
     }
 
+    @Override
     public void subscribe(String topic) throws Exception {
         deFiBusPushConsumer.subscribe(topic);
     }
 
+    @Override
     public void unsubscribe(String topic) throws Exception {
         deFiBusPushConsumer.unsubscribe(topic);
     }
 
+    @Override
     public boolean isPause() {
         return deFiBusPushConsumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().isPause();
     }
 
+    @Override
     public void pause() {
         deFiBusPushConsumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().setPause(true);
     }
 
+    @Override
     public synchronized void shutdown() throws Exception {
         deFiBusPushConsumer.shutdown();
     }
 
+    @Override
     public void setInstanceName(String instanceName) {
         deFiBusPushConsumer.getDefaultMQPushConsumer().setInstanceName(instanceName);
     }
 
+    @Override
     public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext context) {
         ConsumeMessageService consumeMessageService = deFiBusPushConsumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
         ((ConsumeMessageConcurrentlyService) consumeMessageService).updateOffset(msgs, context);

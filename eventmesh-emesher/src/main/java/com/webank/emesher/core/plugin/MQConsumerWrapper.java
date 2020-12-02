@@ -18,8 +18,8 @@
 package com.webank.emesher.core.plugin;
 
 import com.webank.emesher.configuration.CommonConfiguration;
-import com.webank.emesher.core.plugin.impl.DeFiMeshMQConsumerImpl;
-import com.webank.emesher.core.plugin.impl.RMQMeshMQConsumerImpl;
+import com.webank.emesher.core.plugin.impl.DeFiBusConsumerImpl;
+import com.webank.emesher.core.plugin.impl.MeshMQConsumer;
 import com.webank.emesher.patch.ProxyConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -27,111 +27,76 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.ServiceLoader;
 
 public class MQConsumerWrapper extends MQWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected RMQMeshMQConsumerImpl rmqConsumerImpl;
 
-    protected DeFiMeshMQConsumerImpl deFiConsumerImpl;
+    protected MeshMQConsumer meshMQConsumer;
 
     public void setInstanceName(String instanceName) {
-        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            rmqConsumerImpl.setInstanceName(instanceName);
-            return;
-        }
 
-        deFiConsumerImpl.setInstanceName(instanceName);
+        meshMQConsumer.setInstanceName(instanceName);
     }
 
     public void subscribe(String topic) throws Exception {
-        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            rmqConsumerImpl.subscribe(topic);
-            return;
-        }
-        deFiConsumerImpl.subscribe(topic);
+        meshMQConsumer.subscribe(topic);
     }
 
     public void unsubscribe(String topic) throws Exception {
-        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            rmqConsumerImpl.unsubscribe(topic);
-            return;
-        }
-        deFiConsumerImpl.unsubscribe(topic);
+        meshMQConsumer.unsubscribe(topic);
     }
 
     public boolean isPause() {
-        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            return rmqConsumerImpl.isPause();
-        }
 
-        return deFiConsumerImpl.isPause();
+        return meshMQConsumer.isPause();
     }
 
     public void pause() {
-        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            rmqConsumerImpl.pause();
-            return;
-        }
 
-        deFiConsumerImpl.pause();
+        meshMQConsumer.pause();
     }
 
     public synchronized void init(boolean isBroadcast, CommonConfiguration commonConfiguration,
                                   String consumerGroup) throws Exception {
-        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            rmqConsumerImpl = new RMQMeshMQConsumerImpl();
-            rmqConsumerImpl.init(isBroadcast, commonConfiguration, consumerGroup);
-            inited.compareAndSet(false, true);
-            return;
-        }
 
-        deFiConsumerImpl = new DeFiMeshMQConsumerImpl();
-        deFiConsumerImpl.init(isBroadcast, commonConfiguration, consumerGroup);
+        meshMQConsumer = getMeshMQConsumer();
+        meshMQConsumer.init(isBroadcast, commonConfiguration, consumerGroup);
         inited.compareAndSet(false, true);
     }
 
-    public synchronized void start() throws Exception {
-        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            rmqConsumerImpl.start();
-            started.compareAndSet(false, true);
-            return;
-        }
+    private MeshMQConsumer getMeshMQConsumer() {
+        ServiceLoader<MeshMQConsumer> meshMQConsumerServiceLoader = ServiceLoader.load(MeshMQConsumer.class);
 
-        deFiConsumerImpl.start();
+        if (meshMQConsumerServiceLoader.iterator().hasNext()){
+            return  meshMQConsumerServiceLoader.iterator().next();
+        }
+        return new DeFiBusConsumerImpl();
+    }
+
+    public synchronized void start() throws Exception {
+
+        meshMQConsumer.start();
         started.compareAndSet(false, true);
         return;
     }
 
     public synchronized void shutdown() throws Exception {
-        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            rmqConsumerImpl.shutdown();
-            inited.compareAndSet(false, true);
-            started.compareAndSet(false, true);
-            return;
-        }
 
-        deFiConsumerImpl.shutdown();
+        meshMQConsumer.shutdown();
         inited.compareAndSet(false, true);
         started.compareAndSet(false, true);
     }
 
     public void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently) {
-        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            rmqConsumerImpl.registerMessageListener(messageListenerConcurrently);
-            return;
-        }
-        deFiConsumerImpl.registerMessageListener(messageListenerConcurrently);
+        meshMQConsumer.registerMessageListener(messageListenerConcurrently);
     }
 
     public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext proxyConsumeConcurrentlyContext) {
-        if (CURRENT_EVENT_STORE.equals(EVENT_STORE_ROCKETMQ)) {
-            rmqConsumerImpl.updateOffset(msgs, proxyConsumeConcurrentlyContext);
-            return;
-        }
 
-        deFiConsumerImpl.updateOffset(msgs, proxyConsumeConcurrentlyContext);
+        meshMQConsumer.updateOffset(msgs, proxyConsumeConcurrentlyContext);
         return;
     }
 }

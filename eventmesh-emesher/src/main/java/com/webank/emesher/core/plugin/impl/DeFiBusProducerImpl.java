@@ -15,92 +15,89 @@
  * limitations under the License.
  */
 
-package com.webank.emesher.core.plugin;
+package com.webank.emesher.core.plugin.impl;
 
+import com.webank.defibus.client.common.DeFiBusClientConfig;
 import com.webank.defibus.client.impl.producer.RRCallback;
+import com.webank.defibus.producer.DeFiBusProducer;
 import com.webank.emesher.configuration.CommonConfiguration;
-import com.webank.emesher.core.plugin.impl.DeFiBusProducerImpl;
-import com.webank.emesher.core.plugin.impl.MeshMQProducer;
+import com.webank.emesher.constants.ProxyConstants;
+import com.webank.eventmesh.common.ThreadUtil;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageClientIDSetter;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ServiceLoader;
-
-public class MQProducerWrapper extends MQWrapper {
+public class DeFiBusProducerImpl implements MeshMQProducer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected MeshMQProducer meshMQProducer;
+    protected DeFiBusProducer defibusProducer;
 
-    public synchronized void init(CommonConfiguration commonConfiguration, String producerGroup) throws Exception{
-        if (inited.get()) {
-            return;
-        }
-        meshMQProducer = getMeshMQProducer();
-        meshMQProducer.init(commonConfiguration, producerGroup);
+    @Override
+    public synchronized void init(CommonConfiguration commonConfiguration, String producerGroup) {
 
-        inited.compareAndSet(false, true);
+        DeFiBusClientConfig wcc = new DeFiBusClientConfig();
+        wcc.setClusterPrefix(commonConfiguration.proxyIDC);
+        wcc.setPollNameServerInterval(commonConfiguration.pollNameServerInteval);
+        wcc.setHeartbeatBrokerInterval(commonConfiguration.heartbeatBrokerInterval);
+        wcc.setProducerGroup(ProxyConstants.PRODUCER_GROUP_NAME_PREFIX + producerGroup);
+        wcc.setNamesrvAddr(commonConfiguration.namesrvAddr);
+        MessageClientIDSetter.createUniqID();
+        defibusProducer = new DeFiBusProducer(wcc);
+        defibusProducer.getDefaultMQProducer().setVipChannelEnabled(false);
+        defibusProducer.getDefaultMQProducer().setCompressMsgBodyOverHowmuch(2 * 1024);
+
     }
 
-    private MeshMQProducer getMeshMQProducer() {
-        ServiceLoader<MeshMQProducer> meshMQProducerServiceLoader = ServiceLoader.load(MeshMQProducer.class);
-
-        if (meshMQProducerServiceLoader.iterator().hasNext()){
-            return  meshMQProducerServiceLoader.iterator().next();
-        }
-        return new DeFiBusProducerImpl();
-    }
-
+    @Override
     public synchronized void start() throws Exception {
-        if (started.get()) {
-            return;
-        }
 
-        meshMQProducer.start();
+        defibusProducer.start();
+        ThreadUtil.randomSleep(500);
+        defibusProducer.getDefaultMQProducer().getDefaultMQProducerImpl().getmQClientFactory().updateTopicRouteInfoFromNameServer();
 
-        started.compareAndSet(false, true);
     }
 
+    @Override
     public synchronized void shutdown() throws Exception {
-        if (!inited.get()) {
-            return;
-        }
 
-        if (!started.get()) {
-            return;
-        }
+        defibusProducer.shutdown();
 
-        meshMQProducer.shutdown();
-
-        inited.compareAndSet(true, false);
-        started.compareAndSet(true, false);
     }
 
+    @Override
     public void send(Message message, SendCallback sendCallback) throws Exception {
-        meshMQProducer.send(message,sendCallback);
+        defibusProducer.publish(message, sendCallback);
     }
 
+    @Override
     public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        meshMQProducer.request(message, sendCallback, rrCallback, timeout);
+
+        defibusProducer.request(message, sendCallback, rrCallback, timeout);
     }
 
+    @Override
     public Message request(Message message, long timeout) throws Exception {
-        return meshMQProducer.request(message, timeout);
+
+        return defibusProducer.request(message, timeout);
     }
 
+    @Override
     public boolean reply(final Message message, final SendCallback sendCallback) throws Exception {
-        meshMQProducer.reply(message, sendCallback);
+
+        defibusProducer.reply(message, sendCallback);
         return true;
     }
 
+    @Override
     public DefaultMQProducer getDefaultMQProducer() {
-        return meshMQProducer.getDefaultMQProducer();
+        return defibusProducer.getDefaultMQProducer();
     }
 }
