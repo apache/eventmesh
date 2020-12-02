@@ -61,7 +61,7 @@ public class ProxyProducer {
         mqProducerWrapper.request(sendMsgContext.getMsg(), sendCallback, rrCallback, timeout);
     }
 
-    public Message request(SendMessageContext sendMessageContext, long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+    public Message request(SendMessageContext sendMessageContext, long timeout) throws Exception {
         return mqProducerWrapper.request(sendMessageContext.getMsg(), timeout);
     }
 
@@ -76,7 +76,7 @@ public class ProxyProducer {
         return mqProducerWrapper;
     }
 
-    public synchronized void init(ProxyConfiguration proxyConfiguration, ProducerGroupConf producerGroupConfig) {
+    public synchronized void init(ProxyConfiguration proxyConfiguration, ProducerGroupConf producerGroupConfig) throws Exception {
         this.producerGroupConfig = producerGroupConfig;
         this.proxyConfiguration = proxyConfiguration;
         mqProducerWrapper.init(proxyConfiguration, producerGroupConfig.getGroupName());
