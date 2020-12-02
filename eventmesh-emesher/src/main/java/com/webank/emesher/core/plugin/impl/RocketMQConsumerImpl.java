@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class RMQMeshMQConsumerImpl implements MeshMQConsumer {
+public class RocketMQConsumerImpl implements MeshMQConsumer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -42,6 +42,7 @@ public class RMQMeshMQConsumerImpl implements MeshMQConsumer {
 
     private DefaultMQPushConsumer defaultMQPushConsumer;
 
+    @Override
     public synchronized void init(boolean isBroadcast, CommonConfiguration commonConfiguration,
                                   String consumerGroup) throws Exception {
         if (isBroadcast) {
@@ -64,14 +65,17 @@ public class RMQMeshMQConsumerImpl implements MeshMQConsumer {
         defaultMQPushConsumer.setConsumeTimeout(commonConfiguration.consumeTimeout);
     }
 
+    @Override
     public void setInstanceName(String instanceName) {
         defaultMQPushConsumer.setInstanceName(instanceName);
     }
 
+    @Override
     public void registerMessageListener(MessageListenerConcurrently listener) {
         this.defaultMQPushConsumer.registerMessageListener(listener);
     }
 
+    @Override
     public synchronized void start() throws Exception {
         ThreadUtil.randomSleep(50);
 
@@ -83,18 +87,22 @@ public class RMQMeshMQConsumerImpl implements MeshMQConsumer {
         defaultMQPushConsumer.unsubscribe(MixAll.getRetryTopic(defaultMQPushConsumer.getConsumerGroup()));
     }
 
+    @Override
     public void subscribe(String topic) throws Exception {
         defaultMQPushConsumer.subscribe(topic, "*");
     }
 
+    @Override
     public void unsubscribe(String topic) throws Exception {
         defaultMQPushConsumer.unsubscribe(topic);
     }
 
+    @Override
     public boolean isPause() {
         return defaultMQPushConsumer.getDefaultMQPushConsumerImpl().isPause();
     }
 
+    @Override
     public void pause() {
         defaultMQPushConsumer.getDefaultMQPushConsumerImpl().setPause(true);
     }
@@ -103,6 +111,7 @@ public class RMQMeshMQConsumerImpl implements MeshMQConsumer {
         defaultMQPushConsumer.shutdown();
     }
 
+    @Override
     public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext context) {
         ConsumeMessageService consumeMessageService = defaultMQPushConsumer.getDefaultMQPushConsumerImpl().getConsumeMessageService();
         ((ConsumeMessageConcurrentlyService) consumeMessageService).updateOffset(msgs, context);
