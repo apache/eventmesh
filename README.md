@@ -20,6 +20,7 @@ General functions of the event mesh:
 * Event driven;
 * Event governance;
 * Dynamic routing;
+* Connector Pluggable;
 * Cloud native
 
 Dependent components:
@@ -27,9 +28,11 @@ Dependent components:
 * RocketMQ
 
 Key components:
-* eventmesh-emesher : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
+* eventmesh-runtime : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
+* eventmesh-connector-rocketmq : connect to rocketmq as event store
+* eventmesh-connector-defibus : connect defibus as event store
 * eventmesh-sdk-java : currently supports HTTP and TCP protocols, and will support gRPC in the future
-* eventmesh-registry : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-emesher
+* eventmesh-registry : automatically routes events between applications and services connected to seperate event meshers
 
 ## RoadMap
 | version | feature |
@@ -37,15 +40,15 @@ Key components:
 | v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
 | v1.1.0  |Support rocketmq as eventstore|
 | v1.1.1  |Support https|
-| v1.2.0  |Support transaction event|
-| v1.3.0  |Support Plug-in architectur|
-|         |Support Event Sourcing|
-|         |Support Event orchestration|
-|         |Support Dashboard|
+| v1.2.0  |Support cloudevents|
+| v1.3.0  |Support Plug-in architecture|
+|         |Support Control panel|
 |         |Support Event governance|
 |         |Support Nacos as an event router|
+|         |Support Evnet Souring
+|         |Support Event orchestration
 |         |Support Promethus|
-|         |Support Skywalking|
+|         |Support Skywalking/zipkin|
 |         |Support Spiffe|
 |         |Support gRPC|
 |         |Support c/go/python/nodejs SDK|
@@ -53,7 +56,7 @@ Key components:
 ## Quick Start
 1. Build and deploy event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus)), 
    see instruction ['event-store quickstart'](docs/en/instructions/eventmesh-store-quickstart.md).
-2. Build and deploy eventmesh-emesher, see instruction ['eventmesh-emesher quickstart'](docs/en/instructions/eventmesh-emesher-quickstart.md).
+2. Build and deploy eventmesh, see instruction ['eventmesh-emesher quickstart'](docs/en/instructions/eventmesh-emesher-quickstart.md).
 3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md). 
 
 ## Contributing
