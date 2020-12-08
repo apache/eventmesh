@@ -48,7 +48,6 @@ public class PushConsumerImpl implements PushConsumer {
     private boolean started = false;
     private final Map<String, MessageListener> subscribeTable = new ConcurrentHashMap<>();
     private final ClientConfig clientConfig;
-//    public final MessageListenerImpl messageListener = new MessageListenerImpl();
 
     public PushConsumerImpl(final KeyValue properties) {
         this.rocketmqPushConsumer = new DefaultMQPushConsumer();

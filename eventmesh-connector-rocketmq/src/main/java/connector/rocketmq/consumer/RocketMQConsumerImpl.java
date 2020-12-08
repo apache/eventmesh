@@ -17,31 +17,18 @@
 
 package connector.rocketmq.consumer;
 
-import com.webank.eventmesh.common.ThreadUtil;
 import com.webank.runtime.configuration.CommonConfiguration;
-import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.plugin.impl.MeshMQConsumer;
 import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
-import connector.rocketmq.config.PropInitImpl;
-import connector.rocketmq.utils.OMSUtil;
-import io.openmessaging.KeyValue;
-import io.openmessaging.Message;
-import io.openmessaging.MessagingAccessPoint;
-import io.openmessaging.OMS;
+import io.openmessaging.*;
 import io.openmessaging.consumer.MessageListener;
 import io.openmessaging.consumer.PushConsumer;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
-import org.apache.rocketmq.common.MixAll;
-import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.List;
 
 public class RocketMQConsumerImpl implements MeshMQConsumer {
@@ -50,49 +37,29 @@ public class RocketMQConsumerImpl implements MeshMQConsumer {
 
     public Logger messageLogger = LoggerFactory.getLogger("message");
 
-//    private DefaultMQPushConsumer defaultMQPushConsumer;
+    public final String DEFAULT_ACCESS_DRIVER = "connector.rocketmq.MessagingAccessPointImpl";
 
-//    private PushConsumerImpl pushConsumer;
-
-    private KeyValue properties = new PropInitImpl().initProp();
-    String namesrv = "";
     private PushConsumer pushConsumer;
 
     @Override
     public synchronized void init(boolean isBroadcast, CommonConfiguration commonConfiguration,
                                   String consumerGroup) throws Exception {
-        // properties需要由runtime构建传入
-//        pushConsumer = new PushConsumerImpl(properties);
-        MessagingAccessPoint messagingAccessPoint = OMS.getMessagingAccessPoint(namesrv, properties);
-        pushConsumer = messagingAccessPoint.createPushConsumer(properties);
-//        if (isBroadcast) {
-//            defaultMQPushConsumer = new DefaultMQPushConsumer(ProxyConstants.CONSUMER_GROUP_NAME_PREFIX + ProxyConstants.BROADCAST_PREFIX + consumerGroup);
-//            defaultMQPushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
-//            defaultMQPushConsumer.setMessageModel(MessageModel.BROADCASTING);
-//        } else {
-//            defaultMQPushConsumer = new DefaultMQPushConsumer(ProxyConstants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup);
-//            defaultMQPushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
-//            defaultMQPushConsumer.setMessageModel(MessageModel.CLUSTERING);
-//        }
-//
-//        defaultMQPushConsumer.setPollNameServerInterval(commonConfiguration.pollNameServerInteval);
-//        defaultMQPushConsumer.setHeartbeatBrokerInterval(commonConfiguration.heartbeatBrokerInterval);
-//        defaultMQPushConsumer.setPullThresholdForQueue(commonConfiguration.ackWindow);
-//        defaultMQPushConsumer.setNamesrvAddr(commonConfiguration.namesrvAddr);
-//        defaultMQPushConsumer.setPullBatchSize(commonConfiguration.pullBatchSize);
-//        defaultMQPushConsumer.setConsumeThreadMax(commonConfiguration.consumeThreadMax);
-//        defaultMQPushConsumer.setConsumeThreadMin(commonConfiguration.consumeThreadMin);
-//        defaultMQPushConsumer.setConsumeTimeout(commonConfiguration.consumeTimeout);
+        KeyValue properties = OMS.newKeyValue().put(OMSBuiltinKeys.DRIVER_IMPL, DEFAULT_ACCESS_DRIVER);
+        properties.put("ACCESS_POINTS", commonConfiguration.namesrvAddr)
+                .put("REGION", "namespace")
+                .put(OMSBuiltinKeys.CONSUMER_ID, consumerGroup);
+        MessagingAccessPoint messagingAccessPoint = OMS.getMessagingAccessPoint(commonConfiguration.namesrvAddr, properties);
+        pushConsumer = messagingAccessPoint.createPushConsumer();
     }
 
     @Override
     public void setInstanceName(String instanceName) {
-//        defaultMQPushConsumer.setInstanceName(instanceName);
+        ((DefaultMQPushConsumer)pushConsumer).setInstanceName(instanceName);
     }
 
     @Override
     public void registerMessageListener(MessageListenerConcurrently listener) {
-//        this.defaultMQPushConsumer.registerMessageListener(listener);
+        ((DefaultMQPushConsumer)pushConsumer).setMessageListener(listener);
     }
 
     @Override
