@@ -18,9 +18,9 @@
 package com.webank.runtime.core.plugin;
 
 import com.webank.runtime.configuration.CommonConfiguration;
-import com.webank.runtime.configuration.PropInit;
 import com.webank.runtime.core.plugin.impl.DeFiBusConsumerImpl;
 import com.webank.runtime.core.plugin.impl.MeshMQConsumer;
+import com.webank.runtime.core.plugin.impl.MeshMQProducer;
 import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
 import connector.rocketmq.consumer.PushConsumerImpl;
 import io.openmessaging.*;
@@ -42,11 +42,11 @@ public class MQConsumerWrapper extends MQWrapper {
 
     public String namesrv = "oms:rocketmq://IP1:9876,IP2:9876/namespace";
 
-    protected PushConsumer meshMQConsumer;
+    protected MeshMQConsumer meshMQConsumer;
 
     public void setInstanceName(String instanceName) {
 
-//        meshMQConsumer.setInstanceName(instanceName);
+        meshMQConsumer.setInstanceName(instanceName);
     }
 
     public void subscribe(String topic) throws Exception {
@@ -59,30 +59,29 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public boolean isPause() {
-        return meshMQConsumer.isSuspended();
+        return meshMQConsumer.isPause();
     }
 
     public void pause() {
-        meshMQConsumer.suspend();
+        meshMQConsumer.pause();
     }
 
     public synchronized void init(boolean isBroadcast, CommonConfiguration commonConfiguration,
                                   String consumerGroup) throws Exception {
+        meshMQConsumer = getMeshMQConsumer();
+        if (meshMQConsumer == null){
+            logger.error("can't load the meshMQConsumer plugin, please check.");
+            throw new RuntimeException("doesn't load the meshMQConsumer plugin, please check.");
+        }
 
-        PropInit driverProp = getDriverProp();
-        KeyValue prop = driverProp.initProp();
-        prop.put(OMSBuiltinKeys.CONSUMER_ID, consumerGroup);
-        messagingAccessPoint = OMS.getMessagingAccessPoint(namesrv, prop);
-        meshMQConsumer = messagingAccessPoint.createPushConsumer(prop);
-//        meshMQConsumer = getMeshMQConsumer();
-//        meshMQConsumer.init(isBroadcast, commonConfiguration, consumerGroup);
+        meshMQConsumer.init(isBroadcast, commonConfiguration, consumerGroup);
         inited.compareAndSet(false, true);
     }
 
-    private PropInit getDriverProp() {
-        ServiceLoader<PropInit> propInitServiceLoader = ServiceLoader.load(PropInit.class);
-        if (propInitServiceLoader.iterator().hasNext()){
-            return propInitServiceLoader.iterator().next();
+    private MeshMQConsumer getMeshMQConsumer() {
+        ServiceLoader<MeshMQConsumer> meshMQConsumerServiceLoader = ServiceLoader.load(MeshMQConsumer.class);
+        if (meshMQConsumerServiceLoader.iterator().hasNext()){
+            return meshMQConsumerServiceLoader.iterator().next();
         }
         return null;
     }
@@ -98,9 +97,8 @@ public class MQConsumerWrapper extends MQWrapper {
 
     public synchronized void start() throws Exception {
 
-        meshMQConsumer.startup();
+        meshMQConsumer.start();
         started.compareAndSet(false, true);
-        return;
     }
 
     public synchronized void shutdown() throws Exception {
@@ -111,12 +109,11 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently) {
-//        meshMQConsumer.registerMessageListener(messageListenerConcurrently);
+        meshMQConsumer.registerMessageListener(messageListenerConcurrently);
     }
 
     public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext proxyConsumeConcurrentlyContext) {
 
-//        meshMQConsumer.updateOffset(msgs, proxyConsumeConcurrentlyContext);
-        return;
+        meshMQConsumer.updateOffset(msgs, proxyConsumeConcurrentlyContext);
     }
 }

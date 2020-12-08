@@ -16,9 +16,6 @@
  */
 package rocketmq.consumer;
 
-import com.webank.runtime.configuration.PropInit;
-import connector.rocketmq.MessagingAccessPointImpl;
-import connector.rocketmq.config.PropInitImpl;
 import connector.rocketmq.consumer.PushConsumerImpl;
 import connector.rocketmq.domain.NonStandardKeys;
 import io.openmessaging.*;
@@ -50,13 +47,8 @@ public class PushConsumerImplTest {
     @Before
     public void init() throws NoSuchFieldException, IllegalAccessException {
 
-//        final MessagingAccessPoint messagingAccessPoint = OMS
-//            .getMessagingAccessPoint("oms:rocketmq://IP1:9876,IP2:9876/namespace");
-        ServiceLoader<PropInit> propInitServiceLoader = ServiceLoader.load(PropInit.class);
-        PropInit p = propInitServiceLoader.iterator().next();
-        KeyValue prop = p.initProp().put("ACCESS_POINTS", "IP1:9876,IP2:9876")
-                .put("REGION", "namespace");
-        MessagingAccessPoint messagingAccessPoint = OMS.getMessagingAccessPoint("oms:rocketmq://IP1:9876,IP2:9876/namespace", prop);
+        final MessagingAccessPoint messagingAccessPoint = OMS
+            .getMessagingAccessPoint("oms:rocketmq://IP1:9876,IP2:9876/namespace");
         consumer = messagingAccessPoint.createPushConsumer(
             OMS.newKeyValue().put(OMSBuiltinKeys.CONSUMER_ID, "TestGroup"));
 
