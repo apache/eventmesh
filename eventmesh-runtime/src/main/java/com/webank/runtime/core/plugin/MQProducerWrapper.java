@@ -20,6 +20,7 @@ package com.webank.runtime.core.plugin;
 import com.webank.defibus.client.impl.producer.RRCallback;
 import com.webank.runtime.configuration.CommonConfiguration;
 import com.webank.runtime.configuration.ConfigurationWraper;
+import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.plugin.impl.MeshMQProducer;
 import com.webank.runtime.util.OMSUtil;
 import io.openmessaging.*;
@@ -36,6 +37,7 @@ import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ServiceLoader;
 
@@ -121,7 +123,9 @@ public class MQProducerWrapper extends MQWrapper {
     public static void main(String[] args) throws Exception {
 
         MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
-        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(null, false));
+        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
+                + File.separator
+                + ProxyConstants.PROXY_CONF_FILE, false));
         mqProducerWrapper.init(commonConfiguration, "TEST");
     }
 }
