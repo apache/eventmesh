@@ -1,6 +1,6 @@
 ##如何运行eventmesh-sdk-java演示
 
-> Eventmesh-sdk-java作为客户端，与eventmesh-emesher通信，用于完成消息的发送和接收。
+> Eventmesh-sdk-java作为客户端，与eventmesh-runtime通信，用于完成消息的发送和接收。
 >
 > Eventmesh-sdk-java支持同步消息，异步消息和广播消息。同步消息表示生产者发送消息，需要消费者提供响应消息；异步消息表示生产者只发送消息，不关心回复消息。广播消息表示生产者发送一次消息，所有订阅广播主题的消费者都将收到消息
 >
