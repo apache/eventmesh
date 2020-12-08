@@ -64,20 +64,11 @@ public class RocketMQConsumerImpl implements MeshMQConsumer {
 
     @Override
     public synchronized void start() throws Exception {
-//        ThreadUtil.randomSleep(50);
-//
-//        if (this.defaultMQPushConsumer.getMessageListener() == null) {
-//            throw new Exception("no messageListener has been registered");
-//        }
-
         pushConsumer.startup();
-
-//        defaultMQPushConsumer.unsubscribe(MixAll.getRetryTopic(defaultMQPushConsumer.getConsumerGroup()));
     }
 
     @Override
     public void subscribe(String topic) throws Exception {
-//        defaultMQPushConsumer.subscribe(topic, "*");
         pushConsumer.attachQueue(topic, new MessageListener() {
             @Override
             public void onReceived(Message message, Context context) {
@@ -88,7 +79,6 @@ public class RocketMQConsumerImpl implements MeshMQConsumer {
 
     @Override
     public void unsubscribe(String topic) throws Exception {
-//        defaultMQPushConsumer.unsubscribe(topic);
         pushConsumer.detachQueue(topic);
     }
 
@@ -99,20 +89,16 @@ public class RocketMQConsumerImpl implements MeshMQConsumer {
 
     @Override
     public void pause() {
-//        defaultMQPushConsumer.getDefaultMQPushConsumerImpl().setPause(true);
         pushConsumer.suspend();
     }
 
     @Override
     public synchronized void shutdown() throws Exception {
-//        defaultMQPushConsumer.shutdown();
         pushConsumer.shutdown();
     }
 
     @Override
     public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext context) {
-//        ConsumeMessageService consumeMessageService = defaultMQPushConsumer.getDefaultMQPushConsumerImpl().getConsumeMessageService();
-//        ((ConsumeMessageConcurrentlyService) consumeMessageService).updateOffset(msgs, context);
         MessageListenerConcurrently pushConsumerMessageListener = (MessageListenerConcurrently) ((DefaultMQPushConsumer)pushConsumer).getMessageListener();
         pushConsumerMessageListener.consumeMessage(msgs, context);
     }
