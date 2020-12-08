@@ -20,7 +20,6 @@ package com.webank.runtime.core.plugin;
 import com.webank.defibus.client.impl.producer.RRCallback;
 import com.webank.runtime.configuration.CommonConfiguration;
 import com.webank.runtime.configuration.ConfigurationWraper;
-import com.webank.runtime.configuration.PropInit;
 import com.webank.runtime.core.plugin.impl.MeshMQProducer;
 import com.webank.runtime.util.OMSUtil;
 import io.openmessaging.*;
@@ -44,7 +43,7 @@ public class MQProducerWrapper extends MQWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected Producer meshMQProducer;
+    protected MeshMQProducer meshMQProducer;
 
     protected MessagingAccessPoint messagingAccessPoint;
 
@@ -55,25 +54,20 @@ public class MQProducerWrapper extends MQWrapper {
             return;
         }
 
-        PropInit driverProp = getDriverProp();
-        KeyValue prop = driverProp.initProp();
-        prop.put(OMSBuiltinKeys.PRODUCER_ID, producerGroup);
-        prop.put("RMQ_PRODUCER_GROUP", producerGroup);
-        prop.put(OMSBuiltinKeys.OPERATION_TIMEOUT, 3000);
-
-//        messagingAccessPoint = OMS.getMessagingAccessPoint(commonConfiguration.namesrvAddr, prop);
-        messagingAccessPoint = OMS.getMessagingAccessPoint(namesrv, prop);
-        meshMQProducer = messagingAccessPoint.createProducer(prop);
-//        System.out.println(meshMQProducer.getClass().getName());
-//        meshMQProducer.init(commonConfiguration, producerGroup);
+        meshMQProducer = getMeshMQProducer();
+        if (meshMQProducer == null){
+            logger.error("can't load the meshMQProducer plugin, please check.");
+            throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
+        }
+        meshMQProducer.init(commonConfiguration, producerGroup);
 
         inited.compareAndSet(false, true);
     }
 
-    private PropInit getDriverProp() {
-        ServiceLoader<PropInit> propInitServiceLoader = ServiceLoader.load(PropInit.class);
-        if (propInitServiceLoader.iterator().hasNext()){
-            return propInitServiceLoader.iterator().next();
+    private MeshMQProducer getMeshMQProducer() {
+        ServiceLoader<MeshMQProducer> meshMQProducerServiceLoader = ServiceLoader.load(MeshMQProducer.class);
+        if (meshMQProducerServiceLoader.iterator().hasNext()){
+            return meshMQProducerServiceLoader.iterator().next();
         }
         return null;
     }
@@ -83,7 +77,7 @@ public class MQProducerWrapper extends MQWrapper {
             return;
         }
 
-        meshMQProducer.startup();
+        meshMQProducer.start();
 
         started.compareAndSet(false, true);
     }
@@ -104,25 +98,20 @@ public class MQProducerWrapper extends MQWrapper {
     }
 
     public void send(Message message, SendCallback sendCallback) throws Exception {
-        Future<SendResult> future = meshMQProducer.sendAsync(OMSUtil.msgConvert((MessageExt) message));
-        String messageId = future.get().messageId();
-        logger.info("send message {}", messageId);
+        meshMQProducer.send(message, sendCallback);
     }
 
     public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-//        meshMQProducer.request(message, sendCallback, rrCallback, timeout);
-//        meshMQProducer.request(message, sendCallback, rrCallback, timeout);
+        meshMQProducer.request(message, sendCallback, rrCallback, timeout);
     }
 
     public Message request(Message message, long timeout) throws Exception {
-//        return meshMQProducer.request(message, timeout);
-        return null;
+        return meshMQProducer.request(message, timeout);
     }
 
     public boolean reply(final Message message, final SendCallback sendCallback) throws Exception {
-//        meshMQProducer.reply(message, sendCallback);
-        return true;
+        return meshMQProducer.reply(message, sendCallback);
     }
 
     public DefaultMQProducer getDefaultMQProducer() {

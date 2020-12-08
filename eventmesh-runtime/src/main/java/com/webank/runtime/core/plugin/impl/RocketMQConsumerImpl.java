@@ -107,6 +107,7 @@ public class RocketMQConsumerImpl implements MeshMQConsumer {
         defaultMQPushConsumer.getDefaultMQPushConsumerImpl().setPause(true);
     }
 
+    @Override
     public synchronized void shutdown() throws Exception {
         defaultMQPushConsumer.shutdown();
     }
