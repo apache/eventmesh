@@ -49,7 +49,7 @@ public class ConfigurationWraper {
     }
 
     private void init() {
-//        load();
+        load();
         if (this.reload) {
             configLoader.scheduleAtFixedRate(new Runnable() {
                 @Override
