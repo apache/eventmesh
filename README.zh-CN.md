@@ -25,9 +25,9 @@ Event Mesh的一般功能:
 * RocketMQ
 
 关键部件：
-* eventmesh-emesher：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
+* eventmesh-runtime：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
 * eventmesh-sdk-java：当前支持HTTP和TCP协议，未来会支持gRPC等
-* eventmesh-registry：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理emesher
+* eventmesh-registry：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理runtime
 
 ## RoadMap
 | version | feature |
@@ -51,7 +51,7 @@ Event Mesh的一般功能:
 ## 快速开始
 1. 构建并部署event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus))
    请参见说明['event-store quickstart.zh-CN'](docs/cn/instructions/eventmesh-store-quickstart.zh-CN.md)
-2. 构建并部署eventmesh-emesher，请参见说明['eventmesh-emesher quickstart.zh-CN'](docs/cn/instructions/eventmesh-emesher-quickstart.zh-CN.md)
+2. 构建并部署eventmesh-runtime，请参见说明['eventmesh-runtime quickstart.zh-CN'](docs/cn/instructions/eventmesh-runtime-quickstart.zh-CN.md)
 3. 运行eventmesh-sdk-java演示，请参见说明['eventmesh-sdk-java quickstart.zh-CN'](docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
 
 ## 贡献

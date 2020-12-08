@@ -27,9 +27,9 @@ Dependent components:
 * RocketMQ
 
 Key components:
-* eventmesh-emesher : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
+* eventmesh-runtime : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
 * eventmesh-sdk-java : currently supports HTTP and TCP protocols, and will support gRPC in the future
-* eventmesh-registry : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-emesher
+* eventmesh-registry : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-runtime
 
 ## RoadMap
 | version | feature |
@@ -52,7 +52,7 @@ Key components:
 ## Quick Start
 1. Build and deploy event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus)), 
    see instruction ['event-store quickstart'](instructions/eventmesh-store-quickstart.md).
-2. Build and deploy eventmesh-emesher, see instruction ['eventmesh-emesher quickstart'](instructions/eventmesh-emesher-quickstart.md).
+2. Build and deploy eventmesh-runtime, see instruction ['eventmesh-runtime quickstart'](instructions/eventmesh-runtime-quickstart.md).
 3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](instructions/eventmesh-sdk-java-quickstart.md). 
 
 ## Contributing
