@@ -69,6 +69,7 @@ public class ProxyConfiguration extends CommonConfiguration {
         super(configurationWraper);
     }
 
+    @Override
     public void init(){
         super.init();
 
