@@ -162,6 +162,10 @@ public class PushConsumerImpl implements PushConsumer {
         this.started = false;
     }
 
+    public DefaultMQPushConsumer getRocketmqPushConsumer() {
+        return rocketmqPushConsumer;
+    }
+
     class MessageListenerImpl implements MessageListenerConcurrently {
 
         @Override
