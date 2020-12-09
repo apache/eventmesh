@@ -43,7 +43,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
 //    protected DefaultMQProducer defaultMQProducer;
 
-    private Producer producer;
+    private ProducerImpl producer;
 
     public final String DEFAULT_ACCESS_DRIVER = "connector.rocketmq.MessagingAccessPointImpl";
 
@@ -57,7 +57,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
                 .put("RMQ_PRODUCER_GROUP", producerGroup)
                 .put(OMSBuiltinKeys.OPERATION_TIMEOUT, 3000);
         MessagingAccessPoint messagingAccessPoint = OMS.getMessagingAccessPoint(commonConfiguration.namesrvAddr, properties);
-        producer = messagingAccessPoint.createProducer();
+        producer = (ProducerImpl) messagingAccessPoint.createProducer();
 
     }
 
@@ -99,6 +99,6 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
     @Override
     public DefaultMQProducer getDefaultMQProducer() {
-        return (DefaultMQProducer) producer;
+        return producer.getRocketmqProducer();
     }
 }

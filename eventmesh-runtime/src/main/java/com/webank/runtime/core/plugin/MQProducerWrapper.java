@@ -38,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ServiceLoader;
 
 public class MQProducerWrapper extends MQWrapper {
@@ -46,10 +45,6 @@ public class MQProducerWrapper extends MQWrapper {
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected MeshMQProducer meshMQProducer;
-
-    protected MessagingAccessPoint messagingAccessPoint;
-
-    public String namesrv = "oms:rocketmq://IP1:9876,IP2:9876/namespace";
 
     public synchronized void init(CommonConfiguration commonConfiguration, String producerGroup) throws Exception{
         if (inited.get()) {
@@ -117,7 +112,7 @@ public class MQProducerWrapper extends MQWrapper {
     }
 
     public DefaultMQProducer getDefaultMQProducer() {
-        return (DefaultMQProducer) meshMQProducer;
+        return meshMQProducer.getDefaultMQProducer();
     }
 
     public static void main(String[] args) throws Exception {
