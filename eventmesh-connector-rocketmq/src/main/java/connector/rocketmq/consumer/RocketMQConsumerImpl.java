@@ -22,8 +22,6 @@ import com.webank.runtime.core.plugin.impl.MeshMQConsumer;
 import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
 import io.openmessaging.*;
 import io.openmessaging.consumer.MessageListener;
-import io.openmessaging.consumer.PushConsumer;
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
@@ -39,7 +37,7 @@ public class RocketMQConsumerImpl implements MeshMQConsumer {
 
     public final String DEFAULT_ACCESS_DRIVER = "connector.rocketmq.MessagingAccessPointImpl";
 
-    private PushConsumer pushConsumer;
+    private PushConsumerImpl pushConsumer;
 
     @Override
     public synchronized void init(boolean isBroadcast, CommonConfiguration commonConfiguration,
@@ -49,17 +47,17 @@ public class RocketMQConsumerImpl implements MeshMQConsumer {
                 .put("REGION", "namespace")
                 .put(OMSBuiltinKeys.CONSUMER_ID, consumerGroup);
         MessagingAccessPoint messagingAccessPoint = OMS.getMessagingAccessPoint(commonConfiguration.namesrvAddr, properties);
-        pushConsumer = messagingAccessPoint.createPushConsumer();
+        pushConsumer = (PushConsumerImpl)messagingAccessPoint.createPushConsumer();
     }
 
     @Override
     public void setInstanceName(String instanceName) {
-        ((DefaultMQPushConsumer)pushConsumer).setInstanceName(instanceName);
+        pushConsumer.getRocketmqPushConsumer().setInstanceName(instanceName);
     }
 
     @Override
     public void registerMessageListener(MessageListenerConcurrently listener) {
-        ((DefaultMQPushConsumer)pushConsumer).setMessageListener(listener);
+        pushConsumer.getRocketmqPushConsumer().setMessageListener(listener);
     }
 
     @Override
@@ -99,7 +97,7 @@ public class RocketMQConsumerImpl implements MeshMQConsumer {
 
     @Override
     public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext context) {
-        MessageListenerConcurrently pushConsumerMessageListener = (MessageListenerConcurrently) ((DefaultMQPushConsumer)pushConsumer).getMessageListener();
+        MessageListenerConcurrently pushConsumerMessageListener = (MessageListenerConcurrently) pushConsumer.getRocketmqPushConsumer().getMessageListener();
         pushConsumerMessageListener.consumeMessage(msgs, context);
     }
 }
