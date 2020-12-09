@@ -137,4 +137,8 @@ public abstract class AbstractOMSProducer implements ServiceLifecycle, MessageFa
         message.sysHeaders().put(Message.BuiltinKeys.DESTINATION, queue);
         return message;
     }
+
+    public DefaultMQProducer getRocketmqProducer() {
+        return rocketmqProducer;
+    }
 }
