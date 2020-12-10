@@ -22,17 +22,11 @@ import com.webank.runtime.configuration.CommonConfiguration;
 import com.webank.runtime.configuration.ConfigurationWraper;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.plugin.impl.MeshMQProducer;
-import com.webank.runtime.util.OMSUtil;
-import io.openmessaging.*;
-import io.openmessaging.producer.Producer;
-import io.openmessaging.producer.SendResult;
-import org.apache.commons.lang3.ClassPathUtils;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,6 +115,7 @@ public class MQProducerWrapper extends MQWrapper {
         CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
                 + File.separator
                 + ProxyConstants.PROXY_CONF_FILE, false));
+        commonConfiguration.init();
         mqProducerWrapper.init(commonConfiguration, "TEST");
     }
 }
