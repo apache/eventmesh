@@ -155,6 +155,7 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
         logger.info("--------------------------ProxyHTTPServer inited");
     }
 
+    @Override
     public void start() throws Exception {
         super.start();
         metrics.start();
@@ -164,6 +165,7 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
         logger.info("--------------------------ProxyHTTPServer started");
     }
 
+    @Override
     public void shutdown() throws Exception {
 
         super.shutdown();

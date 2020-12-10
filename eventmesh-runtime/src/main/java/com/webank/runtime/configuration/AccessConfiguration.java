@@ -77,6 +77,7 @@ public class AccessConfiguration extends CommonConfiguration {
         super(configurationWraper);
     }
 
+    @Override
     public void init(){
         super.init();
         String proxyTcpServerPortStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_TCP_PORT);

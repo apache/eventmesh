@@ -22,4 +22,5 @@ include 'eventmesh-connector-rocketmq'
 include 'eventmesh-registry'
 include 'eventmesh-sdk-java'
 include 'eventmesh-common'
+include 'eventmesh-connector-api'
 

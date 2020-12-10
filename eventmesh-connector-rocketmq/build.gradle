@@ -59,8 +59,8 @@ List metrics = [
 ]
 
 dependencies {
-    compile project(":eventmesh-runtime")
-    testCompile project(":eventmesh-runtime")
+    compile project(":eventmesh-connector-api")
+    testCompile project(":eventmesh-connector-api")
     compile rocketmq, metrics, log4j2, sl4j
     testCompile rocketmq, metrics, log4j2, sl4j, junit
 }
