@@ -32,14 +32,10 @@ repositories {
     mavenCentral()
 }
 
-List defibus = [
-    "com.webank.defibus:defibus-client:$defibus_version",
-    "com.webank.defibus:defibus-common:$defibus_version"
-]
-
-List open_message = [
-        "io.openmessaging:openmessaging-api:0.3.1-alpha"
-]
+//List defibus = [
+//    "com.webank.defibus:defibus-client:$defibus_version",
+//    "com.webank.defibus:defibus-common:$defibus_version"
+//]
 
 List junit = [
     "junit:junit:4.12"
@@ -65,11 +61,11 @@ List metrics = [
 ]
 
 dependencies {
-    compile project(":eventmesh-common")
+    compile project(":eventmesh-common"), project(":eventmesh-connector-api")
     compile files('..\\eventmesh-connector-rocketmq\\build\\libs\\eventmesh-connector-rocketmq-1.1.1.jar')
-    testCompile project(":eventmesh-common")
-    compile defibus, metrics, log4j2, sl4j, open_message
-    testCompile defibus, metrics, log4j2, sl4j, junit, open_message
+    testCompile project(":eventmesh-common"), project(":eventmesh-connector-api")
+    compile metrics, log4j2, sl4j
+    testCompile metrics, log4j2, sl4j, junit
 }
 
 clean.doFirst {

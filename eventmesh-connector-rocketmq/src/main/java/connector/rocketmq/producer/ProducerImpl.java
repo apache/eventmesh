@@ -34,30 +34,33 @@ import org.apache.rocketmq.client.producer.SendStatus;
 import static connector.rocketmq.utils.OMSUtil.msgConvert;
 
 
-public class ProducerImpl extends AbstractOMSProducer implements Producer {
+//public class ProducerImpl extends AbstractOMSProducer implements Producer {
+public class ProducerImpl extends AbstractOMSProducer{
+
+    private SendCallback sendCallback;
 
     public ProducerImpl(final KeyValue properties) {
         super(properties);
     }
 
-    @Override
+//    @Override
     public KeyValue attributes() {
         return properties;
     }
 
-    @Override
+//    @Override
     public SendResult send(final Message message) {
         return send(message, this.rocketmqProducer.getSendMsgTimeout());
     }
 
-    @Override
+//    @Override
     public SendResult send(final Message message, final KeyValue properties) {
         long timeout = properties.containsKey(Message.BuiltinKeys.TIMEOUT)
             ? properties.getInt(Message.BuiltinKeys.TIMEOUT) : this.rocketmqProducer.getSendMsgTimeout();
         return send(message, timeout);
     }
 
-    @Override
+//    @Override
     public SendResult send(Message message, LocalTransactionExecutor branchExecutor, KeyValue attributes) {
         return null;
     }
@@ -79,12 +82,12 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
         }
     }
 
-    @Override
+//    @Override
     public Promise<SendResult> sendAsync(final Message message) {
         return sendAsync(message, this.rocketmqProducer.getSendMsgTimeout());
     }
 
-    @Override
+//    @Override
     public Promise<SendResult> sendAsync(final Message message, final KeyValue properties) {
         long timeout = properties.containsKey(Message.BuiltinKeys.TIMEOUT)
             ? properties.getInt(Message.BuiltinKeys.TIMEOUT) : this.rocketmqProducer.getSendMsgTimeout();
@@ -96,25 +99,26 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
         org.apache.rocketmq.common.message.Message rmqMessage = msgConvert((BytesMessage) message);
         final Promise<SendResult> promise = new DefaultPromise<>();
         try {
-            this.rocketmqProducer.send(rmqMessage, new SendCallback() {
-                @Override
-                public void onSuccess(final org.apache.rocketmq.client.producer.SendResult rmqResult) {
-                    message.sysHeaders().put(Message.BuiltinKeys.MESSAGE_ID, rmqResult.getMsgId());
-                    promise.set(OMSUtil.sendResultConvert(rmqResult));
-                }
-
-                @Override
-                public void onException(final Throwable e) {
-                    promise.setFailure(e);
-                }
-            }, timeout);
+//            this.rocketmqProducer.send(rmqMessage, new SendCallback() {
+//                @Override
+//                public void onSuccess(final org.apache.rocketmq.client.producer.SendResult rmqResult) {
+//                    message.sysHeaders().put(Message.BuiltinKeys.MESSAGE_ID, rmqResult.getMsgId());
+//                    promise.set(OMSUtil.sendResultConvert(rmqResult));
+//                }
+//
+//                @Override
+//                public void onException(final Throwable e) {
+//                    promise.setFailure(e);
+//                }
+//            }, timeout);
+            this.rocketmqProducer.send(rmqMessage, this.sendCallback, timeout);
         } catch (Exception e) {
             promise.setFailure(e);
         }
         return promise;
     }
 
-    @Override
+//    @Override
     public void sendOneway(final Message message) {
         checkMessageType(message);
         org.apache.rocketmq.common.message.Message rmqMessage = msgConvert((BytesMessage) message);
@@ -124,23 +128,31 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
         }
     }
 
-    @Override
+//    @Override
     public void sendOneway(final Message message, final KeyValue properties) {
         sendOneway(message);
     }
 
-    @Override
+//    @Override
     public BatchMessageSender createBatchMessageSender() {
         return null;
     }
 
-    @Override
+//    @Override
     public void addInterceptor(ProducerInterceptor interceptor) {
 
     }
 
-    @Override
+//    @Override
     public void removeInterceptor(ProducerInterceptor interceptor) {
 
+    }
+
+    public void setSendCallback(SendCallback sendCallback) {
+        this.sendCallback = sendCallback;
+    }
+
+    public SendCallback getSendCallback() {
+        return sendCallback;
     }
 }

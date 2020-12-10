@@ -17,11 +17,13 @@
 
 package connector.rocketmq.consumer;
 
-import com.webank.runtime.configuration.CommonConfiguration;
-import com.webank.runtime.core.plugin.impl.MeshMQConsumer;
-import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
+import com.webank.api.consumer.MeshMQPushConsumer;
+import com.webank.eventmesh.common.config.CommonConfiguration;
 import io.openmessaging.*;
 import io.openmessaging.consumer.MessageListener;
+import io.openmessaging.consumer.PushConsumer;
+import io.openmessaging.interceptor.ConsumerInterceptor;
+import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
@@ -29,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class RocketMQConsumerImpl implements MeshMQConsumer {
+public class RocketMQConsumerImpl implements MeshMQPushConsumer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -91,13 +93,68 @@ public class RocketMQConsumerImpl implements MeshMQConsumer {
     }
 
     @Override
-    public synchronized void shutdown() throws Exception {
+    public void startup() {
+        pushConsumer.startup();
+    }
+
+    @Override
+    public synchronized void shutdown() {
         pushConsumer.shutdown();
     }
 
     @Override
-    public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext context) {
+    public void updateOffset(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
         MessageListenerConcurrently pushConsumerMessageListener = (MessageListenerConcurrently) pushConsumer.getRocketmqPushConsumer().getMessageListener();
         pushConsumerMessageListener.consumeMessage(msgs, context);
+    }
+
+    @Override
+    public KeyValue attributes() {
+        return pushConsumer.attributes();
+    }
+
+    @Override
+    public void resume() {
+        pushConsumer.resume();
+    }
+
+    @Override
+    public void suspend() {
+        pushConsumer.suspend();
+    }
+
+    @Override
+    public void suspend(long timeout) {
+        pushConsumer.suspend(timeout);
+    }
+
+    @Override
+    public boolean isSuspended() {
+        return pushConsumer.isSuspended();
+    }
+
+    @Override
+    public PushConsumer attachQueue(String queueName, MessageListener listener) {
+        return pushConsumer.attachQueue(queueName, listener);
+    }
+
+    @Override
+    public PushConsumer attachQueue(String queueName, MessageListener listener, KeyValue attributes) {
+        return pushConsumer.attachQueue(queueName, listener, attributes);
+    }
+
+    @Override
+    public PushConsumer detachQueue(String queueName) {
+        return pushConsumer.detachQueue(queueName);
+    }
+
+    @Override
+    public void addInterceptor(ConsumerInterceptor interceptor) {
+        pushConsumer.addInterceptor(interceptor);
+    }
+
+    @Override
+    public void removeInterceptor(ConsumerInterceptor interceptor) {
+        pushConsumer.removeInterceptor(interceptor);
     }
 }
