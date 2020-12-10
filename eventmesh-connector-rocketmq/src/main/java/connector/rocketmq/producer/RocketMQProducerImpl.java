@@ -17,15 +17,15 @@
 
 package connector.rocketmq.producer;
 
+import com.webank.api.producer.MeshMQProducer;
 import com.webank.defibus.client.impl.producer.RRCallback;
-import com.webank.runtime.configuration.CommonConfiguration;
-import com.webank.runtime.core.plugin.impl.MeshMQProducer;
-import com.webank.runtime.util.OMSUtil;
-import io.openmessaging.KeyValue;
-import io.openmessaging.MessagingAccessPoint;
-import io.openmessaging.OMS;
-import io.openmessaging.OMSBuiltinKeys;
-import io.openmessaging.producer.Producer;
+import com.webank.eventmesh.common.config.CommonConfiguration;
+import connector.rocketmq.utils.OMSUtil;
+import io.openmessaging.*;
+import io.openmessaging.interceptor.ProducerInterceptor;
+import io.openmessaging.producer.BatchMessageSender;
+import io.openmessaging.producer.LocalTransactionExecutor;
+import io.openmessaging.producer.SendResult;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -39,9 +39,6 @@ import org.slf4j.LoggerFactory;
 public class RocketMQProducerImpl implements MeshMQProducer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
-
-
-//    protected DefaultMQProducer defaultMQProducer;
 
     private ProducerImpl producer;
 
@@ -71,13 +68,21 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public synchronized void shutdown() throws Exception {
+    public void startup() {
+
+    }
+
+    @Override
+    public synchronized void shutdown() {
 
         producer.shutdown();
     }
 
     @Override
     public void send(Message message, SendCallback sendCallback) throws Exception {
+        if (producer.getSendCallback() == null){
+            producer.setSendCallback(sendCallback);
+        }
         producer.sendAsync(OMSUtil.msgConvert((MessageExt) message));
     }
 
@@ -100,5 +105,65 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     @Override
     public DefaultMQProducer getDefaultMQProducer() {
         return producer.getRocketmqProducer();
+    }
+
+    @Override
+    public KeyValue attributes() {
+        return producer.attributes();
+    }
+
+    @Override
+    public SendResult send(io.openmessaging.Message message) {
+        return producer.send(message);
+    }
+
+    @Override
+    public SendResult send(io.openmessaging.Message message, KeyValue attributes) {
+        return producer.send(message, attributes);
+    }
+
+    @Override
+    public SendResult send(io.openmessaging.Message message, LocalTransactionExecutor branchExecutor, KeyValue attributes) {
+        return producer.send(message, branchExecutor, attributes);
+    }
+
+    @Override
+    public Future<SendResult> sendAsync(io.openmessaging.Message message) {
+        return producer.sendAsync(message);
+    }
+
+    @Override
+    public Future<SendResult> sendAsync(io.openmessaging.Message message, KeyValue attributes) {
+        return producer.sendAsync(message, attributes);
+    }
+
+    @Override
+    public void sendOneway(io.openmessaging.Message message) {
+        producer.sendOneway(message);
+    }
+
+    @Override
+    public void sendOneway(io.openmessaging.Message message, KeyValue properties) {
+        producer.sendOneway(message, properties);
+    }
+
+    @Override
+    public BatchMessageSender createBatchMessageSender() {
+        return producer.createBatchMessageSender();
+    }
+
+    @Override
+    public void addInterceptor(ProducerInterceptor interceptor) {
+        producer.addInterceptor(interceptor);
+    }
+
+    @Override
+    public void removeInterceptor(ProducerInterceptor interceptor) {
+        producer.removeInterceptor(interceptor);
+    }
+
+    @Override
+    public BytesMessage createBytesMessage(String queue, byte[] body) {
+        return producer.createBytesMessage(queue, body);
     }
 }
