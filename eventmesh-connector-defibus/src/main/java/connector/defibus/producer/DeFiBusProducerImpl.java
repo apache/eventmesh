@@ -15,14 +15,22 @@
  * limitations under the License.
  */
 
-package com.webank.runtime.core.plugin.impl;
+package connector.defibus.producer;
 
+import com.webank.api.producer.MeshMQProducer;
 import com.webank.defibus.client.common.DeFiBusClientConfig;
 import com.webank.defibus.client.impl.producer.RRCallback;
 import com.webank.defibus.producer.DeFiBusProducer;
-import com.webank.runtime.configuration.CommonConfiguration;
-import com.webank.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.common.ThreadUtil;
+import com.webank.eventmesh.common.config.CommonConfiguration;
+import connector.defibus.common.Constants;
+import io.openmessaging.BytesMessage;
+import io.openmessaging.Future;
+import io.openmessaging.KeyValue;
+import io.openmessaging.interceptor.ProducerInterceptor;
+import io.openmessaging.producer.BatchMessageSender;
+import io.openmessaging.producer.LocalTransactionExecutor;
+import io.openmessaging.producer.SendResult;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -46,7 +54,7 @@ public class DeFiBusProducerImpl implements MeshMQProducer {
         wcc.setClusterPrefix(commonConfiguration.proxyIDC);
         wcc.setPollNameServerInterval(commonConfiguration.pollNameServerInteval);
         wcc.setHeartbeatBrokerInterval(commonConfiguration.heartbeatBrokerInterval);
-        wcc.setProducerGroup(ProxyConstants.PRODUCER_GROUP_NAME_PREFIX + producerGroup);
+        wcc.setProducerGroup(Constants.PRODUCER_GROUP_NAME_PREFIX + producerGroup);
         wcc.setNamesrvAddr(commonConfiguration.namesrvAddr);
         MessageClientIDSetter.createUniqID();
         defibusProducer = new DeFiBusProducer(wcc);
@@ -65,7 +73,13 @@ public class DeFiBusProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public synchronized void shutdown() throws Exception {
+    public void startup() {
+
+    }
+
+    //TODO void shutdown() throws Exception;
+    @Override
+    public synchronized void shutdown() {
 
         defibusProducer.shutdown();
 
@@ -99,5 +113,65 @@ public class DeFiBusProducerImpl implements MeshMQProducer {
     @Override
     public DefaultMQProducer getDefaultMQProducer() {
         return defibusProducer.getDefaultMQProducer();
+    }
+
+    @Override
+    public KeyValue attributes() {
+        return null;
+    }
+
+    @Override
+    public SendResult send(io.openmessaging.Message message) {
+        return null;
+    }
+
+    @Override
+    public SendResult send(io.openmessaging.Message message, KeyValue attributes) {
+        return null;
+    }
+
+    @Override
+    public SendResult send(io.openmessaging.Message message, LocalTransactionExecutor branchExecutor, KeyValue attributes) {
+        return null;
+    }
+
+    @Override
+    public Future<SendResult> sendAsync(io.openmessaging.Message message) {
+        return null;
+    }
+
+    @Override
+    public Future<SendResult> sendAsync(io.openmessaging.Message message, KeyValue attributes) {
+        return null;
+    }
+
+    @Override
+    public void sendOneway(io.openmessaging.Message message) {
+
+    }
+
+    @Override
+    public void sendOneway(io.openmessaging.Message message, KeyValue properties) {
+
+    }
+
+    @Override
+    public BatchMessageSender createBatchMessageSender() {
+        return null;
+    }
+
+    @Override
+    public void addInterceptor(ProducerInterceptor interceptor) {
+
+    }
+
+    @Override
+    public void removeInterceptor(ProducerInterceptor interceptor) {
+
+    }
+
+    @Override
+    public BytesMessage createBytesMessage(String queue, byte[] body) {
+        return null;
     }
 }

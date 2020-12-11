@@ -15,14 +15,19 @@
  * limitations under the License.
  */
 
-package com.webank.runtime.core.plugin.impl;
+package connector.defibus.consumer;
 
+import com.webank.api.consumer.MeshMQPushConsumer;
 import com.webank.defibus.client.common.DeFiBusClientConfig;
 import com.webank.defibus.consumer.DeFiBusPushConsumer;
-import com.webank.runtime.configuration.CommonConfiguration;
-import com.webank.runtime.constants.ProxyConstants;
-import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
 import com.webank.eventmesh.common.ThreadUtil;
+import com.webank.eventmesh.common.config.CommonConfiguration;
+import connector.defibus.common.Constants;
+import io.openmessaging.KeyValue;
+import io.openmessaging.consumer.MessageListener;
+import io.openmessaging.consumer.PushConsumer;
+import io.openmessaging.interceptor.ConsumerInterceptor;
+import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
@@ -35,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class DeFiBusConsumerImpl implements MeshMQConsumer {
+public class DeFiBusConsumerImpl implements MeshMQPushConsumer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -57,9 +62,9 @@ public class DeFiBusConsumerImpl implements MeshMQConsumer {
         wcc.setPullBatchSize(commonConfiguration.pullBatchSize);
         wcc.setClusterPrefix(commonConfiguration.proxyIDC);
         if (isBroadcast) {
-            wcc.setConsumerGroup(ProxyConstants.CONSUMER_GROUP_NAME_PREFIX + ProxyConstants.BROADCAST_PREFIX + consumerGroup);
+            wcc.setConsumerGroup(Constants.CONSUMER_GROUP_NAME_PREFIX + Constants.BROADCAST_PREFIX + consumerGroup);
         } else {
-            wcc.setConsumerGroup(ProxyConstants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup);
+            wcc.setConsumerGroup(Constants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup);
         }
         wcc.setNamesrvAddr(commonConfiguration.namesrvAddr);
         deFiBusPushConsumer = new DeFiBusPushConsumer(wcc);
@@ -88,6 +93,12 @@ public class DeFiBusConsumerImpl implements MeshMQConsumer {
     }
 
     @Override
+    public void updateOffset(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
+        ConsumeMessageService consumeMessageService = deFiBusPushConsumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
+        ((ConsumeMessageConcurrentlyService) consumeMessageService).updateOffset(msgs, context);
+    }
+
+    @Override
     public void subscribe(String topic) throws Exception {
         deFiBusPushConsumer.subscribe(topic);
     }
@@ -108,7 +119,13 @@ public class DeFiBusConsumerImpl implements MeshMQConsumer {
     }
 
     @Override
-    public synchronized void shutdown() throws Exception {
+    public void startup() {
+
+    }
+
+    //TODO throws Exception
+    @Override
+    public synchronized void shutdown()  {
         deFiBusPushConsumer.shutdown();
     }
 
@@ -118,8 +135,52 @@ public class DeFiBusConsumerImpl implements MeshMQConsumer {
     }
 
     @Override
-    public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext context) {
-        ConsumeMessageService consumeMessageService = deFiBusPushConsumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
-        ((ConsumeMessageConcurrentlyService) consumeMessageService).updateOffset(msgs, context);
+    public KeyValue attributes() {
+        return null;
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void suspend() {
+
+    }
+
+    @Override
+    public void suspend(long timeout) {
+
+    }
+
+    @Override
+    public boolean isSuspended() {
+        return false;
+    }
+
+    @Override
+    public PushConsumer attachQueue(String queueName, MessageListener listener) {
+        return null;
+    }
+
+    @Override
+    public PushConsumer attachQueue(String queueName, MessageListener listener, KeyValue attributes) {
+        return null;
+    }
+
+    @Override
+    public PushConsumer detachQueue(String queueName) {
+        return null;
+    }
+
+    @Override
+    public void addInterceptor(ConsumerInterceptor interceptor) {
+
+    }
+
+    @Override
+    public void removeInterceptor(ConsumerInterceptor interceptor) {
+
     }
 }

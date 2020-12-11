@@ -19,6 +19,8 @@ package com.webank.runtime.configuration;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
+import com.webank.eventmesh.common.config.CommonConfiguration;
+import com.webank.eventmesh.common.config.ConfigurationWraper;
 
 public class AccessConfiguration extends CommonConfiguration {
     public int proxyTcpServerPort = 10000;
