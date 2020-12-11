@@ -41,33 +41,22 @@ repositories {
     mavenCentral()
 }
 
-List open_message = [
-        "io.openmessaging:openmessaging-api:0.3.1-alpha"
+//List eventmesh_common = [
+//        "com.webank.eventmesh:eventmesh-common:1.1.2-SNAPSHOT"
+//]
+
+List eventmesh_connector_api = [
+        "com.webank.eventmesh:eventmesh-connector-api:1.1.2-SNAPSHOT"
 ]
 
-List eventmesh_common = [
-        "com.webank.eventmesh:eventmesh-common:1.1.2-SNAPSHOT"
+List junit = [
+        "junit:junit:4.12"
 ]
 
 dependencies {
-//    compile project(":eventmesh-common")
-    compile open_message, eventmesh_common
-    testCompile group: 'junit', name: 'junit', version: '4.12', open_message, eventmesh_common
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            snapshotRepository(url: 'Your target repo address') {
-                authentication(userName: 'Your user name', password: 'Your password')
-            }
-            repository(url: 'Your target repo address') {
-                authentication(userName: 'Your user name', password: 'Your password')
-            }
-        }
-    }
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
+//    compile project(":eventmesh-connector-api")
+//    testCompile project(":eventmesh-connector-api")
+//    testCompile junit
+    compile  eventmesh_connector_api
+    testCompile junit, eventmesh_connector_api
 }

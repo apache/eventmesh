@@ -17,11 +17,11 @@
 
 package com.webank.runtime.core.plugin;
 
+import com.webank.api.producer.MeshMQProducer;
 import com.webank.defibus.client.impl.producer.RRCallback;
-import com.webank.runtime.configuration.CommonConfiguration;
-import com.webank.runtime.configuration.ConfigurationWraper;
+import com.webank.eventmesh.common.config.CommonConfiguration;
+import com.webank.eventmesh.common.config.ConfigurationWraper;
 import com.webank.runtime.constants.ProxyConstants;
-import com.webank.runtime.core.plugin.impl.MeshMQProducer;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -109,13 +109,13 @@ public class MQProducerWrapper extends MQWrapper {
         return meshMQProducer.getDefaultMQProducer();
     }
 
-    public static void main(String[] args) throws Exception {
-
-        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
-        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
-                + File.separator
-                + ProxyConstants.PROXY_CONF_FILE, false));
-        commonConfiguration.init();
-        mqProducerWrapper.init(commonConfiguration, "TEST");
-    }
+//    public static void main(String[] args) throws Exception {
+//
+//        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
+//        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
+//                + File.separator
+//                + ProxyConstants.PROXY_CONF_FILE, false));
+//        commonConfiguration.init();
+//        mqProducerWrapper.init(commonConfiguration, "TEST");
+//    }
 }

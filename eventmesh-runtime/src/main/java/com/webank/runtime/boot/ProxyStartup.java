@@ -17,8 +17,8 @@
 
 package com.webank.runtime.boot;
 
+import com.webank.eventmesh.common.config.ConfigurationWraper;
 import com.webank.runtime.configuration.AccessConfiguration;
-import com.webank.runtime.configuration.ConfigurationWraper;
 import com.webank.runtime.configuration.ProxyConfiguration;
 import com.webank.runtime.constants.ProxyConstants;
 import org.slf4j.Logger;
