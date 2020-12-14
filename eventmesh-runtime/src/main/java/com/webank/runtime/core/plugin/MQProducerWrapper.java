@@ -109,13 +109,13 @@ public class MQProducerWrapper extends MQWrapper {
         return meshMQProducer.getDefaultMQProducer();
     }
 
-    public static void main(String[] args) throws Exception {
-
-        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
-        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
-                + File.separator
-                + ProxyConstants.PROXY_CONF_FILE, false));
-        commonConfiguration.init();
-        mqProducerWrapper.init(commonConfiguration, "TEST");
-    }
+//    public static void main(String[] args) throws Exception {
+//
+//        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
+//        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
+//                + File.separator
+//                + ProxyConstants.PROXY_CONF_FILE, false));
+//        commonConfiguration.init();
+//        mqProducerWrapper.init(commonConfiguration, "TEST");
+//    }
 }
