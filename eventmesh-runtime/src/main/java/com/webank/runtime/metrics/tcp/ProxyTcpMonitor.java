@@ -132,17 +132,17 @@ public class ProxyTcpMonitor {
             }
         }), delay, period, TimeUnit.MILLISECONDS);
 
-//        monitorThreadPoolTask = proxyTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
-//            @Override
-//            public void run() {
-////                ThreadPoolHelper.printThreadPoolState();
-//                proxyTCPServer.getProxyTcpRetryer().printRetryThreadPoolState();
-//
-//                //monitor retry queue size
-//                int retrySize = proxyTCPServer.getProxyTcpRetryer().getRetrySize();
-//                appLogger.info(String.format(MonitorMetricConstants.PROXY_MONITOR_FORMAT_COMMON, ProxyConstants.PROTOCOL_TCP, MonitorMetricConstants.RETRY_QUEUE_SIZE, retrySize));
-//            }
-//        }, 10, PRINT_THREADPOOLSTATE_INTERVAL, TimeUnit.SECONDS);
+        monitorThreadPoolTask = proxyTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+//                ThreadPoolHelper.printThreadPoolState();
+                proxyTCPServer.getProxyTcpRetryer().printRetryThreadPoolState();
+
+                //monitor retry queue size
+                int retrySize = proxyTCPServer.getProxyTcpRetryer().getRetrySize();
+                appLogger.info(String.format(MonitorMetricConstants.PROXY_MONITOR_FORMAT_COMMON, ProxyConstants.PROTOCOL_TCP, MonitorMetricConstants.RETRY_QUEUE_SIZE, retrySize));
+            }
+        }, 10, PRINT_THREADPOOLSTATE_INTERVAL, TimeUnit.SECONDS);
         logger.info("ProxyTcpMonitor started......");
     }
 
