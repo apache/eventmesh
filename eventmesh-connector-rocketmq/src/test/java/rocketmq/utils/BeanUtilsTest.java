@@ -16,9 +16,9 @@
  */
 package rocketmq.utils;
 
-import connector.rocketmq.config.ClientConfig;
-import connector.rocketmq.domain.NonStandardKeys;
-import connector.rocketmq.utils.BeanUtils;
+import com.webank.connector.rocketmq.config.ClientConfig;
+import com.webank.connector.rocketmq.domain.NonStandardKeys;
+import com.webank.connector.rocketmq.utils.BeanUtils;
 import io.openmessaging.KeyValue;
 import io.openmessaging.OMS;
 import org.junit.Assert;
