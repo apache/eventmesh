@@ -16,7 +16,7 @@
  */
 package rocketmq.promise;
 
-import connector.rocketmq.promise.DefaultPromise;
+import com.webank.connector.rocketmq.promise.DefaultPromise;
 import io.openmessaging.Future;
 import io.openmessaging.FutureListener;
 import io.openmessaging.Promise;

@@ -16,8 +16,8 @@
  */
 package rocketmq.consumer;
 
-import connector.rocketmq.consumer.PushConsumerImpl;
-import connector.rocketmq.domain.NonStandardKeys;
+import com.webank.connector.rocketmq.consumer.PushConsumerImpl;
+import com.webank.connector.rocketmq.domain.NonStandardKeys;
 import io.openmessaging.*;
 import io.openmessaging.consumer.MessageListener;
 import io.openmessaging.consumer.PushConsumer;
@@ -32,7 +32,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
-import java.util.ServiceLoader;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;

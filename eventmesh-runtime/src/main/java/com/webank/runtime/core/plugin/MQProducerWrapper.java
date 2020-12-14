@@ -38,7 +38,7 @@ public class MQProducerWrapper extends MQWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected MeshMQProducer meshMQProducer;
+    protected com.webank.api.producer.MeshMQProducer meshMQProducer;
 
     public synchronized void init(CommonConfiguration commonConfiguration, String producerGroup) throws Exception{
         if (inited.get()) {
