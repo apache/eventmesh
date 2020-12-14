@@ -1,1 +1,1 @@
-connector.rocketmq.MessagingAccessPointImpl
+com.webank.connector.rocketmq.MessagingAccessPointImpl

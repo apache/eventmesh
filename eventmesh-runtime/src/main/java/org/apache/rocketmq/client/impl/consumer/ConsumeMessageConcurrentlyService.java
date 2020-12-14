@@ -332,12 +332,12 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
         }
     }
 
-    public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext context) {
+    public void updateOffset(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
         for (MessageExt m : msgs) {
             log.debug("update offset, msg: {} {} {}", m.getTopic(), m.getQueueId(), m.getQueueOffset());
         }
         MessageQueue messageQueue = context.getMessageQueue();
-        ProcessQueue processQueue = context.getProcessQueue();
+        ProcessQueue processQueue = ((ProxyConsumeConcurrentlyContext)context).getProcessQueue();
         long offset = processQueue.removeMessage(msgs);
         if (offset >= 0) {
             log.debug("update offset={}", offset);

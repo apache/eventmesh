@@ -17,11 +17,11 @@
 
 package com.webank.runtime.core.plugin;
 
+import com.webank.api.producer.MeshMQProducer;
 import com.webank.defibus.client.impl.producer.RRCallback;
-import com.webank.runtime.configuration.CommonConfiguration;
-import com.webank.runtime.configuration.ConfigurationWraper;
+import com.webank.eventmesh.common.config.CommonConfiguration;
+import com.webank.eventmesh.common.config.ConfigurationWraper;
 import com.webank.runtime.constants.ProxyConstants;
-import com.webank.runtime.core.plugin.impl.MeshMQProducer;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -38,7 +38,7 @@ public class MQProducerWrapper extends MQWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected MeshMQProducer meshMQProducer;
+    protected com.webank.api.producer.MeshMQProducer meshMQProducer;
 
     public synchronized void init(CommonConfiguration commonConfiguration, String producerGroup) throws Exception{
         if (inited.get()) {
