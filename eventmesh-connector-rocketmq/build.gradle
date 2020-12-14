@@ -1,0 +1,158 @@
+import java.util.concurrent.TimeUnit
+
+apply plugin: 'java'
+apply plugin: "maven"
+apply plugin: "eclipse"
+apply plugin: "idea"
+
+sourceCompatibility = 1.8
+
+configurations {
+    compile.exclude group: 'ch.qos.logback', module: 'logback-classic'
+}
+repositories {
+    mavenLocal()
+    maven {
+        url "https://maven.aliyun.com/repository/public"
+    }
+    mavenCentral()
+}
+
+List rocketmq = [
+        "org.apache.rocketmq:rocketmq-client:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-broker:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-common:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-store:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-namesrv:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-tools:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-remoting:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-logging:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-test:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-filter:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-acl:$rocketmq_version",
+        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
+
+]
+
+List junit = [
+        "junit:junit:4.12"
+]
+
+List log4j2 = [
+        "org.apache.logging.log4j:log4j-api:2.13.3",
+        "org.apache.logging.log4j:log4j-core:2.13.3",
+        "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
+        "org.apache.logging.log4j:log4j-web:2.13.3",
+        "com.lmax:disruptor:3.4.2"
+]
+
+List sl4j = [
+        "org.slf4j:slf4j-api:1.7.30"
+]
+
+List metrics = [
+        "io.dropwizard.metrics:metrics-core:4.1.0",
+        "io.dropwizard.metrics:metrics-healthchecks:4.1.0",
+        "io.dropwizard.metrics:metrics-annotation:4.1.0",
+        "io.dropwizard.metrics:metrics-json:4.1.0"
+]
+
+dependencies {
+    compile project(":eventmesh-connector-api")
+    testCompile project(":eventmesh-connector-api")
+    compile rocketmq, metrics, log4j2, sl4j
+    testCompile rocketmq, metrics, log4j2, sl4j, junit
+}
+
+clean.doFirst {
+    delete 'build'
+    delete 'dist'
+}
+
+//def versionString = project.version
+//if (project.findProperty("buildNo") instanceof String) {
+//    versionString = project.version + '_' + project.property("buildNo")
+//}
+
+//task zip(type: Zip, dependsOn: ['clean', 'jar']) {
+//    extension = 'zip'
+//    archiveName = project.name + '_' + versionString + '.' + extension
+//    destinationDir = new File(projectDir, 'dist')
+//
+//    into('apps') {
+//        from project.jar.getArchivePath()
+//    }
+//
+//    into('bin') {
+//        from 'bin'
+//    }
+//
+//    into('conf') {
+//        from "conf"
+//    }
+//
+//    into('lib') {
+//        from project.configurations.runtime
+//        exclude '**/*.properties*'
+//        exclude '**/*testng*.jar'
+//        exclude '**/*powermock*.jar'
+//        exclude '**/*mockito*.jar'
+//        exclude '**/*junit*.jar'
+//        exclude '**/*jacoco*.jar'
+//        exclude '**/*log4j2.xml*'
+//        exclude '**/spring-boot-devtools*.jar'
+//    }
+//
+//    into('scripts') {
+//        from "scripts"
+//    }
+//}
+//
+//task tar(type: Tar, dependsOn: ['clean', 'jar']) {
+//    extension = 'tar.gz'
+//    compression = Compression.GZIP
+//    archiveName = project.name + '_' + versionString + '.' + extension
+//    destinationDir = new File(projectDir, 'dist')
+//
+//    into('apps') {
+//        from project.jar.getArchivePath()
+//    }
+//
+//    into('bin') {
+//        from 'bin'
+//    }
+//
+//    into('conf') {
+//        from "conf"
+//    }
+//
+//    into('lib') {
+//        from project.configurations.runtime
+//        exclude '**/*.properties*'
+//        exclude '**/*testng*.jar'
+//        exclude '**/*powermock*.jar'
+//        exclude '**/*mockito*.jar'
+//        exclude '**/*junit*.jar'
+//        exclude '**/*jacoco*.jar'
+//        exclude '**/*log4j2.xml*'
+//        exclude '**/spring-boot-devtools*.jar'
+//    }
+//
+//    into('scripts') {
+//        from "scripts"
+//    }
+//}
+
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            snapshotRepository(url: 'Your target repo address') {
+//                authentication(userName: 'Your user name', password: 'Your password')
+//            }
+//            repository(url: 'Your target repo address') {
+//                authentication(userName: 'Your user name', password: 'Your password')
+//            }
+//        }
+//    }
+//}

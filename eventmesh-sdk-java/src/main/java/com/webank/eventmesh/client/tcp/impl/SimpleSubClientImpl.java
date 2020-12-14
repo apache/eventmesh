@@ -141,17 +141,23 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
             Command cmd = msg.getHeader().getCommand();
             logger.info(SimpleSubClientImpl.class.getSimpleName() + "|receive|type={}|msg={}", cmd, msg);
-            if (callback != null) {
-                callback.handle(msg, ctx);
-            }
             if (cmd == Command.REQUEST_TO_CLIENT) {
+                if (callback != null) {
+                    callback.handle(msg, ctx);
+                }
                 Package pkg = MessageUtils.requestToClientAck(msg);
                 send(pkg);
             } else if (cmd == Command.ASYNC_MESSAGE_TO_CLIENT) {
                 Package pkg = MessageUtils.asyncMessageAck(msg);
+                if (callback != null) {
+                    callback.handle(msg, ctx);
+                }
                 send(pkg);
             } else if (cmd == Command.BROADCAST_MESSAGE_TO_CLIENT) {
                 Package pkg = MessageUtils.broadcastMessageAck(msg);
+                if (callback != null) {
+                    callback.handle(msg, ctx);
+                }
                 send(pkg);
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
                 //TODO
