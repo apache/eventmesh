@@ -18,6 +18,8 @@
 package com.webank.runtime.configuration;
 
 import com.google.common.base.Preconditions;
+import com.webank.eventmesh.common.config.CommonConfiguration;
+import com.webank.eventmesh.common.config.ConfigurationWraper;
 import org.apache.commons.lang3.StringUtils;
 
 public class AccessConfiguration extends CommonConfiguration {
