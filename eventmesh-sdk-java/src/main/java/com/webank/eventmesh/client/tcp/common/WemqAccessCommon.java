@@ -61,7 +61,7 @@ public class WemqAccessCommon {
     /**
      * 服务器共有的超时时间
      */
-    public static int DEFAULT_TIME_OUT_MILLS = 2000 * 1000;
+    public static int DEFAULT_TIME_OUT_MILLS = 20 * 1000;
 
     /**
      * PUB用途的USERAGENT
