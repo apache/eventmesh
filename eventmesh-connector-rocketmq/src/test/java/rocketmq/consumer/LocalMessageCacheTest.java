@@ -16,10 +16,10 @@
  */
 package rocketmq.consumer;
 
-import connector.rocketmq.config.ClientConfig;
-import connector.rocketmq.consumer.LocalMessageCache;
-import connector.rocketmq.domain.ConsumeRequest;
-import connector.rocketmq.domain.NonStandardKeys;
+import com.webank.connector.rocketmq.config.ClientConfig;
+import com.webank.connector.rocketmq.consumer.LocalMessageCache;
+import com.webank.connector.rocketmq.domain.ConsumeRequest;
+import com.webank.connector.rocketmq.domain.NonStandardKeys;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
