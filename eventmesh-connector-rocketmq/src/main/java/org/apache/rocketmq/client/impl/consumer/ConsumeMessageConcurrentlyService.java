@@ -16,7 +16,7 @@
  */
 package org.apache.rocketmq.client.impl.consumer;
 
-import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
+import com.webank.connector.rocketmq.patch.ProxyConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -93,6 +93,11 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
             }, this.defaultMQPushConsumer.getConsumeTimeout(), this.defaultMQPushConsumer.getConsumeTimeout(), TimeUnit.MINUTES);
         }
+    }
+
+    @Override
+    public void shutdown(long awaitTerminateMillis) {
+
     }
 
 //    @Override
