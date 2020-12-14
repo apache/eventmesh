@@ -74,8 +74,8 @@ List defibus = [
 ]
 
 dependencies {
-    compile apache_commons, httpclient, guava, netty, fastjson, defibus, jackson
-    testCompile apache_commons, httpclient, guava, netty, fastjson, defibus, jackson
+    compile apache_commons, httpclient, guava, netty, fastjson, jackson, defibus
+    testCompile apache_commons, httpclient, guava, netty, fastjson,  jackson, defibus
 }
 
 uploadArchives {
