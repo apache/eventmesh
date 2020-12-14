@@ -19,6 +19,7 @@ package com.webank.runtime.core.plugin;
 
 import com.webank.api.consumer.MeshMQPushConsumer;
 import com.webank.eventmesh.common.config.CommonConfiguration;
+import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
