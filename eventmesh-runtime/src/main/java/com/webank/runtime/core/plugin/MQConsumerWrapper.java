@@ -19,6 +19,7 @@ package com.webank.runtime.core.plugin;
 
 import com.webank.api.consumer.MeshMQPushConsumer;
 import com.webank.eventmesh.common.config.CommonConfiguration;
+import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -62,8 +63,13 @@ public class MQConsumerWrapper extends MQWrapper {
             logger.error("can't load the meshMQPushConsumer plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
         }
-
+        if (isBroadcast){
+            consumerGroup = ProxyConstants.CONSUMER_GROUP_NAME_PREFIX + ProxyConstants.BROADCAST_PREFIX + consumerGroup;
+        }else {
+            consumerGroup = ProxyConstants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup;
+        }
         meshMQPushConsumer.init(isBroadcast, commonConfiguration, consumerGroup);
+
         inited.compareAndSet(false, true);
     }
 
