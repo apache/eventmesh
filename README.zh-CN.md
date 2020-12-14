@@ -7,12 +7,11 @@
 该图显示了Event Mesh相对于应用程序框架中其他类似技术(例如Service Mesh)的定位.
 ![architecture1](docs/images/eventmesh-define.png)
 
-EventMesh的功能全景:
-![architecture1](docs/images/eventmesh-landscape.png)
+Event Mesh是一个动态的插件式云原生基础服务层，用于分离应用程序和中间件层。它提供了灵活，可靠和快速的事件分发，并且可以进行管理：
+![architecture1](docs/images/eventmesher.png)
 
-Event Mesh是一个动态的插件式云原生基础服务层，用于分离应用程序和中间件层。它提供了灵活，可靠和快速的事件分发，并且可以进行管理，
-下图显示了Event Mesh的体系结构:
-![architecture2](docs/images/eventmesh-arch.png)
+云原生Event Mesh：
+![architecture2](docs/images/bus.png)
 
 Event Mesh允许将来自一个应用程序的事件动态路由到任何其他应用程序.
 Event Mesh的一般功能:
@@ -23,16 +22,36 @@ Event Mesh的一般功能:
 
 依赖部件：
 * DeFiBus：具有低延迟，高性能和可靠性，和灵活可伸缩性的分布式消息传递平台 [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)
+* RocketMQ
 
 关键部件：
-* eventmesh-emesher：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
-* eventmesh-sdk-java：当前支持HTTP和TCP协议，未来会支持AMQP, MQTT, Websocket and JMS, gRPC等
-* eventmesh-registry：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理emesher
+* eventmesh-runtime：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
+* eventmesh-sdk-java：当前支持HTTP和TCP协议，未来会支持gRPC等
+* eventmesh-registry：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理runtime
+
+## RoadMap
+| version | feature |
+| ----    | ----    |
+| v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
+| v1.1.0  |Support rocketmq as eventstore|
+| v1.1.1  |Support https|
+| v1.2.0  |Support transaction event|
+| v1.3.0  |Support Plug-in architectur|
+|         |Support Event Sourcing|
+|         |Support Event orchestration|
+|         |Support Dashboard|
+|         |Support Event governance|
+|         |Support Nacos as an event router|
+|         |Support Promethus|
+|         |Support Skywalking|
+|         |Support Spiffe|
+|         |Support gRPC|
+|         |Support c/go/python/nodejs SDK|
 
 ## 快速开始
 1. 构建并部署event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus))
    请参见说明['event-store quickstart.zh-CN'](docs/cn/instructions/eventmesh-store-quickstart.zh-CN.md)
-2. 构建并部署eventmesh-emesher，请参见说明['eventmesh-emesher quickstart.zh-CN'](docs/cn/instructions/eventmesh-emesher-quickstart.zh-CN.md)
+2. 构建并部署eventmesh-runtime，请参见说明['eventmesh-runtime quickstart.zh-CN'](docs/cn/instructions/eventmesh-runtime-quickstart.zh-CN.md)
 3. 运行eventmesh-sdk-java演示，请参见说明['eventmesh-sdk-java quickstart.zh-CN'](docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
 
 ## 贡献
