@@ -19,7 +19,6 @@ package com.webank.runtime.core.plugin;
 
 import com.webank.api.consumer.MeshMQPushConsumer;
 import com.webank.eventmesh.common.config.CommonConfiguration;
-import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -33,73 +32,70 @@ public class MQConsumerWrapper extends MQWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected MeshMQPushConsumer meshMQConsumer;
+    protected MeshMQPushConsumer meshMQPushConsumer;
 
     public void setInstanceName(String instanceName) {
 
-        meshMQConsumer.setInstanceName(instanceName);
+        meshMQPushConsumer.setInstanceName(instanceName);
     }
 
     public void subscribe(String topic) throws Exception {
-
-        meshMQConsumer.subscribe(topic);
+        meshMQPushConsumer.subscribe(topic);
     }
 
     public void unsubscribe(String topic) throws Exception {
-        meshMQConsumer.unsubscribe(topic);
+        meshMQPushConsumer.unsubscribe(topic);
     }
 
     public boolean isPause() {
-        return meshMQConsumer.isPause();
+        return meshMQPushConsumer.isPause();
     }
 
     public void pause() {
-        meshMQConsumer.pause();
+        meshMQPushConsumer.pause();
     }
 
     public synchronized void init(boolean isBroadcast, CommonConfiguration commonConfiguration,
                                   String consumerGroup) throws Exception {
-        meshMQConsumer = getMeshMQConsumer();
-        if (meshMQConsumer == null){
-            logger.error("can't load the meshMQConsumer plugin, please check.");
-            throw new RuntimeException("doesn't load the meshMQConsumer plugin, please check.");
+        meshMQPushConsumer = getMeshMQPushConsumer();
+        if (meshMQPushConsumer == null){
+            logger.error("can't load the meshMQPushConsumer plugin, please check.");
+            throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
         }
         if (isBroadcast){
             consumerGroup = ProxyConstants.CONSUMER_GROUP_NAME_PREFIX + ProxyConstants.BROADCAST_PREFIX + consumerGroup;
         }else {
             consumerGroup = ProxyConstants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup;
         }
-        meshMQConsumer.init(isBroadcast, commonConfiguration, consumerGroup);
+        meshMQPushConsumer.init(isBroadcast, commonConfiguration, consumerGroup);
+
         inited.compareAndSet(false, true);
     }
 
-    private MeshMQPushConsumer getMeshMQConsumer() {
-        ServiceLoader<MeshMQPushConsumer> meshMQConsumerServiceLoader = ServiceLoader.load(MeshMQPushConsumer.class);
-        if (meshMQConsumerServiceLoader.iterator().hasNext()){
-            return meshMQConsumerServiceLoader.iterator().next();
+    private MeshMQPushConsumer getMeshMQPushConsumer() {
+        ServiceLoader<MeshMQPushConsumer> meshMQPushConsumerServiceLoader = ServiceLoader.load(MeshMQPushConsumer.class);
+        if (meshMQPushConsumerServiceLoader.iterator().hasNext()){
+            return meshMQPushConsumerServiceLoader.iterator().next();
         }
         return null;
     }
 
     public synchronized void start() throws Exception {
-
-        meshMQConsumer.start();
+        meshMQPushConsumer.start();
         started.compareAndSet(false, true);
     }
 
     public synchronized void shutdown() throws Exception {
-
-        meshMQConsumer.shutdown();
+        meshMQPushConsumer.shutdown();
         inited.compareAndSet(false, true);
         started.compareAndSet(false, true);
     }
 
     public void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently) {
-        meshMQConsumer.registerMessageListener(messageListenerConcurrently);
+        meshMQPushConsumer.registerMessageListener(messageListenerConcurrently);
     }
 
     public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext proxyConsumeConcurrentlyContext) {
-
-        meshMQConsumer.updateOffset(msgs, proxyConsumeConcurrentlyContext);
+        meshMQPushConsumer.updateOffset(msgs, proxyConsumeConcurrentlyContext);
     }
 }
