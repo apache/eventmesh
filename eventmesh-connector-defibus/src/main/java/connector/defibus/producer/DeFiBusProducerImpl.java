@@ -17,6 +17,7 @@
 
 package connector.defibus.producer;
 
+import com.webank.api.SendCallback;
 import com.webank.api.producer.MeshMQProducer;
 import com.webank.defibus.client.common.DeFiBusClientConfig;
 import com.webank.defibus.client.impl.producer.RRCallback;
@@ -27,6 +28,7 @@ import connector.defibus.common.Constants;
 import io.openmessaging.BytesMessage;
 import io.openmessaging.Future;
 import io.openmessaging.KeyValue;
+import io.openmessaging.Message;
 import io.openmessaging.interceptor.ProducerInterceptor;
 import io.openmessaging.producer.BatchMessageSender;
 import io.openmessaging.producer.LocalTransactionExecutor;
@@ -34,8 +36,6 @@ import io.openmessaging.producer.SendResult;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageClientIDSetter;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;

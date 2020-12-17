@@ -17,6 +17,7 @@
 
 package com.webank.runtime.core.protocol.tcp.client.session.push;
 
+import com.webank.api.AbstractContext;
 import com.webank.defibus.common.DeFiBusConstant;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.plugin.MQConsumerWrapper;
@@ -59,7 +60,7 @@ public class DownStreamMsgContext implements Delayed {
 
     public boolean msgFromOtherProxy;
 
-    public DownStreamMsgContext(MessageExt msgExt, Session session, MQConsumerWrapper consumer, ProxyConsumeConcurrentlyContext consumeConcurrentlyContext, boolean msgFromOtherProxy) {
+    public DownStreamMsgContext(MessageExt msgExt, Session session, MQConsumerWrapper consumer, AbstractContext consumeConcurrentlyContext, boolean msgFromOtherProxy) {
         this.seq = String.valueOf(ServerGlobal.getInstance().getMsgCounter().incrementAndGet());
         this.msgExt = msgExt;
         this.session = session;

@@ -104,4 +104,8 @@ public class ProxyConstants {
 
     public static int DEFAULT_TIME_OUT_MILLS = 5 * 1000;
 
+    public static final String RR_REPLY_TOPIC = "rr-reply-topic";
+
+    public static final String PROPERTY_MESSAGE_CLUSTER = "CLUSTER";
+
 }
