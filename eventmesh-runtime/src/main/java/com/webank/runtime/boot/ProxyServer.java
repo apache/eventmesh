@@ -21,7 +21,7 @@ import com.webank.runtime.common.ServiceState;
 import com.webank.runtime.configuration.AccessConfiguration;
 import com.webank.runtime.configuration.ProxyConfiguration;
 import com.webank.runtime.constants.ProxyConstants;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
+//import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +55,7 @@ public class ProxyServer {
 
         String eventstore = System.getProperty(ProxyConstants.EVENT_STORE_PROPERTIES, System.getenv(ProxyConstants.EVENT_STORE_ENV));
         logger.info("eventstore : {}", eventstore);
-        logger.info("load custom {} class for proxy", ConsumeMessageConcurrentlyService.class.getCanonicalName());
+//        logger.info("load custom {} class for proxy", ConsumeMessageConcurrentlyService.class.getCanonicalName());
 
         serviceState = ServiceState.INITED;
         logger.info("server state:{}",serviceState);

@@ -32,6 +32,7 @@ import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
 import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.Header;
+import com.webank.runtime.util.RemotingHelper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
@@ -44,7 +45,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

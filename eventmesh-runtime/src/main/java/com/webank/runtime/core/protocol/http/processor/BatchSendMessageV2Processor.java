@@ -17,7 +17,7 @@
 
 package com.webank.runtime.core.protocol.http.processor;
 
-import com.webank.defibus.common.DeFiBusConstant;
+import com.webank.eventmesh.api.SendCallback;
 import com.webank.runtime.boot.ProxyHTTPServer;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.protocol.http.async.AsyncContext;
@@ -32,14 +32,14 @@ import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchV2ResponseHeader;
+import com.webank.runtime.domain.BytesMessageImpl;
 import com.webank.runtime.util.ProxyUtil;
+import com.webank.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
+import io.openmessaging.BytesMessage;
+import io.openmessaging.Message;
+import io.openmessaging.producer.SendResult;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.message.MessageAccessor;
-import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +57,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
     public Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
 
+    @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
 
         HttpCommand responseProxyCommand;
@@ -111,13 +112,13 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         String producerGroup = ProxyUtil.buildClientGroup(sendMessageBatchV2RequestHeader.getSys(),
                 sendMessageBatchV2RequestHeader.getDcn());
         ProxyProducer batchProxyProducer = proxyHTTPServer.getProducerManager().getProxyProducer(producerGroup);
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendFailed(0);
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendAsyncFailed(0);
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setPollNameServerInterval(60000);
-
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().getDefaultMQProducerImpl().getmQClientFactory()
-                .getNettyClientConfig().setClientAsyncSemaphoreValue(proxyHTTPServer.getProxyConfiguration().proxyServerAsyncAccumulationThreshold);
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setCompressMsgBodyOverHowmuch(10);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setExtFields();
+//        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendAsyncFailed(0);
+//        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setPollNameServerInterval(60000);
+//
+//        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().getDefaultMQProducerImpl().getmQClientFactory()
+//                .getNettyClientConfig().setClientAsyncSemaphoreValue(proxyHTTPServer.getProxyConfiguration().proxyServerAsyncAccumulationThreshold);
+//        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setCompressMsgBodyOverHowmuch(10);
         if (!batchProxyProducer.getStarted().get()) {
             responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchV2ResponseHeader,
@@ -132,17 +133,29 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
             sendMessageBatchV2RequestBody.setTtl(String.valueOf(ProxyConstants.DEFAULT_MSG_TTL_MILLS));
         }
 
-        Message rocketMQMsg = null;
+//        Message rocketMQMsg = null;
+        BytesMessage omsMsg = new BytesMessageImpl();
 
         try {
-            if (StringUtils.isBlank(sendMessageBatchV2RequestBody.getTag())) {
-                rocketMQMsg = new Message(sendMessageBatchV2RequestBody.getTopic(), sendMessageBatchV2RequestBody.getMsg().getBytes(ProxyConstants.DEFAULT_CHARSET));
-            } else {
-                rocketMQMsg = new Message(sendMessageBatchV2RequestBody.getTopic(), sendMessageBatchV2RequestBody.getTag(),
-                        sendMessageBatchV2RequestBody.getMsg().getBytes(ProxyConstants.DEFAULT_CHARSET));
+//            if (StringUtils.isBlank(sendMessageBatchV2RequestBody.getTag())) {
+//                rocketMQMsg = new Message(sendMessageBatchV2RequestBody.getTopic(), sendMessageBatchV2RequestBody.getMsg().getBytes(ProxyConstants.DEFAULT_CHARSET));
+//            } else {
+//                rocketMQMsg = new Message(sendMessageBatchV2RequestBody.getTopic(), sendMessageBatchV2RequestBody.getTag(),
+//                        sendMessageBatchV2RequestBody.getMsg().getBytes(ProxyConstants.DEFAULT_CHARSET));
+//            }
+            // body
+            omsMsg.setBody(sendMessageBatchV2RequestBody.getMsg().getBytes(ProxyConstants.DEFAULT_CHARSET));
+            // topic
+            omsMsg.putSysHeaders(Message.BuiltinKeys.DESTINATION, sendMessageBatchV2RequestBody.getTopic());
+            if (!StringUtils.isBlank(sendMessageBatchV2RequestBody.getTag())) {
+                omsMsg.putUserHeaders(ProxyConstants.TAG, sendMessageBatchV2RequestBody.getTag());
             }
-            rocketMQMsg.putUserProperty(DeFiBusConstant.KEY, DeFiBusConstant.PERSISTENT);
-            MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, sendMessageBatchV2RequestBody.getTtl());
+            omsMsg.putUserHeaders("msgType", "persistent");
+            // ttl
+            omsMsg.putSysHeaders(Message.BuiltinKeys.TIMEOUT, sendMessageBatchV2RequestBody.getTtl());
+
+//            rocketMQMsg.putUserProperty(DeFiBusConstant.KEY, DeFiBusConstant.PERSISTENT);
+//            MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, sendMessageBatchV2RequestBody.getTtl());
 
             if (batchMessageLogger.isDebugEnabled()) {
                 batchMessageLogger.debug("msg2MQMsg suc, topic:{}, msg:{}", sendMessageBatchV2RequestBody.getTopic(), sendMessageBatchV2RequestBody.getMsg());
@@ -159,7 +172,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
         proxyHTTPServer.metrics.summaryMetrics.recordSendBatchMsg(1);
 
-        final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageBatchV2RequestBody.getBizSeqNo(), rocketMQMsg, batchProxyProducer, proxyHTTPServer);
+        final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageBatchV2RequestBody.getBizSeqNo(), omsMsg, batchProxyProducer, proxyHTTPServer);
 
         try {
             batchProxyProducer.send(sendMessageContext, new SendCallback() {

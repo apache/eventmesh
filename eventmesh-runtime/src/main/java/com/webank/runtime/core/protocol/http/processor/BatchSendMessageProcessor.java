@@ -17,7 +17,7 @@
 
 package com.webank.runtime.core.protocol.http.processor;
 
-import com.webank.defibus.common.DeFiBusConstant;
+import com.webank.eventmesh.api.SendCallback;
 import com.webank.runtime.boot.ProxyHTTPServer;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.protocol.http.async.AsyncContext;
@@ -32,18 +32,15 @@ import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchResponseHeader;
+import com.webank.runtime.domain.BytesMessageImpl;
 import com.webank.runtime.util.ProxyUtil;
+import com.webank.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
+import io.openmessaging.BytesMessage;
+import io.openmessaging.Message;
+import io.openmessaging.producer.SendResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.Validators;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.message.MessageAccessor;
-import org.apache.rocketmq.common.message.MessageBatch;
-import org.apache.rocketmq.common.message.MessageClientIDSetter;
-import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +62,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
     public Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
 
+    @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
 
         HttpCommand responseProxyCommand;
@@ -120,14 +118,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 sendMessageBatchRequestHeader.getDcn());
         ProxyProducer batchProxyProducer = proxyHTTPServer.getProducerManager().getProxyProducer(producerGroup);
 
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendFailed(0);
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendAsyncFailed(0);
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setPollNameServerInterval(60000);
-
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setCompressMsgBodyOverHowmuch(10);
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().getDefaultMQProducerImpl().getmQClientFactory()
-                .getNettyClientConfig()
-                .setClientAsyncSemaphoreValue(proxyHTTPServer.getProxyConfiguration().proxyServerAsyncAccumulationThreshold);
+        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setExtFields();
 
         if (!batchProxyProducer.getStarted().get()) {
             responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
@@ -152,20 +143,28 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             }
 
             try {
-                Message rocketMQMsg;
-                if (StringUtils.isBlank(msg.tag)) {
-                    rocketMQMsg = new Message(msg.topic, msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
-                } else {
-                    rocketMQMsg = new Message(msg.topic, msg.tag, msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
+//                Message rocketMQMsg;
+                BytesMessage omsMsg = new BytesMessageImpl();
+                // body
+                omsMsg.setBody(msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
+                if (!StringUtils.isBlank(msg.tag)) {
+                    omsMsg.putUserHeaders(ProxyConstants.TAG, msg.tag);
                 }
-                rocketMQMsg.putUserProperty(DeFiBusConstant.KEY, DeFiBusConstant.PERSISTENT);
-                MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, msg.ttl);
-                msgList.add(rocketMQMsg);
+//                if (StringUtils.isBlank(msg.tag)) {
+//                    rocketMQMsg = new Message(msg.topic, msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
+//                } else {
+//                    rocketMQMsg = new Message(msg.topic, msg.tag, msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
+//                }
+                omsMsg.putUserHeaders("msgType", "persistent");
+                // ttl
+                omsMsg.putSysHeaders(Message.BuiltinKeys.TIMEOUT, msg.ttl);
+                //MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, msg.ttl);
+                msgList.add(omsMsg);
                 if (topicBatchMessageMappings.containsKey(msg.topic)) {
-                    topicBatchMessageMappings.get(msg.topic).add(rocketMQMsg);
+                    topicBatchMessageMappings.get(msg.topic).add(omsMsg);
                 } else {
                     List<Message> tmp = new ArrayList<>();
-                    tmp.add(rocketMQMsg);
+                    tmp.add(omsMsg);
                     topicBatchMessageMappings.put(msg.topic, tmp);
                 }
 
@@ -190,19 +189,22 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         if (proxyHTTPServer.getProxyConfiguration().proxyServerBatchMsgBatchEnabled) {
             for (List<Message> batchMsgs : topicBatchMessageMappings.values()) {
-                MessageBatch msgBatch;
-                try {
-                    msgBatch = MessageBatch.generateFromList(batchMsgs);
-                    for (Message message : msgBatch) {
-                        Validators.checkMessage(message, batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer());
-                        MessageClientIDSetter.setUniqID(message);
-                    }
-                    msgBatch.setBody(msgBatch.encode());
-                } catch (Exception e) {
-                    continue;
-                }
+                // TODO:api中的实现，考虑是否放到插件中
+                BytesMessage omsMsg = new BytesMessageImpl();
+//                try {
+//                    msgBatch = msgBatch.generateFromList(batchMsgs);
+//                    for (Message message : msgBatch.getMessages()) {
+//                        // TODO：未针对不同producer检测消息最大长度
+//                        Validators.checkMessage(message, batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer());
+//                        MessageClientIDSetter.setUniqID(message);
+//                    }
+//                    msgBatch.setBody(msgBatch.encode());
+//                } catch (Exception e) {
+//                    continue;
+//                }
 
-                final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageBatchRequestBody.getBatchId(), msgBatch, batchProxyProducer, proxyHTTPServer);
+                final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageBatchRequestBody.getBatchId(), omsMsg, batchProxyProducer, proxyHTTPServer);
+                sendMessageContext.setMessageList(batchMsgs);
                 batchProxyProducer.send(sendMessageContext, new SendCallback() {
                     @Override
                     public void onSuccess(SendResult sendResult) {

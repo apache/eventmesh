@@ -97,12 +97,8 @@ public class MQProducerWrapper extends MQWrapper {
         return meshMQProducer.reply(message, sendCallback);
     }
 
-//    public DefaultMQProducer getDefaultMQProducer() {
-//        return meshMQProducer.getDefaultMQProducer();
-//    }
-
-    public MeshMQProducer getMeshMQProducer() {
-        return meshMQProducer;
+    public MeshMQProducer getDefaultMQProducer() {
+        return meshMQProducer.getDefaultMQProducer();
     }
 
     //    public static void main(String[] args) throws Exception {
