@@ -17,12 +17,12 @@
 
 package com.webank.runtime.core.protocol.tcp.client;
 
+import com.webank.runtime.util.RemotingHelper;
 import com.webank.runtime.boot.ProxyTCPServer;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

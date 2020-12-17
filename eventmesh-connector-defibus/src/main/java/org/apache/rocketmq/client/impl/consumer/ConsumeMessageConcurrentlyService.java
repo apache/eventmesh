@@ -16,7 +16,7 @@
  */
 package org.apache.rocketmq.client.impl.consumer;
 
-import connector.defibus.patch.ProxyConsumeConcurrentlyContext;
+import com.webank.eventmesh.connector.defibus.patch.ProxyConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
