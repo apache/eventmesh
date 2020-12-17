@@ -68,14 +68,14 @@ List netty = [
         "io.netty:netty-all:4.1.49.Final"
 ]
 
-List defibus = [
-        "com.webank.defibus:defibus-client:$defibus_version",
-        "com.webank.defibus:defibus-common:$defibus_version"
-]
+//List defibus = [
+//        "com.webank.defibus:defibus-client:$defibus_version",
+//        "com.webank.defibus:defibus-common:$defibus_version"
+//]
 
 dependencies {
-    compile apache_commons, httpclient, guava, netty, fastjson, jackson, defibus
-    testCompile apache_commons, httpclient, guava, netty, fastjson,  jackson, defibus
+    compile apache_commons, httpclient, guava, netty, fastjson, jackson
+    testCompile apache_commons, httpclient, guava, netty, fastjson,  jackson
 }
 
 uploadArchives {
