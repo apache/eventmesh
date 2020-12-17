@@ -1,4 +1,4 @@
-package com.webank.api;
+package com.webank.eventmesh.api;
 
 import io.openmessaging.producer.SendResult;
 
