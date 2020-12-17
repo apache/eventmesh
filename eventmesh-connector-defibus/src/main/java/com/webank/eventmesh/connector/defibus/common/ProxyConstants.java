@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.webank.runtime.constants;
+package com.webank.eventmesh.connector.defibus.common;
 
 public class ProxyConstants {
 
