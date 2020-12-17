@@ -17,17 +17,13 @@
 
 package com.webank.connector.rocketmq.consumer;
 
-import com.webank.api.consumer.MeshMQPushConsumer;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
+import com.webank.eventmesh.api.AbstractContext;
+import com.webank.eventmesh.api.consumer.MeshMQPushConsumer;
 import com.webank.eventmesh.common.config.CommonConfiguration;
 import io.openmessaging.*;
 import io.openmessaging.consumer.MessageListener;
 import io.openmessaging.consumer.PushConsumer;
 import io.openmessaging.interceptor.ConsumerInterceptor;
-import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
-import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
-import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,15 +59,20 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     }
 
     @Override
+    public void subscribe(String topic, MessageListener listener) throws Exception {
+        pushConsumer.attachQueue(topic, listener);
+    }
+
+    @Override
     public void setInstanceName(String instanceName) {
         pushConsumer.getRocketmqPushConsumer().setInstanceName(instanceName);
     }
 
     @Override
-    public void registerMessageListener(MessageListener listener) {
-       // pushConsumer.getRocketmqPushConsumer().setMessageListener(listener);
-//        pushConsumer.getRocketmqPushConsumer().registerMessageListener(listener);
+    public AbstractContext getContext() {
+        return pushConsumer.getContext();
     }
+
 
     @Override
     public synchronized void start() throws Exception {
@@ -79,18 +80,7 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     }
 
     @Override
-    public void subscribe(String topic) throws Exception {
-        if (pushConsumer.getRocketmqPushConsumer().getMessageListener() == null){
-            logger.error("no messageListener has been registered");
-            throw new Exception("no messageListener has been registered");
-        }
-        pushConsumer.attachQueue(topic, new MessageListener() {
-            @Override
-            public void onReceived(Message message, Context context) {
-                System.out.printf("Received one message: %s%n", message.sysHeaders().getString(Message.BuiltinKeys.MESSAGE_ID));
-                context.ack();
-            }
-        });
+    public void updateOffset(List<Message> msgs, AbstractContext context) {
 
     }
 
@@ -117,12 +107,6 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     @Override
     public synchronized void shutdown() {
         pushConsumer.shutdown();
-    }
-
-    @Override
-    public void updateOffset(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {
-        ConsumeMessageService consumeMessageService = pushConsumer.getRocketmqPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
-        ((ConsumeMessageConcurrentlyService) consumeMessageService).updateOffset(msgs, context);
     }
 
     @Override

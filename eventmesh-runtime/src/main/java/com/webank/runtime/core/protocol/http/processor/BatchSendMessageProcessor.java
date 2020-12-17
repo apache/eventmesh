@@ -17,9 +17,7 @@
 
 package com.webank.runtime.core.protocol.http.processor;
 
-import com.webank.MessageBatchImpl;
-import com.webank.api.SendCallback;
-import com.webank.api.message.MessageBatch;
+import com.webank.eventmesh.api.SendCallback;
 import com.webank.runtime.boot.ProxyHTTPServer;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.protocol.http.async.AsyncContext;
@@ -35,10 +33,8 @@ import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchResponseHeader;
 import com.webank.runtime.domain.BytesMessageImpl;
-import com.webank.runtime.util.MessageClientIDSetter;
 import com.webank.runtime.util.ProxyUtil;
 import com.webank.runtime.util.RemotingHelper;
-import com.webank.runtime.util.Validators;
 import io.netty.channel.ChannelHandlerContext;
 import io.openmessaging.BytesMessage;
 import io.openmessaging.Message;
@@ -194,7 +190,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         if (proxyHTTPServer.getProxyConfiguration().proxyServerBatchMsgBatchEnabled) {
             for (List<Message> batchMsgs : topicBatchMessageMappings.values()) {
                 // TODO:api中的实现，考虑是否放到插件中
-                MessageBatch msgBatch = new MessageBatchImpl();
+                BytesMessage omsMsg = new BytesMessageImpl();
 //                try {
 //                    msgBatch = msgBatch.generateFromList(batchMsgs);
 //                    for (Message message : msgBatch.getMessages()) {
@@ -207,7 +203,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 //                    continue;
 //                }
 
-                final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageBatchRequestBody.getBatchId(), msgBatch, batchProxyProducer, proxyHTTPServer);
+                final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageBatchRequestBody.getBatchId(), omsMsg, batchProxyProducer, proxyHTTPServer);
                 sendMessageContext.setMessageList(batchMsgs);
                 batchProxyProducer.send(sendMessageContext, new SendCallback() {
                     @Override

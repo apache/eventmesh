@@ -20,7 +20,6 @@ package com.webank.runtime.boot;
 import com.google.common.eventbus.EventBus;
 import com.webank.runtime.common.ServiceState;
 import com.webank.runtime.configuration.ProxyConfiguration;
-import com.webank.runtime.core.protocol.http.consumer.ConsumerManager;
 import com.webank.runtime.core.protocol.http.processor.*;
 import com.webank.runtime.core.protocol.http.producer.ProducerManager;
 import com.webank.runtime.core.protocol.http.push.AbstractHTTPPushRequest;
@@ -54,7 +53,7 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
 
     public EventBus eventBus = new EventBus();
 
-    private ConsumerManager consumerManager;
+//    private ConsumerManager consumerManager;
 
     private ProducerManager producerManager;
 
@@ -141,8 +140,8 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
         metrics = new HTTPMetricsServer(this);
         metrics.init();
 
-        consumerManager = new ConsumerManager(this);
-        consumerManager.init();
+//        consumerManager = new ConsumerManager(this);
+//        consumerManager.init();
 
         producerManager = new ProducerManager(this);
         producerManager.init();
@@ -159,7 +158,7 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
     public void start() throws Exception {
         super.start();
         metrics.start();
-        consumerManager.start();
+//        consumerManager.start();
         producerManager.start();
         httpRetryer.start();
         logger.info("--------------------------ProxyHTTPServer started");
@@ -172,7 +171,7 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
 
         metrics.shutdown();
 
-        consumerManager.shutdown();
+//        consumerManager.shutdown();
 
         shutdownThreadPool();
 
@@ -214,9 +213,9 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);
     }
 
-    public ConsumerManager getConsumerManager() {
-        return consumerManager;
-    }
+//    public ConsumerManager getConsumerManager() {
+//        return consumerManager;
+//    }
 
     public ProducerManager getProducerManager() {
         return producerManager;
