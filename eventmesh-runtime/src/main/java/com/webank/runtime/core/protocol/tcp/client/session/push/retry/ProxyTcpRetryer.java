@@ -19,11 +19,12 @@ package com.webank.runtime.core.protocol.tcp.client.session.push.retry;
 
 import com.webank.runtime.boot.ProxyTCPServer;
 import com.webank.runtime.constants.DeFiBusConstant;
+import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.protocol.tcp.client.session.Session;
 import com.webank.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import com.webank.runtime.util.ProxyThreadFactoryImpl;
 import com.webank.runtime.util.ProxyUtil;
-import com.webank.eventmesh.connector.defibus.common.Constants;
+//import com.webank.eventmesh.connector.defibus.common.Constants;
 import io.openmessaging.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -161,7 +162,7 @@ public class ProxyTcpRetryer {
 
     private boolean isRetryMsgTimeout(DownStreamMsgContext downStreamMsgContext){
         boolean flag =false;
-        long ttl = Long.valueOf(downStreamMsgContext.msgExt.sysHeaders().getString(Constants.PROPERTY_MESSAGE_TTL));
+        long ttl = Long.valueOf(downStreamMsgContext.msgExt.sysHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_TTL));
         //TODO 关注是否能取到
         long storeTimestamp = Long.valueOf(downStreamMsgContext.msgExt.sysHeaders().getString(DeFiBusConstant.STORE_TIME));
         String leaveTimeStr = downStreamMsgContext.msgExt.sysHeaders().getString(DeFiBusConstant.LEAVE_TIME);
@@ -200,7 +201,7 @@ public class ProxyTcpRetryer {
     private void proxyAckMsg(DownStreamMsgContext downStreamMsgContext){
         List<Message> msgExts = new ArrayList<Message>();
         msgExts.add(downStreamMsgContext.msgExt);
-        logger.warn("proxyAckMsg topic:{}, seq:{}, bizSeq:{}",downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION), downStreamMsgContext.seq, downStreamMsgContext.msgExt.sysHeaders().getString(Constants.PROPERTY_MESSAGE_KEYS));
+        logger.warn("proxyAckMsg topic:{}, seq:{}, bizSeq:{}",downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION), downStreamMsgContext.seq, downStreamMsgContext.msgExt.sysHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_KEYS));
         downStreamMsgContext.consumer.updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);
 //        ConsumeMessageService consumeMessageService = downStreamMsgContext.consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //        ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);

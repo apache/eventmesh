@@ -26,6 +26,7 @@ import com.webank.eventmesh.common.protocol.http.common.ClientRetCode;
 import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
 import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+import com.webank.runtime.util.OMSUtil;
 import com.webank.runtime.util.ProxyUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
@@ -70,6 +71,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         this.waitingRequests = waitingRequests;
     }
 
+    @Override
     public void tryHTTPRequest() {
 
         currPushUrl = getUrl();
@@ -98,11 +100,11 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         builder.addHeader(ProtocolKey.ProxyInstanceKey.PROXYREGION, handleMsgContext.getProxyHTTPServer().getProxyConfiguration().proxyRegion);
         builder.addHeader(ProtocolKey.ProxyInstanceKey.PROXYIDC, handleMsgContext.getProxyHTTPServer().getProxyConfiguration().proxyIDC);
 
-        handleMsgContext.getMsg().putUserProperty(ProxyConstants.REQ_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+        handleMsgContext.getMsg().userHeaders().put(ProxyConstants.REQ_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
 
         String content = "";
         try {
-            content = new String(handleMsgContext.getMsg().getBody(), ProxyConstants.DEFAULT_CHARSET);
+            content = new String(handleMsgContext.getMsg().getBody(byte[].class), ProxyConstants.DEFAULT_CHARSET);
         } catch (Exception ex) {
             return;
         }
@@ -123,7 +125,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         body.add(new BasicNameValuePair(PushMessageRequestBody.RANDOMNO, handleMsgContext.getMsgRandomNo()));
         body.add(new BasicNameValuePair(PushMessageRequestBody.TOPIC, handleMsgContext.getTopic()));
 
-        body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS, JSON.toJSONString(handleMsgContext.getMsg().getProperties())));
+        body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS, JSON.toJSONString(OMSUtil.getMessageProp(handleMsgContext.getMsg()))));
 
         try {
             builder.setEntity(new UrlEncodedFormEntity(body));

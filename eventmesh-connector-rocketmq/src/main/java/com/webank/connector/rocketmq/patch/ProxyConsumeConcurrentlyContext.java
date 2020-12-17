@@ -17,11 +17,12 @@
 
 package com.webank.connector.rocketmq.patch;
 
+import com.webank.eventmesh.api.AbstractContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.impl.consumer.ProcessQueue;
 import org.apache.rocketmq.common.message.MessageQueue;
 
-public class ProxyConsumeConcurrentlyContext extends ConsumeConcurrentlyContext {
+public class ProxyConsumeConcurrentlyContext extends ConsumeConcurrentlyContext implements AbstractContext {
     private final ProcessQueue processQueue;
     private boolean manualAck = true;
 

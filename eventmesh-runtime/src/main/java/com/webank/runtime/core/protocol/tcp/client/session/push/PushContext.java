@@ -23,7 +23,6 @@ import com.webank.runtime.core.plugin.MQConsumerWrapper;
 import io.openmessaging.Message;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
