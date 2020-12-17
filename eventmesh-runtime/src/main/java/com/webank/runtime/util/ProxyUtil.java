@@ -27,6 +27,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.webank.eventmesh.connector.defibus.domain.BytesMessageImpl;
+import io.openmessaging.BytesMessage;
+import io.openmessaging.KeyValue;
+import io.openmessaging.Message;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,10 +42,9 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
+
+import static com.webank.eventmesh.connector.defibus.utils.OMSUtil.isOMSHeader;
 
 public class ProxyUtil {
 
@@ -221,34 +224,86 @@ public class ProxyUtil {
         return result;
     }
 
-    public static String getMessageBizSeq(org.apache.rocketmq.common.message.Message msg) {
-        Map<String, String> properties = msg.getProperties();
+    public static String getMessageBizSeq(Message msg) {
+        KeyValue properties = msg.sysHeaders();
 
-        String keys = properties.get(ProxyConstants.KEYS_UPPERCASE);
+        String keys = properties.getString(ProxyConstants.KEYS_UPPERCASE);
         if (!StringUtils.isNotBlank(keys)) {
-            keys = properties.get(ProxyConstants.KEYS_LOWERCASE);
+            keys = properties.getString(ProxyConstants.KEYS_LOWERCASE);
         }
         return keys;
     }
 
-    public static org.apache.rocketmq.common.message.Message decodeMessage(AccessMessage accessMessage) {
-        org.apache.rocketmq.common.message.Message msg = new org.apache.rocketmq.common.message.Message();
-        msg.setTopic(accessMessage.getTopic());
-        msg.setBody(accessMessage.getBody().getBytes());
-        msg.getProperty("init");
-        for (Map.Entry<String, String> property : accessMessage.getProperties().entrySet()) {
-            msg.getProperties().put(property.getKey(), property.getValue());
+//    public static org.apache.rocketmq.common.message.Message decodeMessage(AccessMessage accessMessage) {
+//        org.apache.rocketmq.common.message.Message msg = new org.apache.rocketmq.common.message.Message();
+//        msg.setTopic(accessMessage.getTopic());
+//        msg.setBody(accessMessage.getBody().getBytes());
+//        msg.getProperty("init");
+//        for (Map.Entry<String, String> property : accessMessage.getProperties().entrySet()) {
+//            msg.getProperties().put(property.getKey(), property.getValue());
+//        }
+//        return msg;
+//    }
+
+    public static BytesMessage decodeMessage(AccessMessage accessMessage) {
+        BytesMessage omsMsg = new BytesMessageImpl();
+        omsMsg.setBody(accessMessage.getBody().getBytes());
+
+        KeyValue headers = omsMsg.sysHeaders();
+        KeyValue properties = omsMsg.userHeaders();
+
+        final Set<Map.Entry<String, String>> entries = accessMessage.getProperties().entrySet();
+
+        for (final Map.Entry<String, String> entry : entries) {
+            if (isOMSHeader(entry.getKey())) {
+                headers.put(entry.getKey(), entry.getValue());
+            } else {
+                properties.put(entry.getKey(), entry.getValue());
+            }
         }
-        return msg;
+
+        omsMsg.putSysHeaders(Message.BuiltinKeys.DESTINATION, accessMessage.getTopic());
+        return omsMsg;
     }
 
-    public static AccessMessage encodeMessage(org.apache.rocketmq.common.message.Message msg) throws Exception {
+//    public static AccessMessage encodeMessage(org.apache.rocketmq.common.message.Message msg) throws Exception {
+//        AccessMessage accessMessage = new AccessMessage();
+//        accessMessage.setBody(new String(msg.getBody(), "UTF-8"));
+//        accessMessage.setTopic(msg.getTopic());
+//        for (Map.Entry<String, String> property : msg.getProperties().entrySet()) {
+//            accessMessage.getProperties().put(property.getKey(), property.getValue());
+//        }
+//        return accessMessage;
+//    }
+
+    public static AccessMessage encodeMessage(BytesMessage omsMessage) throws Exception {
+
         AccessMessage accessMessage = new AccessMessage();
-        accessMessage.setBody(new String(msg.getBody(), "UTF-8"));
-        accessMessage.setTopic(msg.getTopic());
-        for (Map.Entry<String, String> property : msg.getProperties().entrySet()) {
-            accessMessage.getProperties().put(property.getKey(), property.getValue());
+        accessMessage.setBody(new String(omsMessage.getBody(byte[].class), "UTF-8"));
+
+        KeyValue sysHeaders = omsMessage.sysHeaders();
+        KeyValue userHeaders = omsMessage.userHeaders();
+
+        //All destinations in RocketMQ use Topic
+        accessMessage.setTopic(sysHeaders.getString(Message.BuiltinKeys.DESTINATION));
+
+        if (sysHeaders.containsKey(Message.BuiltinKeys.START_TIME)) {
+            long deliverTime = sysHeaders.getLong(Message.BuiltinKeys.START_TIME, 0);
+            if (deliverTime > 0) {
+//                rmqMessage.putUserProperty(RocketMQConstants.START_DELIVER_TIME, String.valueOf(deliverTime));
+                accessMessage.getProperties().put(Message.BuiltinKeys.START_TIME, String.valueOf(deliverTime));
+            }
         }
+
+        for (String key : userHeaders.keySet()) {
+            accessMessage.getProperties().put(key, userHeaders.getString(key));
+        }
+
+        //System headers has a high priority
+        for (String key : sysHeaders.keySet()) {
+            accessMessage.getProperties().put(key, sysHeaders.getString(key));
+        }
+
         return accessMessage;
     }
 

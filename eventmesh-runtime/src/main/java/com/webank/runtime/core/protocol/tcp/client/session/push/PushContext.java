@@ -17,16 +17,15 @@
 
 package com.webank.runtime.core.protocol.tcp.client.session.push;
 
-import com.webank.defibus.consumer.DeFiBusPushConsumer;
+import com.webank.eventmesh.api.AbstractContext;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.plugin.MQConsumerWrapper;
+import io.openmessaging.Message;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
-import org.apache.rocketmq.common.message.MessageExt;
+import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -59,7 +58,7 @@ public class PushContext {
         deliverFailMsgsCount.incrementAndGet();
     }
 
-    public void unAckMsg(String seq, List<MessageExt> msg, ProxyConsumeConcurrentlyContext context, MQConsumerWrapper consumer) {
+    public void unAckMsg(String seq, List<Message> msg, AbstractContext context, MQConsumerWrapper consumer) {
         ClientAckContext ackContext = new ClientAckContext(seq,context, msg, consumer);
         unAckMsg.put(seq, ackContext);
         logger.info("put msg in unAckMsg,seq:{},unAckMsgSize:{}", seq, getTotalUnackMsgs());

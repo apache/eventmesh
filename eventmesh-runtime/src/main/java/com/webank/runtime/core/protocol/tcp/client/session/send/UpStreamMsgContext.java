@@ -19,8 +19,8 @@ package com.webank.runtime.core.protocol.tcp.client.session.send;
 
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.protocol.tcp.client.session.Session;
+import io.openmessaging.Message;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.rocketmq.common.message.Message;
 
 public class UpStreamMsgContext {
 
@@ -53,7 +53,7 @@ public class UpStreamMsgContext {
     @Override
     public String toString() {
         return "UpStreamMsgContext{seq=" + seq
-                + ",topic=" + msg.getTopic()
+                + ",topic=" + msg.sysHeaders().getString(Message.BuiltinKeys.DESTINATION)
                 + ",client=" + session.getClient()
                 + ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) + "}";
     }
