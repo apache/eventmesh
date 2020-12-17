@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.webank.runtime.patch;
+package com.webank.eventmesh.connector.defibus.patch;
 
 public enum ProxyConsumeConcurrentlyStatus {
     /**

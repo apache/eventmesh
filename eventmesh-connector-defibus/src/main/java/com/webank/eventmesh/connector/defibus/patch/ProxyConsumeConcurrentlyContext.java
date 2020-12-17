@@ -14,42 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package connector.defibus.domain;
 
+package com.webank.eventmesh.connector.defibus.patch;
+
+import com.webank.eventmesh.api.AbstractContext;
+import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.impl.consumer.ProcessQueue;
-import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 
-public class ConsumeRequest {
-    private final MessageExt messageExt;
-    private final MessageQueue messageQueue;
+public class ProxyConsumeConcurrentlyContext extends ConsumeConcurrentlyContext implements AbstractContext {
     private final ProcessQueue processQueue;
-    private long startConsumeTimeMillis;
+    private boolean manualAck = true;
 
-    public ConsumeRequest(final MessageExt messageExt, final MessageQueue messageQueue,
-        final ProcessQueue processQueue) {
-        this.messageExt = messageExt;
-        this.messageQueue = messageQueue;
+    public ProxyConsumeConcurrentlyContext(MessageQueue messageQueue, ProcessQueue processQueue) {
+        super(messageQueue);
         this.processQueue = processQueue;
-    }
-
-    public MessageExt getMessageExt() {
-        return messageExt;
-    }
-
-    public MessageQueue getMessageQueue() {
-        return messageQueue;
     }
 
     public ProcessQueue getProcessQueue() {
         return processQueue;
     }
 
-    public long getStartConsumeTimeMillis() {
-        return startConsumeTimeMillis;
+    public boolean isManualAck() {
+        return manualAck;
     }
 
-    public void setStartConsumeTimeMillis(final long startConsumeTimeMillis) {
-        this.startConsumeTimeMillis = startConsumeTimeMillis;
+    public void setManualAck(boolean manualAck) {
+        this.manualAck = manualAck;
     }
 }

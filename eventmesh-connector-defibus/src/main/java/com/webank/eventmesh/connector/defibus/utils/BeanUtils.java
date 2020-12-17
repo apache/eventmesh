@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package connector.defibus.utils;
+package com.webank.eventmesh.connector.defibus.utils;
 
 import io.openmessaging.KeyValue;
 import org.apache.commons.lang3.StringUtils;

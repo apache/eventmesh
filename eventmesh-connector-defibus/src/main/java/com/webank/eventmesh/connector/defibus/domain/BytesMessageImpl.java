@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package connector.defibus.domain;
+package com.webank.eventmesh.connector.defibus.domain;
 
 import io.openmessaging.BytesMessage;
 import io.openmessaging.KeyValue;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package connector.defibus.promise;
+package com.webank.eventmesh.connector.defibus.promise;
 
 import io.openmessaging.FutureListener;
 import io.openmessaging.Promise;
