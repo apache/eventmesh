@@ -30,13 +30,11 @@ import com.webank.runtime.configuration.AccessConfiguration;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.plugin.MQConsumerWrapper;
 import com.webank.runtime.core.plugin.MQProducerWrapper;
+import com.webank.runtime.domain.NonStandardKeys;
 import com.webank.runtime.metrics.tcp.ProxyTcpMonitor;
 import com.webank.runtime.patch.ProxyConsumeConcurrentlyStatus;
 import com.webank.runtime.util.HttpTinyClient;
 import com.webank.runtime.util.ProxyUtil;
-import com.webank.eventmesh.connector.defibus.common.Constants;
-import com.webank.eventmesh.connector.defibus.domain.NonStandardKeys;
-import com.webank.eventmesh.connector.defibus.patch.ProxyConsumeConcurrentlyContext;
 import io.openmessaging.Message;
 import io.openmessaging.consumer.MessageListener;
 import io.openmessaging.producer.SendResult;
@@ -148,7 +146,7 @@ public class ClientGroupWrapper {
 
             @Override
             public void onException(Throwable e) {
-                String bizSeqNo = upStreamMsgContext.getMsg().sysHeaders().getString(Constants.PROPERTY_MESSAGE_KEYS);
+                String bizSeqNo = upStreamMsgContext.getMsg().sysHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_KEYS);
                 logger.error("reply err! topic:{}, bizSeqNo:{}, client:{}", upStreamMsgContext.getMsg().sysHeaders().getString(Message.BuiltinKeys.DESTINATION), bizSeqNo, upStreamMsgContext.getSession().getClient(), e);
             }
         });
@@ -226,7 +224,7 @@ public class ClientGroupWrapper {
         }
 
         mqProducerWrapper.init(accessConfiguration , groupName);
-        mqProducerWrapper.getMeshMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//set instance name
+        mqProducerWrapper.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//set instance name
         mqProducerWrapper.start();
         producerStarted.compareAndSet(false, true);
         logger.info("starting producer success, group:{}", groupName);
@@ -576,7 +574,7 @@ public class ClientGroupWrapper {
                     }
 
                     DownStreamMsgContext downStreamMsgContext =
-                            new DownStreamMsgContext(message, session, persistentMsgConsumer, (ProxyConsumeConcurrentlyContext)context, false);
+                            new DownStreamMsgContext(message, session, persistentMsgConsumer, persistentMsgConsumer.getContext(), false);
 
                     if(downstreamMap.size() < proxyTCPServer.getAccessConfiguration().proxyTcpDownStreamMapSize){
                         downstreamMap.putIfAbsent(downStreamMsgContext.seq, downStreamMsgContext);

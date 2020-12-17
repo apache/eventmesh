@@ -17,8 +17,8 @@
 
 package com.webank.runtime.core.protocol.http.processor;
 
-import com.webank.api.RRCallback;
-import com.webank.api.SendCallback;
+import com.webank.eventmesh.api.RRCallback;
+import com.webank.eventmesh.api.SendCallback;
 import com.webank.runtime.boot.ProxyHTTPServer;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.protocol.http.async.AsyncContext;

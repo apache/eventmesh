@@ -15,19 +15,18 @@
  * limitations under the License.
  */
 
-package com.webank.runtime.util;
+package com.webank.connector.rocketmq.utils;
 
 
-import com.webank.runtime.constants.ProxyConstants;
-import com.webank.runtime.constants.ProxyVersion;
-import com.webank.eventmesh.common.ThreadUtil;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.webank.runtime.domain.BytesMessageImpl;
+import com.webank.connector.rocketmq.common.ProxyConstants;
+import com.webank.connector.rocketmq.domain.BytesMessageImpl;
+import com.webank.eventmesh.common.ThreadUtil;
+import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import io.openmessaging.BytesMessage;
 import io.openmessaging.KeyValue;
 import io.openmessaging.Message;
@@ -37,14 +36,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.*;
 
-import static com.webank.runtime.util.OMSUtil.isOMSHeader;
+import static com.webank.connector.rocketmq.utils.OMSUtil.isOMSHeader;
+
 
 public class ProxyUtil {
 
@@ -54,19 +50,19 @@ public class ProxyUtil {
         return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + String.valueOf(RandomStringUtils.randomNumeric(4));
     }
 
-    public static String buildProxyClientID(String clientGroup, String proxyRegion, String proxyCluster) {
+    public static String buildProxyClientID(String clientGroup, String proxyRegion, String proxyVersion, String proxyCluster) {
         return StringUtils.trim(clientGroup)
                 + "-" + StringUtils.trim(proxyRegion) + "(" + StringUtils.trim(proxyCluster) + ")"
-                + "-" + ProxyVersion.getCurrentVersionDesc()
+                + "-" + StringUtils.trim(proxyVersion)
                 + "-" + ThreadUtil.getPID();
     }
 
-    public static String buildProxyTcpClientID(String clientSysId, String clientDcn, String purpose,  String proxyCluster) {
+    public static String buildProxyTcpClientID(String clientSysId, String clientDcn, String purpose, String proxyVersion, String proxyCluster) {
         return StringUtils.trim(clientSysId)
                 + "-" + StringUtils.trim(clientDcn)
                 + "-" + StringUtils.trim(purpose)
                 + "-" + StringUtils.trim(proxyCluster)
-                + "-" + ProxyVersion.getCurrentVersionDesc()
+                + "-" + StringUtils.trim(proxyVersion)
                 + "-" + ThreadUtil.getPID();
     }
 
@@ -74,12 +70,12 @@ public class ProxyUtil {
         return "Proxy-Tcp-RRReplyer";
     }
 
-    public static String buildProxyTcpRRReplyerClientID(String proxySysId, String proxyRegion, String proxyDcn, String proxyCluster) {
+    public static String buildProxyTcpRRReplyerClientID(String proxySysId, String proxyRegion, String proxyDcn, String proxyVersion, String proxyCluster) {
         return proxySysId
                 + "-" + StringUtils.trim(proxyRegion)
                 + "-" + StringUtils.trim(proxyDcn)
                 + "-" + StringUtils.trim(proxyCluster)
-                + "-" + ProxyVersion.getCurrentVersionDesc()
+                + "-" + StringUtils.trim(proxyVersion)
                 + "-" + ThreadUtil.getPID()
                 + "-RRReplyer";
         //return ProxyVersion.getCurrentVersionDesc() + "-" + ThreadUtil.getPID() +  "(" + proxyConfiguration.proxyCluster + ")";
