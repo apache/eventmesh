@@ -17,16 +17,13 @@
 
 package com.webank.runtime.core.protocol.http.producer;
 
-import com.webank.defibus.client.impl.producer.RRCallback;
+import com.webank.api.RRCallback;
+import com.webank.api.SendCallback;
 import com.webank.runtime.configuration.ProxyConfiguration;
 import com.webank.runtime.core.consumergroup.ProducerGroupConf;
 import com.webank.runtime.core.plugin.MQProducerWrapper;
 import com.webank.runtime.util.ProxyUtil;
-import org.apache.rocketmq.client.exception.MQBrokerException;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.remoting.exception.RemotingException;
+import io.openmessaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +54,7 @@ public class ProxyProducer {
     }
 
     public void request(SendMessageContext sendMsgContext, SendCallback sendCallback, RRCallback rrCallback, long timeout)
-            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+            throws Exception {
         mqProducerWrapper.request(sendMsgContext.getMsg(), sendCallback, rrCallback, timeout);
     }
 

@@ -45,14 +45,10 @@ List open_message = [
         "io.openmessaging:openmessaging-api:0.3.1-alpha"
 ]
 
-List eventmesh_common = [
-        "com.webank.eventmesh:eventmesh-common:1.1.2-SNAPSHOT"
-]
-
 dependencies {
-//    compile project(":eventmesh-common")
-    compile open_message, eventmesh_common
-    testCompile group: 'junit', name: 'junit', version: '4.12', open_message, eventmesh_common
+    compile project(":eventmesh-common")
+    compile open_message
+    testCompile group: 'junit', name: 'junit', version: '4.12', open_message
 }
 
 uploadArchives {

@@ -25,8 +25,8 @@ import com.webank.eventmesh.common.IPUtil;
 import com.webank.eventmesh.common.command.HttpCommand;
 import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+import com.webank.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -17,6 +17,9 @@
 package com.webank.connector.rocketmq.consumer;
 
 import com.webank.connector.rocketmq.domain.NonStandardKeys;
+import com.webank.connector.rocketmq.patch.ProxyConsumeConcurrentlyContext;
+import com.webank.connector.rocketmq.patch.ProxyConsumeConcurrentlyStatus;
+import com.webank.connector.rocketmq.patch.ProxyMessageListenerConcurrently;
 import com.webank.connector.rocketmq.utils.BeanUtils;
 import com.webank.connector.rocketmq.utils.OMSUtil;
 import com.webank.connector.rocketmq.config.ClientConfig;
@@ -37,6 +40,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,7 +83,51 @@ public class PushConsumerImpl implements PushConsumer {
         properties.put(OMSBuiltinKeys.CONSUMER_ID, consumerId);
         this.rocketmqPushConsumer.setLanguage(LanguageCode.OMS);
 
-//        this.rocketmqPushConsumer.registerMessageListener(new MessageListenerImpl());
+        this.rocketmqPushConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
+            @Override
+            public ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ProxyConsumeConcurrentlyContext pcontext) {
+//                MessageExt rmqMsg = rmqMsgList.get(0);
+                BytesMessage omsMsg = OMSUtil.msgConvert(msg);
+
+                MessageListener listener = PushConsumerImpl.this.subscribeTable.get(msg.getTopic());
+
+                if (listener == null) {
+                    throw new OMSRuntimeException("-1",
+                            String.format("The topic/queue %s isn't attached to this consumer", msg.getTopic()));
+                }
+
+                final KeyValue contextProperties = OMS.newKeyValue();
+                final CountDownLatch sync = new CountDownLatch(1);
+
+                contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+
+                MessageListener.Context context = new MessageListener.Context() {
+                    Map<Object, Object> contextMap = new HashMap<>();
+                    @Override
+                    public KeyValue attributes() {
+                        contextMap.put("t", pcontext);
+                        return contextProperties;
+                    }
+
+                    @Override
+                    public void ack() {
+                        sync.countDown();
+                        contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
+                                ConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                    }
+                };
+                long begin = System.currentTimeMillis();
+                listener.onReceived(omsMsg, context);
+                long costs = System.currentTimeMillis() - begin;
+                long timeoutMills = clientConfig.getRmqMessageConsumeTimeout() * 60 * 1000;
+                try {
+                    sync.await(Math.max(0, timeoutMills - costs), TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ignore) {
+                }
+
+                return ProxyConsumeConcurrentlyStatus.valueOf(contextProperties.getString(NonStandardKeys.MESSAGE_CONSUME_STATUS));
+            }
+        });
     }
 
     @Override
