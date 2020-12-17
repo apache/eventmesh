@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.webank.runtime.constants;
+package com.webank.connector.rocketmq.common;
 
 public class ProxyConstants {
 
@@ -103,13 +103,5 @@ public class ProxyConstants {
     public static final String  PROXY_REGISTRY_ADDR_KEY= "proxyRegistryAddr";
 
     public static int DEFAULT_TIME_OUT_MILLS = 5 * 1000;
-
-    public static final String RR_REPLY_TOPIC = "rr-reply-topic";
-
-    public static final String PROPERTY_MESSAGE_CLUSTER = "CLUSTER";
-
-    public static final String PROPERTY_MESSAGE_TTL = "TTL";
-
-    public static final String PROPERTY_MESSAGE_KEYS = "KEYS";
 
 }

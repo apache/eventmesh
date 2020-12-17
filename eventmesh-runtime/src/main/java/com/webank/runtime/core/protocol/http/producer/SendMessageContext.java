@@ -17,17 +17,18 @@
 
 package com.webank.runtime.core.protocol.http.producer;
 
+import com.webank.eventmesh.api.SendCallback;
 import com.webank.runtime.boot.ProxyHTTPServer;
 import com.webank.runtime.core.protocol.http.retry.RetryContext;
 import com.webank.eventmesh.common.Constants;
+import io.openmessaging.Message;
+import io.openmessaging.producer.SendResult;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.common.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SendMessageContext extends RetryContext {
@@ -45,6 +46,8 @@ public class SendMessageContext extends RetryContext {
     private Map<String, String> props;
 
     public ProxyHTTPServer proxyHTTPServer;
+
+    private List<Message> messageList;
 
     public SendMessageContext(String bizSeqNo, Message msg, ProxyProducer proxyProducer, ProxyHTTPServer proxyHTTPServer) {
         this.bizSeqNo = bizSeqNo;
@@ -96,6 +99,14 @@ public class SendMessageContext extends RetryContext {
         this.createTime = createTime;
     }
 
+    public List<Message> getMessageList() {
+        return messageList;
+    }
+
+    public void setMessageList(List<Message> messageList) {
+        this.messageList = messageList;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -120,6 +131,7 @@ public class SendMessageContext extends RetryContext {
 
         retryTimes++;
         proxyProducer.send(this, new SendCallback() {
+
             @Override
             public void onSuccess(SendResult sendResult) {
 
