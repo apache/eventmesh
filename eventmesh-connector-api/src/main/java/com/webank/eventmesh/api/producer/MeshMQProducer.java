@@ -37,11 +37,11 @@ public interface MeshMQProducer extends Producer {
 
     boolean reply(final Message message, final SendCallback sendCallback) throws Exception;
 
-//    DefaultMQProducer getDefaultMQProducer();
-
-    MeshMQProducer geMeshMQProducer();
+    MeshMQProducer getDefaultMQProducer();
 
     String buildMQClientId();
+
+    void setExtFields();
 
     void setInstanceName(String instanceName);
 
