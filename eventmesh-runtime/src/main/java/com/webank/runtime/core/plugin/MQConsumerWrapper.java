@@ -17,12 +17,13 @@
 
 package com.webank.runtime.core.plugin;
 
-import com.webank.api.consumer.MeshMQPushConsumer;
+import com.webank.eventmesh.api.AbstractContext;
+import com.webank.eventmesh.api.consumer.MeshMQPushConsumer;
 import com.webank.eventmesh.common.config.CommonConfiguration;
 import com.webank.runtime.constants.ProxyConstants;
-import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
-import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
-import org.apache.rocketmq.common.message.MessageExt;
+import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyContext;
+import io.openmessaging.Message;
+import io.openmessaging.consumer.MessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,8 +41,8 @@ public class MQConsumerWrapper extends MQWrapper {
         meshMQPushConsumer.setInstanceName(instanceName);
     }
 
-    public void subscribe(String topic) throws Exception {
-        meshMQPushConsumer.subscribe(topic);
+    public void subscribe(String topic, MessageListener listener) throws Exception {
+        meshMQPushConsumer.subscribe(topic, listener);
     }
 
     public void unsubscribe(String topic) throws Exception {
@@ -92,11 +93,15 @@ public class MQConsumerWrapper extends MQWrapper {
         started.compareAndSet(false, true);
     }
 
-    public void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently) {
-        meshMQPushConsumer.registerMessageListener(messageListenerConcurrently);
+//    public void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently) {
+//        meshMQPushConsumer.registerMessageListener(messageListenerConcurrently);
+//    }
+
+    public void updateOffset(List<Message> msgs, AbstractContext proxyConsumeConcurrentlyContext) {
+        meshMQPushConsumer.updateOffset(msgs, proxyConsumeConcurrentlyContext);
     }
 
-    public void updateOffset(List<MessageExt> msgs, ProxyConsumeConcurrentlyContext proxyConsumeConcurrentlyContext) {
-        meshMQPushConsumer.updateOffset(msgs, proxyConsumeConcurrentlyContext);
+    public AbstractContext getContext(){
+        return meshMQPushConsumer.getContext();
     }
 }
