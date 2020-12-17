@@ -17,31 +17,27 @@
 
 package com.webank.runtime.core.plugin;
 
-import com.webank.api.RRCallback;
-import com.webank.api.SendCallback;
-import com.webank.api.producer.MeshMQProducer;
+import com.webank.eventmesh.api.RRCallback;
+import com.webank.eventmesh.api.SendCallback;
+import com.webank.eventmesh.api.producer.MeshMQProducer;
 import com.webank.eventmesh.common.config.CommonConfiguration;
-import com.webank.eventmesh.common.config.ConfigurationWraper;
-import com.webank.runtime.constants.ProxyConstants;
 import io.openmessaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 import java.util.ServiceLoader;
 
 public class MQProducerWrapper extends MQWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected com.webank.api.producer.MeshMQProducer meshMQProducer;
+    protected MeshMQProducer meshMQProducer;
 
     public synchronized void init(CommonConfiguration commonConfiguration, String producerGroup) throws Exception{
         if (inited.get()) {
             return;
         }
 
-        meshMQProducer = getMeshMQProducer();
+        meshMQProducer = getSpiMeshMQProducer();
         if (meshMQProducer == null){
             logger.error("can't load the meshMQProducer plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
@@ -51,7 +47,7 @@ public class MQProducerWrapper extends MQWrapper {
         inited.compareAndSet(false, true);
     }
 
-    private MeshMQProducer getMeshMQProducer() {
+    private MeshMQProducer getSpiMeshMQProducer() {
         ServiceLoader<MeshMQProducer> meshMQProducerServiceLoader = ServiceLoader.load(MeshMQProducer.class);
         if (meshMQProducerServiceLoader.iterator().hasNext()){
             return meshMQProducerServiceLoader.iterator().next();
@@ -105,7 +101,7 @@ public class MQProducerWrapper extends MQWrapper {
         return meshMQProducer.getDefaultMQProducer();
     }
 
-//    public static void main(String[] args) throws Exception {
+    //    public static void main(String[] args) throws Exception {
 //
 //        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
 //        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
