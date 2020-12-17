@@ -32,7 +32,6 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +74,7 @@ public class ClientManageController {
         server.createContext("/clientManage/redirectClientBySubSystem", new RedirectClientBySubSystemHandler());
         server.createContext("/clientManage/redirectClientByPath", new RedirectClientByPathHandler());
         server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler());
-        server.createContext("/proxy/msg/push", new ProxyMsgDownStreamHandler());
+//        server.createContext("/proxy/msg/push", new ProxyMsgDownStreamHandler());
         server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler());
 
         server.start();
@@ -712,56 +711,56 @@ public class ClientManageController {
             String result = "false";
             OutputStream out = httpExchange.getResponseBody();
             try{
-                Map<String, Object> queryStringInfo =  parsePostParameters(httpExchange);
-                String msgStr = (String)queryStringInfo.get("msg");
-                String groupName = (String)queryStringInfo.get("group");
-                logger.info("recieve msg from other proxy, group:{}, msg:{}", groupName, msgStr);
-                if (StringUtils.isBlank(msgStr) || StringUtils.isBlank(groupName)) {
-                    logger.warn("msg or groupName is null");
-                    httpExchange.sendResponseHeaders(200, 0);
-                    out.write(result.getBytes());
-                    return;
-                }
-                MessageExt messageExt = JSON.parseObject(msgStr, MessageExt.class);
-                String topic = messageExt.getTopic();
-
-                if (!ProxyUtil.isValidRMBTopic(topic)) {
-                    logger.warn("msg topic is illegal");
-                    httpExchange.sendResponseHeaders(200, 0);
-                    out.write(result.getBytes());
-                    return;
-                }
-
-                DownstreamDispatchStrategy downstreamDispatchStrategy = proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getDownstreamDispatchStrategy();
-                Set<Session> groupConsumerSessions = proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getGroupConsumerSessions();
-                Session session = downstreamDispatchStrategy.select(groupName, topic, groupConsumerSessions);
-
-                if(session == null){
-                    logger.error("DownStream msg,retry other proxy found no session again");
-                    httpExchange.sendResponseHeaders(200, 0);
-                    out.write(result.getBytes());
-                    return;
-                }
-
-                DownStreamMsgContext downStreamMsgContext =
-                        new DownStreamMsgContext(messageExt, session, proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getPersistentMsgConsumer(), null, true);
-                proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getDownstreamMap().putIfAbsent(downStreamMsgContext.seq, downStreamMsgContext);
-
-                if (session.isCanDownStream()) {
-                    session.downstreamMsg(downStreamMsgContext);
-                    httpExchange.sendResponseHeaders(200, 0);
-                    result = "true";
-                    out.write(result.getBytes());
-                    return;
-                }
-
-                logger.warn("ProxyMsgDownStreamHandler|dispatch retry, seq[{}]", downStreamMsgContext.seq);
-                long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getTopic()) ? 0 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
-                downStreamMsgContext.delay(delayTime);
-                proxyTCPServer.getProxyTcpRetryer().pushRetry(downStreamMsgContext);
-                result = "true";
-                httpExchange.sendResponseHeaders(200, 0);
-                out.write(result.getBytes());
+//                Map<String, Object> queryStringInfo =  parsePostParameters(httpExchange);
+//                String msgStr = (String)queryStringInfo.get("msg");
+//                String groupName = (String)queryStringInfo.get("group");
+//                logger.info("recieve msg from other proxy, group:{}, msg:{}", groupName, msgStr);
+//                if (StringUtils.isBlank(msgStr) || StringUtils.isBlank(groupName)) {
+//                    logger.warn("msg or groupName is null");
+//                    httpExchange.sendResponseHeaders(200, 0);
+//                    out.write(result.getBytes());
+//                    return;
+//                }
+//                MessageExt messageExt = JSON.parseObject(msgStr, MessageExt.class);
+//                String topic = messageExt.getTopic();
+//
+//                if (!ProxyUtil.isValidRMBTopic(topic)) {
+//                    logger.warn("msg topic is illegal");
+//                    httpExchange.sendResponseHeaders(200, 0);
+//                    out.write(result.getBytes());
+//                    return;
+//                }
+//
+//                DownstreamDispatchStrategy downstreamDispatchStrategy = proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getDownstreamDispatchStrategy();
+//                Set<Session> groupConsumerSessions = proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getGroupConsumerSessions();
+//                Session session = downstreamDispatchStrategy.select(groupName, topic, groupConsumerSessions);
+//
+//                if(session == null){
+//                    logger.error("DownStream msg,retry other proxy found no session again");
+//                    httpExchange.sendResponseHeaders(200, 0);
+//                    out.write(result.getBytes());
+//                    return;
+//                }
+//
+//                DownStreamMsgContext downStreamMsgContext =
+//                        new DownStreamMsgContext(messageExt, session, proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getPersistentMsgConsumer(), null, true);
+//                proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getDownstreamMap().putIfAbsent(downStreamMsgContext.seq, downStreamMsgContext);
+//
+//                if (session.isCanDownStream()) {
+//                    session.downstreamMsg(downStreamMsgContext);
+//                    httpExchange.sendResponseHeaders(200, 0);
+//                    result = "true";
+//                    out.write(result.getBytes());
+//                    return;
+//                }
+//
+//                logger.warn("ProxyMsgDownStreamHandler|dispatch retry, seq[{}]", downStreamMsgContext.seq);
+//                long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getTopic()) ? 0 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
+//                downStreamMsgContext.delay(delayTime);
+//                proxyTCPServer.getProxyTcpRetryer().pushRetry(downStreamMsgContext);
+//                result = "true";
+//                httpExchange.sendResponseHeaders(200, 0);
+//                out.write(result.getBytes());
 
             }catch (Exception e){
                 logger.error("ProxyMsgDownStreamHandler handle fail...", e);

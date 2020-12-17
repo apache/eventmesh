@@ -17,8 +17,8 @@
 
 package com.webank.runtime.core.protocol.http.producer;
 
-import com.webank.api.RRCallback;
-import com.webank.api.SendCallback;
+import com.webank.eventmesh.api.RRCallback;
+import com.webank.eventmesh.api.SendCallback;
 import com.webank.runtime.configuration.ProxyConfiguration;
 import com.webank.runtime.core.consumergroup.ProducerGroupConf;
 import com.webank.runtime.core.plugin.MQProducerWrapper;

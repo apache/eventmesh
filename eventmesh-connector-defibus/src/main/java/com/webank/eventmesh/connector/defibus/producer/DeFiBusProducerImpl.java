@@ -128,13 +128,13 @@ public class DeFiBusProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public MeshMQProducer geMeshMQProducer() {
-        return this;
+    public String buildMQClientId() {
+        return defibusProducer.getDefaultMQProducer().buildMQClientId();
     }
 
     @Override
-    public String buildMQClientId() {
-        return defibusProducer.getDefaultMQProducer().buildMQClientId();
+    public void setExtFields() {
+
     }
 
     @Override
@@ -149,8 +149,9 @@ public class DeFiBusProducerImpl implements MeshMQProducer {
                 timeout);
     }
 
-    public DefaultMQProducer getDefaultMQProducer(){
-        return defibusProducer.getDefaultMQProducer();
+    @Override
+    public MeshMQProducer getDefaultMQProducer(){
+        return this;
     }
 
     @Override

@@ -17,17 +17,15 @@
 
 package com.webank.runtime.core.protocol.http.consumer;
 
-import com.webank.defibus.common.DeFiBusConstant;
+import com.webank.eventmesh.api.AbstractContext;
 import com.webank.runtime.boot.ProxyHTTPServer;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.consumergroup.ConsumerGroupConf;
 import com.webank.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import com.webank.eventmesh.common.Constants;
+import io.openmessaging.Message;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
-import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
-import org.apache.rocketmq.common.message.MessageExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,13 +49,13 @@ public class HandleMsgContext {
 
     private String topic;
 
-    private MessageExt msg;
+    private Message msg;
 
     private int ttl;
 
     private long createTime = System.currentTimeMillis();
 
-    private ConsumeConcurrentlyContext context;
+    private AbstractContext context;
 
     private ConsumerGroupConf consumerGroupConfig;
 
@@ -68,21 +66,21 @@ public class HandleMsgContext {
     private Map<String, String> props;
 
     public HandleMsgContext(String msgRandomNo, String consumerGroup, ProxyConsumer proxyConsumer,
-                            String topic, MessageExt msg,
-                            ConsumeConcurrentlyContext context, ConsumerGroupConf consumerGroupConfig,
+                            String topic, Message msg,
+                            AbstractContext context, ConsumerGroupConf consumerGroupConfig,
                             ProxyHTTPServer proxyHTTPServer, String bizSeqNo, String uniqueId, ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
         this.consumerGroup = consumerGroup;
         this.proxyConsumer = proxyConsumer;
         this.topic = topic;
         this.msg = msg;
-        this.context = (ProxyConsumeConcurrentlyContext) context;
+        this.context = context;
         this.consumerGroupConfig = consumerGroupConfig;
         this.proxyHTTPServer = proxyHTTPServer;
         this.bizSeqNo = bizSeqNo;
         this.uniqueId = uniqueId;
         this.consumeTopicConfig = consumeTopicConfig;
-        this.ttl = MapUtils.getIntValue(msg.getProperties(), DeFiBusConstant.PROPERTY_MESSAGE_TTL, ProxyConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+        this.ttl = Integer.parseInt(msg.sysHeaders().getString(Message.BuiltinKeys.TIMEOUT));
     }
 
     public void addProp(String key, String val) {
@@ -144,11 +142,11 @@ public class HandleMsgContext {
         this.topic = topic;
     }
 
-    public MessageExt getMsg() {
+    public Message getMsg() {
         return msg;
     }
 
-    public void setMsg(MessageExt msg) {
+    public void setMsg(Message msg) {
         this.msg = msg;
     }
 
@@ -160,11 +158,11 @@ public class HandleMsgContext {
         this.createTime = createTime;
     }
 
-    public ConsumeConcurrentlyContext getContext() {
+    public AbstractContext getContext() {
         return context;
     }
 
-    public void setContext(ProxyConsumeConcurrentlyContext context) {
+    public void setContext(AbstractContext context) {
         this.context = context;
     }
 
@@ -183,12 +181,12 @@ public class HandleMsgContext {
     public void finish() {
         if (proxyConsumer != null && context != null && msg != null) {
             if (messageLogger.isDebugEnabled()) {
-                messageLogger.debug("messageAcked|topic={}|msgId={}|cluster={}|broker={}|queueId={}|queueOffset={}", topic,
-                        msg.getMsgId(), msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER),
-                        msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
-                        msg.getQueueId(), msg.getQueueOffset());
+//                messageLogger.debug("messageAcked|topic={}|msgId={}|cluster={}|broker={}|queueId={}|queueOffset={}", topic,
+//                        msg.getMsgId(), msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER),
+//                        msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
+//                        msg.getQueueId(), msg.getQueueOffset());
             }
-            proxyConsumer.updateOffset(topic, Arrays.asList(msg), (ProxyConsumeConcurrentlyContext) context);
+            proxyConsumer.updateOffset(topic, Arrays.asList(msg), context);
         }
     }
 

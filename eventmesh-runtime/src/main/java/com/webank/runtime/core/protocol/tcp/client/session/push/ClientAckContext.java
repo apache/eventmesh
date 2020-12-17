@@ -21,11 +21,9 @@ import com.webank.eventmesh.api.AbstractContext;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.plugin.MQConsumerWrapper;
 import com.webank.runtime.util.ProxyUtil;
-import com.webank.eventmesh.connector.defibus.common.Constants;
 import io.openmessaging.Message;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +51,7 @@ public class ClientAckContext {
         this.msgs = msgs;
         this.consumer = consumer;
         this.createTime = System.currentTimeMillis();
-        this.expireTime = System.currentTimeMillis() + Long.valueOf(msgs.get(0).sysHeaders().getString(Constants.PROPERTY_MESSAGE_TTL));
+        this.expireTime = System.currentTimeMillis() + Long.valueOf(msgs.get(0).sysHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_TTL));
     }
 
     public boolean isExpire() {
