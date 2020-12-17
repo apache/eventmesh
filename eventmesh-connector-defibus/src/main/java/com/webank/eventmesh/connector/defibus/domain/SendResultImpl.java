@@ -14,31 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.webank.eventmesh.connector.defibus.domain;
 
-package connector.defibus.patch;
+import io.openmessaging.KeyValue;
+import io.openmessaging.producer.SendResult;
 
-import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
-import org.apache.rocketmq.client.impl.consumer.ProcessQueue;
-import org.apache.rocketmq.common.message.MessageQueue;
+public class SendResultImpl implements SendResult {
+    private String messageId;
+    private KeyValue properties;
 
-public class ProxyConsumeConcurrentlyContext extends ConsumeConcurrentlyContext {
-    private final ProcessQueue processQueue;
-    private boolean manualAck = true;
-
-    public ProxyConsumeConcurrentlyContext(MessageQueue messageQueue, ProcessQueue processQueue) {
-        super(messageQueue);
-        this.processQueue = processQueue;
+    public SendResultImpl(final String messageId, final KeyValue properties) {
+        this.messageId = messageId;
+        this.properties = properties;
     }
 
-    public ProcessQueue getProcessQueue() {
-        return processQueue;
+    @Override
+    public String messageId() {
+        return messageId;
     }
 
-    public boolean isManualAck() {
-        return manualAck;
-    }
-
-    public void setManualAck(boolean manualAck) {
-        this.manualAck = manualAck;
+    public KeyValue properties() {
+        return properties;
     }
 }

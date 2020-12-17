@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.webank.runtime.patch;
+package com.webank.eventmesh.connector.defibus.patch;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -30,6 +30,8 @@ import java.util.List;
 public abstract class ProxyMessageListenerConcurrently implements MessageListenerConcurrently {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProxyMessageListenerConcurrently.class);
+
+    public ProxyConsumeConcurrentlyContext context;
 
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(final List<MessageExt> msgs,
@@ -66,4 +68,12 @@ public abstract class ProxyMessageListenerConcurrently implements MessageListene
     }
 
     public abstract ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ProxyConsumeConcurrentlyContext context);
+
+    public ProxyConsumeConcurrentlyContext getContext() {
+        return context;
+    }
+
+    public void setContext(ProxyConsumeConcurrentlyContext context) {
+        this.context = context;
+    }
 }
