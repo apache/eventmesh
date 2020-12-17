@@ -17,25 +17,25 @@
 
 package com.webank.runtime.core.protocol.tcp.client.session;
 
-import com.webank.runtime.configuration.AccessConfiguration;
-import com.webank.runtime.constants.ProxyConstants;
-import com.webank.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
+import com.webank.eventmesh.api.SendCallback;
 import com.webank.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import com.webank.runtime.core.protocol.tcp.client.session.push.SessionPusher;
 import com.webank.runtime.core.protocol.tcp.client.session.send.ProxyTcpSendResult;
 import com.webank.runtime.core.protocol.tcp.client.session.send.SessionSender;
+import com.webank.runtime.configuration.AccessConfiguration;
+import com.webank.runtime.constants.ProxyConstants;
+import com.webank.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+import com.webank.runtime.util.RemotingHelper;
 import com.webank.runtime.util.Utils;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.openmessaging.Message;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -165,8 +165,7 @@ public class Session {
             sessionContext.subscribeTopics.putIfAbsent(topic, topic);
             clientGroupWrapper.get().subscribe(topic);
 
-            clientGroupWrapper.get().getMqProducerWrapper().getDefaultMQProducer().getDefaultMQProducerImpl()
-                    .getmQClientFactory().getMQClientAPIImpl().getDefaultTopicRouteInfoFromNameServer(topic,
+            clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().getDefaultTopicRouteInfoFromNameServer(topic,
                     ProxyConstants.DEFAULT_TIME_OUT_MILLS);
 
             clientGroupWrapper.get().addSubscription(topic, this);
@@ -187,7 +186,8 @@ public class Session {
     }
 
     public ProxyTcpSendResult upstreamMsg(Header header, Message msg, SendCallback sendCallback, long startTime, long taskExecuteTime) {
-        sessionContext.sendTopics.putIfAbsent(msg.getTopic(), msg.getTopic());
+        String topic = msg.sysHeaders().getString(Message.BuiltinKeys.DESTINATION);
+        sessionContext.sendTopics.putIfAbsent(topic, topic);
         return sender.send(header, msg, sendCallback, startTime, taskExecuteTime);
     }
 
