@@ -60,18 +60,11 @@ List metrics = [
     "io.dropwizard.metrics:metrics-json:4.1.0"
 ]
 
-//List eventmesh_connector_api = [
-//        "com.webank.eventmesh:eventmesh-connector-api:1.1.2-SNAPSHOT"
-//]
-
-List eventmesh_connector_defibus = [
-        "com.webank.eventmesh:eventmesh-connector-defibus:1.1.2-SNAPSHOT"
-]
 
 dependencies {
     compile project(":eventmesh-connector-api")
     compile files('..\\eventmesh-connector-defibus\\build\\libs\\eventmesh-connector-defibus-1.1.2-SNAPSHOT.jar')
-//    testCompile project(":eventmesh-common"), project(":eventmesh-connector-api")
+    testCompile project(":eventmesh-connector-api")
     compile metrics, log4j2, sl4j
     testCompile metrics, log4j2, sl4j, junit
 }

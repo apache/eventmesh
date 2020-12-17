@@ -16,10 +16,16 @@
  */
 package com.webank.connector.rocketmq.consumer;
 
+import com.webank.connector.rocketmq.common.ProxyConstants;
 import com.webank.connector.rocketmq.domain.NonStandardKeys;
+import com.webank.connector.rocketmq.patch.ProxyConsumeConcurrentlyContext;
+import com.webank.connector.rocketmq.patch.ProxyConsumeConcurrentlyStatus;
+import com.webank.connector.rocketmq.patch.ProxyMessageListenerConcurrently;
 import com.webank.connector.rocketmq.utils.BeanUtils;
 import com.webank.connector.rocketmq.utils.OMSUtil;
 import com.webank.connector.rocketmq.config.ClientConfig;
+import com.webank.connector.rocketmq.utils.ProxyUtil;
+import com.webank.eventmesh.api.AbstractContext;
 import io.openmessaging.BytesMessage;
 import io.openmessaging.KeyValue;
 import io.openmessaging.OMS;
@@ -37,6 +43,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,6 +56,7 @@ public class PushConsumerImpl implements PushConsumer {
     private boolean started = false;
     private final Map<String, MessageListener> subscribeTable = new ConcurrentHashMap<>();
     private final ClientConfig clientConfig;
+    private ProxyConsumeConcurrentlyContext context;
 
     public PushConsumerImpl(final KeyValue properties) {
         this.rocketmqPushConsumer = new DefaultMQPushConsumer();
@@ -79,7 +87,117 @@ public class PushConsumerImpl implements PushConsumer {
         properties.put(OMSBuiltinKeys.CONSUMER_ID, consumerId);
         this.rocketmqPushConsumer.setLanguage(LanguageCode.OMS);
 
-//        this.rocketmqPushConsumer.registerMessageListener(new MessageListenerImpl());
+        if (clientConfig.getMessageModel().equalsIgnoreCase(MessageModel.BROADCASTING.name())){
+            rocketmqPushConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
+
+                @Override
+                public ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ProxyConsumeConcurrentlyContext context) {
+                    PushConsumerImpl.this.setContext(context);
+                    if (msg == null)
+                        return ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+
+                    if (!ProxyUtil.isValidRMBTopic(msg.getTopic())) {
+                        return ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                    }
+
+                    msg.putUserProperty(ProxyConstants.BORN_TIMESTAMP, String.valueOf(msg.getBornTimestamp()));
+                    msg.putUserProperty(ProxyConstants.STORE_TIMESTAMP, String.valueOf(msg.getStoreTimestamp()));
+
+                    BytesMessage omsMsg = OMSUtil.msgConvert(msg);
+
+                    MessageListener listener = PushConsumerImpl.this.subscribeTable.get(msg.getTopic());
+
+                    if (listener == null) {
+                        throw new OMSRuntimeException("-1",
+                                String.format("The topic/queue %s isn't attached to this consumer", msg.getTopic()));
+                    }
+
+                    final KeyValue contextProperties = OMS.newKeyValue();
+                    final CountDownLatch sync = new CountDownLatch(1);
+
+                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+
+                    MessageListener.Context omsContext = new MessageListener.Context() {
+                        @Override
+                        public KeyValue attributes() {
+                            return contextProperties;
+                        }
+
+                        @Override
+                        public void ack() {
+                            sync.countDown();
+                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
+                                    ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                        }
+                    };
+                    long begin = System.currentTimeMillis();
+                    listener.onReceived(omsMsg, omsContext);
+                    long costs = System.currentTimeMillis() - begin;
+                    long timeoutMills = clientConfig.getRmqMessageConsumeTimeout() * 60 * 1000;
+                    try {
+                        sync.await(Math.max(0, timeoutMills - costs), TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException ignore) {
+                    }
+
+                    return ProxyConsumeConcurrentlyStatus.valueOf(contextProperties.getString(NonStandardKeys.MESSAGE_CONSUME_STATUS));
+                }
+            });
+        }else {
+            rocketmqPushConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
+
+                @Override
+                public ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ProxyConsumeConcurrentlyContext context) {
+                    PushConsumerImpl.this.setContext(context);
+                    if (msg == null)
+                        return ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+
+                    if (!ProxyUtil.isValidRMBTopic(msg.getTopic())) {
+                        return ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                    }
+
+                    msg.putUserProperty(ProxyConstants.BORN_TIMESTAMP, String.valueOf(msg.getBornTimestamp()));
+                    msg.putUserProperty(ProxyConstants.STORE_TIMESTAMP, String.valueOf(msg.getStoreTimestamp()));
+
+                    BytesMessage omsMsg = OMSUtil.msgConvert(msg);
+
+                    MessageListener listener = PushConsumerImpl.this.subscribeTable.get(msg.getTopic());
+
+                    if (listener == null) {
+                        throw new OMSRuntimeException("-1",
+                                String.format("The topic/queue %s isn't attached to this consumer", msg.getTopic()));
+                    }
+
+                    final KeyValue contextProperties = OMS.newKeyValue();
+                    final CountDownLatch sync = new CountDownLatch(1);
+
+                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+
+                    MessageListener.Context omsContext = new MessageListener.Context() {
+                        @Override
+                        public KeyValue attributes() {
+                            return contextProperties;
+                        }
+
+                        @Override
+                        public void ack() {
+                            sync.countDown();
+                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
+                                    ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                        }
+                    };
+                    long begin = System.currentTimeMillis();
+                    listener.onReceived(omsMsg, omsContext);
+                    long costs = System.currentTimeMillis() - begin;
+                    long timeoutMills = clientConfig.getRmqMessageConsumeTimeout() * 60 * 1000;
+                    try {
+                        sync.await(Math.max(0, timeoutMills - costs), TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException ignore) {
+                    }
+
+                    return ProxyConsumeConcurrentlyStatus.valueOf(contextProperties.getString(NonStandardKeys.MESSAGE_CONSUME_STATUS));
+                }
+            });
+        }
     }
 
     @Override
@@ -212,5 +330,13 @@ public class PushConsumerImpl implements PushConsumer {
 
             return ConsumeConcurrentlyStatus.valueOf(contextProperties.getString(NonStandardKeys.MESSAGE_CONSUME_STATUS));
         }
+    }
+
+    public AbstractContext getContext() {
+        return this.context;
+    }
+
+    public void setContext(ProxyConsumeConcurrentlyContext context) {
+        this.context = context;
     }
 }

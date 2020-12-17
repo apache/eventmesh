@@ -21,7 +21,6 @@ import com.webank.eventmesh.api.AbstractContext;
 import com.webank.eventmesh.api.consumer.MeshMQPushConsumer;
 import com.webank.eventmesh.common.config.CommonConfiguration;
 import com.webank.runtime.constants.ProxyConstants;
-import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyContext;
 import io.openmessaging.Message;
 import io.openmessaging.consumer.MessageListener;
 import org.slf4j.Logger;

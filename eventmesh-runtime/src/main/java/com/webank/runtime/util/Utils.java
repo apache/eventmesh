@@ -111,38 +111,38 @@ public class Utils {
         }
     }
 
-    public static org.apache.rocketmq.common.message.Message decodeMessage(AccessMessage accessMessage) {
-        org.apache.rocketmq.common.message.Message msg = new org.apache.rocketmq.common.message.Message();
-        msg.setTopic(accessMessage.getTopic());
-        msg.setBody(accessMessage.getBody().getBytes());
-        msg.getProperty("init");
-        for (Map.Entry<String, String> property : accessMessage.getProperties().entrySet()) {
-            msg.getProperties().put(property.getKey(), property.getValue());
-        }
-        return msg;
-    }
+//    public static org.apache.rocketmq.common.message.Message decodeMessage(AccessMessage accessMessage) {
+//        org.apache.rocketmq.common.message.Message msg = new org.apache.rocketmq.common.message.Message();
+//        msg.setTopic(accessMessage.getTopic());
+//        msg.setBody(accessMessage.getBody().getBytes());
+//        msg.getProperty("init");
+//        for (Map.Entry<String, String> property : accessMessage.getProperties().entrySet()) {
+//            msg.getProperties().put(property.getKey(), property.getValue());
+//        }
+//        return msg;
+//    }
 
-    public static AccessMessage encodeMessage(org.apache.rocketmq.common.message.Message msg) throws Exception {
-        AccessMessage accessMessage = new AccessMessage();
-        accessMessage.setBody(new String(msg.getBody(), "UTF-8"));
-        accessMessage.setTopic(msg.getTopic());
-        for (Map.Entry<String, String> property : msg.getProperties().entrySet()) {
-            accessMessage.getProperties().put(property.getKey(), property.getValue());
-        }
-        return accessMessage;
-    }
+//    public static AccessMessage encodeMessage(org.apache.rocketmq.common.message.Message msg) throws Exception {
+//        AccessMessage accessMessage = new AccessMessage();
+//        accessMessage.setBody(new String(msg.getBody(), "UTF-8"));
+//        accessMessage.setTopic(msg.getTopic());
+//        for (Map.Entry<String, String> property : msg.getProperties().entrySet()) {
+//            accessMessage.getProperties().put(property.getKey(), property.getValue());
+//        }
+//        return accessMessage;
+//    }
 
-    public static org.apache.rocketmq.common.message.Message messageMapper(org.apache.rocketmq.common.message.Message
-                                                                                   message) {
-        org.apache.rocketmq.common.message.Message msg = new org.apache.rocketmq.common.message.Message();
-        msg.setTopic(message.getTopic());
-        msg.setBody(message.getBody());
-        msg.getProperty("init");
-        for (Map.Entry<String, String> property : message.getProperties().entrySet()) {
-            msg.getProperties().put(property.getKey(), property.getValue());
-        }
-        return msg;
-    }
+//    public static org.apache.rocketmq.common.message.Message messageMapper(org.apache.rocketmq.common.message.Message
+//                                                                                   message) {
+//        org.apache.rocketmq.common.message.Message msg = new org.apache.rocketmq.common.message.Message();
+//        msg.setTopic(message.getTopic());
+//        msg.setBody(message.getBody());
+//        msg.getProperty("init");
+//        for (Map.Entry<String, String> property : message.getProperties().entrySet()) {
+//            msg.getProperties().put(property.getKey(), property.getValue());
+//        }
+//        return msg;
+//    }
 
     /**
      * 打印mq消息的一部分内容
@@ -169,13 +169,13 @@ public class Utils {
      * @param message
      * @return
      */
-    public static String printMqMessage(org.apache.rocketmq.common.message.Message message) {
-        Map<String, String> properties = message.getProperties();
-        String bizSeqNo = message.getKeys();
-        String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", message.getTopic()
-                , properties.get(ProxyConstants.TTL), properties.get(ProxyConstants.RR_REQUEST_UNIQ_ID), bizSeqNo);
-        return result;
-    }
+//    public static String printMqMessage(org.apache.rocketmq.common.message.Message message) {
+//        Map<String, String> properties = message.getProperties();
+//        String bizSeqNo = message.getKeys();
+//        String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", message.getTopic()
+//                , properties.get(ProxyConstants.TTL), properties.get(ProxyConstants.RR_REQUEST_UNIQ_ID), bizSeqNo);
+//        return result;
+//    }
 
     /**
      * 根据topic获取serviceId
