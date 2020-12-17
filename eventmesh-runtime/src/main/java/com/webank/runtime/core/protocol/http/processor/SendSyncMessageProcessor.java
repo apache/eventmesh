@@ -17,8 +17,8 @@
 
 package com.webank.runtime.core.protocol.http.processor;
 
-import com.webank.defibus.client.impl.producer.RRCallback;
-import com.webank.defibus.common.DeFiBusConstant;
+import com.webank.api.RRCallback;
+import com.webank.api.SendCallback;
 import com.webank.runtime.boot.ProxyHTTPServer;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.protocol.http.async.AsyncContext;
@@ -36,16 +36,17 @@ import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
+import com.webank.runtime.domain.BytesMessageImpl;
+import com.webank.runtime.util.OMSUtil;
 import com.webank.runtime.util.ProxyUtil;
 import com.alibaba.fastjson.JSON;
+import com.webank.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
+import io.openmessaging.BytesMessage;
+import io.openmessaging.Message;
+import io.openmessaging.OMS;
+import io.openmessaging.producer.SendResult;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.message.MessageAccessor;
-import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,29 +123,29 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             ttl = sendMessageRequestBody.getTtl();
         }
 
-        Message rocketMQMsg;
+        BytesMessage omsMsg = new BytesMessageImpl();
         try {
-            if (StringUtils.isBlank(sendMessageRequestBody.getTag())) {
-                rocketMQMsg = new Message(sendMessageRequestBody.getTopic(),
-                        sendMessageRequestBody.getContent().getBytes(ProxyConstants.DEFAULT_CHARSET));
-            } else {
-                rocketMQMsg = new Message(sendMessageRequestBody.getTopic(), sendMessageRequestBody.getTag(),
-                        sendMessageRequestBody.getContent().getBytes(ProxyConstants.DEFAULT_CHARSET));
+            // body
+            omsMsg.setBody(sendMessageRequestBody.getContent().getBytes(ProxyConstants.DEFAULT_CHARSET));
+            // topic
+            omsMsg.putSysHeaders(Message.BuiltinKeys.DESTINATION, sendMessageRequestBody.getTopic());
+            if (!StringUtils.isBlank(sendMessageRequestBody.getTag())) {
+                omsMsg.putUserHeaders("Tag", sendMessageRequestBody.getTag());
             }
-            rocketMQMsg.putUserProperty(DeFiBusConstant.KEY, DeFiBusConstant.PERSISTENT);
-            MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, ttl);
-//            rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL, ttl);
-            rocketMQMsg.putUserProperty(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-            rocketMQMsg.putUserProperty(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
-            rocketMQMsg.setKeys(sendMessageRequestBody.getBizSeqNo());
-            rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO,
-                    proxyProducer.getMqProducerWrapper().getDefaultMQProducer().buildMQClientId());
+            // ttl
+            omsMsg.putSysHeaders(Message.BuiltinKeys.TIMEOUT, ttl);
+            // bizNo
+            omsMsg.putSysHeaders(Message.BuiltinKeys.SEARCH_KEYS, sendMessageRequestBody.getBizSeqNo());
+            omsMsg.putUserHeaders("msgType", "persistent");
+            omsMsg.putUserHeaders(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+            omsMsg.putUserHeaders(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
+            omsMsg.putUserHeaders("REPLY_TO", proxyProducer.getMqProducerWrapper().getDefaultMQProducer().buildMQClientId());
 
             if (messageLogger.isDebugEnabled()) {
                 messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", sendMessageRequestBody.getBizSeqNo(),
                         sendMessageRequestBody.getTopic());
             }
-            rocketMQMsg.putUserProperty(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+            omsMsg.putUserHeaders(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
         } catch (Exception e) {
             messageLogger.error("msg2MQMsg err, bizSeqNo={}, topic={}", sendMessageRequestBody.getBizSeqNo(),
                     sendMessageRequestBody.getTopic(), e);
@@ -155,7 +156,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageRequestBody.getBizSeqNo(), rocketMQMsg, proxyProducer, proxyHTTPServer);
+        final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageRequestBody.getBizSeqNo(), omsMsg, proxyProducer, proxyHTTPServer);
         proxyHTTPServer.metrics.summaryMetrics.recordSendMsg();
 
         long startTime = System.currentTimeMillis();
@@ -210,14 +211,12 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 }
             }, new RRCallback() {
                 @Override
-                public void onSuccess(Message mqMsg) {
-                    if (mqMsg instanceof MessageExt) {
-                        mqMsg.putUserProperty(ProxyConstants.BORN_TIMESTAMP, String.valueOf(((MessageExt) mqMsg)
-                                .getBornTimestamp()));
-                        mqMsg.putUserProperty(ProxyConstants.STORE_TIMESTAMP, String.valueOf(((MessageExt) mqMsg)
-                                .getStoreTimestamp()));
-                    }
-                    mqMsg.putUserProperty(ProxyConstants.RSP_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                public void onSuccess(Message omsMsg) {
+                    omsMsg.userHeaders().put(ProxyConstants.BORN_TIMESTAMP, omsMsg.sysHeaders().
+                            getString(Message.BuiltinKeys.BORN_TIMESTAMP));
+                    omsMsg.userHeaders().put(ProxyConstants.STORE_TIMESTAMP, omsMsg.sysHeaders().
+                            getString(Message.BuiltinKeys.STORE_TIMESTAMP));
+                    omsMsg.userHeaders().put(ProxyConstants.RSP_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                     messageLogger.info("message|mq2proxy|RSP|SYNC|rrCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                             System.currentTimeMillis() - startTime,
                             sendMessageRequestBody.getTopic(),
@@ -225,13 +224,16 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                             sendMessageRequestBody.getUniqueId());
 
                     try {
-                        final String rtnMsg = new String(mqMsg.getBody(), ProxyConstants.DEFAULT_CHARSET);
-                        mqMsg.putUserProperty(ProxyConstants.RSP_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                        final String rtnMsg = new String(omsMsg.getBody(byte[].class), ProxyConstants.DEFAULT_CHARSET);
+                        omsMsg.userHeaders().put(ProxyConstants.RSP_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                         HttpCommand succ = asyncContext.getRequest().createHttpCommandResponse(
                                 sendMessageResponseHeader,
                                 SendMessageResponseBody.buildBody(ProxyRetCode.SUCCESS.getRetCode(),
-                                        JSON.toJSONString(new SendMessageResponseBody.ReplyMessage(mqMsg.getTopic(), rtnMsg,
-                                                mqMsg.getProperties()))));
+                                        JSON.toJSONString(new SendMessageResponseBody.ReplyMessage(omsMsg.sysHeaders().
+                                                getString(Message.BuiltinKeys.DESTINATION), rtnMsg,
+                                                OMSUtil.combineProp(OMSUtil.convertKeyValue2Prop(omsMsg.sysHeaders()),
+                                                        OMSUtil.convertKeyValue2Prop(omsMsg.userHeaders())))
+                                        )));
                         asyncContext.onComplete(succ, handler);
                     } catch (Exception ex) {
                         HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(

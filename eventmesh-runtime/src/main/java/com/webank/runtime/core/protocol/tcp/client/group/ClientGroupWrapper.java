@@ -462,7 +462,7 @@ public class ClientGroupWrapper {
                     }
 
                     DownStreamMsgContext downStreamMsgContext =
-                            new DownStreamMsgContext(msg, session, broadCastMsgConsumer, context, false);
+                            new DownStreamMsgContext(msg, session, broadCastMsgConsumer, broadCastMsgConsumer.getContext(), false);
 
                     if (session.isCanDownStream()) {
                         session.downstreamMsg(downStreamMsgContext);

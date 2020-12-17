@@ -27,6 +27,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import io.openmessaging.KeyValue;
+import io.openmessaging.Message;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -221,8 +223,10 @@ public class ProxyUtil {
         return result;
     }
 
-    public static String getMessageBizSeq(org.apache.rocketmq.common.message.Message msg) {
+    public static String getMessageBizSeq(Message msg) {
         Map<String, String> properties = msg.getProperties();
+        KeyValue sysHeaders = msg.sysHeaders();
+        KeyValue userHeaders = msg.userHeaders();
 
         String keys = properties.get(ProxyConstants.KEYS_UPPERCASE);
         if (!StringUtils.isNotBlank(keys)) {

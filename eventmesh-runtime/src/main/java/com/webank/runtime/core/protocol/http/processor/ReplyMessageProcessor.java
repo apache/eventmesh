@@ -17,7 +17,7 @@
 
 package com.webank.runtime.core.protocol.http.processor;
 
-import com.webank.defibus.common.DeFiBusConstant;
+import com.webank.api.SendCallback;
 import com.webank.runtime.boot.ProxyHTTPServer;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.protocol.http.async.AsyncContext;
@@ -35,17 +35,15 @@ import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.message.ReplyMessageRequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.ReplyMessageResponseHeader;
+import com.webank.runtime.domain.BytesMessageImpl;
 import com.webank.runtime.util.ProxyUtil;
+import com.webank.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
+import io.openmessaging.BytesMessage;
+import io.openmessaging.Message;
+import io.openmessaging.producer.SendResult;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.common.MixAll;
-import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.message.MessageAccessor;
-import org.apache.rocketmq.common.message.MessageConst;
-import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,12 +118,12 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         long startTime = System.currentTimeMillis();
 
-        Message rocketMQMsg;
-
-        String replyTopic = DeFiBusConstant.RR_REPLY_TOPIC;
+//        Message rocketMQMsg;
+        BytesMessage omsMsg = new BytesMessageImpl();
+        String replyTopic = ProxyConstants.RR_REPLY_TOPIC;
 
         Map<String, String> extFields = replyMessageRequestBody.getExtFields();
-        final String replyMQCluster = MapUtils.getString(extFields, DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER, null);
+        final String replyMQCluster = MapUtils.getString(extFields, ProxyConstants.PROPERTY_MESSAGE_CLUSTER, null);
         if (!org.apache.commons.lang3.StringUtils.isEmpty(replyMQCluster)) {
             replyTopic = replyMQCluster + "-" + replyTopic;
         } else {
@@ -137,21 +135,29 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
         }
 
         try {
-            rocketMQMsg = new Message(replyTopic,
-                    replyMessageRequestBody.getContent().getBytes(ProxyConstants.DEFAULT_CHARSET));
-
-            rocketMQMsg.putUserProperty(DeFiBusConstant.KEY, DeFiBusConstant.PERSISTENT);
+            // body
+            omsMsg.setBody(replyMessageRequestBody.getContent().getBytes(ProxyConstants.DEFAULT_CHARSET));
+            // topic
+            omsMsg.putSysHeaders(Message.BuiltinKeys.DESTINATION, replyTopic);
+//            if (!StringUtils.isBlank(sendMessageRequestBody.getTag())) {
+//                omsMsg.putUserHeaders("Tag", sendMessageRequestBody.getTag());
+//            }
+//            rocketMQMsg = new Message(replyTopic,
+//                    replyMessageRequestBody.getContent().getBytes(ProxyConstants.DEFAULT_CHARSET));
+            omsMsg.putUserHeaders("msgType", "persistent");
+//            rocketMQMsg.putUserProperty(DeFiBusConstant.KEY, DeFiBusConstant.PERSISTENT);
             for (Map.Entry<String, String> entry : extFields.entrySet()) {
-                rocketMQMsg.putUserProperty(entry.getKey(), entry.getValue());
+                omsMsg.putUserHeaders(entry.getKey(), entry.getValue());
             }
 
 //            //for rocketmq support
 //            MessageAccessor.putProperty(rocketMQMsg, MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
 //            MessageAccessor.putProperty(rocketMQMsg, MessageConst.PROPERTY_CORRELATION_ID, rocketMQMsg.getProperty(DeFiBusConstant.PROPERTY_RR_REQUEST_ID));
 //            MessageAccessor.putProperty(rocketMQMsg, MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT, rocketMQMsg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO));
-
-            MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, String.valueOf(ProxyConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS));
-            rocketMQMsg.getProperties().put(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+            // ttl
+            omsMsg.putSysHeaders(Message.BuiltinKeys.TIMEOUT, String.valueOf(ProxyConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS));
+//            MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, String.valueOf(ProxyConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS));
+            omsMsg.putUserHeaders(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
             if (messageLogger.isDebugEnabled()) {
                 messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", replyMessageRequestBody.getBizSeqNo(),
                         replyTopic);
@@ -167,7 +173,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        final SendMessageContext sendMessageContext = new SendMessageContext(replyMessageRequestBody.getBizSeqNo(), rocketMQMsg, proxyProducer, proxyHTTPServer);
+        final SendMessageContext sendMessageContext = new SendMessageContext(replyMessageRequestBody.getBizSeqNo(), omsMsg, proxyProducer, proxyHTTPServer);
         proxyHTTPServer.metrics.summaryMetrics.recordReplyMsg();
 
         CompleteHandler<HttpCommand> handler = new CompleteHandler<HttpCommand>() {
@@ -189,7 +195,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                 replyMessageRequestBody.getContent());
 
         try {
-            sendMessageContext.getMsg().getProperties().put(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+            sendMessageContext.getMsg().userHeaders().put(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
             proxyProducer.reply(sendMessageContext, new SendCallback() {
                 @Override
                 public void onSuccess(SendResult sendResult) {
@@ -201,7 +207,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                     proxyHTTPServer.metrics.summaryMetrics.recordReplyMsgCost(endTime - startTime);
                     messageLogger.info("message|proxy2mq|RSP|SYNC|reply2MQCost={}|topic={}|origTopic={}|bizSeqNo={}|uniqueId={}",
                             endTime - startTime,
-                            replyMQCluster + "-" + DeFiBusConstant.RR_REPLY_TOPIC,
+                            replyMQCluster + "-" + ProxyConstants.RR_REPLY_TOPIC,
                             replyMessageRequestBody.getOrigTopic(),
                             replyMessageRequestBody.getBizSeqNo(),
                             replyMessageRequestBody.getUniqueId());
@@ -219,7 +225,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                     proxyHTTPServer.metrics.summaryMetrics.recordReplyMsgCost(endTime - startTime);
                     messageLogger.error("message|proxy2mq|RSP|SYNC|reply2MQCost={}|topic={}|origTopic={}|bizSeqNo={}|uniqueId={}",
                             endTime - startTime,
-                            replyMQCluster + "-" + DeFiBusConstant.RR_REPLY_TOPIC,
+                            replyMQCluster + "-" + ProxyConstants.RR_REPLY_TOPIC,
                             replyMessageRequestBody.getOrigTopic(),
                             replyMessageRequestBody.getBizSeqNo(),
                             replyMessageRequestBody.getUniqueId(), e);

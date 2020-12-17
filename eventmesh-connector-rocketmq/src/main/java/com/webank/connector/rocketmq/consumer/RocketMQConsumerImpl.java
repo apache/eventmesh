@@ -68,9 +68,9 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     }
 
     @Override
-    public void registerMessageListener(MessageListenerConcurrently listener) {
+    public void registerMessageListener(MessageListener listener) {
        // pushConsumer.getRocketmqPushConsumer().setMessageListener(listener);
-        pushConsumer.getRocketmqPushConsumer().registerMessageListener(listener);
+//        pushConsumer.getRocketmqPushConsumer().registerMessageListener(listener);
     }
 
     @Override

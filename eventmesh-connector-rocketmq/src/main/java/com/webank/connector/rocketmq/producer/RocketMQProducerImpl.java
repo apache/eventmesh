@@ -17,20 +17,19 @@
 
 package com.webank.connector.rocketmq.producer;
 
+import com.webank.api.RRCallback;
+import com.webank.api.SendCallback;
 import com.webank.api.producer.MeshMQProducer;
-import com.webank.defibus.client.impl.producer.RRCallback;
 import com.webank.eventmesh.common.config.CommonConfiguration;
-import com.webank.connector.rocketmq.utils.OMSUtil;
 import io.openmessaging.*;
 import io.openmessaging.interceptor.ProducerInterceptor;
 import io.openmessaging.producer.BatchMessageSender;
 import io.openmessaging.producer.LocalTransactionExecutor;
+import io.openmessaging.producer.Producer;
 import io.openmessaging.producer.SendResult;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +80,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
         if (producer.getSendCallback() == null){
             producer.setSendCallback(sendCallback);
         }
-        producer.sendAsync(OMSUtil.msgConvert(message));
+        producer.sendAsync(message);
     }
 
     @Override
@@ -101,8 +100,23 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public DefaultMQProducer getDefaultMQProducer() {
-        return producer.getRocketmqProducer();
+    public MeshMQProducer getDefaultMQProducer() {
+        return this;
+    }
+
+    @Override
+    public String buildMQClientId() {
+        return producer.getRocketmqProducer().buildMQClientId();
+    }
+
+    @Override
+    public void setExtFields() {
+        producer.setExtFields();
+    }
+
+    @Override
+    public void setInstanceName(String instanceName) {
+        producer.getRocketmqProducer().setInstanceName(instanceName);
     }
 
     @Override

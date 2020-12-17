@@ -17,15 +17,11 @@
 
 package com.webank.api.producer;
 
-import com.webank.defibus.client.impl.producer.RRCallback;
+import com.webank.api.RRCallback;
+import com.webank.api.SendCallback;
 import com.webank.eventmesh.common.config.CommonConfiguration;
+import io.openmessaging.Message;
 import io.openmessaging.producer.Producer;
-import org.apache.rocketmq.client.exception.MQBrokerException;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.remoting.exception.RemotingException;
 
 public interface MeshMQProducer extends Producer {
 
@@ -33,14 +29,20 @@ public interface MeshMQProducer extends Producer {
 
     void start() throws Exception;
 
-    void send(org.apache.rocketmq.common.message.Message message, org.apache.rocketmq.client.producer.SendCallback sendCallback) throws Exception;
+    void send(Message message, SendCallback sendCallback) throws Exception;
 
-    void request(org.apache.rocketmq.common.message.Message message, org.apache.rocketmq.client.producer.SendCallback sendCallback, RRCallback rrCallback, long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException;
+    void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout) throws Exception;
 
-    org.apache.rocketmq.common.message.Message request(org.apache.rocketmq.common.message.Message message, long timeout) throws Exception;
+    Message request(Message message, long timeout) throws Exception;
 
     boolean reply(final Message message, final SendCallback sendCallback) throws Exception;
 
-    DefaultMQProducer getDefaultMQProducer();
+    MeshMQProducer getDefaultMQProducer();
+
+    String buildMQClientId();
+
+    void setExtFields();
+
+    void setInstanceName(String instanceName);
 
 }
