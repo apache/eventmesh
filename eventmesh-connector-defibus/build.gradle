@@ -45,8 +45,13 @@ repositories {
 //        "com.webank.eventmesh:eventmesh-common:1.1.2-SNAPSHOT"
 //]
 
-List eventmesh_connector_api = [
-        "com.webank.eventmesh:eventmesh-connector-api:1.1.2-SNAPSHOT"
+//List eventmesh_connector_api = [
+//        "com.webank.eventmesh:eventmesh-connector-api:1.1.2-SNAPSHOT"
+//]
+
+List defibus = [
+        "com.webank.defibus:defibus-client:$defibus_version",
+        "com.webank.defibus:defibus-common:$defibus_version"
 ]
 
 List junit = [
@@ -54,9 +59,10 @@ List junit = [
 ]
 
 dependencies {
-//    compile project(":eventmesh-connector-api")
-//    testCompile project(":eventmesh-connector-api")
-//    testCompile junit
-    compile  eventmesh_connector_api
-    testCompile junit, eventmesh_connector_api
+    compile project(":eventmesh-connector-api")
+    testCompile project(":eventmesh-connector-api")
+    compile defibus
+    testCompile junit, defibus
+//    compile  eventmesh_connector_api
+//    testCompile junit, eventmesh_connector_api
 }
