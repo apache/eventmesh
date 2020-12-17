@@ -17,11 +17,12 @@
 
 package com.webank.runtime.core.protocol.tcp.client.task;
 
-import com.webank.defibus.common.DeFiBusConstant;
-import com.webank.runtime.boot.ProxyTCPServer;
-import com.webank.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.api.SendCallback;
+import com.webank.runtime.constants.DeFiBusConstant;
 import com.webank.runtime.core.protocol.tcp.client.session.send.ProxyTcpSendResult;
 import com.webank.runtime.core.protocol.tcp.client.session.send.ProxyTcpSendStatus;
+import com.webank.runtime.boot.ProxyTCPServer;
+import com.webank.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
@@ -32,9 +33,8 @@ import com.webank.runtime.util.Utils;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.openmessaging.producer.SendResult;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +85,7 @@ public class MessageTransferTask extends AbstractTask {
                 addTimestamp(accessMessage, cmd, sendTime);
                 if (cmd.equals(Command.REQUEST_TO_SERVER)) {
                     accessMessage.getProperties().put(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO, session.getClientGroupWrapper()
-                            .get().getMqProducerWrapper().getDefaultMQProducer().buildMQClientId());
+                            .get().getMqProducerWrapper().getMeshMQProducer().buildMQClientId());
                 }
 
                 sendStatus = session.upstreamMsg(pkg.getHeader(), ProxyUtil.decodeMessage(accessMessage), createSendCallback(replyCmd, taskExecuteTime, accessMessage), startTime, taskExecuteTime);
