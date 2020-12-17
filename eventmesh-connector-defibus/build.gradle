@@ -53,7 +53,6 @@ List defibus = [
 dependencies {
     compile project(":eventmesh-connector-api")
     testCompile project(":eventmesh-connector-api")
-    testCompile junit
+    testCompile junit, defibus
     compile defibus
-//    testCompile junit, eventmesh_connector_api
 }

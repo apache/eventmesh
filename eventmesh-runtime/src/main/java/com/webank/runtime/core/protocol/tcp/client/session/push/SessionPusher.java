@@ -27,7 +27,8 @@ import com.webank.eventmesh.common.protocol.tcp.Package;
 import com.webank.runtime.util.ProxyUtil;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import org.apache.rocketmq.common.message.MessageExt;
+import io.openmessaging.BytesMessage;
+import io.openmessaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,21 +78,21 @@ public class SessionPusher {
 
     public void push(final DownStreamMsgContext downStreamMsgContext) {
         Command cmd;
-        if (ProxyUtil.isBroadcast(downStreamMsgContext.msgExt.getTopic())) {
+        if (ProxyUtil.isBroadcast(downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION))) {
             cmd = Command.BROADCAST_MESSAGE_TO_CLIENT;
-        } else if (ProxyUtil.isService(downStreamMsgContext.msgExt.getTopic())) {
+        } else if (ProxyUtil.isService(downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION))) {
             cmd = Command.REQUEST_TO_CLIENT;
         } else {
             cmd = Command.ASYNC_MESSAGE_TO_CLIENT;
         }
 
         Package pkg = new Package();
-        downStreamMsgContext.msgExt.putUserProperty(ProxyConstants.REQ_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+        downStreamMsgContext.msgExt.sysHeaders().put(ProxyConstants.REQ_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
         AccessMessage body = null;
         int retCode = 0;
         String retMsg = null;
         try {
-            body = ProxyUtil.encodeMessage(downStreamMsgContext.msgExt);
+            body = ProxyUtil.encodeMessage((BytesMessage) downStreamMsgContext.msgExt);
             pkg.setBody(body);
             pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, downStreamMsgContext.seq));
             messageLogger.info("pkg|mq2proxy|cmd={}|mqMsg={}|user={}", cmd, ProxyUtil.printMqMessage(body), session.getClient());
@@ -104,7 +105,7 @@ public class SessionPusher {
             pushContext.deliveredMsgCount();
 
             //avoid ack arrives to server prior to callback of the method writeAndFlush,may cause ack problem
-            List<MessageExt> msgExts = new ArrayList<MessageExt>();
+            List<Message> msgExts = new ArrayList<Message>();
             msgExts.add(downStreamMsgContext.msgExt);
             pushContext.unAckMsg(downStreamMsgContext.seq,
                     msgExts,
@@ -128,7 +129,7 @@ public class SessionPusher {
                                 logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                                 //retry
-                                long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getTopic()) ? 0 : session.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
+                                long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION)) ? 0 : session.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
                                 downStreamMsgContext.delay(delayTime);
                                 session.getClientGroupWrapper().get().getProxyTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {
