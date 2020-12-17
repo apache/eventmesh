@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package connector.defibus.config;
+package com.webank.eventmesh.connector.defibus.config;
 
-import connector.defibus.domain.NonStandardKeys;
+import com.webank.eventmesh.connector.defibus.domain.NonStandardKeys;
 import io.openmessaging.OMSBuiltinKeys;
 
 public class ClientConfig implements OMSBuiltinKeys, NonStandardKeys {

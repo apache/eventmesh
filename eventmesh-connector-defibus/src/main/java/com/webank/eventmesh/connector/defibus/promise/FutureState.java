@@ -14,17 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package connector.defibus.domain;
 
-public interface NonStandardKeys {
-    String CONSUMER_GROUP = "rmq.consumer.group";
-    String PRODUCER_GROUP = "rmq.producer.group";
-    String MAX_REDELIVERY_TIMES = "rmq.max.redelivery.times";
-    String MESSAGE_CONSUME_TIMEOUT = "rmq.message.consume.timeout";
-    String MAX_CONSUME_THREAD_NUMS = "rmq.max.consume.thread.nums";
-    String MIN_CONSUME_THREAD_NUMS = "rmq.min.consume.thread.nums";
-    String MESSAGE_CONSUME_STATUS = "rmq.message.consume.status";
-    String MESSAGE_DESTINATION = "rmq.message.destination";
-    String PULL_MESSAGE_BATCH_NUMS = "rmq.pull.message.batch.nums";
-    String PULL_MESSAGE_CACHE_CAPACITY = "rmq.pull.message.cache.capacity";
+package com.webank.eventmesh.connector.defibus.promise;
+
+public enum FutureState {
+    /**
+     * the task is doing
+     **/
+    DOING(0),
+    /**
+     * the task is done
+     **/
+    DONE(1),
+    /**
+     * ths task is cancelled
+     **/
+    CANCELLED(2);
+
+    public final int value;
+
+    private FutureState(int value) {
+        this.value = value;
+    }
+
+    public boolean isCancelledState() {
+        return this == CANCELLED;
+    }
+
+    public boolean isDoneState() {
+        return this == DONE;
+    }
+
+    public boolean isDoingState() {
+        return this == DOING;
+    }
 }
