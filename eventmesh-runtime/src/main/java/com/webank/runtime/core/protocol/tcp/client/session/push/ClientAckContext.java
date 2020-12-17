@@ -17,15 +17,15 @@
 
 package com.webank.runtime.core.protocol.tcp.client.session.push;
 
-import com.webank.defibus.common.DeFiBusConstant;
-import com.webank.defibus.consumer.DeFiBusPushConsumer;
+import com.webank.eventmesh.api.AbstractContext;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.plugin.MQConsumerWrapper;
 import com.webank.runtime.util.ProxyUtil;
+import com.webank.eventmesh.connector.defibus.common.Constants;
+import io.openmessaging.Message;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
-import org.apache.rocketmq.common.message.MessageExt;
+import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,23 +37,23 @@ public class ClientAckContext {
 
     private String seq;
 
-    private ProxyConsumeConcurrentlyContext context;
+    private AbstractContext context;
 
     private long createTime;
 
     private long expireTime;
 
-    private List<MessageExt> msgs;
+    private List<Message> msgs;
 
     private MQConsumerWrapper consumer;
 
-    public ClientAckContext(String seq, ProxyConsumeConcurrentlyContext context, List<MessageExt> msgs, MQConsumerWrapper consumer) {
+    public ClientAckContext(String seq, AbstractContext context, List<Message> msgs, MQConsumerWrapper consumer) {
         this.seq = seq;
         this.context = context;
         this.msgs = msgs;
         this.consumer = consumer;
         this.createTime = System.currentTimeMillis();
-        this.expireTime = System.currentTimeMillis() + Long.valueOf(msgs.get(0).getProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL));
+        this.expireTime = System.currentTimeMillis() + Long.valueOf(msgs.get(0).sysHeaders().getString(Constants.PROPERTY_MESSAGE_TTL));
     }
 
     public boolean isExpire() {
@@ -68,11 +68,11 @@ public class ClientAckContext {
         this.seq = seq;
     }
 
-    public ProxyConsumeConcurrentlyContext getContext() {
+    public AbstractContext getContext() {
         return context;
     }
 
-    public void setContext(ProxyConsumeConcurrentlyContext context) {
+    public void setContext(AbstractContext context) {
         this.context = context;
     }
 
@@ -84,11 +84,11 @@ public class ClientAckContext {
         this.createTime = createTime;
     }
 
-    public List<MessageExt> getMsgs() {
+    public List<Message> getMsgs() {
         return msgs;
     }
 
-    public void setMsgs(List<MessageExt> msgs) {
+    public void setMsgs(List<Message> msgs) {
         this.msgs = msgs;
     }
 
@@ -109,7 +109,7 @@ public class ClientAckContext {
             consumer.updateOffset(msgs, context);
 //            ConsumeMessageService consumeMessageService = consumer..getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, context);
-            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getTopic(), ProxyUtil.getMessageBizSeq(msgs.get(0)));
+            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).sysHeaders().getString(Message.BuiltinKeys.DESTINATION), ProxyUtil.getMessageBizSeq(msgs.get(0)));
         }else{
             logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",consumer == null, context == null, msgs == null);
         }
@@ -121,7 +121,7 @@ public class ClientAckContext {
                 ",seq=" + seq +
 // TODO               ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
 //                ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
-                ",topic=" + (CollectionUtils.size(msgs) > 0 ? msgs.get(0).getTopic() : null) +
+                ",topic=" + (CollectionUtils.size(msgs) > 0 ? msgs.get(0).sysHeaders().getString(Message.BuiltinKeys.DESTINATION) : null) +
                 ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) +
                 ",expireTime=" + DateFormatUtils.format(expireTime, ProxyConstants.DATE_FORMAT) + '}';
     }

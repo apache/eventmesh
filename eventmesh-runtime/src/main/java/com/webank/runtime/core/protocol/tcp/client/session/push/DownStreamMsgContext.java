@@ -17,14 +17,15 @@
 
 package com.webank.runtime.core.protocol.tcp.client.session.push;
 
-import com.webank.defibus.common.DeFiBusConstant;
+import com.webank.eventmesh.api.AbstractContext;
 import com.webank.runtime.constants.ProxyConstants;
 import com.webank.runtime.core.plugin.MQConsumerWrapper;
 import com.webank.runtime.core.protocol.tcp.client.session.Session;
 import com.webank.runtime.util.ServerGlobal;
+import com.webank.eventmesh.connector.defibus.common.Constants;
+import io.openmessaging.Message;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import com.webank.runtime.patch.ProxyConsumeConcurrentlyContext;
-import org.apache.rocketmq.common.message.MessageExt;
+import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +40,11 @@ public class DownStreamMsgContext implements Delayed {
 
     public String seq;
 
-    public MessageExt msgExt;
+    public Message msgExt;
 
     public Session session;
 
-    public ProxyConsumeConcurrentlyContext consumeConcurrentlyContext;
+    public AbstractContext consumeConcurrentlyContext;
 
     public MQConsumerWrapper consumer;
 
@@ -59,7 +60,7 @@ public class DownStreamMsgContext implements Delayed {
 
     public boolean msgFromOtherProxy;
 
-    public DownStreamMsgContext(MessageExt msgExt, Session session, MQConsumerWrapper consumer, ProxyConsumeConcurrentlyContext consumeConcurrentlyContext, boolean msgFromOtherProxy) {
+    public DownStreamMsgContext(Message msgExt, Session session, MQConsumerWrapper consumer, AbstractContext consumeConcurrentlyContext, boolean msgFromOtherProxy) {
         this.seq = String.valueOf(ServerGlobal.getInstance().getMsgCounter().incrementAndGet());
         this.msgExt = msgExt;
         this.session = session;
@@ -69,7 +70,7 @@ public class DownStreamMsgContext implements Delayed {
         this.lastPushTime = System.currentTimeMillis();
         this.executeTime = System.currentTimeMillis();
         this.createTime = System.currentTimeMillis();
-        this.expireTime = System.currentTimeMillis() + Long.valueOf(msgExt.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL));
+        this.expireTime = System.currentTimeMillis() + Long.valueOf(msgExt.sysHeaders().getString(Constants.PROPERTY_MESSAGE_TTL));
         this.msgFromOtherProxy = msgFromOtherProxy;
     }
 
@@ -79,12 +80,12 @@ public class DownStreamMsgContext implements Delayed {
 
     public void ackMsg() {
         if (consumer != null && consumeConcurrentlyContext != null && msgExt != null) {
-            List<MessageExt> msgs = new ArrayList<MessageExt>();
+            List<Message> msgs = new ArrayList<Message>();
             msgs.add(msgExt);
             consumer.updateOffset(msgs, consumeConcurrentlyContext);
 //            ConsumeMessageService consumeMessageService = consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, consumeConcurrentlyContext);
-            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getTopic(), msgs.get(0).getKeys());
+            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).sysHeaders().getString(Message.BuiltinKeys.DESTINATION), msgs.get(0).sysHeaders().getString(Constants.PROPERTY_MESSAGE_KEYS));
         }else{
             logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",consumer == null, consumeConcurrentlyContext == null, msgExt == null);
         }
@@ -102,7 +103,7 @@ public class DownStreamMsgContext implements Delayed {
                 ",retryTimes=" + retryTimes +
                 ",consumer=" + consumer +
 //  todo              ",consumerGroup=" + consumer.getClass().getConsumerGroup() +
-                ",topic=" + msgExt.getTopic() +
+                ",topic=" + msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION) +
                 ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) +
                 ",executeTime=" + DateFormatUtils.format(executeTime, ProxyConstants.DATE_FORMAT) +
                 ",lastPushTime=" + DateFormatUtils.format(lastPushTime, ProxyConstants.DATE_FORMAT) + '}';
