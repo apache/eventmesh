@@ -17,17 +17,13 @@
 
 package com.webank.runtime.core.plugin;
 
+import com.webank.api.RRCallback;
+import com.webank.api.SendCallback;
 import com.webank.api.producer.MeshMQProducer;
-import com.webank.defibus.client.impl.producer.RRCallback;
 import com.webank.eventmesh.common.config.CommonConfiguration;
 import com.webank.eventmesh.common.config.ConfigurationWraper;
 import com.webank.runtime.constants.ProxyConstants;
-import org.apache.rocketmq.client.exception.MQBrokerException;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.remoting.exception.RemotingException;
+import io.openmessaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,7 +89,7 @@ public class MQProducerWrapper extends MQWrapper {
     }
 
     public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout)
-            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+            throws Exception {
         meshMQProducer.request(message, sendCallback, rrCallback, timeout);
     }
 
@@ -105,7 +101,7 @@ public class MQProducerWrapper extends MQWrapper {
         return meshMQProducer.reply(message, sendCallback);
     }
 
-    public DefaultMQProducer getDefaultMQProducer() {
+    public MeshMQProducer getDefaultMQProducer() {
         return meshMQProducer.getDefaultMQProducer();
     }
 

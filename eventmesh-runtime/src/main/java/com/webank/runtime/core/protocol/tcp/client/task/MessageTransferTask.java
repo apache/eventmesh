@@ -84,7 +84,7 @@ public class MessageTransferTask extends AbstractTask {
                 long sendTime = System.currentTimeMillis();
                 addTimestamp(accessMessage, cmd, sendTime);
                 if (cmd.equals(Command.REQUEST_TO_SERVER)) {
-                    accessMessage.getProperties().put(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO, session.getClientGroupWrapper()
+                    accessMessage.getProperties().put(ProxyConstants.PROPERTY_MESSAGE_REPLY_TO, session.getClientGroupWrapper()
                             .get().getMqProducerWrapper().getDefaultMQProducer().buildMQClientId());
                 }
 
