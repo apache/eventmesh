@@ -14,15 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.webank.eventmesh.runtime.domain;
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-registry'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-connector-defibus'
-include 'eventmesh-starter'
+import io.openmessaging.KeyValue;
+import io.openmessaging.producer.SendResult;
 
+public class SendResultImpl implements SendResult {
+    private String messageId;
+    private KeyValue properties;
+
+    public SendResultImpl(final String messageId, final KeyValue properties) {
+        this.messageId = messageId;
+        this.properties = properties;
+    }
+
+    @Override
+    public String messageId() {
+        return messageId;
+    }
+
+    public KeyValue properties() {
+        return properties;
+    }
+}
