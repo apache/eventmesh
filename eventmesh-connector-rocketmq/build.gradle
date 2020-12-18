@@ -70,6 +70,12 @@ clean.doFirst {
     delete 'dist'
 }
 
+//jar {
+//    from {
+//        configurations.runtime.collect{zipTree(it)}
+//    }
+//}
+
 //def versionString = project.version
 //if (project.findProperty("buildNo") instanceof String) {
 //    versionString = project.version + '_' + project.property("buildNo")

@@ -1,3 +1,4 @@
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,14 +16,27 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-registry'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-connector-defibus'
-include 'eventmesh-starter'
+package com.webank.eventmesh.runtime.util;
 
+import java.util.concurrent.atomic.AtomicLong;
+
+public class ServerGlobal {
+
+    private static class SerGlobalHolder {
+        private static ServerGlobal singleton = new ServerGlobal();
+    }
+
+    public static ServerGlobal getInstance() {
+        return SerGlobalHolder.singleton;
+    }
+
+    private AtomicLong msgCounter = new AtomicLong();
+
+    public AtomicLong getMsgCounter() {
+        return msgCounter;
+    }
+
+    public void setMsgCounter(AtomicLong msgCounter) {
+        this.msgCounter = msgCounter;
+    }
+}

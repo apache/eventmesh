@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-registry'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-connector-defibus'
-include 'eventmesh-starter'
+package com.webank.eventmesh.runtime.common;
 
+public enum ServiceState {
+
+    INITED,
+
+    RUNNING,
+
+    STOPING,
+
+    STOPED;
+}

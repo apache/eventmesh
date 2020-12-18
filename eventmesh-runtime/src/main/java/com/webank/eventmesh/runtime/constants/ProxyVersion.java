@@ -15,14 +15,23 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-registry'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-connector-defibus'
-include 'eventmesh-starter'
+package com.webank.eventmesh.runtime.constants;
 
+public class ProxyVersion {
+
+    public static final String CURRENT_VERSION = Version.V3_0_0.name();
+
+    public static String getCurrentVersionDesc() {
+        return CURRENT_VERSION.replaceAll("V", "")
+                .replaceAll("_", ".")
+                .replaceAll("_SNAPSHOT", "-SNAPSHOT");
+    }
+
+    public enum Version {
+        V3_0_0,
+        V3_0_1,
+        V3_1_0,
+        V3_2_0,
+        V3_3_0
+    }
+}

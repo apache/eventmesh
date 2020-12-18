@@ -15,14 +15,19 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-registry'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-connector-defibus'
-include 'eventmesh-starter'
+package com.webank.eventmesh.runtime.patch;
 
+public enum ProxyConsumeConcurrentlyStatus {
+    /**
+     * Success consumption
+     */
+    CONSUME_SUCCESS,
+    /**
+     * Failure consumption,later try to consume
+     */
+    RECONSUME_LATER,
+    /**
+     * Success consumption but ack later manually
+     */
+    CONSUME_FINISH;
+}

@@ -15,14 +15,19 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-registry'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-connector-defibus'
-include 'eventmesh-starter'
+package com.webank.eventmesh.runtime.core.protocol.tcp.client.group.dispatch;
 
+
+import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+
+import java.util.Set;
+
+public interface DownstreamDispatchStrategy {
+    /**
+     * 选择一个SESSION
+     * @param group
+     * @param consumeSessions
+     * @return
+     */
+    Session select(String group, String topic, Set<Session> consumeSessions);
+}
