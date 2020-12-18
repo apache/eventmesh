@@ -63,7 +63,6 @@ List metrics = [
 
 dependencies {
     compile project(":eventmesh-connector-api")
-    compile files('..\\eventmesh-connector-defibus\\build\\libs\\eventmesh-connector-defibus-1.1.2-SNAPSHOT.jar')
     testCompile project(":eventmesh-connector-api")
     compile metrics, log4j2, sl4j
     testCompile metrics, log4j2, sl4j, junit
