@@ -37,7 +37,6 @@ import io.openmessaging.producer.LocalTransactionExecutor;
 import io.openmessaging.producer.SendResult;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.message.MessageClientIDSetter;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.remoting.exception.RemotingException;
@@ -48,7 +47,6 @@ import static com.webank.eventmesh.connector.defibus.utils.OMSUtil.msgConvert;
 
 public class DeFiBusProducerImpl implements MeshMQProducer {
 
-    private KeyValue properties;
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -56,11 +54,7 @@ public class DeFiBusProducerImpl implements MeshMQProducer {
 
     @Override
     public synchronized void init(CommonConfiguration commonConfiguration, String producerGroup) {
-        this.properties = properties;
         DeFiBusClientConfig wcc = new DeFiBusClientConfig();
-
-        //TODO 注意填充是否遗漏
-//        wcc = BeanUtils.populate(properties, DeFiBusClientConfig.class);
         wcc.setClusterPrefix(commonConfiguration.proxyIDC);
         wcc.setPollNameServerInterval(commonConfiguration.pollNameServerInteval);
         wcc.setHeartbeatBrokerInterval(commonConfiguration.heartbeatBrokerInterval);
@@ -150,13 +144,13 @@ public class DeFiBusProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public MeshMQProducer getDefaultMQProducer(){
+    public MeshMQProducer getMeshMQProducer(){
         return this;
     }
 
     @Override
     public KeyValue attributes() {
-        return properties;
+        return null;
     }
 
     @Override

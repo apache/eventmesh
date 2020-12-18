@@ -37,7 +37,7 @@ public interface MeshMQProducer extends Producer {
 
     boolean reply(final Message message, final SendCallback sendCallback) throws Exception;
 
-    MeshMQProducer getDefaultMQProducer();
+    MeshMQProducer getMeshMQProducer();
 
     String buildMQClientId();
 

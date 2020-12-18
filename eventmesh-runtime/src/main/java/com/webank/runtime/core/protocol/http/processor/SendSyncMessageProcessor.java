@@ -139,7 +139,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             omsMsg.putUserHeaders("msgType", "persistent");
             omsMsg.putUserHeaders(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
             omsMsg.putUserHeaders(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
-            omsMsg.putUserHeaders("REPLY_TO", proxyProducer.getMqProducerWrapper().getDefaultMQProducer().buildMQClientId());
+            omsMsg.putUserHeaders("REPLY_TO", proxyProducer.getMqProducerWrapper().getMeshMQProducer().buildMQClientId());
 
             if (messageLogger.isDebugEnabled()) {
                 messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", sendMessageRequestBody.getBizSeqNo(),

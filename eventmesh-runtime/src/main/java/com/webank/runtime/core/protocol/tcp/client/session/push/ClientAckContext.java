@@ -51,7 +51,7 @@ public class ClientAckContext {
         this.msgs = msgs;
         this.consumer = consumer;
         this.createTime = System.currentTimeMillis();
-        this.expireTime = System.currentTimeMillis() + Long.valueOf(msgs.get(0).sysHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_TTL));
+        this.expireTime = System.currentTimeMillis() + Long.valueOf(msgs.get(0).userHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_TTL));
     }
 
     public boolean isExpire() {

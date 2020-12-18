@@ -97,11 +97,15 @@ public class MQProducerWrapper extends MQWrapper {
         return meshMQProducer.reply(message, sendCallback);
     }
 
-    public MeshMQProducer getDefaultMQProducer() {
-        return meshMQProducer.getDefaultMQProducer();
+    public MeshMQProducer getMeshMQProducer() {
+        return meshMQProducer;
     }
 
-    //    public static void main(String[] args) throws Exception {
+//    public MeshMQProducer getDefaultMQProducer() {
+//        return meshMQProducer.getDefaultMQProducer();
+//    }
+
+//    public static void main(String[] args) throws Exception {
 //
 //        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
 //        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
