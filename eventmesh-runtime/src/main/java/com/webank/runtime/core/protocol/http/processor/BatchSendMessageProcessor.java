@@ -118,7 +118,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 sendMessageBatchRequestHeader.getDcn());
         ProxyProducer batchProxyProducer = proxyHTTPServer.getProducerManager().getProxyProducer(producerGroup);
 
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setExtFields();
+        batchProxyProducer.getMqProducerWrapper().getMeshMQProducer().setExtFields();
 
         if (!batchProxyProducer.getStarted().get()) {
             responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(

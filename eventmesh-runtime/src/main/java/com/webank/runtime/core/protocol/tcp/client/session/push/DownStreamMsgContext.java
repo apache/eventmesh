@@ -68,7 +68,7 @@ public class DownStreamMsgContext implements Delayed {
         this.lastPushTime = System.currentTimeMillis();
         this.executeTime = System.currentTimeMillis();
         this.createTime = System.currentTimeMillis();
-        this.expireTime = System.currentTimeMillis() + Long.valueOf(msgExt.sysHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_TTL));
+        this.expireTime = System.currentTimeMillis() + Long.valueOf(msgExt.userHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_TTL));
         this.msgFromOtherProxy = msgFromOtherProxy;
     }
 
