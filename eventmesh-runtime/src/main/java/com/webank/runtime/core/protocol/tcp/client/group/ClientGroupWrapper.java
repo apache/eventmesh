@@ -224,7 +224,7 @@ public class ClientGroupWrapper {
         }
 
         mqProducerWrapper.init(accessConfiguration , groupName);
-        mqProducerWrapper.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//set instance name
+        mqProducerWrapper.getMeshMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//set instance name
         mqProducerWrapper.start();
         producerStarted.compareAndSet(false, true);
         logger.info("starting producer success, group:{}", groupName);
