@@ -15,14 +15,17 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-registry'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-connector-defibus'
-include 'eventmesh-starter'
+package com.webank.eventmesh.runtime.core.protocol.http.processor.inf;
 
+import com.webank.eventmesh.runtime.core.protocol.http.async.AsyncContext;
+import com.webank.eventmesh.common.command.HttpCommand;
+import io.netty.channel.ChannelHandlerContext;
+
+public interface HttpRequestProcessor {
+
+    void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext)
+            throws Exception;
+
+    boolean rejectRequest();
+
+}

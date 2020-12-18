@@ -15,14 +15,29 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-registry'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-connector-defibus'
-include 'eventmesh-starter'
+package com.webank.eventmesh.runtime.core.consumergroup.event;
 
+import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+
+public class ConsumerGroupStateEvent {
+
+    public String consumerGroup;
+    public ConsumerGroupStateAction action;
+    public ConsumerGroupConf consumerGroupConfig;
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("consumerGroupStateEvent={")
+                .append("consumerGroup=").append(consumerGroup)
+                .append(",action=").append(action).append("}");
+        return sb.toString();
+    }
+
+
+    public enum ConsumerGroupStateAction {
+        NEW,
+        CHANGE,
+        DELETE
+    }
+}

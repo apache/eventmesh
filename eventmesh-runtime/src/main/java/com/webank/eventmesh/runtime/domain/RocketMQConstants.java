@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.webank.eventmesh.runtime.domain;
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-registry'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-connector-defibus'
-include 'eventmesh-starter'
+public interface RocketMQConstants {
 
+    /**
+     * Key of scheduled message delivery time
+     */
+    String START_DELIVER_TIME = "__STARTDELIVERTIME";
+
+}

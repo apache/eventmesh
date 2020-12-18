@@ -14,15 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.webank.eventmesh.connector.rocketmq.domain;
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-registry'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-connector-defibus'
-include 'eventmesh-starter'
-
+public interface NonStandardKeys {
+    String CONSUMER_GROUP = "rmq.consumer.group";
+    String PRODUCER_GROUP = "rmq.producer.group";
+    String MAX_REDELIVERY_TIMES = "rmq.max.redelivery.times";
+    String MESSAGE_CONSUME_TIMEOUT = "rmq.message.consume.timeout";
+    String MAX_CONSUME_THREAD_NUMS = "rmq.max.consume.thread.nums";
+    String MIN_CONSUME_THREAD_NUMS = "rmq.min.consume.thread.nums";
+    String MESSAGE_CONSUME_STATUS = "rmq.message.consume.status";
+    String MESSAGE_DESTINATION = "rmq.message.destination";
+    String PULL_MESSAGE_BATCH_NUMS = "rmq.pull.message.batch.nums";
+    String PULL_MESSAGE_CACHE_CAPACITY = "rmq.pull.message.cache.capacity";
+}
