@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
