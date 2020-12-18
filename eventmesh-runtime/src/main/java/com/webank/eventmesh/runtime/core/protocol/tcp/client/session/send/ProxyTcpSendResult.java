@@ -15,14 +15,38 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-registry'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-connector-defibus'
-include 'eventmesh-starter'
+package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send;
 
+public class ProxyTcpSendResult {
+
+    private String seq;
+
+    private ProxyTcpSendStatus sendStatus;
+
+    private String detail;
+
+    public ProxyTcpSendResult(String seq, ProxyTcpSendStatus sendStatus, String detail) {
+        this.seq = seq;
+        this.sendStatus = sendStatus;
+        this.detail = detail;
+    }
+
+    public String getSeq() {
+        return seq;
+    }
+
+    public ProxyTcpSendStatus getSendStatus() {
+        return sendStatus;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
+    @Override
+    public String toString() {
+        return "ProxyTcpSendResult{seq=" + seq
+                + ",sendStatus=" + sendStatus
+                + ",detail=" + detail + "}";
+    }
+}
