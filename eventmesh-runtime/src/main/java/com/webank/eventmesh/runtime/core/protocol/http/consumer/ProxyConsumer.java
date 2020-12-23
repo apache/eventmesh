@@ -67,6 +67,9 @@ public class ProxyConsumer {
         keyValue.put("isBroadcast", "false");
         keyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
         keyValue.put("proxyIDC", proxyHTTPServer.getProxyConfiguration().proxyIDC);
+        keyValue.put("instanceName", ProxyUtil.buildProxyClientID(consumerGroupConf.getConsumerGroup(),
+                proxyHTTPServer.getProxyConfiguration().proxyRegion,
+                proxyHTTPServer.getProxyConfiguration().proxyCluster));
         persistentMqConsumer.init(keyValue);
 
         //
@@ -74,13 +77,10 @@ public class ProxyConsumer {
         broadcastKeyValue.put("isBroadcast", "true");
         broadcastKeyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
         broadcastKeyValue.put("proxyIDC", proxyHTTPServer.getProxyConfiguration().proxyIDC);
+        broadcastKeyValue.put("instanceName", ProxyUtil.buildProxyClientID(consumerGroupConf.getConsumerGroup(),
+                proxyHTTPServer.getProxyConfiguration().proxyRegion,
+                proxyHTTPServer.getProxyConfiguration().proxyCluster));
         broadcastMqConsumer.init(broadcastKeyValue);
-        broadcastMqConsumer.setInstanceName(ProxyUtil.buildProxyClientID(consumerGroupConf.getConsumerGroup(),
-                proxyHTTPServer.getProxyConfiguration().proxyRegion,
-                proxyHTTPServer.getProxyConfiguration().proxyCluster));
-        persistentMqConsumer.setInstanceName(ProxyUtil.buildProxyClientID(consumerGroupConf.getConsumerGroup(),
-                proxyHTTPServer.getProxyConfiguration().proxyRegion,
-                proxyHTTPServer.getProxyConfiguration().proxyCluster));
         inited4Persistent.compareAndSet(false, true);
         inited4Broadcast.compareAndSet(false, true);
         logger.info("ProxyConsumer [{}] inited.............", consumerGroupConf.getConsumerGroup());
