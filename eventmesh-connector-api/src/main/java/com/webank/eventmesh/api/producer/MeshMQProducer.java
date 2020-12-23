@@ -19,13 +19,13 @@ package com.webank.eventmesh.api.producer;
 
 import com.webank.eventmesh.api.RRCallback;
 import com.webank.eventmesh.api.SendCallback;
-import com.webank.eventmesh.common.config.CommonConfiguration;
+import io.openmessaging.KeyValue;
 import io.openmessaging.Message;
 import io.openmessaging.producer.Producer;
 
 public interface MeshMQProducer extends Producer {
 
-    void init(CommonConfiguration commonConfiguration, String producerGroup) throws Exception;
+    void init(KeyValue keyValue) throws Exception;
 
     void start() throws Exception;
 
@@ -42,8 +42,6 @@ public interface MeshMQProducer extends Producer {
     String buildMQClientId();
 
     void setExtFields();
-
-    void setInstanceName(String instanceName);
 
     void getDefaultTopicRouteInfoFromNameServer(String topic, long timeout) throws Exception;
 

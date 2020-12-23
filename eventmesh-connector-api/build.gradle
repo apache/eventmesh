@@ -46,7 +46,7 @@ List open_message = [
 ]
 
 dependencies {
-    compile project(":eventmesh-common")
+//    compile project(":eventmesh-common")
     compile open_message
     testCompile group: 'junit', name: 'junit', version: '4.12', open_message
 }
