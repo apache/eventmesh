@@ -23,8 +23,10 @@ import com.webank.eventmesh.api.producer.MeshMQProducer;
 import com.webank.defibus.client.common.DeFiBusClientConfig;
 import com.webank.defibus.producer.DeFiBusProducer;
 import com.webank.eventmesh.common.ThreadUtil;
-import com.webank.eventmesh.common.config.CommonConfiguration;
 import com.webank.eventmesh.connector.defibus.common.Constants;
+import com.webank.eventmesh.connector.defibus.common.ProxyConstants;
+import com.webank.eventmesh.connector.defibus.config.ClientConfiguration;
+import com.webank.eventmesh.connector.defibus.config.ConfigurationWraper;
 import com.webank.eventmesh.connector.defibus.utils.OMSUtil;
 import io.openmessaging.BytesMessage;
 import io.openmessaging.Future;
@@ -42,6 +44,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.io.File;
 
 import static com.webank.eventmesh.connector.defibus.utils.OMSUtil.msgConvert;
 
@@ -53,20 +56,32 @@ public class DeFiBusProducerImpl implements MeshMQProducer {
     protected DeFiBusProducer defibusProducer;
 
     @Override
-    public synchronized void init(CommonConfiguration commonConfiguration, String producerGroup) {
+    public synchronized void init(KeyValue keyValue) {
+        ConfigurationWraper configurationWraper =
+                new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
+                        + File.separator
+                        + ProxyConstants.PROXY_CONF_FILE, false);
+        final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWraper);
+        clientConfiguration.init();
+
+        String producerGroup = keyValue.getString("producerGroup");
+        String proxyIDC = keyValue.getString("proxyIDC");
+        String instanceName = keyValue.getString("instanceName");
+
         DeFiBusClientConfig wcc = new DeFiBusClientConfig();
-        wcc.setClusterPrefix(commonConfiguration.proxyIDC);
-        wcc.setPollNameServerInterval(commonConfiguration.pollNameServerInteval);
-        wcc.setHeartbeatBrokerInterval(commonConfiguration.heartbeatBrokerInterval);
-        wcc.setNamesrvAddr(commonConfiguration.namesrvAddr);
+        wcc.setNamesrvAddr(clientConfiguration.namesrvAddr);
+        wcc.setPollNameServerInterval(clientConfiguration.pollNameServerInteval);
+        wcc.setHeartbeatBrokerInterval(clientConfiguration.heartbeatBrokerInterval);
         wcc.setProducerGroup(Constants.PRODUCER_GROUP_NAME_PREFIX + producerGroup);
+        wcc.setClusterPrefix(proxyIDC);
 
         MessageClientIDSetter.createUniqID();
         defibusProducer = new DeFiBusProducer(wcc);
         defibusProducer.getDefaultMQProducer().setVipChannelEnabled(false);
         defibusProducer.getDefaultMQProducer().setCompressMsgBodyOverHowmuch(2 * 1024);
 
-//        defibusProducer.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//set instance name
+        //set instance name
+        defibusProducer.getDefaultMQProducer().setInstanceName(instanceName);
     }
 
     @Override
@@ -129,11 +144,6 @@ public class DeFiBusProducerImpl implements MeshMQProducer {
     @Override
     public void setExtFields() {
 
-    }
-
-    @Override
-    public void setInstanceName(String instanceName) {
-        defibusProducer.getDefaultMQProducer().setInstanceName(instanceName);
     }
 
     @Override
