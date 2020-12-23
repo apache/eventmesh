@@ -22,7 +22,8 @@ import com.webank.eventmesh.api.consumer.MeshMQPushConsumer;
 import com.webank.defibus.client.common.DeFiBusClientConfig;
 import com.webank.defibus.consumer.DeFiBusPushConsumer;
 import com.webank.eventmesh.common.ThreadUtil;
-import com.webank.eventmesh.common.config.CommonConfiguration;
+import com.webank.eventmesh.connector.defibus.config.ClientConfiguration;
+import com.webank.eventmesh.connector.defibus.config.ConfigurationWraper;
 import com.webank.eventmesh.connector.defibus.domain.NonStandardKeys;
 import com.webank.eventmesh.connector.defibus.utils.ProxyUtil;
 import com.webank.eventmesh.connector.defibus.common.Constants;
@@ -47,7 +48,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -68,24 +69,35 @@ public class DeFiBusConsumerImpl implements MeshMQPushConsumer {
     private ProxyConsumeConcurrentlyContext context;
 
     @Override
-    public synchronized void init(boolean isBroadcast, final CommonConfiguration commonConfiguration,
-                                  String consumerGroup) throws Exception {
+    public synchronized void init(KeyValue keyValue) throws Exception {
+        ConfigurationWraper configurationWraper =
+                new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
+                        + File.separator
+                        + ProxyConstants.PROXY_CONF_FILE, false);
+        final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWraper);
+        clientConfiguration.init();
+
+        boolean isBroadcast = Boolean.valueOf(keyValue.getString("isBroadcast"));
+        String consumerGroup = keyValue.getString("consumerGroup");
+        String proxyIDC = keyValue.getString("proxyIDC");
+
         DeFiBusClientConfig wcc = new DeFiBusClientConfig();
-        wcc.setPollNameServerInterval(commonConfiguration.pollNameServerInteval);
-        wcc.setHeartbeatBrokerInterval(commonConfiguration.heartbeatBrokerInterval);
-        wcc.setAckWindowSize(commonConfiguration.ackWindow);
-        wcc.setThreadPoolCoreSize(commonConfiguration.consumeThreadMin);
-        wcc.setThreadPoolMaxSize(commonConfiguration.consumeThreadMax);
-        wcc.setConsumeTimeout(commonConfiguration.consumeTimeout);
-        wcc.setPubWindowSize(commonConfiguration.pubWindow);
-        wcc.setPullBatchSize(commonConfiguration.pullBatchSize);
-        wcc.setClusterPrefix(commonConfiguration.proxyIDC);
+        wcc.setNamesrvAddr(clientConfiguration.namesrvAddr);
+        wcc.setPollNameServerInterval(clientConfiguration.pollNameServerInteval);
+        wcc.setHeartbeatBrokerInterval(clientConfiguration.heartbeatBrokerInterval);
+        wcc.setAckWindowSize(clientConfiguration.ackWindow);
+        wcc.setThreadPoolCoreSize(clientConfiguration.consumeThreadMin);
+        wcc.setThreadPoolMaxSize(clientConfiguration.consumeThreadMax);
+        wcc.setConsumeTimeout(clientConfiguration.consumeTimeout);
+        wcc.setPubWindowSize(clientConfiguration.pubWindow);
+        wcc.setPullBatchSize(clientConfiguration.pullBatchSize);
+        wcc.setClusterPrefix(proxyIDC);
         if (isBroadcast) {
             wcc.setConsumerGroup(Constants.CONSUMER_GROUP_NAME_PREFIX + Constants.BROADCAST_PREFIX + consumerGroup);
         } else {
             wcc.setConsumerGroup(Constants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup);
         }
-        wcc.setNamesrvAddr(commonConfiguration.namesrvAddr);
+
         deFiBusPushConsumer = new DeFiBusPushConsumer(wcc);
         deFiBusPushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
         if (isBroadcast) {
@@ -129,14 +141,13 @@ public class DeFiBusConsumerImpl implements MeshMQPushConsumer {
                         @Override
                         public void ack() {
                             sync.countDown();
-                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                    ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+//                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
                         }
                     };
                     long begin = System.currentTimeMillis();
                     listener.onReceived(omsMsg, omsContext);
                     long costs = System.currentTimeMillis() - begin;
-                    long timeoutMills = commonConfiguration.consumeTimeout * 60 * 1000;
+                    long timeoutMills = clientConfiguration.consumeTimeout * 60 * 1000;
                     try {
                         sync.await(Math.max(0, timeoutMills - costs), TimeUnit.MILLISECONDS);
                     } catch (InterruptedException ignore) {
@@ -186,14 +197,13 @@ public class DeFiBusConsumerImpl implements MeshMQPushConsumer {
                         @Override
                         public void ack() {
                             sync.countDown();
-                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                    ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+//                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
                         }
                     };
                     long begin = System.currentTimeMillis();
                     listener.onReceived(omsMsg, omsContext);
                     long costs = System.currentTimeMillis() - begin;
-                    long timeoutMills = commonConfiguration.consumeTimeout * 60 * 1000;
+                    long timeoutMills = clientConfiguration.consumeTimeout * 60 * 1000;
                     try {
                         sync.await(Math.max(0, timeoutMills - costs), TimeUnit.MILLISECONDS);
                     } catch (InterruptedException ignore) {

@@ -31,7 +31,7 @@ public class AccessTestUtils {
 
     public static UserAgent generateClient2() {
         UserAgent user = new UserAgent();
-        user.setDcn("AC0");
+        user.setDcn("FT0");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");

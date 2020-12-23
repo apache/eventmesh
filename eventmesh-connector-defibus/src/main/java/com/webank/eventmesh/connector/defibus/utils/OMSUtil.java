@@ -16,6 +16,7 @@
  */
 package com.webank.eventmesh.connector.defibus.utils;
 
+import com.webank.eventmesh.connector.defibus.common.Constants;
 import com.webank.eventmesh.connector.defibus.domain.BytesMessageImpl;
 import com.webank.eventmesh.connector.defibus.domain.RocketMQConstants;
 import com.webank.eventmesh.connector.defibus.domain.SendResultImpl;
@@ -85,6 +86,10 @@ public class OMSUtil {
         //All destinations in RocketMQ use Topic
         rmqMessageExt.setTopic(sysHeaders.getString(BuiltinKeys.DESTINATION));
 
+        //use in manual ack
+        rmqMessageExt.setQueueId(userHeaders.getInt(Constants.PROPERTY_MESSAGE_QUEUE_ID));
+        rmqMessageExt.setQueueOffset(userHeaders.getLong(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET));
+
         if (sysHeaders.containsKey(BuiltinKeys.START_TIME)) {
             long deliverTime = sysHeaders.getLong(BuiltinKeys.START_TIME, 0);
             if (deliverTime > 0) {
@@ -128,6 +133,10 @@ public class OMSUtil {
         omsMsg.putSysHeaders(BuiltinKeys.BORN_TIMESTAMP, rmqMsg.getBornTimestamp());
         omsMsg.putSysHeaders(BuiltinKeys.STORE_HOST, String.valueOf(rmqMsg.getStoreHost()));
         omsMsg.putSysHeaders(BuiltinKeys.STORE_TIMESTAMP, rmqMsg.getStoreTimestamp());
+
+        //use in manual ack
+        omsMsg.putUserHeaders(Constants.PROPERTY_MESSAGE_QUEUE_ID, rmqMsg.getQueueId());
+        omsMsg.putUserHeaders(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET, rmqMsg.getQueueOffset());
         return omsMsg;
     }
 
