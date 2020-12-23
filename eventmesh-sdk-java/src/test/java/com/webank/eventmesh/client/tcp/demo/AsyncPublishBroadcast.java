@@ -23,7 +23,7 @@ public class AsyncPublishBroadcast {
             client.heartbeat();
 
             Package broadcastMsg = AccessTestUtils.broadcastMessage();
-            logger.info("开始发送广播消息：{}", broadcastMsg);
+            logger.info("begin send broadcast msg============={}", broadcastMsg);
             client.broadcast(broadcastMsg, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
 
             Thread.sleep(2000);
