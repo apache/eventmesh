@@ -37,7 +37,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ProducerImpl producer;
-    public final String DEFAULT_ACCESS_DRIVER = "com.webank.connector.rocketmq.MessagingAccessPointImpl";
+    public final String DEFAULT_ACCESS_DRIVER = "com.webank.eventmesh.connector.rocketmq.MessagingAccessPointImpl";
 
     @Override
     public synchronized void init(CommonConfiguration commonConfiguration, String producerGroup) {
@@ -55,11 +55,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
     @Override
     public synchronized void start() throws Exception {
-
         producer.startup();
-//        ThreadUtil.randomSleep(500);
-//        defaultMQProducer.getDefaultMQProducerImpl().getmQClientFactory().updateTopicRouteInfoFromNameServer();
-
     }
 
     @Override
@@ -69,7 +65,6 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
     @Override
     public synchronized void shutdown() {
-
         producer.shutdown();
     }
 
