@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common.config;
+package com.webank.eventmesh.connector.defibus.config;
 
 import com.webank.eventmesh.common.ThreadPoolFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -73,6 +73,4 @@ public class ConfigurationWraper {
     public String getProp(String key) {
         return StringUtils.isEmpty(key) ? null : properties.getProperty(key, null);
     }
-
-
 }

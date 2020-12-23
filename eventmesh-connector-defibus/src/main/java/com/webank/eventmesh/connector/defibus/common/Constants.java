@@ -10,4 +10,9 @@ public class Constants {
     public static final String PROPERTY_MESSAGE_TTL = "TTL";
 
     public static final String PROPERTY_MESSAGE_KEYS = "KEYS";
+
+    public static final String PROPERTY_MESSAGE_QUEUE_ID = "QUEUE_ID";
+
+    public static final String PROPERTY_MESSAGE_QUEUE_OFFSET = "QUEUE_OFFSET";
+
 }
