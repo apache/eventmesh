@@ -23,9 +23,9 @@ public class SyncRequest {
             client.heartbeat();
 
             Package rrMsg = AccessTestUtils.syncRR();
-            logger.info("开始发送同步RR消息:{}",rrMsg);
+            logger.info("begin send rr msg=================={}",rrMsg);
             Package response = client.rr(rrMsg, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
-            logger.info("收到同步RR回包:{}",response);
+            logger.info("receive rr reply==================={}",response);
 
             //退出,销毁资源
 //            client.close();

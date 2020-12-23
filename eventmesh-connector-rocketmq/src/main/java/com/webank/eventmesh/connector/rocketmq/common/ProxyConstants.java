@@ -37,7 +37,7 @@ public class ProxyConstants {
 
     public static final String PROXY_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
-    public static final String PROXY_CONF_FILE = "proxy.properties";
+    public static final String PROXY_CONF_FILE = "rocketmq-client.properties";
 
     public static final String REQ_C2PROXY_TIMESTAMP = "req_c2access_timestamp";
     public static final String REQ_PROXY2MQ_TIMESTAMP = "req_access2mq_timestamp";
