@@ -16,11 +16,13 @@
  */
 package com.webank.eventmesh.connector.rocketmq.utils;
 
+import com.webank.eventmesh.connector.rocketmq.common.Constants;
 import com.webank.eventmesh.connector.rocketmq.domain.RocketMQConstants;
 import com.webank.eventmesh.connector.rocketmq.domain.SendResultImpl;
 import com.webank.eventmesh.connector.rocketmq.domain.BytesMessageImpl;
 import io.openmessaging.BytesMessage;
 import io.openmessaging.KeyValue;
+import io.openmessaging.Message;
 import io.openmessaging.Message.BuiltinKeys;
 import io.openmessaging.OMS;
 import io.openmessaging.producer.SendResult;
@@ -104,7 +106,44 @@ public class OMSUtil {
         omsMsg.putSysHeaders(BuiltinKeys.BORN_TIMESTAMP, rmqMsg.getBornTimestamp());
         omsMsg.putSysHeaders(BuiltinKeys.STORE_HOST, String.valueOf(rmqMsg.getStoreHost()));
         omsMsg.putSysHeaders(BuiltinKeys.STORE_TIMESTAMP, rmqMsg.getStoreTimestamp());
+
+        //use in manual ack
+        omsMsg.putUserHeaders(Constants.PROPERTY_MESSAGE_QUEUE_ID, rmqMsg.getQueueId());
+        omsMsg.putUserHeaders(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET, rmqMsg.getQueueOffset());
         return omsMsg;
+    }
+
+    public static org.apache.rocketmq.common.message.MessageExt msgConvertExt(Message omsMessage) {
+        org.apache.rocketmq.common.message.MessageExt rmqMessageExt = new org.apache.rocketmq.common.message.MessageExt();
+        rmqMessageExt.setBody(omsMessage.getBody(byte[].class));
+
+        KeyValue sysHeaders = omsMessage.sysHeaders();
+        KeyValue userHeaders = omsMessage.userHeaders();
+
+        //All destinations in RocketMQ use Topic
+        rmqMessageExt.setTopic(sysHeaders.getString(BuiltinKeys.DESTINATION));
+
+        //use in manual ack
+        rmqMessageExt.setQueueId(userHeaders.getInt(Constants.PROPERTY_MESSAGE_QUEUE_ID));
+        rmqMessageExt.setQueueOffset(userHeaders.getLong(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET));
+
+        if (sysHeaders.containsKey(BuiltinKeys.START_TIME)) {
+            long deliverTime = sysHeaders.getLong(BuiltinKeys.START_TIME, 0);
+            if (deliverTime > 0) {
+                rmqMessageExt.putUserProperty(RocketMQConstants.START_DELIVER_TIME, String.valueOf(deliverTime));
+            }
+        }
+
+        for (String key : userHeaders.keySet()) {
+            MessageAccessor.putProperty(rmqMessageExt, key, userHeaders.getString(key));
+        }
+
+        //System headers has a high priority
+        for (String key : sysHeaders.keySet()) {
+            MessageAccessor.putProperty(rmqMessageExt, key, sysHeaders.getString(key));
+        }
+
+        return rmqMessageExt;
     }
 
     public static boolean isOMSHeader(String value) {

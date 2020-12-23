@@ -19,13 +19,11 @@ package com.webank.eventmesh.runtime.core.plugin;
 
 import com.webank.eventmesh.api.AbstractContext;
 import com.webank.eventmesh.api.consumer.MeshMQPushConsumer;
-import com.webank.eventmesh.common.config.CommonConfiguration;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import io.openmessaging.KeyValue;
 import io.openmessaging.Message;
 import io.openmessaging.consumer.MessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.ServiceLoader;
 
@@ -56,20 +54,14 @@ public class MQConsumerWrapper extends MQWrapper {
         meshMQPushConsumer.pause();
     }
 
-    public synchronized void init(boolean isBroadcast, CommonConfiguration commonConfiguration,
-                                  String consumerGroup) throws Exception {
+    public synchronized void init(KeyValue keyValue) throws Exception {
         meshMQPushConsumer = getMeshMQPushConsumer();
         if (meshMQPushConsumer == null){
             logger.error("can't load the meshMQPushConsumer plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
         }
-        if (isBroadcast){
-            consumerGroup = ProxyConstants.CONSUMER_GROUP_NAME_PREFIX + ProxyConstants.BROADCAST_PREFIX + consumerGroup;
-        }else {
-            consumerGroup = ProxyConstants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup;
-        }
-        meshMQPushConsumer.init(isBroadcast, commonConfiguration, consumerGroup);
 
+        meshMQPushConsumer.init(keyValue);
         inited.compareAndSet(false, true);
     }
 
