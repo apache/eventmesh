@@ -34,7 +34,9 @@ import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.DownSt
 import com.webank.eventmesh.runtime.domain.NonStandardKeys;
 import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyStatus;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
+import io.openmessaging.KeyValue;
 import io.openmessaging.Message;
+import io.openmessaging.OMS;
 import io.openmessaging.consumer.MessageListener;
 import io.openmessaging.producer.SendResult;
 import org.apache.commons.collections4.CollectionUtils;
@@ -77,8 +79,18 @@ public class ProxyConsumer {
     private MessageHandler httpMessageHandler = new HTTPMessageHandler(this);
 
     public synchronized void init() throws Exception {
-        persistentMqConsumer.init(false, proxyHTTPServer.getProxyConfiguration(), consumerGroupConf.getConsumerGroup());
-        broadcastMqConsumer.init(true, proxyHTTPServer.getProxyConfiguration(), consumerGroupConf.getConsumerGroup());
+        KeyValue keyValue = OMS.newKeyValue();
+        keyValue.put("isBroadcast", "false");
+        keyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
+        keyValue.put("proxyIDC", proxyHTTPServer.getProxyConfiguration().proxyIDC);
+        persistentMqConsumer.init(keyValue);
+
+        //
+        KeyValue broadcastKeyValue = OMS.newKeyValue();
+        broadcastKeyValue.put("isBroadcast", "true");
+        broadcastKeyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
+        broadcastKeyValue.put("proxyIDC", proxyHTTPServer.getProxyConfiguration().proxyIDC);
+        broadcastMqConsumer.init(broadcastKeyValue);
         broadcastMqConsumer.setInstanceName(ProxyUtil.buildProxyClientID(consumerGroupConf.getConsumerGroup(),
                 proxyHTTPServer.getProxyConfiguration().proxyRegion,
                 proxyHTTPServer.getProxyConfiguration().proxyCluster));

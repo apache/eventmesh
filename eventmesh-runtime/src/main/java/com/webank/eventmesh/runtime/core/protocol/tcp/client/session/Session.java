@@ -165,7 +165,7 @@ public class Session {
             sessionContext.subscribeTopics.putIfAbsent(topic, topic);
             clientGroupWrapper.get().subscribe(topic);
 
-            clientGroupWrapper.get().getMqProducerWrapper().getDefaultMQProducer().getDefaultTopicRouteInfoFromNameServer(topic,
+            clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().getDefaultTopicRouteInfoFromNameServer(topic,
                     ProxyConstants.DEFAULT_TIME_OUT_MILLS);
 
             clientGroupWrapper.get().addSubscription(topic, this);

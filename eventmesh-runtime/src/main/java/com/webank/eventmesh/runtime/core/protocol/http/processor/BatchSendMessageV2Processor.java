@@ -112,7 +112,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         String producerGroup = ProxyUtil.buildClientGroup(sendMessageBatchV2RequestHeader.getSys(),
                 sendMessageBatchV2RequestHeader.getDcn());
         ProxyProducer batchProxyProducer = proxyHTTPServer.getProducerManager().getProxyProducer(producerGroup);
-        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setExtFields();
+        batchProxyProducer.getMqProducerWrapper().getMeshMQProducer().setExtFields();
 //        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendAsyncFailed(0);
 //        batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer().setPollNameServerInterval(60000);
 //
