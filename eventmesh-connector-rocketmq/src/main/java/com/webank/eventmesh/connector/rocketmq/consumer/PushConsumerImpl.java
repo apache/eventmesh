@@ -126,8 +126,7 @@ public class PushConsumerImpl implements PushConsumer {
                         @Override
                         public void ack() {
                             sync.countDown();
-                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                    ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+//                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
                         }
                     };
                     long begin = System.currentTimeMillis();
