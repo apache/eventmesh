@@ -42,7 +42,7 @@ public class SyncResponse implements ReceiveMsgHook {
 
     @Override
     public void handle(Package msg, ChannelHandlerContext ctx) {
-        logger.info("sub收到消息：{}", msg);
+        logger.info("receive sync rr msg================{}", msg);
         Package pkg = AccessTestUtils.rrResponse(msg);
         ctx.writeAndFlush(pkg);
     }

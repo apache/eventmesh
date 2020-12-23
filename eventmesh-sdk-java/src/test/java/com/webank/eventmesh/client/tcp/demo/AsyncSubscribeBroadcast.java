@@ -43,6 +43,6 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
     @Override
     public void handle(Package msg, ChannelHandlerContext ctx) {
         AccessMessage accessMessage = (AccessMessage)msg.getBody();
-        logger.info("sub收到广播消息：{}", accessMessage);
+        logger.info("receive broadcast msg==============={}", accessMessage);
     }
 }

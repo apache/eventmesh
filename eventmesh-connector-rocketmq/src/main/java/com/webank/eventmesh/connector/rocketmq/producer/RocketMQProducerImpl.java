@@ -20,7 +20,9 @@ package com.webank.eventmesh.connector.rocketmq.producer;
 import com.webank.eventmesh.api.RRCallback;
 import com.webank.eventmesh.api.SendCallback;
 import com.webank.eventmesh.api.producer.MeshMQProducer;
-import com.webank.eventmesh.common.config.CommonConfiguration;
+import com.webank.eventmesh.connector.rocketmq.common.ProxyConstants;
+import com.webank.eventmesh.connector.rocketmq.config.ClientConfiguration;
+import com.webank.eventmesh.connector.rocketmq.config.ConfigurationWraper;
 import io.openmessaging.*;
 import io.openmessaging.interceptor.ProducerInterceptor;
 import io.openmessaging.producer.BatchMessageSender;
@@ -32,6 +34,8 @@ import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+
 public class RocketMQProducerImpl implements MeshMQProducer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -40,8 +44,16 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     public final String DEFAULT_ACCESS_DRIVER = "com.webank.eventmesh.connector.rocketmq.MessagingAccessPointImpl";
 
     @Override
-    public synchronized void init(CommonConfiguration commonConfiguration, String producerGroup) {
-        String omsNamesrv = "oms:rocketmq://" + commonConfiguration.namesrvAddr + "/namespace";
+    public synchronized void init(KeyValue keyValue) {
+        ConfigurationWraper configurationWraper =
+                new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
+                        + File.separator
+                        + ProxyConstants.PROXY_CONF_FILE, false);
+        final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWraper);
+        clientConfiguration.init();
+        String producerGroup = keyValue.getString("producerGroup");
+
+        String omsNamesrv = "oms:rocketmq://" + clientConfiguration.namesrvAddr + "/namespace";
         KeyValue properties = OMS.newKeyValue().put(OMSBuiltinKeys.DRIVER_IMPL, DEFAULT_ACCESS_DRIVER);
         properties.put("ACCESS_POINTS", omsNamesrv)
                 .put("REGION", "namespace")
@@ -93,7 +105,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public MeshMQProducer getDefaultMQProducer() {
+    public MeshMQProducer getMeshMQProducer() {
         return this;
     }
 
@@ -105,11 +117,6 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     @Override
     public void setExtFields() {
         producer.setExtFields();
-    }
-
-    @Override
-    public void setInstanceName(String instanceName) {
-        producer.getRocketmqProducer().setInstanceName(instanceName);
     }
 
     @Override
