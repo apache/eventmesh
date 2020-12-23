@@ -19,15 +19,22 @@ package com.webank.eventmesh.connector.rocketmq.consumer;
 
 import com.webank.eventmesh.api.AbstractContext;
 import com.webank.eventmesh.api.consumer.MeshMQPushConsumer;
-import com.webank.eventmesh.common.config.CommonConfiguration;
+import com.webank.eventmesh.connector.rocketmq.common.Constants;
+import com.webank.eventmesh.connector.rocketmq.common.ProxyConstants;
+import com.webank.eventmesh.connector.rocketmq.config.ClientConfiguration;
+import com.webank.eventmesh.connector.rocketmq.config.ConfigurationWraper;
+import com.webank.eventmesh.connector.rocketmq.patch.ProxyConsumeConcurrentlyContext;
+import com.webank.eventmesh.connector.rocketmq.utils.OMSUtil;
 import io.openmessaging.*;
 import io.openmessaging.consumer.MessageListener;
 import io.openmessaging.consumer.PushConsumer;
 import io.openmessaging.interceptor.ConsumerInterceptor;
+import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
+import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RocketMQConsumerImpl implements MeshMQPushConsumer {
@@ -41,9 +48,23 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     private PushConsumerImpl pushConsumer;
 
     @Override
-    public synchronized void init(boolean isBroadcast, CommonConfiguration commonConfiguration,
-                                  String consumerGroup) throws Exception {
-        String omsNamesrv = "oms:rocketmq://" + commonConfiguration.namesrvAddr + "/namespace";
+    public synchronized void init(KeyValue keyValue) throws Exception {
+        ConfigurationWraper configurationWraper =
+                new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
+                        + File.separator
+                        + ProxyConstants.PROXY_CONF_FILE, false);
+        final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWraper);
+        clientConfiguration.init();
+        boolean isBroadcast = Boolean.valueOf(keyValue.getString("isBroadcast"));
+        String consumerGroup = keyValue.getString("consumerGroup");
+
+        if(isBroadcast){
+            consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + Constants.BROADCAST_PREFIX + consumerGroup;
+        }else {
+            consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup;
+        }
+
+        String omsNamesrv = "oms:rocketmq://" + clientConfiguration.namesrvAddr + "/namespace";
         KeyValue properties = OMS.newKeyValue().put(OMSBuiltinKeys.DRIVER_IMPL, DEFAULT_ACCESS_DRIVER);
 
         properties.put("ACCESS_POINTS", omsNamesrv)
@@ -81,7 +102,12 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
 
     @Override
     public void updateOffset(List<Message> msgs, AbstractContext context) {
-
+        ConsumeMessageService consumeMessageService = pushConsumer.getRocketmqPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
+        List<MessageExt> msgExtList = new ArrayList<>(msgs.size());
+        for(Message msg : msgs){
+            msgExtList.add(OMSUtil.msgConvertExt(msg));
+        }
+        ((ConsumeMessageConcurrentlyService) consumeMessageService).updateOffset(msgExtList, (ProxyConsumeConcurrentlyContext) context);
     }
 
     @Override
