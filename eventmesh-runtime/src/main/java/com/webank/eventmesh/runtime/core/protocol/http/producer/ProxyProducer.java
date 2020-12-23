@@ -23,7 +23,9 @@ import com.webank.eventmesh.runtime.configuration.ProxyConfiguration;
 import com.webank.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import com.webank.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
+import io.openmessaging.KeyValue;
 import io.openmessaging.Message;
+import io.openmessaging.OMS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,9 +78,16 @@ public class ProxyProducer {
     public synchronized void init(ProxyConfiguration proxyConfiguration, ProducerGroupConf producerGroupConfig) throws Exception {
         this.producerGroupConfig = producerGroupConfig;
         this.proxyConfiguration = proxyConfiguration;
-        mqProducerWrapper.init(proxyConfiguration, producerGroupConfig.getGroupName());
-        mqProducerWrapper.getMeshMQProducer().setInstanceName(ProxyUtil.buildProxyClientID(producerGroupConfig.getGroupName(),
+
+        KeyValue keyValue = OMS.newKeyValue();
+        keyValue.put("producerGroup", producerGroupConfig.getGroupName());
+        keyValue.put("instanceName", ProxyUtil.buildProxyClientID(producerGroupConfig.getGroupName(),
                 proxyConfiguration.proxyRegion, proxyConfiguration.proxyCluster));
+
+        //TODO for defibus
+        keyValue.put("proxyIDC", proxyConfiguration.proxyIDC);
+
+        mqProducerWrapper.init(keyValue);
         inited.compareAndSet(false, true);
         logger.info("ProxyProducer [{}] inited.............", producerGroupConfig.getGroupName());
     }
