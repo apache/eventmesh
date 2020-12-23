@@ -28,6 +28,7 @@ import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.DownSt
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.retry.ProxyTcpRetryer;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
 import com.webank.eventmesh.runtime.util.HttpTinyClient;
+import com.webank.eventmesh.runtime.util.OMSUtil;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
 import com.webank.eventmesh.runtime.configuration.AccessConfiguration;
@@ -35,7 +36,9 @@ import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.domain.NonStandardKeys;
 import com.webank.eventmesh.runtime.metrics.tcp.ProxyTcpMonitor;
 import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyStatus;
+import io.openmessaging.KeyValue;
 import io.openmessaging.Message;
+import io.openmessaging.OMS;
 import io.openmessaging.consumer.MessageListener;
 import io.openmessaging.producer.SendResult;
 import org.apache.commons.collections4.CollectionUtils;
@@ -223,8 +226,14 @@ public class ClientGroupWrapper {
             return;
         }
 
-        mqProducerWrapper.init(accessConfiguration , groupName);
-        mqProducerWrapper.getDefaultMQProducer().setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));//set instance name
+        KeyValue keyValue = OMS.newKeyValue();
+        keyValue.put("producerGroup", groupName);
+        keyValue.put("instanceName", ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));
+
+        //TODO for defibus
+        keyValue.put("proxyIDC", accessConfiguration.proxyIDC);
+
+        mqProducerWrapper.init(keyValue);
         mqProducerWrapper.start();
         producerStarted.compareAndSet(false, true);
         logger.info("starting producer success, group:{}", groupName);
@@ -339,7 +348,11 @@ public class ClientGroupWrapper {
             return;
         }
 
-        persistentMsgConsumer.init(false, accessConfiguration, groupName);
+        KeyValue keyValue = OMS.newKeyValue();
+        keyValue.put("isBroadcast", "false");
+        keyValue.put("consumerGroup", groupName);
+        keyValue.put("proxyIDC", accessConfiguration.proxyIDC);
+        persistentMsgConsumer.init(keyValue);
         persistentMsgConsumer.setInstanceName(ProxyUtil.buildProxyTcpClientID(sysId, dcn, "SUB", accessConfiguration.proxyCluster));
 //        persistentMsgConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
 //
@@ -422,7 +435,12 @@ public class ClientGroupWrapper {
         if(inited4Broadcast.get()){
             return;
         }
-        broadCastMsgConsumer.init(true, accessConfiguration, groupName);
+
+        KeyValue keyValue = OMS.newKeyValue();
+        keyValue.put("isBroadcast", "true");
+        keyValue.put("consumerGroup", groupName);
+        keyValue.put("proxyIDC", accessConfiguration.proxyIDC);
+        broadCastMsgConsumer.init(keyValue);
 //        broadCastMsgConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
 //            @Override
 //            public ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ProxyConsumeConcurrentlyContext context) {
@@ -502,6 +520,7 @@ public class ClientGroupWrapper {
                     if(CollectionUtils.isEmpty(groupConsumerSessions)){
                         logger.warn("found no session to downstream broadcast msg");
                         context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                        context.ack();
                         return;
                     }
 
@@ -530,6 +549,7 @@ public class ClientGroupWrapper {
                     }
 
                     context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                    context.ack();
                 }
             };
             broadCastMsgConsumer.subscribe(topic, listener);
@@ -570,6 +590,7 @@ public class ClientGroupWrapper {
                         }
 
                         context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                        context.ack();
                         return;
                     }
 
@@ -585,6 +606,7 @@ public class ClientGroupWrapper {
                     if (session.isCanDownStream()) {
                         session.downstreamMsg(downStreamMsgContext);
                         context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                        context.ack();
                         return;
                     }
 
@@ -594,6 +616,7 @@ public class ClientGroupWrapper {
                     proxyTcpRetryer.pushRetry(downStreamMsgContext);
 
                     context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                    context.ack();
                 }
             };
             persistentMsgConsumer.subscribe(topic, listener);

@@ -20,7 +20,7 @@ package com.webank.eventmesh.runtime.core.plugin;
 import com.webank.eventmesh.api.RRCallback;
 import com.webank.eventmesh.api.SendCallback;
 import com.webank.eventmesh.api.producer.MeshMQProducer;
-import com.webank.eventmesh.common.config.CommonConfiguration;
+import io.openmessaging.KeyValue;
 import io.openmessaging.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class MQProducerWrapper extends MQWrapper {
 
     protected MeshMQProducer meshMQProducer;
 
-    public synchronized void init(CommonConfiguration commonConfiguration, String producerGroup) throws Exception{
+    public synchronized void init(KeyValue keyValue) throws Exception{
         if (inited.get()) {
             return;
         }
@@ -42,7 +42,7 @@ public class MQProducerWrapper extends MQWrapper {
             logger.error("can't load the meshMQProducer plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
         }
-        meshMQProducer.init(commonConfiguration, producerGroup);
+        meshMQProducer.init(keyValue);
 
         inited.compareAndSet(false, true);
     }
@@ -97,11 +97,15 @@ public class MQProducerWrapper extends MQWrapper {
         return meshMQProducer.reply(message, sendCallback);
     }
 
-    public MeshMQProducer getDefaultMQProducer() {
-        return meshMQProducer.getDefaultMQProducer();
+    public MeshMQProducer getMeshMQProducer() {
+        return meshMQProducer;
     }
 
-    //    public static void main(String[] args) throws Exception {
+//    public MeshMQProducer getDefaultMQProducer() {
+//        return meshMQProducer.getDefaultMQProducer();
+//    }
+
+//    public static void main(String[] args) throws Exception {
 //
 //        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
 //        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME

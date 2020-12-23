@@ -24,9 +24,13 @@ public class AsyncPublish{
             client.init();
             client.heartbeat();
 
-            Package asyncMsg = AccessTestUtils.asyncMessage();
-            logger.info("开始发送异步单播消息：{}", asyncMsg);
-            client.publish(asyncMsg, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
+            for(int i=0; i < 10; i++) {
+                Package asyncMsg = AccessTestUtils.asyncMessage();
+                logger.info("begin send async msg[{}]==================={}", i, asyncMsg);
+                client.publish(asyncMsg, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
+
+                Thread.sleep(10);
+            }
 
             Thread.sleep(2000);
             //退出,销毁资源
