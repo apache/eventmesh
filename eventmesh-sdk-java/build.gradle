@@ -15,10 +15,16 @@
  * limitations under the License.
  */
 
+plugins {
+    id 'org.springframework.boot' version '2.1.6.RELEASE'
+}
+
 apply plugin: 'java'
 apply plugin: "maven"
 apply plugin: "eclipse"
 apply plugin: "idea"
+
+apply plugin: "io.spring.dependency-management"
 
 if (project.findProperty("jdk") == "1.7") {
     sourceCompatibility = 1.7
@@ -41,6 +47,8 @@ repositories {
     mavenCentral()
 }
 
+ext['commons-pool2.version'] = '2.6.1'
+
 List log4j2 = [
         "org.apache.logging.log4j:log4j-api:2.13.3",
         "org.apache.logging.log4j:log4j-core:2.13.3",
@@ -58,6 +66,27 @@ dependencies {
     testCompile log4j2, sl4j
     compile project(":eventmesh-common")
     testCompile project(":eventmesh-common")
+    //Spring模块
+    compile("org.springframework.boot:spring-boot-starter-web")
+    //Spring依赖的第三方模块(2.1.6依赖的是3.8.1)
+    compile("org.apache.commons:commons-lang3")
+    //Spring依赖的第三方模块(2.1.6依赖的是2.6.2)指定依赖版本为2.6.1
+    compile('org.apache.commons:commons-pool2')
+    //未被依赖的库需要手动：我司开源的 轻代码开发框架核心包，文末源码链接
+    compile('com.diboot:diboot-core:2.0.0')
+
+//    implementation('org.springframework.boot:spring-boot-starter-web') {
+//        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+//    }
+//
+//    implementation('org.springframework.boot:spring-boot-starter') {
+//        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+//    }
+}
+
+configurations.all{
+    exclude group: "ch.qos.logback"
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 }
 
 uploadArchives {
