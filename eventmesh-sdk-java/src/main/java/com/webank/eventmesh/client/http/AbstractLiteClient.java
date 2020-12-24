@@ -27,6 +27,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class AbstractLiteClient {
@@ -37,8 +38,11 @@ public abstract class AbstractLiteClient {
 
     public LiteClientConfig liteClientConfig;
 
-    public static final String REGEX_VALIDATE_FOR_RPOXY_DEFAULT =
-            "^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5};)*(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5})$";
+    public static final String REGEX_VALIDATE_FOR_RPOXY_DEFAULT;
+
+    static {
+        REGEX_VALIDATE_FOR_RPOXY_DEFAULT = "^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5};)*(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5})$";
+    }
 
     public List<String> proxyServerList = Lists.newArrayList();
 
@@ -46,22 +50,20 @@ public abstract class AbstractLiteClient {
         this.liteClientConfig = liteClientConfig;
     }
 
-    public void start() throws ProxyException {
+    public void start() throws Exception {
         proxyServerList = process(liteClientConfig.getLiteProxyAddr());
         if(proxyServerList == null || proxyServerList.size() < 1){
             throw new ProxyException("liteProxyAddr param illegal,please check");
         }
     }
 
-    private List process(String format) {
+    private List<String> process(String format) {
         List<String> list = Lists.newArrayList();
         if (StringUtils.isNotBlank(format) && format.matches(REGEX_VALIDATE_FOR_RPOXY_DEFAULT)) {
 
             String[] serversArr = StringUtils.split(format, ";");
             if (ArrayUtils.isNotEmpty(serversArr)) {
-                for (String server : serversArr) {
-                    list.add(server);
-                }
+                list.addAll(Arrays.asList(serversArr));
             }
 
             return list;
