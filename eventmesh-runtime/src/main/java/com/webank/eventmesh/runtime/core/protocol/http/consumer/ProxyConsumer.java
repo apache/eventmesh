@@ -76,9 +76,10 @@ public class ProxyConsumer {
         this.consumerGroupConf = consumerGroupConf;
     }
 
-    private MessageHandler httpMessageHandler = new HTTPMessageHandler(this);
+    private MessageHandler httpMessageHandler ;
 
     public synchronized void init() throws Exception {
+        httpMessageHandler = new HTTPMessageHandler(this);
         KeyValue keyValue = OMS.newKeyValue();
         keyValue.put("isBroadcast", "false");
         keyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
@@ -133,20 +134,25 @@ public class ProxyConsumer {
                         logger.error("no topicConfig found, consumerGroup:{} topic:{}", consumerGroupConf.getConsumerGroup(), topic);
                         try {
                             sendMessageBack(message, uniqueId, bizSeqNo);
+                            context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                            context.ack();
+                            return;
                         } catch (Exception ex) {
                         }
                     }
                     HandleMsgContext handleMsgContext = new HandleMsgContext(ProxyUtil.buildPushMsgSeqNo(), consumerGroupConf.getConsumerGroup(), ProxyConsumer.this,
                             topic, message, persistentMqConsumer.getContext(), consumerGroupConf, proxyHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
-                    if (!httpMessageHandler.handle(handleMsgContext)) {
+                    if (httpMessageHandler.handle(handleMsgContext)) {
+                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                        context.ack();
+                    } else {
                         try {
                             sendMessageBack(message, uniqueId, bizSeqNo);
-                        } catch (Exception e){
+                        } catch (Exception e) {
 
                         }
-                    } else {
-                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
                         context.ack();
                     }
                 }
@@ -174,20 +180,25 @@ public class ProxyConsumer {
                         logger.error("no topicConfig found, consumerGroup:{} topic:{}", consumerGroupConf.getConsumerGroup(), topic);
                         try {
                             sendMessageBack(message, uniqueId, bizSeqNo);
+                            context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                            context.ack();
+                            return;
                         } catch (Exception ex) {
                         }
                     }
                     HandleMsgContext handleMsgContext = new HandleMsgContext(ProxyUtil.buildPushMsgSeqNo(), consumerGroupConf.getConsumerGroup(), ProxyConsumer.this,
                             topic, message, broadcastMqConsumer.getContext(), consumerGroupConf, proxyHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
-                    if (!httpMessageHandler.handle(handleMsgContext)) {
+                    if (httpMessageHandler.handle(handleMsgContext)) {
+                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                        context.ack();
+                    } else {
                         try {
                             sendMessageBack(message, uniqueId, bizSeqNo);
-                        } catch (Exception e){
+                        } catch (Exception e) {
 
                         }
-                    } else {
-                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
                         context.ack();
                     }
                 }

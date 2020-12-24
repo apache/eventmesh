@@ -1,1 +1,1 @@
-com.webank.connector.rocketmq.producer.ProducerImpl
+com.webank.eventmesh.connector.rocketmq.producer.ProducerImpl
