@@ -27,6 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ConsumerManager {
 
@@ -35,6 +38,8 @@ public class ConsumerManager {
     private ConcurrentHashMap<String /** consumerGroup */, ConsumerGroupManager> consumerTable = new ConcurrentHashMap<String, ConsumerGroupManager>();
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     public ConsumerManager(ProxyHTTPServer proxyHTTPServer) {
         this.proxyHTTPServer = proxyHTTPServer;
@@ -47,6 +52,12 @@ public class ConsumerManager {
 
     public void start() throws Exception {
         logger.info("consumerManager started......");
+        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        }, 10000, 10000, TimeUnit.MILLISECONDS);
     }
 
     public void shutdown() {

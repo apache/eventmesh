@@ -17,34 +17,31 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.processor;
 
+import com.webank.eventmesh.common.IPUtil;
+import com.webank.eventmesh.common.command.HttpCommand;
+import com.webank.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
+import com.webank.eventmesh.common.protocol.http.body.client.HeartbeatResponseBody;
 import com.webank.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
 import com.webank.eventmesh.common.protocol.http.body.client.SubscribeResponseBody;
-import com.webank.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+import com.webank.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
+import com.webank.eventmesh.common.protocol.http.header.client.HeartbeatResponseHeader;
 import com.webank.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.client.SubscribeResponseHeader;
-import com.webank.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
-import com.webank.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
+import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
+import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import com.webank.eventmesh.runtime.core.consumergroup.event.ConsumerGroupStateEvent;
+import com.webank.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import com.webank.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
 import com.webank.eventmesh.runtime.core.protocol.http.consumer.ConsumerGroupManager;
-import com.webank.eventmesh.runtime.core.protocol.http.consumer.ProxyConsumer;
 import com.webank.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import com.webank.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
-import com.webank.eventmesh.runtime.core.protocol.http.async.AsyncContext;
-import com.webank.eventmesh.common.IPUtil;
-import com.webank.eventmesh.common.command.HttpCommand;
-import com.webank.eventmesh.common.protocol.http.common.RequestCode;
-import com.webank.eventmesh.runtime.core.protocol.http.producer.ProxyProducer;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +49,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SubscribeProcessor implements HttpRequestProcessor {
+public class HeartBeatProcessor implements HttpRequestProcessor {
 
     public Logger cmdLogger = LoggerFactory.getLogger("cmd");
 
@@ -60,7 +57,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
     private ProxyHTTPServer proxyHTTPServer;
 
-    public SubscribeProcessor(ProxyHTTPServer proxyHTTPServer) {
+    public HeartBeatProcessor(ProxyHTTPServer proxyHTTPServer) {
         this.proxyHTTPServer = proxyHTTPServer;
     }
 
@@ -70,100 +67,91 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         cmdLogger.info("cmd={}|{}|client2proxy|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
                 ProxyConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
-        SubscribeRequestHeader subscribeRequestHeader = (SubscribeRequestHeader) asyncContext.getRequest().getHeader();
-        SubscribeRequestBody subscribeRequestBody = (SubscribeRequestBody) asyncContext.getRequest().getBody();
+        HeartbeatRequestHeader heartbeatRequestHeader = (HeartbeatRequestHeader) asyncContext.getRequest().getHeader();
+        HeartbeatRequestBody heartbeatRequestBody = (HeartbeatRequestBody) asyncContext.getRequest().getBody();
 
-        SubscribeResponseHeader subscribeResponseHeader =
-                SubscribeResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), proxyHTTPServer.getProxyConfiguration().proxyCluster,
+        HeartbeatResponseHeader heartbeatResponseHeader =
+                HeartbeatResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), proxyHTTPServer.getProxyConfiguration().proxyCluster,
                         IPUtil.getLocalAddress(), proxyHTTPServer.getProxyConfiguration().proxyEnv,
                         proxyHTTPServer.getProxyConfiguration().proxyRegion,
                         proxyHTTPServer.getProxyConfiguration().proxyDCN, proxyHTTPServer.getProxyConfiguration().proxyIDC);
 
 
         //validate header
-        if (StringUtils.isBlank(subscribeRequestHeader.getIdc())
-                || StringUtils.isBlank(subscribeRequestHeader.getDcn())
-                || StringUtils.isBlank(subscribeRequestHeader.getPid())
-                || !StringUtils.isNumeric(subscribeRequestHeader.getPid())
-                || StringUtils.isBlank(subscribeRequestHeader.getSys())) {
+        if (StringUtils.isBlank(heartbeatRequestHeader.getIdc())
+                || StringUtils.isBlank(heartbeatRequestHeader.getDcn())
+                || StringUtils.isBlank(heartbeatRequestHeader.getPid())
+                || !StringUtils.isNumeric(heartbeatRequestHeader.getPid())
+                || StringUtils.isBlank(heartbeatRequestHeader.getSys())) {
             responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
-                    subscribeResponseHeader,
-                    SubscribeResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getErrMsg()));
+                    heartbeatResponseHeader,
+                    HeartbeatResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getErrMsg()));
             asyncContext.onComplete(responseProxyCommand);
             return;
         }
 
         //validate body
-        if (StringUtils.isBlank(subscribeRequestBody.getUrl())
-                || StringUtils.isBlank(subscribeRequestBody.getTopic())) {
+        if (StringUtils.isBlank(heartbeatRequestBody.getClientType())){
+//                || StringUtils.isBlank(heartbeatRequestBody.getTopic())) {
 
             responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
-                    subscribeResponseHeader,
-                    SubscribeResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getErrMsg()));
+                    heartbeatResponseHeader,
+                    HeartbeatResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getErrMsg()));
             asyncContext.onComplete(responseProxyCommand);
             return;
         }
-        String topic = subscribeRequestBody.getTopic();
+        ConcurrentHashMap<String, List<Client>> tmp = new ConcurrentHashMap<>();
+        String env = heartbeatRequestHeader.getEnv();
+        String dcn = heartbeatRequestHeader.getDcn();
+        String idc = heartbeatRequestHeader.getIdc();
+        String sys = heartbeatRequestHeader.getSys();
+        String ip = heartbeatRequestHeader.getIp();
+        String pid = heartbeatRequestHeader.getPid();
+        String consumerGroup = ProxyUtil.buildClientGroup(heartbeatRequestHeader.getSys(),
+                heartbeatRequestHeader.getDcn());
+        List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = heartbeatRequestBody.getHeartbeatEntities();
+        for (HeartbeatRequestBody.HeartbeatEntity heartbeatEntity : heartbeatEntities){
+            String topic = heartbeatEntity.topic;
+            String url = heartbeatEntity.url;
+            Client client = new Client();
+            client.env = env;
+            client.dcn = dcn;
+            client.idc = idc;
+            client.sys = sys;
+            client.ip = ip;
+            client.pid = pid;
+            client.consumerGroup = consumerGroup;
+            client.topic = topic;
+            client.url = url;
 
-        String url = subscribeRequestBody.getUrl();
-        String consumerGroup = ProxyUtil.buildClientGroup(subscribeRequestHeader.getSys(),
-                subscribeRequestHeader.getDcn());
+            client.lastUpTime = new Date();
 
-        List<Client> groupTopicClients = proxyHTTPServer.localClientInfoMapping.get(consumerGroup + "@" + topic);
+            if (StringUtils.isBlank(client.topic)){
+                continue;
+            }
 
-        if (CollectionUtils.isEmpty(groupTopicClients)){
-            httpLogger.error("group {} topic {} clients is empty", consumerGroup, topic);
-        }
+            if (StringUtils.isBlank(client.url)){
+                continue;
+            }
 
-        Map<String, List<String>> idcUrls = new HashMap<>();
-        for (Client client : groupTopicClients) {
-            if (idcUrls.containsKey(client.idc)) {
-                idcUrls.get(client.idc).add(StringUtils.deleteWhitespace(client.url));
-            } else {
-                List<String> urls = new ArrayList<>();
-                urls.add(client.url);
-                idcUrls.put(client.idc, urls);
+            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+
+            if (tmp.containsKey(groupTopicKey)){
+                tmp.get(groupTopicKey).add(client);
+            }else {
+                List<Client> clients = new ArrayList<>();
+                clients.add(client);
+                tmp.put(groupTopicKey, clients);
             }
         }
 
-        ConsumerGroupConf consumerGroupConf = proxyHTTPServer.localConsumerGroupMapping.get(consumerGroup);
-        if (consumerGroupConf == null) {
-            // 新订阅
-            consumerGroupConf = new ConsumerGroupConf(consumerGroup);
-            ConsumerGroupTopicConf consumeTopicConfig = new ConsumerGroupTopicConf();
-            consumeTopicConfig.setConsumerGroup(consumerGroup);
-            consumeTopicConfig.setTopic(topic);
-            consumeTopicConfig.setUrls(new HashSet<>(Arrays.asList(url)));
-
-            consumeTopicConfig.setIdcUrls(idcUrls);
-
-            Map<String, ConsumerGroupTopicConf> map = new HashMap<>();
-            map.put(topic, consumeTopicConfig);
-            consumerGroupConf.setConsumerGroupTopicConf(map);
-        } else {
-            // 已有订阅
-            Map<String, ConsumerGroupTopicConf> map = consumerGroupConf.getConsumerGroupTopicConf();
-            for (String key : map.keySet()) {
-                if (StringUtils.equals(topic, key)) {
-                    ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
-                    ConsumerGroupTopicConf currentTopicConf = map.get(key);
-                    latestTopicConf.setConsumerGroup(consumerGroup);
-                    latestTopicConf.setTopic(topic);
-                    latestTopicConf.setUrls(new HashSet<>(Arrays.asList(url)));
-                    latestTopicConf.getUrls().addAll(currentTopicConf.getUrls());
-
-                    latestTopicConf.setIdcUrls(idcUrls);
-
-                    map.put(key, latestTopicConf);
-                }
-            }
+        for (Map.Entry<String, List<Client>> groupTopicClientMapping : tmp.entrySet()) {
+            proxyHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), groupTopicClientMapping.getValue());
         }
-        proxyHTTPServer.localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
+
 
         long startTime = System.currentTimeMillis();
         try {
-            // 订阅关系变化通知
-            notifyConsumerManager(consumerGroup, consumerGroupConf, proxyHTTPServer.localConsumerGroupMapping);
 
             final CompleteHandler<HttpCommand> handler = new CompleteHandler<HttpCommand>() {
                 @Override
@@ -184,15 +172,13 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             asyncContext.onComplete(responseProxyCommand, handler);
         } catch (Exception e) {
             HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
-                    subscribeResponseHeader,
-                    SubscribeResponseBody.buildBody(ProxyRetCode.PROXY_SEND_ASYNC_MSG_ERR.getRetCode(),
+                    heartbeatResponseHeader,
+                    HeartbeatResponseBody.buildBody(ProxyRetCode.PROXY_SEND_ASYNC_MSG_ERR.getRetCode(),
                             ProxyRetCode.PROXY_SEND_ASYNC_MSG_ERR.getErrMsg() + ProxyUtil.stackTrace(e, 2)));
             asyncContext.onComplete(err);
             long endTime = System.currentTimeMillis();
-            httpLogger.error("message|proxy2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime,
-                    subscribeRequestBody.getTopic(),
-                    subscribeRequestBody.getUrl(), e);
+            httpLogger.error("message|proxy2mq|REQ|ASYNC|heartBeatMessageCost={}ms",
+                    endTime - startTime, e);
             proxyHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
             proxyHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
         }
@@ -228,15 +214,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             return;
         }
 
-//        for (String curr : weMQProxyServer.getConsumerManager().getCurrRunningGroupSet()) {
-//            if (!localConsumerGroupMapping.containsKey(curr)) {
-//                ConsumerGroupStateEvent notification = new ConsumerManager.ConsumerGroupStateEvent();
-//                notification.action = ConsumerGroupStateAction.DELETE;
-//                notification.consumerGroup = consumerGroup;
-//                weMQProxyServer.getEventBus().post(notification);
-//            }
-//        }
-
         return;
     }
+
+
 }

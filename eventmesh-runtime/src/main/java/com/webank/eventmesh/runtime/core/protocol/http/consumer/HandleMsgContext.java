@@ -79,7 +79,7 @@ public class HandleMsgContext {
         this.bizSeqNo = bizSeqNo;
         this.uniqueId = uniqueId;
         this.consumeTopicConfig = consumeTopicConfig;
-        this.ttl = Integer.parseInt(msg.userHeaders().getString(ProxyConstants.TTL));
+        this.ttl = Integer.parseInt(msg.sysHeaders().getString(Message.BuiltinKeys.TIMEOUT));
     }
 
     public void addProp(String key, String val) {
