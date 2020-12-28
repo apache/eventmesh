@@ -25,18 +25,23 @@ import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.consumer.listener.LiteMessageListener;
 import com.webank.eventmesh.client.http.http.HttpUtil;
 import com.webank.eventmesh.client.http.http.RequestParam;
+import com.webank.eventmesh.client.tcp.common.MessageUtils;
+import com.webank.eventmesh.client.tcp.common.WemqAccessCommon;
+import com.webank.eventmesh.client.tcp.common.WemqAccessThreadFactoryImpl;
+import com.webank.eventmesh.client.tcp.impl.SimpleSubClientImpl;
 import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.common.LiteMessage;
 import com.webank.eventmesh.common.ProxyException;
 import com.webank.eventmesh.common.ThreadPoolFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.webank.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
+import com.webank.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
 import com.webank.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
-import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
-import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
-import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
-import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+import com.webank.eventmesh.common.protocol.http.common.*;
+import com.webank.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
+import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -47,8 +52,11 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LiteConsumer extends AbstractLiteClient {
@@ -66,6 +74,8 @@ public class LiteConsumer extends AbstractLiteClient {
     private List<String> subscription = Lists.newArrayList();
 
     private LiteMessageListener messageListener;
+
+    protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4, new WemqAccessThreadFactoryImpl("TCPClientScheduler", true));
 
     public LiteConsumer(LiteClientConfig liteClientConfig) throws Exception {
         super(liteClientConfig);
@@ -112,9 +122,39 @@ public class LiteConsumer extends AbstractLiteClient {
         if(!started.get()) {
             start();
         }
+
+        RequestParam heartBeatParam = generateHeartBeatRequestParam(topic, url);
+        RequestParam subscribeParam = generateSubscribeRequestParam(topic, url);
+
+        long startTime = System.currentTimeMillis();
+        String target = selectProxy();
+        String subRes = "";
+        String heartRes = "";
+        try {
+            heartRes = HttpUtil.post(httpClient, target, heartBeatParam);
+            subRes = HttpUtil.post(httpClient, target, subscribeParam);
+        } catch (Exception ex) {
+            throw new ProxyException(ex);
+        }
+
+        if(logger.isDebugEnabled()) {
+            logger.debug("subscribe message by await, targetProxy:{}, cost:{}ms, subscribeParam:{}, rtn:{}", target, System.currentTimeMillis() - startTime, JSON.toJSONString(subscribeParam), subRes);
+        }
+
+        ProxyRetObj ret = JSON.parseObject(subRes, ProxyRetObj.class);
+
+        if (ret.getRetCode() == ProxyRetCode.SUCCESS.getRetCode()) {
+            return Boolean.TRUE;
+        } else {
+            throw new ProxyException(ret.getRetCode(), ret.getRetMsg());
+        }
+
+    }
+
+    private RequestParam generateSubscribeRequestParam(String topic, String url) {
         final LiteMessage liteMessage = new LiteMessage();
         liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
-                .setContent("contentStr with special protocal")
+                .setContent("subscribe message")
                 .setTopic(topic)
                 .setUniqueId(RandomStringUtils.randomNumeric(30));
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
@@ -131,36 +171,73 @@ public class LiteConsumer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
-                .addBody(SendMessageRequestBody.TOPIC, liteMessage.getTopic())
-                .addBody("url", url)
-                .addBody(SendMessageRequestBody.CONTENT, liteMessage.getContent())
-                .addBody(SendMessageRequestBody.TTL, String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT))
-                .addBody(SendMessageRequestBody.BIZSEQNO, liteMessage.getBizSeqNo())
-                .addBody(SendMessageRequestBody.UNIQUEID, liteMessage.getUniqueId());
+                .addBody(SubscribeRequestBody.TOPIC, liteMessage.getTopic())
+                .addBody(SubscribeRequestBody.URL, url);
+//                .addBody(SubscribeRequestBody.CONTENT, liteMessage.getContent())
+//                .addBody(SubscribeRequestBody.TTL, String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT))
+//                .addBody(SubscribeRequestBody.BIZSEQNO, liteMessage.getBizSeqNo())
+//                .addBody(SubscribeRequestBody.UNIQUEID, liteMessage.getUniqueId());
+        return requestParam;
+    }
 
-        long startTime = System.currentTimeMillis();
-        String target = selectProxy();
-        String res = "";
-        try {
-            res = HttpUtil.post(httpClient, target, requestParam);
-        } catch (Exception ex) {
-            throw new ProxyException(ex);
-        }
+    private RequestParam generateHeartBeatRequestParam(String topic, String url) {
+        HashMap<String, String> heartBeatEntity = new HashMap<>();
+        heartBeatEntity.put("topic", topic);
+        heartBeatEntity.put("url", url);
 
-        if(logger.isDebugEnabled()) {
-            logger.debug("publish sync message by await, targetProxy:{}, cost:{}ms, message:{}, rtn:{}", target, System.currentTimeMillis() - startTime, liteMessage, res);
-        }
+        RequestParam requestParam = new RequestParam(HttpMethod.POST);
+        requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.HEARTBEAT.getRequestCode()))
+                .addHeader(ProtocolKey.ClientInstanceKey.ENV, weMQProxyClientConfig.getEnv())
+                .addHeader(ProtocolKey.ClientInstanceKey.REGION, weMQProxyClientConfig.getRegion())
+                .addHeader(ProtocolKey.ClientInstanceKey.IDC, weMQProxyClientConfig.getIdc())
+                .addHeader(ProtocolKey.ClientInstanceKey.DCN, weMQProxyClientConfig.getDcn())
+                .addHeader(ProtocolKey.ClientInstanceKey.IP, weMQProxyClientConfig.getIp())
+                .addHeader(ProtocolKey.ClientInstanceKey.PID, weMQProxyClientConfig.getPid())
+                .addHeader(ProtocolKey.ClientInstanceKey.SYS, weMQProxyClientConfig.getSys())
+                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, weMQProxyClientConfig.getUserName())
+                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, weMQProxyClientConfig.getPassword())
+                .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
+                .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+                .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
+                .addBody(HeartbeatRequestBody.CLIENTTYPE, ClientType.SUB.name())
+                .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JSON.toJSONString(heartBeatEntity));
+        return requestParam;
+    }
 
-        ProxyRetObj ret = JSON.parseObject(res, ProxyRetObj.class);
+    public void heartBeat(String topic, String url) throws Exception {
+        scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if(!started.get()) {
+                        start();
+                    }
+                    RequestParam requestParam = generateHeartBeatRequestParam(topic, url);
 
-        if (ret.getRetCode() == ProxyRetCode.SUCCESS.getRetCode()) {
-            return Boolean.TRUE;
-        } else {
-            throw new ProxyException(ret.getRetCode(), ret.getRetMsg());
-        }
+                    long startTime = System.currentTimeMillis();
+                    String target = selectProxy();
+                    String res = "";
+                    try {
+                        res = HttpUtil.post(httpClient, target, requestParam);
+                    } catch (Exception ex) {
+                        throw new ProxyException(ex);
+                    }
 
-        //做一次心跳
-//        return Boolean.TRUE;
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("heartBeat message by await, targetProxy:{}, cost:{}ms, rtn:{}", target, System.currentTimeMillis() - startTime, res);
+                    }
+
+                    ProxyRetObj ret = JSON.parseObject(res, ProxyRetObj.class);
+
+                    if (ret.getRetCode() == ProxyRetCode.SUCCESS.getRetCode()) {
+                    } else {
+                        throw new ProxyException(ret.getRetCode(), ret.getRetMsg());
+                    }
+                } catch (Exception e) {
+                    logger.error("send heartBeat error", e);
+                }
+            }
+        }, WemqAccessCommon.HEATBEAT, WemqAccessCommon.HEATBEAT, TimeUnit.MILLISECONDS);
     }
 
     public boolean unsubscribe(String topic) throws ProxyException {
