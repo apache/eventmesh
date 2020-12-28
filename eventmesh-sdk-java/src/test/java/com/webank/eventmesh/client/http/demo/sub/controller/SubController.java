@@ -18,7 +18,15 @@ public class SubController {
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
     public String subTest(@RequestBody String message){
-        logger.info("receive message {}", JSONObject.toJSONString(message));
+        logger.info("=======receive message======= {}", JSONObject.toJSONString(message));
+        JSONObject result = new JSONObject();
+        result.put("retCode", 1);
+        return result.toJSONString();
+    }
+
+    @RequestMapping(value = "/rrTest", method = RequestMethod.POST)
+    public String rrSubTest(@RequestBody String message){
+        logger.info("=======receive message======= {}", JSONObject.toJSONString(message));
         JSONObject result = new JSONObject();
         result.put("retCode", 1);
         return result.toJSONString();
