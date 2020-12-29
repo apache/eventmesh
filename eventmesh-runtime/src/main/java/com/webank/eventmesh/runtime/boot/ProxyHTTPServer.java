@@ -45,9 +45,9 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
 
     private ProxyConfiguration proxyConfiguration;
 
-    public ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>();
 
-    public ConcurrentHashMap<String, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<String, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>();
 
     public ProxyHTTPServer(ProxyServer proxyServer,
                            ProxyConfiguration proxyConfiguration) {
