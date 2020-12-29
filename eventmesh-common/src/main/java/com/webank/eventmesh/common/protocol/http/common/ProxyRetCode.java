@@ -35,7 +35,10 @@ public enum ProxyRetCode {
     PROXY_GROUP_PRODUCER_STOPED_ERR(13, "proxy group producer stopped, "),
     PROXY_SEND_ASYNC_MSG_ERR(14, "proxy send async msg err, "),
     PROXY_REPLY_MSG_ERR(15, "proxy reply msg err, "),
-    PROXY_RUNTIME_ERR(16, "proxy runtime err, ");
+    PROXY_RUNTIME_ERR(16, "proxy runtime err, "),
+    PROXY_SUBSCRIBE_ERR(17, "proxy subscribe err"),
+    PROXY_UNSUBSCRIBE_ERR(18, "proxy unsubscribe err"),
+    PROXY_HEARTBEAT_ERR(19, "proxy heartbeat err");
 
     private Integer retCode;
 
