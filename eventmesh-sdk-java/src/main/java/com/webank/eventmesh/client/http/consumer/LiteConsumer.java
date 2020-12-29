@@ -18,6 +18,7 @@
 package com.webank.eventmesh.client.http.consumer;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.webank.eventmesh.client.http.AbstractLiteClient;
 import com.webank.eventmesh.client.http.ProxyRetObj;
 import com.webank.eventmesh.client.http.RemotingServer;
@@ -52,6 +53,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -117,14 +119,14 @@ public class LiteConsumer extends AbstractLiteClient {
         logger.info("LiteConsumer shutdown");
     }
 
-    public boolean subscribe(String topic, String url) throws Exception {
-        subscription.add(topic);
+    public boolean subscribe(List<String> topicList, String url) throws Exception {
+        subscription.addAll(topicList);
         if(!started.get()) {
             start();
         }
 
-        RequestParam heartBeatParam = generateHeartBeatRequestParam(topic, url);
-        RequestParam subscribeParam = generateSubscribeRequestParam(topic, url);
+        RequestParam heartBeatParam = generateHeartBeatRequestParam(topicList, url);
+        RequestParam subscribeParam = generateSubscribeRequestParam(topicList, url);
 
         long startTime = System.currentTimeMillis();
         String target = selectProxy();
@@ -151,12 +153,11 @@ public class LiteConsumer extends AbstractLiteClient {
 
     }
 
-    private RequestParam generateSubscribeRequestParam(String topic, String url) {
-        final LiteMessage liteMessage = new LiteMessage();
-        liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
-                .setContent("subscribe message")
-                .setTopic(topic)
-                .setUniqueId(RandomStringUtils.randomNumeric(30));
+    private RequestParam generateSubscribeRequestParam(List<String> topicList, String url) {
+//        final LiteMessage liteMessage = new LiteMessage();
+//        liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
+//                .setContent("subscribe message")
+//                .setUniqueId(RandomStringUtils.randomNumeric(30));
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.SUBSCRIBE.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, weMQProxyClientConfig.getEnv())
@@ -171,19 +172,19 @@ public class LiteConsumer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
-                .addBody(SubscribeRequestBody.TOPIC, liteMessage.getTopic())
+                .addBody(SubscribeRequestBody.TOPIC, JSONObject.toJSONString(topicList))
                 .addBody(SubscribeRequestBody.URL, url);
-//                .addBody(SubscribeRequestBody.CONTENT, liteMessage.getContent())
-//                .addBody(SubscribeRequestBody.TTL, String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT))
-//                .addBody(SubscribeRequestBody.BIZSEQNO, liteMessage.getBizSeqNo())
-//                .addBody(SubscribeRequestBody.UNIQUEID, liteMessage.getUniqueId());
         return requestParam;
     }
 
-    private RequestParam generateHeartBeatRequestParam(String topic, String url) {
-        HashMap<String, String> heartBeatEntity = new HashMap<>();
-        heartBeatEntity.put("topic", topic);
-        heartBeatEntity.put("url", url);
+    private RequestParam generateHeartBeatRequestParam(List<String> topics, String url) {
+        List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = new ArrayList<>();
+        for (String topic : topics){
+            HeartbeatRequestBody.HeartbeatEntity heartbeatEntity = new HeartbeatRequestBody.HeartbeatEntity();
+            heartbeatEntity.topic = topic;
+            heartbeatEntity.url = url;
+            heartbeatEntities.add(heartbeatEntity);
+        }
 
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.HEARTBEAT.getRequestCode()))
@@ -200,11 +201,11 @@ public class LiteConsumer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
                 .addBody(HeartbeatRequestBody.CLIENTTYPE, ClientType.SUB.name())
-                .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JSON.toJSONString(heartBeatEntity));
+                .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JSON.toJSONString(heartbeatEntities));
         return requestParam;
     }
 
-    public void heartBeat(String topic, String url) throws Exception {
+    public void heartBeat(List<String> topicList, String url) throws Exception {
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -212,7 +213,7 @@ public class LiteConsumer extends AbstractLiteClient {
                     if(!started.get()) {
                         start();
                     }
-                    RequestParam requestParam = generateHeartBeatRequestParam(topic, url);
+                    RequestParam requestParam = generateHeartBeatRequestParam(topicList, url);
 
                     long startTime = System.currentTimeMillis();
                     String target = selectProxy();
@@ -240,10 +241,53 @@ public class LiteConsumer extends AbstractLiteClient {
         }, WemqAccessCommon.HEATBEAT, WemqAccessCommon.HEATBEAT, TimeUnit.MILLISECONDS);
     }
 
-    public boolean unsubscribe(String topic) throws ProxyException {
-        subscription.remove(topic);
-        //做一次心跳
-        return Boolean.TRUE;
+    public boolean unsubscribe(List<String> topicList, String url) throws ProxyException {
+        subscription.removeAll(topicList);
+        RequestParam heartBeatParam = generateHeartBeatRequestParam(topicList, url);
+        RequestParam unSubscribeParam = generateUnSubscribeRequestParam(topicList, url);
+
+        long startTime = System.currentTimeMillis();
+        String target = selectProxy();
+        String unSubRes = "";
+        String heartRes = "";
+        try {
+            heartRes = HttpUtil.post(httpClient, target, heartBeatParam);
+            unSubRes = HttpUtil.post(httpClient, target, unSubscribeParam);
+        } catch (Exception ex) {
+            throw new ProxyException(ex);
+        }
+
+        if(logger.isDebugEnabled()) {
+            logger.debug("unSubscribe message by await, targetProxy:{}, cost:{}ms, unSubscribeParam:{}, rtn:{}", target, System.currentTimeMillis() - startTime, JSON.toJSONString(unSubscribeParam), unSubRes);
+        }
+
+        ProxyRetObj ret = JSON.parseObject(unSubRes, ProxyRetObj.class);
+
+        if (ret.getRetCode() == ProxyRetCode.SUCCESS.getRetCode()) {
+            return Boolean.TRUE;
+        } else {
+            throw new ProxyException(ret.getRetCode(), ret.getRetMsg());
+        }
+    }
+
+    private RequestParam generateUnSubscribeRequestParam(List<String> topicList, String url) {
+        RequestParam requestParam = new RequestParam(HttpMethod.POST);
+        requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.UNSUBSCRIBE.getRequestCode()))
+                .addHeader(ProtocolKey.ClientInstanceKey.ENV, weMQProxyClientConfig.getEnv())
+                .addHeader(ProtocolKey.ClientInstanceKey.REGION, weMQProxyClientConfig.getRegion())
+                .addHeader(ProtocolKey.ClientInstanceKey.IDC, weMQProxyClientConfig.getIdc())
+                .addHeader(ProtocolKey.ClientInstanceKey.DCN, weMQProxyClientConfig.getDcn())
+                .addHeader(ProtocolKey.ClientInstanceKey.IP, weMQProxyClientConfig.getIp())
+                .addHeader(ProtocolKey.ClientInstanceKey.PID, weMQProxyClientConfig.getPid())
+                .addHeader(ProtocolKey.ClientInstanceKey.SYS, weMQProxyClientConfig.getSys())
+                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, weMQProxyClientConfig.getUserName())
+                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, weMQProxyClientConfig.getPassword())
+                .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
+                .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+                .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
+                .addBody(SubscribeRequestBody.TOPIC, JSONObject.toJSONString(topicList))
+                .addBody(SubscribeRequestBody.URL, url);
+        return requestParam;
     }
 
     public void registerMessageListener(LiteMessageListener messageListener) throws ProxyException {

@@ -42,6 +42,7 @@ import com.webank.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequest
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +51,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class HeartBeatProcessor implements HttpRequestProcessor {
-
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
@@ -64,7 +63,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
         HttpCommand responseProxyCommand;
-        cmdLogger.info("cmd={}|{}|client2proxy|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+        httpLogger.info("cmd={}|{}|client2proxy|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
                 ProxyConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
         HeartbeatRequestHeader heartbeatRequestHeader = (HeartbeatRequestHeader) asyncContext.getRequest().getHeader();
@@ -91,8 +90,8 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         }
 
         //validate body
-        if (StringUtils.isBlank(heartbeatRequestBody.getClientType())){
-//                || StringUtils.isBlank(heartbeatRequestBody.getTopic())) {
+        if (StringUtils.isBlank(heartbeatRequestBody.getClientType())
+                || CollectionUtils.isEmpty(heartbeatRequestBody.getHeartbeatEntities())) {
 
             responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
                     heartbeatResponseHeader,
@@ -144,11 +143,11 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 tmp.put(groupTopicKey, clients);
             }
         }
-
-        for (Map.Entry<String, List<Client>> groupTopicClientMapping : tmp.entrySet()) {
-            proxyHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), groupTopicClientMapping.getValue());
+        synchronized (proxyHTTPServer.localClientInfoMapping){
+            for (Map.Entry<String, List<Client>> groupTopicClientMapping : tmp.entrySet()) {
+                proxyHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), groupTopicClientMapping.getValue());
+            }
         }
-
 
         long startTime = System.currentTimeMillis();
         try {
@@ -189,33 +188,5 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
     public boolean rejectRequest() {
         return false;
     }
-
-    /**
-     * notify ConsumerManager 组级别
-     */
-    private void notifyConsumerManager(String consumerGroup, ConsumerGroupConf latestConsumerGroupConfig,
-                                       ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping) throws Exception {
-        ConsumerGroupManager cgm = proxyHTTPServer.getConsumerManager().getConsumer(consumerGroup);
-        if (cgm == null) {
-            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW;
-            notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig;
-            proxyHTTPServer.getEventBus().post(notification);
-            return;
-        }
-
-        if (!latestConsumerGroupConfig.equals(cgm.getConsumerGroupConfig())) {
-            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.CHANGE;
-            notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig;
-            proxyHTTPServer.getEventBus().post(notification);
-            return;
-        }
-
-        return;
-    }
-
 
 }

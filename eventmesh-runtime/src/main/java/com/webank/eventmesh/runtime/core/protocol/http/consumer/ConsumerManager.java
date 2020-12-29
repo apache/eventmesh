@@ -17,15 +17,19 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.consumer;
 
+import com.alibaba.fastjson.JSONObject;
 import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import com.webank.eventmesh.runtime.core.consumergroup.event.ConsumerGroupStateEvent;
 import com.webank.eventmesh.runtime.core.consumergroup.event.ConsumerGroupTopicConfChangeEvent;
 import com.google.common.eventbus.Subscribe;
+import com.webank.eventmesh.runtime.core.protocol.http.processor.inf.Client;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,6 +40,8 @@ public class ConsumerManager {
     private ProxyHTTPServer proxyHTTPServer;
 
     private ConcurrentHashMap<String /** consumerGroup */, ConsumerGroupManager> consumerTable = new ConcurrentHashMap<String, ConsumerGroupManager>();
+
+    private static final int DEFAULT_UPDATE_TIME = 3 * 30 * 1000;
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -55,9 +61,118 @@ public class ConsumerManager {
         scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
+                logger.info("clientInfo check start.....");
+                synchronized (proxyHTTPServer.localClientInfoMapping) {
+                    Map<String, List<Client>> clientInfoMap = proxyHTTPServer.localClientInfoMapping;
+                    if (clientInfoMap.size() > 0) {
+                        for (String key : clientInfoMap.keySet()) {
+                            String consumerGroup = key.split("@")[0];
+                            String topic = key.split("@")[1];
+                            List<Client> clientList = clientInfoMap.get(key);
+                            Iterator<Client> clientIterator = clientList.iterator();
+                            boolean isChange = false;
+                            while (clientIterator.hasNext()) {
+                                Client client = clientIterator.next();
+                                //时间差大于3次心跳周期
+                                if (System.currentTimeMillis() - client.lastUpTime.getTime() > DEFAULT_UPDATE_TIME) {
+                                    logger.warn("client {} lastUpdate time {} over three heartbeat cycles",
+                                            JSONObject.toJSONString(client), client.lastUpTime);
+                                    clientIterator.remove();
+                                    isChange = true;
+                                }
+                            }
+                            if (isChange) {
+                                if (clientList.size() > 0) {
+                                    //change url
+                                    logger.info("consumerGroup {} client info changing", consumerGroup);
+                                    Map<String, List<String>> idcUrls = new HashMap<>();
+                                    Set<String> clientUrls = new HashSet<>();
+                                    for (Client client : clientList) {
+                                        clientUrls.add(client.url);
+                                        if (idcUrls.containsKey(client.idc)) {
+                                            idcUrls.get(client.idc).add(StringUtils.deleteWhitespace(client.url));
+                                        } else {
+                                            List<String> urls = new ArrayList<>();
+                                            urls.add(client.url);
+                                            idcUrls.put(client.idc, urls);
+                                        }
+                                    }
+                                    synchronized (proxyHTTPServer.localConsumerGroupMapping) {
+                                        ConsumerGroupConf consumerGroupConf = proxyHTTPServer.localConsumerGroupMapping.get(consumerGroup);
+                                        Map<String, ConsumerGroupTopicConf> map = consumerGroupConf.getConsumerGroupTopicConf();
+                                        for (String topicKey : map.keySet()) {
+                                            if (StringUtils.equals(topic, topicKey)) {
+                                                ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
+                                                latestTopicConf.setConsumerGroup(consumerGroup);
+                                                latestTopicConf.setTopic(topic);
+                                                latestTopicConf.setUrls(clientUrls);
 
+                                                latestTopicConf.setIdcUrls(idcUrls);
+
+                                                map.put(topic, latestTopicConf);
+                                            }
+                                        }
+                                        proxyHTTPServer.localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
+                                        logger.info("consumerGroup {} client info changed, consumerGroupConf {}", consumerGroup,
+                                                JSONObject.toJSONString(consumerGroupConf));
+                                        try {
+                                            notifyConsumerManager(consumerGroup, consumerGroupConf, proxyHTTPServer.localConsumerGroupMapping);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+
+                                } else {
+                                    logger.info("consumerGroup {} client info removed", consumerGroup);
+                                    //remove
+                                    try {
+                                        notifyConsumerManager(consumerGroup, null, proxyHTTPServer.localConsumerGroupMapping);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    proxyHTTPServer.localConsumerGroupMapping.keySet().removeIf(s -> StringUtils.equals(consumerGroup, s));
+                                }
+                            }
+
+                        }
+                    }
+                }
             }
         }, 10000, 10000, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * notify ConsumerManager 组级别
+     */
+    public void notifyConsumerManager(String consumerGroup, ConsumerGroupConf latestConsumerGroupConfig,
+                                      ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping) throws Exception {
+        ConsumerGroupManager cgm = proxyHTTPServer.getConsumerManager().getConsumer(consumerGroup);
+        if (cgm == null) {
+            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
+            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW;
+            notification.consumerGroup = consumerGroup;
+            notification.consumerGroupConfig = latestConsumerGroupConfig;
+            proxyHTTPServer.getEventBus().post(notification);
+            return;
+        }
+
+        if (latestConsumerGroupConfig == null) {
+            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
+            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.DELETE;
+            notification.consumerGroup = consumerGroup;
+            proxyHTTPServer.getEventBus().post(notification);
+            return;
+        }
+
+        if (!latestConsumerGroupConfig.equals(cgm.getConsumerGroupConfig())) {
+            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
+            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.CHANGE;
+            notification.consumerGroup = consumerGroup;
+            notification.consumerGroupConfig = latestConsumerGroupConfig;
+            proxyHTTPServer.getEventBus().post(notification);
+            return;
+        }
     }
 
     public void shutdown() {

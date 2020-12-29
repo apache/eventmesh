@@ -17,6 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.processor;
 
+import com.alibaba.fastjson.JSONObject;
 import com.webank.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
 import com.webank.eventmesh.common.protocol.http.body.client.SubscribeResponseBody;
 import com.webank.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
@@ -54,8 +55,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SubscribeProcessor implements HttpRequestProcessor {
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
-
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
     private ProxyHTTPServer proxyHTTPServer;
@@ -67,7 +66,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
         HttpCommand responseProxyCommand;
-        cmdLogger.info("cmd={}|{}|client2proxy|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+        httpLogger.info("cmd={}|{}|client2proxy|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
                 ProxyConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
         SubscribeRequestHeader subscribeRequestHeader = (SubscribeRequestHeader) asyncContext.getRequest().getHeader();
@@ -95,7 +94,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
         //validate body
         if (StringUtils.isBlank(subscribeRequestBody.getUrl())
-                || StringUtils.isBlank(subscribeRequestBody.getTopic())) {
+                || CollectionUtils.isEmpty(subscribeRequestBody.getTopics())) {
 
             responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
                     subscribeResponseHeader,
@@ -103,100 +102,105 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             asyncContext.onComplete(responseProxyCommand);
             return;
         }
-        String topic = subscribeRequestBody.getTopic();
+        List<String> subTopicList = subscribeRequestBody.getTopics();
 
         String url = subscribeRequestBody.getUrl();
         String consumerGroup = ProxyUtil.buildClientGroup(subscribeRequestHeader.getSys(),
                 subscribeRequestHeader.getDcn());
 
-        List<Client> groupTopicClients = proxyHTTPServer.localClientInfoMapping.get(consumerGroup + "@" + topic);
+        synchronized (proxyHTTPServer.localClientInfoMapping){
 
-        if (CollectionUtils.isEmpty(groupTopicClients)){
-            httpLogger.error("group {} topic {} clients is empty", consumerGroup, topic);
-        }
 
-        Map<String, List<String>> idcUrls = new HashMap<>();
-        for (Client client : groupTopicClients) {
-            if (idcUrls.containsKey(client.idc)) {
-                idcUrls.get(client.idc).add(StringUtils.deleteWhitespace(client.url));
-            } else {
-                List<String> urls = new ArrayList<>();
-                urls.add(client.url);
-                idcUrls.put(client.idc, urls);
-            }
-        }
+            for (String subTopic : subTopicList){
+                List<Client> groupTopicClients = proxyHTTPServer.localClientInfoMapping.get(consumerGroup + "@" + subTopic);
 
-        ConsumerGroupConf consumerGroupConf = proxyHTTPServer.localConsumerGroupMapping.get(consumerGroup);
-        if (consumerGroupConf == null) {
-            // 新订阅
-            consumerGroupConf = new ConsumerGroupConf(consumerGroup);
-            ConsumerGroupTopicConf consumeTopicConfig = new ConsumerGroupTopicConf();
-            consumeTopicConfig.setConsumerGroup(consumerGroup);
-            consumeTopicConfig.setTopic(topic);
-            consumeTopicConfig.setUrls(new HashSet<>(Arrays.asList(url)));
-
-            consumeTopicConfig.setIdcUrls(idcUrls);
-
-            Map<String, ConsumerGroupTopicConf> map = new HashMap<>();
-            map.put(topic, consumeTopicConfig);
-            consumerGroupConf.setConsumerGroupTopicConf(map);
-        } else {
-            // 已有订阅
-            Map<String, ConsumerGroupTopicConf> map = consumerGroupConf.getConsumerGroupTopicConf();
-            for (String key : map.keySet()) {
-                if (StringUtils.equals(topic, key)) {
-                    ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
-                    ConsumerGroupTopicConf currentTopicConf = map.get(key);
-                    latestTopicConf.setConsumerGroup(consumerGroup);
-                    latestTopicConf.setTopic(topic);
-                    latestTopicConf.setUrls(new HashSet<>(Arrays.asList(url)));
-                    latestTopicConf.getUrls().addAll(currentTopicConf.getUrls());
-
-                    latestTopicConf.setIdcUrls(idcUrls);
-
-                    map.put(key, latestTopicConf);
+                if (CollectionUtils.isEmpty(groupTopicClients)){
+                    httpLogger.error("group {} topic {} clients is empty", consumerGroup, subTopic);
                 }
-            }
-        }
-        proxyHTTPServer.localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
 
-        long startTime = System.currentTimeMillis();
-        try {
-            // 订阅关系变化通知
-            notifyConsumerManager(consumerGroup, consumerGroupConf, proxyHTTPServer.localConsumerGroupMapping);
-
-            final CompleteHandler<HttpCommand> handler = new CompleteHandler<HttpCommand>() {
-                @Override
-                public void onResponse(HttpCommand httpCommand) {
-                    try {
-                        if (httpLogger.isDebugEnabled()) {
-                            httpLogger.debug("{}", httpCommand);
-                        }
-                        proxyHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                        proxyHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
-                    } catch (Exception ex) {
+                Map<String, List<String>> idcUrls = new HashMap<>();
+                for (Client client : groupTopicClients) {
+                    if (idcUrls.containsKey(client.idc)) {
+                        idcUrls.get(client.idc).add(StringUtils.deleteWhitespace(client.url));
+                    } else {
+                        List<String> urls = new ArrayList<>();
+                        urls.add(client.url);
+                        idcUrls.put(client.idc, urls);
                     }
                 }
-            };
+                ConsumerGroupConf consumerGroupConf = proxyHTTPServer.localConsumerGroupMapping.get(consumerGroup);
+                if (consumerGroupConf == null) {
+                    // 新订阅
+                    consumerGroupConf = new ConsumerGroupConf(consumerGroup);
+                    ConsumerGroupTopicConf consumeTopicConfig = new ConsumerGroupTopicConf();
+                    consumeTopicConfig.setConsumerGroup(consumerGroup);
+                    consumeTopicConfig.setTopic(subTopic);
+                    consumeTopicConfig.setUrls(new HashSet<>(Arrays.asList(url)));
 
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
-                    ProxyRetCode.SUCCESS.getRetCode(), ProxyRetCode.SUCCESS.getErrMsg());
-            asyncContext.onComplete(responseProxyCommand, handler);
-        } catch (Exception e) {
-            HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
-                    subscribeResponseHeader,
-                    SubscribeResponseBody.buildBody(ProxyRetCode.PROXY_SEND_ASYNC_MSG_ERR.getRetCode(),
-                            ProxyRetCode.PROXY_SEND_ASYNC_MSG_ERR.getErrMsg() + ProxyUtil.stackTrace(e, 2)));
-            asyncContext.onComplete(err);
-            long endTime = System.currentTimeMillis();
-            httpLogger.error("message|proxy2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime,
-                    subscribeRequestBody.getTopic(),
-                    subscribeRequestBody.getUrl(), e);
-            proxyHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
-            proxyHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
+                    consumeTopicConfig.setIdcUrls(idcUrls);
+
+                    Map<String, ConsumerGroupTopicConf> map = new HashMap<>();
+                    map.put(subTopic, consumeTopicConfig);
+                    consumerGroupConf.setConsumerGroupTopicConf(map);
+                } else {
+                    // 已有订阅
+                    Map<String, ConsumerGroupTopicConf> map = consumerGroupConf.getConsumerGroupTopicConf();
+                    for (String key : map.keySet()) {
+                        if (StringUtils.equals(subTopic, key)) {
+                            ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
+                            ConsumerGroupTopicConf currentTopicConf = map.get(key);
+                            latestTopicConf.setConsumerGroup(consumerGroup);
+                            latestTopicConf.setTopic(subTopic);
+                            latestTopicConf.setUrls(new HashSet<>(Arrays.asList(url)));
+                            latestTopicConf.getUrls().addAll(currentTopicConf.getUrls());
+
+                            latestTopicConf.setIdcUrls(idcUrls);
+
+                            map.put(key, latestTopicConf);
+                        }
+                    }
+                }
+                proxyHTTPServer.localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
+            }
+
+            long startTime = System.currentTimeMillis();
+            try {
+                // 订阅关系变化通知
+                proxyHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup, proxyHTTPServer.localConsumerGroupMapping.get(consumerGroup),
+                        proxyHTTPServer.localConsumerGroupMapping);
+
+                final CompleteHandler<HttpCommand> handler = new CompleteHandler<HttpCommand>() {
+                    @Override
+                    public void onResponse(HttpCommand httpCommand) {
+                        try {
+                            if (httpLogger.isDebugEnabled()) {
+                                httpLogger.debug("{}", httpCommand);
+                            }
+                            proxyHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
+                            proxyHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+                        } catch (Exception ex) {
+                        }
+                    }
+                };
+
+                responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+                        ProxyRetCode.SUCCESS.getRetCode(), ProxyRetCode.SUCCESS.getErrMsg());
+                asyncContext.onComplete(responseProxyCommand, handler);
+            } catch (Exception e) {
+                HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
+                        subscribeResponseHeader,
+                        SubscribeResponseBody.buildBody(ProxyRetCode.PROXY_SUBSCRIBE_ERR.getRetCode(),
+                                ProxyRetCode.PROXY_SUBSCRIBE_ERR.getErrMsg() + ProxyUtil.stackTrace(e, 2)));
+                asyncContext.onComplete(err);
+                long endTime = System.currentTimeMillis();
+                httpLogger.error("message|proxy2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                        endTime - startTime,
+                        JSONObject.toJSONString(subscribeRequestBody.getTopics()),
+                        subscribeRequestBody.getUrl(), e);
+                proxyHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
+                proxyHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
+            }
         }
-
     }
 
     @Override
@@ -204,39 +208,4 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         return false;
     }
 
-    /**
-     * notify ConsumerManager 组级别
-     */
-    private void notifyConsumerManager(String consumerGroup, ConsumerGroupConf latestConsumerGroupConfig,
-                                       ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping) throws Exception {
-        ConsumerGroupManager cgm = proxyHTTPServer.getConsumerManager().getConsumer(consumerGroup);
-        if (cgm == null) {
-            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW;
-            notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig;
-            proxyHTTPServer.getEventBus().post(notification);
-            return;
-        }
-
-        if (!latestConsumerGroupConfig.equals(cgm.getConsumerGroupConfig())) {
-            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.CHANGE;
-            notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig;
-            proxyHTTPServer.getEventBus().post(notification);
-            return;
-        }
-
-//        for (String curr : weMQProxyServer.getConsumerManager().getCurrRunningGroupSet()) {
-//            if (!localConsumerGroupMapping.containsKey(curr)) {
-//                ConsumerGroupStateEvent notification = new ConsumerManager.ConsumerGroupStateEvent();
-//                notification.action = ConsumerGroupStateAction.DELETE;
-//                notification.consumerGroup = consumerGroup;
-//                weMQProxyServer.getEventBus().post(notification);
-//            }
-//        }
-
-        return;
-    }
 }
