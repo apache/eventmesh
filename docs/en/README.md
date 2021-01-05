@@ -7,16 +7,20 @@
 
 ## What is Event Mesh?
 This figure shows the positioning of the event mesh relative to other similar technologies (such as service mesh) in the application framework.
-![architecture1](images/eventmesh-define.png)
+
+![architecture1](../images/eventmesh-define.png)
 
 Event Mesh is a dynamic plug-in cloud-native basic service layer used to decouple the application and middleware layer. It provides flexible, reliable and fast event distribution, and can be managed.
-![architecture1](/images/eventmesher.png)
+
+![architecture1](../images/eventmesh-runtime.png)
 
 Cloud Native Event Mesh:
-![architecture2](/images/bus.png)
+
+![architecture2](../images/eventmesh-panels.png)
 
 The event mesh allows events from one application to be dynamically routed to any other application.
 General functions of the event mesh:
+
 * Event driven;
 * Event governance;
 * Dynamic routing;
@@ -36,8 +40,9 @@ Key components:
 | ----    | ----    |
 | v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
 | v1.1.0  |Support rocketmq as eventstore|
-| v1.2.0  |Support transaction event|
-| v1.3.0  |Support Plug-in architectur|
+| v1.2.0  |Support Plug-in architecture, support http sub|
+| v1.3.0 |Support cloud event protocal|
+|   |Support transaction event|
 |         |Support Event Sourcing|
 |         |Support Event orchestration|
 |         |Support Dashboard|
@@ -67,6 +72,6 @@ You can start with the issues labeled with good first issue.
 ## Contacts
 WeChat group：
 
-![wechat_qr](/images/mesh-helper.png)
+![wechat_qr](../images/mesh-helper.png)
 
 
