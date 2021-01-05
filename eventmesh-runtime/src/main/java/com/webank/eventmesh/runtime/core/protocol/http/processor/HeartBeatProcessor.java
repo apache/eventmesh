@@ -172,8 +172,8 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         } catch (Exception e) {
             HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
                     heartbeatResponseHeader,
-                    HeartbeatResponseBody.buildBody(ProxyRetCode.PROXY_SEND_ASYNC_MSG_ERR.getRetCode(),
-                            ProxyRetCode.PROXY_SEND_ASYNC_MSG_ERR.getErrMsg() + ProxyUtil.stackTrace(e, 2)));
+                    HeartbeatResponseBody.buildBody(ProxyRetCode.PROXY_HEARTBEAT_ERR.getRetCode(),
+                            ProxyRetCode.PROXY_HEARTBEAT_ERR.getErrMsg() + ProxyUtil.stackTrace(e, 2)));
             asyncContext.onComplete(err);
             long endTime = System.currentTimeMillis();
             httpLogger.error("message|proxy2mq|REQ|ASYNC|heartBeatMessageCost={}ms",
