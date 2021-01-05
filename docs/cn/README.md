@@ -14,7 +14,7 @@ Event Mesh是一个动态的插件式云原生基础服务层，用于分离应�
 
 云原生Event Mesh：
 
-![architecture2](../images/bus.png)
+![architecture2](../images/eventmesh-panels.png)
 
 Event Mesh允许将来自一个应用程序的事件动态路由到任何其他应用程序.
 Event Mesh的一般功能:
