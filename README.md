@@ -20,21 +20,26 @@ Event Mesh is a dynamic plug-in cloud-native basic service layer used to decoupl
 
 The event mesh allows events from one application to be dynamically routed to any other application.
 General functions of the event mesh:
+
 * Event driven;
 * Event governance;
 * Dynamic routing;
 * Cloud native
+* Flow Control
+* Load Balance
 
-**Dependent components:**
+**Support connecting event stores:**
 
-* DeFiBus : a distributed messaging platform with low latency, high performance and reliability, flexible scalability. [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)
-* RocketMQ
+* **DeFiBus** : a distributed messaging platform with low latency, high performance and reliability, flexible scalability. [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)
+* **RocketMQ**
 
 **Key components:**
 
-* eventmesh-runtime : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
-* eventmesh-sdk-java : currently supports HTTP and TCP protocols, and will support gRPC in the future
-* eventmesh-registry : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-runtime
+* **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
+* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols, and will support gRPC in the future
+* **eventmesh-registry** : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-runtime
+* **eventmesh-connector-defibus** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from DeFiBus Event Store
+* **eventmesh-connector-rocketmq** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from RocketMQ Event Store
 
 **Protocol:**
 
@@ -43,11 +48,11 @@ The protocol of eventmesh is easier and convenient, you can read more [here](doc
 ## RoadMap
 | version | feature |
 | ----    | ----    |
-| v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
-| v1.1.0  |Support rocketmq as eventstore|
+| v1.0.0  |Support DeFiBus as eventstore, support java-sdk , tcp pub/sub, http pub|
+| v1.1.0  |Support RocketMQ as eventstore|
 | v1.1.1  |Support https|
 | v1.2.0  |Support Plug-in architecture, support http sub|
-| V1.3.0 |Support cloud event protocal|
+| V1.3.0 |Support cloud event protocol|
 |         |Support transaction event|
 |         |Support Event Sourcing|
 |         |Support Event orchestration|
