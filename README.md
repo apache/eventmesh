@@ -38,7 +38,7 @@ General functions of the event mesh:
 
 **Protocol:**
 
-The protocol of eventmesh is more easily and convenient, you can read more [here](docs/cn/instructions/eventmesh-runtime-protocol.zh-CN.md)
+The protocol of eventmesh is easier and convenient, you can read more [here](docs/cn/instructions/eventmesh-runtime-protocol.zh-CN.md)
 
 ## RoadMap
 | version | feature |
@@ -48,7 +48,7 @@ The protocol of eventmesh is more easily and convenient, you can read more [here
 | v1.1.1  |Support https|
 | v1.2.0  |Support Plug-in architecture, support http sub|
 | V1.3.0 |Support cloud event protocal|
-| v1.3.0  |Support transaction event|
+|         |Support transaction event|
 |         |Support Event Sourcing|
 |         |Support Event orchestration|
 |         |Support Dashboard|
