@@ -11,7 +11,7 @@ Event Mesh是一个动态的插件式云原生基础服务层，用于分离应�
 
 ![architecture1](docs/images/eventmesh-runtime.png)
 
-云原生Event Mesh：
+**云原生Event Mesh：**
 
 ![architecture2](docs/images/eventmesh-panels.png)
 
@@ -22,14 +22,20 @@ Event Mesh的一般功能:
 * 动态路由;
 * 云原生
 
-依赖部件：
+**依赖部件：**
+
 * DeFiBus：具有低延迟，高性能和可靠性，和灵活可伸缩性的分布式消息传递平台 [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)
 * RocketMQ
 
-关键部件：
+**关键部件：**
+
 * eventmesh-runtime：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
 * eventmesh-sdk-java：当前支持HTTP和TCP协议，未来会支持gRPC等
 * eventmesh-registry：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理runtime
+
+**通信协议：**
+
+eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里](docs/cn/instructions/eventmesh-runtime-protocol.zh-CN.md)
 
 ## RoadMap
 | version | feature |
