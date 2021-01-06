@@ -72,7 +72,8 @@ public class LiteProducer extends AbstractLiteClient {
 
     private AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
 
-    public void start() throws ProxyException {
+    @Override
+    public void start() throws Exception {
         Preconditions.checkState(liteClientConfig != null, "liteClientConfig can't be null");
         Preconditions.checkState(liteClientConfig.getLiteProxyAddr() != null, "liteClientConfig.liteServerAddr can't be null");
         if(started.get()) {
@@ -84,6 +85,7 @@ public class LiteProducer extends AbstractLiteClient {
         logger.info("LiteProducer started");
     }
 
+    @Override
     public void shutdown() throws Exception {
         if(!started.get()) {
             return;
@@ -99,7 +101,7 @@ public class LiteProducer extends AbstractLiteClient {
         return started;
     }
 
-    public boolean publish(LiteMessage message) throws ProxyException {
+    public boolean publish(LiteMessage message) throws Exception {
         if (!started.get()) {
             start();
         }
@@ -161,7 +163,7 @@ public class LiteProducer extends AbstractLiteClient {
         }
     }
 
-    public LiteMessage request(LiteMessage message, long timeout) throws ProxyException {
+    public LiteMessage request(LiteMessage message, long timeout) throws Exception {
         if(!started.get()) {
             start();
         }
@@ -215,7 +217,7 @@ public class LiteProducer extends AbstractLiteClient {
         return null;
     }
 
-    public void request(LiteMessage message, RRCallback rrCallback, long timeout) throws ProxyException {
+    public void request(LiteMessage message, RRCallback rrCallback, long timeout) throws Exception {
         if(!started.get()) {
             start();
         }

@@ -5,16 +5,20 @@
 
 ## 什么是Event Mesh？
 该图显示了Event Mesh相对于应用程序框架中其他类似技术(例如Service Mesh)的定位.
-![architecture1](/images/eventmesh-define.png)
+
+![architecture1](../images/eventmesh-define.png)
 
 Event Mesh是一个动态的插件式云原生基础服务层，用于分离应用程序和中间件层。它提供了灵活，可靠和快速的事件分发，并且可以进行管理：
-![architecture1](/images/eventmesher.png)
+
+![architecture1](../images/eventmesh-runtime.png)
 
 云原生Event Mesh：
-![architecture2](/images/bus.png)
+
+![architecture2](../images/eventmesh-panels.png)
 
 Event Mesh允许将来自一个应用程序的事件动态路由到任何其他应用程序.
 Event Mesh的一般功能:
+
 * 事件驱动;
 * 事件治理;
 * 动态路由;
@@ -25,17 +29,18 @@ Event Mesh的一般功能:
 * RocketMQ
 
 关键部件：
-* eventmesh-emesher：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
+* eventmesh-runtime：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
 * eventmesh-sdk-java：当前支持HTTP和TCP协议，未来会支持gRPC等
-* eventmesh-registry：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理emesher
+* eventmesh-registry：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理runtime
 
 ## RoadMap
 | version | feature |
 | ----    | ----    |
 | v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
 | v1.1.0  |Support rocketmq as eventstore|
-| v1.2.0  |Support transaction event|
-| v1.3.0  |Support Plug-in architectur|
+| v1.2.0  |Support Plug-in architecture, support http sub|
+| V1.3.0 |Support cloud event protocal|
+|   |Support transaction event|
 |         |Support Event Sourcing|
 |         |Support Event orchestration|
 |         |Support Dashboard|
@@ -50,7 +55,7 @@ Event Mesh的一般功能:
 ## 快速开始
 1. 构建并部署event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus))
    请参见说明['event-store quickstart'](instructions/eventmesh-store-quickstart.md)
-2. 构建并部署eventmesh-emesher，请参见说明['eventmesh-emesher quickstart'](   instructions/eventmesh-emesher-quickstart.md)
+2. 构建并部署eventmesh-runtime，请参见说明['eventmesh-runtime quickstart'](   instructions/eventmesh-runtime-quickstart.md)
 3. 运行eventmesh-sdk-java演示，请参见说明['eventmesh-sdk-java quickstart'](instructions/eventmesh-sdk-java-quickstart.md)
 
 ## 贡献
@@ -65,4 +70,4 @@ Event Mesh的一般功能:
 ## 联系人
 微信群:
 
-![wechat_qr](/images/mesh-helper.png)
+![wechat_qr](../images/mesh-helper.png)
