@@ -14,7 +14,7 @@ Event Mesh is a dynamic plug-in cloud-native basic service layer used to decoupl
 
 ![architecture1](docs/images/eventmesh-runtime.png)
 
-Cloud Native Event Mesh:
+**Cloud Native Event Mesh:**
 
 ![architecture2](docs/images/eventmesh-panels.png)
 
@@ -25,14 +25,20 @@ General functions of the event mesh:
 * Dynamic routing;
 * Cloud native
 
-Dependent components:
+**Dependent components:**
+
 * DeFiBus : a distributed messaging platform with low latency, high performance and reliability, flexible scalability. [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)
 * RocketMQ
 
-Key components:
+**Key components:**
+
 * eventmesh-runtime : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
 * eventmesh-sdk-java : currently supports HTTP and TCP protocols, and will support gRPC in the future
 * eventmesh-registry : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-runtime
+
+**Protocol:**
+
+The protocol of eventmesh is more easily and convenient, you can read more [here](docs/cn/instructions/eventmesh-runtime-protocol.zh-CN.md)
 
 ## RoadMap
 | version | feature |
