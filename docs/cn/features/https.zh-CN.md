@@ -1,4 +1,4 @@
-1.在eventmesh-emesher 中配置
+1.在eventmesh-runtime 中配置
 
 ```
 proxy.properties(添加如下配置)
