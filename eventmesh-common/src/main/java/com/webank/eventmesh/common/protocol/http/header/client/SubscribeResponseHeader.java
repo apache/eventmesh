@@ -17,5 +17,123 @@
 
 package com.webank.eventmesh.common.protocol.http.header.client;
 
-public class SubscribeResponseHeader {
+import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
+import com.webank.eventmesh.common.protocol.http.header.Header;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class SubscribeResponseHeader extends Header {
+
+    private int code;
+
+    private String proxyCluster;
+
+    private String proxyIp;
+
+    private String proxyEnv;
+
+    private String proxyRegion;
+
+    private String proxyIdc;
+
+    private String proxyDcn;
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public String getProxyCluster() {
+        return proxyCluster;
+    }
+
+    public void setProxyCluster(String proxyCluster) {
+        this.proxyCluster = proxyCluster;
+    }
+
+    public String getProxyIp() {
+        return proxyIp;
+    }
+
+    public void setProxyIp(String proxyIp) {
+        this.proxyIp = proxyIp;
+    }
+
+    public String getProxyEnv() {
+        return proxyEnv;
+    }
+
+    public void setProxyEnv(String proxyEnv) {
+        this.proxyEnv = proxyEnv;
+    }
+
+    public String getProxyRegion() {
+        return proxyRegion;
+    }
+
+    public void setProxyRegion(String proxyRegion) {
+        this.proxyRegion = proxyRegion;
+    }
+
+    public String getProxyIdc() {
+        return proxyIdc;
+    }
+
+    public void setProxyIdc(String proxyIdc) {
+        this.proxyIdc = proxyIdc;
+    }
+
+    public String getProxyDcn() {
+        return proxyDcn;
+    }
+
+    public void setProxyDcn(String proxyDcn) {
+        this.proxyDcn = proxyDcn;
+    }
+
+    public static SubscribeResponseHeader buildHeader(Integer requestCode, String proxyCluster,
+                                                        String proxyIp, String proxyEnv, String proxyRegion,
+                                                        String proxyDcn, String proxyIDC) {
+        SubscribeResponseHeader subscribeResponseHeader = new SubscribeResponseHeader();
+        subscribeResponseHeader.setCode(requestCode);
+        subscribeResponseHeader.setProxyCluster(proxyCluster);
+        subscribeResponseHeader.setProxyDcn(proxyDcn);
+        subscribeResponseHeader.setProxyIp(proxyIp);
+        subscribeResponseHeader.setProxyEnv(proxyEnv);
+        subscribeResponseHeader.setProxyRegion(proxyRegion);
+        subscribeResponseHeader.setProxyIdc(proxyIDC);
+        return subscribeResponseHeader;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("subscribeResponseHeader={")
+                .append("code=").append(code).append(",")
+                .append("proxyEnv=").append(proxyEnv).append(",")
+                .append("proxyRegion=").append(proxyRegion).append(",")
+                .append("proxyIdc=").append(proxyIdc).append(",")
+                .append("proxyDcn=").append(proxyDcn).append(",")
+                .append("proxyCluster=").append(proxyCluster).append(",")
+                .append("proxyIp=").append(proxyIp).append("}");
+        return sb.toString();
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put(ProtocolKey.REQUEST_CODE, code);
+        map.put(ProtocolKey.ProxyInstanceKey.PROXYCLUSTER, proxyCluster);
+        map.put(ProtocolKey.ProxyInstanceKey.PROXYIP, proxyIp);
+        map.put(ProtocolKey.ProxyInstanceKey.PROXYENV, proxyEnv);
+        map.put(ProtocolKey.ProxyInstanceKey.PROXYIDC, proxyIdc);
+        map.put(ProtocolKey.ProxyInstanceKey.PROXYREGION, proxyRegion);
+        map.put(ProtocolKey.ProxyInstanceKey.PROXYDCN, proxyDcn);
+        return map;
+    }
+
 }

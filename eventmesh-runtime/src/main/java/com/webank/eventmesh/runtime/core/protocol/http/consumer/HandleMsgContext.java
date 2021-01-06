@@ -19,6 +19,7 @@ package com.webank.eventmesh.runtime.core.protocol.http.consumer;
 
 import com.webank.eventmesh.api.AbstractContext;
 import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
+import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import com.webank.eventmesh.common.Constants;

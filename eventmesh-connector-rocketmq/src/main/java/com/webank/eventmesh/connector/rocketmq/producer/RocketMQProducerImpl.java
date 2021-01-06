@@ -67,11 +67,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
     @Override
     public synchronized void start() throws Exception {
-
         producer.startup();
-//        ThreadUtil.randomSleep(500);
-//        defaultMQProducer.getDefaultMQProducerImpl().getmQClientFactory().updateTopicRouteInfoFromNameServer();
-
     }
 
     @Override
@@ -81,7 +77,6 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
     @Override
     public synchronized void shutdown() {
-
         producer.shutdown();
     }
 

@@ -17,8 +17,8 @@
 
 package client.common;
 
-import com.webank.runtime.boot.ProxyServer;
-import com.webank.runtime.configuration.ProxyConfiguration;
+import com.webank.eventmesh.runtime.boot.ProxyServer;
+import com.webank.eventmesh.runtime.configuration.ProxyConfiguration;
 
 public class Server {
 

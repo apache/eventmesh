@@ -70,6 +70,7 @@ public class HeartbeatRequestBody extends Body {
     public static class HeartbeatEntity {
         public String topic;
         public String serviceId;
+        public String url;
         public String instanceId;
 
         @Override
@@ -77,8 +78,9 @@ public class HeartbeatRequestBody extends Body {
             StringBuilder sb = new StringBuilder();
             sb.append("heartbeatEntity={")
                     .append("topic=").append(topic).append(",")
-                    .append("heartbeatEntities=").append(serviceId).append(",")
-                    .append("instanceId=").append(instanceId).append("}");
+                    .append("serviceId=").append(serviceId).append(",")
+                    .append("instanceId=").append(instanceId).append(",")
+                    .append("url=").append(url).append("}");
             return sb.toString();
         }
     }
