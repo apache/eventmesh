@@ -1,4 +1,4 @@
-1.config in eventmesh-emesher
+1.config in eventmesh-runtime
 
 ```
 proxy.properties(add config as follows)

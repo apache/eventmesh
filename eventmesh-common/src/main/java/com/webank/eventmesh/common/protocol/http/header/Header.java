@@ -18,10 +18,10 @@
 package com.webank.eventmesh.common.protocol.http.header;
 
 
+import com.webank.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
+import com.webank.eventmesh.common.protocol.http.body.message.ReplyMessageRequestBody;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
-import com.webank.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
-import com.webank.eventmesh.common.protocol.http.header.client.RegRequestHeader;
-import com.webank.eventmesh.common.protocol.http.header.client.UnRegRequestHeader;
+import com.webank.eventmesh.common.protocol.http.header.client.*;
 import com.webank.eventmesh.common.protocol.http.header.message.PushMessageRequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
@@ -51,6 +51,10 @@ public abstract class Header {
             return RegRequestHeader.buildHeader(originalMap);
         } else if (String.valueOf(RequestCode.UNREGISTER.getRequestCode()).equals(requestCode)) {
             return UnRegRequestHeader.buildHeader(originalMap);
+        } else if (String.valueOf(RequestCode.SUBSCRIBE.getRequestCode()).equals(requestCode)) {
+            return SubscribeRequestHeader.buildHeader(originalMap);
+        } else if (String.valueOf(RequestCode.UNSUBSCRIBE.getRequestCode()).equals(requestCode)) {
+            return UnSubscribeRequestHeader.buildHeader(originalMap);
         } else if (String.valueOf(RequestCode.HEARTBEAT.getRequestCode()).equals(requestCode)) {
             return HeartbeatRequestHeader.buildHeader(originalMap);
         } else if (String.valueOf(RequestCode.REPLY_MESSAGE.getRequestCode()).equals(requestCode)) {

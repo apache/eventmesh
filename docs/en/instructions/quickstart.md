@@ -10,8 +10,8 @@ Gradle at least 5.6, eg 5.6.*
 ### Deploy eventmesh-store
 Read more [here](eventmesh-store-quickstart.md)
 
-### Deploy eventmesn-emesher
-Read more [here](eventmesh-emesher-quickstart.md)
+### Deploy eventmesh-runtime
+Read more [here](eventmesh-runtime-quickstart.md)
 
 ### Run eventmesh sdk demo
 Read more [here](eventmesh-sdk-java-quickstart.md)
