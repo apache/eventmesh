@@ -17,5 +17,63 @@
 
 package com.webank.eventmesh.common.protocol.http.body.client;
 
-public class SubscribeRequestBody {
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.webank.eventmesh.common.protocol.http.body.Body;
+import org.apache.commons.collections4.MapUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class SubscribeRequestBody extends Body {
+
+    public static final String TOPIC = "topic";
+
+    public static final String URL = "url";
+
+    private List<String> topics;
+
+    private String url;
+
+    private String topic;
+
+    public List<String> getTopics() {
+        return topics;
+    }
+
+    public void setTopics(List<String> topics) {
+        this.topics = topics;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public static SubscribeRequestBody buildBody(Map<String, Object> bodyParam) {
+        SubscribeRequestBody body = new SubscribeRequestBody();
+        body.setUrl(MapUtils.getString(bodyParam, URL));
+        body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPIC), String.class));
+        return body;
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put(URL, url);
+        map.put(TOPIC, JSON.toJSONString(topics));
+        return map;
+    }
+
+    @Override
+    public String toString() {
+        return "subscribeBody{" +
+                "url='" + url + '\'' +
+                ", topics=" + topics +
+                '}';
+    }
 }

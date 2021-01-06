@@ -17,7 +17,7 @@
 
 package client.common;
 
-import com.webank.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;

@@ -17,5 +17,68 @@
 
 package com.webank.eventmesh.common.protocol.http.body.client;
 
-public class UnSubscribeResponseBody {
+import com.webank.eventmesh.common.Constants;
+import com.webank.eventmesh.common.protocol.http.body.Body;
+import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.commons.lang3.time.DateFormatUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class UnSubscribeResponseBody extends Body {
+
+    private Integer retCode;
+    private String retMsg;
+    private long resTime = System.currentTimeMillis();
+
+    public Integer getRetCode() {
+        return retCode;
+    }
+
+    public void setRetCode(Integer retCode) {
+        this.retCode = retCode;
+    }
+
+    public String getRetMsg() {
+        return retMsg;
+    }
+
+    public void setRetMsg(String retMsg) {
+        this.retMsg = retMsg;
+    }
+
+    public long getResTime() {
+        return resTime;
+    }
+
+    public void setResTime(long resTime) {
+        this.resTime = resTime;
+    }
+
+    public static UnSubscribeResponseBody buildBody(Integer retCode, String retMsg) throws Exception {
+        UnSubscribeResponseBody regResponseBody = new UnSubscribeResponseBody();
+        regResponseBody.setRetMsg(retMsg);
+        regResponseBody.setResTime(System.currentTimeMillis());
+        regResponseBody.setRetCode(retCode);
+        return regResponseBody;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("regResponseBody={")
+                .append("retCode=").append(retCode).append(",")
+                .append("retMsg=").append(retMsg).append(",")
+                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT)).append("}");
+        return sb.toString();
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put(ProtocolKey.RETCODE, retCode);
+        map.put(ProtocolKey.RETMSG, retMsg);
+        map.put(ProtocolKey.RESTIME, resTime);
+        return map;
+    }
 }

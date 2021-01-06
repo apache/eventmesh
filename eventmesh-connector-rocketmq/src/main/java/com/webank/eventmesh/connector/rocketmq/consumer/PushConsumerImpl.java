@@ -285,51 +285,51 @@ public class PushConsumerImpl implements PushConsumer {
         return rocketmqPushConsumer;
     }
 
-    class MessageListenerImpl implements MessageListenerConcurrently {
-
-        @Override
-        public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> rmqMsgList,
-            ConsumeConcurrentlyContext contextRMQ) {
-            MessageExt rmqMsg = rmqMsgList.get(0);
-            BytesMessage omsMsg = OMSUtil.msgConvert(rmqMsg);
-
-            MessageListener listener = PushConsumerImpl.this.subscribeTable.get(rmqMsg.getTopic());
-
-            if (listener == null) {
-                throw new OMSRuntimeException("-1",
-                    String.format("The topic/queue %s isn't attached to this consumer", rmqMsg.getTopic()));
-            }
-
-            final KeyValue contextProperties = OMS.newKeyValue();
-            final CountDownLatch sync = new CountDownLatch(1);
-
-            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ConsumeConcurrentlyStatus.RECONSUME_LATER.name());
-
-            MessageListener.Context context = new MessageListener.Context() {
-                @Override
-                public KeyValue attributes() {
-                    return contextProperties;
-                }
-
-                @Override
-                public void ack() {
-                    sync.countDown();
-                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                        ConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                }
-            };
-            long begin = System.currentTimeMillis();
-            listener.onReceived(omsMsg, context);
-            long costs = System.currentTimeMillis() - begin;
-            long timeoutMills = clientConfig.getRmqMessageConsumeTimeout() * 60 * 1000;
-            try {
-                sync.await(Math.max(0, timeoutMills - costs), TimeUnit.MILLISECONDS);
-            } catch (InterruptedException ignore) {
-            }
-
-            return ConsumeConcurrentlyStatus.valueOf(contextProperties.getString(NonStandardKeys.MESSAGE_CONSUME_STATUS));
-        }
-    }
+//    class MessageListenerImpl implements MessageListenerConcurrently {
+//
+//        @Override
+//        public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> rmqMsgList,
+//            ConsumeConcurrentlyContext contextRMQ) {
+//            MessageExt rmqMsg = rmqMsgList.get(0);
+//            BytesMessage omsMsg = OMSUtil.msgConvert(rmqMsg);
+//
+//            MessageListener listener = PushConsumerImpl.this.subscribeTable.get(rmqMsg.getTopic());
+//
+//            if (listener == null) {
+//                throw new OMSRuntimeException("-1",
+//                    String.format("The topic/queue %s isn't attached to this consumer", rmqMsg.getTopic()));
+//            }
+//
+//            final KeyValue contextProperties = OMS.newKeyValue();
+//            final CountDownLatch sync = new CountDownLatch(1);
+//
+//            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+//
+//            MessageListener.Context context = new MessageListener.Context() {
+//                @Override
+//                public KeyValue attributes() {
+//                    return contextProperties;
+//                }
+//
+//                @Override
+//                public void ack() {
+//                    sync.countDown();
+//                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
+//                        ConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+//                }
+//            };
+//            long begin = System.currentTimeMillis();
+//            listener.onReceived(omsMsg, context);
+//            long costs = System.currentTimeMillis() - begin;
+//            long timeoutMills = clientConfig.getRmqMessageConsumeTimeout() * 60 * 1000;
+//            try {
+//                sync.await(Math.max(0, timeoutMills - costs), TimeUnit.MILLISECONDS);
+//            } catch (InterruptedException ignore) {
+//            }
+//
+//            return ConsumeConcurrentlyStatus.valueOf(contextProperties.getString(NonStandardKeys.MESSAGE_CONSUME_STATUS));
+//        }
+//    }
 
     public AbstractContext getContext() {
         return this.context;
