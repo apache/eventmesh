@@ -3,7 +3,7 @@
 
 ##  1 远程部署
 
-<h3>1.1 依赖</h3>
+### 1.1 依赖
 
 ```
 建议使用64位操作系统，建议使用Linux / Unix；
@@ -11,12 +11,12 @@
 Gradle至少为5.6, 推荐 5.6.*
 ```
 
-<h3>1.2 下载源码</h3> 
+### 1.2 下载源码 
 
 [https://github.com/WeBankFinTech/EventMesh](https://github.com/WeBankFinTech/EventMesh)
 您将获得**EventMesh-master.zip**
 
-<h3>1.3 构建源码</h3>
+### 1.3 构建源码
 
 ```$ xslt
 unzip EventMesh-master.zip
@@ -25,7 +25,7 @@ gradle clean dist tar -x test
 ```
 您将在目录/ *您的部署路径* /EventMesh-master/eventmesh-runtime/dist中获得**eventmesh-runtime_1.0.0.tar.gz**
 
-<h3>1.4 部署</h3>
+### 1.4 部署
 
 - 部署eventmesh-runtime
 
@@ -42,13 +42,17 @@ sh start.sh
 
 
 
-<h2>2 本地构建运行</h2>
+## 2 本地构建运行
 
-<h3>2.1 同上述步骤 1.1</h3>
+### 2.1 依赖
 
-<h3>2.2 同上述步骤 1.2</h3>
+同上述步骤 1.1
 
-<h3>2.3 本地启动</h3>
+### 2.2 下载源码 
+
+同上述步骤 1.2
+
+### 2.3 本地启动
 
 **2.3.1 项目结构说明：**
 
@@ -66,7 +70,7 @@ sh start.sh
 
 **2.3.2 配置VM启动参数**
 
-```
+```java
 -Dlog4j.configurationFile=..\eventmesh-runtime\conf\log4j2.xml
 -Dproxy.log.home=..\eventmesh-runtime\logs
 -Dproxy.home=..\eventmesh-runtime
@@ -78,6 +82,20 @@ sh start.sh
 通过修改dependencies，compile project 项来指定项目启动后加载的插件
 
 > 默认加载eventmesh-connector-defibus插件
+
+```java
+dependencies {
+    compile project(":eventmesh-runtime"), project(":eventmesh-connector-defibus")
+}
+```
+
+加载RocketMQ插件配置：
+
+```java
+dependencies {
+    compile project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
+}
+```
 
 **2.3.4 启动运行**
 

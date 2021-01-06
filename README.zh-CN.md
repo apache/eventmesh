@@ -20,18 +20,22 @@ Event Mesh的一般功能:
 * 事件驱动;
 * 事件治理;
 * 动态路由;
-* 云原生
+* 云原生;
+* 流控；
+* 负载均衡
 
-**依赖部件：**
+**支持连接的事件存储：**
 
 * DeFiBus：具有低延迟，高性能和可靠性，和灵活可伸缩性的分布式消息传递平台 [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)
 * RocketMQ
 
 **关键部件：**
 
-* eventmesh-runtime：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
-* eventmesh-sdk-java：当前支持HTTP和TCP协议，未来会支持gRPC等
-* eventmesh-registry：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理runtime
+* **eventmesh-runtime**：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
+* **eventmesh-sdk-java**：当前支持HTTP和TCP协议，未来会支持gRPC等
+* **eventmesh-registry**：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理runtime
+* **eventmesh-connector-defibus** : 一种基于OpenMessagingConnector 接口的实现，该实现支持将DeFiBus作为事件存储，实现事件的发布与订阅
+* **eventmesh-connector-rocketmq** : 一种基于OpenMessagingConnector 接口的实现，该实现支持将RocketMQ作为事件存储，实现事件的发布与订阅
 
 **通信协议：**
 
@@ -40,11 +44,11 @@ eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里]
 ## RoadMap
 | version | feature |
 | ----    | ----    |
-| v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
+| v1.0.0  |Support DeFiBus as eventstore, support java-sdk , tcp pub/sub, http pub|
 | v1.1.0  |Support rocketmq as eventstore|
 | v1.1.1  |Support https|
 | v1.2.0  |Support Plug-in architecture, support http sub|
-| V1.3.0 |Support cloud event protocal|
+| V1.3.0 |Support cloud event protocol|
 |   |Support transaction event|
 |         |Support Event Sourcing|
 |         |Support Event orchestration|
