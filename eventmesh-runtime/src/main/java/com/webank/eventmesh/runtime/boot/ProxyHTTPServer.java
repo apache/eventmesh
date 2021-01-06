@@ -18,8 +18,11 @@
 package com.webank.eventmesh.runtime.boot;
 
 import com.google.common.eventbus.EventBus;
+import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import com.webank.eventmesh.runtime.core.protocol.http.processor.*;
+import com.webank.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import com.webank.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
+import com.webank.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
 import com.webank.eventmesh.runtime.core.protocol.http.push.AbstractHTTPPushRequest;
 import com.webank.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import com.webank.eventmesh.runtime.common.ServiceState;
@@ -28,7 +31,9 @@ import com.webank.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import com.webank.eventmesh.common.ThreadPoolFactory;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -39,6 +44,10 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
     public ServiceState serviceState;
 
     private ProxyConfiguration proxyConfiguration;
+
+    public final ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>();
+
+    public final ConcurrentHashMap<String, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>();
 
     public ProxyHTTPServer(ProxyServer proxyServer,
                            ProxyConfiguration proxyConfiguration) {
@@ -53,7 +62,7 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
 
     public EventBus eventBus = new EventBus();
 
-//    private ConsumerManager consumerManager;
+    private ConsumerManager consumerManager;
 
     private ProducerManager producerManager;
 
@@ -140,8 +149,8 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
         metrics = new HTTPMetricsServer(this);
         metrics.init();
 
-//        consumerManager = new ConsumerManager(this);
-//        consumerManager.init();
+        consumerManager = new ConsumerManager(this);
+        consumerManager.init();
 
         producerManager = new ProducerManager(this);
         producerManager.init();
@@ -158,7 +167,7 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
     public void start() throws Exception {
         super.start();
         metrics.start();
-//        consumerManager.start();
+        consumerManager.start();
         producerManager.start();
         httpRetryer.start();
         logger.info("--------------------------ProxyHTTPServer started");
@@ -171,7 +180,7 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
 
         metrics.shutdown();
 
-//        consumerManager.shutdown();
+        consumerManager.shutdown();
 
         shutdownThreadPool();
 
@@ -203,6 +212,9 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
         AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
         registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor, adminExecutor);
 
+        HeartBeatProcessor heartProcessor = new HeartBeatProcessor(this);
+        registerProcessor(RequestCode.HEARTBEAT.getRequestCode(), heartProcessor, clientManageExecutor);
+
         SubscribeProcessor subscribeProcessor = new SubscribeProcessor(this);
         registerProcessor(RequestCode.SUBSCRIBE.getRequestCode(), subscribeProcessor, clientManageExecutor);
 
@@ -213,9 +225,9 @@ public class ProxyHTTPServer extends AbrstractHTTPServer {
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);
     }
 
-//    public ConsumerManager getConsumerManager() {
-//        return consumerManager;
-//    }
+    public ConsumerManager getConsumerManager() {
+        return consumerManager;
+    }
 
     public ProducerManager getProducerManager() {
         return producerManager;

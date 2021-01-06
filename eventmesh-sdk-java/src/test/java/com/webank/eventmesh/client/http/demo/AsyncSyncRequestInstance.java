@@ -12,16 +12,16 @@ import org.slf4j.LoggerFactory;
 
 public class AsyncSyncRequestInstance {
 
-    public static Logger logger = LoggerFactory.getLogger(SyncRequestInstance.class);
+    public static Logger logger = LoggerFactory.getLogger(AsyncSyncRequestInstance.class);
 
     public static void main(String[] args) throws Exception {
 
         LiteProducer liteProducer = null;
         try {
-            String proxyIPPort = args[0];
-
-            final String topic = args[1];
-
+//            String proxyIPPort = args[0];
+            String proxyIPPort = "";
+//            final String topic = args[1];
+            final String topic = "FT0-e-80010000-01-1";
             if (StringUtils.isBlank(proxyIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
                 proxyIPPort = "127.0.0.1:10105";
@@ -41,14 +41,14 @@ public class AsyncSyncRequestInstance {
             final long startTime = System.currentTimeMillis();
             final LiteMessage liteMessage = new LiteMessage();
             liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
-                    .setContent("contentStr with special protocal")
+                    .setContent("testAsyncMessage")
                     .setTopic(topic)
                     .setUniqueId(RandomStringUtils.randomNumeric(30));
 
             liteProducer.request(liteMessage, new RRCallback() {
                 @Override
                 public void onSuccess(LiteMessage o) {
-                    logger.debug("sendmsg : {}, return : {}, cost:{}ms", liteMessage.getContent(), System.currentTimeMillis() - startTime);
+                    logger.debug("sendmsg : {}, return : {}, cost:{}ms", liteMessage.getContent(), o.getContent(), System.currentTimeMillis() - startTime);
                 }
 
                 @Override

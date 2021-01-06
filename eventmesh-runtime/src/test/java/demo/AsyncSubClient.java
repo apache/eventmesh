@@ -27,7 +27,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class AsyncSubClient {
     public static void main(String[] args) throws Exception {
-        SubClientImpl client = new SubClientImpl("127.0.0.1", 10000, MessageUtils.generateSubServer());
+        SubClientImpl client = new SubClientImpl("127.0.0.1", 10002, MessageUtils.generateSubServer());
         client.init();
         client.heartbeat();
         client.justSubscribe(ClientConstants.ASYNC_TOPIC);

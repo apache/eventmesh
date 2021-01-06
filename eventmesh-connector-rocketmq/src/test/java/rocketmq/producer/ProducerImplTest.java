@@ -16,7 +16,7 @@
  */
 package rocketmq.producer;
 
-import com.webank.connector.rocketmq.producer.AbstractOMSProducer;
+import com.webank.eventmesh.connector.rocketmq.producer.AbstractOMSProducer;
 import io.openmessaging.MessagingAccessPoint;
 import io.openmessaging.OMS;
 import io.openmessaging.exception.OMSRuntimeException;
