@@ -100,6 +100,7 @@ public class RemotingServer {
         this.consumeExecutor = consumeExecutor;
     }
 
+    //TODO:不同的topic有不同的listener
     public void registerMessageListener(LiteMessageListener proxyMessageListener) {
         this.messageListener = proxyMessageListener;
     }
@@ -135,6 +136,10 @@ public class RemotingServer {
     public String getEndpointURL() {
         return String.format("http://%s:%s", IPUtil.getLocalAddress(), port);
     }
+
+
+
+
 
     class HTTPHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
@@ -229,7 +234,7 @@ public class RemotingServer {
 
                 //检查是否有该TOPIC的listener
 //                if (!listenerTable.containsKey(topic)) {
-//                    logger.error("no listenning for this topic, {}", pushMessageRequest);
+//                    logger.error("no listenning for this topic, {}", topic);
 //                    responseCommand = requestCommand.createHttpCommandResponse(ClientRetCode.NOLISTEN.getRetCode(), ClientRetCode.NOLISTEN.getErrMsg());
 //                    sendResponse(ctx, responseCommand.httpResponse());
 //                    return;
@@ -345,12 +350,6 @@ public class RemotingServer {
             });
         }
 
-        public void init() throws Exception {
-            initBossGroup();
-            initWokerGroup();
-            inited.compareAndSet(false, true);
-        }
-
         public void shutdown() throws Exception {
             if (bossGroup != null) {
                 bossGroup.shutdownGracefully();
@@ -365,40 +364,46 @@ public class RemotingServer {
             started.compareAndSet(true, false);
             inited.compareAndSet(true, false);
         }
+    }
 
-        public void start() throws Exception {
-            Runnable r = new Runnable() {
-                @Override
-                public void run() {
-                    ServerBootstrap b = new ServerBootstrap();
-                    b.group(bossGroup, workerGroup)
-                            .channel(NioServerSocketChannel.class)
-                            .childHandler(new ChannelInitializer<SocketChannel>() {
-                                @Override
-                                public void initChannel(SocketChannel ch)
-                                        throws Exception {
-                                    ch.pipeline()
-                                            .addLast(new HttpRequestDecoder(),
-                                                    new HttpResponseEncoder(),
-                                                    new HttpObjectAggregator(Integer.MAX_VALUE),
-                                                    new HTTPHandler());        // 4
-                                }
-                            }).childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
-                    try {
-                        logger.info("WeMQProxy Client[{}] Started......", port);
-                        ChannelFuture future = b.bind(port).sync();
-                        future.channel().closeFuture().sync();
-                        started.compareAndSet(false, true);
-                    } catch (Exception e) {
-                        bossGroup.shutdownGracefully();
-                        workerGroup.shutdownGracefully();
-                    }
+    public void init() throws Exception {
+        initBossGroup();
+        initWokerGroup();
+        inited.compareAndSet(false, true);
+    }
+
+    public void start() throws Exception {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                ServerBootstrap b = new ServerBootstrap();
+                b.group(bossGroup, workerGroup)
+                        .channel(NioServerSocketChannel.class)
+                        .childHandler(new ChannelInitializer<SocketChannel>() {
+                            @Override
+                            public void initChannel(SocketChannel ch)
+                                    throws Exception {
+                                ch.pipeline()
+                                        .addLast(new HttpRequestDecoder(),
+                                                new HttpResponseEncoder(),
+                                                new HttpObjectAggregator(Integer.MAX_VALUE),
+                                                new HTTPHandler());        // 4
+                            }
+                        }).childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
+                try {
+                    logger.info("WeMQProxy Client[{}] Started......", port);
+                    ChannelFuture future = b.bind(port).sync();
+                    future.channel().closeFuture().sync();
+                    started.compareAndSet(false, true);
+                } catch (Exception e) {
+                    bossGroup.shutdownGracefully();
+                    workerGroup.shutdownGracefully();
                 }
-            };
+            }
+        };
 
 
-            Thread t = new Thread(r, "proxy-client-remoting-server");
-            t.start();
-        }
+        Thread t = new Thread(r, "proxy-client-remoting-server");
+        t.start();
     }
 }

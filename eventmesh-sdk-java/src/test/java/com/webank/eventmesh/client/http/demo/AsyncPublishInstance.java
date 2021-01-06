@@ -18,10 +18,10 @@ public class AsyncPublishInstance {
 
         LiteProducer liteProducer = null;
         try{
-            String proxyIPPort = args[0];
-
-            String topic = args[1];
-
+//            String proxyIPPort = args[0];
+            String proxyIPPort = "";
+//            final String topic = args[1];
+            final String topic = "FT0-e-80010000-01-1";
             if (StringUtils.isBlank(proxyIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
                 proxyIPPort = "127.0.0.1:10105";
@@ -41,7 +41,8 @@ public class AsyncPublishInstance {
 
             LiteMessage liteMessage = new LiteMessage();
             liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
-                    .setContent("contentStr with special protocal")
+//                    .setContent("contentStr with special protocal")
+                    .setContent("testPublishMessage")
                     .setTopic(topic)
                     .setUniqueId(RandomStringUtils.randomNumeric(30))
                     .addProp(Constants.PROXY_MESSAGE_CONST_TTL, String.valueOf(4 * 3600 * 1000));
