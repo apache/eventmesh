@@ -24,9 +24,9 @@ General functions of the event mesh:
 * Event driven;
 * Event governance;
 * Dynamic routing;
-* Cloud native
-* Flow Control
-* Load Balance
+* Cloud native；
+* Flow control；
+* Load balance
 
 **Support connecting event stores:**
 
