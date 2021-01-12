@@ -53,17 +53,21 @@ The protocol of eventmesh is easier and convenient, you can read more [here](doc
 | v1.1.1  |Support https|
 | v1.2.0  |Support Plug-in architecture, support http sub|
 | V1.3.0 |Support cloud event protocol|
-|         |Support transaction event|
-|         |Support Event Sourcing|
+|         |Support Event transaction|
+|         |Support Event filter|
+|         |Support Promethus as metrics|
+|         |Support multi language SDK(c\go\python\wsam)|
 |         |Support Event orchestration|
-|         |Support Dashboard|
 |         |Support Event governance|
-|         |Support Nacos as an event router|
-|         |Support Promethus|
-|         |Support Skywalking|
-|         |Support Spiffe|
-|         |Support gRPC|
-|         |Support c/go/python/nodejs SDK|
+|         |Support Skywalking as tracing|
+|         |Support Spiffe as security|
+|         |Support Event replay|
+|         |Support openmessaging-storage-dledger as default event store|
+|         |Support Dashboard|
+| |Support schema registry|
+| |Support gRPC protocol|
+| |Support MQTT protocol|
+| |Support routing functions with triggers and bindings|
 
 ## Quick Start
 1. Build and deploy event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus)), 
