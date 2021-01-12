@@ -42,24 +42,28 @@ Event Mesh的一般功能:
 eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里](docs/cn/instructions/eventmesh-runtime-protocol.zh-CN.md)
 
 ## RoadMap
-| version | feature |
-| ----    | ----    |
-| v1.0.0  |Support DeFiBus as eventstore, support java-sdk , tcp pub/sub, http pub|
-| v1.1.0  |Support rocketmq as eventstore|
-| v1.1.1  |Support https|
-| v1.2.0  |Support Plug-in architecture, support http sub|
-| V1.3.0 |Support cloud event protocol|
-|   |Support transaction event|
-|         |Support Event Sourcing|
-|         |Support Event orchestration|
-|         |Support Dashboard|
-|         |Support Event governance|
-|         |Support Nacos as an event router|
-|         |Support Promethus|
-|         |Support Skywalking|
-|         |Support Spiffe|
-|         |Support gRPC|
-|         |Support c/go/python/nodejs SDK|
+| version | feature                                                      |
+| ------- | ------------------------------------------------------------ |
+| v1.0.0  | Support DeFiBus as eventstore, support java-sdk , tcp pub/sub, http pub |
+| v1.1.0  | Support RocketMQ as eventstore                               |
+| v1.1.1  | Support https                                                |
+| v1.2.0  | Support Plug-in architecture, support http sub               |
+| V1.3.0  | Support cloud event protocol                                 |
+|         | Support Event transaction                                    |
+|         | Support Event filter                                         |
+|         | Support Promethus as metrics                                 |
+|         | Support multi language SDK(c\go\python\wsam)                 |
+|         | Support Event orchestration                                  |
+|         | Support Event governance                                     |
+|         | Support Skywalking as tracing                                |
+|         | Support Spiffe as security                                   |
+|         | Support Event replay                                         |
+|         | Support openmessaging-storage-dledger as default event store |
+|         | Support Dashboard                                            |
+|         | Support schema registry                                      |
+|         | Support gRPC protocol                                        |
+|         | Support MQTT protocol                                        |
+|         | Support routing functions with triggers and bindings         |
 
 ## 快速开始
 1. 构建并部署event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus))
