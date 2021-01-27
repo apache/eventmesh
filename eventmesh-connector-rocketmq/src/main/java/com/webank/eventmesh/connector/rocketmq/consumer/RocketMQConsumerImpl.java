@@ -60,6 +60,7 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
         clientConfiguration.init();
         boolean isBroadcast = Boolean.valueOf(keyValue.getString("isBroadcast"));
         String consumerGroup = keyValue.getString("consumerGroup");
+        String instanceName = keyValue.getString("instanceName");
 
         if(isBroadcast){
             consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + Constants.BROADCAST_PREFIX + consumerGroup;
@@ -72,12 +73,14 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
 
         properties.put("ACCESS_POINTS", omsNamesrv)
                 .put("REGION", "namespace")
-                .put(OMSBuiltinKeys.CONSUMER_ID, consumerGroup);
+                .put(OMSBuiltinKeys.CONSUMER_ID, consumerGroup)
+                .put("instanceName", instanceName);
         if (isBroadcast){
             properties.put("MESSAGE_MODEL", MessageModel.BROADCASTING.name());
         }else {
             properties.put("MESSAGE_MODEL", MessageModel.CLUSTERING.name());
         }
+
         MessagingAccessPoint messagingAccessPoint = OMS.getMessagingAccessPoint(omsNamesrv, properties);
         pushConsumer = (PushConsumerImpl)messagingAccessPoint.createPushConsumer();
     }
@@ -85,11 +88,6 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     @Override
     public void subscribe(String topic, MessageListener listener) throws Exception {
         pushConsumer.attachQueue(topic, listener);
-    }
-
-    @Override
-    public void setInstanceName(String instanceName) {
-        pushConsumer.getRocketmqPushConsumer().setInstanceName(instanceName);
     }
 
     @Override
