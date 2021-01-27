@@ -80,6 +80,7 @@ public class DeFiBusConsumerImpl implements MeshMQPushConsumer {
         boolean isBroadcast = Boolean.valueOf(keyValue.getString("isBroadcast"));
         String consumerGroup = keyValue.getString("consumerGroup");
         String proxyIDC = keyValue.getString("proxyIDC");
+        String instanceName = keyValue.getString("instanceName");
 
         DeFiBusClientConfig wcc = new DeFiBusClientConfig();
         wcc.setNamesrvAddr(clientConfiguration.namesrvAddr);
@@ -100,6 +101,7 @@ public class DeFiBusConsumerImpl implements MeshMQPushConsumer {
 
         deFiBusPushConsumer = new DeFiBusPushConsumer(wcc);
         deFiBusPushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
+        deFiBusPushConsumer.getDefaultMQPushConsumer().setInstanceName(instanceName);
         if (isBroadcast) {
             deFiBusPushConsumer.getDefaultMQPushConsumer().setMessageModel(MessageModel.BROADCASTING);
 
@@ -272,11 +274,6 @@ public class DeFiBusConsumerImpl implements MeshMQPushConsumer {
     @Override
     public synchronized void shutdown()  {
         deFiBusPushConsumer.shutdown();
-    }
-
-    @Override
-    public void setInstanceName(String instanceName) {
-        deFiBusPushConsumer.getDefaultMQPushConsumer().setInstanceName(instanceName);
     }
 
     @Override

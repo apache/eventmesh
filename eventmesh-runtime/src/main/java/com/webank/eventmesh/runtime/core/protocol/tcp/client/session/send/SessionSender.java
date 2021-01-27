@@ -84,7 +84,7 @@ public class SessionSender {
                     upStreamMsgContext = new UpStreamMsgContext(header.getSeq(), session, msg);
                     session.getClientGroupWrapper().get().request(upStreamMsgContext, sendCallback, initSyncRRCallback(header, startTime, taskExecuteTime), ttl);
                 } else if (Command.RESPONSE_TO_SERVER == cmd) {
-                    String cluster = msg.sysHeaders().getString(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER);
+                    String cluster = msg.userHeaders().getString(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER);
                     if (!StringUtils.isEmpty(cluster)) {
                         String replyTopic = DeFiBusConstant.RR_REPLY_TOPIC;
                         replyTopic = cluster + "-" + replyTopic;
