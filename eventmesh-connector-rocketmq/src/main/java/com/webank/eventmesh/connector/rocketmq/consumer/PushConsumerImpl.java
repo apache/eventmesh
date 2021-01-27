@@ -83,7 +83,8 @@ public class PushConsumerImpl implements PushConsumer {
         this.rocketmqPushConsumer.setMessageModel(MessageModel.valueOf(clientConfig.getMessageModel()));
 
         String consumerId = OMSUtil.buildInstanceName();
-        this.rocketmqPushConsumer.setInstanceName(consumerId);
+        //this.rocketmqPushConsumer.setInstanceName(consumerId);
+        this.rocketmqPushConsumer.setInstanceName(properties.getString("instanceName"));
         properties.put(OMSBuiltinKeys.CONSUMER_ID, consumerId);
         this.rocketmqPushConsumer.setLanguage(LanguageCode.OMS);
 

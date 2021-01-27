@@ -22,8 +22,6 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.webank.eventmesh.common.config.CommonConfiguration;
 import com.webank.eventmesh.common.config.ConfigurationWraper;
 import org.apache.commons.lang3.StringUtils;
-import com.webank.eventmesh.common.config.CommonConfiguration;
-import com.webank.eventmesh.common.config.ConfigurationWraper;
 
 public class ProxyConfiguration extends CommonConfiguration {
 
