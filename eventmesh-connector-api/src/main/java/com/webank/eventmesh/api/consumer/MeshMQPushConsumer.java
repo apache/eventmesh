@@ -28,7 +28,5 @@ public interface MeshMQPushConsumer extends PushConsumer {
 
     void pause();
 
-    void setInstanceName(String instanceName);
-
     AbstractContext getContext();
 }
