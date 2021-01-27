@@ -33,11 +33,6 @@ public class MQConsumerWrapper extends MQWrapper {
 
     protected MeshMQPushConsumer meshMQPushConsumer;
 
-    public void setInstanceName(String instanceName) {
-
-        meshMQPushConsumer.setInstanceName(instanceName);
-    }
-
     public void subscribe(String topic, MessageListener listener) throws Exception {
         meshMQPushConsumer.subscribe(topic, listener);
     }
