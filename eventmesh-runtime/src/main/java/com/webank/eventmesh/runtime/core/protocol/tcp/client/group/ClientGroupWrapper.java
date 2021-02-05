@@ -441,6 +441,7 @@ public class ClientGroupWrapper {
         keyValue.put("isBroadcast", "true");
         keyValue.put("consumerGroup", groupName);
         keyValue.put("proxyIDC", accessConfiguration.proxyIDC);
+        keyValue.put("instanceName", ProxyUtil.buildProxyTcpClientID(sysId, dcn, "SUB", accessConfiguration.proxyCluster));
         broadCastMsgConsumer.init(keyValue);
 //        broadCastMsgConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
 //            @Override
