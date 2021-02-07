@@ -150,18 +150,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                     proxyHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), groupTopicClientMapping.getValue());
                 }else {
                     List<Client> tmpClientList = groupTopicClientMapping.getValue();
-                    for (Client tmpClient : tmpClientList){
-                        boolean isContains = false;
-                        for (Client localClient : localClientList){
-                            if (StringUtils.equals(localClient.url, tmpClient.url)){
-                                isContains = true;
-                                break;
-                            }
-                        }
-                        if (!isContains){
-                            localClientList.add(tmpClient);
-                        }
-                    }
+                    supplyClientInfoList(tmpClientList, localClientList);
                     proxyHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), localClientList);
                 }
 
@@ -201,6 +190,21 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
             proxyHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
         }
 
+    }
+
+    private void supplyClientInfoList(List<Client> tmpClientList, List<Client> localClientList) {
+        for (Client tmpClient : tmpClientList){
+            boolean isContains = false;
+            for (Client localClient : localClientList){
+                if (StringUtils.equals(localClient.url, tmpClient.url)){
+                    isContains = true;
+                    break;
+                }
+            }
+            if (!isContains){
+                localClientList.add(tmpClient);
+            }
+        }
     }
 
     @Override
