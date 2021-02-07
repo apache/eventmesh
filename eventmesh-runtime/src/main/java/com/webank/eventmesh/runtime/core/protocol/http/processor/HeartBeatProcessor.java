@@ -145,7 +145,15 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         }
         synchronized (proxyHTTPServer.localClientInfoMapping){
             for (Map.Entry<String, List<Client>> groupTopicClientMapping : tmp.entrySet()) {
-                proxyHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), groupTopicClientMapping.getValue());
+                List<Client> localClientList =  proxyHTTPServer.localClientInfoMapping.get(groupTopicClientMapping.getKey());
+                if (CollectionUtils.isEmpty(localClientList)){
+                    proxyHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), groupTopicClientMapping.getValue());
+                }else {
+                    List<Client> tmpClientList = groupTopicClientMapping.getValue();
+                    supplyClientInfoList(tmpClientList, localClientList);
+                    proxyHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), localClientList);
+                }
+
             }
         }
 
@@ -182,6 +190,21 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
             proxyHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
         }
 
+    }
+
+    private void supplyClientInfoList(List<Client> tmpClientList, List<Client> localClientList) {
+        for (Client tmpClient : tmpClientList){
+            boolean isContains = false;
+            for (Client localClient : localClientList){
+                if (StringUtils.equals(localClient.url, tmpClient.url)){
+                    isContains = true;
+                    break;
+                }
+            }
+            if (!isContains){
+                localClientList.add(tmpClient);
+            }
+        }
     }
 
     @Override
