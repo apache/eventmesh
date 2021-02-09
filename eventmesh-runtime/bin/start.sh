@@ -155,6 +155,11 @@ echo "using jdk[$JAVA]" >> ${PROXY_LOG_HOME}/proxy.out
 
 
 PROXY_MAIN=com.webank.eventmesh.runtime.boot.ProxyStartup
-$JAVA $JAVA_OPT -classpath ${PROXY_HOME}/conf:${PROXY_HOME}/apps/*:${PROXY_HOME}/lib/* $PROXY_MAIN >> ${PROXY_LOG_HOME}/proxy.out 2>&1 &
+if [ $DOCKER ]
+then
+	$JAVA $JAVA_OPT -classpath ${PROXY_HOME}/conf:${PROXY_HOME}/apps/*:${PROXY_HOME}/lib/* $PROXY_MAIN >> ${PROXY_LOG_HOME}/proxy.out
+else
+	$JAVA $JAVA_OPT -classpath ${PROXY_HOME}/conf:${PROXY_HOME}/apps/*:${PROXY_HOME}/lib/* $PROXY_MAIN >> ${PROXY_LOG_HOME}/proxy.out 2>&1 &
 echo $!>pid.file
+fi
 exit 0
