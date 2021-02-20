@@ -198,6 +198,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
             for (Client localClient : localClientList){
                 if (StringUtils.equals(localClient.url, tmpClient.url)){
                     isContains = true;
+                    localClient.lastUpTime = tmpClient.lastUpTime;
                     break;
                 }
             }
