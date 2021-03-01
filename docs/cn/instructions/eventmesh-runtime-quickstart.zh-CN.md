@@ -56,8 +56,7 @@ sh start.sh
 
 **2.3.1 项目结构说明：**
 
-![](C:\Users\mikexue\AppData\Roaming\Typora\typora-user-images\image-20201229211217729.png)
-
+![](../../images/project-structure.png)
 - eventmesh-common : eventmesh公共类与方法模块
 - eventmesh-connector-api : eventmesh插件接口定义模块
 - eventmesh-connector-defibus : eventmesh defibus插件模块
