@@ -50,7 +50,7 @@ Same with 1.2
 
 **2.3.1 Project structure：**
 
-![](C:\Users\mikexue\AppData\Roaming\Typora\typora-user-images\image-20201229211217729.png)
+![](../../images/project-structure.png)
 
 - eventmesh-common : eventmesh common classes and method module
 - eventmesh-connector-api : eventmesh connector api definition module
