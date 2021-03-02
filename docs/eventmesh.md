@@ -19,8 +19,7 @@ EventMesh的一般功能:
 * 云原生;
 
 依赖部件：
-* 可选1：[DeFiBus](https://github.com/WeBankFinTech/DeFiBus)：具有低延迟，高性能和可靠性，和灵活可伸缩性的分布式消息传递平台 
-* 可选2：[RocketMQ](https://github.com/apache/rocketmq)：RocketMQ是一个分布式消息流平台，具有低延迟、高性能和可靠性、万亿级容量和灵活的可伸缩性。
+* [RocketMQ](https://github.com/apache/rocketmq)：RocketMQ是一个分布式消息流平台，具有低延迟、高性能和可靠性、万亿级容量和灵活的可伸缩性。
 
 关键部件：
 * EventMesh：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
