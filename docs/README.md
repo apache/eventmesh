@@ -25,7 +25,6 @@ General functions of the event mesh:
 * Cloud native
 
 Dependent components:
-* [DeFiBus](https://github.com/WeBankFinTech/DeFiBus) : a distributed messaging platform with low latency, high performance and reliability, flexible scalability. 
 * [RocketMQ](https://github.com/apache/rocketmq):RocketMQ is a distributed messaging and streaming platform with low latency, high performance and reliability, trillion-level capacity and flexible scalability.
 
 Key components:
@@ -36,7 +35,7 @@ Key components:
 ## RoadMap
 | version | feature |
 | ----    | ----    |
-| v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
+| v1.0.0  |Support pub/sub, http api, java-sdk|
 | v1.1.0  |Support rocketmq as eventstore|
 | v1.2.0  |Support Plug-in architecture, support http sub|
 | V1.3.0 |Support CloudEvents protocal|
