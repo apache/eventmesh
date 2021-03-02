@@ -52,8 +52,7 @@ Key components:
 |         |Support c/go/python/NodeJs/wasm SDK|
 
 ## Quick Start
-1. Build and deploy event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus)), 
-   see instruction ['event-store quickstart'](instructions/eventmesh-store-quickstart.md).
+1. Build and deploy event-store(RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
 2. Build and deploy eventmesh-runtime, see instruction ['eventmesh-runtime quickstart'](instructions/eventmesh-runtime-quickstart.md).
 3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](instructions/eventmesh-sdk-java-quickstart.md). 
 
