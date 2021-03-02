@@ -1,30 +1,31 @@
 ## 什么是Event Mesh？
-该图显示了Event Mesh相对于应用程序框架中其他类似技术(例如Service Mesh)的定位.
+EventMesh是一个动态的云原生事件驱动架构基础设施，用于分离应用程序和后端中间件层，它支持广泛的用例，包括复杂的混合云、使用了不同技术栈的分布式架构。
 ![architecture1](images/eventmesh-define.png)
 
-Event Mesh是一个动态的插件式云原生基础服务层，用于分离应用程序和中间件层。它提供了灵活，可靠和快速的事件分发，并且可以进行管理：
+**EventMesh架构：**
 
 ![architecture1](images/eventmesh-runtime.png)
 
-云原生Event Mesh：
+**EventMesh云原生结构：**
 
 ![architecture2](images/eventmesh-panels.png)
 
-Event Mesh允许将来自一个应用程序的事件动态路由到任何其他应用程序.
-Event Mesh的一般功能:
+EventMesh允许将来自一个应用程序的事件动态路由到任何其他应用程序.
+EventMesh的一般功能:
+
 * 事件驱动;
 * 事件治理;
 * 动态路由;
 * 云原生;
 
 依赖部件：
-* 可选1：DeFiBus：具有低延迟，高性能和可靠性，和灵活可伸缩性的分布式消息传递平台 [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)
-* 可选2：RocketMQ
+* 可选1：[DeFiBus](https://github.com/WeBankFinTech/DeFiBus)：具有低延迟，高性能和可靠性，和灵活可伸缩性的分布式消息传递平台 
+* 可选2：[RocketMQ](https://github.com/apache/rocketmq)：RocketMQ是一个分布式消息流平台，具有低延迟、高性能和可靠性、万亿级容量和灵活的可伸缩性。
 
 关键部件：
-* event mesher：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
+* EventMesh：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
 * sdk：当前支持HTTP和TCP协议，未来会支持gRPC等
-* registry：自动在连接到事件网格的应用程序和服务之间路由事件, 管理event mesher
+* registry：自动在连接到事件网格的应用程序和服务之间路由事件, 管理EventMesh
 
 
 ## 开源地址
