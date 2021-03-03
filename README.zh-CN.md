@@ -46,7 +46,7 @@ eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里]
 | v1.1.0  | Support RocketMQ as eventstore                               |
 | v1.1.1  | Support https                                                |
 | v1.2.0  | Support Plug-in architecture, support http sub               |
-| V1.3.0  | Support cloud event protocol                                 |
+| V1.3.0  | Support CloudEvents protocol                                 |
 |         | Support Event transaction                                    |
 |         | Support Event filter                                         |
 |         | Support Promethus as metrics                                 |
