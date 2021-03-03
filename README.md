@@ -8,6 +8,7 @@
 ## What is EventMesh?
 EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
+**EventMesh Ecosystem:**
 ![architecture1](docs/images/eventmesh-define.png)
 
 **EventMesh Architecture:**
@@ -86,4 +87,9 @@ WeChat group：
 
 ![wechat_qr](docs/images/mesh-helper.png)
 
-
+Mailing Lists:
+| Name | Description |Subscribe	|Unsubscribe|Archive
+| ----    | ----    |----    | ----    | ----    |
+|Users	|User support and questions mailing list|	[Subscribe](mailto:users-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:users-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?users@eventmesh.apache.org)|
+|Development	|Development related discussions|	[Subscribe](mailto:dev-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:dev-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?dev@eventmesh.apache.org)|
+|Commits	|All commits to repositories|	[Subscribe](mailto:commits-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:commits-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?commits@eventmesh.apache.org)|
