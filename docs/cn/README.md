@@ -8,7 +8,7 @@ EventMesh是一个动态的云原生事件驱动架构基础设施，用于分�
 
 ![architecture1](../images/eventmesh-define.png)
 
-**EventMesh架构：**https://rocketmq.apache.org/docs/quick-start/
+**EventMesh架构：**
 
 ![architecture1](../images/eventmesh-runtime.png)
 
