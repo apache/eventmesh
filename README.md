@@ -35,14 +35,14 @@ General functions of the eventmesh:
 
 **Components:**
 
-* **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
-* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols, and will support gRPC in the future
-* **eventmesh-registry** : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-runtime
-* **eventmesh-connector-rocketmq** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from RocketMQ Event Store
+* **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
+* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols, and will support gRPC in the future.
+* **eventmesh-registry** : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-runtime.
+* **eventmesh-connector-rocketmq** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from RocketMQ Event Store.
 
 **Protocol:**
 
-The protocol of eventmesh is easier and convenient, you can read more [here](docs/cn/instructions/eventmesh-runtime-protocol.zh-CN.md)
+The protocol of eventmesh is easier and convenient, you can read more [here](docs/cn/instructions/eventmesh-runtime-protocol.zh-CN.md).
 
 ## RoadMap
 | version | feature |
@@ -74,13 +74,13 @@ The protocol of eventmesh is easier and convenient, you can read more [here](doc
 3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md). 
 
 ## Contributing
-Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines
+Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.
 
 You can start with the issues labeled with good first issue. 
 [GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
 
 ## License
-[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation
+[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation.
 
 ## Community
 WeChat group：
