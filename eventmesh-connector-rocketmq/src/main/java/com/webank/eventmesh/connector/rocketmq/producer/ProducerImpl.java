@@ -19,10 +19,7 @@ package com.webank.eventmesh.connector.rocketmq.producer;
 import com.webank.eventmesh.connector.rocketmq.promise.DefaultPromise;
 import com.webank.eventmesh.connector.rocketmq.utils.OMSUtil;
 import com.webank.eventmesh.api.SendCallback;
-import io.openmessaging.BytesMessage;
-import io.openmessaging.KeyValue;
-import io.openmessaging.Message;
-import io.openmessaging.Promise;
+import io.openmessaging.*;
 import io.openmessaging.exception.OMSRuntimeException;
 import io.openmessaging.interceptor.ProducerInterceptor;
 import io.openmessaging.producer.BatchMessageSender;
@@ -37,8 +34,6 @@ import static com.webank.eventmesh.connector.rocketmq.utils.OMSUtil.msgConvert;
 public class ProducerImpl extends AbstractOMSProducer implements Producer {
 
     public static final int proxyServerAsyncAccumulationThreshold = 1000;
-
-    protected SendCallback sendCallback;
 
     public ProducerImpl(final KeyValue properties) {
         super(properties);
@@ -66,6 +61,16 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
         return null;
     }
 
+    @Override
+    public Future<SendResult> sendAsync(Message message) {
+        return null;
+    }
+
+    @Override
+    public Future<SendResult> sendAsync(Message message, KeyValue attributes) {
+        return null;
+    }
+
     private SendResult send(final Message message, long timeout) {
         checkMessageType(message);
         org.apache.rocketmq.common.message.Message rmqMessage = msgConvert((BytesMessage) message);
@@ -83,19 +88,11 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
         }
     }
 
-    @Override
-    public Promise<SendResult> sendAsync(final Message message) {
-        return sendAsync(message, this.rocketmqProducer.getSendMsgTimeout());
+    public Promise<SendResult> sendAsync(final Message message, SendCallback sendCallback) {
+        return sendAsync(message, this.rocketmqProducer.getSendMsgTimeout(), sendCallback);
     }
 
-    @Override
-    public Promise<SendResult> sendAsync(final Message message, final KeyValue properties) {
-        long timeout = properties.containsKey(Message.BuiltinKeys.TIMEOUT)
-            ? properties.getInt(Message.BuiltinKeys.TIMEOUT) : this.rocketmqProducer.getSendMsgTimeout();
-        return sendAsync(message, timeout);
-    }
-
-    private Promise<SendResult> sendAsync(final Message message, long timeout) {
+    private Promise<SendResult> sendAsync(final Message message, long timeout, SendCallback sendCallback) {
         checkMessageType(message);
         org.apache.rocketmq.common.message.Message rmqMessage = msgConvert((BytesMessage) message);
         final Promise<SendResult> promise = new DefaultPromise<>();
@@ -106,13 +103,13 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
                     message.sysHeaders().put(Message.BuiltinKeys.MESSAGE_ID, rmqResult.getMsgId());
                     SendResult omsSendResult = OMSUtil.sendResultConvert(rmqResult);
                     promise.set(omsSendResult);
-                    ProducerImpl.this.sendCallback.onSuccess(omsSendResult);
+                    sendCallback.onSuccess(omsSendResult);
                 }
 
                 @Override
                 public void onException(final Throwable e) {
                     promise.setFailure(e);
-                    ProducerImpl.this.sendCallback.onException(e);
+                    sendCallback.onException(e);
                 }
             }, timeout);
         } catch (Exception e) {
@@ -161,11 +158,4 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
         super.getRocketmqProducer().setCompressMsgBodyOverHowmuch(10);
     }
 
-    public void setSendCallback(SendCallback sendCallback) {
-        this.sendCallback = sendCallback;
-    }
-
-    public SendCallback getSendCallback() {
-        return sendCallback;
-    }
 }
