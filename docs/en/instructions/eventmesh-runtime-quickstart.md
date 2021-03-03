@@ -50,11 +50,10 @@ Same with 1.2
 
 **2.3.1 Project structure：**
 
-![](C:\Users\mikexue\AppData\Roaming\Typora\typora-user-images\image-20201229211217729.png)
+![](../../images/project-structure.png)
 
 - eventmesh-common : eventmesh common classes and method module
 - eventmesh-connector-api : eventmesh connector api definition module
-- eventmesh-connector-defibus : eventmesh defibus connector module
 - eventmesh-connector-rocketmq : eventmesh rocketmq connector module
 - eventmesh-runtime : eventmesh runtime module
 - eventmesh-sdk-java : eventmesh java client sdk
@@ -75,15 +74,9 @@ ps：The loading of connector plugin follows the Java SPI mechanism,  it's neces
 
 Specify the connector that will be loaded after the project start with updating compile project item in dependencies
 
-> default load eventmesh-connector-defibus connector 
+update `build.gradle` file under the `eventmesh-starter` module
 
-```java
-dependencies {
-    compile project(":eventmesh-runtime"), project(":eventmesh-connector-defibus")
-}
-```
-
-load rocketmq connector configuration：
+load **rocketmq connector** configuration：
 
 ```java
 dependencies {
@@ -93,5 +86,5 @@ dependencies {
 
 **2.3.4 Run**
 
-running com.webank.eventmesh.starter.StartUp main method
+running `com.webank.eventmesh.starter.StartUp` main method
 

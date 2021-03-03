@@ -82,10 +82,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
     @Override
     public void send(Message message, SendCallback sendCallback) throws Exception {
-        if (producer.getSendCallback() == null){
-            producer.setSendCallback(sendCallback);
-        }
-        producer.sendAsync(message);
+        producer.sendAsync(message, sendCallback);
     }
 
     @Override
