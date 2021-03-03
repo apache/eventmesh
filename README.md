@@ -14,7 +14,7 @@ EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the 
 
 ![architecture1](docs/images/eventmesh-runtime.png)
 
-**Cloud Native Event Mesh:**
+**EventMesh Cloud Native:**
 
 ![architecture2](docs/images/eventmesh-panels.png)
 
