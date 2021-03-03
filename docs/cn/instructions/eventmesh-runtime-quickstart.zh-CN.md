@@ -56,11 +56,9 @@ sh start.sh
 
 **2.3.1 项目结构说明：**
 
-![](C:\Users\mikexue\AppData\Roaming\Typora\typora-user-images\image-20201229211217729.png)
-
+![](../../images/project-structure.png)
 - eventmesh-common : eventmesh公共类与方法模块
 - eventmesh-connector-api : eventmesh插件接口定义模块
-- eventmesh-connector-defibus : eventmesh defibus插件模块
 - eventmesh-connector-rocketmq : eventmesh rocketmq插件模块
 - eventmesh-runtime : eventmesh运行时模块
 - eventmesh-sdk-java : eventmesh java客户端sdk
@@ -81,15 +79,9 @@ sh start.sh
 
 通过修改dependencies，compile project 项来指定项目启动后加载的插件
 
-> 默认加载eventmesh-connector-defibus插件
+修改`eventmesh-starter`模块下面的`build.gradle`文件
 
-```java
-dependencies {
-    compile project(":eventmesh-runtime"), project(":eventmesh-connector-defibus")
-}
-```
-
-加载RocketMQ插件配置：
+加载**RocketMQ**插件配置：
 
 ```java
 dependencies {
