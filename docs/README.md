@@ -6,14 +6,14 @@
 [点我查看中文版](cn/README.md)
 
 ## What is Event Mesh?
-This figure shows the positioning of the event mesh relative to other similar technologies (such as service mesh) in the application framework.
+EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 ![architecture1](images/eventmesh-define.png)
 
-Event Mesh is a dynamic plug-in cloud-native basic service layer used to decouple the application and middleware layer. It provides flexible, reliable and fast event distribution, and can be managed.
+**EventMesh Architecture:**
 
 ![architecture1](images/eventmesh-runtime.png)
 
-Cloud Native Event Mesh:
+**EventMesh Cloud Native Structure:**
 
 ![architecture2](images/eventmesh-panels.png)
 
@@ -25,21 +25,20 @@ General functions of the event mesh:
 * Cloud native
 
 Dependent components:
-* DeFiBus : a distributed messaging platform with low latency, high performance and reliability, flexible scalability. [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)
-* RocketMQ
+* [RocketMQ](https://github.com/apache/rocketmq):RocketMQ is a distributed messaging and streaming platform with low latency, high performance and reliability, trillion-level capacity and flexible scalability.
 
 Key components:
 * eventmesh-runtime : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
 * eventmesh-sdk-java : currently supports HTTP and TCP protocols, and will support gRPC in the future
-* eventmesh-registry : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-runtime
+* eventmesh-registry : automatically routes events between applications and services connected to seperate EventMeshes, manage eventmesh-runtime
 
 ## RoadMap
 | version | feature |
 | ----    | ----    |
-| v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
+| v1.0.0  |Support pub/sub, http api, java-sdk|
 | v1.1.0  |Support rocketmq as eventstore|
 | v1.2.0  |Support Plug-in architecture, support http sub|
-| V1.3.0 |Support cloud event protocal|
+| V1.3.0 |Support CloudEvents protocol|
 |   |Support transaction event|
 |         |Support Event Sourcing|
 |         |Support Event orchestration|
@@ -50,11 +49,10 @@ Key components:
 |         |Support Skywalking|
 |         |Support Spiffe|
 |         |Support gRPC|
-|         |Support c/go/python/nodejs SDK|
+|         |Support c/go/python/NodeJs/wasm SDK|
 
 ## Quick Start
-1. Build and deploy event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus)), 
-   see instruction ['event-store quickstart'](instructions/eventmesh-store-quickstart.md).
+1. Build and deploy event-store(RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
 2. Build and deploy eventmesh-runtime, see instruction ['eventmesh-runtime quickstart'](instructions/eventmesh-runtime-quickstart.md).
 3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](instructions/eventmesh-sdk-java-quickstart.md). 
 
