@@ -85,80 +85,6 @@ public class CommonConfiguration {
         Preconditions.checkState(StringUtils.isNotEmpty(proxyDCNStr), String.format("%s error", ConfKeys.KEYS_PROXY_DCN));
         proxyDCN = StringUtils.deleteWhitespace(proxyDCNStr);
 
-        String clientUserNameStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_USERNAME);
-        if (StringUtils.isNotBlank(clientUserNameStr)) {
-            clientUserName = StringUtils.trim(clientUserNameStr);
-        }
-
-        String clientPassStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_PASSWORD);
-        if (StringUtils.isNotBlank(clientPassStr)) {
-            clientPass = StringUtils.trim(clientPassStr);
-        }
-
-        String namesrvAddrStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_NAMESRV_ADDR);
-        Preconditions.checkState(StringUtils.isNotEmpty(namesrvAddrStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_NAMESRV_ADDR));
-        namesrvAddr = StringUtils.trim(namesrvAddrStr);
-
-        String consumeThreadPoolMinStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MIN);
-        if(StringUtils.isNotEmpty(consumeThreadPoolMinStr)){
-            Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMinStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MIN));
-            consumeThreadMin = Integer.valueOf(consumeThreadPoolMinStr);
-        }
-
-        String consumeThreadPoolMaxStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MAX);
-        if(StringUtils.isNotEmpty(consumeThreadPoolMaxStr)){
-            Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMaxStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MAX));
-            consumeThreadMax = Integer.valueOf(consumeThreadPoolMaxStr);
-        }
-
-        String consumerThreadPoolQueueSizeStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_QUEUESIZE);
-        if(StringUtils.isNotEmpty(consumerThreadPoolQueueSizeStr)){
-            Preconditions.checkState(StringUtils.isNumeric(consumerThreadPoolQueueSizeStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_QUEUESIZE));
-            consumeQueueSize = Integer.valueOf(consumerThreadPoolQueueSizeStr);
-        }
-
-        String clientAckWindowStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_ACK_WINDOW);
-        if(StringUtils.isNotEmpty(clientAckWindowStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientAckWindowStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_ACK_WINDOW));
-            ackWindow = Integer.valueOf(clientAckWindowStr);
-        }
-
-        String clientPubWindowStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_PUB_WINDOW);
-        if(StringUtils.isNotEmpty(clientPubWindowStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientPubWindowStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_PUB_WINDOW));
-            pubWindow = Integer.valueOf(clientPubWindowStr);
-        }
-
-        String consumeTimeoutStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_CONSUME_TIMEOUT);
-        if(StringUtils.isNotBlank(consumeTimeoutStr)) {
-            Preconditions.checkState(StringUtils.isNumeric(consumeTimeoutStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_CONSUME_TIMEOUT));
-            consumeTimeout = Long.valueOf(consumeTimeoutStr);
-        }
-
-        String clientPullBatchSizeStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_PULL_BATCHSIZE);
-        if(StringUtils.isNotEmpty(clientPullBatchSizeStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientPullBatchSizeStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_PULL_BATCHSIZE));
-            pullBatchSize = Integer.valueOf(clientPullBatchSizeStr);
-        }
-
-        String clientPollNamesrvIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_POLL_NAMESRV_INTERVAL);
-        if(StringUtils.isNotEmpty(clientPollNamesrvIntervalStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientPollNamesrvIntervalStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_POLL_NAMESRV_INTERVAL));
-            pollNameServerInteval = Integer.valueOf(clientPollNamesrvIntervalStr);
-        }
-
-        String clientHeartbeatBrokerIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_HEARTBEAT_BROKER_INTERVEL);
-        if(StringUtils.isNotEmpty(clientHeartbeatBrokerIntervalStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientHeartbeatBrokerIntervalStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_HEARTBEAT_BROKER_INTERVEL));
-            heartbeatBrokerInterval = Integer.valueOf(clientHeartbeatBrokerIntervalStr);
-        }
-
-        String clientRebalanceIntervalIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_REBALANCE_INTERVEL);
-        if(StringUtils.isNotEmpty(clientRebalanceIntervalIntervalStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientRebalanceIntervalIntervalStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_REBALANCE_INTERVEL));
-            rebalanceInterval = Integer.valueOf(clientRebalanceIntervalIntervalStr);
-        }
-
         proxyServerIp = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_HOST_IP);
         if(StringUtils.isBlank(proxyServerIp)) {
             proxyServerIp = getLocalAddr();
@@ -179,32 +105,6 @@ public class CommonConfiguration {
         public static String KEYS_PROXY_SERVER_CLUSTER = "proxy.server.cluster";
 
         public static String KEYS_PROXY_SERVER_NAME = "proxy.server.name";
-
-        public static String KEYS_PROXY_DEFIBUS_NAMESRV_ADDR = "proxy.server.defibus.namesrvAddr";
-
-        public static String KEYS_PROXY_DEFIBUS_USERNAME = "proxy.server.defibus.username";
-
-        public static String KEYS_PROXY_DEFIBUS_PASSWORD = "proxy.server.defibus.password";
-
-        public static String KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MIN = "proxy.server.defibus.client.consumeThreadMin";
-
-        public static String KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MAX = "proxy.server.defibus.client.consumeThreadMax";
-
-        public static String KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_QUEUESIZE = "proxy.server.defibus.client.consumeThreadPoolQueueSize";
-
-        public static String KEYS_PROXY_DEFIBUS_CLIENT_ACK_WINDOW = "proxy.server.defibus.client.ackwindow";
-
-        public static String KEYS_PROXY_DEFIBUS_CLIENT_PUB_WINDOW = "proxy.server.defibus.client.pubwindow";
-
-        public static String KEYS_PROXY_DEFIBUS_CLIENT_CONSUME_TIMEOUT = "proxy.server.defibus.client.comsumeTimeoutInMin";
-
-        public static String KEYS_PROXY_DEFIBUS_CLIENT_PULL_BATCHSIZE = "proxy.server.defibus.client.pullBatchSize";
-
-        public static String KEYS_PROXY_DEFIBUS_CLIENT_POLL_NAMESRV_INTERVAL = "proxy.server.defibus.client.pollNameServerInterval";
-
-        public static String KEYS_PROXY_DEFIBUS_CLIENT_HEARTBEAT_BROKER_INTERVEL = "proxy.server.defibus.client.heartbeatBrokerInterval";
-
-        public static String KEYS_PROXY_DEFIBUS_CLIENT_REBALANCE_INTERVEL = "proxy.server.defibus.client.rebalanceInterval";
 
         public static String KEYS_PROXY_SERVER_HOST_IP = "proxy.server.hostIp";
 
