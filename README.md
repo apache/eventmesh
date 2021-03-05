@@ -9,6 +9,7 @@
 EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
 **EventMesh Ecosystem:**
+
 ![architecture1](docs/images/eventmesh-define.png)
 
 **EventMesh Architecture:**
@@ -19,7 +20,7 @@ EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the 
 
 ![architecture2](docs/images/eventmesh-panels.png)
 
-The event mesh allows events from one application to be dynamically routed to any other application.
+The EventMesh allows events from one application to be dynamically routed to any other application.
 General functions of the eventmesh:
 
 * Event driven;
