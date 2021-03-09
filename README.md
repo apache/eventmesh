@@ -41,7 +41,7 @@ General functions of the event mesh:
 
 **Protocol:**
 
-The protocol of eventmesh is easier and convenient, you can read more [here](docs/cn/instructions/eventmesh-runtime-protocol.zh-CN.md)
+The protocol of eventmesh is easier and convenient, you can read more [here](docs/en/instructions/eventmesh-runtime-protocol.md)
 
 ## RoadMap
 | version | feature |
