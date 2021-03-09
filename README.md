@@ -5,8 +5,10 @@
 
 [点我查看中文版](README.zh-CN.md)
 
-## What is Event Mesh?
+## What is EventMesh?
 EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
+
+**EventMesh Ecosystem:**
 
 ![architecture1](docs/images/eventmesh-define.png)
 
@@ -14,12 +16,12 @@ EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the 
 
 ![architecture1](docs/images/eventmesh-runtime.png)
 
-**Cloud Native Event Mesh:**
+**EventMesh Cloud Native:**
 
 ![architecture2](docs/images/eventmesh-panels.png)
 
-The event mesh allows events from one application to be dynamically routed to any other application.
-General functions of the event mesh:
+The EventMesh allows events from one application to be dynamically routed to any other application.
+General functions of the eventmesh:
 
 * Event driven;
 * Event governance;
@@ -28,16 +30,16 @@ General functions of the event mesh:
 * Flow control；
 * Load balance
 
-**Support connecting event stores:**
+**Support connecting event store:**
 
 * [RocketMQ](https://github.com/apache/rocketmq):RocketMQ is a distributed messaging and streaming platform with low latency, high performance and reliability, trillion-level capacity and flexible scalability.
 
-**Key components:**
+**Components:**
 
-* **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
-* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols, and will support gRPC in the future
-* **eventmesh-registry** : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-runtime
-* **eventmesh-connector-rocketmq** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from RocketMQ Event Store
+* **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
+* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols, and will support gRPC in the future.
+* **eventmesh-registry** : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-runtime.
+* **eventmesh-connector-rocketmq** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from RocketMQ Event Store.
 
 **Protocol:**
 
@@ -73,17 +75,22 @@ The protocol of eventmesh is easier and convenient, you can read more [here](doc
 3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md). 
 
 ## Contributing
-Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines
+Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.
 
 You can start with the issues labeled with good first issue. 
 [GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
 
 ## License
-[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation
+[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation.
 
-## Contacts
+## Community
 WeChat group：
 
 ![wechat_qr](docs/images/mesh-helper.png)
 
-
+Mailing Lists:
+| Name | Description |Subscribe	|Unsubscribe|Archive
+| ----    | ----    |----    | ----    | ----    |
+|Users	|User support and questions mailing list|	[Subscribe](mailto:users-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:users-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?users@eventmesh.apache.org)|
+|Development	|Development related discussions|	[Subscribe](mailto:dev-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:dev-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?dev@eventmesh.apache.org)|
+|Commits	|All commits to repositories|	[Subscribe](mailto:commits-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:commits-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?commits@eventmesh.apache.org)|
