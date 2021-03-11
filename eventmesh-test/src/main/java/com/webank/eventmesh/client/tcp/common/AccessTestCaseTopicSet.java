@@ -6,7 +6,7 @@ package com.webank.eventmesh.client.tcp.common;
 public class AccessTestCaseTopicSet {
 
 //    public static final String TOPIC_PRX_WQ2ClientBroadCast = "topic-broadcast-test";
-    public static final String TOPIC_PRX_WQ2ClientBroadCast = "FT0-e-80030001-01-3";
+    public static final String TOPIC_PRX_WQ2ClientBroadCast = "FT0-e-80030000-01-3";
 
 //    public static final String TOPIC_PRX_SyncSubscribeTest = "topic-sync-test";
     public static final String TOPIC_PRX_SyncSubscribeTest = "FT0-s-80000000-01-0";

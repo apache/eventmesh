@@ -9,34 +9,28 @@ import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AsyncPublish{
+public class SyncRequest {
 
-    public static Logger logger = LoggerFactory.getLogger(AsyncPublish.class);
+    public static Logger logger = LoggerFactory.getLogger(SyncRequest.class);
 
     private static WemqAccessClient client;
-
-    public static AsyncPublish handler = new AsyncPublish();
 
     public static void main(String[] agrs)throws Exception{
         try{
             UserAgent userAgent = AccessTestUtils.generateClient1();
-            client = new DefaultWemqAccessClient("127.0.0.1",10002,userAgent);
+            client = new DefaultWemqAccessClient("127.0.0.1",10000,userAgent);
             client.init();
             client.heartbeat();
 
-            for(int i=0; i < 5; i++) {
-                Package asyncMsg = AccessTestUtils.asyncMessage();
-                logger.info("begin send async msg[{}]==================={}", i, asyncMsg);
-                client.publish(asyncMsg, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
+            Package rrMsg = AccessTestUtils.syncRR();
+            logger.info("begin send rr msg=================={}",rrMsg);
+            Package response = client.rr(rrMsg, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
+            logger.info("receive rr reply==================={}",response);
 
-                Thread.sleep(1000);
-            }
-
-            Thread.sleep(2000);
             //退出,销毁资源
 //            client.close();
         }catch (Exception e){
-            logger.warn("AsyncPublish failed", e);
+            logger.warn("SyncRequest failed", e);
         }
     }
 }
