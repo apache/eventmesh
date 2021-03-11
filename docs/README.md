@@ -37,7 +37,7 @@ Key components:
 | ----    | ----    |
 | v1.0.0  |Support pub/sub, http api, java-sdk|
 | v1.1.0  |Support rocketmq as eventstore|
-| v1.2.0  |Support Plug-in architecture, support http sub|
+| v1.2.0  |Support Plug-in architecture, support http sub，support cloud native deploy|
 | V1.3.0 |Support CloudEvents protocol|
 |   |Support transaction event|
 |         |Support Event Sourcing|

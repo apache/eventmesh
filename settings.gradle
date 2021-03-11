@@ -24,4 +24,5 @@ include 'eventmesh-sdk-java'
 include 'eventmesh-common'
 include 'eventmesh-connector-api'
 include 'eventmesh-starter'
+include 'eventmesh-test'
 

@@ -95,3 +95,175 @@ dependencies {
 运行com.webank.eventmesh.starter.StartUp的主要方法
 ```
 
+
+
+## 3 Docker 运行
+
+### 3.1 拉取镜像
+
+执行 `docker pull eventmesh/eventmesh-rocketmq:v1.2.0` , 你将会获取到EventMesh的镜像，如下图所示：
+
+![image-20210309155255510](..\..\images\docker\docker-image.png)
+
+### 3.2 配置
+
+> **预先准备** : 你可能需要从github上下载源代码，并参考这两个文件(proxy.properties 和 rocketmq-client.properties)的内容来做下面的操作
+
+**3.2.1 需要配置的文件**
+
+在运行容器之前，你需要配置如下文件：
+
+**proxy.properties** 
+
+| 配置项                 | 默认值 | 备注                    |
+| ---------------------- | ------ | ----------------------- |
+| proxy.server.http.port | 10105  | EventMesh http 服务端口 |
+| proxy.server.tcp.port  | 10000  | EventMesh tcp 服务端口  |
+
+**rocketmq-client.properties**
+
+| 配置项                            | 默认值                        | 备注                  |
+| --------------------------------- | ----------------------------- | --------------------- |
+| proxy.server.rocketmq.namesrvAddr | 127.0.0.1:9876;127.0.0.1:9876 | RocketMQ namesrv 地址 |
+
+拉取了EventMesh镜像到你的宿主机后，你可以执行下面的命令来完成**proxy.properties**和**rocketmq-client.properties** 文件的配置
+
+**3.2.2 创建文件**
+
+```shell
+mkdir -p /data/eventmesh/rocketmq/conf
+cd /data/eventmesh/rocketmq/conf
+vi proxy.properties
+vi rocketmq-client.properties
+```
+
+这两个文件内容可以参考 [proxy.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/proxy.properties) 和 [rocketmq-client.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/rocketmq-client.properties)
+
+### 3.3 运行
+
+**3.3.1 运行**
+
+执行下面的命令来运行容器
+
+```shell
+docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/proxy.properties:/data/app/eventmesh/conf/proxy.properties -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.2.0
+```
+
+> -p : 将容器内端口与宿主机端口绑定，容器的端口应与配置文件中的端口一致
+>
+> -v : 将容器内的配置文件挂载到宿主机下，需注意配置文件的路径
+
+**3.3.2 检查容器的运行状况**
+
+执行 `docker ps` 来检查容器的运行状况
+
+![image-20210309155917269](..\..\images\docker\docker-ps.png)
+
+执行 `docker logs [container id]` 可以得到如下结果
+
+![image-20210309195623836](..\..\images\docker\docker-logs.png)
+
+执行 `docker exec -it [container id] /bin/bash` 可以进入到容器中并查看详细信息
+
+![image-20210309200327627](..\..\images\docker\docker-exec.png)
+
+### 3.4 测试
+
+**预先准备** ：RocketMQ Namesrv & Broker
+
+你可以通过[这里](https://github.com/apache/rocketmq-docker)来构建rocketmq镜像或者从 docker hub上获取rocketmq镜像.
+
+```shell
+#获取namesrv镜像
+docker pull rocketmqinc/rocketmq-namesrv:4.5.0-alpine
+#获取broker镜像
+docker pull rocketmqinc/rocketmq-broker:4.5.0-alpine
+
+#运行namerv容器 
+docker run -d -p 9876:9876 -v `pwd` /data/namesrv/logs:/root/logs -v `pwd`/data/namesrv/store:/root/store --name rmqnamesrv  rocketmqinc/rocketmq-namesrv:4.5.0-alpine sh mqnamesrv 
+
+#运行broker容器 
+docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq-broker:4.5.0-alpine sh mqbroker -c ../conf/broker.conf
+```
+
+这里 **rocketmq-broker ip** 是 **pod ip**, 如果你想修改这个ip, 可以通过挂载容器中 **broker.conf** 文件的方式并修改文件中的 **brokerIP1** 配置项为自定义值
+
+**3.4.1 运行示例**
+
+Windows
+
+- Windows系统下运行示例可以参考[这里](https://github.com/WeBankFinTech/EventMesh/blob/develop/docs/en/instructions/eventmesh-sdk-java-quickstart.md)
+
+Linux
+
+- **获取 eventmesh-test_1.2.0-SNAPSHOT.tar.gz**
+
+  你可以从我们的 **releases** 获取或者**通过源码的方式进行构建**
+
+  **通过源码的方式进行构建**：
+
+  ```shell
+  cd /* Your Deploy Path */EventMesh/eventmesh-test 
+  gradle clean testdist testtar -x test`
+  ```
+
+  可以在 `/eventmesh-test/build` 目录下获得 **eventmesh-test_1.2.0-SNAPSHOT.tar.gz** 
+
+- **修改配置文件**
+
+  ```shell
+  #上传
+  upload eventmesh-test_1.2.0-SNAPSHOT.tar.gz
+  #解压
+  tar -zxvf eventmesh-test_1.2.0-SNAPSHOT.tar.gz
+  #配置
+  cd conf
+  config your application.properties
+  ```
+
+- **运行**
+
+  TCP Sub 
+
+  ```shell
+  cd bin
+  sh tcp_sub.sh
+  ```
+
+  TCP Pub
+
+  ```shell
+  cd bin
+  sh tcp_pub.sh
+  ```
+
+  TCP Sub Broadcast
+
+  ```shell
+  cd bin
+  sh tcp_sub_broadcast.sh
+  ```
+
+  TCP Pub Broadcast
+
+  ```shell
+  cd bin
+  sh tcp_pub_broadcast.sh
+  ```
+
+  HTTP Sub
+
+  ```shell
+  cd bin
+  sh http_sub.sh
+  ```
+
+  HTTP Pub
+
+  ```shell
+  cd bin
+  sh http_pub.sh
+  ```
+
+  之后 , 你可以在 `/logs` 目录下面看到不同模式的运行日志
+
