@@ -7,9 +7,12 @@ import com.webank.eventmesh.client.tcp.impl.DefaultWemqAccessClient;
 import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+import com.webank.eventmesh.util.Utils;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Properties;
 
 public class AsyncSubscribe implements ReceiveMsgHook {
 
@@ -20,9 +23,12 @@ public class AsyncSubscribe implements ReceiveMsgHook {
     public static AsyncSubscribe handler = new AsyncSubscribe();
 
     public static void main(String[] agrs)throws Exception{
+        Properties properties = Utils.readPropertiesFile("application.properties");
+        final String eventMeshIp = properties.getProperty("eventmesh.ip");
+        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
         try{
             UserAgent userAgent = AccessTestUtils.generateClient2();
-            client = new DefaultWemqAccessClient("127.0.0.1",10002,userAgent);
+            client = new DefaultWemqAccessClient(eventMeshIp,eventMeshTcpPort,userAgent);
             client.init();
             client.heartbeat();
 
