@@ -103,7 +103,7 @@ dependencies {
 
 执行 `docker pull eventmesh/eventmesh-rocketmq:v1.2.0` , 你将会获取到EventMesh的镜像，如下图所示：
 
-![image-20210309155255510](..\..\images\docker\docker-image.png)
+![image-20210309155255510](../../images/docker/docker-image.png)
 
 ### 3.2 配置
 
@@ -157,15 +157,15 @@ docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/pro
 
 执行 `docker ps` 来检查容器的运行状况
 
-![image-docker-ps](..\..\images\docker\docker-ps.png)
+![image-docker-ps](../../images/docker/docker-ps.png)
 
 执行 `docker logs [container id]` 可以得到如下结果
 
-![image-docker-logs](..\..\images\docker\docker-logs.png)
+![image-docker-logs](../../images/docker/docker-logs.png)
 
 执行 `docker exec -it [container id] /bin/bash` 可以进入到容器中并查看详细信息
 
-![image-docker-exec](..\..\images\docker\docker-exec.png)
+![image-docker-exec](../../images/docker/docker-exec.png)
 
 ### 3.4 测试
 
