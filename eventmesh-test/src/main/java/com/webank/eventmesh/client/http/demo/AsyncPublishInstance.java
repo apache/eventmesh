@@ -5,21 +5,27 @@ import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.common.IPUtil;
 import com.webank.eventmesh.common.LiteMessage;
 import com.webank.eventmesh.common.ThreadUtil;
+import com.webank.eventmesh.util.Utils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Properties;
 
 public class AsyncPublishInstance {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncPublishInstance.class);
 
     public static void main(String[] args) throws Exception {
+        Properties properties = Utils.readPropertiesFile("application.properties");
+        final String eventMeshIp = properties.getProperty("eventmesh.ip");
+        final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
 
         LiteProducer liteProducer = null;
         try{
 //            String proxyIPPort = args[0];
-            String proxyIPPort = "";
+            String proxyIPPort = eventMeshIp + ":" + eventMeshHttpPort;
 //            final String topic = args[1];
             final String topic = "FT0-e-80010000-01-1";
             if (StringUtils.isBlank(proxyIPPort)) {
@@ -38,7 +44,7 @@ public class AsyncPublishInstance {
 
             liteProducer = new LiteProducer(weMQProxyClientConfig);
             liteProducer.start();
-            for(int i = 0; i < 1; i++) {
+            for(int i = 0; i < 5; i++) {
                 LiteMessage liteMessage = new LiteMessage();
                 liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
 //                    .setContent("contentStr with special protocal")
