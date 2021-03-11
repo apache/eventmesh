@@ -45,7 +45,7 @@ eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里]
 | v1.0.0  | Support java-sdk , tcp pub/sub, http pub                     |
 | v1.1.0  | Support RocketMQ as eventstore                               |
 | v1.1.1  | Support https                                                |
-| v1.2.0  | Support Plug-in architecture, support http sub               |
+| v1.2.0  | Support Plug-in architecture, support http sub, support cloud native deploy |
 | V1.3.0  | Support CloudEvents protocol                                 |
 |         | Support Event transaction                                    |
 |         | Support Event filter                                         |
