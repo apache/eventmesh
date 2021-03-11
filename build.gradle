@@ -44,6 +44,7 @@ allprojects {
     clean.doFirst {
         delete 'build'
         delete 'dist'
+        delete 'out'
     }
 
     if (project.findProperty("snapshot") instanceof String) {
@@ -235,6 +236,10 @@ subprojects {
             copy {
                 into('../dist/apps/')
                 from project.jar.getArchivePath()
+                exclude 'eventmesh-common*.jar'
+                exclude 'eventmesh-connector-api*.jar'
+                exclude 'eventmesh-registry*.jar'
+                exclude 'eventmesh-starter*.jar'
             }
             copy {
                 into '../dist/lib'
@@ -248,19 +253,20 @@ subprojects {
                 exclude '**/*log4j2.xml*'
                 exclude '**/spring-boot-devtools*.jar'
                 exclude '**/mumble-sdk-test*.jar'
-                exclude '**/defibus*.jar'
-                exclude '*log4j*.jar'
+                exclude '*connector-rocketmq*.jar'
+                exclude 'eventmesh-runtime*.jar'
+//                exclude '*log4j*.jar'
                 exclude 'commons-collections-3.2.2.jar'
             }
 
             copy {
                 into '../dist/bin'
-                from '../script'
+                from '../eventmesh-runtime/bin'
             }
 
             copy {
                 into '../dist/conf'
-                from '../conf/'
+                from '../eventmesh-runtime/conf'
             }
         }
     }
