@@ -56,7 +56,7 @@ Same with 1.2
 
 **2.3.1 Project structure：**
 
-![](..\..\images\project-structure.png)
+![project-structure.png](../../images/project-structure.png)
 
 - eventmesh-common : eventmesh common classes and method module
 - eventmesh-connector-api : eventmesh connector api definition module
@@ -156,15 +156,15 @@ docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/pro
 
 execute `docker ps` to check the container health
 
-![image-20210309155917269](..\..\images\docker\docker-ps.png)
+![image-docker-ps](..\..\images\docker\docker-ps.png)
 
 execute `docker logs [container id]` you will get following result:
 
-![image-20210309195623836](..\..\images\docker\docker-logs.png)
+![image-docker-logs](..\..\images\docker\docker-logs.png)
 
 execute `docker exec -it [container id] /bin/bash` you will go into the container and see the details:
 
-![image-20210309200327627](..\..\images\docker\docker-exec.png)
+![image-docker-exec](..\..\images\docker\docker-exec.png)
 
 ### 3.4 Test
 

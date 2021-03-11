@@ -43,13 +43,13 @@ function get_pid {
 	else
 		if [[ $OS =~ Msys ]]; then
 			# 在Msys上存在可能无法kill识别出的进程的BUG
-			ppid=`jps -v | grep -i "com.webank.eventmesh.client.http.demo.sub.SpringBootDemoApplication" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
+			ppid=`jps -v | grep -i "com.webank.eventmesh.http.demo.sub.SpringBootDemoApplication" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
 		elif [[ $OS =~ Darwin ]]; then
 			# 已知问题：grep java 可能无法精确识别java进程
-			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "com.webank.eventmesh.client.http.demo.sub.SpringBootDemoApplication" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "com.webank.eventmesh.http.demo.sub.SpringBootDemoApplication" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
 			#在Linux服务器上要求尽可能精确识别进程
-			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $PROXY_HOME | grep -i "com.webank.eventmesh.client.http.demo.sub.SpringBootDemoApplication" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $PROXY_HOME | grep -i "com.webank.eventmesh.http.demo.sub.SpringBootDemoApplication" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		fi
 	fi
 	echo "$ppid";
@@ -124,7 +124,7 @@ make_logs_dir
 echo "using jdk[$JAVA]" >> ${DEMO_LOG_HOME}/demo_http_sub.out
 
 
-DEMO_MAIN=com.webank.eventmesh.client.http.demo.sub.SpringBootDemoApplication
+DEMO_MAIN=com.webank.eventmesh.http.demo.sub.SpringBootDemoApplication
 if [ $DOCKER ]
 then
 	$JAVA $JAVA_OPT -classpath ${DEMO_HOME}/conf:${DEMO_HOME}/apps/*:${DEMO_HOME}/lib/* $DEMO_MAIN >> ${DEMO_LOG_HOME}/demo_http_sub.out
