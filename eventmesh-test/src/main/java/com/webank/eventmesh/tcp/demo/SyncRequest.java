@@ -1,11 +1,11 @@
-package com.webank.eventmesh.client.tcp.demo;
+package com.webank.eventmesh.tcp.demo;
 
 import com.webank.eventmesh.client.tcp.WemqAccessClient;
-import com.webank.eventmesh.client.tcp.common.AccessTestUtils;
 import com.webank.eventmesh.client.tcp.common.WemqAccessCommon;
 import com.webank.eventmesh.client.tcp.impl.DefaultWemqAccessClient;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+import com.webank.eventmesh.tcp.common.AccessTestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package com.webank.eventmesh.client.tcp.common;
+package com.webank.eventmesh.tcp.common;
 
 /**
  * Testcase set
