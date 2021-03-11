@@ -10,7 +10,7 @@ TCP demos and Http demos are both under the **eventmesh-test** module.
 
 **prerequisite**：after download the source code you should copy `/conf/application.properties` and `/conf/log4j2.xml` to the `resources` directory
 
-![image-20210311193048090](..\..\images\eventmesh-test-structure.png)
+![image-test-structure](../../images/eventmesh-test-structure.png)
 
 ###  1. TCP DEMO
 
@@ -21,34 +21,30 @@ TCP demos and Http demos are both under the **eventmesh-test** module.
 - start consumer ,subscribe topic in previous step. 
 
 ```
-Run the main method of com.webank.eventmesh.client.tcp.demo.AsyncSubscribe
+Run the main method of com.webank.eventmesh.tcp.demo.AsyncSubscribe
 ```
 
 - start producer, send  message
 
 
 ```
-Run the main method of com.webank.eventmesh.client.tcp.demo.AsyncPublish
+Run the main method of com.webank.eventmesh.tcp.demo.AsyncPublish
 ```
 
 #### Broadcast msg 
 
 - create topic FT0-e-80030000-01-3 on rocketmq-console
 
-```
-sh runadmin.sh updateTopic  -c ${ClusterName} -t ${topic} -n ${namesrvAddr}
-```
-
 - start consumer ,subscribe topic in previous step. 
 
 ```
-Run the main method of com.webank.eventmesh.client.tcp.demo.AsyncSubscribeBroadcast
+Run the main method of com.webank.eventmesh.tcp.demo.AsyncSubscribeBroadcast
 ```
 
 * start producer, send broadcast message
 
 ```
-Run the main method of com.webank.eventmesh.client.tcp.demo.AsyncPublishBroadcast
+Run the main method of com.webank.eventmesh.tcp.demo.AsyncPublishBroadcast
 ```
 
 ### 2. HTTP DEMO
@@ -66,12 +62,12 @@ Run the main method of com.webank.eventmesh.client.tcp.demo.AsyncPublishBroadcas
   Async consumer demo is a spring boot application demo,  you can easily run this demo to start service and subscribe the topic.
 
 ```
-Run the main method of com.webank.eventmesh.client.http.demo.sub.SpringBootDemoApplication
+Run the main method of com.webank.eventmesh.http.demo.sub.SpringBootDemoApplication
 ```
 
 - start producer, produce msg
 
 ```
-Run the main method of com.webank.eventmesh.client.http.demo.AsyncPublishInstance
+Run the main method of com.webank.eventmesh.http.demo.AsyncPublishInstance
 ```
 
