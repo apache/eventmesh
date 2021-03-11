@@ -156,15 +156,15 @@ docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/pro
 
 execute `docker ps` to check the container health
 
-![image-docker-ps](..\..\images\docker\docker-ps.png)
+![image-docker-ps](../../images/docker/docker-ps.png)
 
 execute `docker logs [container id]` you will get following result:
 
-![image-docker-logs](..\..\images\docker\docker-logs.png)
+![image-docker-logs](../../images/docker/docker-logs.png)
 
 execute `docker exec -it [container id] /bin/bash` you will go into the container and see the details:
 
-![image-docker-exec](..\..\images\docker\docker-exec.png)
+![image-docker-exec](../../images/docker/docker-exec.png)
 
 ### 3.4 Test
 
