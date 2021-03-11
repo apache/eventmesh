@@ -1,6 +1,6 @@
 ## TCP协议文档
 
-#### 数据流层
+#### 1. 协议格式
 
 ![dataFlow](../../images/protocol/eventmesh-tcp-dataFlow.png)
 
@@ -22,9 +22,9 @@
 
 
 
-#### 业务逻辑层
+#### 2. 业务逻辑层
 
-**消息组成：**
++ 消息组成
 
 消息头（header）+ 消息体（body）
 
@@ -47,7 +47,7 @@ public class Header {
 
 
 
-**详解：**
++ 详解
 
 消息头(header)：类型为Header，Header中有Command字段，用于区分不同的消息类型
 
@@ -63,7 +63,7 @@ public class Header {
 
  
 
-#### Client 与 Eventmesh-Runtime （Server）交互场景详解
+#### 3. Client 与 Eventmesh-Runtime(Server)交互场景详解
 
 ```java
 public enum Command {
@@ -119,7 +119,7 @@ public enum Command {
 
 
 
-#### Client发起交互
+#### 4. Client发起交互
 
 | 场景           | Client向Server发送消息命令字 | Server回复Client消息的命令字    | 说明 |
 | -------------- | ---------------------------- | ------------------------------- | ---- |
@@ -136,7 +136,7 @@ public enum Command {
 
 
 
-#### Server发起交互
+#### 5. Server发起交互
 
 | 场景               | Server向Client发送消息命令字 | Client回复Server消息命令字      | 说明 |
 | ------------------ | ---------------------------- | ------------------------------- | ---- |
@@ -149,7 +149,7 @@ public enum Command {
 |                    |                              |                                 |      |
 
 
-
+#### 6. 消息类型
 + 发送RR消息
 
 ![rr-msg](../../images/protocol/eventmesh-rr-msg.png)
@@ -191,7 +191,7 @@ public class LiteMessage {
 
 
 
-#### 消息发送方式与组成
+#### 1. 消息发送方式与组成
 
 
 
@@ -201,7 +201,7 @@ public class LiteMessage {
 
 
 
-##### 心跳消息：
++ 心跳消息
 
 **RequestHeader**
 
@@ -229,7 +229,7 @@ public class LiteMessage {
 
 
 
-##### 订阅消息：
++ 订阅消息：
 
 **RequestHeader**
 
@@ -244,7 +244,7 @@ public class LiteMessage {
 
 
 
-##### 取消订阅消息：
++ 取消订阅消息：
 
 **RequestHeader**
 
@@ -256,7 +256,7 @@ public class LiteMessage {
 
 
 
-##### 发送异步事件：
++ 发送异步事件：
 
 **RequestHeader**
 
@@ -274,7 +274,7 @@ public class LiteMessage {
 
 
 
-#### Client发起交互
+#### 2. Client发起交互
 
 | 场景         | Client向Server发送消息请求码 | Server回复Client消息的响应码            | 说明 |
 | ------------ | ---------------------------- | --------------------------------------- | ---- |
@@ -285,7 +285,7 @@ public class LiteMessage {
 
 
 
-#### Server发起交互
+#### 3. Server发起交互
 
 | 场景               | Server向Client发送消息请求码 | Client回复Server消息响应码 | 说明                   |
 | ------------------ | ---------------------------- | -------------------------- | ---------------------- |
