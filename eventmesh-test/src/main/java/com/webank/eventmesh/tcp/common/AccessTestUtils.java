@@ -1,14 +1,11 @@
-package com.webank.eventmesh.client.tcp.common;
+package com.webank.eventmesh.tcp.common;
 
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
-import com.webank.eventmesh.common.protocol.tcp.Command;
-import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.Package;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+import com.webank.eventmesh.common.protocol.tcp.*;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.webank.eventmesh.client.tcp.common.AccessTestCaseTopicSet.*;
+import static com.webank.eventmesh.tcp.common.AccessTestCaseTopicSet.*;
 import static com.webank.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 
 public class AccessTestUtils {
