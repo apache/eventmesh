@@ -1,4 +1,4 @@
-package com.webank.eventmesh.client.http.demo.sub.controller;
+package com.webank.eventmesh.http.demo.sub.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
