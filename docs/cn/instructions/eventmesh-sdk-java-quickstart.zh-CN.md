@@ -10,7 +10,7 @@ TCP 和 Http 示例都在**eventmesh-test**模块下
 
 **注意：**下载了源代码后，需要将`/conf/application.properties` 和 `/conf/log4j2.xml` 复制到 `resources` 目录下
 
-![image-test-structure](..\..\images\eventmesh-test-structure.png)
+![image-test-structure](../../images/eventmesh-test-structure.png)
 
 ### 1. TCP DEMO
 

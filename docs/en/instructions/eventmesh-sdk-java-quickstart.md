@@ -10,7 +10,7 @@ TCP demos and Http demos are both under the **eventmesh-test** module.
 
 **prerequisite**：after download the source code you should copy `/conf/application.properties` and `/conf/log4j2.xml` to the `resources` directory
 
-![image-test-structure](..\..\images\eventmesh-test-structure.png)
+![image-test-structure](../../images/eventmesh-test-structure.png)
 
 ###  1. TCP DEMO
 
