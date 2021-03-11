@@ -1,0 +1,111 @@
+buildscript {
+    repositories {
+        // 优先使用国内源
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        mavenCentral()
+    }
+//    dependencies {
+//        // 让spring-boot支持gradle
+//        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.6.RELEASE")
+//    }
+}
+
+//apply plugin: 'org.springframework.boot'
+//apply plugin: "io.spring.dependency-management"
+apply plugin: 'java'
+apply plugin: "maven"
+apply plugin: "eclipse"
+apply plugin: "idea"
+
+group 'com.webank.eventmesh'
+version '1.2.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+//List log4j2 = [
+//        "org.apache.logging.log4j:log4j-api:2.13.3",
+//        "org.apache.logging.log4j:log4j-core:2.13.3",
+//        "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
+//        "org.apache.logging.log4j:log4j-web:2.13.3",
+//        "com.lmax:disruptor:3.4.2"
+//]
+//
+//List sl4j = [
+//        "org.slf4j:slf4j-api:1.7.30"
+//]
+
+dependencies {
+//    compile log4j2, sl4j
+//    testCompile log4j2, sl4j
+    compile project(":eventmesh-sdk-java")
+    //Spring模块
+    compile("org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE")
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+}
+
+configurations.all{
+    exclude group: "ch.qos.logback"
+    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+
+clean.doFirst {
+    delete 'build'
+    delete 'dist'
+}
+
+task testdist(dependsOn: ['jar']) {
+
+    doFirst {
+        new File(projectDir.getPath() , 'dist/bin').mkdirs()
+        new File(projectDir.getPath() , 'dist/apps').mkdirs()
+        new File(projectDir.getPath() , 'dist/conf').mkdirs()
+        new File(projectDir.getPath() , 'dist/lib').mkdirs()
+    }
+
+    doLast {
+        copy {
+            into('dist/apps/')
+            from project.jar.getArchivePath()
+        }
+        copy {
+            into 'dist/lib'
+            from project.configurations.runtime
+        }
+
+        copy {
+            into 'dist/bin'
+            from '../eventmesh-test/bin'
+        }
+
+        copy {
+            into 'dist/conf'
+            from 'conf'
+        }
+    }
+}
+
+task testtar(type: Tar) {
+    extension = 'tar.gz'
+    compression = Compression.GZIP
+    archiveName = project.name + '_' + project.version + '.' + extension
+    destinationDir = new File(projectDir.getPath(), 'build')
+    into('/') {
+        from 'dist'
+    }
+}
+
+task packageTestSources(type: Jar) {
+    from project.sourceSets.main.allSource
+    classifier = 'sources'  // either here or in artifacts block
+}
+
+artifacts {
+    archives jar
+    archives packageJavadoc
+    archives packageSources
+}

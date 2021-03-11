@@ -18,7 +18,7 @@ public class AsyncPublishBroadcast {
     public static void main(String[] agrs)throws Exception{
         try{
             UserAgent userAgent = AccessTestUtils.generateClient1();
-            client = new DefaultWemqAccessClient("127.0.0.1",10000,userAgent);
+            client = new DefaultWemqAccessClient("127.0.0.1",10002,userAgent);
             client.init();
             client.heartbeat();
 

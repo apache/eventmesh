@@ -22,7 +22,7 @@ public class AsyncSubscribe implements ReceiveMsgHook{
     public static void main(String[] agrs)throws Exception{
         try{
             UserAgent userAgent = AccessTestUtils.generateClient2();
-            client = new DefaultWemqAccessClient("127.0.0.1",10000,userAgent);
+            client = new DefaultWemqAccessClient("127.0.0.1",10002,userAgent);
             client.init();
             client.heartbeat();
 
