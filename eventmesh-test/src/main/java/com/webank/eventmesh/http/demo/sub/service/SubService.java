@@ -1,6 +1,5 @@
-package com.webank.eventmesh.client.http.demo.sub.service;
+package com.webank.eventmesh.http.demo.sub.service;
 
-import com.webank.eventmesh.client.http.RemotingServer;
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.consumer.LiteConsumer;
 import com.webank.eventmesh.common.IPUtil;
@@ -8,19 +7,14 @@ import com.webank.eventmesh.common.ProxyException;
 import com.webank.eventmesh.common.ThreadUtil;
 import com.webank.eventmesh.util.Utils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.remoting.support.RemotingSupport;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class SubService implements InitializingBean {
