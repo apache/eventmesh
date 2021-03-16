@@ -17,3 +17,7 @@ test-output
 dist
 .pmd
 classes
+package-lock.json
+node_modules
+.DS_Store
+

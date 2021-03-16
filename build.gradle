@@ -79,7 +79,8 @@ subprojects {
     apply plugin: "idea"
     apply plugin: "project-reports"
     apply plugin: "jacoco"
-    apply plugin: "checkstyle"
+
+//    apply plugin: "checkstyle"
     apply plugin: "pmd"
     apply plugin: 'com.github.spotbugs'
 
@@ -103,20 +104,22 @@ subprojects {
         }
     }
 
-    checkstyle {
-        toolVersion = "8.32"
-        ignoreFailures = true
-        sourceSets = [sourceSets.main]
-        configFile = 'conf/checkstyle.xml' as File
-        showViolations true
-    }
 
-    tasks.withType(Checkstyle) {
-        reports {
-            xml.enabled false
-            html.enabled true
-        }
-    }
+//    checkstyle {
+//        toolVersion = "8.32"
+//        ignoreFailures = true
+//        sourceSets = [sourceSets.main]
+//        configFile = '../style/codeStyle.xml' as File
+//        showViolations true
+//    }
+//
+//    tasks.withType(Checkstyle) {
+//        reports {
+//            xml.enabled false
+//            html.enabled true
+//        }
+//    }
+
 
     spotbugs {
         toolVersion = '4.0.2'
@@ -166,35 +169,36 @@ subprojects {
 
 
     List junit = [
-        "junit:junit:4.12"
+
+            "junit:junit:4.12"
     ]
 
     List apache_commons = [
-        "org.apache.commons:commons-collections4:4.1",
-        "commons-beanutils:commons-beanutils:1.9.3",
-        "org.apache.commons:commons-lang3:3.6",
-        "commons-codec:commons-codec:1.10"
+            "org.apache.commons:commons-collections4:4.1",
+            "commons-beanutils:commons-beanutils:1.9.3",
+            "org.apache.commons:commons-lang3:3.6",
+            "commons-codec:commons-codec:1.10"
 
     ]
 
-    List logback = [
-        "org.slf4j:slf4j-api:1.7.25"
+    List log = [
+            "org.slf4j:slf4j-api:1.7.30"
     ]
 
     List guava = [
-        "com.google.guava:guava:20.0"
+            "com.google.guava:guava:29.0-jre"
     ]
 
     List fastjson = [
-        "com.alibaba:fastjson:1.2.71"
+            "com.alibaba:fastjson:1.2.71"
     ]
 
     List common_io = [
-        "commons-io:commons-io:2.4"
+            "commons-io:commons-io:2.4"
     ]
 
     List assertj = [
-        "org.assertj:assertj-core:2.6.0"
+            "org.assertj:assertj-core:2.6.0"
     ]
 
     List mock = [
@@ -205,20 +209,23 @@ subprojects {
     ]
 
     dependencies {
-        compile apache_commons, guava, logback, fastjson, common_io
-        testCompile apache_commons, guava, logback, fastjson, common_io, junit, assertj, mock
-        runtime apache_commons, guava, logback, fastjson, common_io
+
+        compile apache_commons, guava, log, fastjson, common_io
+        testCompile apache_commons, guava, log, fastjson, common_io, junit, assertj, mock
+        runtime apache_commons, guava, log, fastjson, common_io
     }
 
     jar {
         manifest {
             attributes("Specification-Version": project.version,
-                "Specification-Vendor": "WeBank, Inc.",
-                "Specification-Title": project.name,
-                "Implementation-Version": project.version,
-                "Implementation-Vendor": "WeBank, Inc.",
-                "Implementation-Title": project.name,
-                "Build-Jdk": project.findProperty("jdk")
+
+                    "Specification-Vendor": "WeBank, Inc.",
+                    "Specification-Title": project.name,
+                    "Implementation-Version": project.version,
+                    "Implementation-Vendor": "WeBank, Inc.",
+                    "Implementation-Title": project.name,
+                    "Build-Jdk": project.findProperty("jdk")
+
             )
         }
     }
