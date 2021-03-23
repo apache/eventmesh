@@ -1,0 +1,21 @@
+<section id="{{ section.section_id }}" class="page-section {{ section.background_style }}">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 text-center">
+        <h2 class="mt-0">{{ section.title }}</h2>
+        <hr class="divider my-4">
+        <p class="text-muted mb-5">{{ section.text }}</p>
+      </div>
+    </div>
+    <div class="row justify-content-center">
+      {% for action in section.actions %}
+      {% assign fa = action.icon_type | default: "fas" %}
+      <div class="col ml-auto">
+        <i class="{{ fa }} {{ action.icon }} fa-3x mb-3 text-muted"></i>
+        <span class="d-block" href="{{ action.url }}">{{ action.title }}</span>
+        <span class="d-block text" href="{{ action.url }}">{{ action.text }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>

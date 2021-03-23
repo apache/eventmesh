@@ -1,0 +1,31 @@
+<section class="page-section {{ section.background_style }}" id="{{ section.section_id }}">
+  <div class="container">
+    <h2 class="text-center mt-0">{{ section.title }}</h2>
+    <hr class="divider my-4">
+    <div class="row justify-content-center">
+      <!-- {#% assign cols = section.services.size | at_most: 4 %#} -->
+      {% assign cols = section.services.size %}
+      {% if cols > 2 %}
+        {% assign cols = 2 %}
+      {% endif %}
+
+      {% assign colsL = 12 | divided_by: cols %}
+      {% assign colsM = colsL | times: 2 %}
+
+      {% for service in section.services %}
+      <div class="col-lg-{{ colsL }} col-md-{{ colsM }}">
+        <div class="mt-5">
+          <i class="fa-4x {{ service.icon }} text-primary mb-4" style="margin-right: 40px;float: left;"></i>
+          <h3 class="h4 mb-2">{{ service.title }}</h3>
+          <div class="text-muted mb-0">
+            {{ service.text | markdownify }}
+            {% if service.url %}
+              <a href="{{ service.url }}"><i class="fas fa-link"></i></a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>

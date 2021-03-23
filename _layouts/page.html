@@ -1,0 +1,30 @@
+---
+layout: base
+---
+
+<!-- Header -->
+<header class="masthead pagehead" {% if page.background_image %} style="background-image: {{ page.background_image }}"{% endif %} >
+  <div class="container h-100">
+    <div class="row h-100 align-items-center justify-content-center text-center">
+      <div class="col-lg-10 ">
+        <h1 class="text-uppercase text-white font-weight-bold">{{ page.title }}</h1>
+        <hr class="divider my-4">
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Any Ready-to-Use sections -->
+{% for section in page.sections %}
+    {% include {{ section.type }} section=section site=site page=page %}
+{% endfor %}
+
+<!-- include content as section -->
+{% assign content = content | strip_newlines %}
+{% if content != "" %}
+<section class="page-section {{ page.background_style }}">
+  <div class="container">
+    {{ content }}
+  </div>
+</section>
+{% endif %}

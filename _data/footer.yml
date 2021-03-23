@@ -1,0 +1,14 @@
+copyright: 'Copyright &copy; 2021 <a href="http://www.apache.org/">The Apache Software Foundation</a>. Licensed under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0.</a><br/>Apache EventMesh, EventMesh, Apache, the Apache feather logo and the Apache EventMesh logo are trademarks of The Apache Software Foundation.<br/>'
+links:
+  - text: License
+    url: 'https://www.apache.org/licenses/'
+    new_window: true
+  - text: Security
+    url: 'https://www.apache.org/security/'
+    new_window: true
+  - text: Thanks
+    url: 'https://www.apache.org/foundation/thanks.html'
+    new_window: true
+  - text: Sponsorship
+    url: 'https://www.apache.org/foundation/sponsorship.html'
+    new_window: true
