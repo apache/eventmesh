@@ -1,0 +1,17 @@
+<section class="page-section {{ section.background_style }}" id="{{ section.section_id }}">
+  <div class="container">
+    <h2 class="text-center mt-0">{{ section.title }}</h2>
+    <hr class="divider my-4">
+    <div class="row justify-content-center">
+      {% for member in section.members %}
+      <div class="col-lg-3 col-md-6 text-center">
+        <div class="member-box">
+          <img class="fa fa-4x text-primary" src="{{ member.image }}" alt="{{ member.title }}">
+          <h3 class="h4 mb-2">{{ member.title }}</h3>
+          <p class="text-white-50 mb-0">{{ member.text }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>

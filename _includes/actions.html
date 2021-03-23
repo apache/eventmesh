@@ -1,0 +1,9 @@
+{% if include.actions %}
+<div class="row justify-content-center">
+  <div class="col md-auto text-center">
+    {% for action in include.actions %}
+      <a href="{{ action.url }}" class="btn btn-xl js-scroll-trigger {{ action.class | default: "btn-primary" }}">{{ action.title }}</a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}

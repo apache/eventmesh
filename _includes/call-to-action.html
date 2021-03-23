@@ -1,0 +1,12 @@
+<section id="{{ section.section_id }}" class="page-section {{ section.background_style }}">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 {{ section.text_style | default: 'text-center' }}">
+        <h2 class="text-white mt-0 text-center">{{ section.title }}</h2>
+        <hr class="divider light my-4">
+        <div class="text-white-50 mb-4 ">{{ section.text | markdownify }}</div>
+      </div>
+    </div>
+    {% include actions.html actions=section.actions %}
+  </div>
+</section>
