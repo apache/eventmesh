@@ -116,5 +116,10 @@ sections:
       icon: fa-facebook
       icon_type: fab
       url: '#'
+    - title: WeChat Official Account
+      icon: fa-weixin
+      text: <img src="assets/img/wechat.jpg" alt="wechat official account">
+      icon_type: fab
+      url: '#'
 
 ---
