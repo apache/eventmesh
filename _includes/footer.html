@@ -1,23 +1,34 @@
 <!-- no footer at all! -->
 <footer class="bg-light py-5">
   <div class="container" >
-    <div class="small text-center text-muted last-hidden" style="display: flex"  >
-      <a style="display: block;margin-right:10px" href="https://www.apache.org/">
-        <img src="assets/img/apache-logo-small.png" alt="Apache Software Foundation" style="height: 100px !important">
+    <div class="small text-muted">
+      {{ site.data.footer.copyright }}
+    </div>
+    <div class="small text-center text-muted" style="display: flex">
+
+      <a style="display: block" href="https://incubator.apache.org">
+        <img src="assets/img/incubator_feather_egg_logo_sm.png" alt="Apache Software Foundation" style="height: 80px !important">
       </a>
-      <div style="flex: 1">
-        {{ site.data.footer.copyright }}
-        {% for link in site.data.footer.links %}
-        <a href="{{ link.url }}" {% assign new_window_is_not_empty = link.new_window | is_not_empty %}
-           {% if new_window_is_not_empty %}target="_blank" rel="noopener"
-           {% endif %}>{{ link.text }}</a><span>|</span>
-        {% endfor %}
-        <div class="text-center" style="margin: 20px 0">
-          <a href="https://www.apache.org/events/current-event.html">
-            <img src="https://www.apache.org/events/current-event-234x60.png" />
-          </a>
-        </div>
+      <div style="flex: 1" class="last-hidden">
+<!--        {{ site.data.footer.copyright }}-->
+<!--        {% for link in site.data.footer.links %}-->
+<!--        <a href="{{ link.url }}" {% assign new_window_is_not_empty = link.new_window | is_not_empty %}-->
+<!--           {% if new_window_is_not_empty %}target="_blank" rel="noopener"-->
+<!--           {% endif %}>{{ link.text }}</a><span>|</span>-->
+<!--        {% endfor %}-->
+<!--        <div class="text-center" style="margin: 20px 0">-->
+<!--          <a href="https://www.apache.org/events/current-event.html">-->
+<!--            <img src="https://www.apache.org/events/current-event-234x60.png" />-->
+<!--          </a>-->
+<!--        </div>-->
       </div>
+    </div>
+    <div class="small text-muted" style="margin-top:10px">
+      <p>Apache EventMesh is an effort undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Apache Incubator.
+        Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications,
+        and decision making process have stabilized in a manner consistent with other successful ASF projects.
+        While incubation status is not necessarily a reflection of the completeness or stability of the code,
+        it does indicate that the project has yet to be fully endorsed by the ASF.</p>
     </div>
   </div>
 </footer>

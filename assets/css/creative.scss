@@ -2102,7 +2102,7 @@ select.form-control[size], select.form-control[multiple] {
   margin-right: 2px;
 }
 
-.last-hidden span:last-child{
+.last-hidden span:last-of-type{
   display: none;
 }
 
