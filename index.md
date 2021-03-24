@@ -40,7 +40,7 @@ sections:
     # this section has always ID 'portfolio'
     #section_id: portfolio
     #background_style: bg-dark
-    title: instructions
+    title: Instructions
     projects:
       - title: EventMesh Ecosystem
         text: What is EventMesh
@@ -68,7 +68,7 @@ sections:
 
   - type: members.html
     section_id: members
-    title: Our Users
+    title: Use Case
     background_style: bg-info text-white
     members:
       - title:
