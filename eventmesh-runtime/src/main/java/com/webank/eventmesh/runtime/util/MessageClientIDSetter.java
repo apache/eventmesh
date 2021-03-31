@@ -1,6 +1,6 @@
 package com.webank.eventmesh.runtime.util;
 
-import io.openmessaging.Message;
+import io.openmessaging.api.Message;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -43,8 +43,8 @@ public class MessageClientIDSetter {
     }
 
     public static void setUniqID(final Message msg) {
-        if (msg.userHeaders().getString(PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX) == null) {
-            msg.userHeaders().put(PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX, createUniqID());
+        if (msg.getUserProperties(PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX) == null) {
+            msg.getUserProperties().put(PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX, createUniqID());
         }
     }
 

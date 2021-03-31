@@ -23,7 +23,7 @@ import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import com.webank.eventmesh.common.Constants;
-import io.openmessaging.Message;
+import io.openmessaging.api.Message;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +79,7 @@ public class HandleMsgContext {
         this.bizSeqNo = bizSeqNo;
         this.uniqueId = uniqueId;
         this.consumeTopicConfig = consumeTopicConfig;
-        this.ttl = Integer.parseInt(msg.sysHeaders().getString(Message.BuiltinKeys.TIMEOUT));
+        this.ttl = Integer.parseInt(msg.getUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT));
     }
 
     public void addProp(String key, String val) {

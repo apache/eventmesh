@@ -18,16 +18,18 @@
 package com.webank.eventmesh.api.producer;
 
 import com.webank.eventmesh.api.RRCallback;
-import com.webank.eventmesh.api.SendCallback;
-import io.openmessaging.KeyValue;
-import io.openmessaging.Message;
-import io.openmessaging.producer.Producer;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.Producer;
+import io.openmessaging.api.SendCallback;
+
+import java.util.Properties;
 
 public interface MeshMQProducer extends Producer {
 
-    void init(KeyValue keyValue) throws Exception;
+    void init(Properties properties) throws Exception;
 
-    void start() throws Exception;
+    @Override
+    void start();
 
     void send(Message message, SendCallback sendCallback) throws Exception;
 
