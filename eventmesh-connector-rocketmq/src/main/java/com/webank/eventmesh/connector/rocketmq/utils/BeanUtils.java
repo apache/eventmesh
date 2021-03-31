@@ -16,7 +16,6 @@
  */
 package com.webank.eventmesh.connector.rocketmq.utils;
 
-import io.openmessaging.KeyValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.log.ClientLogger;
 import org.apache.rocketmq.logging.InternalLogger;
@@ -95,16 +94,16 @@ public final class BeanUtils {
         return obj;
     }
 
-    public static <T> T populate(final KeyValue properties, final Class<T> clazz) {
-        T obj = null;
-        try {
-            obj = clazz.newInstance();
-            return populate(properties, obj);
-        } catch (Throwable e) {
-            log.warn("Error occurs !", e);
-        }
-        return obj;
-    }
+//    public static <T> T populate(final KeyValue properties, final Class<T> clazz) {
+//        T obj = null;
+//        try {
+//            obj = clazz.newInstance();
+//            return populate(properties, obj);
+//        } catch (Throwable e) {
+//            log.warn("Error occurs !", e);
+//        }
+//        return obj;
+//    }
 
     public static Class<?> getMethodClass(Class<?> clazz, String methodName) {
         Method[] methods = clazz.getMethods();
@@ -142,7 +141,7 @@ public final class BeanUtils {
             Set<Map.Entry<Object, Object>> entries = properties.entrySet();
             for (Map.Entry<Object, Object> entry : entries) {
                 String entryKey = entry.getKey().toString();
-                String[] keyGroup = entryKey.split("\\.");
+                String[] keyGroup = entryKey.split("[\\._]");
                 for (int i = 0; i < keyGroup.length; i++) {
                     keyGroup[i] = keyGroup[i].toLowerCase();
                     keyGroup[i] = StringUtils.capitalize(keyGroup[i]);
@@ -160,28 +159,28 @@ public final class BeanUtils {
         return obj;
     }
 
-    public static <T> T populate(final KeyValue properties, final T obj) {
-        Class<?> clazz = obj.getClass();
-        try {
-
-            final Set<String> keySet = properties.keySet();
-            for (String key : keySet) {
-                String[] keyGroup = key.split("[\\._]");
-                for (int i = 0; i < keyGroup.length; i++) {
-                    keyGroup[i] = keyGroup[i].toLowerCase();
-                    keyGroup[i] = StringUtils.capitalize(keyGroup[i]);
-                }
-                String beanFieldNameWithCapitalization = StringUtils.join(keyGroup);
-                try {
-                    setProperties(clazz, obj, "set" + beanFieldNameWithCapitalization, properties.getString(key));
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
-                    //ignored...
-                }
-            }
-        } catch (RuntimeException e) {
-            log.warn("Error occurs !", e);
-        }
-        return obj;
-    }
+//    public static <T> T populate(final Properties properties, final T obj) {
+//        Class<?> clazz = obj.getClass();
+//        try {
+//
+//            final Set<Object> keySet = properties.keySet();
+//            for (Object key : keySet) {
+//                String[] keyGroup = key.toString().split("[\\._]");
+//                for (int i = 0; i < keyGroup.length; i++) {
+//                    keyGroup[i] = keyGroup[i].toLowerCase();
+//                    keyGroup[i] = StringUtils.capitalize(keyGroup[i]);
+//                }
+//                String beanFieldNameWithCapitalization = StringUtils.join(keyGroup);
+//                try {
+//                    setProperties(clazz, obj, "set" + beanFieldNameWithCapitalization, properties.getProperty(key.toString()));
+//                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+//                    //ignored...
+//                }
+//            }
+//        } catch (RuntimeException e) {
+//            log.warn("Error occurs !", e);
+//        }
+//        return obj;
+//    }
 }
 

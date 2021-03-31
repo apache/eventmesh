@@ -170,7 +170,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
         List<MessageExt> msgs = new ArrayList<MessageExt>();
         msgs.add(msg);
         MessageQueue mq = new MessageQueue();
-        mq.setBrokerName(brokerName);
+//        mq.setBrokerName(brokerName);
         mq.setTopic(msg.getTopic());
         mq.setQueueId(msg.getQueueId());
 

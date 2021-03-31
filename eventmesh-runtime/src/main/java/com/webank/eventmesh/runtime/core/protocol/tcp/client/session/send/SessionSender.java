@@ -18,7 +18,7 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send;
 
 import com.webank.eventmesh.api.RRCallback;
-import com.webank.eventmesh.api.SendCallback;
+import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.util.Utils;
 import com.webank.eventmesh.runtime.constants.DeFiBusConstant;
@@ -28,8 +28,8 @@ import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
 import com.webank.eventmesh.common.protocol.tcp.Package;
-import io.openmessaging.BytesMessage;
-import io.openmessaging.Message;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.SendCallback;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
@@ -79,16 +79,15 @@ public class SessionSender {
                 UpStreamMsgContext upStreamMsgContext = null;
                 Command cmd = header.getCommand();
                 if (Command.REQUEST_TO_SERVER == cmd) {
-                    long ttl = msg.sysHeaders().getString(DeFiBusConstant.PROPERTY_MESSAGE_TTL) != null ? Long.valueOf(msg.sysHeaders().getString
-                            (DeFiBusConstant.PROPERTY_MESSAGE_TTL)) : ProxyConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
+                    long ttl = msg.getSystemProperties(DeFiBusConstant.PROPERTY_MESSAGE_TTL) != null ? Long.parseLong(msg.getSystemProperties(DeFiBusConstant.PROPERTY_MESSAGE_TTL)) : ProxyConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
                     upStreamMsgContext = new UpStreamMsgContext(header.getSeq(), session, msg);
                     session.getClientGroupWrapper().get().request(upStreamMsgContext, sendCallback, initSyncRRCallback(header, startTime, taskExecuteTime), ttl);
                 } else if (Command.RESPONSE_TO_SERVER == cmd) {
-                    String cluster = msg.userHeaders().getString(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER);
+                    String cluster = msg.getUserProperties(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER);
                     if (!StringUtils.isEmpty(cluster)) {
                         String replyTopic = DeFiBusConstant.RR_REPLY_TOPIC;
                         replyTopic = cluster + "-" + replyTopic;
-                        msg.sysHeaders().put(Message.BuiltinKeys.DESTINATION, replyTopic);
+                        msg.getSystemProperties().put(Constants.PROPERTY_MESSAGE_DESTINATION, replyTopic);
                     }
 
 //                    //for rocketmq support
@@ -133,8 +132,8 @@ public class SessionSender {
 //                            .getStoreTimestamp()));
 //                }
 
-                msg.sysHeaders().put(ProxyConstants.RSP_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                msg.sysHeaders().put(ProxyConstants.RSP_RECEIVE_PROXY_IP, session.getAccessConfiguration().proxyServerIp);
+                msg.getSystemProperties().put(ProxyConstants.RSP_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                msg.getSystemProperties().put(ProxyConstants.RSP_RECEIVE_PROXY_IP, session.getAccessConfiguration().proxyServerIp);
                 session.getClientGroupWrapper().get().getProxyTcpMonitor().getMq2proxyMsgNum().incrementAndGet();
 
                 Command cmd;
@@ -146,9 +145,9 @@ public class SessionSender {
                 }
                 Package pkg = new Package();
                 pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, seq));
-                msg.sysHeaders().put(ProxyConstants.RSP_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                msg.getSystemProperties().put(ProxyConstants.RSP_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                 try {
-                    pkg.setBody(ProxyUtil.encodeMessage((BytesMessage) msg));
+                    pkg.setBody(ProxyUtil.encodeMessage(msg));
                     pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, seq));
                 } catch (Exception e) {
                     pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), null, seq));
