@@ -17,7 +17,6 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.processor;
 
-import com.webank.eventmesh.api.SendCallback;
 import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.protocol.http.async.AsyncContext;
@@ -35,13 +34,13 @@ import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
-import com.webank.eventmesh.runtime.domain.BytesMessageImpl;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
-import io.openmessaging.BytesMessage;
-import io.openmessaging.Message;
-import io.openmessaging.producer.SendResult;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.OnExceptionContext;
+import io.openmessaging.api.SendCallback;
+import io.openmessaging.api.SendResult;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,24 +121,25 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             ttl = sendMessageRequestBody.getTtl();
         }
 
-        BytesMessage omsMsg = new BytesMessageImpl();
+        Message omsMsg = new Message();
         try {
             // body
             omsMsg.setBody(sendMessageRequestBody.getContent().getBytes(ProxyConstants.DEFAULT_CHARSET));
             // topic
-            omsMsg.putSysHeaders(Message.BuiltinKeys.DESTINATION, sendMessageRequestBody.getTopic());
+            omsMsg.setTopic(sendMessageRequestBody.getTopic());
+            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION, sendMessageRequestBody.getTopic());
 
             if (!StringUtils.isBlank(sendMessageRequestBody.getTag())) {
-                omsMsg.putUserHeaders(ProxyConstants.TAG, sendMessageRequestBody.getTag());
+                omsMsg.putUserProperties(ProxyConstants.TAG, sendMessageRequestBody.getTag());
             }
             // ttl
-            omsMsg.putSysHeaders(Message.BuiltinKeys.TIMEOUT, ttl);
+            omsMsg.putUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT, ttl);
             // bizNo
-            omsMsg.putSysHeaders(Message.BuiltinKeys.SEARCH_KEYS, sendMessageRequestBody.getBizSeqNo());
-            omsMsg.putUserHeaders("msgType", "persistent");
-            omsMsg.putUserHeaders(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-            omsMsg.putUserHeaders(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
-            omsMsg.putUserHeaders(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS, sendMessageRequestBody.getBizSeqNo());
+            omsMsg.putUserProperties("msgType", "persistent");
+            omsMsg.putUserProperties(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+            omsMsg.putUserProperties(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
+            omsMsg.putUserProperties(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
 
             // new rocketmq client can't support put DeFiBusConstant.PROPERTY_MESSAGE_TTL
 //            rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL, ttl);
@@ -183,7 +183,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 .setProp(sendMessageRequestBody.getExtFields());
 
         try {
-            sendMessageContext.getMsg().userHeaders().put(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+            sendMessageContext.getMsg().getUserProperties().put(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
             proxyProducer.send(sendMessageContext, new SendCallback() {
 
                 @Override
@@ -202,11 +202,11 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 }
 
                 @Override
-                public void onException(Throwable e) {
+                public void onException(OnExceptionContext context) {
                     HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
                             sendMessageResponseHeader,
                             SendMessageResponseBody.buildBody(ProxyRetCode.PROXY_SEND_ASYNC_MSG_ERR.getRetCode(),
-                                    ProxyRetCode.PROXY_SEND_ASYNC_MSG_ERR.getErrMsg() + ProxyUtil.stackTrace(e, 2)));
+                                    ProxyRetCode.PROXY_SEND_ASYNC_MSG_ERR.getErrMsg() + ProxyUtil.stackTrace(context.getException(), 2)));
                     asyncContext.onComplete(err, handler);
                     long endTime = System.currentTimeMillis();
                     proxyHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
@@ -215,7 +215,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                             endTime - startTime,
                             sendMessageRequestBody.getTopic(),
                             sendMessageRequestBody.getBizSeqNo(),
-                            sendMessageRequestBody.getUniqueId(), e);
+                            sendMessageRequestBody.getUniqueId(), context.getException());
                 }
             });
         } catch (Exception ex) {
