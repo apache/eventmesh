@@ -17,10 +17,10 @@
 package rocketmq.producer;
 
 import com.webank.eventmesh.connector.rocketmq.producer.AbstractOMSProducer;
-import io.openmessaging.MessagingAccessPoint;
-import io.openmessaging.OMS;
-import io.openmessaging.exception.OMSRuntimeException;
-import io.openmessaging.producer.Producer;
+import io.openmessaging.api.OMS;
+import io.openmessaging.api.MessagingAccessPoint;
+import io.openmessaging.api.Producer;
+import io.openmessaging.api.exception.OMSRuntimeException;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -35,6 +35,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.lang.reflect.Field;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.failBecauseExceptionWasNotThrown;
@@ -51,16 +52,15 @@ public class ProducerImplTest {
 
     @Before
     public void init() throws NoSuchFieldException, IllegalAccessException {
-        final MessagingAccessPoint messagingAccessPoint = OMS
-            .getMessagingAccessPoint("oms:rocketmq://IP1:9876,IP2:9876/namespace");
-        producer = messagingAccessPoint.createProducer();
+        final MessagingAccessPoint messagingAccessPoint = OMS.builder().endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build();
+        producer = messagingAccessPoint.createProducer(new Properties());
 
         Field field = AbstractOMSProducer.class.getDeclaredField("rocketmqProducer");
         field.setAccessible(true);
         field.set(producer, rocketmqProducer);
 
-        messagingAccessPoint.startup();
-        producer.startup();
+//        messagingAccessPoint.startup();
+        producer.start();
     }
 
     @Test
@@ -69,10 +69,11 @@ public class ProducerImplTest {
         sendResult.setMsgId("TestMsgID");
         sendResult.setSendStatus(SendStatus.SEND_OK);
         when(rocketmqProducer.send(any(Message.class), anyLong())).thenReturn(sendResult);
-        io.openmessaging.producer.SendResult omsResult =
-            producer.send(producer.createBytesMessage("HELLO_TOPIC", new byte[] {'a'}));
+        io.openmessaging.api.Message message = new io.openmessaging.api.Message("HELLO_TOPIC", "", new byte[] {'a'});
+        io.openmessaging.api.SendResult omsResult =
+            producer.send(message);
 
-        assertThat(omsResult.messageId()).isEqualTo("TestMsgID");
+        assertThat(omsResult.getMessageId()).isEqualTo("TestMsgID");
     }
 
     @Test
@@ -82,7 +83,8 @@ public class ProducerImplTest {
 
         when(rocketmqProducer.send(any(Message.class), anyLong())).thenReturn(sendResult);
         try {
-            producer.send(producer.createBytesMessage("HELLO_TOPIC", new byte[] {'a'}));
+            io.openmessaging.api.Message message = new io.openmessaging.api.Message("HELLO_TOPIC", "", new byte[] {'a'});
+            producer.send(message);
             failBecauseExceptionWasNotThrown(OMSRuntimeException.class);
         } catch (Exception e) {
             assertThat(e).hasMessageContaining("Send message to RocketMQ broker failed.");
@@ -93,7 +95,8 @@ public class ProducerImplTest {
     public void testSend_WithException() throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         when(rocketmqProducer.send(any(Message.class), anyLong())).thenThrow(MQClientException.class);
         try {
-            producer.send(producer.createBytesMessage("HELLO_TOPIC", new byte[] {'a'}));
+            io.openmessaging.api.Message message = new io.openmessaging.api.Message("HELLO_TOPIC", "", new byte[] {'a'});
+            producer.send(message);
             failBecauseExceptionWasNotThrown(OMSRuntimeException.class);
         } catch (Exception e) {
             assertThat(e).hasMessageContaining("Send message to RocketMQ broker failed.");

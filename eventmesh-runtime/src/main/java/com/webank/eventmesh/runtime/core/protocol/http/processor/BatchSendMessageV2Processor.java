@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.processor;
 
-import com.webank.eventmesh.api.SendCallback;
+import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.protocol.http.async.AsyncContext;
@@ -32,13 +32,13 @@ import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchV2ResponseHeader;
-import com.webank.eventmesh.runtime.domain.BytesMessageImpl;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
-import io.openmessaging.BytesMessage;
-import io.openmessaging.Message;
-import io.openmessaging.producer.SendResult;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.OnExceptionContext;
+import io.openmessaging.api.SendCallback;
+import io.openmessaging.api.SendResult;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,7 +134,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         }
 
 //        Message rocketMQMsg = null;
-        BytesMessage omsMsg = new BytesMessageImpl();
+        Message omsMsg = new Message();
 
         try {
 //            if (StringUtils.isBlank(sendMessageBatchV2RequestBody.getTag())) {
@@ -146,13 +146,15 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
             // body
             omsMsg.setBody(sendMessageBatchV2RequestBody.getMsg().getBytes(ProxyConstants.DEFAULT_CHARSET));
             // topic
-            omsMsg.putSysHeaders(Message.BuiltinKeys.DESTINATION, sendMessageBatchV2RequestBody.getTopic());
+            // topic
+            omsMsg.setTopic(sendMessageBatchV2RequestBody.getTopic());
+            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION, sendMessageBatchV2RequestBody.getTopic());
             if (!StringUtils.isBlank(sendMessageBatchV2RequestBody.getTag())) {
-                omsMsg.putUserHeaders(ProxyConstants.TAG, sendMessageBatchV2RequestBody.getTag());
+                omsMsg.putUserProperties(ProxyConstants.TAG, sendMessageBatchV2RequestBody.getTag());
             }
-            omsMsg.putUserHeaders("msgType", "persistent");
+            omsMsg.putUserProperties("msgType", "persistent");
             // ttl
-            omsMsg.putSysHeaders(Message.BuiltinKeys.TIMEOUT, sendMessageBatchV2RequestBody.getTtl());
+            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_TIMEOUT, sendMessageBatchV2RequestBody.getTtl());
 
 //            rocketMQMsg.putUserProperty(DeFiBusConstant.KEY, DeFiBusConstant.PERSISTENT);
 //            MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, sendMessageBatchV2RequestBody.getTtl());
@@ -187,15 +189,26 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                 }
 
                 @Override
-                public void onException(Throwable e) {
+                public void onException(OnExceptionContext context) {
                     long batchEndTime = System.currentTimeMillis();
                     proxyHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
                     proxyHTTPServer.metrics.summaryMetrics.recordBatchSendMsgCost(batchEndTime - batchStartTime);
                     batchMessageLogger.error("batchMessageV2|proxy2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}",
                             sendMessageBatchV2RequestBody.getBizSeqNo(),
                             batchEndTime - batchStartTime,
-                            sendMessageBatchV2RequestBody.getTopic(), e);
+                            sendMessageBatchV2RequestBody.getTopic(), context.getException());
                 }
+
+//                @Override
+//                public void onException(Throwable e) {
+//                    long batchEndTime = System.currentTimeMillis();
+//                    proxyHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+//                    proxyHTTPServer.metrics.summaryMetrics.recordBatchSendMsgCost(batchEndTime - batchStartTime);
+//                    batchMessageLogger.error("batchMessageV2|proxy2mq|REQ|ASYNC|bizSeqNo={}|send2MQCost={}ms|topic={}",
+//                            sendMessageBatchV2RequestBody.getBizSeqNo(),
+//                            batchEndTime - batchStartTime,
+//                            sendMessageBatchV2RequestBody.getTopic(), e);
+//                }
             });
         } catch (Exception e) {
             responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
