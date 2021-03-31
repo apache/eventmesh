@@ -17,12 +17,13 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.producer;
 
-import com.webank.eventmesh.api.SendCallback;
 import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
 import com.webank.eventmesh.runtime.core.protocol.http.retry.RetryContext;
 import com.webank.eventmesh.common.Constants;
-import io.openmessaging.Message;
-import io.openmessaging.producer.SendResult;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.OnExceptionContext;
+import io.openmessaging.api.SendCallback;
+import io.openmessaging.api.SendResult;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,14 +135,14 @@ public class SendMessageContext extends RetryContext {
 
             @Override
             public void onSuccess(SendResult sendResult) {
-
             }
 
             @Override
-            public void onException(Throwable e) {
-                logger.warn("", e);
+            public void onException(OnExceptionContext context) {
+                logger.warn("", context.getException());
                 proxyHTTPServer.metrics.summaryMetrics.recordSendBatchMsgFailed(1);
             }
+
         });
 
         return true;

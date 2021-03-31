@@ -19,12 +19,13 @@ package com.webank.eventmesh.runtime.core.plugin;
 
 import com.webank.eventmesh.api.AbstractContext;
 import com.webank.eventmesh.api.consumer.MeshMQPushConsumer;
-import io.openmessaging.KeyValue;
-import io.openmessaging.Message;
-import io.openmessaging.consumer.MessageListener;
+import io.openmessaging.api.AsyncMessageListener;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.MessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
+import java.util.Properties;
 import java.util.ServiceLoader;
 
 public class MQConsumerWrapper extends MQWrapper {
@@ -33,7 +34,7 @@ public class MQConsumerWrapper extends MQWrapper {
 
     protected MeshMQPushConsumer meshMQPushConsumer;
 
-    public void subscribe(String topic, MessageListener listener) throws Exception {
+    public void subscribe(String topic, AsyncMessageListener listener) throws Exception {
         meshMQPushConsumer.subscribe(topic, listener);
     }
 
@@ -41,15 +42,15 @@ public class MQConsumerWrapper extends MQWrapper {
         meshMQPushConsumer.unsubscribe(topic);
     }
 
-    public boolean isPause() {
-        return meshMQPushConsumer.isPause();
-    }
+//    public boolean isPause() {
+//        return meshMQPushConsumer.isPause();
+//    }
+//
+//    public void pause() {
+//        meshMQPushConsumer.pause();
+//    }
 
-    public void pause() {
-        meshMQPushConsumer.pause();
-    }
-
-    public synchronized void init(KeyValue keyValue) throws Exception {
+    public synchronized void init(Properties keyValue) throws Exception {
         meshMQPushConsumer = getMeshMQPushConsumer();
         if (meshMQPushConsumer == null){
             logger.error("can't load the meshMQPushConsumer plugin, please check.");
