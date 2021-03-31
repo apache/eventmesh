@@ -18,11 +18,12 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
 import com.webank.eventmesh.api.AbstractContext;
+import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.util.ServerGlobal;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import io.openmessaging.Message;
+import io.openmessaging.api.Message;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,7 @@ public class DownStreamMsgContext implements Delayed {
         this.lastPushTime = System.currentTimeMillis();
         this.executeTime = System.currentTimeMillis();
         this.createTime = System.currentTimeMillis();
-        this.expireTime = System.currentTimeMillis() + Long.parseLong(msgExt.userHeaders().getString(ProxyConstants.TTL));
+        this.expireTime = System.currentTimeMillis() + Long.parseLong(msgExt.getUserProperties("TTL"));
         this.msgFromOtherProxy = msgFromOtherProxy;
     }
 
@@ -83,7 +84,8 @@ public class DownStreamMsgContext implements Delayed {
             consumer.updateOffset(msgs, consumeConcurrentlyContext);
 //            ConsumeMessageService consumeMessageService = consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, consumeConcurrentlyContext);
-            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).sysHeaders().getString(Message.BuiltinKeys.DESTINATION), msgs.get(0).sysHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_KEYS));
+            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION),
+                    msgs.get(0).getSystemProperties(ProxyConstants.PROPERTY_MESSAGE_KEYS));
         }else{
             logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",consumer == null, consumeConcurrentlyContext == null, msgExt == null);
         }
@@ -101,7 +103,7 @@ public class DownStreamMsgContext implements Delayed {
                 ",retryTimes=" + retryTimes +
                 ",consumer=" + consumer +
 //  todo              ",consumerGroup=" + consumer.getClass().getConsumerGroup() +
-                ",topic=" + msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION) +
+                ",topic=" + msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION) +
                 ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) +
                 ",executeTime=" + DateFormatUtils.format(executeTime, ProxyConstants.DATE_FORMAT) +
                 ",lastPushTime=" + DateFormatUtils.format(lastPushTime, ProxyConstants.DATE_FORMAT) + '}';
