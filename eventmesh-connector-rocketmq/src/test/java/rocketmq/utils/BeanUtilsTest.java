@@ -19,14 +19,14 @@ package rocketmq.utils;
 import com.webank.eventmesh.connector.rocketmq.config.ClientConfig;
 import com.webank.eventmesh.connector.rocketmq.domain.NonStandardKeys;
 import com.webank.eventmesh.connector.rocketmq.utils.BeanUtils;
-import io.openmessaging.KeyValue;
-import io.openmessaging.OMS;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Properties;
+
 public class BeanUtilsTest {
-    private KeyValue properties = OMS.newKeyValue();
+    private Properties properties = new Properties();
 
     public static class CustomizedConfig extends ClientConfig {
         final static String STRING_TEST = "string.test";

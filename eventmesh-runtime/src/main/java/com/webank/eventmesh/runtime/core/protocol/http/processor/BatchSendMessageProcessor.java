@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.processor;
 
-import com.webank.eventmesh.api.SendCallback;
+import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.protocol.http.async.AsyncContext;
@@ -32,13 +32,13 @@ import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchResponseHeader;
-import com.webank.eventmesh.runtime.domain.BytesMessageImpl;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
-import io.openmessaging.BytesMessage;
-import io.openmessaging.Message;
-import io.openmessaging.producer.SendResult;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.OnExceptionContext;
+import io.openmessaging.api.SendCallback;
+import io.openmessaging.api.SendResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -144,20 +144,22 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
             try {
 //                Message rocketMQMsg;
-                BytesMessage omsMsg = new BytesMessageImpl();
+                Message omsMsg = new Message();
+                // topic
+                omsMsg.setTopic(msg.topic);
                 // body
                 omsMsg.setBody(msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
                 if (!StringUtils.isBlank(msg.tag)) {
-                    omsMsg.putUserHeaders(ProxyConstants.TAG, msg.tag);
+                    omsMsg.putUserProperties(ProxyConstants.TAG, msg.tag);
                 }
 //                if (StringUtils.isBlank(msg.tag)) {
 //                    rocketMQMsg = new Message(msg.topic, msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
 //                } else {
 //                    rocketMQMsg = new Message(msg.topic, msg.tag, msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
 //                }
-                omsMsg.putUserHeaders("msgType", "persistent");
+                omsMsg.putUserProperties("msgType", "persistent");
                 // ttl
-                omsMsg.putSysHeaders(Message.BuiltinKeys.TIMEOUT, msg.ttl);
+                omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_TIMEOUT, msg.ttl);
                 //MessageAccessor.putProperty(rocketMQMsg, DeFiBusConstant.PROPERTY_MESSAGE_TTL, msg.ttl);
                 msgList.add(omsMsg);
                 if (topicBatchMessageMappings.containsKey(msg.topic)) {
@@ -185,12 +187,12 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        proxyHTTPServer.metrics.summaryMetrics.recordSendBatchMsg(Integer.valueOf(sendMessageBatchRequestBody.getSize()));
+        proxyHTTPServer.metrics.summaryMetrics.recordSendBatchMsg(Integer.parseInt(sendMessageBatchRequestBody.getSize()));
 
         if (proxyHTTPServer.getProxyConfiguration().proxyServerBatchMsgBatchEnabled) {
             for (List<Message> batchMsgs : topicBatchMessageMappings.values()) {
                 // TODO:api中的实现，考虑是否放到插件中
-                BytesMessage omsMsg = new BytesMessageImpl();
+                Message omsMsg = new Message();
 //                try {
 //                    msgBatch = msgBatch.generateFromList(batchMsgs);
 //                    for (Message message : msgBatch.getMessages()) {
@@ -211,10 +213,16 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                     }
 
                     @Override
-                    public void onException(Throwable e) {
-                        batchMessageLogger.warn("", e);
+                    public void onException(OnExceptionContext context) {
+                        batchMessageLogger.warn("", context.getException());
                         proxyHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
                     }
+
+//                    @Override
+//                    public void onException(Throwable e) {
+//                        batchMessageLogger.warn("", e);
+//                        proxyHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+//                    }
                 });
             }
         } else {
@@ -227,10 +235,16 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                     }
 
                     @Override
-                    public void onException(Throwable e) {
-                        batchMessageLogger.warn("", e);
+                    public void onException(OnExceptionContext context) {
+                        batchMessageLogger.warn("", context.getException());
                         proxyHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
                     }
+
+//                    @Override
+//                    public void onException(Throwable e) {
+//                        batchMessageLogger.warn("", e);
+//                        proxyHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+//                    }
                 });
             }
         }

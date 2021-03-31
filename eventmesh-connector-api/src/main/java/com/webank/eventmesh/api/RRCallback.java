@@ -1,6 +1,6 @@
 package com.webank.eventmesh.api;
 
-import io.openmessaging.Message;
+import io.openmessaging.api.Message;
 
 public interface RRCallback {
 
