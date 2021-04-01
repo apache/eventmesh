@@ -18,12 +18,13 @@
 package com.webank.eventmesh.runtime.core.plugin;
 
 import com.webank.eventmesh.api.RRCallback;
-import com.webank.eventmesh.api.SendCallback;
 import com.webank.eventmesh.api.producer.MeshMQProducer;
-import io.openmessaging.KeyValue;
-import io.openmessaging.Message;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.SendCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Properties;
 import java.util.ServiceLoader;
 
 public class MQProducerWrapper extends MQWrapper {
@@ -32,7 +33,7 @@ public class MQProducerWrapper extends MQWrapper {
 
     protected MeshMQProducer meshMQProducer;
 
-    public synchronized void init(KeyValue keyValue) throws Exception{
+    public synchronized void init(Properties keyValue) throws Exception{
         if (inited.get()) {
             return;
         }

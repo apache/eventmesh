@@ -17,88 +17,75 @@
 package com.webank.eventmesh.connector.rocketmq;
 
 import com.webank.eventmesh.connector.rocketmq.producer.ProducerImpl;
-import com.webank.eventmesh.connector.rocketmq.consumer.PullConsumerImpl;
 import com.webank.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
-import com.webank.eventmesh.connector.rocketmq.utils.OMSUtil;
-import io.openmessaging.KeyValue;
-import io.openmessaging.MessagingAccessPoint;
-import io.openmessaging.ResourceManager;
-import io.openmessaging.consumer.PullConsumer;
-import io.openmessaging.consumer.PushConsumer;
-import io.openmessaging.consumer.StreamingConsumer;
-import io.openmessaging.exception.OMSNotSupportedException;
-import io.openmessaging.producer.Producer;
+import io.openmessaging.api.Consumer;
+import io.openmessaging.api.MessagingAccessPoint;
+import io.openmessaging.api.Producer;
+import io.openmessaging.api.PullConsumer;
+import io.openmessaging.api.batch.BatchConsumer;
+import io.openmessaging.api.order.OrderConsumer;
+import io.openmessaging.api.order.OrderProducer;
+import io.openmessaging.api.transaction.LocalTransactionChecker;
+import io.openmessaging.api.transaction.TransactionProducer;
+
+import java.util.Properties;
 
 public class MessagingAccessPointImpl implements MessagingAccessPoint {
 
-    private KeyValue accessPointProperties;
+    private Properties accessPointProperties;
 
-    public MessagingAccessPointImpl(final KeyValue accessPointProperties) {
+    public MessagingAccessPointImpl(final Properties accessPointProperties) {
         this.accessPointProperties = accessPointProperties;
     }
 
     @Override
-    public KeyValue attributes() {
+    public String version() {
+        return null;
+    }
+
+    @Override
+    public Properties attributes() {
         return accessPointProperties;
     }
 
     @Override
-    public String implVersion() {
-        return "0.3.0";
-    }
-
-    @Override
-    public Producer createProducer() {
+    public Producer createProducer(Properties properties) {
         return new ProducerImpl(this.accessPointProperties);
     }
 
     @Override
-    public Producer createProducer(KeyValue properties) {
-        return new ProducerImpl(OMSUtil.buildKeyValue(this.accessPointProperties, properties));
-    }
-
-    @Override
-    public PushConsumer createPushConsumer() {
-        return new PushConsumerImpl(accessPointProperties);
-    }
-
-    @Override
-    public PushConsumer createPushConsumer(KeyValue properties) {
-        return new PushConsumerImpl(OMSUtil.buildKeyValue(this.accessPointProperties, properties));
-    }
-
-    @Override
-    public PullConsumer createPullConsumer() {
-        return new PullConsumerImpl(accessPointProperties);
-    }
-
-    @Override
-    public PullConsumer createPullConsumer(KeyValue attributes) {
-        return new PullConsumerImpl(OMSUtil.buildKeyValue(this.accessPointProperties, attributes));
-    }
-
-    @Override
-    public StreamingConsumer createStreamingConsumer() {
+    public OrderProducer createOrderProducer(Properties properties) {
         return null;
     }
 
     @Override
-    public StreamingConsumer createStreamingConsumer(KeyValue attributes) {
+    public TransactionProducer createTransactionProducer(Properties properties, LocalTransactionChecker checker) {
         return null;
     }
 
     @Override
-    public ResourceManager resourceManager() {
-        throw new OMSNotSupportedException("-1", "ResourceManager is not supported in current version.");
+    public TransactionProducer createTransactionProducer(Properties properties) {
+        return null;
     }
 
     @Override
-    public void startup() {
-        //Ignore
+    public Consumer createConsumer(Properties properties) {
+        return new PushConsumerImpl(properties);
     }
 
     @Override
-    public void shutdown() {
-        //Ignore
+    public PullConsumer createPullConsumer(Properties properties) {
+        return null;
     }
+
+    @Override
+    public BatchConsumer createBatchConsumer(Properties properties) {
+        return null;
+    }
+
+    @Override
+    public OrderConsumer createOrderedConsumer(Properties properties) {
+        return null;
+    }
+
 }
