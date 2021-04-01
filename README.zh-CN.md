@@ -32,7 +32,6 @@ Event Mesh的一般功能:
 
 * **eventmesh-runtime**：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
 * **eventmesh-sdk-java**：当前支持HTTP和TCP协议，未来会支持gRPC等
-* **eventmesh-registry**：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理runtime
 * **eventmesh-connector-rocketmq** : 一种基于OpenMessagingConnector 接口的实现，该实现支持将RocketMQ作为事件存储，实现事件的发布与订阅
 
 **通信协议：**
