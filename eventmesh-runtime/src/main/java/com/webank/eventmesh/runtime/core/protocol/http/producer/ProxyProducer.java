@@ -18,17 +18,16 @@
 package com.webank.eventmesh.runtime.core.protocol.http.producer;
 
 import com.webank.eventmesh.api.RRCallback;
-import com.webank.eventmesh.api.SendCallback;
 import com.webank.eventmesh.runtime.configuration.ProxyConfiguration;
 import com.webank.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import com.webank.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
-import io.openmessaging.KeyValue;
-import io.openmessaging.Message;
-import io.openmessaging.OMS;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.SendCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ProxyProducer {
@@ -79,7 +78,7 @@ public class ProxyProducer {
         this.producerGroupConfig = producerGroupConfig;
         this.proxyConfiguration = proxyConfiguration;
 
-        KeyValue keyValue = OMS.newKeyValue();
+        Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
         keyValue.put("instanceName", ProxyUtil.buildProxyClientID(producerGroupConfig.getGroupName(),
                 proxyConfiguration.proxyRegion, proxyConfiguration.proxyCluster));

@@ -100,11 +100,11 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         builder.addHeader(ProtocolKey.ProxyInstanceKey.PROXYREGION, handleMsgContext.getProxyHTTPServer().getProxyConfiguration().proxyRegion);
         builder.addHeader(ProtocolKey.ProxyInstanceKey.PROXYIDC, handleMsgContext.getProxyHTTPServer().getProxyConfiguration().proxyIDC);
 
-        handleMsgContext.getMsg().userHeaders().put(ProxyConstants.REQ_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+        handleMsgContext.getMsg().getUserProperties().put(ProxyConstants.REQ_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
 
         String content = "";
         try {
-            content = new String(handleMsgContext.getMsg().getBody(byte[].class), ProxyConstants.DEFAULT_CHARSET);
+            content = new String(handleMsgContext.getMsg().getBody(), ProxyConstants.DEFAULT_CHARSET);
         } catch (Exception ex) {
             return;
         }

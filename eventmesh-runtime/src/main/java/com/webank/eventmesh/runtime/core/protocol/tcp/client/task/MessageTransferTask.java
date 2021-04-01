@@ -17,7 +17,6 @@
 
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import com.webank.eventmesh.api.SendCallback;
 import com.webank.eventmesh.runtime.constants.DeFiBusConstant;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.ProxyTcpSendResult;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.ProxyTcpSendStatus;
@@ -33,7 +32,9 @@ import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.openmessaging.producer.SendResult;
+import io.openmessaging.api.OnExceptionContext;
+import io.openmessaging.api.SendCallback;
+import io.openmessaging.api.SendResult;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,15 +152,26 @@ public class MessageTransferTask extends AbstractTask {
             }
 
             @Override
-            public void onException(Throwable e) {
+            public void onException(OnExceptionContext context) {
                 session.getSender().getUpstreamBuff().release();
                 session.getSender().failMsgCount.incrementAndGet();
                 messageLogger.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(), String.valueOf
-                        (System.currentTimeMillis() - createTime), new Exception(e));
-                msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), e.toString(), pkg.getHeader().getSeq()));
+                        (System.currentTimeMillis() - createTime), new Exception(context.getException()));
+                msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), context.getException().toString(), pkg.getHeader().getSeq()));
                 msg.setBody(accessMessage);
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
             }
+
+//            @Override
+//            public void onException(Throwable e) {
+//                session.getSender().getUpstreamBuff().release();
+//                session.getSender().failMsgCount.incrementAndGet();
+//                messageLogger.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(), String.valueOf
+//                        (System.currentTimeMillis() - createTime), new Exception(e));
+//                msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), e.toString(), pkg.getHeader().getSeq()));
+//                msg.setBody(accessMessage);
+//                Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
+//            }
         };
     }
 }

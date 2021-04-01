@@ -18,10 +18,11 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
 import com.webank.eventmesh.api.AbstractContext;
+import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.plugin.MQConsumerWrapper;
-import io.openmessaging.Message;
+import io.openmessaging.api.Message;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
@@ -51,7 +52,7 @@ public class ClientAckContext {
         this.msgs = msgs;
         this.consumer = consumer;
         this.createTime = System.currentTimeMillis();
-        this.expireTime = System.currentTimeMillis() + Long.parseLong(msgs.get(0).userHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_TTL));
+        this.expireTime = System.currentTimeMillis() + Long.parseLong(msgs.get(0).getUserProperties(ProxyConstants.PROPERTY_MESSAGE_TTL));
     }
 
     public boolean isExpire() {
@@ -107,7 +108,7 @@ public class ClientAckContext {
             consumer.updateOffset(msgs, context);
 //            ConsumeMessageService consumeMessageService = consumer..getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, context);
-            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).sysHeaders().getString(Message.BuiltinKeys.DESTINATION), ProxyUtil.getMessageBizSeq(msgs.get(0)));
+            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), ProxyUtil.getMessageBizSeq(msgs.get(0)));
         }else{
             logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",consumer == null, context == null, msgs == null);
         }
@@ -119,7 +120,7 @@ public class ClientAckContext {
                 ",seq=" + seq +
 // TODO               ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
 //                ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
-                ",topic=" + (CollectionUtils.size(msgs) > 0 ? msgs.get(0).sysHeaders().getString(Message.BuiltinKeys.DESTINATION) : null) +
+                ",topic=" + (CollectionUtils.size(msgs) > 0 ? msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION) : null) +
                 ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) +
                 ",expireTime=" + DateFormatUtils.format(expireTime, ProxyConstants.DATE_FORMAT) + '}';
     }

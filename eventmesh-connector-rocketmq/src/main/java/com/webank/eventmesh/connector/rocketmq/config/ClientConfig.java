@@ -17,7 +17,7 @@
 package com.webank.eventmesh.connector.rocketmq.config;
 
 import com.webank.eventmesh.connector.rocketmq.domain.NonStandardKeys;
-import io.openmessaging.OMSBuiltinKeys;
+import io.openmessaging.api.OMSBuiltinKeys;
 
 public class ClientConfig implements OMSBuiltinKeys, NonStandardKeys {
     private String driverImpl;
