@@ -17,6 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.retry;
 
+import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.util.ProxyThreadFactoryImpl;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
@@ -25,7 +26,7 @@ import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 //import com.webank.eventmesh.connector.defibus.common.Constants;
-import io.openmessaging.Message;
+import io.openmessaging.api.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +74,7 @@ public class ProxyTcpRetryer {
             return;
         }
 
-        int maxRetryTimes = ProxyUtil.isService(downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION)) ? 1 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryTimes;
+        int maxRetryTimes = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 1 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryTimes;
         if (downStreamMsgContext.retryTimes >= maxRetryTimes) {
             logger.warn("pushRetry fail,retry over maxRetryTimes:{}, retryTimes:{}, seq:{}, bizSeq:{}", maxRetryTimes, downStreamMsgContext.retryTimes,
                     downStreamMsgContext.seq, ProxyUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
@@ -109,14 +110,14 @@ public class ProxyTcpRetryer {
         try {
             logger.info("retry downStream msg start,seq:{},retryTimes:{},bizSeq:{}",downStreamMsgContext.seq, downStreamMsgContext.retryTimes, ProxyUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
-            if(isRetryMsgTimeout(downStreamMsgContext))
+            if(isRetryMsgTimeout(downStreamMsgContext)){
                 return;
-
+            }
             downStreamMsgContext.retryTimes++;
             downStreamMsgContext.lastPushTime = System.currentTimeMillis();
 
             Session rechoosen = null;
-            String topic = downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION);
+            String topic = downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
             if(!ProxyUtil.isBroadcast(topic)){
                 rechoosen = downStreamMsgContext.session.getClientGroupWrapper()
                         .get().getDownstreamDispatchStrategy().select(downStreamMsgContext.session.getClientGroupWrapper().get().getGroupName()
@@ -162,13 +163,13 @@ public class ProxyTcpRetryer {
 
     private boolean isRetryMsgTimeout(DownStreamMsgContext downStreamMsgContext){
         boolean flag =false;
-        long ttl = Long.parseLong(downStreamMsgContext.msgExt.userHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_TTL));
+        long ttl = Long.parseLong(downStreamMsgContext.msgExt.getUserProperties(ProxyConstants.PROPERTY_MESSAGE_TTL));
         //TODO 关注是否能取到
-        long storeTimestamp = Long.parseLong(downStreamMsgContext.msgExt.userHeaders().getString(DeFiBusConstant.STORE_TIME));
-        String leaveTimeStr = downStreamMsgContext.msgExt.userHeaders().getString(DeFiBusConstant.LEAVE_TIME);
+        long storeTimestamp = Long.parseLong(downStreamMsgContext.msgExt.getUserProperties(DeFiBusConstant.STORE_TIME));
+        String leaveTimeStr = downStreamMsgContext.msgExt.getUserProperties(DeFiBusConstant.LEAVE_TIME);
         long brokerCost = StringUtils.isNumeric(leaveTimeStr) ? Long.parseLong(leaveTimeStr) - storeTimestamp : 0;
 
-        String arriveTimeStr = downStreamMsgContext.msgExt.userHeaders().getString(DeFiBusConstant.ARRIVE_TIME);
+        String arriveTimeStr = downStreamMsgContext.msgExt.getUserProperties(DeFiBusConstant.ARRIVE_TIME);
         long accessCost = StringUtils.isNumeric(arriveTimeStr) ? System.currentTimeMillis() - Long.parseLong(arriveTimeStr) : 0;
         double elapseTime = brokerCost + accessCost;
         if (elapseTime >= ttl) {
@@ -201,7 +202,8 @@ public class ProxyTcpRetryer {
     private void proxyAckMsg(DownStreamMsgContext downStreamMsgContext){
         List<Message> msgExts = new ArrayList<Message>();
         msgExts.add(downStreamMsgContext.msgExt);
-        logger.warn("proxyAckMsg topic:{}, seq:{}, bizSeq:{}",downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION), downStreamMsgContext.seq, downStreamMsgContext.msgExt.sysHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_KEYS));
+        logger.warn("proxyAckMsg topic:{}, seq:{}, bizSeq:{}",downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION),
+                downStreamMsgContext.seq, downStreamMsgContext.msgExt.getSystemProperties(ProxyConstants.PROPERTY_MESSAGE_KEYS));
         downStreamMsgContext.consumer.updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);
 //        ConsumeMessageService consumeMessageService = downStreamMsgContext.consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //        ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);
