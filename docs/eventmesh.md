@@ -24,7 +24,6 @@ EventMesh的一般功能:
 关键部件：
 * eventmesh-runtime：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
 * eventmesh-sdk-java：当前支持HTTP和TCP协议，未来会支持gRPC等
-* eventmesh-registry：自动在连接到事件网格的应用程序和服务之间路由事件, 管理EventMesh
 
 
 ## 开源地址
