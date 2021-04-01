@@ -192,7 +192,7 @@ docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs
 
 Windows
 
-- Windows系统下运行示例可以参考[这里](https://github.com/WeBankFinTech/EventMesh/blob/develop/docs/en/instructions/eventmesh-sdk-java-quickstart.md)
+- Windows系统下运行示例可以参考[这里](https://github.com/WeBankFinTech/EventMesh/blob/develop/docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
 
 Linux
 

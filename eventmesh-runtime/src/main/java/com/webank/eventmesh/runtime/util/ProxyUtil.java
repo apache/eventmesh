@@ -18,6 +18,7 @@
 package com.webank.eventmesh.runtime.util;
 
 
+import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.constants.ProxyVersion;
 import com.webank.eventmesh.common.ThreadUtil;
@@ -27,10 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.webank.eventmesh.runtime.domain.BytesMessageImpl;
-import io.openmessaging.BytesMessage;
-import io.openmessaging.KeyValue;
-import io.openmessaging.Message;
+import io.openmessaging.api.Message;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -42,6 +40,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static com.webank.eventmesh.runtime.util.OMSUtil.isOMSHeader;
@@ -225,11 +224,11 @@ public class ProxyUtil {
     }
 
     public static String getMessageBizSeq(Message msg) {
-        KeyValue properties = msg.sysHeaders();
+        Properties properties = msg.getSystemProperties();
 
-        String keys = properties.getString(ProxyConstants.KEYS_UPPERCASE);
+        String keys = properties.getProperty(ProxyConstants.KEYS_UPPERCASE);
         if (!StringUtils.isNotBlank(keys)) {
-            keys = properties.getString(ProxyConstants.KEYS_LOWERCASE);
+            keys = properties.getProperty(ProxyConstants.KEYS_LOWERCASE);
         }
         return keys;
     }
@@ -245,24 +244,26 @@ public class ProxyUtil {
 //        return msg;
 //    }
 
-    public static BytesMessage decodeMessage(AccessMessage accessMessage) {
-        BytesMessage omsMsg = new BytesMessageImpl();
+    public static Message decodeMessage(AccessMessage accessMessage) {
+        Message omsMsg = new Message();
         omsMsg.setBody(accessMessage.getBody().getBytes());
-
-        KeyValue headers = omsMsg.sysHeaders();
-        KeyValue properties = omsMsg.userHeaders();
+        omsMsg.setTopic(accessMessage.getTopic());
+        Properties systemProperties = new Properties();
+        Properties userProperties = new Properties();
 
         final Set<Map.Entry<String, String>> entries = accessMessage.getProperties().entrySet();
 
         for (final Map.Entry<String, String> entry : entries) {
             if (isOMSHeader(entry.getKey())) {
-                headers.put(entry.getKey(), entry.getValue());
+                systemProperties.put(entry.getKey(), entry.getValue());
             } else {
-                properties.put(entry.getKey(), entry.getValue());
+                userProperties.put(entry.getKey(), entry.getValue());
             }
         }
 
-        omsMsg.putSysHeaders(Message.BuiltinKeys.DESTINATION, accessMessage.getTopic());
+        systemProperties.put(Constants.PROPERTY_MESSAGE_DESTINATION, accessMessage.getTopic());
+        omsMsg.setSystemProperties(systemProperties);
+        omsMsg.setUserProperties(userProperties);
         return omsMsg;
     }
 
@@ -276,32 +277,38 @@ public class ProxyUtil {
 //        return accessMessage;
 //    }
 
-    public static AccessMessage encodeMessage(BytesMessage omsMessage) throws Exception {
+    public static AccessMessage encodeMessage(Message omsMessage) throws Exception {
 
         AccessMessage accessMessage = new AccessMessage();
-        accessMessage.setBody(new String(omsMessage.getBody(byte[].class), "UTF-8"));
+        accessMessage.setBody(new String(omsMessage.getBody(), StandardCharsets.UTF_8));
 
-        KeyValue sysHeaders = omsMessage.sysHeaders();
-        KeyValue userHeaders = omsMessage.userHeaders();
+        Properties sysHeaders = omsMessage.getSystemProperties();
+        Properties userHeaders = omsMessage.getUserProperties();
 
         //All destinations in RocketMQ use Topic
-        accessMessage.setTopic(sysHeaders.getString(Message.BuiltinKeys.DESTINATION));
+        accessMessage.setTopic(sysHeaders.getProperty(Constants.PROPERTY_MESSAGE_DESTINATION));
 
-        if (sysHeaders.containsKey(Message.BuiltinKeys.START_TIME)) {
-            long deliverTime = sysHeaders.getLong(Message.BuiltinKeys.START_TIME, 0);
+        if (sysHeaders.containsKey("START_TIME")) {
+            long deliverTime;
+            if (StringUtils.isBlank(sysHeaders.getProperty("START_TIME"))){
+                deliverTime = 0;
+            }else {
+                deliverTime = Long.parseLong(sysHeaders.getProperty("START_TIME"));
+            }
+
             if (deliverTime > 0) {
 //                rmqMessage.putUserProperty(RocketMQConstants.START_DELIVER_TIME, String.valueOf(deliverTime));
-                accessMessage.getProperties().put(Message.BuiltinKeys.START_TIME, String.valueOf(deliverTime));
+                accessMessage.getProperties().put("START_TIME", String.valueOf(deliverTime));
             }
         }
 
-        for (String key : userHeaders.keySet()) {
-            accessMessage.getProperties().put(key, userHeaders.getString(key));
+        for (String key : userHeaders.stringPropertyNames()) {
+            accessMessage.getProperties().put(key, userHeaders.getProperty(key));
         }
 
         //System headers has a high priority
-        for (String key : sysHeaders.keySet()) {
-            accessMessage.getProperties().put(key, sysHeaders.getString(key));
+        for (String key : sysHeaders.stringPropertyNames()) {
+            accessMessage.getProperties().put(key, sysHeaders.getProperty(key));
         }
 
         return accessMessage;

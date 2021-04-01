@@ -17,6 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.group;
 
+import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.FreePriorityDispatchStrategy;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
@@ -32,7 +33,6 @@ import com.webank.eventmesh.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.openmessaging.Message;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -288,7 +288,7 @@ public class ClientSessionGroupMapping {
         if(unAckMsg.size() > 0 && session.getClientGroupWrapper().get().getGroupConsumerSessions().size() > 0){
             for(Map.Entry<String , ClientAckContext> entry : unAckMsg.entrySet()){
                 ClientAckContext ackContext = entry.getValue();
-                if(ProxyUtil.isBroadcast(ackContext.getMsgs().get(0).sysHeaders().getString(Message.BuiltinKeys.DESTINATION))){
+                if(ProxyUtil.isBroadcast(ackContext.getMsgs().get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))){
                     logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}",ackContext.getSeq(),ProxyUtil.getMessageBizSeq(ackContext.getMsgs().get(0)),session.getClient());
                     continue;
                 }
@@ -372,7 +372,8 @@ public class ClientSessionGroupMapping {
                         }
                         tmp.getPusher().getPushContext().ackMsg(seqKey);
                         tmp.getPusher().getPushContext().getUnAckMsg().remove(seqKey);
-                        logger.warn("remove expire clientAckContext, session:{}, topic:{}, seq:{}", tmp, clientAckContext.getMsgs().get(0).sysHeaders().getString(Message.BuiltinKeys.DESTINATION), seqKey);
+                        logger.warn("remove expire clientAckContext, session:{}, topic:{}, seq:{}", tmp,
+                                clientAckContext.getMsgs().get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), seqKey);
                     }
                 }
             }
@@ -380,7 +381,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void initDownStreamMsgContextCleaner() {
-        proxyTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
+        ProxyTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 Iterator<ClientGroupWrapper> cgwIterator = clientGroupMap.values().iterator();
@@ -394,7 +395,8 @@ public class ClientSessionGroupMapping {
                         }
                         cgw.getDownstreamMap().get(seq).ackMsg();
                         cgw.getDownstreamMap().remove(seq);
-                        logger.warn("remove expire DownStreamMsgContext,group:{}, topic:{}, seq:{}", cgw.getGroupName(), downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION), seq);
+                        logger.warn("remove expire DownStreamMsgContext,group:{}, topic:{}, seq:{}", cgw.getGroupName(),
+                                downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), seq);
                     }
                 }
             }
@@ -453,8 +455,9 @@ public class ClientSessionGroupMapping {
         HashMap<String, AtomicInteger> result = new HashMap<String, AtomicInteger>();
         if (!sessionTable.isEmpty()) {
             for (Session session : sessionTable.values()) {
-                if(!StringUtils.equals(session.getClient().getPurpose(), purpose))
+                if(!StringUtils.equals(session.getClient().getPurpose(), purpose)){
                     continue;
+                }
 
                 String key = session.getClient().getDcn() + "|" + session.getClient().getSubsystem()+ "|" + purpose;
                 if (!result.containsKey(key)) {

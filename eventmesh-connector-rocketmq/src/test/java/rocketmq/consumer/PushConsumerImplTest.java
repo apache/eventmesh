@@ -18,9 +18,7 @@ package rocketmq.consumer;
 
 import com.webank.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
 import com.webank.eventmesh.connector.rocketmq.domain.NonStandardKeys;
-import io.openmessaging.*;
-import io.openmessaging.consumer.MessageListener;
-import io.openmessaging.consumer.PushConsumer;
+import io.openmessaging.api.*;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -32,13 +30,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PushConsumerImplTest {
-    private PushConsumer consumer;
+    private Consumer consumer;
 
     @Mock
     private DefaultMQPushConsumer rocketmqPushConsumer;
@@ -46,10 +45,10 @@ public class PushConsumerImplTest {
     @Before
     public void init() throws NoSuchFieldException, IllegalAccessException {
 
-        final MessagingAccessPoint messagingAccessPoint = OMS
-            .getMessagingAccessPoint("oms:rocketmq://IP1:9876,IP2:9876/namespace");
-        consumer = messagingAccessPoint.createPushConsumer(
-            OMS.newKeyValue().put(OMSBuiltinKeys.CONSUMER_ID, "TestGroup"));
+        final MessagingAccessPoint messagingAccessPoint = OMS.builder().endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build();
+        Properties consumerProp = new Properties();
+        consumerProp.put("CONSUMER_ID", "TestGroup");
+        consumer = messagingAccessPoint.createConsumer(consumerProp);
 
         Field field = PushConsumerImpl.class.getDeclaredField("rocketmqPushConsumer");
         field.setAccessible(true);
@@ -57,8 +56,7 @@ public class PushConsumerImplTest {
         field.set(consumer, rocketmqPushConsumer); //Replace
 
         when(rocketmqPushConsumer.getMessageListener()).thenReturn(innerConsumer.getMessageListener());
-        messagingAccessPoint.startup();
-        consumer.startup();
+        consumer.start();
     }
 
     @Test
@@ -70,12 +68,12 @@ public class PushConsumerImplTest {
         consumedMsg.setBody(testBody);
         consumedMsg.putUserProperty(NonStandardKeys.MESSAGE_DESTINATION, "TOPIC");
         consumedMsg.setTopic("HELLO_QUEUE");
-        consumer.attachQueue("HELLO_QUEUE", new MessageListener() {
+        consumer.subscribe("HELLO_QUEUE", "*", new AsyncMessageListener() {
             @Override
-            public void onReceived(Message message, Context context) {
-                assertThat(message.sysHeaders().getString(Message.BuiltinKeys.MESSAGE_ID)).isEqualTo("NewMsgId");
-                assertThat(((BytesMessage) message).getBody(byte[].class)).isEqualTo(testBody);
-                context.ack();
+            public void consume(Message message, AsyncConsumeContext context) {
+                assertThat(message.getSystemProperties("MESSAGE_ID")).isEqualTo("NewMsgId");
+                assertThat(message.getBody()).isEqualTo(testBody);
+                context.commit(Action.CommitMessage);
             }
         });
         ((MessageListenerConcurrently) rocketmqPushConsumer
