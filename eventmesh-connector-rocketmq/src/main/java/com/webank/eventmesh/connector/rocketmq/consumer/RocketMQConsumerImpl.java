@@ -136,42 +136,42 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
 
     @Override
     public void subscribe(String topic, String subExpression, MessageListener listener) {
-
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
     public void subscribe(String topic, MessageSelector selector, MessageListener listener) {
-
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
     public <T> void subscribe(String topic, String subExpression, GenericMessageListener<T> listener) {
-
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
     public <T> void subscribe(String topic, MessageSelector selector, GenericMessageListener<T> listener) {
-
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
     public void subscribe(String topic, String subExpression, AsyncMessageListener listener) {
-
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
     public void subscribe(String topic, MessageSelector selector, AsyncMessageListener listener) {
-
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
     public <T> void subscribe(String topic, String subExpression, AsyncGenericMessageListener<T> listener) {
-
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
     public <T> void subscribe(String topic, MessageSelector selector, AsyncGenericMessageListener<T> listener) {
-
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
