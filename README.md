@@ -38,7 +38,6 @@ General functions of the eventmesh:
 
 * **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
 * **eventmesh-sdk-java** : currently supports HTTP and TCP protocols, and will support gRPC in the future.
-* **eventmesh-registry** : automatically routes events between applications and services connected to seperate event meshers, manage eventmesh-runtime.
 * **eventmesh-connector-rocketmq** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from RocketMQ Event Store.
 
 **Protocol:**
