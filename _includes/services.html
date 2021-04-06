@@ -15,7 +15,7 @@
       {% for service in section.services %}
       <div class="col-lg-{{ colsL }} col-md-{{ colsM }}">
         <div class="mt-5">
-          <i class="fa-4x {{ service.icon }} text-primary mb-4" style="margin-right: 40px;float: left;"></i>
+          <i class="fa-4x {{ service.icon }} text-primary mb-4" style="margin-right: 40px;float: left; width: 1em;"></i>
           <h3 class="h4 mb-2">{{ service.title }}</h3>
           <div class="text-muted mb-0">
             {{ service.text | markdownify }}
