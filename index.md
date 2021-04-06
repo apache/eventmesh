@@ -17,30 +17,30 @@ sections:
     title: Features
     services:
       - title: Event driven
-        text: Event-driven architecture can minimize coupling and well extend and adapt different types of service components
+        text: Event-driven architecture can minimize coupling between services, enhance scalability and adaptability of different service components, and accomplish asynchronous system communications.
         icon: fa-google-drive fab
         # url: https://startbootstrap.com/ text-info
       - title: Event governance
-        text: You can configure the event scheme and monitor the event with the relevant metrics
+        text: Configurable event Scheme to manage event messages; Configurable event filtering rules and routing rules to manage the events life cycles; Formulate strategies to manage events and dataflows to orchestrate complex tasks.
         icon: fa-whmcs fab
       - title: Dynamic routing
-        text: Supports event filtering , and events can be dynamically routed to various service nodes
+        text: Supports event filtering, which can dynamically route events to different service nodes with zero dependency from upper-stream and downstream activities.
         icon: fa-route fas
       - title: Cloud native
-        text: Supports container-oriented deployment, micro-service oriented, event orchestration and scheduling
+        text: Supports containerized deployment, microservice-oriented architecture, and event orchestration and scheduling.
         icon: fa-cloud fas
       - title: Flow control
-        text: Support flow control, fusing and retry to ensure high availability of services
+        text: Support flow control at the event level and the service instance level to ensure HA of services.
         icon: fa-toggle-on fas
       - title: Load balance
-        text: Supports clustering mode and sidecar mode deployment
+        text: Supports cluster and sidecar deployment, which can evenly distribute traffic to different nodes.
         icon: fa-balance-scale fas
 
   - type: portfolio.html
     # this section has always ID 'portfolio'
     #section_id: portfolio
     #background_style: bg-dark
-    title: Instructions
+    title: Architectures & Structures
     projects:
       - title: EventMesh Ecosystem
         text: What is EventMesh
