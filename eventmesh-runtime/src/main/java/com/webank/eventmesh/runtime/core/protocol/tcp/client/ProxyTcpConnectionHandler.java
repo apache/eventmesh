@@ -58,7 +58,7 @@ public class ProxyTcpConnectionHandler extends ChannelDuplexHandler {
         logger.info("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "");
 
         int c = connections.incrementAndGet();
-        if (c > proxyTCPServer.getAccessConfiguration().proxyTcpClientMaxNum) {
+        if (c > proxyTCPServer.getEventMeshConfiguration().proxyTcpClientMaxNum) {
             logger.warn("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client connect " +
                     "this proxy server");
             ctx.close();

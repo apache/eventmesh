@@ -23,7 +23,7 @@ import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.Sessio
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.SessionSender;
 import com.webank.eventmesh.runtime.util.Utils;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.ProxyTcpSendResult;
-import com.webank.eventmesh.runtime.configuration.AccessConfiguration;
+import com.webank.eventmesh.runtime.configuration.EventMeshConfiguration;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import com.webank.eventmesh.common.protocol.tcp.Header;
@@ -63,7 +63,7 @@ public class Session {
 
     private WeakReference<ClientGroupWrapper> clientGroupWrapper;
 
-    private AccessConfiguration accessConfiguration;
+    private EventMeshConfiguration eventMeshConfiguration;
 
     private SessionPusher pusher;
 
@@ -288,21 +288,21 @@ public class Session {
         this.clientGroupWrapper = clientGroupWrapper;
     }
 
-    public Session(UserAgent client, ChannelHandlerContext context, AccessConfiguration accessConfiguration) {
+    public Session(UserAgent client, ChannelHandlerContext context, EventMeshConfiguration eventMeshConfiguration) {
         this.client = client;
         this.context = context;
-        this.accessConfiguration = accessConfiguration;
+        this.eventMeshConfiguration = eventMeshConfiguration;
         this.remoteAddress = (InetSocketAddress) context.channel().remoteAddress();
         this.sender = new SessionSender(this);
         this.pusher = new SessionPusher(this);
     }
 
-    public AccessConfiguration getAccessConfiguration() {
-        return accessConfiguration;
+    public EventMeshConfiguration getEventMeshConfiguration() {
+        return eventMeshConfiguration;
     }
 
-    public void setAccessConfiguration(AccessConfiguration accessConfiguration) {
-        this.accessConfiguration = accessConfiguration;
+    public void setEventMeshConfiguration(EventMeshConfiguration eventMeshConfiguration) {
+        this.eventMeshConfiguration = eventMeshConfiguration;
     }
 
     public void trySendListenResponse(Header header, long startTime, long taskExecuteTime) {

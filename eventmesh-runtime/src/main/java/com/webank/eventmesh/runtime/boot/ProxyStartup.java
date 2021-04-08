@@ -18,7 +18,7 @@
 package com.webank.eventmesh.runtime.boot;
 
 import com.webank.eventmesh.common.config.ConfigurationWraper;
-import com.webank.eventmesh.runtime.configuration.AccessConfiguration;
+import com.webank.eventmesh.runtime.configuration.EventMeshConfiguration;
 import com.webank.eventmesh.runtime.configuration.ProxyConfiguration;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import org.slf4j.Logger;
@@ -38,9 +38,9 @@ public class ProxyStartup {
                             + ProxyConstants.PROXY_CONF_FILE, false);
             ProxyConfiguration proxyConfiguration = new ProxyConfiguration(configurationWraper);
             proxyConfiguration.init();
-            AccessConfiguration accessConfiguration = new AccessConfiguration(configurationWraper);
-            accessConfiguration.init();
-            ProxyServer server = new ProxyServer(proxyConfiguration, accessConfiguration);
+            EventMeshConfiguration eventMeshConfiguration = new EventMeshConfiguration(configurationWraper);
+            eventMeshConfiguration.init();
+            ProxyServer server = new ProxyServer(proxyConfiguration, eventMeshConfiguration);
             server.init();
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

@@ -33,8 +33,8 @@ public class AsyncPublishInstance {
                 proxyIPPort = "127.0.0.1:10105";
             }
 
-            LiteClientConfig weMQProxyClientConfig = new LiteClientConfig();
-            weMQProxyClientConfig.setLiteProxyAddr(proxyIPPort)
+            LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
+            eventMeshClientConfig.setLiteProxyAddr(proxyIPPort)
                     .setEnv("env")
                     .setIdc("idc")
                     .setDcn("dcn")
@@ -42,7 +42,7 @@ public class AsyncPublishInstance {
                     .setSys("1234")
                     .setPid(String.valueOf(ThreadUtil.getPID()));
 
-            liteProducer = new LiteProducer(weMQProxyClientConfig);
+            liteProducer = new LiteProducer(eventMeshClientConfig);
             liteProducer.start();
             for(int i = 0; i < 5; i++) {
                 LiteMessage liteMessage = new LiteMessage();

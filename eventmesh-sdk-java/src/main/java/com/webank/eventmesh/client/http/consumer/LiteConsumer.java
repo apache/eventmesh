@@ -26,35 +26,25 @@ import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.consumer.listener.LiteMessageListener;
 import com.webank.eventmesh.client.http.http.HttpUtil;
 import com.webank.eventmesh.client.http.http.RequestParam;
-import com.webank.eventmesh.client.tcp.common.MessageUtils;
-import com.webank.eventmesh.client.tcp.common.WemqAccessCommon;
-import com.webank.eventmesh.client.tcp.common.WemqAccessThreadFactoryImpl;
-import com.webank.eventmesh.client.tcp.impl.SimpleSubClientImpl;
+import com.webank.eventmesh.client.tcp.common.EventMeshCommon;
+import com.webank.eventmesh.client.tcp.common.EventMeshThreadFactoryImpl;
 import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.common.LiteMessage;
 import com.webank.eventmesh.common.ProxyException;
 import com.webank.eventmesh.common.ThreadPoolFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.webank.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
 import com.webank.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import com.webank.eventmesh.common.protocol.http.common.*;
-import com.webank.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
-import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.handler.codec.http.HttpMethod;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -71,19 +61,19 @@ public class LiteConsumer extends AbstractLiteClient {
 
     private static CloseableHttpClient httpClient = HttpClients.createDefault();
 
-    protected LiteClientConfig weMQProxyClientConfig;
+    protected LiteClientConfig eventMeshClientConfig;
 
     private List<String> subscription = Lists.newArrayList();
 
     private LiteMessageListener messageListener;
 
-    protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4, new WemqAccessThreadFactoryImpl("TCPClientScheduler", true));
+    protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4, new EventMeshThreadFactoryImpl("TCPClientScheduler", true));
 
     public LiteConsumer(LiteClientConfig liteClientConfig) throws Exception {
         super(liteClientConfig);
         this.consumeExecutor = ThreadPoolFactory.createThreadPoolExecutor(liteClientConfig.getConsumeThreadCore(),
                 liteClientConfig.getConsumeThreadMax(), "proxy-client-consume-");
-        this.weMQProxyClientConfig = liteClientConfig;
+        this.eventMeshClientConfig = liteClientConfig;
 //        this.remotingServer = new RemotingServer(10106, consumeExecutor);
 //        this.remotingServer.init();
     }
@@ -92,7 +82,7 @@ public class LiteConsumer extends AbstractLiteClient {
                         ThreadPoolExecutor customExecutor) {
         super(liteClientConfig);
         this.consumeExecutor = customExecutor;
-        this.weMQProxyClientConfig = liteClientConfig;
+        this.eventMeshClientConfig = liteClientConfig;
 //        this.remotingServer = new RemotingServer(this.consumeExecutor);
     }
 
@@ -100,7 +90,7 @@ public class LiteConsumer extends AbstractLiteClient {
 
     @Override
     public void start() throws Exception {
-        Preconditions.checkState(weMQProxyClientConfig != null, "weMQProxyClientConfig can't be null");
+        Preconditions.checkState(eventMeshClientConfig != null, "eventMeshClientConfig can't be null");
         Preconditions.checkState(consumeExecutor != null, "consumeExecutor can't be null");
 //        Preconditions.checkState(messageListener != null, "messageListener can't be null");
         logger.info("LiteConsumer starting");
@@ -160,15 +150,15 @@ public class LiteConsumer extends AbstractLiteClient {
 //                .setUniqueId(RandomStringUtils.randomNumeric(30));
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.SUBSCRIBE.getRequestCode()))
-                .addHeader(ProtocolKey.ClientInstanceKey.ENV, weMQProxyClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, weMQProxyClientConfig.getRegion())
-                .addHeader(ProtocolKey.ClientInstanceKey.IDC, weMQProxyClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, weMQProxyClientConfig.getDcn())
-                .addHeader(ProtocolKey.ClientInstanceKey.IP, weMQProxyClientConfig.getIp())
-                .addHeader(ProtocolKey.ClientInstanceKey.PID, weMQProxyClientConfig.getPid())
-                .addHeader(ProtocolKey.ClientInstanceKey.SYS, weMQProxyClientConfig.getSys())
-                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, weMQProxyClientConfig.getUserName())
-                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, weMQProxyClientConfig.getPassword())
+                .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshClientConfig.getEnv())
+                .addHeader(ProtocolKey.ClientInstanceKey.REGION, eventMeshClientConfig.getRegion())
+                .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshClientConfig.getIdc())
+                .addHeader(ProtocolKey.ClientInstanceKey.DCN, eventMeshClientConfig.getDcn())
+                .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshClientConfig.getIp())
+                .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshClientConfig.getPid())
+                .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshClientConfig.getSys())
+                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshClientConfig.getUserName())
+                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshClientConfig.getPassword())
                 .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
@@ -188,15 +178,15 @@ public class LiteConsumer extends AbstractLiteClient {
 
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.HEARTBEAT.getRequestCode()))
-                .addHeader(ProtocolKey.ClientInstanceKey.ENV, weMQProxyClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, weMQProxyClientConfig.getRegion())
-                .addHeader(ProtocolKey.ClientInstanceKey.IDC, weMQProxyClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, weMQProxyClientConfig.getDcn())
-                .addHeader(ProtocolKey.ClientInstanceKey.IP, weMQProxyClientConfig.getIp())
-                .addHeader(ProtocolKey.ClientInstanceKey.PID, weMQProxyClientConfig.getPid())
-                .addHeader(ProtocolKey.ClientInstanceKey.SYS, weMQProxyClientConfig.getSys())
-                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, weMQProxyClientConfig.getUserName())
-                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, weMQProxyClientConfig.getPassword())
+                .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshClientConfig.getEnv())
+                .addHeader(ProtocolKey.ClientInstanceKey.REGION, eventMeshClientConfig.getRegion())
+                .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshClientConfig.getIdc())
+                .addHeader(ProtocolKey.ClientInstanceKey.DCN, eventMeshClientConfig.getDcn())
+                .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshClientConfig.getIp())
+                .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshClientConfig.getPid())
+                .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshClientConfig.getSys())
+                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshClientConfig.getUserName())
+                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshClientConfig.getPassword())
                 .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
@@ -238,7 +228,7 @@ public class LiteConsumer extends AbstractLiteClient {
                     logger.error("send heartBeat error", e);
                 }
             }
-        }, WemqAccessCommon.HEATBEAT, WemqAccessCommon.HEATBEAT, TimeUnit.MILLISECONDS);
+        }, EventMeshCommon.HEATBEAT, EventMeshCommon.HEATBEAT, TimeUnit.MILLISECONDS);
     }
 
     public boolean unsubscribe(List<String> topicList, String url) throws ProxyException {
@@ -273,15 +263,15 @@ public class LiteConsumer extends AbstractLiteClient {
     private RequestParam generateUnSubscribeRequestParam(List<String> topicList, String url) {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.UNSUBSCRIBE.getRequestCode()))
-                .addHeader(ProtocolKey.ClientInstanceKey.ENV, weMQProxyClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, weMQProxyClientConfig.getRegion())
-                .addHeader(ProtocolKey.ClientInstanceKey.IDC, weMQProxyClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, weMQProxyClientConfig.getDcn())
-                .addHeader(ProtocolKey.ClientInstanceKey.IP, weMQProxyClientConfig.getIp())
-                .addHeader(ProtocolKey.ClientInstanceKey.PID, weMQProxyClientConfig.getPid())
-                .addHeader(ProtocolKey.ClientInstanceKey.SYS, weMQProxyClientConfig.getSys())
-                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, weMQProxyClientConfig.getUserName())
-                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, weMQProxyClientConfig.getPassword())
+                .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshClientConfig.getEnv())
+                .addHeader(ProtocolKey.ClientInstanceKey.REGION, eventMeshClientConfig.getRegion())
+                .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshClientConfig.getIdc())
+                .addHeader(ProtocolKey.ClientInstanceKey.DCN, eventMeshClientConfig.getDcn())
+                .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshClientConfig.getIp())
+                .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshClientConfig.getPid())
+                .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshClientConfig.getSys())
+                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshClientConfig.getUserName())
+                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshClientConfig.getPassword())
                 .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)

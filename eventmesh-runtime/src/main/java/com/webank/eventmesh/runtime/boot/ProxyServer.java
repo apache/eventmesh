@@ -18,7 +18,7 @@
 package com.webank.eventmesh.runtime.boot;
 
 import com.webank.eventmesh.runtime.common.ServiceState;
-import com.webank.eventmesh.runtime.configuration.AccessConfiguration;
+import com.webank.eventmesh.runtime.configuration.EventMeshConfiguration;
 import com.webank.eventmesh.runtime.configuration.ProxyConfiguration;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 //import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
@@ -35,21 +35,21 @@ public class ProxyServer {
 
     private ProxyConfiguration proxyConfiguration;
 
-    private AccessConfiguration accessConfiguration;
+    private EventMeshConfiguration eventMeshConfiguration;
 
     private ServiceState serviceState;
 
     public ProxyServer(ProxyConfiguration proxyConfiguration,
-                       AccessConfiguration accessConfiguration) {
+                       EventMeshConfiguration eventMeshConfiguration) {
         this.proxyConfiguration = proxyConfiguration;
-        this.accessConfiguration = accessConfiguration;
+        this.eventMeshConfiguration = eventMeshConfiguration;
     }
 
     public void init() throws Exception {
         proxyHTTPServer = new ProxyHTTPServer(this, proxyConfiguration);
         proxyHTTPServer.init();
-        proxyTCPServer = new ProxyTCPServer(this, accessConfiguration);
-        if (accessConfiguration.proxyTcpServerEnabled) {
+        proxyTCPServer = new ProxyTCPServer(this, eventMeshConfiguration);
+        if (eventMeshConfiguration.proxyTcpServerEnabled) {
             proxyTCPServer.init();
         }
 
@@ -63,7 +63,7 @@ public class ProxyServer {
 
     public void start() throws Exception {
         proxyHTTPServer.start();
-        if (accessConfiguration.proxyTcpServerEnabled) {
+        if (eventMeshConfiguration.proxyTcpServerEnabled) {
             proxyTCPServer.start();
         }
         serviceState = ServiceState.RUNNING;
@@ -74,7 +74,7 @@ public class ProxyServer {
         serviceState = ServiceState.STOPING;
         logger.info("server state:{}",serviceState);
         proxyHTTPServer.shutdown();
-        if (accessConfiguration.proxyTcpServerEnabled) {
+        if (eventMeshConfiguration.proxyTcpServerEnabled) {
             proxyTCPServer.shutdown();
         }
         serviceState = ServiceState.STOPED;

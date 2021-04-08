@@ -28,7 +28,7 @@ import com.webank.eventmesh.runtime.core.protocol.tcp.client.task.MessageAckTask
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.task.MessageTransferTask;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.task.SubscribeTask;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.task.UnSubscribeTask;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
@@ -80,8 +80,8 @@ public class ProxyTcpMessageDispatcher extends SimpleChannelInboundHandler<Packa
     }
 
     private void logMessageFlow(ChannelHandlerContext ctx, Package pkg, Command cmd) {
-        if (pkg.getBody() instanceof AccessMessage) {
-            messageLogger.info("pkg|c2proxy|cmd={}|Msg={}|user={}", cmd, ProxyUtil.printMqMessage((AccessMessage) pkg
+        if (pkg.getBody() instanceof EventMeshMessage) {
+            messageLogger.info("pkg|c2proxy|cmd={}|Msg={}|user={}", cmd, ProxyUtil.printMqMessage((EventMeshMessage) pkg
                     .getBody()), proxyTCPServer.getClientSessionGroupMapping().getSession(ctx).getClient());
         } else {
             messageLogger.info("pkg|c2proxy|cmd={}|pkg={}|user={}", cmd, pkg, proxyTCPServer.getClientSessionGroupMapping().getSession(ctx).getClient());

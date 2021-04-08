@@ -90,11 +90,11 @@ public class HelloTask extends AbstractTask {
         }
 
 //        if (user.getUsername() == null) {
-//            throw new Exception("client wemqUser cannot be null");
+//            throw new Exception("client EventMeshUser cannot be null");
 //        }
 //
 //        if (user.getPassword() == null) {
-//            throw new Exception("client wemqPasswd cannot be null");
+//            throw new Exception("client EventMeshPasswd cannot be null");
 //        }
 
         if (!(StringUtils.equals(ProxyConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(ProxyConstants.PURPOSE_SUB, user.getPurpose()))) {

@@ -25,7 +25,7 @@ import client.hook.ReceiveMsgHook;
 import client.impl.ProxyClientImpl;
 import client.impl.PubClientImpl;
 import client.impl.SubClientImpl;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
 import org.junit.Test;
@@ -88,8 +88,8 @@ public class BasicTest {
         client.listen();
         for (int i = 0; i < 100; i++) {
             Package rr = client.rr(MessageUtils.rrMesssage("FT0-s-80000000-01-0", i), 3000);
-            if (rr.getBody() instanceof AccessMessage) {
-                String body = ((AccessMessage) rr.getBody()).getBody();
+            if (rr.getBody() instanceof EventMeshMessage) {
+                String body = ((EventMeshMessage) rr.getBody()).getBody();
                 System.err.println("rrMessage: " + body + "             " + "rr-reply-------------------------------------------------" + rr.toString());
             }
         }
@@ -107,8 +107,8 @@ public class BasicTest {
         client.registerSubBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getBody() instanceof AccessMessage) {
-                    String body = ((AccessMessage) msg.getBody()).getBody();
+                if (msg.getBody() instanceof EventMeshMessage) {
+                    String body = ((EventMeshMessage) msg.getBody()).getBody();
                     System.err.println("receive message :------" + body + "------------------------------------------------" + msg.toString());
                 }
             }
@@ -128,8 +128,8 @@ public class BasicTest {
         client.registerSubBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getBody() instanceof AccessMessage) {
-                    String body = ((AccessMessage) msg.getBody()).getBody();
+                if (msg.getBody() instanceof EventMeshMessage) {
+                    String body = ((EventMeshMessage) msg.getBody()).getBody();
                     System.err.println("receive message: ------------" + body + "-------------------------------" + msg.toString());
                 }
             }

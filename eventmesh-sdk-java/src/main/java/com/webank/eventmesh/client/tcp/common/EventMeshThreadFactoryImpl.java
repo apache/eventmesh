@@ -20,16 +20,16 @@ package com.webank.eventmesh.client.tcp.common;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class WemqAccessThreadFactoryImpl implements ThreadFactory {
+public class EventMeshThreadFactoryImpl implements ThreadFactory {
     private final AtomicLong threadIndex = new AtomicLong(0);
     private final String threadNamePrefix;
     private Boolean isDaemonSpecified = null;
 
-    public WemqAccessThreadFactoryImpl(final String threadNamePrefix) {
+    public EventMeshThreadFactoryImpl(final String threadNamePrefix) {
         this.threadNamePrefix = threadNamePrefix;
     }
 
-    public WemqAccessThreadFactoryImpl(final String threadNamePrefix, final boolean isDaemonSpecified) {
+    public EventMeshThreadFactoryImpl(final String threadNamePrefix, final boolean isDaemonSpecified) {
         this.threadNamePrefix = threadNamePrefix;
         this.isDaemonSpecified = isDaemonSpecified;
     }

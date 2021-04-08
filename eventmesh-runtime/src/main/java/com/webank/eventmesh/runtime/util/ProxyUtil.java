@@ -22,7 +22,7 @@ import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.constants.ProxyVersion;
 import com.webank.eventmesh.common.ThreadUtil;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -207,18 +207,18 @@ public class ProxyUtil {
     /**
      * 打印mq消息的一部分内容
      *
-     * @param accessMessage
+     * @param eventMeshMessage
      * @return
      */
-    public static String printMqMessage(AccessMessage accessMessage) {
-        Map<String, String> properties = accessMessage.getProperties();
+    public static String printMqMessage(EventMeshMessage eventMeshMessage) {
+        Map<String, String> properties = eventMeshMessage.getProperties();
 
         String keys = properties.get(ProxyConstants.KEYS_UPPERCASE);
         if (!StringUtils.isNotBlank(keys)) {
             keys = properties.get(ProxyConstants.KEYS_LOWERCASE);
         }
 
-        String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", accessMessage.getTopic(),
+        String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage.getTopic(),
                 properties.get(ProxyConstants.TTL), properties.get(ProxyConstants.RR_REQUEST_UNIQ_ID), keys);
         return result;
     }
@@ -244,14 +244,14 @@ public class ProxyUtil {
 //        return msg;
 //    }
 
-    public static Message decodeMessage(AccessMessage accessMessage) {
+    public static Message decodeMessage(EventMeshMessage eventMeshMessage) {
         Message omsMsg = new Message();
-        omsMsg.setBody(accessMessage.getBody().getBytes());
-        omsMsg.setTopic(accessMessage.getTopic());
+        omsMsg.setBody(eventMeshMessage.getBody().getBytes());
+        omsMsg.setTopic(eventMeshMessage.getTopic());
         Properties systemProperties = new Properties();
         Properties userProperties = new Properties();
 
-        final Set<Map.Entry<String, String>> entries = accessMessage.getProperties().entrySet();
+        final Set<Map.Entry<String, String>> entries = eventMeshMessage.getProperties().entrySet();
 
         for (final Map.Entry<String, String> entry : entries) {
             if (isOMSHeader(entry.getKey())) {
@@ -261,7 +261,7 @@ public class ProxyUtil {
             }
         }
 
-        systemProperties.put(Constants.PROPERTY_MESSAGE_DESTINATION, accessMessage.getTopic());
+        systemProperties.put(Constants.PROPERTY_MESSAGE_DESTINATION, eventMeshMessage.getTopic());
         omsMsg.setSystemProperties(systemProperties);
         omsMsg.setUserProperties(userProperties);
         return omsMsg;
@@ -277,16 +277,16 @@ public class ProxyUtil {
 //        return accessMessage;
 //    }
 
-    public static AccessMessage encodeMessage(Message omsMessage) throws Exception {
+    public static EventMeshMessage encodeMessage(Message omsMessage) throws Exception {
 
-        AccessMessage accessMessage = new AccessMessage();
-        accessMessage.setBody(new String(omsMessage.getBody(), StandardCharsets.UTF_8));
+        EventMeshMessage eventMeshMessage = new EventMeshMessage();
+        eventMeshMessage.setBody(new String(omsMessage.getBody(), StandardCharsets.UTF_8));
 
         Properties sysHeaders = omsMessage.getSystemProperties();
         Properties userHeaders = omsMessage.getUserProperties();
 
         //All destinations in RocketMQ use Topic
-        accessMessage.setTopic(sysHeaders.getProperty(Constants.PROPERTY_MESSAGE_DESTINATION));
+        eventMeshMessage.setTopic(sysHeaders.getProperty(Constants.PROPERTY_MESSAGE_DESTINATION));
 
         if (sysHeaders.containsKey("START_TIME")) {
             long deliverTime;
@@ -298,20 +298,20 @@ public class ProxyUtil {
 
             if (deliverTime > 0) {
 //                rmqMessage.putUserProperty(RocketMQConstants.START_DELIVER_TIME, String.valueOf(deliverTime));
-                accessMessage.getProperties().put("START_TIME", String.valueOf(deliverTime));
+                eventMeshMessage.getProperties().put("START_TIME", String.valueOf(deliverTime));
             }
         }
 
         for (String key : userHeaders.stringPropertyNames()) {
-            accessMessage.getProperties().put(key, userHeaders.getProperty(key));
+            eventMeshMessage.getProperties().put(key, userHeaders.getProperty(key));
         }
 
         //System headers has a high priority
         for (String key : sysHeaders.stringPropertyNames()) {
-            accessMessage.getProperties().put(key, sysHeaders.getProperty(key));
+            eventMeshMessage.getProperties().put(key, sysHeaders.getProperty(key));
         }
 
-        return accessMessage;
+        return eventMeshMessage;
     }
 
     public static String getLocalAddr() {

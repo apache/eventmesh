@@ -24,7 +24,7 @@ import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.util.Utils;
 import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
@@ -59,11 +59,11 @@ public class MessageTransferTask extends AbstractTask {
         Command cmd = pkg.getHeader().getCommand();
         Command replyCmd = getReplyCmd(cmd);
         Package msg = new Package();
-        AccessMessage accessMessage = (AccessMessage) pkg.getBody();
+        EventMeshMessage eventMeshMessage = (EventMeshMessage) pkg.getBody();
         int retCode = 0;
         ProxyTcpSendResult sendStatus;
         try {
-            if (accessMessage == null) {
+            if (eventMeshMessage == null) {
                 throw new Exception("accessMessage is null");
             }
 
@@ -83,23 +83,23 @@ public class MessageTransferTask extends AbstractTask {
 
             synchronized (session) {
                 long sendTime = System.currentTimeMillis();
-                addTimestamp(accessMessage, cmd, sendTime);
+                addTimestamp(eventMeshMessage, cmd, sendTime);
                 if (cmd.equals(Command.REQUEST_TO_SERVER)) {
-                    accessMessage.getProperties().put(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO, session.getClientGroupWrapper()
+                    eventMeshMessage.getProperties().put(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO, session.getClientGroupWrapper()
                             .get().getMqProducerWrapper().getMeshMQProducer().buildMQClientId());
                 }
 
-                sendStatus = session.upstreamMsg(pkg.getHeader(), ProxyUtil.decodeMessage(accessMessage), createSendCallback(replyCmd, taskExecuteTime, accessMessage), startTime, taskExecuteTime);
+                sendStatus = session.upstreamMsg(pkg.getHeader(), ProxyUtil.decodeMessage(eventMeshMessage), createSendCallback(replyCmd, taskExecuteTime, eventMeshMessage), startTime, taskExecuteTime);
 
                 if (StringUtils.equals(ProxyTcpSendStatus.SUCCESS.name(), sendStatus.getSendStatus().name())) {
                     messageLogger.info("pkg|proxy2mq|cmd={}|Msg={}|user={}|wait={}ms|cost={}ms", cmd, ProxyUtil.printMqMessage
-                            (accessMessage), session.getClient(), taskExecuteTime - startTime, sendTime - startTime);
+                            (eventMeshMessage), session.getClient(), taskExecuteTime - startTime, sendTime - startTime);
                 } else {
                     throw new Exception(sendStatus.getDetail());
                 }
             }
         } catch (Exception e) {
-            logger.error("MessageTransferTask failed|cmd={}|Msg={}|user={}|errMsg={}", cmd, accessMessage, session.getClient(), e);
+            logger.error("MessageTransferTask failed|cmd={}|Msg={}|user={}|errMsg={}", cmd, eventMeshMessage, session.getClient(), e);
             if (!cmd.equals(RESPONSE_TO_SERVER)) {
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), e.getStackTrace().toString(), pkg.getHeader()
                         .getSeq()));
@@ -108,15 +108,15 @@ public class MessageTransferTask extends AbstractTask {
         }
     }
 
-    private void addTimestamp(AccessMessage accessMessage, Command cmd, long sendTime) {
+    private void addTimestamp(EventMeshMessage eventMeshMessage, Command cmd, long sendTime) {
         if (cmd.equals(RESPONSE_TO_SERVER)) {
-            accessMessage.getProperties().put(ProxyConstants.RSP_C2PROXY_TIMESTAMP, String.valueOf(startTime));
-            accessMessage.getProperties().put(ProxyConstants.RSP_PROXY2MQ_TIMESTAMP, String.valueOf(sendTime));
-            accessMessage.getProperties().put(ProxyConstants.RSP_SEND_PROXY_IP, proxyTCPServer.getAccessConfiguration().proxyServerIp);
+            eventMeshMessage.getProperties().put(ProxyConstants.RSP_C2PROXY_TIMESTAMP, String.valueOf(startTime));
+            eventMeshMessage.getProperties().put(ProxyConstants.RSP_PROXY2MQ_TIMESTAMP, String.valueOf(sendTime));
+            eventMeshMessage.getProperties().put(ProxyConstants.RSP_SEND_PROXY_IP, proxyTCPServer.getEventMeshConfiguration().proxyServerIp);
         } else {
-            accessMessage.getProperties().put(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(startTime));
-            accessMessage.getProperties().put(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(sendTime));
-            accessMessage.getProperties().put(ProxyConstants.REQ_SEND_PROXY_IP, proxyTCPServer.getAccessConfiguration().proxyServerIp);
+            eventMeshMessage.getProperties().put(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(startTime));
+            eventMeshMessage.getProperties().put(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(sendTime));
+            eventMeshMessage.getProperties().put(ProxyConstants.REQ_SEND_PROXY_IP, proxyTCPServer.getEventMeshConfiguration().proxyServerIp);
         }
     }
 
@@ -133,7 +133,7 @@ public class MessageTransferTask extends AbstractTask {
         }
     }
 
-    protected SendCallback createSendCallback(Command replyCmd, long taskExecuteTime, AccessMessage accessMessage) {
+    protected SendCallback createSendCallback(Command replyCmd, long taskExecuteTime, EventMeshMessage eventMeshMessage) {
         final long createTime = System.currentTimeMillis();
         Package msg = new Package();
 
@@ -146,7 +146,7 @@ public class MessageTransferTask extends AbstractTask {
                 if (replyCmd.equals(Command.BROADCAST_MESSAGE_TO_SERVER_ACK) || replyCmd.equals(Command
                         .ASYNC_MESSAGE_TO_SERVER_ACK)) {
                     msg.setHeader(new Header(replyCmd, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq()));
-                    msg.setBody(accessMessage);
+                    msg.setBody(eventMeshMessage);
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
                 }
             }
@@ -158,7 +158,7 @@ public class MessageTransferTask extends AbstractTask {
                 messageLogger.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(), String.valueOf
                         (System.currentTimeMillis() - createTime), new Exception(context.getException()));
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), context.getException().toString(), pkg.getHeader().getSeq()));
-                msg.setBody(accessMessage);
+                msg.setBody(eventMeshMessage);
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
             }
 

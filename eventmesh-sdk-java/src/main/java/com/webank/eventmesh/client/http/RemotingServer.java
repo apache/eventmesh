@@ -391,7 +391,7 @@ public class RemotingServer {
                             }
                         }).childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
                 try {
-                    logger.info("WeMQProxy Client[{}] Started......", port);
+                    logger.info("EventMesh Client[{}] Started......", port);
                     ChannelFuture future = b.bind(port).sync();
                     future.channel().closeFuture().sync();
                     started.compareAndSet(false, true);

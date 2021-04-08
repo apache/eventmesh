@@ -90,7 +90,7 @@ public class ClientSessionGroupMapping {
         Session session = null;
         if(!sessionTable.containsKey(addr)){
             logger.info("createSession client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
-            session = new Session(user, ctx, proxyTCPServer.getAccessConfiguration());
+            session = new Session(user, ctx, proxyTCPServer.getEventMeshConfiguration());
             initClientGroupWrapper(user, session);
             sessionTable.put(addr, session);
             sessionLogger.info("session|open|succeed|user={}", user);
@@ -344,7 +344,7 @@ public class ClientSessionGroupMapping {
                 Iterator<Session> sessionIterator = sessionTable.values().iterator();
                 while (sessionIterator.hasNext()) {
                     Session tmp = sessionIterator.next();
-                    if (System.currentTimeMillis() - tmp.getLastHeartbeatTime() > proxyTCPServer.getAccessConfiguration().proxyTcpSessionExpiredInMills) {
+                    if (System.currentTimeMillis() - tmp.getLastHeartbeatTime() > proxyTCPServer.getEventMeshConfiguration().proxyTcpSessionExpiredInMills) {
                         try {
                             logger.warn("clean expired session,client:{}", tmp.getClient());
                             closeSession(tmp.getContext());
@@ -354,7 +354,7 @@ public class ClientSessionGroupMapping {
                     }
                 }
             }
-        }, 1000, proxyTCPServer.getAccessConfiguration().proxyTcpSessionExpiredInMills, TimeUnit.MILLISECONDS);
+        }, 1000, proxyTCPServer.getEventMeshConfiguration().proxyTcpSessionExpiredInMills, TimeUnit.MILLISECONDS);
     }
 
     private void initSessionAckContextCleaner() {
