@@ -19,7 +19,7 @@ package demo;
 
 import client.common.MessageUtils;
 import client.hook.ReceiveMsgHook;
-import client.impl.ProxyClientImpl;
+import client.impl.EventMeshClientImpl;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
@@ -39,7 +39,7 @@ public class CClientDemo {
 
 
     public static void main(String[] args) throws Exception {
-        ProxyClientImpl client = new ProxyClientImpl("127.0.0.1", 10000);
+        EventMeshClientImpl client = new EventMeshClientImpl("127.0.0.1", 10000);
         client.init();
         client.heartbeat();
         client.justSubscribe(ASYNC_TOPIC);

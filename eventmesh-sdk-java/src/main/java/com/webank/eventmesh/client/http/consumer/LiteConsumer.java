@@ -20,7 +20,7 @@ package com.webank.eventmesh.client.http.consumer;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.webank.eventmesh.client.http.AbstractLiteClient;
-import com.webank.eventmesh.client.http.ProxyRetObj;
+import com.webank.eventmesh.client.http.EventMeshRetObj;
 import com.webank.eventmesh.client.http.RemotingServer;
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.consumer.listener.LiteMessageListener;
@@ -29,7 +29,7 @@ import com.webank.eventmesh.client.http.http.RequestParam;
 import com.webank.eventmesh.client.tcp.common.EventMeshCommon;
 import com.webank.eventmesh.client.tcp.common.EventMeshThreadFactoryImpl;
 import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.common.ProxyException;
+import com.webank.eventmesh.common.EventMeshException;
 import com.webank.eventmesh.common.ThreadPoolFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -72,7 +72,7 @@ public class LiteConsumer extends AbstractLiteClient {
     public LiteConsumer(LiteClientConfig liteClientConfig) throws Exception {
         super(liteClientConfig);
         this.consumeExecutor = ThreadPoolFactory.createThreadPoolExecutor(liteClientConfig.getConsumeThreadCore(),
-                liteClientConfig.getConsumeThreadMax(), "proxy-client-consume-");
+                liteClientConfig.getConsumeThreadMax(), "eventMesh-client-consume-");
         this.eventMeshClientConfig = liteClientConfig;
 //        this.remotingServer = new RemotingServer(10106, consumeExecutor);
 //        this.remotingServer.init();
@@ -119,26 +119,26 @@ public class LiteConsumer extends AbstractLiteClient {
         RequestParam subscribeParam = generateSubscribeRequestParam(topicList, url);
 
         long startTime = System.currentTimeMillis();
-        String target = selectProxy();
+        String target = selectEventMesh();
         String subRes = "";
         String heartRes = "";
         try {
             heartRes = HttpUtil.post(httpClient, target, heartBeatParam);
             subRes = HttpUtil.post(httpClient, target, subscribeParam);
         } catch (Exception ex) {
-            throw new ProxyException(ex);
+            throw new EventMeshException(ex);
         }
 
         if(logger.isDebugEnabled()) {
-            logger.debug("subscribe message by await, targetProxy:{}, cost:{}ms, subscribeParam:{}, rtn:{}", target, System.currentTimeMillis() - startTime, JSON.toJSONString(subscribeParam), subRes);
+            logger.debug("subscribe message by await, targetEventMesh:{}, cost:{}ms, subscribeParam:{}, rtn:{}", target, System.currentTimeMillis() - startTime, JSON.toJSONString(subscribeParam), subRes);
         }
 
-        ProxyRetObj ret = JSON.parseObject(subRes, ProxyRetObj.class);
+        EventMeshRetObj ret = JSON.parseObject(subRes, EventMeshRetObj.class);
 
-        if (ret.getRetCode() == ProxyRetCode.SUCCESS.getRetCode()) {
+        if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
             return Boolean.TRUE;
         } else {
-            throw new ProxyException(ret.getRetCode(), ret.getRetMsg());
+            throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
         }
 
     }
@@ -206,23 +206,23 @@ public class LiteConsumer extends AbstractLiteClient {
                     RequestParam requestParam = generateHeartBeatRequestParam(topicList, url);
 
                     long startTime = System.currentTimeMillis();
-                    String target = selectProxy();
+                    String target = selectEventMesh();
                     String res = "";
                     try {
                         res = HttpUtil.post(httpClient, target, requestParam);
                     } catch (Exception ex) {
-                        throw new ProxyException(ex);
+                        throw new EventMeshException(ex);
                     }
 
                     if(logger.isDebugEnabled()) {
-                        logger.debug("heartBeat message by await, targetProxy:{}, cost:{}ms, rtn:{}", target, System.currentTimeMillis() - startTime, res);
+                        logger.debug("heartBeat message by await, targetEventMesh:{}, cost:{}ms, rtn:{}", target, System.currentTimeMillis() - startTime, res);
                     }
 
-                    ProxyRetObj ret = JSON.parseObject(res, ProxyRetObj.class);
+                    EventMeshRetObj ret = JSON.parseObject(res, EventMeshRetObj.class);
 
-                    if (ret.getRetCode() == ProxyRetCode.SUCCESS.getRetCode()) {
+                    if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
                     } else {
-                        throw new ProxyException(ret.getRetCode(), ret.getRetMsg());
+                        throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
                     }
                 } catch (Exception e) {
                     logger.error("send heartBeat error", e);
@@ -231,32 +231,32 @@ public class LiteConsumer extends AbstractLiteClient {
         }, EventMeshCommon.HEATBEAT, EventMeshCommon.HEATBEAT, TimeUnit.MILLISECONDS);
     }
 
-    public boolean unsubscribe(List<String> topicList, String url) throws ProxyException {
+    public boolean unsubscribe(List<String> topicList, String url) throws EventMeshException {
         subscription.removeAll(topicList);
         RequestParam heartBeatParam = generateHeartBeatRequestParam(topicList, url);
         RequestParam unSubscribeParam = generateUnSubscribeRequestParam(topicList, url);
 
         long startTime = System.currentTimeMillis();
-        String target = selectProxy();
+        String target = selectEventMesh();
         String unSubRes = "";
         String heartRes = "";
         try {
             heartRes = HttpUtil.post(httpClient, target, heartBeatParam);
             unSubRes = HttpUtil.post(httpClient, target, unSubscribeParam);
         } catch (Exception ex) {
-            throw new ProxyException(ex);
+            throw new EventMeshException(ex);
         }
 
         if(logger.isDebugEnabled()) {
-            logger.debug("unSubscribe message by await, targetProxy:{}, cost:{}ms, unSubscribeParam:{}, rtn:{}", target, System.currentTimeMillis() - startTime, JSON.toJSONString(unSubscribeParam), unSubRes);
+            logger.debug("unSubscribe message by await, targetEventMesh:{}, cost:{}ms, unSubscribeParam:{}, rtn:{}", target, System.currentTimeMillis() - startTime, JSON.toJSONString(unSubscribeParam), unSubRes);
         }
 
-        ProxyRetObj ret = JSON.parseObject(unSubRes, ProxyRetObj.class);
+        EventMeshRetObj ret = JSON.parseObject(unSubRes, EventMeshRetObj.class);
 
-        if (ret.getRetCode() == ProxyRetCode.SUCCESS.getRetCode()) {
+        if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
             return Boolean.TRUE;
         } else {
-            throw new ProxyException(ret.getRetCode(), ret.getRetMsg());
+            throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
         }
     }
 
@@ -280,19 +280,19 @@ public class LiteConsumer extends AbstractLiteClient {
         return requestParam;
     }
 
-    public void registerMessageListener(LiteMessageListener messageListener) throws ProxyException {
+    public void registerMessageListener(LiteMessageListener messageListener) throws EventMeshException {
         this.messageListener = messageListener;
         remotingServer.registerMessageListener(this.messageListener);
     }
 
-    public String selectProxy() {
-        if (CollectionUtils.isEmpty(proxyServerList)) {
+    public String selectEventMesh() {
+        if (CollectionUtils.isEmpty(eventMeshServerList)) {
             return null;
         }
         if(liteClientConfig.isUseTls()){
-            return Constants.HTTPS_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
+            return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
         }else{
-            return Constants.HTTP_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
+            return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
         }
     }
 }

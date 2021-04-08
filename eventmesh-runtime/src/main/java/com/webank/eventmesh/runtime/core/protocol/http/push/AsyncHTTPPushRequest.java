@@ -18,8 +18,8 @@
 package com.webank.eventmesh.runtime.core.protocol.http.push;
 
 import com.webank.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
-import com.webank.eventmesh.runtime.util.ProxyUtil;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.util.EventMeshUtil;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.common.IPUtil;
 import com.webank.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
@@ -84,7 +84,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
         String requestCode = "";
 
-        if (ProxyUtil.isService(handleMsgContext.getTopic())) {
+        if (EventMeshUtil.isService(handleMsgContext.getTopic())) {
             requestCode = String.valueOf(RequestCode.HTTP_PUSH_CLIENT_SYNC.getRequestCode());
         } else {
             requestCode = String.valueOf(RequestCode.HTTP_PUSH_CLIENT_ASYNC.getRequestCode());
@@ -93,18 +93,18 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         builder.addHeader(ProtocolKey.REQUEST_CODE, requestCode);
         builder.addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
         builder.addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
-        builder.addHeader(ProtocolKey.ProxyInstanceKey.PROXYCLUSTER, handleMsgContext.getProxyHTTPServer().getProxyConfiguration().proxyCluster);
-        builder.addHeader(ProtocolKey.ProxyInstanceKey.PROXYIP, IPUtil.getLocalAddress());
-        builder.addHeader(ProtocolKey.ProxyInstanceKey.PROXYDCN, handleMsgContext.getProxyHTTPServer().getProxyConfiguration().proxyDCN);
-        builder.addHeader(ProtocolKey.ProxyInstanceKey.PROXYENV, handleMsgContext.getProxyHTTPServer().getProxyConfiguration().proxyEnv);
-        builder.addHeader(ProtocolKey.ProxyInstanceKey.PROXYREGION, handleMsgContext.getProxyHTTPServer().getProxyConfiguration().proxyRegion);
-        builder.addHeader(ProtocolKey.ProxyInstanceKey.PROXYIDC, handleMsgContext.getProxyHTTPServer().getProxyConfiguration().proxyIDC);
+        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshCluster);
+        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtil.getLocalAddress());
+        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHDCN, handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshDCN);
+        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshEnv);
+        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHREGION, handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshRegion);
+        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshIDC);
 
-        handleMsgContext.getMsg().getUserProperties().put(ProxyConstants.REQ_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+        handleMsgContext.getMsg().getUserProperties().put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
 
         String content = "";
         try {
-            content = new String(handleMsgContext.getMsg().getBody(), ProxyConstants.DEFAULT_CHARSET);
+            content = new String(handleMsgContext.getMsg().getBody(), EventMeshConstants.DEFAULT_CHARSET);
         } catch (Exception ex) {
             return;
         }
@@ -133,13 +133,13 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             return;
         }
 
-        proxyHTTPServer.metrics.summaryMetrics.recordPushMsg();
+        eventMeshHTTPServer.metrics.summaryMetrics.recordPushMsg();
 
         this.lastPushTime = System.currentTimeMillis();
 
         addToWaitingMap(this);
 
-        cmdLogger.info("cmd={}|proxy2client|from={}|to={}", requestCode,
+        cmdLogger.info("cmd={}|eventMesh2client|from={}|to={}", requestCode,
                 IPUtil.getLocalAddress(), currPushUrl);
 
         try {
@@ -148,10 +148,10 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                 public Object handleResponse(HttpResponse response) {
                     removeWaitingMap(AsyncHTTPPushRequest.this);
                     long cost = System.currentTimeMillis() - lastPushTime;
-                    proxyHTTPServer.metrics.summaryMetrics.recordHTTPPushTimeCost(cost);
+                    eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPPushTimeCost(cost);
                     if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                        proxyHTTPServer.metrics.summaryMetrics.recordHttpPushMsgFailed();
-                        messageLogger.info("message|proxy2client|exception|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
+                        eventMeshHTTPServer.metrics.summaryMetrics.recordHttpPushMsgFailed();
+                        messageLogger.info("message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
                                 handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
 
                         delayRetry();
@@ -161,13 +161,13 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     } else {
                         String res = "";
                         try {
-                            res = EntityUtils.toString(response.getEntity(), Charset.forName(ProxyConstants.DEFAULT_CHARSET));
+                            res = EntityUtils.toString(response.getEntity(), Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
                         } catch (IOException e) {
                             handleMsgContext.finish();
                             return new Object();
                         }
                         ClientRetCode result = processResponseContent(res);
-                        messageLogger.info("message|proxy2client|{}|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}", result, currPushUrl, handleMsgContext.getTopic(),
+                        messageLogger.info("message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}", result, currPushUrl, handleMsgContext.getTopic(),
                                 handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
                         if (result == ClientRetCode.OK) {
                             complete();
@@ -196,10 +196,10 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             });
 
             if (messageLogger.isDebugEnabled()) {
-                messageLogger.debug("message|proxy2client|url={}|topic={}|msg={}", currPushUrl, handleMsgContext.getTopic(),
+                messageLogger.debug("message|eventMesh2client|url={}|topic={}|msg={}", currPushUrl, handleMsgContext.getTopic(),
                         handleMsgContext.getMsg());
             } else {
-                messageLogger.info("message|proxy2client|url={}|topic={}|bizSeqNo={}|uniqueId={}", currPushUrl, handleMsgContext.getTopic(),
+                messageLogger.info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}", currPushUrl, handleMsgContext.getTopic(),
                         handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId());
             }
         } catch (IOException e) {

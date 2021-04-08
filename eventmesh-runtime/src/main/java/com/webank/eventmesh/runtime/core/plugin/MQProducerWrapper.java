@@ -109,9 +109,9 @@ public class MQProducerWrapper extends MQWrapper {
 //    public static void main(String[] args) throws Exception {
 //
 //        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
-//        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
+//        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
 //                + File.separator
-//                + ProxyConstants.PROXY_CONF_FILE, false));
+//                + EventMeshConstants.EVENTMESH_CONF_FILE, false));
 //        commonConfiguration.init();
 //        mqProducerWrapper.init(commonConfiguration, "TEST");
 //    }

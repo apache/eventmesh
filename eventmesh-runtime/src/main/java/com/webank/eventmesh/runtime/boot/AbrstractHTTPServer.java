@@ -20,17 +20,17 @@ package com.webank.eventmesh.runtime.boot;
 import com.google.common.base.Preconditions;
 import com.webank.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import com.webank.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import com.webank.eventmesh.runtime.util.ProxyUtil;
+import com.webank.eventmesh.runtime.util.EventMeshUtil;
 import com.webank.eventmesh.runtime.util.RemotingHelper;
 import com.webank.eventmesh.runtime.common.Pair;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import com.webank.eventmesh.common.ThreadPoolFactory;
 import com.webank.eventmesh.common.command.HttpCommand;
 import com.webank.eventmesh.common.protocol.http.body.Body;
 import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
 import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
-import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.Header;
 import io.netty.bootstrap.ServerBootstrap;
@@ -73,7 +73,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
     private boolean useTLS;
 
     public ThreadPoolExecutor asyncContextCompleteHandler =
-            ThreadPoolFactory.createThreadPoolExecutor(10, 10, "proxy-http-asyncContext-");
+            ThreadPoolFactory.createThreadPoolExecutor(10, 10, "eventMesh-http-asyncContext-");
 
     static {
         DiskAttribute.deleteOnExitTemporaryFile = false;
@@ -105,7 +105,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
                 status);
         response.headers().add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN +
-                "; charset=" + ProxyConstants.DEFAULT_CHARSET);
+                "; charset=" + EventMeshConstants.DEFAULT_CHARSET);
         response.headers().add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         response.headers().add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
@@ -148,7 +148,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
             }
         };
 
-        Thread t = new Thread(r, "proxy-http-server");
+        Thread t = new Thread(r, "eventMesh-http-server");
         t.start();
         started.compareAndSet(false, true);
     }
@@ -230,7 +230,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
                 HttpCommand responseCommand = null;
 
                 if (!ProtocolVersion.contains(protocolVersion)) {
-                    responseCommand = requestCommand.createHttpCommandResponse(ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getErrMsg());
+                    responseCommand = requestCommand.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg());
                     sendResponse(ctx, responseCommand.httpResponse());
                     return;
                 }
@@ -239,13 +239,13 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
                         || !StringUtils.isNumeric(requestCode)
                         || !RequestCode.contains(Integer.valueOf(requestCode))
                         || !processorTable.containsKey(Integer.valueOf(requestCode))) {
-                    responseCommand = requestCommand.createHttpCommandResponse(ProxyRetCode.PROXY_REQUESTCODE_INVALID.getRetCode(), ProxyRetCode.PROXY_REQUESTCODE_INVALID.getErrMsg());
+                    responseCommand = requestCommand.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_REQUESTCODE_INVALID.getRetCode(), EventMeshRetCode.EVENTMESH_REQUESTCODE_INVALID.getErrMsg());
                     sendResponse(ctx, responseCommand.httpResponse());
                     return;
                 }
 
                 if (!started.get()) {
-                    responseCommand = requestCommand.createHttpCommandResponse(ProxyRetCode.PROXY_STOP.getRetCode(), ProxyRetCode.PROXY_STOP.getErrMsg());
+                    responseCommand = requestCommand.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_STOP.getRetCode(), EventMeshRetCode.EVENTMESH_STOP.getErrMsg());
                     sendResponse(ctx, responseCommand.httpResponse());
                     return;
                 }
@@ -254,7 +254,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
                     requestCommand.setHeader(Header.buildHeader(requestCode, parseHTTPHeader(httpRequest)));
                     requestCommand.setBody(Body.buildBody(requestCode, bodyMap));
                 } catch (Exception e) {
-                    responseCommand = requestCommand.createHttpCommandResponse(ProxyRetCode.PROXY_RUNTIME_ERR.getRetCode(), ProxyRetCode.PROXY_RUNTIME_ERR.getErrMsg() + ProxyUtil.stackTrace(e, 3));
+                    responseCommand = requestCommand.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_RUNTIME_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_RUNTIME_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 3));
                     sendResponse(ctx, responseCommand.httpResponse());
                     return;
                 }
@@ -264,7 +264,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
                 }
 
                 AsyncContext<HttpCommand> asyncContext = new AsyncContext<HttpCommand>(requestCommand, responseCommand, asyncContextCompleteHandler);
-                processProxyRequest(ctx, asyncContext);
+                processEventMeshRequest(ctx, asyncContext);
             } catch (Exception ex) {
                 logger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
             } finally {
@@ -275,14 +275,14 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
             }
         }
 
-        public void processProxyRequest(final ChannelHandlerContext ctx,
-                                        final AsyncContext<HttpCommand> asyncContext) {
+        public void processEventMeshRequest(final ChannelHandlerContext ctx,
+                                            final AsyncContext<HttpCommand> asyncContext) {
             final Pair<HttpRequestProcessor, ThreadPoolExecutor> choosed = processorTable.get(Integer.valueOf(asyncContext.getRequest().getRequestCode()));
             try {
                 choosed.getObject2().submit(() -> {
                     try {
                         if (choosed.getObject1().rejectRequest()) {
-                            HttpCommand responseCommand = asyncContext.getRequest().createHttpCommandResponse(ProxyRetCode.PROXY_REJECT_BY_PROCESSOR_ERROR.getRetCode(), ProxyRetCode.PROXY_REJECT_BY_PROCESSOR_ERROR.getErrMsg());
+                            HttpCommand responseCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR.getRetCode(), EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR.getErrMsg());
                             asyncContext.onComplete(responseCommand);
                             if (asyncContext.isComplete()) {
                                 if (httpLogger.isDebugEnabled()) {
@@ -310,7 +310,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
                     }
                 });
             } catch (RejectedExecutionException re) {
-                HttpCommand responseCommand = asyncContext.getRequest().createHttpCommandResponse(ProxyRetCode.OVERLOAD.getRetCode(), ProxyRetCode.OVERLOAD.getErrMsg());
+                HttpCommand responseCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.OVERLOAD.getRetCode(), EventMeshRetCode.OVERLOAD.getErrMsg());
                 asyncContext.onComplete(responseCommand);
                 metrics.summaryMetrics.recordHTTPDiscard();
                 metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - responseCommand.getReqTime());
@@ -353,7 +353,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
             int c = connections.incrementAndGet();
             if (c > 20000) {
                 logger.warn("client|http|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client(20000) connect " +
-                        "this proxy server");
+                        "this eventMesh server");
                 ctx.close();
                 return;
             }

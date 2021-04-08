@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.util;
 
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -106,7 +106,7 @@ public class HttpTinyClient {
             conn.setDoInput(true);
             setHeaders(conn, headers, encoding);
 
-            conn.getOutputStream().write(encodedContent.getBytes(ProxyConstants.DEFAULT_CHARSET));
+            conn.getOutputStream().write(encodedContent.getBytes(EventMeshConstants.DEFAULT_CHARSET));
 
             int respCode = conn.getResponseCode();
             String resp = null;
