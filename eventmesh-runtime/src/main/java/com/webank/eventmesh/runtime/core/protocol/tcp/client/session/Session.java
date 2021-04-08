@@ -22,9 +22,9 @@ import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.DownSt
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.SessionPusher;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.SessionSender;
 import com.webank.eventmesh.runtime.util.Utils;
-import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.ProxyTcpSendResult;
-import com.webank.eventmesh.runtime.configuration.EventMeshConfiguration;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
+import com.webank.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
@@ -63,7 +63,7 @@ public class Session {
 
     private WeakReference<ClientGroupWrapper> clientGroupWrapper;
 
-    private EventMeshConfiguration eventMeshConfiguration;
+    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
 
     private SessionPusher pusher;
 
@@ -167,7 +167,7 @@ public class Session {
             clientGroupWrapper.get().subscribe(topic);
 
             clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().getDefaultTopicRouteInfoFromNameServer(topic,
-                    ProxyConstants.DEFAULT_TIME_OUT_MILLS);
+                    EventMeshConstants.DEFAULT_TIME_OUT_MILLS);
 
             clientGroupWrapper.get().addSubscription(topic, this);
             subscribeLogger.info("subscribe|succeed|topic={}|user={}", topic, client);
@@ -186,7 +186,7 @@ public class Session {
         }
     }
 
-    public ProxyTcpSendResult upstreamMsg(Header header, Message msg, SendCallback sendCallback, long startTime, long taskExecuteTime) {
+    public EventMeshTcpSendResult upstreamMsg(Header header, Message msg, SendCallback sendCallback, long startTime, long taskExecuteTime) {
         String topic = msg.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
         sessionContext.sendTopics.putIfAbsent(topic, topic);
         return sender.send(header, msg, sendCallback, startTime, taskExecuteTime);
@@ -224,7 +224,7 @@ public class Session {
                             if (!future.isSuccess()) {
                                 messageLogger.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
                             }else{
-                                clientGroupWrapper.get().getProxyTcpMonitor().getProxy2clientMsgNum().incrementAndGet();
+                                clientGroupWrapper.get().getEventMeshTcpMonitor().getEventMesh2clientMsgNum().incrementAndGet();
                             }
                         }
                     }
@@ -255,8 +255,8 @@ public class Session {
                 ",sessionContext=" + sessionContext +
                 ",pusher=" + pusher +
                 ",sender=" + sender +
-                ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) +
-                ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, ProxyConstants.DATE_FORMAT) + '}';
+                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) +
+                ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
     @Override
@@ -288,21 +288,21 @@ public class Session {
         this.clientGroupWrapper = clientGroupWrapper;
     }
 
-    public Session(UserAgent client, ChannelHandlerContext context, EventMeshConfiguration eventMeshConfiguration) {
+    public Session(UserAgent client, ChannelHandlerContext context, EventMeshTCPConfiguration eventMeshTCPConfiguration) {
         this.client = client;
         this.context = context;
-        this.eventMeshConfiguration = eventMeshConfiguration;
+        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.remoteAddress = (InetSocketAddress) context.channel().remoteAddress();
         this.sender = new SessionSender(this);
         this.pusher = new SessionPusher(this);
     }
 
-    public EventMeshConfiguration getEventMeshConfiguration() {
-        return eventMeshConfiguration;
+    public EventMeshTCPConfiguration getEventMeshTCPConfiguration() {
+        return eventMeshTCPConfiguration;
     }
 
-    public void setEventMeshConfiguration(EventMeshConfiguration eventMeshConfiguration) {
-        this.eventMeshConfiguration = eventMeshConfiguration;
+    public void setEventMeshTCPConfiguration(EventMeshTCPConfiguration eventMeshTCPConfiguration) {
+        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
     }
 
     public void trySendListenResponse(Header header, long startTime, long taskExecuteTime) {

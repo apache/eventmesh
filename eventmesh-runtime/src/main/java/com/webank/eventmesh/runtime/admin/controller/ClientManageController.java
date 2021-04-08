@@ -17,12 +17,12 @@
 
 package com.webank.eventmesh.runtime.admin.controller;
 
-import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
-import com.webank.eventmesh.runtime.core.protocol.tcp.client.ProxyTcp2Client;
+import com.webank.eventmesh.runtime.boot.EventMeshTCPServer;
+import com.webank.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -53,14 +53,14 @@ public class ClientManageController {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientManageController.class);
 
-    private ProxyTCPServer proxyTCPServer;
+    private EventMeshTCPServer eventMeshTCPServer;
 
-    public ClientManageController(ProxyTCPServer proxyTCPServer){
-        this.proxyTCPServer = proxyTCPServer;
+    public ClientManageController(EventMeshTCPServer eventMeshTCPServer){
+        this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
     public  void start() throws IOException {
-        int port = proxyTCPServer.getEventMeshConfiguration().proxyServerAdminPort;
+        int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/clientManage/showClient", new ShowClientHandler());
         server.createContext("/clientManage/showClientBySystemAndDcn", new ShowClientBySystemAndDcnHandler());
@@ -70,7 +70,7 @@ public class ClientManageController {
         server.createContext("/clientManage/redirectClientBySubSystem", new RedirectClientBySubSystemHandler());
         server.createContext("/clientManage/redirectClientByPath", new RedirectClientByPathHandler());
         server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler());
-//        server.createContext("/proxy/msg/push", new ProxyMsgDownStreamHandler());
+//        server.createContext("/eventMesh/msg/push", new EventMeshMsgDownStreamHandler());
         server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler());
 
         server.start();
@@ -129,7 +129,7 @@ public class ClientManageController {
     }
 
     /**
-     * 打印本proxy上所有客户端信息
+     * 打印本eventMesh上所有客户端信息
      *
      * @return
      */
@@ -141,7 +141,7 @@ public class ClientManageController {
             try{
                 String newLine = System.getProperty("line.separator");
                 logger.info("showAllClient=================");
-                ClientSessionGroupMapping clientSessionGroupMapping = proxyTCPServer.getClientSessionGroupMapping();
+                ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 Map<String, AtomicInteger> dcnSystemMap = clientSessionGroupMapping.statDCNSystemInfo();
                 if (!dcnSystemMap.isEmpty()) {
                     List<Map.Entry<String, AtomicInteger>> list = new ArrayList<>();
@@ -192,12 +192,12 @@ public class ClientManageController {
             try{
                 String queryString =  httpExchange.getRequestURI().getQuery();
                 Map<String,String> queryStringInfo = formData2Dic(queryString);
-                String dcn = queryStringInfo.get(ProxyConstants.MANAGE_DCN);
-                String subSystem = queryStringInfo.get(ProxyConstants.MANAGE_SUBSYSTEM);
+                String dcn = queryStringInfo.get(EventMeshConstants.MANAGE_DCN);
+                String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
                 String newLine = System.getProperty("line.separator");
                 logger.info("showClientBySubsysAndDcn,subsys:{},dcn:{}=================",subSystem,dcn);
-                ClientSessionGroupMapping clientSessionGroupMapping = proxyTCPServer.getClientSessionGroupMapping();
+                ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 if (!sessionMap.isEmpty()) {
                     for (Session session : sessionMap.values()) {
@@ -238,11 +238,11 @@ public class ClientManageController {
             try{
                 String queryString =  httpExchange.getRequestURI().getQuery();
                 Map<String,String> queryStringInfo = formData2Dic(queryString);
-                String topic = queryStringInfo.get(ProxyConstants.MANAGE_TOPIC);
+                String topic = queryStringInfo.get(EventMeshConstants.MANAGE_TOPIC);
 
                 String newLine = System.getProperty("line.separator");
                 logger.info("showListeningClientByTopic,topic:{}=================",topic);
-                ClientSessionGroupMapping clientSessionGroupMapping = proxyTCPServer.getClientSessionGroupMapping();
+                ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<String, ClientGroupWrapper> clientGroupMap = clientSessionGroupMapping.getClientGroupMap();
                 if (!clientGroupMap.isEmpty()) {
                     for (ClientGroupWrapper cgw : clientGroupMap.values()) {
@@ -276,7 +276,7 @@ public class ClientManageController {
 
 
     /**
-     * remove all clients accessed by proxy
+     * remove all clients accessed by eventMesh
      *
      * @return
      */
@@ -286,14 +286,14 @@ public class ClientManageController {
             String result = "";
             OutputStream out = httpExchange.getResponseBody();
             try{
-                ClientSessionGroupMapping clientSessionGroupMapping = proxyTCPServer.getClientSessionGroupMapping();
+                ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
                 try {
                     logger.info("rejectAllClient in admin====================");
                     if (!sessionMap.isEmpty()) {
                         for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
-                            InetSocketAddress addr = ProxyTcp2Client.serverGoodby2Client(entry.getValue(), clientSessionGroupMapping);
+                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(entry.getValue(), clientSessionGroupMapping);
                             if (addr != null) {
                                 successRemoteAddrs.add(addr);
                             }
@@ -339,8 +339,8 @@ public class ClientManageController {
             try{
                 String queryString =  httpExchange.getRequestURI().getQuery();
                 Map<String,String> queryStringInfo = formData2Dic(queryString);
-                String ip = queryStringInfo.get(ProxyConstants.MANAGE_IP);
-                String port = queryStringInfo.get(ProxyConstants.MANAGE_PORT);
+                String ip = queryStringInfo.get(EventMeshConstants.MANAGE_IP);
+                String port = queryStringInfo.get(EventMeshConstants.MANAGE_PORT);
 
                 if (StringUtils.isBlank(ip) || StringUtils.isBlank(port)) {
                     httpExchange.sendResponseHeaders(200, 0);
@@ -349,14 +349,14 @@ public class ClientManageController {
                     return;
                 }
                 logger.info("rejectClientByIpPort in admin,ip:{},port:{}====================",ip,port);
-                ClientSessionGroupMapping clientSessionGroupMapping = proxyTCPServer.getClientSessionGroupMapping();
+                ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
                 try {
                     if (!sessionMap.isEmpty()) {
                         for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                             if (entry.getKey().getHostString().equals(ip) && String.valueOf(entry.getKey().getPort()).equals(port)) {
-                                InetSocketAddress addr = ProxyTcp2Client.serverGoodby2Client(entry.getValue(), clientSessionGroupMapping);
+                                InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(entry.getValue(), clientSessionGroupMapping);
                                 if (addr != null) {
                                     successRemoteAddrs.add(addr);
                                 }
@@ -405,8 +405,8 @@ public class ClientManageController {
             try{
                 String queryString =  httpExchange.getRequestURI().getQuery();
                 Map<String,String> queryStringInfo = formData2Dic(queryString);
-                String dcn = queryStringInfo.get(ProxyConstants.MANAGE_DCN);
-                String subSystem = queryStringInfo.get(ProxyConstants.MANAGE_SUBSYSTEM);
+                String dcn = queryStringInfo.get(EventMeshConstants.MANAGE_DCN);
+                String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
                 if (StringUtils.isBlank(dcn) || StringUtils.isBlank(subSystem)) {
                     httpExchange.sendResponseHeaders(200, 0);
@@ -416,14 +416,14 @@ public class ClientManageController {
                 }
 
                 logger.info("rejectClientBySubSystem in admin,subsys:{},dcn:{}====================",subSystem,dcn);
-                ClientSessionGroupMapping clientSessionGroupMapping = proxyTCPServer.getClientSessionGroupMapping();
+                ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
                 try {
                     if (!sessionMap.isEmpty()) {
                         for (Session session : sessionMap.values()) {
                             if (session.getClient().getDcn().equals(dcn) && session.getClient().getSubsystem().equals(subSystem)) {
-                                InetSocketAddress addr = ProxyTcp2Client.serverGoodby2Client(session, clientSessionGroupMapping);
+                                InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(session, clientSessionGroupMapping);
                                 if (addr != null) {
                                     successRemoteAddrs.add(addr);
                                 }
@@ -471,21 +471,21 @@ public class ClientManageController {
             try{
                 String queryString =  httpExchange.getRequestURI().getQuery();
                 Map<String,String> queryStringInfo = formData2Dic(queryString);
-                String dcn = queryStringInfo.get(ProxyConstants.MANAGE_DCN);
-                String subSystem = queryStringInfo.get(ProxyConstants.MANAGE_SUBSYSTEM);
-                String destProxyIp = queryStringInfo.get(ProxyConstants.MANAGE_DEST_IP);
-                String destProxyPort = queryStringInfo.get(ProxyConstants.MANAGE_DEST_PORT);
+                String dcn = queryStringInfo.get(EventMeshConstants.MANAGE_DCN);
+                String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
+                String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
+                String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
 
                 if (StringUtils.isBlank(dcn) || !StringUtils.isNumeric(subSystem)
-                        || StringUtils.isBlank(destProxyIp) || StringUtils.isBlank(destProxyPort)
-                        || !StringUtils.isNumeric(destProxyPort)) {
+                        || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort)
+                        || !StringUtils.isNumeric(destEventMeshPort)) {
                     httpExchange.sendResponseHeaders(200, 0);
                     result = "params illegal!";
                     out.write(result.getBytes());
                     return;
                 }
-                logger.info("redirectClientBySubSystem in admin,subsys:{},dcn:{},destIp:{},destPort:{}====================",subSystem,dcn,destProxyIp,destProxyPort);
-                ClientSessionGroupMapping clientSessionGroupMapping = proxyTCPServer.getClientSessionGroupMapping();
+                logger.info("redirectClientBySubSystem in admin,subsys:{},dcn:{},destIp:{},destPort:{}====================",subSystem,dcn,destEventMeshIp,destEventMeshPort);
+                ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 String redirectResult = "";
                 try {
@@ -493,25 +493,25 @@ public class ClientManageController {
                         for (Session session : sessionMap.values()) {
                             if (session.getClient().getDcn().equals(dcn) && session.getClient().getSubsystem().equals(subSystem)) {
                                 redirectResult += "|";
-                                redirectResult += ProxyTcp2Client.redirectClient2NewProxy(destProxyIp, Integer.parseInt(destProxyPort),
+                                redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(destEventMeshIp, Integer.parseInt(destEventMeshPort),
                                         session, clientSessionGroupMapping);
                             }
                         }
                     }
                 } catch (Exception e) {
-                    logger.error("clientManage|redirectClientBySubSystem|fail|dcn={}|subSystem={}|destProxyIp" +
-                            "={}|destProxyPort={},errMsg={}", dcn, subSystem, destProxyIp, destProxyPort, e);
+                    logger.error("clientManage|redirectClientBySubSystem|fail|dcn={}|subSystem={}|destEventMeshIp" +
+                            "={}|destEventMeshPort={},errMsg={}", dcn, subSystem, destEventMeshIp, destEventMeshPort, e);
                     result = String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {clientIp=%s clientPort=%s " +
-                                    "destProxyIp=%s destProxyPort=%s}, result {%s}, errorMsg : %s",
-                            sessionMap.size(), dcn, subSystem, destProxyIp, destProxyPort, redirectResult, e
+                                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                            sessionMap.size(), dcn, subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e
                                     .getMessage());
                     httpExchange.sendResponseHeaders(200, 0);
                     out.write(result.getBytes());
                     return;
                 }
                 result = String.format("redirectClientBySubSystem success! sessionMap size {%d}, {dcn=%s subSystem=%s " +
-                                "destProxyIp=%s destProxyPort=%s}, result {%s} ",
-                        sessionMap.size(), dcn, subSystem, destProxyIp, destProxyPort, redirectResult);
+                                "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                        sessionMap.size(), dcn, subSystem, destEventMeshIp, destEventMeshPort, redirectResult);
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
             }catch (Exception e){
@@ -542,19 +542,19 @@ public class ClientManageController {
             try{
                 String queryString =  httpExchange.getRequestURI().getQuery();
                 Map<String,String> queryStringInfo = formData2Dic(queryString);
-                String path = queryStringInfo.get(ProxyConstants.MANAGE_PATH);
-                String destProxyIp = queryStringInfo.get(ProxyConstants.MANAGE_DEST_IP);
-                String destProxyPort = queryStringInfo.get(ProxyConstants.MANAGE_DEST_PORT);
+                String path = queryStringInfo.get(EventMeshConstants.MANAGE_PATH);
+                String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
+                String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
 
-                if (StringUtils.isBlank(path) || StringUtils.isBlank(destProxyIp) || StringUtils.isBlank(destProxyPort) ||
-                        !StringUtils.isNumeric(destProxyPort)) {
+                if (StringUtils.isBlank(path) || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort) ||
+                        !StringUtils.isNumeric(destEventMeshPort)) {
                     httpExchange.sendResponseHeaders(200, 0);
                     result = "params illegal!";
                     out.write(result.getBytes());
                     return;
                 }
-                logger.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================",path,destProxyIp,destProxyPort);
-                ClientSessionGroupMapping clientSessionGroupMapping = proxyTCPServer.getClientSessionGroupMapping();
+                logger.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================",path,destEventMeshIp,destEventMeshPort);
+                ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 String redirectResult = "";
                 try {
@@ -562,25 +562,25 @@ public class ClientManageController {
                         for (Session session : sessionMap.values()) {
                             if (session.getClient().getPath().contains(path)) {
                                 redirectResult += "|";
-                                redirectResult += ProxyTcp2Client.redirectClient2NewProxy(destProxyIp, Integer.parseInt(destProxyPort),
+                                redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(destEventMeshIp, Integer.parseInt(destEventMeshPort),
                                         session, clientSessionGroupMapping);
                             }
                         }
                     }
                 } catch (Exception e) {
-                    logger.error("clientManage|redirectClientByPath|fail|path={}|destProxyIp" +
-                            "={}|destProxyPort={},errMsg={}", path, destProxyIp, destProxyPort, e);
+                    logger.error("clientManage|redirectClientByPath|fail|path={}|destEventMeshIp" +
+                            "={}|destEventMeshPort={},errMsg={}", path, destEventMeshIp, destEventMeshPort, e);
                     result = String.format("redirectClientByPath fail! sessionMap size {%d}, {path=%s " +
-                                    "destProxyIp=%s destProxyPort=%s}, result {%s}, errorMsg : %s",
-                            sessionMap.size(), path, destProxyIp, destProxyPort, redirectResult, e
+                                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                            sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult, e
                                     .getMessage());
                     httpExchange.sendResponseHeaders(200, 0);
                     out.write(result.getBytes());
                     return;
                 }
                 result = String.format("redirectClientByPath success! sessionMap size {%d}, {path=%s " +
-                                "destProxyIp=%s destProxyPort=%s}, result {%s} ",
-                        sessionMap.size(), path, destProxyIp, destProxyPort, redirectResult);
+                                "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                        sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
             }catch (Exception e){
@@ -611,21 +611,21 @@ public class ClientManageController {
             try{
                 String queryString =  httpExchange.getRequestURI().getQuery();
                 Map<String,String> queryStringInfo = formData2Dic(queryString);
-                String ip = queryStringInfo.get(ProxyConstants.MANAGE_IP);
-                String port = queryStringInfo.get(ProxyConstants.MANAGE_PORT);
-                String destProxyIp = queryStringInfo.get(ProxyConstants.MANAGE_DEST_IP);
-                String destProxyPort = queryStringInfo.get(ProxyConstants.MANAGE_DEST_PORT);
+                String ip = queryStringInfo.get(EventMeshConstants.MANAGE_IP);
+                String port = queryStringInfo.get(EventMeshConstants.MANAGE_PORT);
+                String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
+                String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
 
                 if (StringUtils.isBlank(ip) || !StringUtils.isNumeric(port)
-                        || StringUtils.isBlank(destProxyIp) || StringUtils.isBlank(destProxyPort)
-                        || !StringUtils.isNumeric(destProxyPort)) {
+                        || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort)
+                        || !StringUtils.isNumeric(destEventMeshPort)) {
                     httpExchange.sendResponseHeaders(200, 0);
                     result = "params illegal!";
                     out.write(result.getBytes());
                     return;
                 }
-                logger.info("redirectClientByIpPort in admin,ip:{},port:{},destIp:{},destPort:{}====================",ip,port,destProxyIp,destProxyPort);
-                ClientSessionGroupMapping clientSessionGroupMapping = proxyTCPServer.getClientSessionGroupMapping();
+                logger.info("redirectClientByIpPort in admin,ip:{},port:{},destIp:{},destPort:{}====================",ip,port,destEventMeshIp,destEventMeshPort);
+                ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 String redirectResult = "";
                 try {
@@ -633,25 +633,25 @@ public class ClientManageController {
                         for (Session session : sessionMap.values()) {
                             if (session.getClient().getHost().equals(ip) && String.valueOf(session.getClient().getPort()).equals(port)) {
                                 redirectResult += "|";
-                                redirectResult += ProxyTcp2Client.redirectClient2NewProxy(destProxyIp, Integer.parseInt(destProxyPort),
+                                redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(destEventMeshIp, Integer.parseInt(destEventMeshPort),
                                         session, clientSessionGroupMapping);
                             }
                         }
                     }
                 } catch (Exception e) {
-                    logger.error("clientManage|redirectClientByIpPort|fail|ip={}|port={}|destProxyIp" +
-                            "={}|destProxyPort={},errMsg={}", ip, port, destProxyIp, destProxyPort, e);
+                    logger.error("clientManage|redirectClientByIpPort|fail|ip={}|port={}|destEventMeshIp" +
+                            "={}|destEventMeshPort={},errMsg={}", ip, port, destEventMeshIp, destEventMeshPort, e);
                     result = String.format("redirectClientByIpPort fail! sessionMap size {%d}, {clientIp=%s clientPort=%s " +
-                                    "destProxyIp=%s destProxyPort=%s}, result {%s}, errorMsg : %s",
-                            sessionMap.size(), ip, port, destProxyIp, destProxyPort, redirectResult, e
+                                    "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
+                            sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult, e
                                     .getMessage());
                     httpExchange.sendResponseHeaders(200, 0);
                     out.write(result.getBytes());
                     return;
                 }
                 result = String.format("redirectClientByIpPort success! sessionMap size {%d}, {ip=%s port=%s " +
-                                "destProxyIp=%s destProxyPort=%s}, result {%s} ",
-                        sessionMap.size(), ip, port, destProxyIp, destProxyPort, redirectResult);
+                                "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
+                        sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult);
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
             }catch (Exception e){
@@ -701,7 +701,7 @@ public class ClientManageController {
         return result;
     }
 
-    class ProxyMsgDownStreamHandler implements HttpHandler{
+    class EventMeshMsgDownStreamHandler implements HttpHandler{
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "false";
@@ -710,7 +710,7 @@ public class ClientManageController {
 //                Map<String, Object> queryStringInfo =  parsePostParameters(httpExchange);
 //                String msgStr = (String)queryStringInfo.get("msg");
 //                String groupName = (String)queryStringInfo.get("group");
-//                logger.info("recieve msg from other proxy, group:{}, msg:{}", groupName, msgStr);
+//                logger.info("recieve msg from other eventMesh, group:{}, msg:{}", groupName, msgStr);
 //                if (StringUtils.isBlank(msgStr) || StringUtils.isBlank(groupName)) {
 //                    logger.warn("msg or groupName is null");
 //                    httpExchange.sendResponseHeaders(200, 0);
@@ -720,27 +720,27 @@ public class ClientManageController {
 //                MessageExt messageExt = JSON.parseObject(msgStr, MessageExt.class);
 //                String topic = messageExt.getTopic();
 //
-//                if (!ProxyUtil.isValidRMBTopic(topic)) {
+//                if (!EventMeshUtil.isValidRMBTopic(topic)) {
 //                    logger.warn("msg topic is illegal");
 //                    httpExchange.sendResponseHeaders(200, 0);
 //                    out.write(result.getBytes());
 //                    return;
 //                }
 //
-//                DownstreamDispatchStrategy downstreamDispatchStrategy = proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getDownstreamDispatchStrategy();
-//                Set<Session> groupConsumerSessions = proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getGroupConsumerSessions();
+//                DownstreamDispatchStrategy downstreamDispatchStrategy = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getDownstreamDispatchStrategy();
+//                Set<Session> groupConsumerSessions = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getGroupConsumerSessions();
 //                Session session = downstreamDispatchStrategy.select(groupName, topic, groupConsumerSessions);
 //
 //                if(session == null){
-//                    logger.error("DownStream msg,retry other proxy found no session again");
+//                    logger.error("DownStream msg,retry other eventMesh found no session again");
 //                    httpExchange.sendResponseHeaders(200, 0);
 //                    out.write(result.getBytes());
 //                    return;
 //                }
 //
 //                DownStreamMsgContext downStreamMsgContext =
-//                        new DownStreamMsgContext(messageExt, session, proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getPersistentMsgConsumer(), null, true);
-//                proxyTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getDownstreamMap().putIfAbsent(downStreamMsgContext.seq, downStreamMsgContext);
+//                        new DownStreamMsgContext(messageExt, session, eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getPersistentMsgConsumer(), null, true);
+//                eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupWrapper(groupName).getDownstreamMap().putIfAbsent(downStreamMsgContext.seq, downStreamMsgContext);
 //
 //                if (session.isCanDownStream()) {
 //                    session.downstreamMsg(downStreamMsgContext);
@@ -750,16 +750,16 @@ public class ClientManageController {
 //                    return;
 //                }
 //
-//                logger.warn("ProxyMsgDownStreamHandler|dispatch retry, seq[{}]", downStreamMsgContext.seq);
-//                long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getTopic()) ? 0 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
+//                logger.warn("EventMeshMsgDownStreamHandler|dispatch retry, seq[{}]", downStreamMsgContext.seq);
+//                long delayTime = EventMeshUtil.isService(downStreamMsgContext.msgExt.getTopic()) ? 0 : eventMeshTCPServer.getAccessConfiguration().eventMeshTcpMsgRetryDelayInMills;
 //                downStreamMsgContext.delay(delayTime);
-//                proxyTCPServer.getProxyTcpRetryer().pushRetry(downStreamMsgContext);
+//                eventMeshTCPServer.getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
 //                result = "true";
 //                httpExchange.sendResponseHeaders(200, 0);
 //                out.write(result.getBytes());
 
             }catch (Exception e){
-                logger.error("ProxyMsgDownStreamHandler handle fail...", e);
+                logger.error("EventMeshMsgDownStreamHandler handle fail...", e);
             }finally {
                 if(out != null){
                     try {
