@@ -17,7 +17,7 @@
 
 package client.common;
 
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
@@ -40,7 +40,7 @@ public class Codec {
 
     private final static Logger logger = LoggerFactory.getLogger(Codec.class);
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
-    private static Charset UTF8 = Charset.forName(ProxyConstants.DEFAULT_CHARSET);
+    private static Charset UTF8 = Charset.forName(EventMeshConstants.DEFAULT_CHARSET);
     private static final byte[] CONSTANT_MAGIC_FLAG = "EventMesh".getBytes(UTF8);
     private static final byte[] VERSION = "0000".getBytes(UTF8);
 

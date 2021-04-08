@@ -22,81 +22,81 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 public class LiteConsumeContext {
 
-    private String proxyIp;
+    private String eventMeshIp;
 
-    private String proxyEnv;
+    private String eventMeshEnv;
 
-    private String proxyIdc;
+    private String eventMeshIdc;
 
-    private String proxyRegion;
+    private String eventMeshRegion;
 
-    private String proxyCluster;
+    private String eventMeshCluster;
 
-    private String proxyDcn;
+    private String eventMeshDcn;
 
     //本地RETRY次数
     private int retryTimes = 0;
 
     private long createTime = System.currentTimeMillis();
 
-    public LiteConsumeContext(String proxyIp, String proxyEnv,
-                              String proxyIdc,String proxyRegion,
-                              String proxyCluster, String proxyDcn) {
-        this.proxyIp = proxyIp;
-        this.proxyEnv = proxyEnv;
-        this.proxyIdc = proxyIdc;
-        this.proxyRegion = proxyRegion;
-        this.proxyCluster = proxyCluster;
-        this.proxyDcn = proxyDcn;
+    public LiteConsumeContext(String eventMeshIp, String eventMeshEnv,
+                              String eventMeshIdc,String eventMeshRegion,
+                              String eventMeshCluster, String eventMeshDcn) {
+        this.eventMeshIp = eventMeshIp;
+        this.eventMeshEnv = eventMeshEnv;
+        this.eventMeshIdc = eventMeshIdc;
+        this.eventMeshRegion = eventMeshRegion;
+        this.eventMeshCluster = eventMeshCluster;
+        this.eventMeshDcn = eventMeshDcn;
 
     }
 
-    public String getProxyIp() {
-        return proxyIp;
+    public String getEventMeshIp() {
+        return eventMeshIp;
     }
 
-    public void setProxyIp(String proxyIp) {
-        this.proxyIp = proxyIp;
+    public void setEventMeshIp(String eventMeshIp) {
+        this.eventMeshIp = eventMeshIp;
     }
 
-    public String getProxyEnv() {
-        return proxyEnv;
+    public String getEventMeshEnv() {
+        return eventMeshEnv;
     }
 
-    public void setProxyEnv(String proxyEnv) {
-        this.proxyEnv = proxyEnv;
+    public void setEventMeshEnv(String eventMeshEnv) {
+        this.eventMeshEnv = eventMeshEnv;
     }
 
-    public String getProxyIdc() {
-        return proxyIdc;
+    public String getEventMeshIdc() {
+        return eventMeshIdc;
     }
 
-    public void setProxyIdc(String proxyIdc) {
-        this.proxyIdc = proxyIdc;
+    public void setEventMeshIdc(String eventMeshIdc) {
+        this.eventMeshIdc = eventMeshIdc;
     }
 
-    public String getProxyRegion() {
-        return proxyRegion;
+    public String getEventMeshRegion() {
+        return eventMeshRegion;
     }
 
-    public void setProxyRegion(String proxyRegion) {
-        this.proxyRegion = proxyRegion;
+    public void setEventMeshRegion(String eventMeshRegion) {
+        this.eventMeshRegion = eventMeshRegion;
     }
 
-    public String getProxyCluster() {
-        return proxyCluster;
+    public String getEventMeshCluster() {
+        return eventMeshCluster;
     }
 
-    public void setProxyCluster(String proxyCluster) {
-        this.proxyCluster = proxyCluster;
+    public void setEventMeshCluster(String eventMeshCluster) {
+        this.eventMeshCluster = eventMeshCluster;
     }
 
-    public String getProxyDcn() {
-        return proxyDcn;
+    public String getEventMeshDcn() {
+        return eventMeshDcn;
     }
 
-    public void setProxyDcn(String proxyDcn) {
-        this.proxyDcn = proxyDcn;
+    public void setEventMeshDcn(String eventMeshDcn) {
+        this.eventMeshDcn = eventMeshDcn;
     }
 
     public int getRetryTimes() {
@@ -111,12 +111,12 @@ public class LiteConsumeContext {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("liteConsumeContext={")
-                .append("proxyIp=").append(proxyIp).append(",")
-                .append("proxyEnv=").append(proxyEnv).append(",")
-                .append("proxyRegion=").append(proxyRegion).append(",")
-                .append("proxyIdc=").append(proxyIdc).append(",")
-                .append("proxyCluster=").append(proxyCluster).append(",")
-                .append("proxyDcn=").append(proxyDcn).append(",")
+                .append("eventMeshIp=").append(eventMeshIp).append(",")
+                .append("eventMeshEnv=").append(eventMeshEnv).append(",")
+                .append("eventMeshRegion=").append(eventMeshRegion).append(",")
+                .append("eventMeshIdc=").append(eventMeshIdc).append(",")
+                .append("eventMeshCluster=").append(eventMeshCluster).append(",")
+                .append("eventMeshDcn=").append(eventMeshDcn).append(",")
                 .append("retryTimes=").append(retryTimes).append(",")
                 .append("createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT))
                 .append("}");

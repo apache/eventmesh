@@ -101,8 +101,8 @@ public class RemotingServer {
     }
 
     //TODO:不同的topic有不同的listener
-    public void registerMessageListener(LiteMessageListener proxyMessageListener) {
-        this.messageListener = proxyMessageListener;
+    public void registerMessageListener(LiteMessageListener eventMeshMessageListener) {
+        this.messageListener = eventMeshMessageListener;
     }
 
     private EventLoopGroup initBossGroup() {
@@ -240,10 +240,10 @@ public class RemotingServer {
 //                    return;
 //                }
 
-                final LiteConsumeContext proxyConsumeContext = new LiteConsumeContext(pushMessageRequestHeader.getProxyIp(),
-                        pushMessageRequestHeader.getProxyEnv(), pushMessageRequestHeader.getProxyIdc(),
-                        pushMessageRequestHeader.getProxyRegion(),
-                        pushMessageRequestHeader.getProxyCluster(), pushMessageRequestHeader.getProxyDcn());
+                final LiteConsumeContext eventMeshConsumeContext = new LiteConsumeContext(pushMessageRequestHeader.getEventMeshIp(),
+                        pushMessageRequestHeader.getEventMeshEnv(), pushMessageRequestHeader.getEventMeshIdc(),
+                        pushMessageRequestHeader.getEventMeshRegion(),
+                        pushMessageRequestHeader.getEventMeshCluster(), pushMessageRequestHeader.getEventMeshDcn());
 
                 final LiteMessage liteMessage = new LiteMessage(pushMessageRequestBody.getBizSeqNo(), pushMessageRequestBody.getUniqueId(),
                         topic, pushMessageRequestBody.getContent());
@@ -263,7 +263,7 @@ public class RemotingServer {
                                 return;
                             }
 
-                            HandleResult handleResult = messageListener.handle(liteMessage, proxyConsumeContext);
+                            HandleResult handleResult = messageListener.handle(liteMessage, eventMeshConsumeContext);
 
                             if (logger.isDebugEnabled()) {
                                 logger.info("bizSeqNo:{}, topic:{}, handleResult:{}", liteMessage.getBizSeqNo(), liteMessage.getTopic(), handleResult);
@@ -403,7 +403,7 @@ public class RemotingServer {
         };
 
 
-        Thread t = new Thread(r, "proxy-client-remoting-server");
+        Thread t = new Thread(r, "eventMesh-client-remoting-server");
         t.start();
     }
 }

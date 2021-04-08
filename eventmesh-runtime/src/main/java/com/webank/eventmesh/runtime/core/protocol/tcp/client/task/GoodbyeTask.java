@@ -18,8 +18,8 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import com.webank.eventmesh.runtime.util.Utils;
-import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
-import com.webank.eventmesh.runtime.core.protocol.tcp.client.ProxyTcp2Client;
+import com.webank.eventmesh.runtime.boot.EventMeshTCPServer;
+import com.webank.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
@@ -30,8 +30,8 @@ import static com.webank.eventmesh.common.protocol.tcp.Command.CLIENT_GOODBYE_RE
 
 public class GoodbyeTask extends AbstractTask {
 
-    public GoodbyeTask(Package pkg, ChannelHandlerContext ctx, long startTime, ProxyTCPServer proxyTCPServer) {
-        super(pkg, ctx, startTime, proxyTCPServer);
+    public GoodbyeTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+        super(pkg, ctx, startTime, eventMeshTCPServer);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class GoodbyeTask extends AbstractTask {
             msg.setHeader(new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.FAIL.getCode(), e.getStackTrace().toString(), pkg
                     .getHeader().getSeq()));
         } finally {
-            ProxyTCPServer.scheduler.submit(new Runnable() {
+            EventMeshTCPServer.scheduler.submit(new Runnable() {
                 @Override
                 public void run() {
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
@@ -58,6 +58,6 @@ public class GoodbyeTask extends AbstractTask {
             });
             //session.write2Client(msg);
         }
-        ProxyTcp2Client.closeSessionIfTimeout(session, proxyTCPServer.getClientSessionGroupMapping());
+        EventMeshTcp2Client.closeSessionIfTimeout(session, eventMeshTCPServer.getClientSessionGroupMapping());
     }
 }

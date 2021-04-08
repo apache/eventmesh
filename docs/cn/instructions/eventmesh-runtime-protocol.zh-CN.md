@@ -278,10 +278,10 @@ public class LiteMessage {
 
 | 场景         | Client向Server发送消息请求码 | Server回复Client消息的响应码            | 说明 |
 | ------------ | ---------------------------- | --------------------------------------- | ---- |
-| 心跳         | HEARTBEAT(203)               | SUCCESS(0)/PROXY_HEARTBEAT_ERROR(19)    |      |
-| 订阅         | SUBSCRIBE(206)               | SUCCESS(0)/PROXY_SUBSCRIBE_ERROR(17)    |      |
-| 取消订阅     | UNSUBSCRIBE(207)             | SUCCESS(0)/PROXY_UNSUBSCRIBE_ERROR(18)  |      |
-| 发送异步事件 | MSG_SEND_ASYNC(104)          | SUCCESS(0)/PROXY_SEND_ASYNC_MSG_ERR(14) |      |
+| 心跳         | HEARTBEAT(203)               | SUCCESS(0)/EVENTMESH_HEARTBEAT_ERROR(19)    |      |
+| 订阅         | SUBSCRIBE(206)               | SUCCESS(0)/EVENTMESH_SUBSCRIBE_ERROR(17)    |      |
+| 取消订阅     | UNSUBSCRIBE(207)             | SUCCESS(0)/EVENTMESH_UNSUBSCRIBE_ERROR(18)  |      |
+| 发送异步事件 | MSG_SEND_ASYNC(104)          | SUCCESS(0)/EVENTMESH_SEND_ASYNC_MSG_ERR(14) |      |
 
 
 

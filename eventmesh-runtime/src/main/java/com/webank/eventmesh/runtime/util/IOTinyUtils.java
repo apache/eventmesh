@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.util;
 
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 
 import java.io.*;
 import java.nio.channels.FileChannel;
@@ -27,7 +27,7 @@ import java.util.List;
 public class IOTinyUtils {
 
     static public String toString(InputStream input, String encoding) throws IOException {
-        return (null == encoding) ? toString(new InputStreamReader(input, ProxyConstants.DEFAULT_CHARSET)) : toString(new InputStreamReader(
+        return (null == encoding) ? toString(new InputStreamReader(input, EventMeshConstants.DEFAULT_CHARSET)) : toString(new InputStreamReader(
             input, encoding));
     }
 

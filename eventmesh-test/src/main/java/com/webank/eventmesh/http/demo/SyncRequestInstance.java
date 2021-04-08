@@ -17,17 +17,17 @@ public class SyncRequestInstance {
 
         LiteProducer liteProducer = null;
         try {
-            String proxyIPPort = args[0];
+            String eventMeshIPPort = args[0];
 
             final String topic = args[1];
 
-            if (StringUtils.isBlank(proxyIPPort)) {
+            if (StringUtils.isBlank(eventMeshIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-                proxyIPPort = "127.0.0.1:10105";
+                eventMeshIPPort = "127.0.0.1:10105";
             }
 
             LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
-            eventMeshClientConfig.setLiteProxyAddr(proxyIPPort)
+            eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
                     .setEnv("env")
                     .setIdc("idc")
                     .setDcn("dcn")
