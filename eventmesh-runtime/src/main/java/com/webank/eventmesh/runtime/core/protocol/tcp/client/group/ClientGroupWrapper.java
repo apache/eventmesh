@@ -28,14 +28,11 @@ import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.DownSt
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.retry.ProxyTcpRetryer;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
 import com.webank.eventmesh.runtime.util.HttpTinyClient;
-import com.webank.eventmesh.runtime.util.OMSUtil;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
-import com.webank.eventmesh.runtime.configuration.AccessConfiguration;
+import com.webank.eventmesh.runtime.configuration.EventMeshConfiguration;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
-import com.webank.eventmesh.runtime.domain.NonStandardKeys;
 import com.webank.eventmesh.runtime.metrics.tcp.ProxyTcpMonitor;
-import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyStatus;
 import io.openmessaging.api.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,7 +54,7 @@ public class ClientGroupWrapper {
 
     private String dcn;
 
-    private AccessConfiguration accessConfiguration;
+    private EventMeshConfiguration eventMeshConfiguration;
 
     private ProxyTCPServer proxyTCPServer;
 
@@ -101,7 +98,7 @@ public class ClientGroupWrapper {
         this.sysId = sysId;
         this.dcn = dcn;
         this.proxyTCPServer = proxyTCPServer;
-        this.accessConfiguration = proxyTCPServer.getAccessConfiguration();
+        this.eventMeshConfiguration = proxyTCPServer.getEventMeshConfiguration();
         this.proxyTcpRetryer = proxyTCPServer.getProxyTcpRetryer();
         this.proxyTcpMonitor = proxyTCPServer.getProxyTcpMonitor();
         this.groupName = ProxyUtil.buildClientGroup(sysId, dcn);
@@ -227,10 +224,10 @@ public class ClientGroupWrapper {
         Properties keyValue = new Properties();
 //        KeyValue keyValue = OMS.newKeyValue();
         keyValue.put("producerGroup", groupName);
-        keyValue.put("instanceName", ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));
+        keyValue.put("instanceName", ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", eventMeshConfiguration.proxyCluster));
 
         //TODO for defibus
-        keyValue.put("proxyIDC", accessConfiguration.proxyIDC);
+        keyValue.put("proxyIDC", eventMeshConfiguration.proxyIDC);
 
         mqProducerWrapper.init(keyValue);
         mqProducerWrapper.start();
@@ -350,8 +347,8 @@ public class ClientGroupWrapper {
         Properties keyValue = new Properties();
         keyValue.put("isBroadcast", "false");
         keyValue.put("consumerGroup", groupName);
-        keyValue.put("proxyIDC", accessConfiguration.proxyIDC);
-        keyValue.put("instanceName", ProxyUtil.buildProxyTcpClientID(sysId, dcn, "SUB", accessConfiguration.proxyCluster));
+        keyValue.put("proxyIDC", eventMeshConfiguration.proxyIDC);
+        keyValue.put("instanceName", ProxyUtil.buildProxyTcpClientID(sysId, dcn, "SUB", eventMeshConfiguration.proxyCluster));
 
         persistentMsgConsumer.init(keyValue);
 //        persistentMsgConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
@@ -439,8 +436,8 @@ public class ClientGroupWrapper {
         Properties keyValue = new Properties();
         keyValue.put("isBroadcast", "true");
         keyValue.put("consumerGroup", groupName);
-        keyValue.put("proxyIDC", accessConfiguration.proxyIDC);
-        keyValue.put("instanceName", ProxyUtil.buildProxyTcpClientID(sysId, dcn, "SUB", accessConfiguration.proxyCluster));
+        keyValue.put("proxyIDC", eventMeshConfiguration.proxyIDC);
+        keyValue.put("instanceName", ProxyUtil.buildProxyTcpClientID(sysId, dcn, "SUB", eventMeshConfiguration.proxyCluster));
         broadCastMsgConsumer.init(keyValue);
 //        broadCastMsgConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
 //            @Override
@@ -516,7 +513,7 @@ public class ClientGroupWrapper {
                     proxyTcpMonitor.getMq2proxyMsgNum().incrementAndGet();
                     String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
                     message.getSystemProperties().put(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                    message.getSystemProperties().put(ProxyConstants.REQ_RECEIVE_PROXY_IP, accessConfiguration.proxyServerIp);
+                    message.getSystemProperties().put(ProxyConstants.REQ_RECEIVE_PROXY_IP, eventMeshConfiguration.proxyServerIp);
 
                     if(CollectionUtils.isEmpty(groupConsumerSessions)){
                         logger.warn("found no session to downstream broadcast msg");
@@ -545,7 +542,7 @@ public class ClientGroupWrapper {
                         }
 
                         logger.warn("downstream broadcast msg,session is busy,dispatch retry,seq:{}, session:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.session.getClient(), ProxyUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
-                        long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
+                        long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : proxyTCPServer.getEventMeshConfiguration().proxyTcpMsgRetryDelayInMills;
                         downStreamMsgContext.delay(delayTime);
                         proxyTcpRetryer.pushRetry(downStreamMsgContext);
                     }
@@ -563,7 +560,7 @@ public class ClientGroupWrapper {
                     proxyTcpMonitor.getMq2proxyMsgNum().incrementAndGet();
                     String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
                     message.getSystemProperties().put(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                    message.getSystemProperties().put(ProxyConstants.REQ_RECEIVE_PROXY_IP, accessConfiguration.proxyServerIp);
+                    message.getSystemProperties().put(ProxyConstants.REQ_RECEIVE_PROXY_IP, eventMeshConfiguration.proxyServerIp);
 
                     Session session = downstreamDispatchStrategy.select(groupName, topic, groupConsumerSessions);
                     String bizSeqNo = ProxyUtil.getMessageBizSeq(message);
@@ -580,8 +577,8 @@ public class ClientGroupWrapper {
 
                             logger.error("found no session to downstream msg,groupName:{}, topic:{}, bizSeqNo:{}", groupName, topic, bizSeqNo);
 
-                            if (sendBackTimes >= proxyTCPServer.getAccessConfiguration().proxyTcpSendBackMaxTimes) {
-                                logger.error("sendBack to broker over max times:{}, groupName:{}, topic:{}, bizSeqNo:{}", proxyTCPServer.getAccessConfiguration().proxyTcpSendBackMaxTimes, groupName, topic, bizSeqNo);
+                            if (sendBackTimes >= proxyTCPServer.getEventMeshConfiguration().proxyTcpSendBackMaxTimes) {
+                                logger.error("sendBack to broker over max times:{}, groupName:{}, topic:{}, bizSeqNo:{}", proxyTCPServer.getEventMeshConfiguration().proxyTcpSendBackMaxTimes, groupName, topic, bizSeqNo);
                             } else {
                                 sendBackTimes++;
                                 message.getSystemProperties().put(ProxyConstants.PROXY_SEND_BACK_TIMES, sendBackTimes.toString());
@@ -601,7 +598,7 @@ public class ClientGroupWrapper {
                     DownStreamMsgContext downStreamMsgContext =
                             new DownStreamMsgContext(message, session, persistentMsgConsumer, persistentMsgConsumer.getContext(), false);
 
-                    if(downstreamMap.size() < proxyTCPServer.getAccessConfiguration().proxyTcpDownStreamMapSize){
+                    if(downstreamMap.size() < proxyTCPServer.getEventMeshConfiguration().proxyTcpDownStreamMapSize){
                         downstreamMap.putIfAbsent(downStreamMsgContext.seq, downStreamMsgContext);
                     }else{
                         logger.warn("downStreamMap is full,group:{}", groupName);
@@ -616,7 +613,7 @@ public class ClientGroupWrapper {
                     }
 
                     logger.warn("session is busy,dispatch retry,seq:{}, session:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.session.getClient(), bizSeqNo);
-                    long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
+                    long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : proxyTCPServer.getEventMeshConfiguration().proxyTcpMsgRetryDelayInMills;
                     downStreamMsgContext.delay(delayTime);
                     proxyTcpRetryer.pushRetry(downStreamMsgContext);
 
@@ -687,12 +684,12 @@ public class ClientGroupWrapper {
         this.groupName = groupName;
     }
 
-    public AccessConfiguration getAccessConfiguration() {
-        return accessConfiguration;
+    public EventMeshConfiguration getEventMeshConfiguration() {
+        return eventMeshConfiguration;
     }
 
-    public void setAccessConfiguration(AccessConfiguration accessConfiguration) {
-        this.accessConfiguration = accessConfiguration;
+    public void setEventMeshConfiguration(EventMeshConfiguration eventMeshConfiguration) {
+        this.eventMeshConfiguration = eventMeshConfiguration;
     }
 
     public ProxyTcpRetryer getProxyTcpRetryer() {

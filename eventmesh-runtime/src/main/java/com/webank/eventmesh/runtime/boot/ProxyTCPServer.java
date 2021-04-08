@@ -25,7 +25,7 @@ import com.webank.eventmesh.runtime.core.protocol.tcp.client.group.ClientSession
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.retry.ProxyTcpRetryer;
 import com.webank.eventmesh.runtime.util.ProxyThreadFactoryImpl;
 import com.webank.eventmesh.runtime.admin.controller.ClientManageController;
-import com.webank.eventmesh.runtime.configuration.AccessConfiguration;
+import com.webank.eventmesh.runtime.configuration.EventMeshConfiguration;
 import com.webank.eventmesh.runtime.metrics.tcp.ProxyTcpMonitor;
 import com.webank.eventmesh.common.ThreadPoolFactory;
 import com.webank.eventmesh.common.protocol.tcp.codec.Codec;
@@ -54,7 +54,7 @@ public class ProxyTCPServer extends AbstractRemotingServer {
 
     private ProxyServer proxyServer;
 
-    private AccessConfiguration accessConfiguration;
+    private EventMeshConfiguration eventMeshConfiguration;
 
     private GlobalTrafficShapingHandler globalTrafficShapingHandler;
 
@@ -67,10 +67,10 @@ public class ProxyTCPServer extends AbstractRemotingServer {
     public RateLimiter rateLimiter;
 
     public ProxyTCPServer(ProxyServer proxyServer,
-                          AccessConfiguration accessConfiguration) {
+                          EventMeshConfiguration eventMeshConfiguration) {
         super();
         this.proxyServer = proxyServer;
-        this.accessConfiguration = accessConfiguration;
+        this.eventMeshConfiguration = eventMeshConfiguration;
     }
 
     private void startServer() throws Exception {
@@ -98,16 +98,16 @@ public class ProxyTCPServer extends AbstractRemotingServer {
                                     .addLast("global-traffic-shaping", globalTrafficShapingHandler)
                                     .addLast("channel-traffic-shaping", newCTSHandler())
                                     .addLast(new ProxyTcpConnectionHandler(ProxyTCPServer.this))
-                                    .addLast(workerGroup, new IdleStateHandler(accessConfiguration.proxyTcpIdleReadSeconds,
-                                                    accessConfiguration.proxyTcpIdleWriteSeconds,
-                                                    accessConfiguration.proxyTcpIdleAllSeconds),
+                                    .addLast(workerGroup, new IdleStateHandler(eventMeshConfiguration.proxyTcpIdleReadSeconds,
+                                                    eventMeshConfiguration.proxyTcpIdleWriteSeconds,
+                                                    eventMeshConfiguration.proxyTcpIdleAllSeconds),
                                             new ProxyTcpMessageDispatcher(ProxyTCPServer.this),
                                             new ProxyTcpExceptionHandler(ProxyTCPServer.this)
                                     );
                         }
                     });
             try {
-                int port = accessConfiguration.proxyTcpServerPort;
+                int port = eventMeshConfiguration.proxyTcpServerPort;
                 ChannelFuture f = bootstrap.bind(port).sync();
                 logger.info("ProxyTCPServer[port={}] started.....", port);
                 f.channel().closeFuture().sync();
@@ -130,7 +130,7 @@ public class ProxyTCPServer extends AbstractRemotingServer {
         logger.info("==================ProxyTCPServer Initialing==================");
          initThreadPool();
 
-        rateLimiter = RateLimiter.create(accessConfiguration.proxyTcpMsgReqnumPerSecond);
+        rateLimiter = RateLimiter.create(eventMeshConfiguration.proxyTcpMsgReqnumPerSecond);
 
         globalTrafficShapingHandler = newGTSHandler();
 
@@ -199,9 +199,9 @@ public class ProxyTCPServer extends AbstractRemotingServer {
     private void initThreadPool() throws Exception {
         super.init("proxy-tcp");
 
-        scheduler = ThreadPoolFactory.createScheduledExecutor(accessConfiguration.proxyTcpGlobalScheduler, new ProxyThreadFactoryImpl("proxy-tcp-scheduler", true));
+        scheduler = ThreadPoolFactory.createScheduledExecutor(eventMeshConfiguration.proxyTcpGlobalScheduler, new ProxyThreadFactoryImpl("proxy-tcp-scheduler", true));
 
-        taskHandleExecutorService = ThreadPoolFactory.createThreadPoolExecutor(accessConfiguration.proxyTcpTaskHandleExecutorPoolSize, accessConfiguration.proxyTcpTaskHandleExecutorPoolSize, new LinkedBlockingQueue<Runnable>(10000), new ProxyThreadFactoryImpl("proxy-tcp-task-handle", true));;
+        taskHandleExecutorService = ThreadPoolFactory.createThreadPoolExecutor(eventMeshConfiguration.proxyTcpTaskHandleExecutorPoolSize, eventMeshConfiguration.proxyTcpTaskHandleExecutorPoolSize, new LinkedBlockingQueue<Runnable>(10000), new ProxyThreadFactoryImpl("proxy-tcp-task-handle", true));;
     }
 
     private void shutdownThreadPool(){
@@ -210,7 +210,7 @@ public class ProxyTCPServer extends AbstractRemotingServer {
     }
 
     private GlobalTrafficShapingHandler newGTSHandler() {
-        GlobalTrafficShapingHandler handler = new GlobalTrafficShapingHandler(scheduler, 0, accessConfiguration.getGtc().getReadLimit()) {
+        GlobalTrafficShapingHandler handler = new GlobalTrafficShapingHandler(scheduler, 0, eventMeshConfiguration.getGtc().getReadLimit()) {
             @Override
             protected long calculateSize(Object msg) {
                 return 1;
@@ -221,7 +221,7 @@ public class ProxyTCPServer extends AbstractRemotingServer {
     }
 
     private ChannelTrafficShapingHandler newCTSHandler() {
-        ChannelTrafficShapingHandler handler = new ChannelTrafficShapingHandler(0, accessConfiguration.getCtc().getReadLimit()) {
+        ChannelTrafficShapingHandler handler = new ChannelTrafficShapingHandler(0, eventMeshConfiguration.getCtc().getReadLimit()) {
             @Override
             protected long calculateSize(Object msg) {
                 return 1;
@@ -247,7 +247,7 @@ public class ProxyTCPServer extends AbstractRemotingServer {
         return proxyServer;
     }
 
-    public AccessConfiguration getAccessConfiguration() {
-        return accessConfiguration;
+    public EventMeshConfiguration getEventMeshConfiguration() {
+        return eventMeshConfiguration;
     }
 }

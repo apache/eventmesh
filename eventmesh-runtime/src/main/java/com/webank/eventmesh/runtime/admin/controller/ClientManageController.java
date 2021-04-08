@@ -60,7 +60,7 @@ public class ClientManageController {
     }
 
     public  void start() throws IOException {
-        int port = proxyTCPServer.getAccessConfiguration().proxyServerAdminPort;
+        int port = proxyTCPServer.getEventMeshConfiguration().proxyServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/clientManage/showClient", new ShowClientHandler());
         server.createContext("/clientManage/showClientBySystemAndDcn", new ShowClientBySystemAndDcnHandler());

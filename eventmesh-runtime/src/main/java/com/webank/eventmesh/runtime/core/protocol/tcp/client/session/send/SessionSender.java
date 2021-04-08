@@ -69,7 +69,7 @@ public class SessionSender {
 
     public SessionSender(Session session) {
         this.session = session;
-        this.upstreamBuff = new Semaphore(session.getAccessConfiguration().proxyTcpSessionUpstreamBufferSize);
+        this.upstreamBuff = new Semaphore(session.getEventMeshConfiguration().proxyTcpSessionUpstreamBufferSize);
     }
 
     public ProxyTcpSendResult send(Header header, Message msg, SendCallback sendCallback, long startTime, long taskExecuteTime) {
@@ -133,7 +133,7 @@ public class SessionSender {
 //                }
 
                 msg.getSystemProperties().put(ProxyConstants.RSP_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                msg.getSystemProperties().put(ProxyConstants.RSP_RECEIVE_PROXY_IP, session.getAccessConfiguration().proxyServerIp);
+                msg.getSystemProperties().put(ProxyConstants.RSP_RECEIVE_PROXY_IP, session.getEventMeshConfiguration().proxyServerIp);
                 session.getClientGroupWrapper().get().getProxyTcpMonitor().getMq2proxyMsgNum().incrementAndGet();
 
                 Command cmd;

@@ -21,7 +21,7 @@ import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
@@ -65,7 +65,7 @@ public class SessionPusher {
 
     public SessionPusher(Session session) {
         this.session = session;
-        unack = (0 == session.getClient().getUnack()) ? session.getAccessConfiguration().proxyTcpSessionDownstreamUnackSize : session.getClient().getUnack();
+        unack = (0 == session.getClient().getUnack()) ? session.getEventMeshConfiguration().proxyTcpSessionDownstreamUnackSize : session.getClient().getUnack();
     }
 
     @Override
@@ -88,7 +88,7 @@ public class SessionPusher {
 
         Package pkg = new Package();
         downStreamMsgContext.msgExt.getSystemProperties().put(ProxyConstants.REQ_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-        AccessMessage body = null;
+        EventMeshMessage body = null;
         int retCode = 0;
         String retMsg = null;
         try {
@@ -124,12 +124,12 @@ public class SessionPusher {
                                 pushContext.getUnAckMsg().remove(downStreamMsgContext.seq);
 
                                 //how long to isolate client when push fail
-                                long isolateTime = System.currentTimeMillis() + session.getAccessConfiguration().proxyTcpPushFailIsolateTimeInMills;
+                                long isolateTime = System.currentTimeMillis() + session.getEventMeshConfiguration().proxyTcpPushFailIsolateTimeInMills;
                                 session.setIsolateTime(isolateTime);
                                 logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                                 //retry
-                                long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : session.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
+                                long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : session.getEventMeshConfiguration().proxyTcpMsgRetryDelayInMills;
                                 downStreamMsgContext.delay(delayTime);
                                 session.getClientGroupWrapper().get().getProxyTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {

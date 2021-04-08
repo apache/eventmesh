@@ -17,7 +17,7 @@
 
 package client.common;
 
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.Package;
@@ -187,8 +187,8 @@ public class MessageUtils {
         return subscription;
     }
 
-    public static AccessMessage generateRRMsg(String topic, int i) {
-        AccessMessage msg = new AccessMessage();
+    public static EventMeshMessage generateRRMsg(String topic, int i) {
+        EventMeshMessage msg = new EventMeshMessage();
         msg.setTopic(topic);
         msg.getProperties().put("msgType", "persistent");
         msg.getProperties().put("TTL", "300000");
@@ -197,8 +197,8 @@ public class MessageUtils {
         return msg;
     }
 
-    public static AccessMessage generateAsyncEventMsg(String topic, int i) {
-        AccessMessage msg = new AccessMessage();
+    public static EventMeshMessage generateAsyncEventMsg(String topic, int i) {
+        EventMeshMessage msg = new EventMeshMessage();
         msg.setTopic(topic);
         msg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         msg.getProperties().put("TTL", "30000");
@@ -207,8 +207,8 @@ public class MessageUtils {
         return msg;
     }
 
-    public static AccessMessage generateBroadcastMsg(String topic, int i) {
-        AccessMessage msg = new AccessMessage();
+    public static EventMeshMessage generateBroadcastMsg(String topic, int i) {
+        EventMeshMessage msg = new EventMeshMessage();
         msg.setTopic(topic);
         msg.getProperties().put("REPLY_TO", "");
         msg.getProperties().put("TTL", "30000");

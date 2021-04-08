@@ -22,7 +22,7 @@ import com.webank.eventmesh.common.config.CommonConfiguration;
 import com.webank.eventmesh.common.config.ConfigurationWraper;
 import org.apache.commons.lang3.StringUtils;
 
-public class AccessConfiguration extends CommonConfiguration {
+public class EventMeshConfiguration extends CommonConfiguration {
     public int proxyTcpServerPort = 10000;
 
     public int proxyTcpIdleAllSeconds = 60;
@@ -75,7 +75,7 @@ public class AccessConfiguration extends CommonConfiguration {
     private TrafficShapingConfig gtc = new TrafficShapingConfig(0, 10_000, 1_000, 2000);
     private TrafficShapingConfig ctc = new TrafficShapingConfig(0, 2_000, 1_000, 10_000);
 
-    public AccessConfiguration(ConfigurationWraper configurationWraper){
+    public EventMeshConfiguration(ConfigurationWraper configurationWraper){
         super(configurationWraper);
     }
 
