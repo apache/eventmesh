@@ -20,16 +20,16 @@ package com.webank.eventmesh.common.protocol.tcp;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class AccessMessage {
+public class EventMeshMessage {
 
     private String topic;
     Map<String, String> properties = new ConcurrentHashMap<>();
     private String body;
 
-    public AccessMessage() {
+    public EventMeshMessage() {
     }
 
-    public AccessMessage(String topic, Map<String, String> properties, String body) {
+    public EventMeshMessage(String topic, Map<String, String> properties, String body) {
         this.topic = topic;
         this.properties = properties;
         this.body = body;

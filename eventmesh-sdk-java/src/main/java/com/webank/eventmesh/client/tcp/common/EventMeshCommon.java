@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.client.tcp.common;
 
-public class WemqAccessCommon {
+public class EventMeshCommon {
     /**
      * 打印线程池状态的间隔时间
      */
@@ -49,14 +49,14 @@ public class WemqAccessCommon {
     public static int SESSION_CLEAN_EXPIRE = 5 * 1000;
 
     /**
-     * WEMQ校验用户名
+     * EventMesh校验用户名
      */
-    public static String WEMQ_USER = "wemq";
+    public static String EventMesh_USER = "EventMesh";
 
     /**
-     * WEMQ校验用户密码
+     * EventMesh校验用户密码
      */
-    public static String WEMQ_PASS = "wemq@123";
+    public static String EventMesh_PASS = "EventMesh@123";
 
     /**
      * 服务器共有的超时时间

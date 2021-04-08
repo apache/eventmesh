@@ -3,7 +3,7 @@ package com.webank.eventmesh.client.tcp.common;
 /**
  * Testcase set
  */
-public class AccessTestCaseTopicSet {
+public class EventMeshTestCaseTopicSet {
 
 //    public static final String TOPIC_PRX_WQ2ClientBroadCast = "topic-broadcast-test";
     public static final String TOPIC_PRX_WQ2ClientBroadCast = "FT0-e-80030001-01-3";

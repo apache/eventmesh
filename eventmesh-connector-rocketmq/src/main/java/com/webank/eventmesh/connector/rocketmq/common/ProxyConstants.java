@@ -35,23 +35,23 @@ public class ProxyConstants {
 
     public static final String DEFAULT_CHARSET = "UTF-8";
 
-    public static final String PROXY_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
+    public static final String EventMesh_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
-    public static final String PROXY_CONF_FILE = "rocketmq-client.properties";
+    public static final String EventMesh_CONF_FILE = "rocketmq-client.properties";
 
-    public static final String REQ_C2PROXY_TIMESTAMP = "req_c2access_timestamp";
-    public static final String REQ_PROXY2MQ_TIMESTAMP = "req_access2mq_timestamp";
-    public static final String REQ_MQ2PROXY_TIMESTAMP = "req_mq2access_timestamp";
-    public static final String REQ_PROXY2C_TIMESTAMP = "req_access2c_timestamp";
-    public static final String RSP_C2PROXY_TIMESTAMP = "rsp_c2access_timestamp";
-    public static final String RSP_PROXY2MQ_TIMESTAMP = "rsp_access2mq_timestamp";
-    public static final String RSP_MQ2PROXY_TIMESTAMP = "rsp_mq2access_timestamp";
-    public static final String RSP_PROXY2C_TIMESTAMP = "rsp_access2c_timestamp";
+    public static final String REQ_C2EventMesh_TIMESTAMP = "req_c2eventMesh_timestamp";
+    public static final String REQ_EventMesh2MQ_TIMESTAMP = "req_eventMesh2mq_timestamp";
+    public static final String REQ_MQ2EventMesh_TIMESTAMP = "req_mq2eventMesh_timestamp";
+    public static final String REQ_EventMesh2C_TIMESTAMP = "req_eventMesh2c_timestamp";
+    public static final String RSP_C2EventMesh_TIMESTAMP = "rsp_c2eventMesh_timestamp";
+    public static final String RSP_EventMesh2MQ_TIMESTAMP = "rsp_eventMesh2mq_timestamp";
+    public static final String RSP_MQ2EventMesh_TIMESTAMP = "rsp_mq2eventMesh_timestamp";
+    public static final String RSP_EventMesh2C_TIMESTAMP = "rsp_eventMesh2c_timestamp";
 
-    public static final String REQ_SEND_PROXY_IP = "req_send_proxy_ip";
-    public static final String REQ_RECEIVE_PROXY_IP = "req_receive_proxy_ip";
-    public static final String RSP_SEND_PROXY_IP = "rsp_send_proxy_ip";
-    public static final String RSP_RECEIVE_PROXY_IP = "rsp_receive_proxy_ip";
+    public static final String REQ_SEND_EventMesh_IP = "req_send_EventMesh_ip";
+    public static final String REQ_RECEIVE_EventMesh_IP = "req_receive_EventMesh_ip";
+    public static final String RSP_SEND_EventMesh_IP = "rsp_send_EventMesh_ip";
+    public static final String RSP_RECEIVE_EventMesh_IP = "rsp_receive_EventMesh_ip";
 
     //default TTL 4 hours
     public static final Integer DEFAULT_MSG_TTL_MILLS = 14400000;
@@ -89,18 +89,18 @@ public class ProxyConstants {
     public static final String MANAGE_SUBSYSTEM = "subSystem";
     public static final String MANAGE_IP = "ip";
     public static final String MANAGE_PORT = "port";
-    public static final String MANAGE_DEST_IP = "destProxyIp";
-    public static final String MANAGE_DEST_PORT = "destProxyPort";
+    public static final String MANAGE_DEST_IP = "destEventMeshIp";
+    public static final String MANAGE_DEST_PORT = "destEventMeshPort";
     public static final String MANAGE_PATH = "path";
     public static final String MANAGE_GROUP = "group";
     public static final String MANAGE_PURPOSE = "purpose";
     public static final String MANAGE_TOPIC = "topic";
 
-    public static final String  PROXY_SEND_BACK_TIMES= "proxySendBackTimes";
+    public static final String  EventMesh_SEND_BACK_TIMES= "EventMeshSendBackTimes";
 
-    public static final String  PROXY_SEND_BACK_IP= "proxySendBackIp";
+    public static final String  EventMesh_SEND_BACK_IP= "EventMeshSendBackIp";
 
-    public static final String  PROXY_REGISTRY_ADDR_KEY= "proxyRegistryAddr";
+    public static final String  EventMesh_REGISTRY_ADDR_KEY= "EventMeshRegistryAddr";
 
     public static int DEFAULT_TIME_OUT_MILLS = 5 * 1000;
 

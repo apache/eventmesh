@@ -108,7 +108,7 @@ public class MessageUtils {
         user.setVersion(agent.getVersion());
         user.setIdc(agent.getIdc());
 
-        user.setPurpose(WemqAccessCommon.USER_AGENT_PURPOSE_SUB);
+        user.setPurpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB);
         return user;
     }
 
@@ -125,7 +125,7 @@ public class MessageUtils {
         user.setVersion(agent.getVersion());
         user.setIdc(agent.getIdc());
 
-        user.setPurpose(WemqAccessCommon.USER_AGENT_PURPOSE_PUB);
+        user.setPurpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB);
         return user;
     }
 
