@@ -20,14 +20,14 @@ package com.webank.eventmesh.client.tcp.impl;
 
 import com.webank.eventmesh.client.tcp.SimplePubClient;
 import com.webank.eventmesh.client.tcp.SimpleSubClient;
-import com.webank.eventmesh.client.tcp.WemqAccessClient;
+import com.webank.eventmesh.client.tcp.EventMeshClient;
 import com.webank.eventmesh.client.tcp.common.AsyncRRCallback;
 import com.webank.eventmesh.client.tcp.common.MessageUtils;
 import com.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 
-public class DefaultWemqAccessClient implements WemqAccessClient {
+public class DefaultEventMeshClient implements EventMeshClient {
     protected UserAgent agent;
     private String accessHost;
     private int accessPort;
@@ -35,7 +35,7 @@ public class DefaultWemqAccessClient implements WemqAccessClient {
     private SimplePubClient pubClient;
     private SimpleSubClient subClient;
 
-    public DefaultWemqAccessClient(String accessHost, int accessPort, UserAgent agent) {
+    public DefaultEventMeshClient(String accessHost, int accessPort, UserAgent agent) {
         this.accessHost = accessHost;
         this.accessPort = accessPort;
         this.agent = agent;
@@ -119,7 +119,7 @@ public class DefaultWemqAccessClient implements WemqAccessClient {
 
     @Override
     public String toString() {
-        return "DefaultWemqAccessClient{" +
+        return "DefaultEventMeshClient{" +
                 "accessHost='" + accessHost + '\'' +
                 ", accessPort=" + accessPort +
                 ", agent=" + agent +

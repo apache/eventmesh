@@ -7,7 +7,7 @@
 **Protocol Specification**
 
 ```
-Magic Code: 4 bit, defaultValue:WEMQ
+Magic Code: 9 bit, defaultValue:EventMesh
 
 Protocol Version: 4 bit, defaultValue:0000
 

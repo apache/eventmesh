@@ -67,14 +67,14 @@ public class ProxyTcpRetryer {
     }
 
     public void pushRetry(DownStreamMsgContext downStreamMsgContext) {
-        if (retrys.size() >= proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryQueueSize) {
+        if (retrys.size() >= proxyTCPServer.getEventMeshConfiguration().proxyTcpMsgRetryQueueSize) {
             logger.error("pushRetry fail,retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
-                    proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryQueueSize, downStreamMsgContext.retryTimes,
+                    proxyTCPServer.getEventMeshConfiguration().proxyTcpMsgRetryQueueSize, downStreamMsgContext.retryTimes,
                     downStreamMsgContext.seq, ProxyUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
             return;
         }
 
-        int maxRetryTimes = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 1 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryTimes;
+        int maxRetryTimes = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 1 : proxyTCPServer.getEventMeshConfiguration().proxyTcpMsgRetryTimes;
         if (downStreamMsgContext.retryTimes >= maxRetryTimes) {
             logger.warn("pushRetry fail,retry over maxRetryTimes:{}, retryTimes:{}, seq:{}, bizSeq:{}", maxRetryTimes, downStreamMsgContext.retryTimes,
                     downStreamMsgContext.seq, ProxyUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
@@ -151,7 +151,7 @@ public class ProxyTcpRetryer {
                     logger.info("retry downStream msg end,seq:{},retryTimes:{},bizSeq:{}",downStreamMsgContext.seq, downStreamMsgContext.retryTimes, ProxyUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
                 }else{
                     logger.warn("session is busy,push retry again,seq:{}, session:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.session.getClient(), ProxyUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
-                    long delayTime = ProxyUtil.isService(topic) ? 0 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
+                    long delayTime = ProxyUtil.isService(topic) ? 0 : proxyTCPServer.getEventMeshConfiguration().proxyTcpMsgRetryDelayInMills;
                     downStreamMsgContext.delay(delayTime);
                     pushRetry(downStreamMsgContext);
                 }

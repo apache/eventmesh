@@ -34,8 +34,8 @@ public class AsyncSyncRequestInstance {
                 proxyIPPort = "127.0.0.1:10105";
             }
 
-            LiteClientConfig weMQProxyClientConfig = new LiteClientConfig();
-            weMQProxyClientConfig.setLiteProxyAddr(proxyIPPort)
+            LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
+            eventMeshClientConfig.setLiteProxyAddr(proxyIPPort)
                     .setEnv("env")
                     .setIdc("idc")
                     .setDcn("dcn")
@@ -43,7 +43,7 @@ public class AsyncSyncRequestInstance {
                     .setSys("1234")
                     .setPid(String.valueOf(ThreadUtil.getPID()));
 
-            liteProducer = new LiteProducer(weMQProxyClientConfig);
+            liteProducer = new LiteProducer(eventMeshClientConfig);
 
             final long startTime = System.currentTimeMillis();
             final LiteMessage liteMessage = new LiteMessage();

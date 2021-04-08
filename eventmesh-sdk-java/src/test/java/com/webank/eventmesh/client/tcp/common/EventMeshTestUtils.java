@@ -1,6 +1,6 @@
 package com.webank.eventmesh.client.tcp.common;
 
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.Package;
@@ -8,10 +8,10 @@ import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.webank.eventmesh.client.tcp.common.AccessTestCaseTopicSet.*;
+import static com.webank.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.*;
 import static com.webank.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 
-public class AccessTestUtils {
+public class EventMeshTestUtils {
     private static final int seqLength = 10;
 
     public static UserAgent generateClient1() {
@@ -47,28 +47,28 @@ public class AccessTestUtils {
     public static Package syncRR() {
         Package msg = new Package();
         msg.setHeader(new Header(Command.REQUEST_TO_SERVER, 0, null, generateRandomString(seqLength)));
-        msg.setBody(generateSyncRRWemqMsg());
+        msg.setBody(generateSyncRRMqMsg());
         return msg;
     }
 
     public static Package asyncRR() {
         Package msg = new Package();
         msg.setHeader(new Header(Command.REQUEST_TO_SERVER, 0, null, generateRandomString(seqLength)));
-        msg.setBody(generateAsyncRRWemqMsg());
+        msg.setBody(generateAsyncRRMqMsg());
         return msg;
     }
 
     public static Package asyncMessage() {
         Package msg = new Package();
         msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_SERVER, 0, null, generateRandomString(seqLength)));
-        msg.setBody(generateAsyncEventWemqMsg());
+        msg.setBody(generateAsyncEventMqMsg());
         return msg;
     }
 
     public static Package broadcastMessage() {
         Package msg = new Package();
         msg.setHeader(new Header(Command.BROADCAST_MESSAGE_TO_SERVER, 0, null, generateRandomString(seqLength)));
-        msg.setBody(generateBroadcastWemqMsg());
+        msg.setBody(generateBroadcastMqMsg());
         return msg;
     }
 
@@ -79,45 +79,45 @@ public class AccessTestUtils {
         return msg;
     }
 
-    private static AccessMessage generateSyncRRWemqMsg() {
-        AccessMessage wemqMsg = new AccessMessage();
-        wemqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
-        wemqMsg.getProperties().put("msgType", "persistent");
-        wemqMsg.getProperties().put("TTL", "300000");
-        wemqMsg.getProperties().put("KEYS", generateRandomString(16));
-        wemqMsg.setBody("testSyncRR");
-        return wemqMsg;
+    private static EventMeshMessage generateSyncRRMqMsg() {
+        EventMeshMessage mqMsg = new EventMeshMessage();
+        mqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
+        mqMsg.getProperties().put("msgType", "persistent");
+        mqMsg.getProperties().put("TTL", "300000");
+        mqMsg.getProperties().put("KEYS", generateRandomString(16));
+        mqMsg.setBody("testSyncRR");
+        return mqMsg;
     }
 
 
-    private static AccessMessage generateAsyncRRWemqMsg() {
-        AccessMessage wemqMsg = new AccessMessage();
-        wemqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
-        wemqMsg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
-        wemqMsg.getProperties().put("TTL", "300000");
-        wemqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
-        wemqMsg.setBody("testAsyncRR");
-        return wemqMsg;
+    private static EventMeshMessage generateAsyncRRMqMsg() {
+        EventMeshMessage mqMsg = new EventMeshMessage();
+        mqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
+        mqMsg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
+        mqMsg.getProperties().put("TTL", "300000");
+        mqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
+        mqMsg.setBody("testAsyncRR");
+        return mqMsg;
     }
 
-    private static AccessMessage generateAsyncEventWemqMsg() {
-        AccessMessage wemqMsg = new AccessMessage();
-        wemqMsg.setTopic(TOPIC_PRX_WQ2ClientUniCast);
-        wemqMsg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
-        wemqMsg.getProperties().put("TTL", "30000");
-        wemqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
-        wemqMsg.setBody("testAsyncMessage");
-        return wemqMsg;
+    private static EventMeshMessage generateAsyncEventMqMsg() {
+        EventMeshMessage mqMsg = new EventMeshMessage();
+        mqMsg.setTopic(TOPIC_PRX_WQ2ClientUniCast);
+        mqMsg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
+        mqMsg.getProperties().put("TTL", "30000");
+        mqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
+        mqMsg.setBody("testAsyncMessage");
+        return mqMsg;
     }
 
-    private static AccessMessage generateBroadcastWemqMsg() {
-        AccessMessage wemqMsg = new AccessMessage();
-        wemqMsg.setTopic(TOPIC_PRX_WQ2ClientBroadCast);
-        wemqMsg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
-        wemqMsg.getProperties().put("TTL", "30000");
-        wemqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
-        wemqMsg.setBody("testAsyncMessage");
-        return wemqMsg;
+    private static EventMeshMessage generateBroadcastMqMsg() {
+        EventMeshMessage mqMsg = new EventMeshMessage();
+        mqMsg.setTopic(TOPIC_PRX_WQ2ClientBroadCast);
+        mqMsg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
+        mqMsg.getProperties().put("TTL", "30000");
+        mqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
+        mqMsg.setBody("testAsyncMessage");
+        return mqMsg;
     }
 
     private static String generateRandomString(int length) {

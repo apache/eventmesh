@@ -45,8 +45,8 @@ public class SubService implements InitializingBean {
             // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
             proxyIPPort = eventMeshIp + ":" + eventMeshHttpPort;
         }
-        LiteClientConfig weMQProxyClientConfig = new LiteClientConfig();
-        weMQProxyClientConfig.setLiteProxyAddr(proxyIPPort)
+        LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
+        eventMeshClientConfig.setLiteProxyAddr(proxyIPPort)
                 .setEnv(env)
                 .setIdc(idc)
                 .setDcn(dcn)
@@ -54,7 +54,7 @@ public class SubService implements InitializingBean {
                 .setSys(subsys)
                 .setPid(String.valueOf(ThreadUtil.getPID()));
 
-        liteConsumer = new LiteConsumer(weMQProxyClientConfig);
+        liteConsumer = new LiteConsumer(eventMeshClientConfig);
         liteConsumer.start();
         liteConsumer.heartBeat(topicList, url);
         liteConsumer.subscribe(topicList, url);
