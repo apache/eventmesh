@@ -54,19 +54,19 @@ allprojects {
 }
 
 task tar(type: Tar) {
-    extension = 'tar.gz'
+    archiveExtension = 'tar.gz'
     compression = Compression.GZIP
-    archiveName = project.name + '_' + project.version + '.' + extension
-    destinationDir = new File(projectDir, 'build')
+    archiveFileName = project.name + '_' + project.version + '.' + archiveExtension
+    destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
     }
 }
 
 task zip(type: Zip) {
-    extension = 'zip'
-    archiveName = project.name + '.' + project.version + '.' + extension
-    destinationDir = new File(projectDir, 'build')
+    archiveExtension = 'zip'
+    archiveFileName = project.name + '.' + project.version + '.' + archiveExtension
+    destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
     }
