@@ -38,17 +38,17 @@ public class PushMessageRequestHeader extends Header {
     //请求方采用的协议版本, 默认1.0
     private ProtocolVersion version;
 
-    private String proxyCluster;
+    private String eventMeshCluster;
 
-    private String proxyIp;
+    private String eventMeshIp;
 
-    private String proxyEnv;
+    private String eventMeshEnv;
 
-    private String proxyRegion;
+    private String eventMeshRegion;
 
-    private String proxyIdc;
+    private String eventMeshIdc;
 
-    private String proxyDcn;
+    private String eventMeshDcn;
 
     public int getCode() {
         return code;
@@ -58,52 +58,52 @@ public class PushMessageRequestHeader extends Header {
         this.code = code;
     }
 
-    public String getProxyCluster() {
-        return proxyCluster;
+    public String getEventMeshCluster() {
+        return eventMeshCluster;
     }
 
-    public void setProxyCluster(String proxyCluster) {
-        this.proxyCluster = proxyCluster;
+    public void setEventMeshCluster(String eventMeshCluster) {
+        this.eventMeshCluster = eventMeshCluster;
     }
 
-    public String getProxyIp() {
-        return proxyIp;
+    public String getEventMeshIp() {
+        return eventMeshIp;
     }
 
-    public void setProxyIp(String proxyIp) {
-        this.proxyIp = proxyIp;
+    public void setEventMeshIp(String eventMeshIp) {
+        this.eventMeshIp = eventMeshIp;
     }
 
-    public String getProxyEnv() {
-        return proxyEnv;
+    public String getEventMeshEnv() {
+        return eventMeshEnv;
     }
 
-    public void setProxyEnv(String proxyEnv) {
-        this.proxyEnv = proxyEnv;
+    public void setEventMeshEnv(String eventMeshEnv) {
+        this.eventMeshEnv = eventMeshEnv;
     }
 
-    public String getProxyRegion() {
-        return proxyRegion;
+    public String getEventMeshRegion() {
+        return eventMeshRegion;
     }
 
-    public void setProxyRegion(String proxyRegion) {
-        this.proxyRegion = proxyRegion;
+    public void setEventMeshRegion(String eventMeshRegion) {
+        this.eventMeshRegion = eventMeshRegion;
     }
 
-    public String getProxyIdc() {
-        return proxyIdc;
+    public String getEventMeshIdc() {
+        return eventMeshIdc;
     }
 
-    public void setProxyIdc(String proxyIdc) {
-        this.proxyIdc = proxyIdc;
+    public void setEventMeshIdc(String eventMeshIdc) {
+        this.eventMeshIdc = eventMeshIdc;
     }
 
-    public String getProxyDcn() {
-        return proxyDcn;
+    public String getEventMeshDcn() {
+        return eventMeshDcn;
     }
 
-    public void setProxyDcn(String proxyDcn) {
-        this.proxyDcn = proxyDcn;
+    public void setEventMeshDcn(String eventMeshDcn) {
+        this.eventMeshDcn = eventMeshDcn;
     }
 
     public String getLanguage() {
@@ -127,12 +127,12 @@ public class PushMessageRequestHeader extends Header {
         pushMessageRequestHeader.setCode(MapUtils.getIntValue(headerParam, ProtocolKey.REQUEST_CODE));
         pushMessageRequestHeader.setLanguage(MapUtils.getString(headerParam, ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA));
         pushMessageRequestHeader.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
-        pushMessageRequestHeader.setProxyCluster(MapUtils.getString(headerParam, ProtocolKey.ProxyInstanceKey.PROXYCLUSTER));
-        pushMessageRequestHeader.setProxyIp(MapUtils.getString(headerParam, ProtocolKey.ProxyInstanceKey.PROXYIP));
-        pushMessageRequestHeader.setProxyDcn(MapUtils.getString(headerParam, ProtocolKey.ProxyInstanceKey.PROXYDCN));
-        pushMessageRequestHeader.setProxyEnv(MapUtils.getString(headerParam, ProtocolKey.ProxyInstanceKey.PROXYENV));
-        pushMessageRequestHeader.setProxyRegion(MapUtils.getString(headerParam, ProtocolKey.ProxyInstanceKey.PROXYREGION));
-        pushMessageRequestHeader.setProxyIdc(MapUtils.getString(headerParam, ProtocolKey.ProxyInstanceKey.PROXYIDC));
+        pushMessageRequestHeader.setEventMeshCluster(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER));
+        pushMessageRequestHeader.setEventMeshIp(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHIP));
+        pushMessageRequestHeader.setEventMeshDcn(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHDCN));
+        pushMessageRequestHeader.setEventMeshEnv(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHENV));
+        pushMessageRequestHeader.setEventMeshRegion(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHREGION));
+        pushMessageRequestHeader.setEventMeshIdc(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC));
         return pushMessageRequestHeader;
     }
 
@@ -142,12 +142,12 @@ public class PushMessageRequestHeader extends Header {
         map.put(ProtocolKey.REQUEST_CODE, code);
         map.put(ProtocolKey.LANGUAGE, language);
         map.put(ProtocolKey.VERSION, version);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYCLUSTER, proxyCluster);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYIP, proxyIp);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYENV, proxyEnv);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYREGION, proxyRegion);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYIDC, proxyIdc);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYDCN, proxyDcn);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHREGION, eventMeshRegion);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHDCN, eventMeshDcn);
         return map;
     }
 
@@ -158,12 +158,12 @@ public class PushMessageRequestHeader extends Header {
                 .append("code=").append(code).append(",")
                 .append("language=").append(language).append(",")
                 .append("version=").append(version.getVersion()).append(",")
-                .append("proxyEnv=").append(proxyEnv).append(",")
-                .append("proxyRegion=").append(proxyRegion).append(",")
-                .append("proxyIdc=").append(proxyIdc).append(",")
-                .append("proxyDcn=").append(proxyDcn).append(",")
-                .append("proxyCluster=").append(proxyCluster).append(",")
-                .append("proxyIp=").append(proxyIp).append("}");
+                .append("eventMeshEnv=").append(eventMeshEnv).append(",")
+                .append("eventMeshRegion=").append(eventMeshRegion).append(",")
+                .append("eventMeshIdc=").append(eventMeshIdc).append(",")
+                .append("eventMeshDcn=").append(eventMeshDcn).append(",")
+                .append("eventMeshCluster=").append(eventMeshCluster).append(",")
+                .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();
     }
 

@@ -18,12 +18,12 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import com.webank.eventmesh.runtime.constants.DeFiBusConstant;
-import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.ProxyTcpSendResult;
-import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.ProxyTcpSendStatus;
-import com.webank.eventmesh.runtime.util.ProxyUtil;
+import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
+import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendStatus;
+import com.webank.eventmesh.runtime.util.EventMeshUtil;
 import com.webank.eventmesh.runtime.util.Utils;
-import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.boot.EventMeshTCPServer;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
@@ -49,8 +49,8 @@ public class MessageTransferTask extends AbstractTask {
 
     private final int TRY_PERMIT_TIME_OUT = 5;
 
-    public MessageTransferTask(Package pkg, ChannelHandlerContext ctx, long startTime, ProxyTCPServer proxyTCPServer) {
-        super(pkg, ctx, startTime, proxyTCPServer);
+    public MessageTransferTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+        super(pkg, ctx, startTime, eventMeshTCPServer);
     }
 
     @Override
@@ -61,13 +61,13 @@ public class MessageTransferTask extends AbstractTask {
         Package msg = new Package();
         EventMeshMessage eventMeshMessage = (EventMeshMessage) pkg.getBody();
         int retCode = 0;
-        ProxyTcpSendResult sendStatus;
+        EventMeshTcpSendResult sendStatus;
         try {
             if (eventMeshMessage == null) {
                 throw new Exception("accessMessage is null");
             }
 
-            if (!cmd.equals(RESPONSE_TO_SERVER) && !proxyTCPServer.rateLimiter.tryAcquire(TRY_PERMIT_TIME_OUT, TimeUnit.MILLISECONDS)) {
+            if (!cmd.equals(RESPONSE_TO_SERVER) && !eventMeshTCPServer.rateLimiter.tryAcquire(TRY_PERMIT_TIME_OUT, TimeUnit.MILLISECONDS)) {
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), "Tps overload, global flow control", pkg.getHeader().getSeq()));
                 ctx.writeAndFlush(msg).addListener(
                         new ChannelFutureListener() {
@@ -77,7 +77,7 @@ public class MessageTransferTask extends AbstractTask {
                             }
                         }
                 );
-                logger.warn("======Tps overload, global flow control, rate:{}! PLEASE CHECK!========", proxyTCPServer.rateLimiter.getRate());
+                logger.warn("======Tps overload, global flow control, rate:{}! PLEASE CHECK!========", eventMeshTCPServer.rateLimiter.getRate());
                 return;
             }
 
@@ -89,10 +89,10 @@ public class MessageTransferTask extends AbstractTask {
                             .get().getMqProducerWrapper().getMeshMQProducer().buildMQClientId());
                 }
 
-                sendStatus = session.upstreamMsg(pkg.getHeader(), ProxyUtil.decodeMessage(eventMeshMessage), createSendCallback(replyCmd, taskExecuteTime, eventMeshMessage), startTime, taskExecuteTime);
+                sendStatus = session.upstreamMsg(pkg.getHeader(), EventMeshUtil.decodeMessage(eventMeshMessage), createSendCallback(replyCmd, taskExecuteTime, eventMeshMessage), startTime, taskExecuteTime);
 
-                if (StringUtils.equals(ProxyTcpSendStatus.SUCCESS.name(), sendStatus.getSendStatus().name())) {
-                    messageLogger.info("pkg|proxy2mq|cmd={}|Msg={}|user={}|wait={}ms|cost={}ms", cmd, ProxyUtil.printMqMessage
+                if (StringUtils.equals(EventMeshTcpSendStatus.SUCCESS.name(), sendStatus.getSendStatus().name())) {
+                    messageLogger.info("pkg|eventMesh2mq|cmd={}|Msg={}|user={}|wait={}ms|cost={}ms", cmd, EventMeshUtil.printMqMessage
                             (eventMeshMessage), session.getClient(), taskExecuteTime - startTime, sendTime - startTime);
                 } else {
                     throw new Exception(sendStatus.getDetail());
@@ -110,13 +110,13 @@ public class MessageTransferTask extends AbstractTask {
 
     private void addTimestamp(EventMeshMessage eventMeshMessage, Command cmd, long sendTime) {
         if (cmd.equals(RESPONSE_TO_SERVER)) {
-            eventMeshMessage.getProperties().put(ProxyConstants.RSP_C2PROXY_TIMESTAMP, String.valueOf(startTime));
-            eventMeshMessage.getProperties().put(ProxyConstants.RSP_PROXY2MQ_TIMESTAMP, String.valueOf(sendTime));
-            eventMeshMessage.getProperties().put(ProxyConstants.RSP_SEND_PROXY_IP, proxyTCPServer.getEventMeshConfiguration().proxyServerIp);
+            eventMeshMessage.getProperties().put(EventMeshConstants.RSP_C2EVENTMESH_TIMESTAMP, String.valueOf(startTime));
+            eventMeshMessage.getProperties().put(EventMeshConstants.RSP_EVENTMESH2MQ_TIMESTAMP, String.valueOf(sendTime));
+            eventMeshMessage.getProperties().put(EventMeshConstants.RSP_SEND_EVENTMESH_IP, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp);
         } else {
-            eventMeshMessage.getProperties().put(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(startTime));
-            eventMeshMessage.getProperties().put(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(sendTime));
-            eventMeshMessage.getProperties().put(ProxyConstants.REQ_SEND_PROXY_IP, proxyTCPServer.getEventMeshConfiguration().proxyServerIp);
+            eventMeshMessage.getProperties().put(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(startTime));
+            eventMeshMessage.getProperties().put(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(sendTime));
+            eventMeshMessage.getProperties().put(EventMeshConstants.REQ_SEND_EVENTMESH_IP, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp);
         }
     }
 

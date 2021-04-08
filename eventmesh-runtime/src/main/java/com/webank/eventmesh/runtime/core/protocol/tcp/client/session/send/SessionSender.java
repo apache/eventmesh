@@ -19,10 +19,10 @@ package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send;
 
 import com.webank.eventmesh.api.RRCallback;
 import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.runtime.util.ProxyUtil;
+import com.webank.eventmesh.runtime.util.EventMeshUtil;
 import com.webank.eventmesh.runtime.util.Utils;
 import com.webank.eventmesh.runtime.constants.DeFiBusConstant;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
@@ -58,7 +58,7 @@ public class SessionSender {
         return "SessionSender{upstreamBuff=" + upstreamBuff.availablePermits() +
                 ",upMsgs=" + upMsgs.longValue() +
                 ",failMsgCount=" + failMsgCount.longValue() +
-                ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) + '}';
+                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
     public Semaphore getUpstreamBuff() {
@@ -69,17 +69,17 @@ public class SessionSender {
 
     public SessionSender(Session session) {
         this.session = session;
-        this.upstreamBuff = new Semaphore(session.getEventMeshConfiguration().proxyTcpSessionUpstreamBufferSize);
+        this.upstreamBuff = new Semaphore(session.getEventMeshTCPConfiguration().eventMeshTcpSessionUpstreamBufferSize);
     }
 
-    public ProxyTcpSendResult send(Header header, Message msg, SendCallback sendCallback, long startTime, long taskExecuteTime) {
+    public EventMeshTcpSendResult send(Header header, Message msg, SendCallback sendCallback, long startTime, long taskExecuteTime) {
         try {
             if (upstreamBuff.tryAcquire(TRY_PERMIT_TIME_OUT, TimeUnit.MILLISECONDS)) {
                 upMsgs.incrementAndGet();
                 UpStreamMsgContext upStreamMsgContext = null;
                 Command cmd = header.getCommand();
                 if (Command.REQUEST_TO_SERVER == cmd) {
-                    long ttl = msg.getSystemProperties(DeFiBusConstant.PROPERTY_MESSAGE_TTL) != null ? Long.parseLong(msg.getSystemProperties(DeFiBusConstant.PROPERTY_MESSAGE_TTL)) : ProxyConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
+                    long ttl = msg.getSystemProperties(DeFiBusConstant.PROPERTY_MESSAGE_TTL) != null ? Long.parseLong(msg.getSystemProperties(DeFiBusConstant.PROPERTY_MESSAGE_TTL)) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
                     upStreamMsgContext = new UpStreamMsgContext(header.getSeq(), session, msg);
                     session.getClientGroupWrapper().get().request(upStreamMsgContext, sendCallback, initSyncRRCallback(header, startTime, taskExecuteTime), ttl);
                 } else if (Command.RESPONSE_TO_SERVER == cmd) {
@@ -103,10 +103,10 @@ public class SessionSender {
                     session.getClientGroupWrapper().get().send(upStreamMsgContext, sendCallback);
                 }
 
-                session.getClientGroupWrapper().get().getProxyTcpMonitor().getProxy2mqMsgNum().incrementAndGet();
+                session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getEventMesh2mqMsgNum().incrementAndGet();
             } else {
                 logger.warn("send too fast,session flow control,session:{}",session.getClient());
-                return new ProxyTcpSendResult(header.getSeq(), ProxyTcpSendStatus.SEND_TOO_FAST, ProxyTcpSendStatus.SEND_TOO_FAST.name());
+                return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.SEND_TOO_FAST, EventMeshTcpSendStatus.SEND_TOO_FAST.name());
             }
         } catch (Exception e) {
             logger.warn("SessionSender send failed", e);
@@ -114,9 +114,9 @@ public class SessionSender {
                 upstreamBuff.release();
             }
             failMsgCount.incrementAndGet();
-            return new ProxyTcpSendResult(header.getSeq(), ProxyTcpSendStatus.OTHER_EXCEPTION, e.getCause().toString());
+            return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.OTHER_EXCEPTION, e.getCause().toString());
         }
-        return new ProxyTcpSendResult(header.getSeq(), ProxyTcpSendStatus.SUCCESS, ProxyTcpSendStatus.SUCCESS.name());
+        return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.SUCCESS, EventMeshTcpSendStatus.SUCCESS.name());
     }
 
     private RRCallback initSyncRRCallback(Header header, long startTime, long taskExecuteTime) {
@@ -126,15 +126,15 @@ public class SessionSender {
                 String seq = header.getSeq();
                 //TODO 此处如何赋值
 //                if (msg instanceof MessageExt) {
-//                    msg.putUserProperty(ProxyConstants.BORN_TIMESTAMP, String.valueOf(((MessageExt) msg)
+//                    msg.putUserProperty(EventMeshConstants.BORN_TIMESTAMP, String.valueOf(((MessageExt) msg)
 //                            .getBornTimestamp()));
-//                    msg.putUserProperty(ProxyConstants.STORE_TIMESTAMP, String.valueOf(((MessageExt) msg)
+//                    msg.putUserProperty(EventMeshConstants.STORE_TIMESTAMP, String.valueOf(((MessageExt) msg)
 //                            .getStoreTimestamp()));
 //                }
 
-                msg.getSystemProperties().put(ProxyConstants.RSP_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                msg.getSystemProperties().put(ProxyConstants.RSP_RECEIVE_PROXY_IP, session.getEventMeshConfiguration().proxyServerIp);
-                session.getClientGroupWrapper().get().getProxyTcpMonitor().getMq2proxyMsgNum().incrementAndGet();
+                msg.getSystemProperties().put(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                msg.getSystemProperties().put(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP, session.getEventMeshTCPConfiguration().eventMeshServerIp);
+                session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getMq2EventMeshMsgNum().incrementAndGet();
 
                 Command cmd;
                 if (header.getCommand().equals(Command.REQUEST_TO_SERVER)) {
@@ -145,9 +145,9 @@ public class SessionSender {
                 }
                 Package pkg = new Package();
                 pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, seq));
-                msg.getSystemProperties().put(ProxyConstants.RSP_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                msg.getSystemProperties().put(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                 try {
-                    pkg.setBody(ProxyUtil.encodeMessage(msg));
+                    pkg.setBody(EventMeshUtil.encodeMessage(msg));
                     pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, seq));
                 } catch (Exception e) {
                     pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), null, seq));

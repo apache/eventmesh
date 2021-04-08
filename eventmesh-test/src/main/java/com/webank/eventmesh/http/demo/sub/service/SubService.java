@@ -3,7 +3,7 @@ package com.webank.eventmesh.http.demo.sub.service;
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.consumer.LiteConsumer;
 import com.webank.eventmesh.common.IPUtil;
-import com.webank.eventmesh.common.ProxyException;
+import com.webank.eventmesh.common.EventMeshException;
 import com.webank.eventmesh.common.ThreadUtil;
 import com.webank.eventmesh.util.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +23,7 @@ public class SubService implements InitializingBean {
 
     private LiteConsumer liteConsumer;
 
-    private String proxyIPPort = "";
+    private String eventMeshIPPort = "";
 
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
@@ -41,12 +41,12 @@ public class SubService implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        if (StringUtils.isBlank(proxyIPPort)) {
+        if (StringUtils.isBlank(eventMeshIPPort)) {
             // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-            proxyIPPort = eventMeshIp + ":" + eventMeshHttpPort;
+            eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
         }
         LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
-        eventMeshClientConfig.setLiteProxyAddr(proxyIPPort)
+        eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
                 .setEnv(env)
                 .setIdc(idc)
                 .setDcn(dcn)
@@ -63,7 +63,7 @@ public class SubService implements InitializingBean {
             logger.info("start destory ....");
             try {
                 liteConsumer.unsubscribe(topicList, url);
-            } catch (ProxyException e) {
+            } catch (EventMeshException e) {
                 e.printStackTrace();
             }
             try {

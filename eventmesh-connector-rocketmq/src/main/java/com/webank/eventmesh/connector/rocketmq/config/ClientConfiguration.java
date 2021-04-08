@@ -44,108 +44,108 @@ public class ClientConfiguration {
 
     public void init() {
 
-        String clientUserNameStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_USERNAME);
+        String clientUserNameStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_USERNAME);
         if (StringUtils.isNotBlank(clientUserNameStr)) {
             clientUserName = StringUtils.trim(clientUserNameStr);
         }
 
-        String clientPassStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_PASSWORD);
+        String clientPassStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_PASSWORD);
         if (StringUtils.isNotBlank(clientPassStr)) {
             clientPass = StringUtils.trim(clientPassStr);
         }
 
-        String namesrvAddrStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_NAMESRV_ADDR);
-        Preconditions.checkState(StringUtils.isNotEmpty(namesrvAddrStr), String.format("%s error", ConfKeys.KEYS_PROXY_ROCKETMQ_NAMESRV_ADDR));
+        String namesrvAddrStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_NAMESRV_ADDR);
+        Preconditions.checkState(StringUtils.isNotEmpty(namesrvAddrStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_NAMESRV_ADDR));
         namesrvAddr = StringUtils.trim(namesrvAddrStr);
 
-        String consumeThreadPoolMinStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_CONSUME_THREADPOOL_MIN);
+        String consumeThreadPoolMinStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MIN);
         if(StringUtils.isNotEmpty(consumeThreadPoolMinStr)){
-            Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMinStr), String.format("%s error", ConfKeys.KEYS_PROXY_ROCKETMQ_CONSUME_THREADPOOL_MIN));
+            Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMinStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MIN));
             consumeThreadMin = Integer.valueOf(consumeThreadPoolMinStr);
         }
 
-        String consumeThreadPoolMaxStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_CONSUME_THREADPOOL_MAX);
+        String consumeThreadPoolMaxStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MAX);
         if(StringUtils.isNotEmpty(consumeThreadPoolMaxStr)){
-            Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMaxStr), String.format("%s error", ConfKeys.KEYS_PROXY_ROCKETMQ_CONSUME_THREADPOOL_MAX));
+            Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMaxStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MAX));
             consumeThreadMax = Integer.valueOf(consumeThreadPoolMaxStr);
         }
 
-        String consumerThreadPoolQueueSizeStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_CONSUME_THREADPOOL_QUEUESIZE);
+        String consumerThreadPoolQueueSizeStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_QUEUESIZE);
         if(StringUtils.isNotEmpty(consumerThreadPoolQueueSizeStr)){
-            Preconditions.checkState(StringUtils.isNumeric(consumerThreadPoolQueueSizeStr), String.format("%s error", ConfKeys.KEYS_PROXY_ROCKETMQ_CONSUME_THREADPOOL_QUEUESIZE));
+            Preconditions.checkState(StringUtils.isNumeric(consumerThreadPoolQueueSizeStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_QUEUESIZE));
             consumeQueueSize = Integer.valueOf(consumerThreadPoolQueueSizeStr);
         }
 
-        String clientAckWindowStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_ACK_WINDOW);
+        String clientAckWindowStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_ACK_WINDOW);
         if(StringUtils.isNotEmpty(clientAckWindowStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientAckWindowStr), String.format("%s error", ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_ACK_WINDOW));
+            Preconditions.checkState(StringUtils.isNumeric(clientAckWindowStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_ACK_WINDOW));
             ackWindow = Integer.valueOf(clientAckWindowStr);
         }
 
-        String clientPubWindowStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_PUB_WINDOW);
+        String clientPubWindowStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_PUB_WINDOW);
         if(StringUtils.isNotEmpty(clientPubWindowStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientPubWindowStr), String.format("%s error", ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_PUB_WINDOW));
+            Preconditions.checkState(StringUtils.isNumeric(clientPubWindowStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_PUB_WINDOW));
             pubWindow = Integer.valueOf(clientPubWindowStr);
         }
 
-        String consumeTimeoutStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_CONSUME_TIMEOUT);
+        String consumeTimeoutStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_CONSUME_TIMEOUT);
         if(StringUtils.isNotBlank(consumeTimeoutStr)) {
-            Preconditions.checkState(StringUtils.isNumeric(consumeTimeoutStr), String.format("%s error", ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_CONSUME_TIMEOUT));
+            Preconditions.checkState(StringUtils.isNumeric(consumeTimeoutStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_CONSUME_TIMEOUT));
             consumeTimeout = Long.valueOf(consumeTimeoutStr);
         }
 
-        String clientPullBatchSizeStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_PULL_BATCHSIZE);
+        String clientPullBatchSizeStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_PULL_BATCHSIZE);
         if(StringUtils.isNotEmpty(clientPullBatchSizeStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientPullBatchSizeStr), String.format("%s error", ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_PULL_BATCHSIZE));
+            Preconditions.checkState(StringUtils.isNumeric(clientPullBatchSizeStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_PULL_BATCHSIZE));
             pullBatchSize = Integer.valueOf(clientPullBatchSizeStr);
         }
 
-        String clientPollNamesrvIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL);
+        String clientPollNamesrvIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL);
         if(StringUtils.isNotEmpty(clientPollNamesrvIntervalStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientPollNamesrvIntervalStr), String.format("%s error", ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL));
+            Preconditions.checkState(StringUtils.isNumeric(clientPollNamesrvIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL));
             pollNameServerInteval = Integer.valueOf(clientPollNamesrvIntervalStr);
         }
 
-        String clientHeartbeatBrokerIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVEL);
+        String clientHeartbeatBrokerIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVEL);
         if(StringUtils.isNotEmpty(clientHeartbeatBrokerIntervalStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientHeartbeatBrokerIntervalStr), String.format("%s error", ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVEL));
+            Preconditions.checkState(StringUtils.isNumeric(clientHeartbeatBrokerIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVEL));
             heartbeatBrokerInterval = Integer.valueOf(clientHeartbeatBrokerIntervalStr);
         }
 
-        String clientRebalanceIntervalIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_REBALANCE_INTERVEL);
+        String clientRebalanceIntervalIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_REBALANCE_INTERVEL);
         if(StringUtils.isNotEmpty(clientRebalanceIntervalIntervalStr)){
-            Preconditions.checkState(StringUtils.isNumeric(clientRebalanceIntervalIntervalStr), String.format("%s error", ConfKeys.KEYS_PROXY_ROCKETMQ_CLIENT_REBALANCE_INTERVEL));
+            Preconditions.checkState(StringUtils.isNumeric(clientRebalanceIntervalIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_REBALANCE_INTERVEL));
             rebalanceInterval = Integer.valueOf(clientRebalanceIntervalIntervalStr);
         }
     }
 
     static class ConfKeys {
 
-        public static String KEYS_PROXY_ROCKETMQ_NAMESRV_ADDR = "proxy.server.rocketmq.namesrvAddr";
+        public static String KEYS_EVENTMESH_ROCKETMQ_NAMESRV_ADDR = "eventMesh.server.rocketmq.namesrvAddr";
 
-        public static String KEYS_PROXY_ROCKETMQ_USERNAME = "proxy.server.rocketmq.username";
+        public static String KEYS_EVENTMESH_ROCKETMQ_USERNAME = "eventMesh.server.rocketmq.username";
 
-        public static String KEYS_PROXY_ROCKETMQ_PASSWORD = "proxy.server.rocketmq.password";
+        public static String KEYS_EVENTMESH_ROCKETMQ_PASSWORD = "eventMesh.server.rocketmq.password";
 
-        public static String KEYS_PROXY_ROCKETMQ_CONSUME_THREADPOOL_MIN = "proxy.server.rocketmq.client.consumeThreadMin";
+        public static String KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MIN = "eventMesh.server.rocketmq.client.consumeThreadMin";
 
-        public static String KEYS_PROXY_ROCKETMQ_CONSUME_THREADPOOL_MAX = "proxy.server.rocketmq.client.consumeThreadMax";
+        public static String KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MAX = "eventMesh.server.rocketmq.client.consumeThreadMax";
 
-        public static String KEYS_PROXY_ROCKETMQ_CONSUME_THREADPOOL_QUEUESIZE = "proxy.server.rocketmq.client.consumeThreadPoolQueueSize";
+        public static String KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_QUEUESIZE = "eventMesh.server.rocketmq.client.consumeThreadPoolQueueSize";
 
-        public static String KEYS_PROXY_ROCKETMQ_CLIENT_ACK_WINDOW = "proxy.server.rocketmq.client.ackwindow";
+        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_ACK_WINDOW = "eventMesh.server.rocketmq.client.ackwindow";
 
-        public static String KEYS_PROXY_ROCKETMQ_CLIENT_PUB_WINDOW = "proxy.server.rocketmq.client.pubwindow";
+        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_PUB_WINDOW = "eventMesh.server.rocketmq.client.pubwindow";
 
-        public static String KEYS_PROXY_ROCKETMQ_CLIENT_CONSUME_TIMEOUT = "proxy.server.rocketmq.client.comsumeTimeoutInMin";
+        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_CONSUME_TIMEOUT = "eventMesh.server.rocketmq.client.comsumeTimeoutInMin";
 
-        public static String KEYS_PROXY_ROCKETMQ_CLIENT_PULL_BATCHSIZE = "proxy.server.rocketmq.client.pullBatchSize";
+        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_PULL_BATCHSIZE = "eventMesh.server.rocketmq.client.pullBatchSize";
 
-        public static String KEYS_PROXY_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL = "proxy.server.rocketmq.client.pollNameServerInterval";
+        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL = "eventMesh.server.rocketmq.client.pollNameServerInterval";
 
-        public static String KEYS_PROXY_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVEL = "proxy.server.rocketmq.client.heartbeatBrokerInterval";
+        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVEL = "eventMesh.server.rocketmq.client.heartbeatBrokerInterval";
 
-        public static String KEYS_PROXY_ROCKETMQ_CLIENT_REBALANCE_INTERVEL = "proxy.server.rocketmq.client.rebalanceInterval";
+        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_REBALANCE_INTERVEL = "eventMesh.server.rocketmq.client.rebalanceInterval";
 
     }
 }

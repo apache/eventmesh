@@ -21,7 +21,7 @@ public class Constants {
 
     public static final String DEFAULT_CHARSET = "UTF-8";
 
-    public static final String TARGET_PROXY_REGION = "TARGET_PROXY_REGION";
+    public static final String TARGET_EVENTMESH_REGION = "TARGET_EVENTMESH_REGION";
 
     public static final String CONSTANTS_DEFAULT_REGION_KEY = "default";
 
@@ -35,7 +35,7 @@ public class Constants {
 
     public static final int DEFAULT_HTTP_TIME_OUT = 3000;
 
-    public static final String PROXY_MESSAGE_CONST_TTL = "ttl";
+    public static final String EVENTMESH_MESSAGE_CONST_TTL = "ttl";
 
     public static final Integer DEFAULT_CLIENT_UNACK = 12;
 
