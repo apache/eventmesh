@@ -95,6 +95,7 @@ public class PushMessageRequestBody extends Body {
         this.extFields = extFields;
     }
 
+    @SuppressWarnings("unchecked")
     public static PushMessageRequestBody buildBody(final Map<String, Object> bodyParam) {
         PushMessageRequestBody pushMessageRequestBody = new PushMessageRequestBody();
         pushMessageRequestBody.setContent(MapUtils.getString(bodyParam, CONTENT));
@@ -103,8 +104,9 @@ public class PushMessageRequestBody extends Body {
         pushMessageRequestBody.setUniqueId(MapUtils.getString(bodyParam, UNIQUEID));
         pushMessageRequestBody.setRandomNo(MapUtils.getString(bodyParam, RANDOMNO));
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
+
         if (StringUtils.isNotBlank(extFields)) {
-            pushMessageRequestBody.setExtFields(JSONObject.parseObject(extFields, HashMap.class));
+            pushMessageRequestBody.setExtFields((HashMap<String, String>) JSONObject.parseObject(extFields, HashMap.class));
         }
         return pushMessageRequestBody;
     }
