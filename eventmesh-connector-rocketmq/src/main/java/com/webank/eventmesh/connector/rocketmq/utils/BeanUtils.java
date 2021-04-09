@@ -86,7 +86,7 @@ public final class BeanUtils {
     public static <T> T populate(final Properties properties, final Class<T> clazz) {
         T obj = null;
         try {
-            obj = clazz.newInstance();
+            obj = clazz.getDeclaredConstructor().newInstance();
             return populate(properties, obj);
         } catch (Throwable e) {
             log.warn("Error occurs !", e);
