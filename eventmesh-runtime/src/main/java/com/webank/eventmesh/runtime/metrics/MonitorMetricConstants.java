@@ -18,14 +18,14 @@
 package com.webank.eventmesh.runtime.metrics;
 
 public class MonitorMetricConstants {
-    public static final String PROXY_MONITOR_FORMAT_COMMON = "{\"protocol\":\"%s\",\"s\":\"%s\",\"t\":\"%s\"}";
+    public static final String EVENTMESH_MONITOR_FORMAT_COMMON = "{\"protocol\":\"%s\",\"s\":\"%s\",\"t\":\"%s\"}";
 
-    public static final String PROXY_TCP_MONITOR_FORMAT_THREADPOOL = "{\"threadPoolName\":\"%s\",\"s\":\"%s\",\"t\":\"%s\"}";
+    public static final String EVENTMESH_TCP_MONITOR_FORMAT_THREADPOOL = "{\"threadPoolName\":\"%s\",\"s\":\"%s\",\"t\":\"%s\"}";
 
-    public static final String CLIENT_2_PROXY_TPS = "client2proxyTPS";
-    public static final String PROXY_2_MQ_TPS = "proxy2mqTPS";
-    public static final String MQ_2_PROXY_TPS = "mq2proxyTPS";
-    public static final String PROXY_2_CLIENT_TPS = "proxy2clientTPS";
+    public static final String CLIENT_2_EVENTMESH_TPS = "client2eventMeshTPS";
+    public static final String EVENTMESH_2_MQ_TPS = "eventMesh2mqTPS";
+    public static final String MQ_2_EVENTMESH_TPS = "mq2eventMeshTPS";
+    public static final String EVENTMESH_2_CLIENT_TPS = "eventMesh2clientTPS";
     public static final String ALL_TPS = "allTPS";
     public static final String CONNECTION = "connection";
     public static final String SUB_TOPIC_NUM = "subTopicNum";

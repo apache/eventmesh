@@ -18,7 +18,7 @@
 package com.webank.eventmesh.runtime.core.protocol.http.push;
 
 import com.webank.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
-import com.webank.eventmesh.runtime.core.protocol.http.consumer.ProxyConsumer;
+import com.webank.eventmesh.runtime.core.protocol.http.consumer.EventMeshConsumer;
 import com.webank.eventmesh.common.ThreadPoolFactory;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -37,9 +37,9 @@ public class HTTPMessageHandler implements MessageHandler {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private ProxyConsumer proxyConsumer;
+    private EventMeshConsumer eventMeshConsumer;
 
-    private static final ScheduledExecutorService SCHEDULER = ThreadPoolFactory.createSingleScheduledExecutor("proxy-pushMsgTimeout-");
+    private static final ScheduledExecutorService SCHEDULER = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout-");
 
     private ThreadPoolExecutor pushExecutor;
 
@@ -56,10 +56,10 @@ public class HTTPMessageHandler implements MessageHandler {
 
     public static Map<String, Set<AbstractHTTPPushRequest>> waitingRequests = Maps.newConcurrentMap();
 
-    public HTTPMessageHandler(ProxyConsumer proxyConsumer) {
-        this.proxyConsumer = proxyConsumer;
-        this.pushExecutor = proxyConsumer.getProxyHTTPServer().pushMsgExecutor;
-        waitingRequests.put(this.proxyConsumer.getConsumerGroupConf().getConsumerGroup(), Sets.newConcurrentHashSet());
+    public HTTPMessageHandler(EventMeshConsumer eventMeshConsumer) {
+        this.eventMeshConsumer = eventMeshConsumer;
+        this.pushExecutor = eventMeshConsumer.getEventMeshHTTPServer().pushMsgExecutor;
+        waitingRequests.put(this.eventMeshConsumer.getConsumerGroupConf().getConsumerGroup(), Sets.newConcurrentHashSet());
         SCHEDULER.scheduleAtFixedRate(this::checkTimeout, 0, 1000, TimeUnit.MILLISECONDS);
     }
 
@@ -80,7 +80,7 @@ public class HTTPMessageHandler implements MessageHandler {
             });
             return true;
         } catch (RejectedExecutionException e) {
-            logger.warn("pushMsgThreadPoolQueue is full, so reject, current task size {}", handleMsgContext.getProxyHTTPServer().getPushMsgExecutor().getQueue().size(), e);
+            logger.warn("pushMsgThreadPoolQueue is full, so reject, current task size {}", handleMsgContext.getEventMeshHTTPServer().getPushMsgExecutor().getQueue().size(), e);
             return false;
         }
     }

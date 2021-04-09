@@ -21,7 +21,7 @@ import client.common.ClientConstants;
 import client.common.MessageUtils;
 import client.hook.ReceiveMsgHook;
 import client.impl.SubClientImpl;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -34,8 +34,8 @@ public class AsyncSubClient {
         client.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getBody() instanceof AccessMessage) {
-                    String body = ((AccessMessage) msg.getBody()).getBody();
+                if (msg.getBody() instanceof EventMeshMessage) {
+                    String body = ((EventMeshMessage) msg.getBody()).getBody();
                     System.err.println("receive message -------------------------------" + body);
                 }
             }

@@ -1,12 +1,12 @@
 package com.webank.eventmesh.tcp.demo;
 
-import com.webank.eventmesh.client.tcp.WemqAccessClient;
+import com.webank.eventmesh.client.tcp.EventMeshClient;
 import com.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
-import com.webank.eventmesh.client.tcp.impl.DefaultWemqAccessClient;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.client.tcp.impl.DefaultEventMeshClient;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
-import com.webank.eventmesh.tcp.common.AccessTestUtils;
+import com.webank.eventmesh.tcp.common.EventMeshTestUtils;
 import com.webank.eventmesh.util.Utils;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncSubscribeBroadcast.class);
 
-    private static WemqAccessClient client;
+    private static EventMeshClient client;
 
     public static AsyncSubscribeBroadcast handler = new AsyncSubscribeBroadcast();
 
@@ -27,8 +27,8 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
         try{
-            UserAgent userAgent = AccessTestUtils.generateClient2();
-            client = new DefaultWemqAccessClient(eventMeshIp,eventMeshTcpPort,userAgent);
+            UserAgent userAgent = EventMeshTestUtils.generateClient2();
+            client = new DefaultEventMeshClient(eventMeshIp,eventMeshTcpPort,userAgent);
             client.init();
             client.heartbeat();
 
@@ -48,7 +48,7 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
 
     @Override
     public void handle(Package msg, ChannelHandlerContext ctx) {
-        AccessMessage accessMessage = (AccessMessage)msg.getBody();
-        logger.info("receive broadcast msg==============={}", accessMessage);
+        EventMeshMessage eventMeshMessage = (EventMeshMessage)msg.getBody();
+        logger.info("receive broadcast msg==============={}", eventMeshMessage);
     }
 }

@@ -17,15 +17,15 @@
 
 package test;
 
-import client.ProxyClient;
+import client.EventMeshClient;
 import client.PubClient;
 import client.SubClient;
 import client.common.MessageUtils;
 import client.hook.ReceiveMsgHook;
-import client.impl.ProxyClientImpl;
+import client.impl.EventMeshClientImpl;
 import client.impl.PubClientImpl;
 import client.impl.SubClientImpl;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
 import org.junit.Test;
@@ -33,14 +33,14 @@ import org.junit.Test;
 public class BasicTest {
     @Test
     public void helloTest() throws Exception {
-        ProxyClient client = initClient();
+        EventMeshClient client = initClient();
         client.heartbeat();
         client.close();
     }
 
     @Test
     public void heartbeatTest() throws Exception {
-        ProxyClient client = initClient();
+        EventMeshClient client = initClient();
         client.heartbeat();
         Thread.sleep(4000);
         client.close();
@@ -48,7 +48,7 @@ public class BasicTest {
 
     @Test
     public void goodbyeTest() throws Exception {
-        ProxyClient client = initClient();
+        EventMeshClient client = initClient();
         client.heartbeat();
         client.goodbye();
         client.close();
@@ -56,7 +56,7 @@ public class BasicTest {
 
     @Test
     public void subscribe() throws Exception {
-        ProxyClient client = initClient();
+        EventMeshClient client = initClient();
         client.heartbeat();
         client.justSubscribe("FT0-s-80010000-01-1");
         client.close();
@@ -64,7 +64,7 @@ public class BasicTest {
 
     @Test
     public void unsubscribe() throws Exception {
-        ProxyClient client = initClient();
+        EventMeshClient client = initClient();
         client.heartbeat();
         client.justSubscribe("FT0-s-80000000-01-0");
         client.listen();
@@ -74,7 +74,7 @@ public class BasicTest {
 
     @Test
     public void listenTest() throws Exception {
-        ProxyClient client = initClient();
+        EventMeshClient client = initClient();
         client.heartbeat();
         client.listen();
         client.close();
@@ -82,14 +82,14 @@ public class BasicTest {
 
     @Test
     public void syncMessage() throws Exception {
-        ProxyClient client = initClient();
+        EventMeshClient client = initClient();
         client.heartbeat();
         client.justSubscribe("FT0-s-80000000-01-0");
         client.listen();
         for (int i = 0; i < 100; i++) {
             Package rr = client.rr(MessageUtils.rrMesssage("FT0-s-80000000-01-0", i), 3000);
-            if (rr.getBody() instanceof AccessMessage) {
-                String body = ((AccessMessage) rr.getBody()).getBody();
+            if (rr.getBody() instanceof EventMeshMessage) {
+                String body = ((EventMeshMessage) rr.getBody()).getBody();
                 System.err.println("rrMessage: " + body + "             " + "rr-reply-------------------------------------------------" + rr.toString());
             }
         }
@@ -99,7 +99,7 @@ public class BasicTest {
 
     @Test
     public void asyncMessage() throws Exception {
-        ProxyClient client = initClient();
+        EventMeshClient client = initClient();
 
         client.justSubscribe("FT0-e-80010000-01-1");
         client.heartbeat();
@@ -107,8 +107,8 @@ public class BasicTest {
         client.registerSubBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getBody() instanceof AccessMessage) {
-                    String body = ((AccessMessage) msg.getBody()).getBody();
+                if (msg.getBody() instanceof EventMeshMessage) {
+                    String body = ((EventMeshMessage) msg.getBody()).getBody();
                     System.err.println("receive message :------" + body + "------------------------------------------------" + msg.toString());
                 }
             }
@@ -121,15 +121,15 @@ public class BasicTest {
 
     @Test
     public void broadcastMessage() throws Exception {
-        ProxyClient client = initClient();
+        EventMeshClient client = initClient();
         client.heartbeat();
         client.justSubscribe("FT0-e-80030000-01-3");
         client.listen();
         client.registerSubBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getBody() instanceof AccessMessage) {
-                    String body = ((AccessMessage) msg.getBody()).getBody();
+                if (msg.getBody() instanceof EventMeshMessage) {
+                    String body = ((EventMeshMessage) msg.getBody()).getBody();
                     System.err.println("receive message: ------------" + body + "-------------------------------" + msg.toString());
                 }
             }
@@ -151,8 +151,8 @@ public class BasicTest {
         return subClient;
     }
 
-    private ProxyClient initClient() throws Exception {
-        ProxyClientImpl client = new ProxyClientImpl("127.0.0.1", 10000);
+    private EventMeshClient initClient() throws Exception {
+        EventMeshClientImpl client = new EventMeshClientImpl("127.0.0.1", 10000);
         client.init();
         return client;
     }

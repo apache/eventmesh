@@ -18,12 +18,12 @@
 package com.webank.eventmesh.runtime.core.protocol.http.processor;
 
 import com.webank.eventmesh.api.RRCallback;
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import com.webank.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
 import com.webank.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import com.webank.eventmesh.runtime.core.protocol.http.producer.ProxyProducer;
+import com.webank.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
 import com.webank.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.common.IPUtil;
@@ -31,12 +31,12 @@ import com.webank.eventmesh.common.LiteMessage;
 import com.webank.eventmesh.common.command.HttpCommand;
 import com.webank.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
-import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
 import com.webank.eventmesh.runtime.util.OMSUtil;
-import com.webank.eventmesh.runtime.util.ProxyUtil;
+import com.webank.eventmesh.runtime.util.EventMeshUtil;
 import com.alibaba.fastjson.JSON;
 import com.webank.eventmesh.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
@@ -56,39 +56,39 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
-    public SendSyncMessageProcessor(ProxyHTTPServer proxyHTTPServer) {
-        this.proxyHTTPServer = proxyHTTPServer;
+    public SendSyncMessageProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
 
-        HttpCommand responseProxyCommand;
+        HttpCommand responseEventMeshCommand;
 
-        cmdLogger.info("cmd={}|{}|client2proxy|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-                ProxyConstants.PROTOCOL_HTTP,
+        cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+                EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
         SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
         SendMessageRequestBody sendMessageRequestBody = (SendMessageRequestBody) asyncContext.getRequest().getBody();
 
         SendMessageResponseHeader sendMessageResponseHeader =
-                SendMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), proxyHTTPServer.getProxyConfiguration().proxyCluster,
-                        IPUtil.getLocalAddress(), proxyHTTPServer.getProxyConfiguration().proxyEnv,
-                        proxyHTTPServer.getProxyConfiguration().proxyRegion,
-                        proxyHTTPServer.getProxyConfiguration().proxyDCN, proxyHTTPServer.getProxyConfiguration().proxyIDC);
+                SendMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
+                        IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         if (StringUtils.isBlank(sendMessageRequestHeader.getIdc())
                 || StringUtils.isBlank(sendMessageRequestHeader.getDcn())
                 || StringUtils.isBlank(sendMessageRequestHeader.getPid())
                 || !StringUtils.isNumeric(sendMessageRequestHeader.getPid())
                 || StringUtils.isBlank(sendMessageRequestHeader.getSys())) {
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
-                    SendMessageResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getErrMsg()));
-            asyncContext.onComplete(responseProxyCommand);
+                    SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
@@ -97,26 +97,26 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 || StringUtils.isBlank(sendMessageRequestBody.getTopic())
                 || StringUtils.isBlank(sendMessageRequestBody.getContent())
                 || (StringUtils.isBlank(sendMessageRequestBody.getTtl()))) {
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
-                    SendMessageResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getErrMsg()));
-            asyncContext.onComplete(responseProxyCommand);
+                    SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
-        String producerGroup = ProxyUtil.buildClientGroup(sendMessageRequestHeader.getSys(),
+        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageRequestHeader.getSys(),
                 sendMessageRequestHeader.getDcn());
-        ProxyProducer proxyProducer = proxyHTTPServer.getProducerManager().getProxyProducer(producerGroup);
+        EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
-        if (!proxyProducer.getStarted().get()) {
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+        if (!eventMeshProducer.getStarted().get()) {
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
-                    SendMessageResponseBody.buildBody(ProxyRetCode.PROXY_GROUP_PRODUCER_STOPED_ERR.getRetCode(), ProxyRetCode.PROXY_GROUP_PRODUCER_STOPED_ERR.getErrMsg()));
-            asyncContext.onComplete(responseProxyCommand);
+                    SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
-        String ttl = String.valueOf(ProxyConstants.DEFAULT_MSG_TTL_MILLS);
+        String ttl = String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS);
         if (StringUtils.isNotBlank(sendMessageRequestBody.getTtl()) && StringUtils.isNumeric(sendMessageRequestBody.getTtl())) {
             ttl = sendMessageRequestBody.getTtl();
         }
@@ -124,7 +124,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         Message omsMsg = new Message();
         try {
             // body
-            omsMsg.setBody(sendMessageRequestBody.getContent().getBytes(ProxyConstants.DEFAULT_CHARSET));
+            omsMsg.setBody(sendMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
             // topic
             omsMsg.setTopic(sendMessageRequestBody.getTopic());
             omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION, sendMessageRequestBody.getTopic());
@@ -136,27 +136,27 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             // bizNo
             omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS, sendMessageRequestBody.getBizSeqNo());
             omsMsg.putUserProperties("msgType", "persistent");
-            omsMsg.putUserProperties(ProxyConstants.REQ_C2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+            omsMsg.putUserProperties(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
             omsMsg.putUserProperties(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
-            omsMsg.putUserProperties("REPLY_TO", proxyProducer.getMqProducerWrapper().getMeshMQProducer().buildMQClientId());
+            omsMsg.putUserProperties("REPLY_TO", eventMeshProducer.getMqProducerWrapper().getMeshMQProducer().buildMQClientId());
 
             if (messageLogger.isDebugEnabled()) {
                 messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", sendMessageRequestBody.getBizSeqNo(),
                         sendMessageRequestBody.getTopic());
             }
-            omsMsg.putUserProperties(ProxyConstants.REQ_PROXY2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+            omsMsg.putUserProperties(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
         } catch (Exception e) {
             messageLogger.error("msg2MQMsg err, bizSeqNo={}, topic={}", sendMessageRequestBody.getBizSeqNo(),
                     sendMessageRequestBody.getTopic(), e);
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
-                    SendMessageResponseBody.buildBody(ProxyRetCode.PROXY_PACKAGE_MSG_ERR.getRetCode(), ProxyRetCode.PROXY_PACKAGE_MSG_ERR.getErrMsg() + ProxyUtil.stackTrace(e, 2)));
-            asyncContext.onComplete(responseProxyCommand);
+                    SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2)));
+            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
-        final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageRequestBody.getBizSeqNo(), omsMsg, proxyProducer, proxyHTTPServer);
-        proxyHTTPServer.metrics.summaryMetrics.recordSendMsg();
+        final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageRequestBody.getBizSeqNo(), omsMsg, eventMeshProducer, eventMeshHTTPServer);
+        eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsg();
 
         long startTime = System.currentTimeMillis();
 
@@ -167,8 +167,8 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     if (httpLogger.isDebugEnabled()) {
                         httpLogger.debug("{}", httpCommand);
                     }
-                    proxyHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                    proxyHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+                    eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
+                    eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
                 } catch (Exception ex) {
                 }
             }
@@ -180,12 +180,12 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 .setProp(sendMessageRequestBody.getExtFields());
 
         try {
-            proxyProducer.request(sendMessageContext, new SendCallback() {
+            eventMeshProducer.request(sendMessageContext, new SendCallback() {
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     long endTime = System.currentTimeMillis();
-                    proxyHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
-                    messageLogger.info("message|proxy2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
+                    messageLogger.info("message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                             endTime - startTime,
                             sendMessageRequestBody.getTopic(),
                             sendMessageRequestBody.getBizSeqNo(),
@@ -196,13 +196,13 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 public void onException(OnExceptionContext context) {
                     HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
                             sendMessageResponseHeader,
-                            SendMessageResponseBody.buildBody(ProxyRetCode.PROXY_SEND_SYNC_MSG_ERR.getRetCode(),
-                                    ProxyRetCode.PROXY_SEND_SYNC_MSG_ERR.getErrMsg() + ProxyUtil.stackTrace(context.getException(), 2)));
+                            SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getRetCode(),
+                                    EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(context.getException(), 2)));
                     asyncContext.onComplete(err, handler);
                     long endTime = System.currentTimeMillis();
-                    proxyHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
-                    proxyHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
-                    messageLogger.error("message|proxy2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
+                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
+                    messageLogger.error("message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                             endTime - startTime,
                             sendMessageRequestBody.getTopic(),
                             sendMessageRequestBody.getBizSeqNo(),
@@ -214,13 +214,13 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 //                public void onException(Throwable e) {
 //                    HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
 //                            sendMessageResponseHeader,
-//                            SendMessageResponseBody.buildBody(ProxyRetCode.PROXY_SEND_SYNC_MSG_ERR.getRetCode(),
-//                                    ProxyRetCode.PROXY_SEND_SYNC_MSG_ERR.getErrMsg() + ProxyUtil.stackTrace(e, 2)));
+//                            SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getRetCode(),
+//                                    EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2)));
 //                    asyncContext.onComplete(err, handler);
 //                    long endTime = System.currentTimeMillis();
-//                    proxyHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
-//                    proxyHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
-//                    messageLogger.error("message|proxy2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+//                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
+//                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
+//                    messageLogger.error("message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
 //                            endTime - startTime,
 //                            sendMessageRequestBody.getTopic(),
 //                            sendMessageRequestBody.getBizSeqNo(),
@@ -230,20 +230,20 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 @Override
                 public void onSuccess(Message omsMsg) {
                     omsMsg.getUserProperties().put(Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP, omsMsg.getSystemProperties("BORN_TIMESTAMP"));
-                    omsMsg.getUserProperties().put(ProxyConstants.STORE_TIMESTAMP, omsMsg.getSystemProperties("STORE_TIMESTAMP"));
-                    omsMsg.getUserProperties().put(ProxyConstants.RSP_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                    messageLogger.info("message|mq2proxy|RSP|SYNC|rrCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    omsMsg.getUserProperties().put(EventMeshConstants.STORE_TIMESTAMP, omsMsg.getSystemProperties("STORE_TIMESTAMP"));
+                    omsMsg.getUserProperties().put(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                    messageLogger.info("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                             System.currentTimeMillis() - startTime,
                             sendMessageRequestBody.getTopic(),
                             sendMessageRequestBody.getBizSeqNo(),
                             sendMessageRequestBody.getUniqueId());
 
                     try {
-                        final String rtnMsg = new String(omsMsg.getBody(), ProxyConstants.DEFAULT_CHARSET);
-                        omsMsg.getUserProperties().put(ProxyConstants.RSP_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                        final String rtnMsg = new String(omsMsg.getBody(), EventMeshConstants.DEFAULT_CHARSET);
+                        omsMsg.getUserProperties().put(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                         HttpCommand succ = asyncContext.getRequest().createHttpCommandResponse(
                                 sendMessageResponseHeader,
-                                SendMessageResponseBody.buildBody(ProxyRetCode.SUCCESS.getRetCode(),
+                                SendMessageResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(),
                                         JSON.toJSONString(new SendMessageResponseBody.ReplyMessage(omsMsg.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), rtnMsg,
                                                 OMSUtil.combineProp(omsMsg.getSystemProperties(),
                                                         omsMsg.getUserProperties()))
@@ -252,10 +252,10 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     } catch (Exception ex) {
                         HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
                                 sendMessageResponseHeader,
-                                SendMessageResponseBody.buildBody(ProxyRetCode.PROXY_WAITING_RR_MSG_ERR.getRetCode(),
-                                        ProxyRetCode.PROXY_WAITING_RR_MSG_ERR.getErrMsg() + ProxyUtil.stackTrace(ex, 2)));
+                                SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_WAITING_RR_MSG_ERR.getRetCode(),
+                                        EventMeshRetCode.EVENTMESH_WAITING_RR_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(ex, 2)));
                         asyncContext.onComplete(err, handler);
-                        messageLogger.warn("message|mq2proxy|RSP", ex);
+                        messageLogger.warn("message|mq2eventMesh|RSP", ex);
                     }
                 }
 
@@ -263,10 +263,10 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 public void onException(Throwable e) {
                     HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
                             sendMessageResponseHeader,
-                            SendMessageResponseBody.buildBody(ProxyRetCode.PROXY_WAITING_RR_MSG_ERR.getRetCode(),
-                                    ProxyRetCode.PROXY_WAITING_RR_MSG_ERR.getErrMsg() + ProxyUtil.stackTrace(e, 2)));
+                            SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_WAITING_RR_MSG_ERR.getRetCode(),
+                                    EventMeshRetCode.EVENTMESH_WAITING_RR_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2)));
                     asyncContext.onComplete(err, handler);
-                    messageLogger.error("message|mq2proxy|RSP|SYNC|rrCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    messageLogger.error("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                             System.currentTimeMillis() - startTime,
                             sendMessageRequestBody.getTopic(),
                             sendMessageRequestBody.getBizSeqNo(),
@@ -276,13 +276,13 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         } catch (Exception ex) {
             HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
-                    SendMessageResponseBody.buildBody(ProxyRetCode.PROXY_SEND_SYNC_MSG_ERR.getRetCode(),
-                            ProxyRetCode.PROXY_SEND_SYNC_MSG_ERR.getErrMsg() + ProxyUtil.stackTrace(ex, 2)));
+                    SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getRetCode(),
+                            EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(ex, 2)));
             asyncContext.onComplete(err);
             long endTime = System.currentTimeMillis();
-            proxyHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
-            proxyHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
-            messageLogger.error("message|proxy2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+            eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
+            eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
+            messageLogger.error("message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime,
                     sendMessageRequestBody.getTopic(),
                     sendMessageRequestBody.getBizSeqNo(),

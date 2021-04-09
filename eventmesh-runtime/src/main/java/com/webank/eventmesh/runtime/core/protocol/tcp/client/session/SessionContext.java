@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.session;
 
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +40,6 @@ public class SessionContext {
     public String toString() {
         return "SessionContext{subscribeTopics=" + subscribeTopics.keySet()
                 + ",sendTopics=" + sendTopics.keySet()
-                + ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) + "}";
+                + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}";
     }
 }

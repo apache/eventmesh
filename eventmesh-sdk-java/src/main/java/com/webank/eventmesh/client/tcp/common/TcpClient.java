@@ -49,7 +49,7 @@ public abstract class TcpClient implements Closeable {
 
     private Channel channel;
 
-    protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4, new WemqAccessThreadFactoryImpl("TCPClientScheduler", true));
+    protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4, new EventMeshThreadFactoryImpl("TCPClientScheduler", true));
 
     private ScheduledFuture<?> task;
 

@@ -1,8 +1,8 @@
 1.config in eventmesh-runtime
 
 ```
-proxy.properties(add config as follows)
-proxy.server.useTls.enabled=true   //default value is false
+eventMesh.properties(add config as follows)
+eventMesh.server.useTls.enabled=true   //default value is false
 
 
 config env varible
