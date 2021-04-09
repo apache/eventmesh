@@ -18,8 +18,7 @@
 package com.webank.eventmesh.runtime.core.protocol.http.consumer;
 
 import com.webank.eventmesh.api.AbstractContext;
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import com.webank.eventmesh.common.Constants;
@@ -40,7 +39,7 @@ public class HandleMsgContext {
 
     private String consumerGroup;
 
-    private ProxyConsumer proxyConsumer;
+    private EventMeshConsumer eventMeshConsumer;
 
     private String bizSeqNo;
 
@@ -58,24 +57,24 @@ public class HandleMsgContext {
 
     private ConsumerGroupConf consumerGroupConfig;
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
     private ConsumerGroupTopicConf consumeTopicConfig;
 
     private Map<String, String> props;
 
-    public HandleMsgContext(String msgRandomNo, String consumerGroup, ProxyConsumer proxyConsumer,
+    public HandleMsgContext(String msgRandomNo, String consumerGroup, EventMeshConsumer eventMeshConsumer,
                             String topic, Message msg,
                             AbstractContext context, ConsumerGroupConf consumerGroupConfig,
-                            ProxyHTTPServer proxyHTTPServer, String bizSeqNo, String uniqueId, ConsumerGroupTopicConf consumeTopicConfig) {
+                            EventMeshHTTPServer eventMeshHTTPServer, String bizSeqNo, String uniqueId, ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
         this.consumerGroup = consumerGroup;
-        this.proxyConsumer = proxyConsumer;
+        this.eventMeshConsumer = eventMeshConsumer;
         this.topic = topic;
         this.msg = msg;
         this.context = context;
         this.consumerGroupConfig = consumerGroupConfig;
-        this.proxyHTTPServer = proxyHTTPServer;
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.bizSeqNo = bizSeqNo;
         this.uniqueId = uniqueId;
         this.consumeTopicConfig = consumeTopicConfig;
@@ -125,12 +124,12 @@ public class HandleMsgContext {
         this.consumerGroup = consumerGroup;
     }
 
-    public ProxyConsumer getProxyConsumer() {
-        return proxyConsumer;
+    public EventMeshConsumer getEventMeshConsumer() {
+        return eventMeshConsumer;
     }
 
-    public void setProxyConsumer(ProxyConsumer proxyConsumer) {
-        this.proxyConsumer = proxyConsumer;
+    public void setEventMeshConsumer(EventMeshConsumer eventMeshConsumer) {
+        this.eventMeshConsumer = eventMeshConsumer;
     }
 
     public String getTopic() {
@@ -173,19 +172,19 @@ public class HandleMsgContext {
         this.consumerGroupConfig = consumerGroupConfig;
     }
 
-    public ProxyHTTPServer getProxyHTTPServer() {
-        return proxyHTTPServer;
+    public EventMeshHTTPServer getEventMeshHTTPServer() {
+        return eventMeshHTTPServer;
     }
 
     public void finish() {
-        if (proxyConsumer != null && context != null && msg != null) {
+        if (eventMeshConsumer != null && context != null && msg != null) {
             if (messageLogger.isDebugEnabled()) {
 //                messageLogger.debug("messageAcked|topic={}|msgId={}|cluster={}|broker={}|queueId={}|queueOffset={}", topic,
 //                        msg.getMsgId(), msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER),
 //                        msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
 //                        msg.getQueueId(), msg.getQueueOffset());
             }
-            proxyConsumer.updateOffset(topic, Arrays.asList(msg), context);
+            eventMeshConsumer.updateOffset(topic, Arrays.asList(msg), context);
         }
     }
 

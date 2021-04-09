@@ -18,7 +18,7 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import com.webank.eventmesh.runtime.util.Utils;
-import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshTCPServer;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
 import com.webank.eventmesh.common.protocol.tcp.Package;
@@ -28,8 +28,8 @@ import static com.webank.eventmesh.common.protocol.tcp.Command.HEARTBEAT_RESPONS
 
 public class HeartBeatTask extends AbstractTask {
 
-    public HeartBeatTask(Package pkg, ChannelHandlerContext ctx, long startTime, ProxyTCPServer proxyTCPServer) {
-        super(pkg, ctx, startTime, proxyTCPServer);
+    public HeartBeatTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+        super(pkg, ctx, startTime, eventMeshTCPServer);
     }
 
     @Override

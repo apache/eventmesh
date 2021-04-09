@@ -18,16 +18,16 @@
 //package com.webank.runtime.configuration;
 //
 //import com.google.common.base.Preconditions;
-//import com.webank.runtime.util.ProxyUtil;
+//import com.webank.runtime.util.EventMeshUtil;
 //import org.apache.commons.lang3.StringUtils;
 //
 //public class CommonConfiguration {
-//    public String proxyEnv = "P";
-//    public String proxyRegion = "";
-//    public String proxyIDC = "FT";
-//    public String proxyDCN = "1C0";
-//    public String proxyCluster = "LS";
-//    public String proxyName = "";
+//    public String EventMeshEnv = "P";
+//    public String EventMeshRegion = "";
+//    public String EventMeshIDC = "FT";
+//    public String EventMeshDCN = "1C0";
+//    public String eventMeshCluster = "LS";
+//    public String eventMeshName = "";
 //    public String sysID = "5477";
 //
 //
@@ -44,9 +44,9 @@
 //    public Integer pollNameServerInteval = 10 * 1000;
 //    public Integer heartbeatBrokerInterval = 30 * 1000;
 //    public Integer rebalanceInterval = 20 * 1000;
-//    public Integer proxyRegisterIntervalInMills = 10 * 1000;
-//    public Integer proxyFetchRegistryAddrInterval = 10 * 1000;
-//    public String proxyServerIp = null;
+//    public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
+//    public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
+//    public String eventMeshServerIp = null;
 //    protected ConfigurationWraper configurationWraper;
 //
 //    public CommonConfiguration(ConfigurationWraper configurationWraper) {
@@ -54,159 +54,159 @@
 //    }
 //
 //    public void init() {
-//        String proxyEnvStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ENV);
-//        Preconditions.checkState(StringUtils.isNotEmpty(proxyEnvStr), String.format("%s error", ConfKeys.KEYS_PROXY_ENV));
-//        proxyEnv = StringUtils.deleteWhitespace(proxyEnvStr);
+//        String eventMeshEnvStr = configurationWraper.getProp(ConfKeys.KEYS_eventMesh_ENV);
+//        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshEnvStr), String.format("%s error", ConfKeys.KEYS_eventMesh_ENV));
+//        eventMeshEnv = StringUtils.deleteWhitespace(eventMeshEnvStr);
 //
-//        String proxyRegionStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_REGION);
-//        Preconditions.checkState(StringUtils.isNotEmpty(proxyRegionStr), String.format("%s error", ConfKeys.KEYS_PROXY_REGION));
-//        proxyRegion = StringUtils.deleteWhitespace(proxyRegionStr);
+//        String eventMeshRegionStr = configurationWraper.getProp(ConfKeys.KEYS_eventMesh_REGION);
+//        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegionStr), String.format("%s error", ConfKeys.KEYS_eventMesh_REGION));
+//        eventMeshRegion = StringUtils.deleteWhitespace(eventMeshRegionStr);
 //
-//        String sysIdStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SYSID);
-//        Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr), String.format("%s error", ConfKeys.KEYS_PROXY_SYSID));
+//        String sysIdStr = configurationWraper.getProp(ConfKeys.KEYS_EventMesh_SYSID);
+//        Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr), String.format("%s error", ConfKeys.KEYS_EventMesh_SYSID));
 //        sysID = StringUtils.deleteWhitespace(sysIdStr);
 //
-//        String proxyClusterStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_CLUSTER);
-//        Preconditions.checkState(StringUtils.isNotEmpty(proxyClusterStr), String.format("%s error", ConfKeys.KEYS_PROXY_SERVER_CLUSTER));
-//        proxyCluster = StringUtils.deleteWhitespace(proxyClusterStr);
+//        String eventMeshClusterStr = configurationWraper.getProp(ConfKeys.KEYS_EventMesh_SERVER_CLUSTER);
+//        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshClusterStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER));
+//        eventMeshCluster = StringUtils.deleteWhitespace(eventMeshClusterStr);
 //
-//        String proxyNameStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_NAME);
-//        Preconditions.checkState(StringUtils.isNotEmpty(proxyNameStr), String.format("%s error", ConfKeys.KEYS_PROXY_SERVER_NAME));
-//        proxyName = StringUtils.deleteWhitespace(proxyNameStr);
+//        String eventMeshNameStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
+//        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshNameStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_NAME));
+//        eventMeshName = StringUtils.deleteWhitespace(eventMeshNameStr);
 //
-//        String proxyIDCStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_IDC);
-//        Preconditions.checkState(StringUtils.isNotEmpty(proxyIDCStr), String.format("%s error", ConfKeys.KEYS_PROXY_IDC));
-//        proxyIDC = StringUtils.deleteWhitespace(proxyIDCStr);
+//        String eventMeshIDCStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
+//        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIDCStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
+//        eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIDCStr);
 //
-//        String proxyDCNStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DCN);
-//        Preconditions.checkState(StringUtils.isNotEmpty(proxyDCNStr), String.format("%s error", ConfKeys.KEYS_PROXY_DCN));
-//        proxyDCN = StringUtils.deleteWhitespace(proxyDCNStr);
+//        String eventMeshDCNStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DCN);
+//        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshDCNStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DCN));
+//        eventMeshDCN = StringUtils.deleteWhitespace(eventMeshDCNStr);
 //
-//        String clientUserNameStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_USERNAME);
+//        String clientUserNameStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_USERNAME);
 //        if (StringUtils.isNotBlank(clientUserNameStr)) {
 //            clientUserName = StringUtils.trim(clientUserNameStr);
 //        }
 //
-//        String clientPassStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_PASSWORD);
+//        String clientPassStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_PASSWORD);
 //        if (StringUtils.isNotBlank(clientPassStr)) {
 //            clientPass = StringUtils.trim(clientPassStr);
 //        }
 //
-//        String namesrvAddrStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_NAMESRV_ADDR);
-//        Preconditions.checkState(StringUtils.isNotEmpty(namesrvAddrStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_NAMESRV_ADDR));
+//        String namesrvAddrStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_NAMESRV_ADDR);
+//        Preconditions.checkState(StringUtils.isNotEmpty(namesrvAddrStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DEFIBUS_NAMESRV_ADDR));
 //        namesrvAddr = StringUtils.trim(namesrvAddrStr);
 //
-//        String consumeThreadPoolMinStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MIN);
+//        String consumeThreadPoolMinStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_CONSUME_THREADPOOL_MIN);
 //        if(StringUtils.isNotEmpty(consumeThreadPoolMinStr)){
-//            Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMinStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MIN));
+//            Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMinStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DEFIBUS_CONSUME_THREADPOOL_MIN));
 //            consumeThreadMin = Integer.valueOf(consumeThreadPoolMinStr);
 //        }
 //
-//        String consumeThreadPoolMaxStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MAX);
+//        String consumeThreadPoolMaxStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_CONSUME_THREADPOOL_MAX);
 //        if(StringUtils.isNotEmpty(consumeThreadPoolMaxStr)){
-//            Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMaxStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MAX));
+//            Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMaxStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DEFIBUS_CONSUME_THREADPOOL_MAX));
 //            consumeThreadMax = Integer.valueOf(consumeThreadPoolMaxStr);
 //        }
 //
-//        String consumerThreadPoolQueueSizeStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_QUEUESIZE);
+//        String consumerThreadPoolQueueSizeStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_CONSUME_THREADPOOL_QUEUESIZE);
 //        if(StringUtils.isNotEmpty(consumerThreadPoolQueueSizeStr)){
-//            Preconditions.checkState(StringUtils.isNumeric(consumerThreadPoolQueueSizeStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_QUEUESIZE));
+//            Preconditions.checkState(StringUtils.isNumeric(consumerThreadPoolQueueSizeStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DEFIBUS_CONSUME_THREADPOOL_QUEUESIZE));
 //            consumeQueueSize = Integer.valueOf(consumerThreadPoolQueueSizeStr);
 //        }
 //
-//        String clientAckWindowStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_ACK_WINDOW);
+//        String clientAckWindowStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_ACK_WINDOW);
 //        if(StringUtils.isNotEmpty(clientAckWindowStr)){
-//            Preconditions.checkState(StringUtils.isNumeric(clientAckWindowStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_ACK_WINDOW));
+//            Preconditions.checkState(StringUtils.isNumeric(clientAckWindowStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_ACK_WINDOW));
 //            ackWindow = Integer.valueOf(clientAckWindowStr);
 //        }
 //
-//        String clientPubWindowStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_PUB_WINDOW);
+//        String clientPubWindowStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_PUB_WINDOW);
 //        if(StringUtils.isNotEmpty(clientPubWindowStr)){
-//            Preconditions.checkState(StringUtils.isNumeric(clientPubWindowStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_PUB_WINDOW));
+//            Preconditions.checkState(StringUtils.isNumeric(clientPubWindowStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_PUB_WINDOW));
 //            pubWindow = Integer.valueOf(clientPubWindowStr);
 //        }
 //
-//        String consumeTimeoutStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_CONSUME_TIMEOUT);
+//        String consumeTimeoutStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_CONSUME_TIMEOUT);
 //        if(StringUtils.isNotBlank(consumeTimeoutStr)) {
-//            Preconditions.checkState(StringUtils.isNumeric(consumeTimeoutStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_CONSUME_TIMEOUT));
+//            Preconditions.checkState(StringUtils.isNumeric(consumeTimeoutStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_CONSUME_TIMEOUT));
 //            consumeTimeout = Long.valueOf(consumeTimeoutStr);
 //        }
 //
-//        String clientPullBatchSizeStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_PULL_BATCHSIZE);
+//        String clientPullBatchSizeStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_PULL_BATCHSIZE);
 //        if(StringUtils.isNotEmpty(clientPullBatchSizeStr)){
-//            Preconditions.checkState(StringUtils.isNumeric(clientPullBatchSizeStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_PULL_BATCHSIZE));
+//            Preconditions.checkState(StringUtils.isNumeric(clientPullBatchSizeStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_PULL_BATCHSIZE));
 //            pullBatchSize = Integer.valueOf(clientPullBatchSizeStr);
 //        }
 //
-//        String clientPollNamesrvIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_POLL_NAMESRV_INTERVAL);
+//        String clientPollNamesrvIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_POLL_NAMESRV_INTERVAL);
 //        if(StringUtils.isNotEmpty(clientPollNamesrvIntervalStr)){
-//            Preconditions.checkState(StringUtils.isNumeric(clientPollNamesrvIntervalStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_POLL_NAMESRV_INTERVAL));
+//            Preconditions.checkState(StringUtils.isNumeric(clientPollNamesrvIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_POLL_NAMESRV_INTERVAL));
 //            pollNameServerInteval = Integer.valueOf(clientPollNamesrvIntervalStr);
 //        }
 //
-//        String clientHeartbeatBrokerIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_HEARTBEAT_BROKER_INTERVEL);
+//        String clientHeartbeatBrokerIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_HEARTBEAT_BROKER_INTERVEL);
 //        if(StringUtils.isNotEmpty(clientHeartbeatBrokerIntervalStr)){
-//            Preconditions.checkState(StringUtils.isNumeric(clientHeartbeatBrokerIntervalStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_HEARTBEAT_BROKER_INTERVEL));
+//            Preconditions.checkState(StringUtils.isNumeric(clientHeartbeatBrokerIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_HEARTBEAT_BROKER_INTERVEL));
 //            heartbeatBrokerInterval = Integer.valueOf(clientHeartbeatBrokerIntervalStr);
 //        }
 //
-//        String clientRebalanceIntervalIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_REBALANCE_INTERVEL);
+//        String clientRebalanceIntervalIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_REBALANCE_INTERVEL);
 //        if(StringUtils.isNotEmpty(clientRebalanceIntervalIntervalStr)){
-//            Preconditions.checkState(StringUtils.isNumeric(clientRebalanceIntervalIntervalStr), String.format("%s error", ConfKeys.KEYS_PROXY_DEFIBUS_CLIENT_REBALANCE_INTERVEL));
+//            Preconditions.checkState(StringUtils.isNumeric(clientRebalanceIntervalIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DEFIBUS_CLIENT_REBALANCE_INTERVEL));
 //            rebalanceInterval = Integer.valueOf(clientRebalanceIntervalIntervalStr);
 //        }
 //
-//        proxyServerIp = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_HOST_IP);
-//        if(StringUtils.isBlank(proxyServerIp)) {
-//            proxyServerIp = ProxyUtil.getLocalAddr();
+//        eventMeshServerIp = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
+//        if(StringUtils.isBlank(eventMeshServerIp)) {
+//            eventMeshServerIp = EventMeshUtil.getLocalAddr();
 //        }
 //    }
 //
 //    static class ConfKeys {
-//        public static String KEYS_PROXY_ENV = "proxy.server.env";
+//        public static String KEYS_EVENTMESH_ENV = "eventMesh.server.env";
 //
-//        public static String KEYS_PROXY_REGION = "proxy.server.region";
+//        public static String KEYS_EVENTMESH_REGION = "eventMesh.server.region";
 //
-//        public static String KEYS_PROXY_IDC = "proxy.server.idc";
+//        public static String KEYS_EVENTMESH_IDC = "eventMesh.server.idc";
 //
-//        public static String KEYS_PROXY_DCN = "proxy.server.dcn";
+//        public static String KEYS_EVENTMESH_DCN = "eventMesh.server.dcn";
 //
-//        public static String KEYS_PROXY_SYSID = "proxy.sysid";
+//        public static String KEYS_EVENTMESH_SYSID = "eventMesh.sysid";
 //
-//        public static String KEYS_PROXY_SERVER_CLUSTER = "proxy.server.cluster";
+//        public static String KEYS_EVENTMESH_SERVER_CLUSTER = "eventMesh.server.cluster";
 //
-//        public static String KEYS_PROXY_SERVER_NAME = "proxy.server.name";
+//        public static String KEYS_EVENTMESH_SERVER_NAME = "eventMesh.server.name";
 //
-//        public static String KEYS_PROXY_DEFIBUS_NAMESRV_ADDR = "proxy.server.defibus.namesrvAddr";
+//        public static String KEYS_EVENTMESH_DEFIBUS_NAMESRV_ADDR = "eventMesh.server.defibus.namesrvAddr";
 //
-//        public static String KEYS_PROXY_DEFIBUS_USERNAME = "proxy.server.defibus.username";
+//        public static String KEYS_EVENTMESH_DEFIBUS_USERNAME = "eventMesh.server.defibus.username";
 //
-//        public static String KEYS_PROXY_DEFIBUS_PASSWORD = "proxy.server.defibus.password";
+//        public static String KEYS_EVENTMESH_DEFIBUS_PASSWORD = "eventMesh.server.defibus.password";
 //
-//        public static String KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MIN = "proxy.server.defibus.client.consumeThreadMin";
+//        public static String KEYS_EVENTMESH_DEFIBUS_CONSUME_THREADPOOL_MIN = "eventMesh.server.defibus.client.consumeThreadMin";
 //
-//        public static String KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_MAX = "proxy.server.defibus.client.consumeThreadMax";
+//        public static String KEYS_EVENTMESH_DEFIBUS_CONSUME_THREADPOOL_MAX = "eventMesh.server.defibus.client.consumeThreadMax";
 //
-//        public static String KEYS_PROXY_DEFIBUS_CONSUME_THREADPOOL_QUEUESIZE = "proxy.server.defibus.client.consumeThreadPoolQueueSize";
+//        public static String KEYS_EVENTMESH_DEFIBUS_CONSUME_THREADPOOL_QUEUESIZE = "eventMesh.server.defibus.client.consumeThreadPoolQueueSize";
 //
-//        public static String KEYS_PROXY_DEFIBUS_CLIENT_ACK_WINDOW = "proxy.server.defibus.client.ackwindow";
+//        public static String KEYS_EVENTMESH_DEFIBUS_CLIENT_ACK_WINDOW = "eventMesh.server.defibus.client.ackwindow";
 //
-//        public static String KEYS_PROXY_DEFIBUS_CLIENT_PUB_WINDOW = "proxy.server.defibus.client.pubwindow";
+//        public static String KEYS_EVENTMESH_DEFIBUS_CLIENT_PUB_WINDOW = "eventMesh.server.defibus.client.pubwindow";
 //
-//        public static String KEYS_PROXY_DEFIBUS_CLIENT_CONSUME_TIMEOUT = "proxy.server.defibus.client.comsumeTimeoutInMin";
+//        public static String KEYS_EVENTMESH_DEFIBUS_CLIENT_CONSUME_TIMEOUT = "eventMesh.server.defibus.client.comsumeTimeoutInMin";
 //
-//        public static String KEYS_PROXY_DEFIBUS_CLIENT_PULL_BATCHSIZE = "proxy.server.defibus.client.pullBatchSize";
+//        public static String KEYS_EVENTMESH_DEFIBUS_CLIENT_PULL_BATCHSIZE = "eventMesh.server.defibus.client.pullBatchSize";
 //
-//        public static String KEYS_PROXY_DEFIBUS_CLIENT_POLL_NAMESRV_INTERVAL = "proxy.server.defibus.client.pollNameServerInterval";
+//        public static String KEYS_EVENTMESH_DEFIBUS_CLIENT_POLL_NAMESRV_INTERVAL = "eventMesh.server.defibus.client.pollNameServerInterval";
 //
-//        public static String KEYS_PROXY_DEFIBUS_CLIENT_HEARTBEAT_BROKER_INTERVEL = "proxy.server.defibus.client.heartbeatBrokerInterval";
+//        public static String KEYS_EVENTMESH_DEFIBUS_CLIENT_HEARTBEAT_BROKER_INTERVEL = "eventMesh.server.defibus.client.heartbeatBrokerInterval";
 //
-//        public static String KEYS_PROXY_DEFIBUS_CLIENT_REBALANCE_INTERVEL = "proxy.server.defibus.client.rebalanceInterval";
+//        public static String KEYS_EVENTMESH_DEFIBUS_CLIENT_REBALANCE_INTERVEL = "eventMesh.server.defibus.client.rebalanceInterval";
 //
-//        public static String KEYS_PROXY_SERVER_HOST_IP = "proxy.server.hostIp";
+//        public static String KEYS_EVENTMESH_SERVER_HOST_IP = "eventMesh.server.hostIp";
 //
-//        public static String KEYS_PROXY_SERVER_REGISTER_INTERVAL = "proxy.server.registry.registerIntervalInMills";
+//        public static String KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL = "eventMesh.server.registry.registerIntervalInMills";
 //
-//        public static String KEYS_PROXY_SERVER_FETCH_REGISTRY_ADDR_INTERVAL = "proxy.server.registry.fetchRegistryAddrIntervalInMills";
+//        public static String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL = "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
 //    }
 //}

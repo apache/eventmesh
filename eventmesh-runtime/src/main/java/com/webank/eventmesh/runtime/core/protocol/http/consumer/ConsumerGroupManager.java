@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.consumer;
 
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,37 +28,37 @@ public class ConsumerGroupManager {
 
     protected AtomicBoolean inited = new AtomicBoolean(Boolean.FALSE);
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
-    private ProxyConsumer proxyConsumer;
+    private EventMeshConsumer eventMeshConsumer;
 
     private ConsumerGroupConf consumerGroupConfig;
 
-    public ConsumerGroupManager(ProxyHTTPServer proxyHTTPServer, ConsumerGroupConf consumerGroupConfig) {
-        this.proxyHTTPServer = proxyHTTPServer;
+    public ConsumerGroupManager(EventMeshHTTPServer eventMeshHTTPServer, ConsumerGroupConf consumerGroupConfig) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.consumerGroupConfig = consumerGroupConfig;
-        proxyConsumer = new ProxyConsumer(this.proxyHTTPServer, this.consumerGroupConfig);
+        eventMeshConsumer = new EventMeshConsumer(this.eventMeshHTTPServer, this.consumerGroupConfig);
     }
 
     public synchronized void init() throws Exception {
-        proxyConsumer.init();
+        eventMeshConsumer.init();
         inited.compareAndSet(false, true);
     }
 
     public synchronized void start() throws Exception {
-        steupProxyConsumer(consumerGroupConfig);
-        proxyConsumer.start();
+        setupEventMeshConsumer(consumerGroupConfig);
+        eventMeshConsumer.start();
         started.compareAndSet(false, true);
     }
 
-    private synchronized void steupProxyConsumer(ConsumerGroupConf consumerGroupConfig) throws Exception {
+    private synchronized void setupEventMeshConsumer(ConsumerGroupConf consumerGroupConfig) throws Exception {
         for(String topic:consumerGroupConfig.getConsumerGroupTopicConf().keySet()) {
-            proxyConsumer.subscribe(topic);
+            eventMeshConsumer.subscribe(topic);
         }
     }
 
     public synchronized void shutdown() throws Exception {
-        proxyConsumer.shutdown();
+        eventMeshConsumer.shutdown();
         started.compareAndSet(true, false);
     }
 

@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.producer;
 
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
 import com.webank.eventmesh.runtime.core.protocol.http.retry.RetryContext;
 import com.webank.eventmesh.common.Constants;
 import io.openmessaging.api.Message;
@@ -40,21 +40,21 @@ public class SendMessageContext extends RetryContext {
 
     private String bizSeqNo;
 
-    private ProxyProducer proxyProducer;
+    private EventMeshProducer eventMeshProducer;
 
     private long createTime = System.currentTimeMillis();
 
     private Map<String, String> props;
 
-    public ProxyHTTPServer proxyHTTPServer;
+    public EventMeshHTTPServer eventMeshHTTPServer;
 
     private List<Message> messageList;
 
-    public SendMessageContext(String bizSeqNo, Message msg, ProxyProducer proxyProducer, ProxyHTTPServer proxyHTTPServer) {
+    public SendMessageContext(String bizSeqNo, Message msg, EventMeshProducer eventMeshProducer, EventMeshHTTPServer eventMeshHTTPServer) {
         this.bizSeqNo = bizSeqNo;
         this.msg = msg;
-        this.proxyProducer = proxyProducer;
-        this.proxyHTTPServer = proxyHTTPServer;
+        this.eventMeshProducer = eventMeshProducer;
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
     public void addProp(String key, String val) {
@@ -84,12 +84,12 @@ public class SendMessageContext extends RetryContext {
         this.msg = msg;
     }
 
-    public ProxyProducer getProxyProducer() {
-        return proxyProducer;
+    public EventMeshProducer getEventMeshProducer() {
+        return eventMeshProducer;
     }
 
-    public void setProxyProducer(ProxyProducer proxyProducer) {
-        this.proxyProducer = proxyProducer;
+    public void setEventMeshProducer(EventMeshProducer eventMeshProducer) {
+        this.eventMeshProducer = eventMeshProducer;
     }
 
     public long getCreateTime() {
@@ -114,7 +114,7 @@ public class SendMessageContext extends RetryContext {
         sb.append("sendMessageContext={")
                 .append("bizSeqNo=").append(bizSeqNo)
                 .append(",retryTimes=").append(retryTimes)
-                .append(",producer=").append(proxyProducer != null ? proxyProducer.producerGroupConfig.getGroupName() : null)
+                .append(",producer=").append(eventMeshProducer != null ? eventMeshProducer.producerGroupConfig.getGroupName() : null)
                 .append(",executeTime=").append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT))
                 .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
         return sb.toString();
@@ -122,7 +122,7 @@ public class SendMessageContext extends RetryContext {
 
     @Override
     public boolean retry() throws Exception {
-        if (proxyProducer == null) {
+        if (eventMeshProducer == null) {
             return false;
         }
 
@@ -131,7 +131,7 @@ public class SendMessageContext extends RetryContext {
         }
 
         retryTimes++;
-        proxyProducer.send(this, new SendCallback() {
+        eventMeshProducer.send(this, new SendCallback() {
 
             @Override
             public void onSuccess(SendResult sendResult) {
@@ -140,7 +140,7 @@ public class SendMessageContext extends RetryContext {
             @Override
             public void onException(OnExceptionContext context) {
                 logger.warn("", context.getException());
-                proxyHTTPServer.metrics.summaryMetrics.recordSendBatchMsgFailed(1);
+                eventMeshHTTPServer.metrics.summaryMetrics.recordSendBatchMsgFailed(1);
             }
 
         });

@@ -1,9 +1,9 @@
 package com.webank.eventmesh.starter;
 
-import com.webank.eventmesh.runtime.boot.ProxyStartup;
+import com.webank.eventmesh.runtime.boot.EventMeshStartup;
 
 public class StartUp {
     public static void main(String[] args) throws Exception {
-        ProxyStartup.main(args);
+        EventMeshStartup.main(args);
     }
 }

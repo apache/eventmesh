@@ -18,10 +18,10 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
 import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.runtime.util.ProxyUtil;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.util.EventMeshUtil;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
@@ -65,7 +65,7 @@ public class SessionPusher {
 
     public SessionPusher(Session session) {
         this.session = session;
-        unack = (0 == session.getClient().getUnack()) ? session.getAccessConfiguration().proxyTcpSessionDownstreamUnackSize : session.getClient().getUnack();
+        unack = (0 == session.getClient().getUnack()) ? session.getEventMeshTCPConfiguration().eventMeshTcpSessionDownstreamUnackSize : session.getClient().getUnack();
     }
 
     @Override
@@ -78,30 +78,30 @@ public class SessionPusher {
 
     public void push(final DownStreamMsgContext downStreamMsgContext) {
         Command cmd;
-        if (ProxyUtil.isBroadcast(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))) {
+        if (EventMeshUtil.isBroadcast(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))) {
             cmd = Command.BROADCAST_MESSAGE_TO_CLIENT;
-        } else if (ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))) {
+        } else if (EventMeshUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))) {
             cmd = Command.REQUEST_TO_CLIENT;
         } else {
             cmd = Command.ASYNC_MESSAGE_TO_CLIENT;
         }
 
         Package pkg = new Package();
-        downStreamMsgContext.msgExt.getSystemProperties().put(ProxyConstants.REQ_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-        AccessMessage body = null;
+        downStreamMsgContext.msgExt.getSystemProperties().put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+        EventMeshMessage body = null;
         int retCode = 0;
         String retMsg = null;
         try {
-            body = ProxyUtil.encodeMessage(downStreamMsgContext.msgExt);
+            body = EventMeshUtil.encodeMessage(downStreamMsgContext.msgExt);
             pkg.setBody(body);
             pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, downStreamMsgContext.seq));
-            messageLogger.info("pkg|mq2proxy|cmd={}|mqMsg={}|user={}", cmd, ProxyUtil.printMqMessage(body), session.getClient());
+            messageLogger.info("pkg|mq2eventMesh|cmd={}|mqMsg={}|user={}", cmd, EventMeshUtil.printMqMessage(body), session.getClient());
         } catch (Exception e) {
             pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), e.getStackTrace().toString(), downStreamMsgContext.seq));
             retCode = -1;
             retMsg = e.toString();
         } finally {
-            session.getClientGroupWrapper().get().getProxyTcpMonitor().getProxy2clientMsgNum().incrementAndGet();
+            session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getEventMesh2clientMsgNum().incrementAndGet();
             pushContext.deliveredMsgCount();
 
             //avoid ack arrives to server prior to callback of the method writeAndFlush,may cause ack problem
@@ -124,17 +124,17 @@ public class SessionPusher {
                                 pushContext.getUnAckMsg().remove(downStreamMsgContext.seq);
 
                                 //how long to isolate client when push fail
-                                long isolateTime = System.currentTimeMillis() + session.getAccessConfiguration().proxyTcpPushFailIsolateTimeInMills;
+                                long isolateTime = System.currentTimeMillis() + session.getEventMeshTCPConfiguration().eventMeshTcpPushFailIsolateTimeInMills;
                                 session.setIsolateTime(isolateTime);
                                 logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                                 //retry
-                                long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : session.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
+                                long delayTime = EventMeshUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryDelayInMills;
                                 downStreamMsgContext.delay(delayTime);
-                                session.getClientGroupWrapper().get().getProxyTcpRetryer().pushRetry(downStreamMsgContext);
+                                session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {
                                 pushContext.deliveredMsgCount();
-                                logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,downStreamMsgContext.retryTimes, ProxyUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+                                logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
                                 session.getClientGroupWrapper().get().getDownstreamMap().remove(downStreamMsgContext.seq);
                                 if(session.isIsolated()){

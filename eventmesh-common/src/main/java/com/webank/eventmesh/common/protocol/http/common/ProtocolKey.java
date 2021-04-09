@@ -37,18 +37,18 @@ public class ProtocolKey {
     }
 
 
-    public static class ProxyInstanceKey {
-        ///////////////////////////////////////////////协议层PROXY描述
-        public static final String PROXYCLUSTER = "ProxyCluster";
-        public static final String PROXYIP = "ProxyIp";
-        public static final String PROXYENV = "ProxyEnv";
-        public static final String PROXYREGION = "ProxyRegion";
-        public static final String PROXYIDC = "ProxyIdc";
-        public static final String PROXYDCN = "ProxyDcn";
+    public static class EventMeshInstanceKey {
+        ///////////////////////////////////////////////协议层EventMesh描述
+        public static final String EVENTMESHCLUSTER = "EventMeshCluster";
+        public static final String EVENTMESHIP = "EventMeshIp";
+        public static final String EVENTMESHENV = "EventMeshEnv";
+        public static final String EVENTMESHREGION = "EventMeshRegion";
+        public static final String EVENTMESHIDC = "EventMeshIdc";
+        public static final String EVENTMESHDCN = "EventMeshDcn";
     }
 
 
-    //CLIENT <-> PROXY 的 返回
+    //CLIENT <-> EventMesh 的 返回
     public static final String RETCODE = "retCode";
     public static final String RETMSG = "retMsg";
     public static final String RESTIME = "resTime";
