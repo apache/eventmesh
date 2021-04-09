@@ -84,8 +84,8 @@ public class MQConsumerWrapper extends MQWrapper {
 //        meshMQPushConsumer.registerMessageListener(messageListenerConcurrently);
 //    }
 
-    public void updateOffset(List<Message> msgs, AbstractContext proxyConsumeConcurrentlyContext) {
-        meshMQPushConsumer.updateOffset(msgs, proxyConsumeConcurrentlyContext);
+    public void updateOffset(List<Message> msgs, AbstractContext eventMeshConsumeConcurrentlyContext) {
+        meshMQPushConsumer.updateOffset(msgs, eventMeshConsumeConcurrentlyContext);
     }
 
     public AbstractContext getContext(){

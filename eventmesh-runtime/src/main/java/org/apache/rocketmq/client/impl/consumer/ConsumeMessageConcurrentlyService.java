@@ -16,7 +16,7 @@
 // */
 //package org.apache.rocketmq.client.impl.consumer;
 //
-//import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyContext;
+//import com.webank.eventmesh.runtime.patch.EventMeshConsumeConcurrentlyContext;
 //import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 //import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 //import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -49,7 +49,7 @@
 //    private final String consumerGroup;
 //
 //    static {
-//        log.info("load custom ConsumeMessageConcurrentlyService class for proxy, because of updateOffset");
+//        log.info("load custom ConsumeMessageConcurrentlyService class for eventMesh, because of updateOffset");
 //    }
 //
 //    private final ScheduledExecutorService scheduledExecutorService;
@@ -75,7 +75,7 @@
 //        this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("ConsumeMessageScheduledThread_"));
 //        this.cleanExpireMsgExecutors = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("CleanExpireMsgScheduledThread_"));
 //
-//        log.info("new ConsumeMessageConcurrentlyService instance for proxy has been created ");
+//        log.info("new ConsumeMessageConcurrentlyService instance for eventMesh has been created ");
 //    }
 //
 //    public void start() {
@@ -170,7 +170,7 @@
 //        mq.setQueueId(msg.getQueueId());
 //
 //        ProcessQueue pq = new ProcessQueue();
-//        ProxyConsumeConcurrentlyContext context = new ProxyConsumeConcurrentlyContext(mq, pq);
+//        EventMeshConsumeConcurrentlyContext context = new EventMeshConsumeConcurrentlyContext(mq, pq);
 //
 //        this.resetRetryTopic(msgs);
 //
@@ -273,7 +273,7 @@
 //
 //    public void processConsumeResult(
 //            final ConsumeConcurrentlyStatus status,
-//            final ProxyConsumeConcurrentlyContext context,
+//            final EventMeshConsumeConcurrentlyContext context,
 //            final ConsumeRequest consumeRequest
 //    ) {
 //        int ackIndex = context.getAckIndex();
@@ -337,7 +337,7 @@
 //            log.debug("update offset, msg: {} {} {}", m.getTopic(), m.getQueueId(), m.getQueueOffset());
 //        }
 //        MessageQueue messageQueue = context.getMessageQueue();
-//        ProcessQueue processQueue = ((ProxyConsumeConcurrentlyContext)context).getProcessQueue();
+//        ProcessQueue processQueue = ((EventMeshConsumeConcurrentlyContext)context).getProcessQueue();
 //        long offset = processQueue.removeMessage(msgs);
 //        if (offset >= 0) {
 //            log.debug("update offset={}", offset);
@@ -436,7 +436,7 @@
 //            }
 //
 //            MessageListenerConcurrently listener = ConsumeMessageConcurrentlyService.this.messageListener;
-//            ProxyConsumeConcurrentlyContext context = new ProxyConsumeConcurrentlyContext(messageQueue, processQueue);
+//            EventMeshConsumeConcurrentlyContext context = new EventMeshConsumeConcurrentlyContext(messageQueue, processQueue);
 //            ConsumeConcurrentlyStatus status = null;
 //
 //            ConsumeMessageContext consumeMessageContext = null;

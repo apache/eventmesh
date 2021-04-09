@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutorService;
 
 public class ProducerImpl extends AbstractOMSProducer implements Producer {
 
-    public static final int proxyServerAsyncAccumulationThreshold = 1000;
+    public static final int eventMeshServerAsyncAccumulationThreshold = 1000;
 
     public ProducerImpl(final Properties properties) {
         super(properties);
@@ -150,7 +150,7 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
         super.getRocketmqProducer().setPollNameServerInterval(60000);
 
         super.getRocketmqProducer().getDefaultMQProducerImpl().getmQClientFactory()
-                .getNettyClientConfig().setClientAsyncSemaphoreValue(proxyServerAsyncAccumulationThreshold);
+                .getNettyClientConfig().setClientAsyncSemaphoreValue(eventMeshServerAsyncAccumulationThreshold);
         super.getRocketmqProducer().setCompressMsgBodyOverHowmuch(10);
     }
 

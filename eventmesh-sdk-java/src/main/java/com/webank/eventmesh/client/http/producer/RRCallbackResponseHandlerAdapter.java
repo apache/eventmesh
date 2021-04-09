@@ -17,12 +17,12 @@
 
 package com.webank.eventmesh.client.http.producer;
 
-import com.webank.eventmesh.client.http.ProxyRetObj;
+import com.webank.eventmesh.client.http.EventMeshRetObj;
 import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.common.LiteMessage;
-import com.webank.eventmesh.common.ProxyException;
+import com.webank.eventmesh.common.EventMeshException;
 import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
-import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.HttpResponse;
@@ -58,7 +58,7 @@ public class RRCallbackResponseHandlerAdapter implements ResponseHandler<String>
     @Override
     public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-            rrCallback.onException(new ProxyException(response.toString()));
+            rrCallback.onException(new EventMeshException(response.toString()));
             return response.toString();
         }
 
@@ -70,14 +70,14 @@ public class RRCallbackResponseHandlerAdapter implements ResponseHandler<String>
                     timeout,
                     System.currentTimeMillis() - createTime);
             logger.warn(err);
-            rrCallback.onException(new ProxyException(err));
+            rrCallback.onException(new EventMeshException(err));
             return err;
         }
 
         String res = EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
-        ProxyRetObj ret = JSON.parseObject(res, ProxyRetObj.class);
-        if (ret.getRetCode() != ProxyRetCode.SUCCESS.getRetCode()) {
-            rrCallback.onException(new ProxyException(ret.getRetCode(), ret.getRetMsg()));
+        EventMeshRetObj ret = JSON.parseObject(res, EventMeshRetObj.class);
+        if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
+            rrCallback.onException(new EventMeshException(ret.getRetCode(), ret.getRetMsg()));
             return res;
         }
 
@@ -89,7 +89,7 @@ public class RRCallbackResponseHandlerAdapter implements ResponseHandler<String>
                     .setTopic(replyMessage.topic);
             rrCallback.onSuccess(liteMessage);
         } catch (Exception ex) {
-            rrCallback.onException(new ProxyException(ex));
+            rrCallback.onException(new EventMeshException(ex));
             return ex.toString();
         }
 

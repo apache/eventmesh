@@ -18,17 +18,17 @@ public class AsyncSyncRequestInstance {
 
         LiteProducer liteProducer = null;
         try {
-//            String proxyIPPort = args[0];
-            String proxyIPPort = "";
+//            String eventMeshIPPort = args[0];
+            String eventMeshIPPort = "";
 //            final String topic = args[1];
             final String topic = "FT0-e-80010000-01-1";
-            if (StringUtils.isBlank(proxyIPPort)) {
+            if (StringUtils.isBlank(eventMeshIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-                proxyIPPort = "127.0.0.1:10105";
+                eventMeshIPPort = "127.0.0.1:10105";
             }
 
-            LiteClientConfig weMQProxyClientConfig = new LiteClientConfig();
-            weMQProxyClientConfig.setLiteProxyAddr(proxyIPPort)
+            LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
+            eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
                     .setEnv("env")
                     .setIdc("idc")
                     .setDcn("dcn")
@@ -36,7 +36,7 @@ public class AsyncSyncRequestInstance {
                     .setSys("1234")
                     .setPid(String.valueOf(ThreadUtil.getPID()));
 
-            liteProducer = new LiteProducer(weMQProxyClientConfig);
+            liteProducer = new LiteProducer(eventMeshClientConfig);
 
             final long startTime = System.currentTimeMillis();
             final LiteMessage liteMessage = new LiteMessage();

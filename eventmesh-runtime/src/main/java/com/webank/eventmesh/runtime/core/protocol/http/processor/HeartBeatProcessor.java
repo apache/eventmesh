@@ -21,25 +21,17 @@ import com.webank.eventmesh.common.IPUtil;
 import com.webank.eventmesh.common.command.HttpCommand;
 import com.webank.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
 import com.webank.eventmesh.common.protocol.http.body.client.HeartbeatResponseBody;
-import com.webank.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.client.SubscribeResponseBody;
-import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.client.HeartbeatResponseHeader;
-import com.webank.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
-import com.webank.eventmesh.common.protocol.http.header.client.SubscribeResponseHeader;
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
-import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
-import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
-import com.webank.eventmesh.runtime.core.consumergroup.event.ConsumerGroupStateEvent;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import com.webank.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import com.webank.eventmesh.runtime.core.protocol.http.consumer.ConsumerGroupManager;
 import com.webank.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import com.webank.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import com.webank.eventmesh.runtime.util.ProxyUtil;
+import com.webank.eventmesh.runtime.util.EventMeshUtil;
 import com.webank.eventmesh.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.collections4.CollectionUtils;
@@ -54,26 +46,26 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
-    public HeartBeatProcessor(ProxyHTTPServer proxyHTTPServer) {
-        this.proxyHTTPServer = proxyHTTPServer;
+    public HeartBeatProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
-        HttpCommand responseProxyCommand;
-        httpLogger.info("cmd={}|{}|client2proxy|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-                ProxyConstants.PROTOCOL_HTTP,
+        HttpCommand responseEventMeshCommand;
+        httpLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+                EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
         HeartbeatRequestHeader heartbeatRequestHeader = (HeartbeatRequestHeader) asyncContext.getRequest().getHeader();
         HeartbeatRequestBody heartbeatRequestBody = (HeartbeatRequestBody) asyncContext.getRequest().getBody();
 
         HeartbeatResponseHeader heartbeatResponseHeader =
-                HeartbeatResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), proxyHTTPServer.getProxyConfiguration().proxyCluster,
-                        IPUtil.getLocalAddress(), proxyHTTPServer.getProxyConfiguration().proxyEnv,
-                        proxyHTTPServer.getProxyConfiguration().proxyRegion,
-                        proxyHTTPServer.getProxyConfiguration().proxyDCN, proxyHTTPServer.getProxyConfiguration().proxyIDC);
+                HeartbeatResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
+                        IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
 
         //validate header
@@ -82,10 +74,10 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 || StringUtils.isBlank(heartbeatRequestHeader.getPid())
                 || !StringUtils.isNumeric(heartbeatRequestHeader.getPid())
                 || StringUtils.isBlank(heartbeatRequestHeader.getSys())) {
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     heartbeatResponseHeader,
-                    HeartbeatResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getErrMsg()));
-            asyncContext.onComplete(responseProxyCommand);
+                    HeartbeatResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
@@ -93,10 +85,10 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         if (StringUtils.isBlank(heartbeatRequestBody.getClientType())
                 || CollectionUtils.isEmpty(heartbeatRequestBody.getHeartbeatEntities())) {
 
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     heartbeatResponseHeader,
-                    HeartbeatResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getErrMsg()));
-            asyncContext.onComplete(responseProxyCommand);
+                    HeartbeatResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
         ConcurrentHashMap<String, List<Client>> tmp = new ConcurrentHashMap<>();
@@ -106,7 +98,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         String sys = heartbeatRequestHeader.getSys();
         String ip = heartbeatRequestHeader.getIp();
         String pid = heartbeatRequestHeader.getPid();
-        String consumerGroup = ProxyUtil.buildClientGroup(heartbeatRequestHeader.getSys(),
+        String consumerGroup = EventMeshUtil.buildClientGroup(heartbeatRequestHeader.getSys(),
                 heartbeatRequestHeader.getDcn());
         List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = heartbeatRequestBody.getHeartbeatEntities();
         for (HeartbeatRequestBody.HeartbeatEntity heartbeatEntity : heartbeatEntities){
@@ -143,15 +135,15 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 tmp.put(groupTopicKey, clients);
             }
         }
-        synchronized (proxyHTTPServer.localClientInfoMapping){
+        synchronized (eventMeshHTTPServer.localClientInfoMapping){
             for (Map.Entry<String, List<Client>> groupTopicClientMapping : tmp.entrySet()) {
-                List<Client> localClientList =  proxyHTTPServer.localClientInfoMapping.get(groupTopicClientMapping.getKey());
+                List<Client> localClientList =  eventMeshHTTPServer.localClientInfoMapping.get(groupTopicClientMapping.getKey());
                 if (CollectionUtils.isEmpty(localClientList)){
-                    proxyHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), groupTopicClientMapping.getValue());
+                    eventMeshHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), groupTopicClientMapping.getValue());
                 }else {
                     List<Client> tmpClientList = groupTopicClientMapping.getValue();
                     supplyClientInfoList(tmpClientList, localClientList);
-                    proxyHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), localClientList);
+                    eventMeshHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), localClientList);
                 }
 
             }
@@ -167,27 +159,27 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                         if (httpLogger.isDebugEnabled()) {
                             httpLogger.debug("{}", httpCommand);
                         }
-                        proxyHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                        proxyHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+                        eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
+                        eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
                     } catch (Exception ex) {
                     }
                 }
             };
 
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
-                    ProxyRetCode.SUCCESS.getRetCode(), ProxyRetCode.SUCCESS.getErrMsg());
-            asyncContext.onComplete(responseProxyCommand, handler);
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                    EventMeshRetCode.SUCCESS.getRetCode(), EventMeshRetCode.SUCCESS.getErrMsg());
+            asyncContext.onComplete(responseEventMeshCommand, handler);
         } catch (Exception e) {
             HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
                     heartbeatResponseHeader,
-                    HeartbeatResponseBody.buildBody(ProxyRetCode.PROXY_HEARTBEAT_ERR.getRetCode(),
-                            ProxyRetCode.PROXY_HEARTBEAT_ERR.getErrMsg() + ProxyUtil.stackTrace(e, 2)));
+                    HeartbeatResponseBody.buildBody(EventMeshRetCode.EVENTMESH_HEARTBEAT_ERR.getRetCode(),
+                            EventMeshRetCode.EVENTMESH_HEARTBEAT_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2)));
             asyncContext.onComplete(err);
             long endTime = System.currentTimeMillis();
-            httpLogger.error("message|proxy2mq|REQ|ASYNC|heartBeatMessageCost={}ms",
+            httpLogger.error("message|eventMesh2mq|REQ|ASYNC|heartBeatMessageCost={}ms",
                     endTime - startTime, e);
-            proxyHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
-            proxyHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
+            eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
+            eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
         }
 
     }

@@ -17,7 +17,7 @@
 
 package client.common;
 
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
@@ -37,7 +37,7 @@ public class UserAgentUtils {
         userAgent.setPort(8362);
         userAgent.setUsername("PU4283");
         userAgent.setPassword(generateRandomString(8));
-        userAgent.setPurpose(ProxyConstants.PURPOSE_PUB);
+        userAgent.setPurpose(EventMeshConstants.PURPOSE_PUB);
 
         return userAgent;
     }
@@ -65,7 +65,7 @@ public class UserAgentUtils {
         userAgent.setUsername("username");
         userAgent.setPassword("1234");
         userAgent.setPath("/data/app/defibus-acl/");
-        userAgent.setPurpose(ProxyConstants.PURPOSE_SUB);
+        userAgent.setPurpose(EventMeshConstants.PURPOSE_SUB);
         return userAgent;
     }
 

@@ -17,9 +17,9 @@
 
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import com.webank.eventmesh.runtime.util.ProxyUtil;
+import com.webank.eventmesh.runtime.util.EventMeshUtil;
 import com.webank.eventmesh.runtime.util.Utils;
-import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshTCPServer;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
@@ -36,8 +36,8 @@ public class SubscribeTask extends AbstractTask {
 
     private final Logger messageLogger = LoggerFactory.getLogger("message");
 
-    public SubscribeTask(Package pkg, ChannelHandlerContext ctx, long startTime, ProxyTCPServer proxyTCPServer) {
-        super(pkg, ctx, startTime, proxyTCPServer);
+    public SubscribeTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+        super(pkg, ctx, startTime, eventMeshTCPServer);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class SubscribeTask extends AbstractTask {
             List<String> topicList = new ArrayList<>();
             for (int i = 0; i < subscriptionInfo.getTopicList().size(); i++) {
                 String topic = subscriptionInfo.getTopicList().get(i);
-                if (!ProxyUtil.isValidRMBTopic(topic)) {
+                if (!EventMeshUtil.isValidRMBTopic(topic)) {
                     throw new Exception("invalid topic!");
                 }
                 topicList.add(topic);

@@ -17,17 +17,17 @@
 
 package com.webank.eventmesh.runtime.metrics.http;
 
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
 import com.codahale.metrics.MetricRegistry;
 
 public class GroupMetrics {
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
     private MetricRegistry metricRegistry;
 
-    public GroupMetrics(ProxyHTTPServer proxyHTTPServer, MetricRegistry metricRegistry) {
-        this.proxyHTTPServer = proxyHTTPServer;
+    public GroupMetrics(EventMeshHTTPServer eventMeshHTTPServer, MetricRegistry metricRegistry) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.metricRegistry = metricRegistry;
     }
 }

@@ -23,10 +23,10 @@ import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.ClientAckContext;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
-import com.webank.eventmesh.runtime.util.ProxyUtil;
-import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
-import com.webank.eventmesh.runtime.core.protocol.tcp.client.ProxyTcp2Client;
+import com.webank.eventmesh.runtime.util.EventMeshUtil;
+import com.webank.eventmesh.runtime.boot.EventMeshTCPServer;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
+import com.webank.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import com.webank.eventmesh.common.ThreadUtil;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import com.webank.eventmesh.runtime.util.RemotingHelper;
@@ -56,18 +56,18 @@ public class ClientSessionGroupMapping {
 
     private ConcurrentHashMap<String /** groupName*/, Object> lockMap = new ConcurrentHashMap<String, Object>();
 
-    private ProxyTCPServer proxyTCPServer;
+    private EventMeshTCPServer eventMeshTCPServer;
 
-    public ClientSessionGroupMapping(ProxyTCPServer proxyTCPServer) {
-        this.proxyTCPServer = proxyTCPServer;
+    public ClientSessionGroupMapping(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
-    public ProxyTCPServer getProxyTCPServer() {
-        return proxyTCPServer;
+    public EventMeshTCPServer getEventMeshTCPServer() {
+        return eventMeshTCPServer;
     }
 
-    public void setProxyTCPServer(ProxyTCPServer proxyTCPServer) {
-        this.proxyTCPServer = proxyTCPServer;
+    public void setEventMeshTCPServer(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
     public ClientGroupWrapper getClientGroupWrapper(String groupName) {
@@ -90,7 +90,7 @@ public class ClientSessionGroupMapping {
         Session session = null;
         if(!sessionTable.containsKey(addr)){
             logger.info("createSession client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
-            session = new Session(user, ctx, proxyTCPServer.getAccessConfiguration());
+            session = new Session(user, ctx, eventMeshTCPServer.getEventMeshTCPConfiguration());
             initClientGroupWrapper(user, session);
             sessionTable.put(addr, session);
             sessionLogger.info("session|open|succeed|user={}", user);
@@ -102,7 +102,7 @@ public class ClientSessionGroupMapping {
     }
 
     public void readySession(Session session) throws Exception {
-        if (!ProxyConstants.PURPOSE_SUB.equals(session.getClient().getPurpose())) {
+        if (!EventMeshConstants.PURPOSE_SUB.equals(session.getClient().getPurpose())) {
             throw new Exception("client purpose config is not sub");
         }
         startClientGroupConsumer(session);
@@ -151,9 +151,9 @@ public class ClientSessionGroupMapping {
 
             session.setSessionState(SessionState.CLOSED);
 
-            if (ProxyConstants.PURPOSE_SUB.equals(session.getClient().getPurpose())) {
+            if (EventMeshConstants.PURPOSE_SUB.equals(session.getClient().getPurpose())) {
                 cleanClientGroupWrapperByCloseSub(session);
-            }else if (ProxyConstants.PURPOSE_PUB.equals(session.getClient().getPurpose())) {
+            }else if (EventMeshConstants.PURPOSE_PUB.equals(session.getClient().getPurpose())) {
                 cleanClientGroupWrapperByClosePub(session);
             }else{
                 logger.error("client purpose config is error:{}", session.getClient().getPurpose());
@@ -173,7 +173,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void  initClientGroupWrapper(UserAgent user, Session session) throws Exception {
-        final String clientGroup = ProxyUtil.buildClientGroup(user.getSubsystem(), user.getDcn());
+        final String clientGroup = EventMeshUtil.buildClientGroup(user.getSubsystem(), user.getDcn());
         if(!lockMap.containsKey(clientGroup)){
             Object obj = lockMap.putIfAbsent(clientGroup, new Object());
             if(obj == null) {
@@ -183,16 +183,16 @@ public class ClientSessionGroupMapping {
         synchronized (lockMap.get(clientGroup)) {
             if (!clientGroupMap.containsKey(clientGroup)) {
                 ClientGroupWrapper cgw = new ClientGroupWrapper(user.getSubsystem(), user.getDcn()
-                        , proxyTCPServer, new FreePriorityDispatchStrategy());
+                        , eventMeshTCPServer, new FreePriorityDispatchStrategy());
                 clientGroupMap.put(clientGroup, cgw);
                 logger.info("create new ClientGroupWrapper,group:{}", clientGroup);
             }
 
             ClientGroupWrapper cgw = clientGroupMap.get(clientGroup);
 
-            if (ProxyConstants.PURPOSE_PUB.equals(user.getPurpose())){
+            if (EventMeshConstants.PURPOSE_PUB.equals(user.getPurpose())){
                 startClientGroupProducer(cgw, session);
-            }else if (ProxyConstants.PURPOSE_SUB.equals(user.getPurpose())) {
+            }else if (EventMeshConstants.PURPOSE_SUB.equals(user.getPurpose())) {
                 initClientGroupConsumser(cgw);
             }else{
                 logger.error("unknown client purpose:{}", user.getPurpose());
@@ -229,7 +229,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void startClientGroupConsumer(Session session) throws Exception {
-        final String clientGroup = ProxyUtil.buildClientGroup(session.getClient().getSubsystem(), session.getClient().getDcn());
+        final String clientGroup = EventMeshUtil.buildClientGroup(session.getClient().getSubsystem(), session.getClient().getDcn());
         if(!lockMap.containsKey(clientGroup)){
             lockMap.putIfAbsent(clientGroup, new Object());
         }
@@ -288,8 +288,8 @@ public class ClientSessionGroupMapping {
         if(unAckMsg.size() > 0 && session.getClientGroupWrapper().get().getGroupConsumerSessions().size() > 0){
             for(Map.Entry<String , ClientAckContext> entry : unAckMsg.entrySet()){
                 ClientAckContext ackContext = entry.getValue();
-                if(ProxyUtil.isBroadcast(ackContext.getMsgs().get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))){
-                    logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}",ackContext.getSeq(),ProxyUtil.getMessageBizSeq(ackContext.getMsgs().get(0)),session.getClient());
+                if(EventMeshUtil.isBroadcast(ackContext.getMsgs().get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))){
+                    logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}",ackContext.getSeq(), EventMeshUtil.getMessageBizSeq(ackContext.getMsgs().get(0)),session.getClient());
                     continue;
                 }
                 List<Session> list = new ArrayList(session.getClientGroupWrapper().get().getGroupConsumerSessions());
@@ -297,7 +297,7 @@ public class ClientSessionGroupMapping {
                 DownStreamMsgContext downStreamMsgContext= new DownStreamMsgContext(ackContext.getMsgs().get(0),list.get(0),ackContext.getConsumer(), ackContext.getContext(), false);
 
                 downStreamMsgContext.delay(0L);
-                proxyTCPServer.getProxyTcpRetryer().pushRetry(downStreamMsgContext);
+                eventMeshTCPServer.getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                 logger.warn("rePush msg form unAckMsgs,seq:{},rePushSeq:{},rePushClient:{}",entry.getKey(), downStreamMsgContext.seq, downStreamMsgContext.session.getClient());
             }
         }
@@ -338,13 +338,13 @@ public class ClientSessionGroupMapping {
     }
 
     private void initSessionCleaner() {
-        ProxyTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
+        EventMeshTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 Iterator<Session> sessionIterator = sessionTable.values().iterator();
                 while (sessionIterator.hasNext()) {
                     Session tmp = sessionIterator.next();
-                    if (System.currentTimeMillis() - tmp.getLastHeartbeatTime() > proxyTCPServer.getAccessConfiguration().proxyTcpSessionExpiredInMills) {
+                    if (System.currentTimeMillis() - tmp.getLastHeartbeatTime() > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills) {
                         try {
                             logger.warn("clean expired session,client:{}", tmp.getClient());
                             closeSession(tmp.getContext());
@@ -354,11 +354,11 @@ public class ClientSessionGroupMapping {
                     }
                 }
             }
-        }, 1000, proxyTCPServer.getAccessConfiguration().proxyTcpSessionExpiredInMills, TimeUnit.MILLISECONDS);
+        }, 1000, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills, TimeUnit.MILLISECONDS);
     }
 
     private void initSessionAckContextCleaner() {
-        proxyTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
+        eventMeshTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 Iterator<Session> sessionIterator = sessionTable.values().iterator();
@@ -381,7 +381,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void initDownStreamMsgContextCleaner() {
-        ProxyTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
+        EventMeshTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 Iterator<ClientGroupWrapper> cgwIterator = clientGroupMap.values().iterator();
@@ -419,7 +419,7 @@ public class ClientSessionGroupMapping {
         logger.info("begin to close sessions gracefully");
         sessionTable.values().parallelStream().forEach(itr -> {
             try {
-                ProxyTcp2Client.serverGoodby2Client(itr, this);
+                EventMeshTcp2Client.serverGoodby2Client(itr, this);
             } catch (Exception e) {
                 logger.error("say goodbye to session error! {}", itr, e);
             }
@@ -470,15 +470,15 @@ public class ClientSessionGroupMapping {
         return result;
     }
 
-    public Map<String, Map<String, Integer>> prepareProxyClientDistributionData(){
+    public Map<String, Map<String, Integer>> prepareEventMeshClientDistributionData(){
         Map<String, Map<String, Integer>> result = null;
 
         if(!clientGroupMap.isEmpty()){
             result = new HashMap<>();
             for(Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()){
                 Map<String, Integer> map = new HashMap();
-                map.put(ProxyConstants.PURPOSE_SUB,entry.getValue().getGroupConsumerSessions().size());
-                map.put(ProxyConstants.PURPOSE_PUB,entry.getValue().getGroupProducerSessions().size());
+                map.put(EventMeshConstants.PURPOSE_SUB,entry.getValue().getGroupConsumerSessions().size());
+                map.put(EventMeshConstants.PURPOSE_PUB,entry.getValue().getGroupProducerSessions().size());
                 result.put(entry.getKey(), map);
             }
         }

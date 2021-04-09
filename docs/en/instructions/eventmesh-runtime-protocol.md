@@ -7,7 +7,7 @@
 **Protocol Specification**
 
 ```
-Magic Code: 4 bit, defaultValue:WEMQ
+Magic Code: 9 bit, defaultValue:EventMesh
 
 Protocol Version: 4 bit, defaultValue:0000
 
@@ -277,10 +277,10 @@ same with RequestHeader of Heartbeat Msg
 
 | Scene         | Client Send | Server Reply           | Remark |
 | ------------ | ---------------------------- | --------------------------------------- | ---- |
-| Heartbeat         | HEARTBEAT(203)               | SUCCESS(0)/PROXY_HEARTBEAT_ERROR(19)    |      |
-| Subscribe         | SUBSCRIBE(206)               | SUCCESS(0)/PROXY_SUBSCRIBE_ERROR(17)    |      |
-| Unsubscribe     | UNSUBSCRIBE(207)             | SUCCESS(0)/PROXY_UNSUBSCRIBE_ERROR(18)  |      |
-| Send async msg | MSG_SEND_ASYNC(104)          | SUCCESS(0)/PROXY_SEND_ASYNC_MSG_ERR(14) |      |
+| Heartbeat         | HEARTBEAT(203)               | SUCCESS(0)/EVENTMESH_HEARTBEAT_ERROR(19)    |      |
+| Subscribe         | SUBSCRIBE(206)               | SUCCESS(0)/EVENTMESH_SUBSCRIBE_ERROR(17)    |      |
+| Unsubscribe     | UNSUBSCRIBE(207)             | SUCCESS(0)/EVENTMESH_UNSUBSCRIBE_ERROR(18)  |      |
+| Send async msg | MSG_SEND_ASYNC(104)          | SUCCESS(0)/EVENTMESH_SEND_ASYNC_MSG_ERR(14) |      |
 
 
 
