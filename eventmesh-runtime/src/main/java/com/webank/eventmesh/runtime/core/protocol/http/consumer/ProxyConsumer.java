@@ -18,7 +18,6 @@
 package com.webank.eventmesh.runtime.core.protocol.http.consumer;
 
 import com.webank.eventmesh.api.AbstractContext;
-import com.webank.eventmesh.api.SendCallback;
 import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
@@ -29,24 +28,16 @@ import com.webank.eventmesh.runtime.core.protocol.http.producer.ProxyProducer;
 import com.webank.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 import com.webank.eventmesh.runtime.core.protocol.http.push.HTTPMessageHandler;
 import com.webank.eventmesh.runtime.core.protocol.http.push.MessageHandler;
-import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import com.webank.eventmesh.runtime.domain.NonStandardKeys;
 import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyStatus;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
-import io.openmessaging.KeyValue;
-import io.openmessaging.Message;
-import io.openmessaging.OMS;
-import io.openmessaging.consumer.MessageListener;
-import io.openmessaging.producer.SendResult;
-import org.apache.commons.collections4.CollectionUtils;
+import io.openmessaging.api.*;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ProxyConsumer {
@@ -80,7 +71,7 @@ public class ProxyConsumer {
 
     public synchronized void init() throws Exception {
         httpMessageHandler = new HTTPMessageHandler(this);
-        KeyValue keyValue = OMS.newKeyValue();
+        Properties keyValue = new Properties();
         keyValue.put("isBroadcast", "false");
         keyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
         keyValue.put("proxyIDC", proxyHTTPServer.getProxyConfiguration().proxyIDC);
@@ -90,7 +81,7 @@ public class ProxyConsumer {
         persistentMqConsumer.init(keyValue);
 
         //
-        KeyValue broadcastKeyValue = OMS.newKeyValue();
+        Properties broadcastKeyValue = new Properties();
         broadcastKeyValue.put("isBroadcast", "true");
         broadcastKeyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
         broadcastKeyValue.put("proxyIDC", proxyHTTPServer.getProxyConfiguration().proxyIDC);
@@ -112,16 +103,16 @@ public class ProxyConsumer {
     }
 
     public void subscribe(String topic) throws Exception {
-        MessageListener listener = null;
+        AsyncMessageListener listener = null;
         if (!ProxyUtil.isBroadcast(topic)) {
-            listener = new MessageListener() {
+            listener = new AsyncMessageListener() {
                 @Override
-                public void onReceived(Message message, Context context) {
-                    String topic = message.sysHeaders().getString(Message.BuiltinKeys.DESTINATION);
-                    String bizSeqNo = message.sysHeaders().getString(Message.BuiltinKeys.SEARCH_KEYS);
-                    String uniqueId = message.userHeaders().getString(Constants.RMB_UNIQ_ID);
+                public void consume(Message message, AsyncConsumeContext context) {
+                    String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
+                    String bizSeqNo = message.getSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
+                    String uniqueId = message.getUserProperties(Constants.RMB_UNIQ_ID);
 
-                    message.userHeaders().put(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                    message.getUserProperties().put(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                     if (messageLogger.isDebugEnabled()) {
                         messageLogger.debug("message|mq2proxy|topic={}|msg={}", topic, message);
                     } else {
@@ -134,8 +125,9 @@ public class ProxyConsumer {
                         logger.error("no topicConfig found, consumerGroup:{} topic:{}", consumerGroupConf.getConsumerGroup(), topic);
                         try {
                             sendMessageBack(message, uniqueId, bizSeqNo);
-                            context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                            context.ack();
+//                            context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+//                            context.ack();
+                            context.commit(Action.CommitMessage);
                             return;
                         } catch (Exception ex) {
                         }
@@ -144,29 +136,31 @@ public class ProxyConsumer {
                             topic, message, persistentMqConsumer.getContext(), consumerGroupConf, proxyHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                     if (httpMessageHandler.handle(handleMsgContext)) {
-                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
-                        context.ack();
+//                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+//                        context.ack();
+                        context.commit(Action.CommitMessage);
                     } else {
                         try {
                             sendMessageBack(message, uniqueId, bizSeqNo);
                         } catch (Exception e) {
 
                         }
-                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                        context.ack();
+//                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+//                        context.ack();
+                        context.commit(Action.CommitMessage);
                     }
                 }
             };
             persistentMqConsumer.subscribe(topic, listener);
         } else {
-            listener = new MessageListener() {
+            listener = new AsyncMessageListener() {
                 @Override
-                public void onReceived(Message message, Context context) {
-                    String topic = message.sysHeaders().getString(Message.BuiltinKeys.DESTINATION);
-                    String bizSeqNo = message.sysHeaders().getString(Message.BuiltinKeys.SEARCH_KEYS);
-                    String uniqueId = message.userHeaders().getString(Constants.RMB_UNIQ_ID);
+                public void consume(Message message, AsyncConsumeContext context) {
+                    String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
+                    String bizSeqNo = message.getSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
+                    String uniqueId = message.getUserProperties(Constants.RMB_UNIQ_ID);
 
-                    message.userHeaders().put(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                    message.getUserProperties().put(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
 
                     if (messageLogger.isDebugEnabled()) {
                         messageLogger.debug("message|mq2proxy|topic={}|msg={}", topic, message);
@@ -180,8 +174,9 @@ public class ProxyConsumer {
                         logger.error("no topicConfig found, consumerGroup:{} topic:{}", consumerGroupConf.getConsumerGroup(), topic);
                         try {
                             sendMessageBack(message, uniqueId, bizSeqNo);
-                            context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                            context.ack();
+//                            context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+//                            context.ack();
+                            context.commit(Action.CommitMessage);
                             return;
                         } catch (Exception ex) {
                         }
@@ -190,16 +185,18 @@ public class ProxyConsumer {
                             topic, message, broadcastMqConsumer.getContext(), consumerGroupConf, proxyHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                     if (httpMessageHandler.handle(handleMsgContext)) {
-                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
-                        context.ack();
+//                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+//                        context.ack();
+                        context.commit(Action.CommitMessage);
                     } else {
                         try {
                             sendMessageBack(message, uniqueId, bizSeqNo);
                         } catch (Exception e) {
 
                         }
-                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                        context.ack();
+//                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+//                        context.ack();
+                        context.commit(Action.CommitMessage);
                     }
                 }
             };
@@ -215,14 +212,14 @@ public class ProxyConsumer {
         }
     }
 
-    public boolean isPause() {
-        return persistentMqConsumer.isPause() && broadcastMqConsumer.isPause();
-    }
-
-    public void pause() {
-        persistentMqConsumer.pause();
-        broadcastMqConsumer.pause();
-    }
+//    public boolean isPause() {
+//        return persistentMqConsumer.isPause() && broadcastMqConsumer.isPause();
+//    }
+//
+//    public void pause() {
+//        persistentMqConsumer.pause();
+//        broadcastMqConsumer.pause();
+//    }
 
     public synchronized void shutdown() throws Exception {
         persistentMqConsumer.shutdown();
@@ -266,9 +263,14 @@ public class ProxyConsumer {
             }
 
             @Override
-            public void onException(Throwable e) {
+            public void onException(OnExceptionContext context) {
                 logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqno:{}, uniqueId:{}", consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);
             }
+
+//            @Override
+//            public void onException(Throwable e) {
+//                logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqno:{}, uniqueId:{}", consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);
+//            }
         });
     }
 }
