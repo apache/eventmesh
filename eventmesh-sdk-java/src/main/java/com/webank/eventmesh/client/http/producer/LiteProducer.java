@@ -17,6 +17,15 @@
 
 package com.webank.eventmesh.client.http.producer;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
+import com.alibaba.fastjson.JSON;
+import com.google.common.base.Preconditions;
 import com.webank.eventmesh.client.http.AbstractLiteClient;
 import com.webank.eventmesh.client.http.ProxyRetObj;
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
@@ -32,9 +41,9 @@ import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
 import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
 import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
-import com.alibaba.fastjson.JSON;
-import com.google.common.base.Preconditions;
+
 import io.netty.handler.codec.http.HttpMethod;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -45,18 +54,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public class LiteProducer extends AbstractLiteClient {
 
     public Logger logger = LoggerFactory.getLogger(LiteProducer.class);
@@ -65,7 +62,7 @@ public class LiteProducer extends AbstractLiteClient {
 
     public LiteProducer(LiteClientConfig liteClientConfig) {
         super(liteClientConfig);
-        if(liteClientConfig.isUseTls()){
+        if (liteClientConfig.isUseTls()) {
             setHttpClient();
         }
     }
@@ -76,7 +73,7 @@ public class LiteProducer extends AbstractLiteClient {
     public void start() throws Exception {
         Preconditions.checkState(liteClientConfig != null, "liteClientConfig can't be null");
         Preconditions.checkState(liteClientConfig.getLiteProxyAddr() != null, "liteClientConfig.liteServerAddr can't be null");
-        if(started.get()) {
+        if (started.get()) {
             return;
         }
         logger.info("LiteProducer starting");
@@ -87,7 +84,7 @@ public class LiteProducer extends AbstractLiteClient {
 
     @Override
     public void shutdown() throws Exception {
-        if(!started.get()) {
+        if (!started.get()) {
             return;
         }
         logger.info("LiteProducer shutting down");
@@ -138,7 +135,7 @@ public class LiteProducer extends AbstractLiteClient {
             throw new ProxyException(ex);
         }
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("publish async message, targetProxy:{}, cost:{}ms, message:{}, rtn:{}",
                     target, System.currentTimeMillis() - startTime, message, res);
         }
@@ -156,15 +153,15 @@ public class LiteProducer extends AbstractLiteClient {
         if (CollectionUtils.isEmpty(proxyServerList)) {
             return null;
         }
-        if(liteClientConfig.isUseTls()){
+        if (liteClientConfig.isUseTls()) {
             return Constants.HTTPS_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
-        }else{
+        } else {
             return Constants.HTTP_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
         }
     }
 
     public LiteMessage request(LiteMessage message, long timeout) throws Exception {
-        if(!started.get()) {
+        if (!started.get()) {
             start();
         }
         Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
@@ -200,7 +197,7 @@ public class LiteProducer extends AbstractLiteClient {
             throw new ProxyException(ex);
         }
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("publish sync message by await, targetProxy:{}, cost:{}ms, message:{}, rtn:{}", target, System.currentTimeMillis() - startTime, message, res);
         }
 
@@ -218,7 +215,7 @@ public class LiteProducer extends AbstractLiteClient {
     }
 
     public void request(LiteMessage message, RRCallback rrCallback, long timeout) throws Exception {
-        if(!started.get()) {
+        if (!started.get()) {
             start();
         }
         Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
@@ -255,7 +252,7 @@ public class LiteProducer extends AbstractLiteClient {
             throw new ProxyException(ex);
         }
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("publish sync message by async, target:{}, cost:{}, message:{}", target, System.currentTimeMillis() - startTime, message);
         }
     }
@@ -264,11 +261,11 @@ public class LiteProducer extends AbstractLiteClient {
         SSLContext sslContext = null;
         try {
             String protocol = System.getProperty("ssl.client.protocol", "TLSv1.1");
-            TrustManager[] tm = new TrustManager[] { new MyX509TrustManager() };
+            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
             sslContext = SSLContext.getInstance(protocol);
             sslContext.init(null, tm, new SecureRandom());
-            httpClient = HttpClients.custom().setSslcontext(sslContext)
-                    .setHostnameVerifier(SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER).build();
+            httpClient = HttpClients.custom().setSSLContext(sslContext)
+                    .setSSLHostnameVerifier(SSLConnectionSocketFactory.getDefaultHostnameVerifier()).build();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (KeyManagementException e) {
