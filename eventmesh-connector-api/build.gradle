@@ -42,7 +42,7 @@ repositories {
 }
 
 List open_message = [
-        "io.openmessaging:openmessaging-api:0.3.1-alpha"
+        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 ]
 
 dependencies {

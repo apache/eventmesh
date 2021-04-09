@@ -17,6 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
+import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.util.ProxyUtil;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -27,8 +28,7 @@ import com.webank.eventmesh.common.protocol.tcp.OPStatus;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import io.openmessaging.BytesMessage;
-import io.openmessaging.Message;
+import io.openmessaging.api.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,21 +78,21 @@ public class SessionPusher {
 
     public void push(final DownStreamMsgContext downStreamMsgContext) {
         Command cmd;
-        if (ProxyUtil.isBroadcast(downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION))) {
+        if (ProxyUtil.isBroadcast(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))) {
             cmd = Command.BROADCAST_MESSAGE_TO_CLIENT;
-        } else if (ProxyUtil.isService(downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION))) {
+        } else if (ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))) {
             cmd = Command.REQUEST_TO_CLIENT;
         } else {
             cmd = Command.ASYNC_MESSAGE_TO_CLIENT;
         }
 
         Package pkg = new Package();
-        downStreamMsgContext.msgExt.sysHeaders().put(ProxyConstants.REQ_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+        downStreamMsgContext.msgExt.getSystemProperties().put(ProxyConstants.REQ_PROXY2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
         AccessMessage body = null;
         int retCode = 0;
         String retMsg = null;
         try {
-            body = ProxyUtil.encodeMessage((BytesMessage) downStreamMsgContext.msgExt);
+            body = ProxyUtil.encodeMessage(downStreamMsgContext.msgExt);
             pkg.setBody(body);
             pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, downStreamMsgContext.seq));
             messageLogger.info("pkg|mq2proxy|cmd={}|mqMsg={}|user={}", cmd, ProxyUtil.printMqMessage(body), session.getClient());
@@ -129,7 +129,7 @@ public class SessionPusher {
                                 logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                                 //retry
-                                long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION)) ? 0 : session.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
+                                long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : session.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
                                 downStreamMsgContext.delay(delayTime);
                                 session.getClientGroupWrapper().get().getProxyTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {
