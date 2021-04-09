@@ -85,6 +85,7 @@ public class ReplyMessageRequestBody extends Body {
         this.extFields = extFields;
     }
 
+    @SuppressWarnings("unchecked")
     public static ReplyMessageRequestBody buildBody(Map<String, Object> bodyParam) {
         ReplyMessageRequestBody body = new ReplyMessageRequestBody();
         body.setBizSeqNo(MapUtils.getString(bodyParam, BIZSEQNO));
@@ -93,7 +94,7 @@ public class ReplyMessageRequestBody extends Body {
         body.setOrigTopic(MapUtils.getString(bodyParam, ORIGTOPIC));
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
         if (StringUtils.isNotBlank(extFields)) {
-            body.setExtFields(JSONObject.parseObject(extFields, HashMap.class));
+            body.setExtFields((HashMap<String,String>)JSONObject.parseObject(extFields, HashMap.class));
         }
         return body;
     }

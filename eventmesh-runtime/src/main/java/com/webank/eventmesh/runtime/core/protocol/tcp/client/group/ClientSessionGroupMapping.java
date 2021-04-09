@@ -292,7 +292,7 @@ public class ClientSessionGroupMapping {
                     logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}",ackContext.getSeq(),ProxyUtil.getMessageBizSeq(ackContext.getMsgs().get(0)),session.getClient());
                     continue;
                 }
-                List<Session> list = new ArrayList(session.getClientGroupWrapper().get().getGroupConsumerSessions());
+                List<Session> list = new ArrayList<Session>(session.getClientGroupWrapper().get().getGroupConsumerSessions());
                 Collections.shuffle(list);
                 DownStreamMsgContext downStreamMsgContext= new DownStreamMsgContext(ackContext.getMsgs().get(0),list.get(0),ackContext.getConsumer(), ackContext.getContext(), false);
 
@@ -476,7 +476,7 @@ public class ClientSessionGroupMapping {
         if(!clientGroupMap.isEmpty()){
             result = new HashMap<>();
             for(Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()){
-                Map<String, Integer> map = new HashMap();
+                Map<String, Integer> map = new HashMap<>();
                 map.put(ProxyConstants.PURPOSE_SUB,entry.getValue().getGroupConsumerSessions().size());
                 map.put(ProxyConstants.PURPOSE_PUB,entry.getValue().getGroupProducerSessions().size());
                 result.put(entry.getKey(), map);

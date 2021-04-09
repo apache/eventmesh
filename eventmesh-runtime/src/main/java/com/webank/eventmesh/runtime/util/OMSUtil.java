@@ -1,13 +1,13 @@
 
 package com.webank.eventmesh.runtime.util;
 
-import io.openmessaging.api.Message;
-import io.openmessaging.api.OMSBuiltinKeys;
-
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import io.openmessaging.api.Message;
+import io.openmessaging.api.OMSBuiltinKeys;
 
 public class OMSUtil {
 
@@ -32,15 +32,16 @@ public class OMSUtil {
 //        return properties;
 //    }
 
-    public static Map<String, String> combineProp(Properties p1, Properties p2){
+    @SuppressWarnings("unchecked")
+    public static Map<String, String> combineProp(Properties p1, Properties p2) {
         Properties properties = new Properties();
         properties.putAll(p1);
         properties.putAll(p2);
 
-        return new HashMap<>((Map)properties);
+        return new HashMap<>((Map) properties);
     }
 
-    public static Map<String, String> getMessageProp(Message message){
+    public static Map<String, String> getMessageProp(Message message) {
         Properties p1 = message.getSystemProperties();
         Properties p2 = message.getUserProperties();
         return combineProp(p1, p2);
