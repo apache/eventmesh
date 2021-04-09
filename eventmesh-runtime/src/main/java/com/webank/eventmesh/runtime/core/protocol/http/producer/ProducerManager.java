@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.producer;
 
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
 import com.webank.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +28,12 @@ public class ProducerManager {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
-    private ConcurrentHashMap<String /** groupName*/, ProxyProducer> producerTable = new ConcurrentHashMap<String, ProxyProducer>();
+    private ConcurrentHashMap<String /** groupName*/, EventMeshProducer> producerTable = new ConcurrentHashMap<String, EventMeshProducer>();
 
-    public ProducerManager(ProxyHTTPServer proxyHTTPServer) {
-        this.proxyHTTPServer = proxyHTTPServer;
+    public ProducerManager(EventMeshHTTPServer eventMeshHTTPServer) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
     public void init() throws Exception {
@@ -44,53 +44,53 @@ public class ProducerManager {
         logger.info("producerManager started......");
     }
 
-    public ProxyProducer getProxyProducer(String producerGroup) throws Exception {
-        ProxyProducer proxyProducer = null;
+    public EventMeshProducer getEventMeshProducer(String producerGroup) throws Exception {
+        EventMeshProducer eventMeshProducer = null;
         if (!producerTable.containsKey(producerGroup)) {
             synchronized (producerTable) {
                 if (!producerTable.containsKey(producerGroup)) {
                     ProducerGroupConf producerGroupConfig = new ProducerGroupConf(producerGroup);
-                    proxyProducer = createProxyProducer(producerGroupConfig);
-                    proxyProducer.start();
+                    eventMeshProducer = createEventMeshProducer(producerGroupConfig);
+                    eventMeshProducer.start();
                 }
             }
         }
 
-        proxyProducer = producerTable.get(producerGroup);
+        eventMeshProducer = producerTable.get(producerGroup);
 
-        if (!proxyProducer.getStarted().get()) {
-            proxyProducer.start();
+        if (!eventMeshProducer.getStarted().get()) {
+            eventMeshProducer.start();
         }
 
-        return proxyProducer;
+        return eventMeshProducer;
     }
 
-    public synchronized ProxyProducer createProxyProducer(ProducerGroupConf producerGroupConfig) throws Exception {
+    public synchronized EventMeshProducer createEventMeshProducer(ProducerGroupConf producerGroupConfig) throws Exception {
         if (producerTable.containsKey(producerGroupConfig.getGroupName())) {
             return producerTable.get(producerGroupConfig.getGroupName());
         }
-        ProxyProducer proxyProducer = new ProxyProducer();
-        proxyProducer.init(proxyHTTPServer.getProxyConfiguration(), producerGroupConfig);
-        producerTable.put(producerGroupConfig.getGroupName(), proxyProducer);
-        return proxyProducer;
+        EventMeshProducer eventMeshProducer = new EventMeshProducer();
+        eventMeshProducer.init(eventMeshHTTPServer.getEventMeshHttpConfiguration(), producerGroupConfig);
+        producerTable.put(producerGroupConfig.getGroupName(), eventMeshProducer);
+        return eventMeshProducer;
     }
 
     public void shutdown() {
-        for (ProxyProducer proxyProducer : producerTable.values()) {
+        for (EventMeshProducer eventMeshProducer : producerTable.values()) {
             try {
-                proxyProducer.shutdown();
+                eventMeshProducer.shutdown();
             } catch (Exception ex) {
-                logger.error("shutdown proxyProducer[{}] err", proxyProducer, ex);
+                logger.error("shutdown eventMeshProducer[{}] err", eventMeshProducer, ex);
             }
         }
         logger.info("producerManager shutdown......");
     }
 
-    public ProxyHTTPServer getProxyHTTPServer() {
-        return proxyHTTPServer;
+    public EventMeshHTTPServer getEventMeshHTTPServer() {
+        return eventMeshHTTPServer;
     }
 
-    public ConcurrentHashMap<String, ProxyProducer> getProducerTable() {
+    public ConcurrentHashMap<String, EventMeshProducer> getProducerTable() {
         return producerTable;
     }
 }

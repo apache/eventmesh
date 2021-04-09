@@ -20,9 +20,9 @@ package com.webank.eventmesh.runtime.core.protocol.http.push;
 import com.webank.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import com.webank.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import com.webank.eventmesh.runtime.core.protocol.http.retry.RetryContext;
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
-import com.webank.eventmesh.runtime.configuration.ProxyConfiguration;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
+import com.webank.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractHTTPPushRequest extends RetryContext {
 
-    public ProxyHTTPServer proxyHTTPServer;
+    public EventMeshHTTPServer eventMeshHTTPServer;
 
     public long createTime = System.currentTimeMillis();
 
@@ -47,7 +47,7 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
 
     public volatile int startIdx;
 
-    public ProxyConfiguration proxyConfiguration;
+    public EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
     public HttpRetryer retryer;
 
@@ -60,12 +60,12 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     private AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
 
     public AbstractHTTPPushRequest(HandleMsgContext handleMsgContext) {
-        this.proxyHTTPServer = handleMsgContext.getProxyHTTPServer();
+        this.eventMeshHTTPServer = handleMsgContext.getEventMeshHTTPServer();
         this.handleMsgContext = handleMsgContext;
         this.urls = handleMsgContext.getConsumeTopicConfig().getIdcUrls();
         this.totalUrls = Lists.newArrayList(handleMsgContext.getConsumeTopicConfig().getUrls());
-        this.proxyConfiguration = handleMsgContext.getProxyHTTPServer().getProxyConfiguration();
-        this.retryer = handleMsgContext.getProxyHTTPServer().getHttpRetryer();
+        this.eventMeshHttpConfiguration = handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration();
+        this.retryer = handleMsgContext.getEventMeshHTTPServer().getHttpRetryer();
         this.ttl = handleMsgContext.getTtl();
         this.startIdx = RandomUtils.nextInt(0, totalUrls.size());
     }
@@ -74,9 +74,9 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     }
 
     public void delayRetry() {
-        if (retryTimes < ProxyConstants.DEFAULT_PUSH_RETRY_TIMES) {
+        if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
             retryTimes++;
-            delay(retryTimes * ProxyConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
+            delay(retryTimes * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
             retryer.pushRetry(this);
         } else {
             complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
@@ -85,7 +85,7 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
 
     public String getUrl() {
         List<String> localIDCUrl = MapUtils.getObject(urls,
-                proxyConfiguration.proxyIDC, null);
+                eventMeshHttpConfiguration.eventMeshIDC, null);
         if (CollectionUtils.isNotEmpty(localIDCUrl)) {
             return localIDCUrl.get((startIdx + retryTimes) % localIDCUrl.size());
         }

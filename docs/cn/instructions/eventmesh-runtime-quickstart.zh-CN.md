@@ -34,11 +34,11 @@ gradle clean dist tar -x test
 upload eventmesh-runtime_1.0.0.tar.gz
 tar -zxvf eventmesh-runtime_1.0.0.tar.gz
 cd bin
-配置 proxy.properties
+配置 eventMesh.properties
 cd ../bin
 sh start.sh
 ```
-如果看到"ProxyTCPServer[port=10000] started...."，则说明设置成功。
+如果看到"EventMeshTCPServer[port=10000] started...."，则说明设置成功。
 
 
 
@@ -107,37 +107,37 @@ dependencies {
 
 ### 3.2 配置
 
-> **预先准备** : 你可能需要从github上下载源代码，并参考这两个文件(proxy.properties 和 rocketmq-client.properties)的内容来做下面的操作
+> **预先准备** : 你可能需要从github上下载源代码，并参考这两个文件(eventMesh.properties 和 rocketmq-client.properties)的内容来做下面的操作
 
 **3.2.1 需要配置的文件**
 
 在运行容器之前，你需要配置如下文件：
 
-**proxy.properties** 
+**eventMesh.properties** 
 
 | 配置项                 | 默认值 | 备注                    |
 | ---------------------- | ------ | ----------------------- |
-| proxy.server.http.port | 10105  | EventMesh http 服务端口 |
-| proxy.server.tcp.port  | 10000  | EventMesh tcp 服务端口  |
+| eventMesh.server.http.port | 10105  | EventMesh http 服务端口 |
+| eventMesh.server.tcp.port  | 10000  | EventMesh tcp 服务端口  |
 
 **rocketmq-client.properties**
 
 | 配置项                            | 默认值                        | 备注                  |
 | --------------------------------- | ----------------------------- | --------------------- |
-| proxy.server.rocketmq.namesrvAddr | 127.0.0.1:9876;127.0.0.1:9876 | RocketMQ namesrv 地址 |
+| eventMesh.server.rocketmq.namesrvAddr | 127.0.0.1:9876;127.0.0.1:9876 | RocketMQ namesrv 地址 |
 
-拉取了EventMesh镜像到你的宿主机后，你可以执行下面的命令来完成**proxy.properties**和**rocketmq-client.properties** 文件的配置
+拉取了EventMesh镜像到你的宿主机后，你可以执行下面的命令来完成**eventMesh.properties**和**rocketmq-client.properties** 文件的配置
 
 **3.2.2 创建文件**
 
 ```shell
 mkdir -p /data/eventmesh/rocketmq/conf
 cd /data/eventmesh/rocketmq/conf
-vi proxy.properties
+vi eventMesh.properties
 vi rocketmq-client.properties
 ```
 
-这两个文件内容可以参考 [proxy.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/proxy.properties) 和 [rocketmq-client.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/rocketmq-client.properties)
+这两个文件内容可以参考 [eventMesh.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/eventMesh.properties) 和 [rocketmq-client.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/rocketmq-client.properties)
 
 ### 3.3 运行
 
@@ -146,7 +146,7 @@ vi rocketmq-client.properties
 执行下面的命令来运行容器
 
 ```shell
-docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/proxy.properties:/data/app/eventmesh/conf/proxy.properties -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.2.0
+docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.2.0
 ```
 
 > -p : 将容器内端口与宿主机端口绑定，容器的端口应与配置文件中的端口一致

@@ -17,11 +17,11 @@
 package com.webank.eventmesh.connector.rocketmq.consumer;
 
 import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.connector.rocketmq.common.ProxyConstants;
+import com.webank.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import com.webank.eventmesh.connector.rocketmq.domain.NonStandardKeys;
-import com.webank.eventmesh.connector.rocketmq.patch.ProxyConsumeConcurrentlyContext;
-import com.webank.eventmesh.connector.rocketmq.patch.ProxyConsumeConcurrentlyStatus;
-import com.webank.eventmesh.connector.rocketmq.patch.ProxyMessageListenerConcurrently;
+import com.webank.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
+import com.webank.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyStatus;
+import com.webank.eventmesh.connector.rocketmq.patch.EventMeshMessageListenerConcurrently;
 import com.webank.eventmesh.connector.rocketmq.utils.BeanUtils;
 import com.webank.eventmesh.connector.rocketmq.utils.OMSUtil;
 import com.webank.eventmesh.connector.rocketmq.config.ClientConfig;
@@ -45,7 +45,7 @@ public class PushConsumerImpl implements Consumer {
     private AtomicBoolean started = new AtomicBoolean(false);
     private final Map<String, AsyncMessageListener> subscribeTable = new ConcurrentHashMap<>();
     private final ClientConfig clientConfig;
-    private ProxyConsumeConcurrentlyContext context;
+    private EventMeshConsumeConcurrentlyContext context;
 
     public PushConsumerImpl(final Properties properties) {
         this.rocketmqPushConsumer = new DefaultMQPushConsumer();
@@ -79,18 +79,18 @@ public class PushConsumerImpl implements Consumer {
         this.rocketmqPushConsumer.setLanguage(LanguageCode.OMS);
 
         if (clientConfig.getMessageModel().equalsIgnoreCase(MessageModel.BROADCASTING.name())){
-            rocketmqPushConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
+            rocketmqPushConsumer.registerMessageListener(new EventMeshMessageListenerConcurrently() {
 
                 @Override
-                public ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ProxyConsumeConcurrentlyContext context) {
+                public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg, EventMeshConsumeConcurrentlyContext context) {
                     PushConsumerImpl.this.setContext(context);
                     if (msg == null){
-                        return ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                        return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                     }
 
 
-//                    if (!ProxyUtil.isValidRMBTopic(msg.getTopic())) {
-//                        return ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+//                    if (!EventMeshUtil.isValidRMBTopic(msg.getTopic())) {
+//                        return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 //                    }
 
                     msg.putUserProperty(Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP, String.valueOf(msg.getBornTimestamp()));
@@ -106,33 +106,33 @@ public class PushConsumerImpl implements Consumer {
                     }
 
                     final Properties contextProperties = new Properties();
-                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
                     AsyncConsumeContext omsContext = new AsyncConsumeContext() {
                         @Override
                         public void commit(Action action) {
-                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
                         }
                     };
                     listener.consume(omsMsg, omsContext);
 
-                    return ProxyConsumeConcurrentlyStatus.valueOf(contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
+                    return EventMeshConsumeConcurrentlyStatus.valueOf(contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
                 }
             });
         }else {
-            rocketmqPushConsumer.registerMessageListener(new ProxyMessageListenerConcurrently() {
+            rocketmqPushConsumer.registerMessageListener(new EventMeshMessageListenerConcurrently() {
 
                 @Override
-                public ProxyConsumeConcurrentlyStatus handleMessage(MessageExt msg, ProxyConsumeConcurrentlyContext context) {
+                public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg, EventMeshConsumeConcurrentlyContext context) {
                     PushConsumerImpl.this.setContext(context);
                     if (msg == null) {
-                        return ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                        return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                     }
-//                    if (!ProxyUtil.isValidRMBTopic(msg.getTopic())) {
-//                        return ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+//                    if (!EventMeshUtil.isValidRMBTopic(msg.getTopic())) {
+//                        return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
 //                    }
 
                     msg.putUserProperty(Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP, String.valueOf(msg.getBornTimestamp()));
-                    msg.putUserProperty(ProxyConstants.STORE_TIMESTAMP, String.valueOf(msg.getStoreTimestamp()));
+                    msg.putUserProperty(EventMeshConstants.STORE_TIMESTAMP, String.valueOf(msg.getStoreTimestamp()));
 
                     Message omsMsg = OMSUtil.msgConvert(msg);
 
@@ -145,18 +145,18 @@ public class PushConsumerImpl implements Consumer {
 
                     final Properties contextProperties = new Properties();
 
-                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
 
                     AsyncConsumeContext omsContext = new AsyncConsumeContext() {
                         @Override
                         public void commit(Action action) {
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                    ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                                    EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
                         }
                     };
                     listener.consume(omsMsg, omsContext);
 
-                    return ProxyConsumeConcurrentlyStatus.valueOf(contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
+                    return EventMeshConsumeConcurrentlyStatus.valueOf(contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
                 }
             });
         }
@@ -248,7 +248,7 @@ public class PushConsumerImpl implements Consumer {
         return this.context;
     }
 
-    public void setContext(ProxyConsumeConcurrentlyContext context) {
+    public void setContext(EventMeshConsumeConcurrentlyContext context) {
         this.context = context;
     }
 

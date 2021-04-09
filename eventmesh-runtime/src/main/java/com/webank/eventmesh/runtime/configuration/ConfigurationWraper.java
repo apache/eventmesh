@@ -40,7 +40,7 @@
 //
 //    private boolean reload = true;
 //
-//    private ScheduledExecutorService configLoader = ThreadPoolFactory.createSingleScheduledExecutor("proxy-configloader-");
+//    private ScheduledExecutorService configLoader = ThreadPoolFactory.createSingleScheduledExecutor("EventMesh-configloader-");
 //
 //    public ConfigurationWraper(String file, boolean reload) {
 //        this.file = file;

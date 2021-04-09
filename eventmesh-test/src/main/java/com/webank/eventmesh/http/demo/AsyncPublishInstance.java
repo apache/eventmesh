@@ -24,17 +24,17 @@ public class AsyncPublishInstance {
 
         LiteProducer liteProducer = null;
         try{
-//            String proxyIPPort = args[0];
-            String proxyIPPort = eventMeshIp + ":" + eventMeshHttpPort;
+//            String eventMeshIPPort = args[0];
+            String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
 //            final String topic = args[1];
             final String topic = "FT0-e-80010000-01-1";
-            if (StringUtils.isBlank(proxyIPPort)) {
+            if (StringUtils.isBlank(eventMeshIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-                proxyIPPort = "127.0.0.1:10105";
+                eventMeshIPPort = "127.0.0.1:10105";
             }
 
-            LiteClientConfig weMQProxyClientConfig = new LiteClientConfig();
-            weMQProxyClientConfig.setLiteProxyAddr(proxyIPPort)
+            LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
+            eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
                     .setEnv("env")
                     .setIdc("idc")
                     .setDcn("dcn")
@@ -42,7 +42,7 @@ public class AsyncPublishInstance {
                     .setSys("1234")
                     .setPid(String.valueOf(ThreadUtil.getPID()));
 
-            liteProducer = new LiteProducer(weMQProxyClientConfig);
+            liteProducer = new LiteProducer(eventMeshClientConfig);
             liteProducer.start();
             for(int i = 0; i < 5; i++) {
                 LiteMessage liteMessage = new LiteMessage();
@@ -51,7 +51,7 @@ public class AsyncPublishInstance {
                         .setContent("testPublishMessage")
                         .setTopic(topic)
                         .setUniqueId(RandomStringUtils.randomNumeric(30))
-                        .addProp(Constants.PROXY_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
+                        .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
 
                 boolean flag = liteProducer.publish(liteMessage);
                 Thread.sleep(1000);

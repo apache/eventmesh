@@ -18,7 +18,7 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
 import com.webank.eventmesh.api.AbstractContext;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import io.openmessaging.api.Message;
 import org.apache.commons.collections4.CollectionUtils;
@@ -88,6 +88,6 @@ public class PushContext {
                 ",deliverFailCount=" + deliverFailMsgsCount.longValue() +
                 ",ackedMsgsCount=" + ackedMsgsCount.longValue() +
                 ",unAckMsg=" + CollectionUtils.size(unAckMsg) +
-                ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) + '}';
+                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 }

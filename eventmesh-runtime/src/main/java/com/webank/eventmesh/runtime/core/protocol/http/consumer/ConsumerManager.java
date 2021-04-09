@@ -18,7 +18,7 @@
 package com.webank.eventmesh.runtime.core.protocol.http.consumer;
 
 import com.alibaba.fastjson.JSONObject;
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import com.webank.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import com.webank.eventmesh.runtime.core.consumergroup.event.ConsumerGroupStateEvent;
@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ConsumerManager {
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
     private ConcurrentHashMap<String /** consumerGroup */, ConsumerGroupManager> consumerTable = new ConcurrentHashMap<String, ConsumerGroupManager>();
 
@@ -47,12 +47,12 @@ public class ConsumerManager {
 
     private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
-    public ConsumerManager(ProxyHTTPServer proxyHTTPServer) {
-        this.proxyHTTPServer = proxyHTTPServer;
+    public ConsumerManager(EventMeshHTTPServer eventMeshHTTPServer) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
     public void init() throws Exception {
-        proxyHTTPServer.getEventBus().register(this);
+        eventMeshHTTPServer.getEventBus().register(this);
         logger.info("consumerManager inited......");
     }
 
@@ -62,8 +62,8 @@ public class ConsumerManager {
             @Override
             public void run() {
                 logger.info("clientInfo check start.....");
-                synchronized (proxyHTTPServer.localClientInfoMapping) {
-                    Map<String, List<Client>> clientInfoMap = proxyHTTPServer.localClientInfoMapping;
+                synchronized (eventMeshHTTPServer.localClientInfoMapping) {
+                    Map<String, List<Client>> clientInfoMap = eventMeshHTTPServer.localClientInfoMapping;
                     if (clientInfoMap.size() > 0) {
                         for (String key : clientInfoMap.keySet()) {
                             String consumerGroup = key.split("@")[0];
@@ -97,8 +97,8 @@ public class ConsumerManager {
                                             idcUrls.put(client.idc, urls);
                                         }
                                     }
-                                    synchronized (proxyHTTPServer.localConsumerGroupMapping) {
-                                        ConsumerGroupConf consumerGroupConf = proxyHTTPServer.localConsumerGroupMapping.get(consumerGroup);
+                                    synchronized (eventMeshHTTPServer.localConsumerGroupMapping) {
+                                        ConsumerGroupConf consumerGroupConf = eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
                                         Map<String, ConsumerGroupTopicConf> map = consumerGroupConf.getConsumerGroupTopicConf();
                                         for (String topicKey : map.keySet()) {
                                             if (StringUtils.equals(topic, topicKey)) {
@@ -112,11 +112,11 @@ public class ConsumerManager {
                                                 map.put(topic, latestTopicConf);
                                             }
                                         }
-                                        proxyHTTPServer.localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
+                                        eventMeshHTTPServer.localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
                                         logger.info("consumerGroup {} client info changed, consumerGroupConf {}", consumerGroup,
                                                 JSONObject.toJSONString(consumerGroupConf));
                                         try {
-                                            notifyConsumerManager(consumerGroup, consumerGroupConf, proxyHTTPServer.localConsumerGroupMapping);
+                                            notifyConsumerManager(consumerGroup, consumerGroupConf, eventMeshHTTPServer.localConsumerGroupMapping);
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }
@@ -126,12 +126,12 @@ public class ConsumerManager {
                                     logger.info("consumerGroup {} client info removed", consumerGroup);
                                     //remove
                                     try {
-                                        notifyConsumerManager(consumerGroup, null, proxyHTTPServer.localConsumerGroupMapping);
+                                        notifyConsumerManager(consumerGroup, null, eventMeshHTTPServer.localConsumerGroupMapping);
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
 
-                                    proxyHTTPServer.localConsumerGroupMapping.keySet().removeIf(s -> StringUtils.equals(consumerGroup, s));
+                                    eventMeshHTTPServer.localConsumerGroupMapping.keySet().removeIf(s -> StringUtils.equals(consumerGroup, s));
                                 }
                             }
 
@@ -147,13 +147,13 @@ public class ConsumerManager {
      */
     public void notifyConsumerManager(String consumerGroup, ConsumerGroupConf latestConsumerGroupConfig,
                                       ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping) throws Exception {
-        ConsumerGroupManager cgm = proxyHTTPServer.getConsumerManager().getConsumer(consumerGroup);
+        ConsumerGroupManager cgm = eventMeshHTTPServer.getConsumerManager().getConsumer(consumerGroup);
         if (cgm == null) {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
             notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW;
             notification.consumerGroup = consumerGroup;
             notification.consumerGroupConfig = latestConsumerGroupConfig;
-            proxyHTTPServer.getEventBus().post(notification);
+            eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }
 
@@ -161,7 +161,7 @@ public class ConsumerManager {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
             notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.DELETE;
             notification.consumerGroup = consumerGroup;
-            proxyHTTPServer.getEventBus().post(notification);
+            eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }
 
@@ -170,13 +170,13 @@ public class ConsumerManager {
             notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.CHANGE;
             notification.consumerGroup = consumerGroup;
             notification.consumerGroupConfig = latestConsumerGroupConfig;
-            proxyHTTPServer.getEventBus().post(notification);
+            eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }
     }
 
     public void shutdown() {
-        proxyHTTPServer.getEventBus().unregister(this);
+        eventMeshHTTPServer.getEventBus().unregister(this);
         for (ConsumerGroupManager consumerGroupManager : consumerTable.values()) {
             try {
                 consumerGroupManager.shutdown();
@@ -199,7 +199,7 @@ public class ConsumerManager {
      * @throws Exception
      */
     public synchronized void addConsumer(String consumerGroup, ConsumerGroupConf consumerGroupConfig) throws Exception {
-        ConsumerGroupManager cgm = new ConsumerGroupManager(proxyHTTPServer, consumerGroupConfig);
+        ConsumerGroupManager cgm = new ConsumerGroupManager(eventMeshHTTPServer, consumerGroupConfig);
         cgm.init();
         cgm.start();
         consumerTable.put(consumerGroup, cgm);
