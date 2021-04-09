@@ -1,18 +1,20 @@
 package com.webank.eventmesh.api.consumer;
 
 import com.webank.eventmesh.api.AbstractContext;
-import io.openmessaging.KeyValue;
-import io.openmessaging.consumer.MessageListener;
-import io.openmessaging.Message;
-import io.openmessaging.consumer.PushConsumer;
+import io.openmessaging.api.AsyncMessageListener;
+import io.openmessaging.api.MessageListener;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.Consumer;
 
 import java.util.List;
+import java.util.Properties;
 
-public interface MeshMQPushConsumer extends PushConsumer {
+public interface MeshMQPushConsumer extends Consumer {
 
-    void init(KeyValue keyValue) throws Exception;
+    void init(Properties keyValue) throws Exception;
 
-    void start() throws Exception;
+    @Override
+    void start();
 
 //    void updateOffset(List<MessageExt> msgs, ConsumeConcurrentlyContext context);
 
@@ -20,13 +22,10 @@ public interface MeshMQPushConsumer extends PushConsumer {
 
 //    void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently);
 
-    void subscribe(String topic, final MessageListener listener) throws Exception;
+    void subscribe(String topic, final AsyncMessageListener listener) throws Exception;
 
-    void unsubscribe(String topic) throws Exception;
-
-    boolean isPause();
-
-    void pause();
+    @Override
+    void unsubscribe(String topic);
 
     AbstractContext getContext();
 }
