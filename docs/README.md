@@ -30,7 +30,6 @@ Dependent components:
 Key components:
 * eventmesh-runtime : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices
 * eventmesh-sdk-java : currently supports HTTP and TCP protocols, and will support gRPC in the future
-* eventmesh-registry : automatically routes events between applications and services connected to seperate EventMeshes, manage eventmesh-runtime
 
 ## RoadMap
 | version | feature |

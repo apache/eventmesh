@@ -19,7 +19,7 @@ package com.webank.eventmesh.runtime.core.protocol.tcp.client.group;
 
 import com.alibaba.fastjson.JSON;
 import com.webank.eventmesh.api.RRCallback;
-import com.webank.eventmesh.api.SendCallback;
+import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import com.webank.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.DownstreamDispatchStrategy;
@@ -36,11 +36,7 @@ import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.domain.NonStandardKeys;
 import com.webank.eventmesh.runtime.metrics.tcp.ProxyTcpMonitor;
 import com.webank.eventmesh.runtime.patch.ProxyConsumeConcurrentlyStatus;
-import io.openmessaging.KeyValue;
-import io.openmessaging.Message;
-import io.openmessaging.OMS;
-import io.openmessaging.consumer.MessageListener;
-import io.openmessaging.producer.SendResult;
+import io.openmessaging.api.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -148,9 +144,11 @@ public class ClientGroupWrapper {
             }
 
             @Override
-            public void onException(Throwable e) {
-                String bizSeqNo = upStreamMsgContext.getMsg().sysHeaders().getString(ProxyConstants.PROPERTY_MESSAGE_KEYS);
-                logger.error("reply err! topic:{}, bizSeqNo:{}, client:{}", upStreamMsgContext.getMsg().sysHeaders().getString(Message.BuiltinKeys.DESTINATION), bizSeqNo, upStreamMsgContext.getSession().getClient(), e);
+            public void onException(OnExceptionContext context) {
+                String bizSeqNo = upStreamMsgContext.getMsg().getSystemProperties(ProxyConstants.PROPERTY_MESSAGE_KEYS);
+                logger.error("reply err! topic:{}, bizSeqNo:{}, client:{}",
+                        upStreamMsgContext.getMsg().getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), bizSeqNo,
+                        upStreamMsgContext.getSession().getClient(), context.getException());
             }
         });
         return true;
@@ -226,7 +224,8 @@ public class ClientGroupWrapper {
             return;
         }
 
-        KeyValue keyValue = OMS.newKeyValue();
+        Properties keyValue = new Properties();
+//        KeyValue keyValue = OMS.newKeyValue();
         keyValue.put("producerGroup", groupName);
         keyValue.put("instanceName", ProxyUtil.buildProxyTcpClientID(sysId, dcn, "PUB", accessConfiguration.proxyCluster));
 
@@ -348,7 +347,7 @@ public class ClientGroupWrapper {
             return;
         }
 
-        KeyValue keyValue = OMS.newKeyValue();
+        Properties keyValue = new Properties();
         keyValue.put("isBroadcast", "false");
         keyValue.put("consumerGroup", groupName);
         keyValue.put("proxyIDC", accessConfiguration.proxyIDC);
@@ -437,7 +436,7 @@ public class ClientGroupWrapper {
             return;
         }
 
-        KeyValue keyValue = OMS.newKeyValue();
+        Properties keyValue = new Properties();
         keyValue.put("isBroadcast", "true");
         keyValue.put("consumerGroup", groupName);
         keyValue.put("proxyIDC", accessConfiguration.proxyIDC);
@@ -508,21 +507,22 @@ public class ClientGroupWrapper {
     }
 
     public void subscribe(String topic) throws Exception {
-        MessageListener listener = null;
+        AsyncMessageListener listener = null;
         if (ProxyUtil.isBroadcast(topic)) {
-            listener = new MessageListener() {
+            listener = new AsyncMessageListener() {
                 @Override
-                public void onReceived(Message message, Context context) {
+                public void consume(Message message, AsyncConsumeContext context) {
 
                     proxyTcpMonitor.getMq2proxyMsgNum().incrementAndGet();
-                    String topic = message.sysHeaders().getString(Message.BuiltinKeys.DESTINATION);
-                    message.sysHeaders().put(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                    message.sysHeaders().put(ProxyConstants.REQ_RECEIVE_PROXY_IP, accessConfiguration.proxyServerIp);
+                    String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
+                    message.getSystemProperties().put(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                    message.getSystemProperties().put(ProxyConstants.REQ_RECEIVE_PROXY_IP, accessConfiguration.proxyServerIp);
 
                     if(CollectionUtils.isEmpty(groupConsumerSessions)){
                         logger.warn("found no session to downstream broadcast msg");
-                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                        context.ack();
+//                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+//                        context.ack();
+                        context.commit(Action.CommitMessage);
                         return;
                     }
 
@@ -545,24 +545,25 @@ public class ClientGroupWrapper {
                         }
 
                         logger.warn("downstream broadcast msg,session is busy,dispatch retry,seq:{}, session:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.session.getClient(), ProxyUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
-                        long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION)) ? 0 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
+                        long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
                         downStreamMsgContext.delay(delayTime);
                         proxyTcpRetryer.pushRetry(downStreamMsgContext);
                     }
 
-                    context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
-                    context.ack();
+//                    context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+//                    context.ack();
+                    context.commit(Action.CommitMessage);
                 }
             };
             broadCastMsgConsumer.subscribe(topic, listener);
         } else {
-            listener = new MessageListener() {
+            listener = new AsyncMessageListener() {
                 @Override
-                public void onReceived(Message message, Context context) {
+                public void consume(Message message, AsyncConsumeContext context) {
                     proxyTcpMonitor.getMq2proxyMsgNum().incrementAndGet();
-                    String topic = message.sysHeaders().getString(Message.BuiltinKeys.DESTINATION);
-                    message.sysHeaders().put(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                    message.sysHeaders().put(ProxyConstants.REQ_RECEIVE_PROXY_IP, accessConfiguration.proxyServerIp);
+                    String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
+                    message.getSystemProperties().put(ProxyConstants.REQ_MQ2PROXY_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                    message.getSystemProperties().put(ProxyConstants.REQ_RECEIVE_PROXY_IP, accessConfiguration.proxyServerIp);
 
                     Session session = downstreamDispatchStrategy.select(groupName, topic, groupConsumerSessions);
                     String bizSeqNo = ProxyUtil.getMessageBizSeq(message);
@@ -570,11 +571,11 @@ public class ClientGroupWrapper {
                         try {
                             Integer sendBackTimes = new Integer(0);
                             String sendBackFromProxyIp = "";
-                            if(StringUtils.isNotBlank(message.sysHeaders().getString(ProxyConstants.PROXY_SEND_BACK_TIMES))){
-                                sendBackTimes = Integer.valueOf(message.sysHeaders().getString(ProxyConstants.PROXY_SEND_BACK_TIMES));
+                            if(StringUtils.isNotBlank(message.getSystemProperties(ProxyConstants.PROXY_SEND_BACK_TIMES))){
+                                sendBackTimes = Integer.valueOf(message.getSystemProperties(ProxyConstants.PROXY_SEND_BACK_TIMES));
                             }
-                            if(StringUtils.isNotBlank(message.sysHeaders().getString(ProxyConstants.PROXY_SEND_BACK_IP))){
-                                sendBackFromProxyIp = message.sysHeaders().getString(ProxyConstants.PROXY_SEND_BACK_IP);
+                            if(StringUtils.isNotBlank(message.getSystemProperties(ProxyConstants.PROXY_SEND_BACK_IP))){
+                                sendBackFromProxyIp = message.getSystemProperties(ProxyConstants.PROXY_SEND_BACK_IP);
                             }
 
                             logger.error("found no session to downstream msg,groupName:{}, topic:{}, bizSeqNo:{}", groupName, topic, bizSeqNo);
@@ -583,16 +584,17 @@ public class ClientGroupWrapper {
                                 logger.error("sendBack to broker over max times:{}, groupName:{}, topic:{}, bizSeqNo:{}", proxyTCPServer.getAccessConfiguration().proxyTcpSendBackMaxTimes, groupName, topic, bizSeqNo);
                             } else {
                                 sendBackTimes++;
-                                message.sysHeaders().put(ProxyConstants.PROXY_SEND_BACK_TIMES, sendBackTimes.toString());
-                                message.sysHeaders().put(ProxyConstants.PROXY_SEND_BACK_IP, sendBackFromProxyIp);
+                                message.getSystemProperties().put(ProxyConstants.PROXY_SEND_BACK_TIMES, sendBackTimes.toString());
+                                message.getSystemProperties().put(ProxyConstants.PROXY_SEND_BACK_IP, sendBackFromProxyIp);
                                 sendMsgBackToBroker(message, bizSeqNo);
                             }
                         } catch (Exception e){
                             logger.warn("handle msg exception when no session found", e);
                         }
 
-                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                        context.ack();
+//                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+//                        context.ack();
+                        context.commit(Action.CommitMessage);
                         return;
                     }
 
@@ -607,18 +609,20 @@ public class ClientGroupWrapper {
 
                     if (session.isCanDownStream()) {
                         session.downstreamMsg(downStreamMsgContext);
-                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
-                        context.ack();
+//                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+//                        context.ack();
+                        context.commit(Action.CommitMessage);
                         return;
                     }
 
                     logger.warn("session is busy,dispatch retry,seq:{}, session:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.session.getClient(), bizSeqNo);
-                    long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.sysHeaders().getString(Message.BuiltinKeys.DESTINATION)) ? 0 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
+                    long delayTime = ProxyUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : proxyTCPServer.getAccessConfiguration().proxyTcpMsgRetryDelayInMills;
                     downStreamMsgContext.delay(delayTime);
                     proxyTcpRetryer.pushRetry(downStreamMsgContext);
 
-                    context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
-                    context.ack();
+//                    context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, ProxyConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+//                    context.ack();
+                    context.commit(Action.CommitMessage);
                 }
             };
             persistentMsgConsumer.subscribe(topic, listener);
@@ -756,7 +760,7 @@ public class ClientGroupWrapper {
 
     private void sendMsgBackToBroker(Message msg, String bizSeqNo){
         try {
-            String topic = msg.sysHeaders().getString(Message.BuiltinKeys.DESTINATION);
+            String topic = msg.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
             logger.warn("send msg back to broker, bizSeqno:{}, topic:{}",bizSeqNo, topic);
 
             send(new UpStreamMsgContext(null,null, msg), new SendCallback() {
@@ -766,9 +770,14 @@ public class ClientGroupWrapper {
                 }
 
                 @Override
-                public void onException(Throwable e) {
+                public void onException(OnExceptionContext context) {
                     logger.warn("consumerGroup:{} consume fail, sendMessageBack fail, bizSeqno:{}, topic:{}", groupName, bizSeqNo, topic);
                 }
+
+//                @Override
+//                public void onException(Throwable e) {
+//                    logger.warn("consumerGroup:{} consume fail, sendMessageBack fail, bizSeqno:{}, topic:{}", groupName, bizSeqNo, topic);
+//                }
             });
             proxyTcpMonitor.getProxy2mqMsgNum().incrementAndGet();
         }catch (Exception e){

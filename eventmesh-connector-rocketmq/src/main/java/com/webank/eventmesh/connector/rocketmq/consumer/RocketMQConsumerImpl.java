@@ -25,10 +25,7 @@ import com.webank.eventmesh.connector.rocketmq.config.ClientConfiguration;
 import com.webank.eventmesh.connector.rocketmq.config.ConfigurationWraper;
 import com.webank.eventmesh.connector.rocketmq.patch.ProxyConsumeConcurrentlyContext;
 import com.webank.eventmesh.connector.rocketmq.utils.OMSUtil;
-import io.openmessaging.*;
-import io.openmessaging.consumer.MessageListener;
-import io.openmessaging.consumer.PushConsumer;
-import io.openmessaging.interceptor.ConsumerInterceptor;
+import io.openmessaging.api.*;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -39,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class RocketMQConsumerImpl implements MeshMQPushConsumer {
 
@@ -51,16 +49,17 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     private PushConsumerImpl pushConsumer;
 
     @Override
-    public synchronized void init(KeyValue keyValue) throws Exception {
+    public synchronized void init(Properties keyValue) throws Exception {
         ConfigurationWraper configurationWraper =
                 new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
                         + File.separator
                         + ProxyConstants.PROXY_CONF_FILE, false);
         final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWraper);
         clientConfiguration.init();
-        boolean isBroadcast = Boolean.valueOf(keyValue.getString("isBroadcast"));
-        String consumerGroup = keyValue.getString("consumerGroup");
-        String instanceName = keyValue.getString("instanceName");
+        boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast"));
+        String consumerGroup = keyValue.getProperty("consumerGroup");
+        String instanceName = keyValue.getProperty("instanceName");
+
 
         if(isBroadcast){
             consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + Constants.BROADCAST_PREFIX + consumerGroup;
@@ -68,26 +67,26 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
             consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup;
         }
 
-        String omsNamesrv = "oms:rocketmq://" + clientConfiguration.namesrvAddr + "/namespace";
-        KeyValue properties = OMS.newKeyValue().put(OMSBuiltinKeys.DRIVER_IMPL, DEFAULT_ACCESS_DRIVER);
-
-        properties.put("ACCESS_POINTS", omsNamesrv)
-                .put("REGION", "namespace")
-                .put(OMSBuiltinKeys.CONSUMER_ID, consumerGroup)
-                .put("instanceName", instanceName);
+        String omsNamesrv = clientConfiguration.namesrvAddr;
+//        KeyValue properties = OMS.newKeyValue().put(OMSBuiltinKeys.DRIVER_IMPL, DEFAULT_ACCESS_DRIVER);
+        Properties properties = new Properties();
+        properties.put(OMSBuiltinKeys.DRIVER_IMPL, DEFAULT_ACCESS_DRIVER);
+        properties.put("ACCESS_POINTS", omsNamesrv);
+        properties.put("REGION", "namespace");
+        properties.put("instanceName", instanceName);
+        properties.put("CONSUMER_ID", consumerGroup);
         if (isBroadcast){
             properties.put("MESSAGE_MODEL", MessageModel.BROADCASTING.name());
         }else {
             properties.put("MESSAGE_MODEL", MessageModel.CLUSTERING.name());
         }
-
-        MessagingAccessPoint messagingAccessPoint = OMS.getMessagingAccessPoint(omsNamesrv, properties);
-        pushConsumer = (PushConsumerImpl)messagingAccessPoint.createPushConsumer();
+        MessagingAccessPoint messagingAccessPoint = OMS.builder().build(properties);
+        pushConsumer = (PushConsumerImpl)messagingAccessPoint.createConsumer(properties);
     }
 
     @Override
-    public void subscribe(String topic, MessageListener listener) throws Exception {
-        pushConsumer.attachQueue(topic, listener);
+    public void subscribe(String topic, AsyncMessageListener listener) throws Exception {
+        pushConsumer.subscribe(topic, "*", listener);
     }
 
     @Override
@@ -97,8 +96,18 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
 
 
     @Override
-    public synchronized void start() throws Exception {
-        pushConsumer.startup();
+    public boolean isStarted() {
+        return pushConsumer.isStarted();
+    }
+
+    @Override
+    public boolean isClosed() {
+        return pushConsumer.isClosed();
+    }
+
+    @Override
+    public synchronized void start() {
+        pushConsumer.start();
     }
 
     @Override
@@ -112,23 +121,8 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     }
 
     @Override
-    public void unsubscribe(String topic) throws Exception {
-        pushConsumer.detachQueue(topic);
-    }
-
-    @Override
-    public boolean isPause() {
-        return pushConsumer.isSuspended();
-    }
-
-    @Override
-    public void pause() {
-        pushConsumer.suspend();
-    }
-
-    @Override
-    public void startup() {
-        pushConsumer.startup();
+    public void unsubscribe(String topic) {
+        pushConsumer.unsubscribe(topic);
     }
 
     @Override
@@ -136,53 +130,52 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
         pushConsumer.shutdown();
     }
 
-    @Override
-    public KeyValue attributes() {
+    public Properties attributes() {
         return pushConsumer.attributes();
     }
 
     @Override
-    public void resume() {
-        pushConsumer.resume();
+    public void subscribe(String topic, String subExpression, MessageListener listener) {
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
-    public void suspend() {
-        pushConsumer.suspend();
+    public void subscribe(String topic, MessageSelector selector, MessageListener listener) {
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
-    public void suspend(long timeout) {
-        pushConsumer.suspend(timeout);
+    public <T> void subscribe(String topic, String subExpression, GenericMessageListener<T> listener) {
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
-    public boolean isSuspended() {
-        return pushConsumer.isSuspended();
+    public <T> void subscribe(String topic, MessageSelector selector, GenericMessageListener<T> listener) {
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
-    public PushConsumer attachQueue(String queueName, MessageListener listener) {
-        return pushConsumer.attachQueue(queueName, listener);
+    public void subscribe(String topic, String subExpression, AsyncMessageListener listener) {
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
-    public PushConsumer attachQueue(String queueName, MessageListener listener, KeyValue attributes) {
-        return pushConsumer.attachQueue(queueName, listener, attributes);
+    public void subscribe(String topic, MessageSelector selector, AsyncMessageListener listener) {
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
-    public PushConsumer detachQueue(String queueName) {
-        return pushConsumer.detachQueue(queueName);
+    public <T> void subscribe(String topic, String subExpression, AsyncGenericMessageListener<T> listener) {
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
-    public void addInterceptor(ConsumerInterceptor interceptor) {
-        pushConsumer.addInterceptor(interceptor);
+    public <T> void subscribe(String topic, MessageSelector selector, AsyncGenericMessageListener<T> listener) {
+        throw new UnsupportedOperationException("not supported yet");
     }
 
     @Override
-    public void removeInterceptor(ConsumerInterceptor interceptor) {
-        pushConsumer.removeInterceptor(interceptor);
+    public void updateCredential(Properties credentialProperties) {
+
     }
 }

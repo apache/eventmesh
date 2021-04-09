@@ -20,7 +20,7 @@ package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push;
 import com.webank.eventmesh.api.AbstractContext;
 import com.webank.eventmesh.runtime.constants.ProxyConstants;
 import com.webank.eventmesh.runtime.core.plugin.MQConsumerWrapper;
-import io.openmessaging.Message;
+import io.openmessaging.api.Message;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
