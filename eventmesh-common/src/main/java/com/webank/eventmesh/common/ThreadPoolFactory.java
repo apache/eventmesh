@@ -36,7 +36,7 @@ public class ThreadPoolFactory {
         return createThreadPoolExecutor(core, max, new LinkedBlockingQueue<Runnable>(1000), threadName, isDaemon);
     }
 
-    public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue blockingQueue, final String threadName, final boolean isDaemon) {
+    public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue, final String threadName, final boolean isDaemon) {
         return new ThreadPoolExecutor(core, max,
                 10 * 1000, TimeUnit.MILLISECONDS, blockingQueue, new ThreadFactory() {
 
@@ -56,8 +56,8 @@ public class ThreadPoolFactory {
         return createThreadPoolExecutor(core, max, new LinkedBlockingQueue<Runnable>(1000), threadFactory);
     }
 
-    public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue blockingQueue, ThreadFactory threadFactory) {
-        return new ThreadPoolExecutor(core, max,10 * 1000, TimeUnit.MILLISECONDS, blockingQueue, threadFactory);
+    public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue, ThreadFactory threadFactory) {
+        return new ThreadPoolExecutor(core, max, 10 * 1000, TimeUnit.MILLISECONDS, blockingQueue, threadFactory);
     }
 
     public static ScheduledExecutorService createSingleScheduledExecutor(final String threadName) {

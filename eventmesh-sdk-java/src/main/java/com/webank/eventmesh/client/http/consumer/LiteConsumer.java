@@ -17,8 +17,17 @@
 
 package com.webank.eventmesh.client.http.consumer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.webank.eventmesh.client.http.AbstractLiteClient;
 import com.webank.eventmesh.client.http.ProxyRetObj;
 import com.webank.eventmesh.client.http.RemotingServer;
@@ -26,40 +35,27 @@ import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.consumer.listener.LiteMessageListener;
 import com.webank.eventmesh.client.http.http.HttpUtil;
 import com.webank.eventmesh.client.http.http.RequestParam;
-import com.webank.eventmesh.client.tcp.common.MessageUtils;
 import com.webank.eventmesh.client.tcp.common.WemqAccessCommon;
 import com.webank.eventmesh.client.tcp.common.WemqAccessThreadFactoryImpl;
-import com.webank.eventmesh.client.tcp.impl.SimpleSubClientImpl;
 import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.common.LiteMessage;
 import com.webank.eventmesh.common.ProxyException;
 import com.webank.eventmesh.common.ThreadPoolFactory;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.webank.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
 import com.webank.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
-import com.webank.eventmesh.common.protocol.http.common.*;
-import com.webank.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
-import com.webank.eventmesh.common.protocol.tcp.Package;
+import com.webank.eventmesh.common.protocol.http.common.ClientType;
+import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
+import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
+import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.RequestCode;
+
 import io.netty.handler.codec.http.HttpMethod;
+
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LiteConsumer extends AbstractLiteClient {
 
@@ -121,7 +117,7 @@ public class LiteConsumer extends AbstractLiteClient {
 
     public boolean subscribe(List<String> topicList, String url) throws Exception {
         subscription.addAll(topicList);
-        if(!started.get()) {
+        if (!started.get()) {
             start();
         }
 
@@ -139,7 +135,7 @@ public class LiteConsumer extends AbstractLiteClient {
             throw new ProxyException(ex);
         }
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("subscribe message by await, targetProxy:{}, cost:{}ms, subscribeParam:{}, rtn:{}", target, System.currentTimeMillis() - startTime, JSON.toJSONString(subscribeParam), subRes);
         }
 
@@ -179,7 +175,7 @@ public class LiteConsumer extends AbstractLiteClient {
 
     private RequestParam generateHeartBeatRequestParam(List<String> topics, String url) {
         List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = new ArrayList<>();
-        for (String topic : topics){
+        for (String topic : topics) {
             HeartbeatRequestBody.HeartbeatEntity heartbeatEntity = new HeartbeatRequestBody.HeartbeatEntity();
             heartbeatEntity.topic = topic;
             heartbeatEntity.url = url;
@@ -210,7 +206,7 @@ public class LiteConsumer extends AbstractLiteClient {
             @Override
             public void run() {
                 try {
-                    if(!started.get()) {
+                    if (!started.get()) {
                         start();
                     }
                     RequestParam requestParam = generateHeartBeatRequestParam(topicList, url);
@@ -224,7 +220,7 @@ public class LiteConsumer extends AbstractLiteClient {
                         throw new ProxyException(ex);
                     }
 
-                    if(logger.isDebugEnabled()) {
+                    if (logger.isDebugEnabled()) {
                         logger.debug("heartBeat message by await, targetProxy:{}, cost:{}ms, rtn:{}", target, System.currentTimeMillis() - startTime, res);
                     }
 
@@ -257,7 +253,7 @@ public class LiteConsumer extends AbstractLiteClient {
             throw new ProxyException(ex);
         }
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("unSubscribe message by await, targetProxy:{}, cost:{}ms, unSubscribeParam:{}, rtn:{}", target, System.currentTimeMillis() - startTime, JSON.toJSONString(unSubscribeParam), unSubRes);
         }
 
@@ -299,9 +295,9 @@ public class LiteConsumer extends AbstractLiteClient {
         if (CollectionUtils.isEmpty(proxyServerList)) {
             return null;
         }
-        if(liteClientConfig.isUseTls()){
+        if (liteClientConfig.isUseTls()) {
             return Constants.HTTPS_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
-        }else{
+        } else {
             return Constants.HTTP_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
         }
     }
