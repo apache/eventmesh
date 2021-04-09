@@ -17,13 +17,14 @@
 
 package com.webank.eventmesh.common.protocol.http.body.message;
 
-import com.webank.eventmesh.common.protocol.http.body.Body;
-import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.alibaba.fastjson.JSONObject;
+import com.webank.eventmesh.common.protocol.http.body.Body;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class SendMessageRequestBody extends Body {
 
@@ -106,6 +107,7 @@ public class SendMessageRequestBody extends Body {
         this.tag = tag;
     }
 
+    @SuppressWarnings("unchecked")
     public static SendMessageRequestBody buildBody(Map<String, Object> bodyParam) {
         SendMessageRequestBody body = new SendMessageRequestBody();
         body.setTopic(MapUtils.getString(bodyParam, TOPIC));
@@ -116,7 +118,7 @@ public class SendMessageRequestBody extends Body {
         body.setContent(MapUtils.getString(bodyParam, CONTENT));
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
         if (StringUtils.isNotBlank(extFields)) {
-            body.setExtFields(JSONObject.parseObject(extFields, HashMap.class));
+            body.setExtFields((HashMap<String, String>) JSONObject.parseObject(extFields, HashMap.class));
         }
         return body;
     }
