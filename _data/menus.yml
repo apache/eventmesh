@@ -5,11 +5,11 @@
 header:
 - title: About
   url: /#about
-- title: Features
+- title: Documentation
   url: /#services
 - title: Use Case
   url: /#members
-- title: History
+- title: News
   url: /#timeline
 - title: Contacts
   url: /#contacts
