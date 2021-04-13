@@ -57,6 +57,8 @@ Run the main method of com.webank.eventmesh.tcp.demo.AsyncPublishBroadcast
 
 > producer send the event to consumer and don't need waiting response msg from consumer
 
+- create topic FT0-e-80010001-01-1 on rocketmq-console
+
 - start consumer, subscribe topic
 
   Async consumer demo is a spring boot application demo,  you can easily run this demo to start service and subscribe the topic.
