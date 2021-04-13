@@ -114,21 +114,21 @@ public class EventMeshTcpMonitor {
                     int sendTopics = session.getSessionContext().sendTopics.size();
                     int subscribeTopics = session.getSessionContext().subscribeTopics.size();
 
-                    tcpLogger.info("session|deliveredFailCount={}|deliveredMsgsCount={}|ackedMsgsCount={}|unAckMsgsCount={}|sendTopics={}|subscribeTopics={}|user={}",
-                            deliveredFailCount.longValue(), deliveredMsgsCount.longValue(), ackedMsgsCount.longValue(),
-                            unAckMsgsCount, sendTopics, subscribeTopics, session.getClient());
+//                    tcpLogger.info("session|deliveredFailCount={}|deliveredMsgsCount={}|ackedMsgsCount={}|unAckMsgsCount={}|sendTopics={}|subscribeTopics={}|user={}",
+//                            deliveredFailCount.longValue(), deliveredMsgsCount.longValue(), ackedMsgsCount.longValue(),
+//                            unAckMsgsCount, sendTopics, subscribeTopics, session.getClient());
 
                     topicSet.addAll(session.getSessionContext().subscribeTopics.keySet());
                 }
                 subTopicNum = topicSet.size();
 
-                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.CLIENT_2_EVENTMESH_TPS, client2eventMeshTPS));
-                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.EVENTMESH_2_MQ_TPS, eventMesh2mqTPS));
-                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.MQ_2_EVENTMESH_TPS, mq2eventMeshTPS));
-                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.EVENTMESH_2_CLIENT_TPS, eventMesh2clientTPS));
-                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.ALL_TPS, allTPS));
-                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.CONNECTION, EventMeshTcpConnectionHandler.connections));
-                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.SUB_TOPIC_NUM, subTopicNum));
+//                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.CLIENT_2_EVENTMESH_TPS, client2eventMeshTPS));
+//                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.EVENTMESH_2_MQ_TPS, eventMesh2mqTPS));
+//                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.MQ_2_EVENTMESH_TPS, mq2eventMeshTPS));
+//                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.EVENTMESH_2_CLIENT_TPS, eventMesh2clientTPS));
+//                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.ALL_TPS, allTPS));
+//                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.CONNECTION, EventMeshTcpConnectionHandler.connections));
+//                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.SUB_TOPIC_NUM, subTopicNum));
             }
         }), delay, period, TimeUnit.MILLISECONDS);
 
@@ -140,7 +140,7 @@ public class EventMeshTcpMonitor {
 
                 //monitor retry queue size
                 int retrySize = eventMeshTCPServer.getEventMeshTcpRetryer().getRetrySize();
-                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.RETRY_QUEUE_SIZE, retrySize));
+//                appLogger.info(String.format(MonitorMetricConstants.EVENTMESH_MONITOR_FORMAT_COMMON, EventMeshConstants.PROTOCOL_TCP, MonitorMetricConstants.RETRY_QUEUE_SIZE, retrySize));
             }
         }, 10, PRINT_THREADPOOLSTATE_INTERVAL, TimeUnit.SECONDS);
         logger.info("EventMeshTcpMonitor started......");

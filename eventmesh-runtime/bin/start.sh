@@ -38,7 +38,7 @@ function is_java8 {
 #0(not running),  1(is running)
 #function is_proxyRunning {
 #        local _pid="$1"
-#        local pid=`ps ax | grep -i 'com.webank.runtime.boot.ProxyStartup' |grep java | grep -v grep | awk '{print $1}'|grep $_pid`
+#        local pid=`ps ax | grep -i 'com.webank.runtime.boot.EventMeshStartup' |grep java | grep -v grep | awk '{print $1}'|grep $_pid`
 #        if [ -z "$pid" ] ; then
 #            return 0
 #        else
@@ -48,8 +48,8 @@ function is_java8 {
 
 function get_pid {
 	local ppid=""
-	if [ -f ${PROXY_HOME}/bin/pid.file ]; then
-		ppid=$(cat ${PROXY_HOME}/bin/pid.file)
+	if [ -f ${EVENTMESH_HOME}/bin/pid.file ]; then
+		ppid=$(cat ${EVENTMESH_HOME}/bin/pid.file)
 	else
 		if [[ $OS =~ Msys ]]; then
 			# 在Msys上存在可能无法kill识别出的进程的BUG
@@ -59,7 +59,7 @@ function get_pid {
 			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "com.webank.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
 			#在Linux服务器上要求尽可能精确识别进程
-			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $PROXY_HOME | grep -i "com.webank.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "com.webank.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		fi
 	fi
 	echo "$ppid";
@@ -83,18 +83,18 @@ else
         exit 9;
 fi
 
-echo "proxy use java location= "$JAVA
+echo "eventmesh use java location= "$JAVA
 
-PROXY_HOME=`cd "./.." && pwd`
+EVENTMESH_HOME=`cd "./.." && pwd`
 
-export PROXY_HOME
+export EVENTMESH_HOME
 
-export PROXY_LOG_HOME=${PROXY_HOME}/logs
+export EVENTMESH_LOG_HOME=${EVENTMESH_HOME}/logs
 
-echo "PROXY_HOME : ${PROXY_HOME}, PROXY_LOG_HOME : ${PROXY_LOG_HOME}"
+echo "EVENTMESH_HOME : ${EVENTMESH_HOME}, EVENTMESH_LOG_HOME : ${EVENTMESH_LOG_HOME}"
 
 function make_logs_dir {
-        if [ ! -e "${PROXY_LOG_HOME}" ]; then mkdir -p "${PROXY_LOG_HOME}"; fi
+        if [ ! -e "${EVENTMESH_LOG_HOME}" ]; then mkdir -p "${EVENTMESH_LOG_HOME}"; fi
 }
 
 error_exit ()
@@ -114,10 +114,10 @@ export JAVA_HOME
 #fi
 
 #JAVA_OPT="${JAVA_OPT} -server -Xms2048M -Xmx4096M -Xmn2048m -XX:SurvivorRatio=4"
-JAVA_OPT=`cat ${PROXY_HOME}/conf/server.env | grep APP_START_JVM_OPTION::: | awk -F ':::' {'print $2'}`
+JAVA_OPT=`cat ${EVENTMESH_HOME}/conf/server.env | grep APP_START_JVM_OPTION::: | awk -F ':::' {'print $2'}`
 JAVA_OPT="${JAVA_OPT} -XX:+UseG1GC -XX:G1HeapRegionSize=16m -XX:G1ReservePercent=25 -XX:InitiatingHeapOccupancyPercent=30 -XX:SoftRefLRUPolicyMSPerMB=0 -XX:SurvivorRatio=8 -XX:MaxGCPauseMillis=50"
-JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${PROXY_HOME}/logs/proxy_gc_%p.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy"
-JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${PROXY_HOME}/logs -XX:ErrorFile=${PROXY_HOME}/logs/hs_err_%p.log"
+JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${EVENTMESH_HOME}/logs/eventmesh_gc_%p.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy"
+JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${EVENTMESH_HOME}/logs -XX:ErrorFile=${EVENTMESH_HOME}/logs/hs_err_%p.log"
 JAVA_OPT="${JAVA_OPT} -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=30m"
 JAVA_OPT="${JAVA_OPT} -XX:-OmitStackTraceInFastThrow"
 JAVA_OPT="${JAVA_OPT} -XX:+AlwaysPreTouch"
@@ -126,9 +126,9 @@ JAVA_OPT="${JAVA_OPT} -XX:-UseLargePages -XX:-UseBiasedLocking"
 JAVA_OPT="${JAVA_OPT} -Dio.netty.leakDetectionLevel=advanced"
 JAVA_OPT="${JAVA_OPT} -Dio.netty.allocator.type=pooled"
 JAVA_OPT="${JAVA_OPT} -Djava.security.egd=file:/dev/./urandom"
-JAVA_OPT="${JAVA_OPT} -Dlog4j.configurationFile=${PROXY_HOME}/conf/log4j2.xml"
-JAVA_OPT="${JAVA_OPT} -Dproxy.log.home=${PROXY_LOG_HOME}"
-JAVA_OPT="${JAVA_OPT} -DconfPath=${PROXY_HOME}/conf"
+JAVA_OPT="${JAVA_OPT} -Dlog4j.configurationFile=${EVENTMESH_HOME}/conf/log4j2.xml"
+JAVA_OPT="${JAVA_OPT} -Deventmesh.log.home=${EVENTMESH_LOG_HOME}"
+JAVA_OPT="${JAVA_OPT} -DconfPath=${EVENTMESH_HOME}/conf"
 JAVA_OPT="${JAVA_OPT} -Dlog4j2.AsyncQueueFullPolicy=Discard"
 JAVA_OPT="${JAVA_OPT} -Drocketmq.client.logUseSlf4j=true"
 
@@ -151,15 +151,15 @@ fi
 
 make_logs_dir
 
-echo "using jdk[$JAVA]" >> ${PROXY_LOG_HOME}/proxy.out
+echo "using jdk[$JAVA]" >> ${EVENTMESH_LOG_HOME}/eventmesh.out
 
 
-PROXY_MAIN=com.webank.eventmesh.runtime.boot.EventMeshStartup
+EVENTMESH_MAIN=com.webank.eventmesh.runtime.boot.EventMeshStartup
 if [ $DOCKER ]
 then
-	$JAVA $JAVA_OPT -classpath ${PROXY_HOME}/conf:${PROXY_HOME}/apps/*:${PROXY_HOME}/lib/* $PROXY_MAIN >> ${PROXY_LOG_HOME}/proxy.out
+	$JAVA $JAVA_OPT -classpath ${EVENTMESH_HOME}/conf:${EVENTMESH_HOME}/apps/*:${EVENTMESH_HOME}/lib/* $EVENTMESH_MAIN >> ${EVENTMESH_LOG_HOME}/eventmesh.out
 else
-	$JAVA $JAVA_OPT -classpath ${PROXY_HOME}/conf:${PROXY_HOME}/apps/*:${PROXY_HOME}/lib/* $PROXY_MAIN >> ${PROXY_LOG_HOME}/proxy.out 2>&1 &
+	$JAVA $JAVA_OPT -classpath ${EVENTMESH_HOME}/conf:${EVENTMESH_HOME}/apps/*:${EVENTMESH_HOME}/lib/* $EVENTMESH_MAIN >> ${EVENTMESH_LOG_HOME}/eventmesh.out 2>&1 &
 echo $!>pid.file
 fi
 exit 0

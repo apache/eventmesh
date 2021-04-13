@@ -61,7 +61,7 @@ public class EventMeshMessage {
 
     @Override
     public String toString() {
-        return "AccessMessage{" +
+        return "EventMeshMessage{" +
                 "topic='" + topic + '\'' +
                 ", properties=" + properties +
                 ", body='" + body + '\'' +

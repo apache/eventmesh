@@ -19,8 +19,8 @@ package client.common;
 
 import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.rocketmq.common.UtilAll;
-import org.apache.rocketmq.remoting.common.RemotingUtil;
+//import org.apache.rocketmq.common.UtilAll;
+//import org.apache.rocketmq.remoting.common.RemotingUtil;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -46,8 +46,8 @@ public class UserAgentUtils {
         UserAgent userAgent = new UserAgent();
         userAgent.setSubsystem("5123");
         userAgent.setDcn("WAC");
-        userAgent.setPid(UtilAll.getPid());
-        userAgent.setHost(RemotingUtil.getLocalAddress());
+//        userAgent.setPid(UtilAll.getPid());
+//        userAgent.setHost(RemotingUtil.getLocalAddress());
         userAgent.setVersion("2.0.8");
         userAgent.setUsername("username");
         userAgent.setPassword("1234");
@@ -58,8 +58,8 @@ public class UserAgentUtils {
         UserAgent userAgent = new UserAgent();
         userAgent.setSubsystem("5243");
         userAgent.setDcn("WAC");
-        userAgent.setPid(UtilAll.getPid());
-        userAgent.setHost(RemotingUtil.getLocalAddress());
+//        userAgent.setPid(UtilAll.getPid());
+//        userAgent.setHost(RemotingUtil.getLocalAddress());
         userAgent.setPort(8888);
         userAgent.setVersion("2.0.8");
         userAgent.setUsername("username");

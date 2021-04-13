@@ -49,7 +49,7 @@ public class EventMeshTcp2Client {
         try{
             long startTime = System.currentTimeMillis();
             Package msg = new Package();
-            msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(), "graceful normal quit from access",
+            msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(), "graceful normal quit from eventmesh",
                     null));
 
             EventMeshTCPServer.scheduler.submit(new Runnable() {
