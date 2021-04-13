@@ -77,7 +77,7 @@ public class HTTPMetricsServer {
             @Override
             public void run() {
                 try {
-                    logPrintServerMetrics();
+//                    logPrintServerMetrics();
                 } catch (Exception ex) {
                     logger.warn("eventMesh print metrics err", ex);
                 }
