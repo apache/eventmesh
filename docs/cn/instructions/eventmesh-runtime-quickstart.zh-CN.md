@@ -70,8 +70,8 @@ sh start.sh
 
 ```java
 -Dlog4j.configurationFile=..\eventmesh-runtime\conf\log4j2.xml
--Dproxy.log.home=..\eventmesh-runtime\logs
--Dproxy.home=..\eventmesh-runtime
+-Deventmesh.log.home=..\eventmesh-runtime\logs
+-Deventmesh.home=..\eventmesh-runtime
 -DconfPath=..\eventmesh-runtime\conf
 ```
 
