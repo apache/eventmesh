@@ -32,7 +32,7 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
             client.init();
             client.heartbeat();
 
-            client.subscribe("FT0-e-80030001-01-3");
+            client.subscribe("FT0-e-80030000-01-3");
             client.registerSubBusiHandler(handler);
 
             client.listen();
