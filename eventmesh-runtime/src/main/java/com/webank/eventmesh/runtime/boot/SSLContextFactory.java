@@ -36,7 +36,7 @@ public class SSLContextFactory {
             }
             sslContext = SSLContext.getInstance(protocol);
             KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME_CONF_HOME
+            keyStore.load(Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME
                     + File.separator
                     + fileName), StandardOpenOption.READ), filePass);
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());

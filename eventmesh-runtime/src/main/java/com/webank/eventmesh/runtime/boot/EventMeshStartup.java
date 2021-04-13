@@ -33,7 +33,7 @@ public class EventMeshStartup {
     public static void main(String[] args) throws Exception {
         try{
             ConfigurationWraper configurationWraper =
-                    new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME_CONF_HOME
+                    new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
                             + File.separator
                             + EventMeshConstants.EVENTMESH_CONF_FILE, false);
             EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(configurationWraper);

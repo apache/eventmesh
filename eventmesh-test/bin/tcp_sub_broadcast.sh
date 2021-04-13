@@ -38,8 +38,8 @@ function is_java8 {
 
 function get_pid {
 	local ppid=""
-	if [ -f ${PROXY_HOME}/bin/pid_tcp_sub_broadcast.file ]; then
-		ppid=$(cat ${PROXY_HOME}/bin/pid_tcp_sub_broadcast.file)
+	if [ -f ${EVENTMESH_HOME}/bin/pid_tcp_sub_broadcast.file ]; then
+		ppid=$(cat ${EVENTMESH_HOME}/bin/pid_tcp_sub_broadcast.file)
 	else
 		if [[ $OS =~ Msys ]]; then
 			# 在Msys上存在可能无法kill识别出的进程的BUG
@@ -49,7 +49,7 @@ function get_pid {
 			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "com.webank.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
 			#在Linux服务器上要求尽可能精确识别进程
-			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $PROXY_HOME | grep -i "com.webank.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "com.webank.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		fi
 	fi
 	echo "$ppid";
@@ -108,7 +108,7 @@ JAVA_OPT="${JAVA_OPT} -Dio.netty.leakDetectionLevel=advanced"
 JAVA_OPT="${JAVA_OPT} -Dio.netty.allocator.type=pooled"
 JAVA_OPT="${JAVA_OPT} -Djava.security.egd=file:/dev/./urandom"
 JAVA_OPT="${JAVA_OPT} -Dlog4j.configurationFile=${DEMO_HOME}/conf/log4j2.xml"
-#JAVA_OPT="${JAVA_OPT} -Dproxy.log.home=${DEMO_LOG_HOME}"
+#JAVA_OPT="${JAVA_OPT} -Deventmesh.log.home=${DEMO_LOG_HOME}"
 JAVA_OPT="${JAVA_OPT} -DconfPath=${DEMO_HOME}/conf"
 JAVA_OPT="${JAVA_OPT} -Dlog4j2.AsyncQueueFullPolicy=Discard"
 JAVA_OPT="${JAVA_OPT} -Drocketmq.client.logUseSlf4j=true"

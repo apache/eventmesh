@@ -35,7 +35,7 @@ public class EventMeshConstants {
 
     public static final String DEFAULT_CHARSET = "UTF-8";
 
-    public static final String EVENTMESH_CONF_HOME_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
+    public static final String EVENTMESH_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
     public static final String EVENTMESH_CONF_FILE = "eventmesh.properties";
 
