@@ -17,33 +17,24 @@
 
 package com.webank.eventmesh.client.http.producer;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-
-import com.alibaba.fastjson.JSON;
-import com.google.common.base.Preconditions;
 import com.webank.eventmesh.client.http.AbstractLiteClient;
-import com.webank.eventmesh.client.http.ProxyRetObj;
+import com.webank.eventmesh.client.http.EventMeshRetObj;
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.http.HttpUtil;
 import com.webank.eventmesh.client.http.http.RequestParam;
 import com.webank.eventmesh.client.http.ssl.MyX509TrustManager;
 import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.common.LiteMessage;
-import com.webank.eventmesh.common.ProxyException;
+import com.webank.eventmesh.common.EventMeshException;
 import com.webank.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
 import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
-import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
-
+import com.alibaba.fastjson.JSON;
+import com.google.common.base.Preconditions;
 import io.netty.handler.codec.http.HttpMethod;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -54,6 +45,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class LiteProducer extends AbstractLiteClient {
 
     public Logger logger = LoggerFactory.getLogger(LiteProducer.class);
@@ -62,7 +60,7 @@ public class LiteProducer extends AbstractLiteClient {
 
     public LiteProducer(LiteClientConfig liteClientConfig) {
         super(liteClientConfig);
-        if (liteClientConfig.isUseTls()) {
+        if(liteClientConfig.isUseTls()){
             setHttpClient();
         }
     }
@@ -72,8 +70,8 @@ public class LiteProducer extends AbstractLiteClient {
     @Override
     public void start() throws Exception {
         Preconditions.checkState(liteClientConfig != null, "liteClientConfig can't be null");
-        Preconditions.checkState(liteClientConfig.getLiteProxyAddr() != null, "liteClientConfig.liteServerAddr can't be null");
-        if (started.get()) {
+        Preconditions.checkState(liteClientConfig.getLiteEventMeshAddr() != null, "liteClientConfig.liteServerAddr can't be null");
+        if(started.get()) {
             return;
         }
         logger.info("LiteProducer starting");
@@ -84,7 +82,7 @@ public class LiteProducer extends AbstractLiteClient {
 
     @Override
     public void shutdown() throws Exception {
-        if (!started.get()) {
+        if(!started.get()) {
             return;
         }
         logger.info("LiteProducer shutting down");
@@ -103,9 +101,9 @@ public class LiteProducer extends AbstractLiteClient {
             start();
         }
         Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
-                "proxyMessage[topic] invalid");
+                "eventMeshMessage[topic] invalid");
         Preconditions.checkState(StringUtils.isNotBlank(message.getContent()),
-                "proxyMessage[content] invalid");
+                "eventMeshMessage[content] invalid");
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
@@ -122,52 +120,52 @@ public class LiteProducer extends AbstractLiteClient {
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
                 .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
                 .addBody(SendMessageRequestBody.CONTENT, message.getContent())
-                .addBody(SendMessageRequestBody.TTL, message.getPropKey(Constants.PROXY_MESSAGE_CONST_TTL))
+                .addBody(SendMessageRequestBody.TTL, message.getPropKey(Constants.EVENTMESH_MESSAGE_CONST_TTL))
                 .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
                 .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
         long startTime = System.currentTimeMillis();
-        String target = selectProxy();
+        String target = selectEventMesh();
         String res = "";
         try {
             res = HttpUtil.post(httpClient, target, requestParam);
         } catch (Exception ex) {
-            throw new ProxyException(ex);
+            throw new EventMeshException(ex);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("publish async message, targetProxy:{}, cost:{}ms, message:{}, rtn:{}",
+        if(logger.isDebugEnabled()) {
+            logger.debug("publish async message, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}",
                     target, System.currentTimeMillis() - startTime, message, res);
         }
 
-        ProxyRetObj ret = JSON.parseObject(res, ProxyRetObj.class);
+        EventMeshRetObj ret = JSON.parseObject(res, EventMeshRetObj.class);
 
-        if (ret.getRetCode() == ProxyRetCode.SUCCESS.getRetCode()) {
+        if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
             return Boolean.TRUE;
         } else {
-            throw new ProxyException(ret.getRetCode(), ret.getRetMsg());
+            throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
         }
     }
 
-    public String selectProxy() {
-        if (CollectionUtils.isEmpty(proxyServerList)) {
+    public String selectEventMesh() {
+        if (CollectionUtils.isEmpty(eventMeshServerList)) {
             return null;
         }
-        if (liteClientConfig.isUseTls()) {
-            return Constants.HTTPS_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
-        } else {
-            return Constants.HTTP_PROTOCOL_PREFIX + proxyServerList.get(RandomUtils.nextInt(0, proxyServerList.size()));
+        if(liteClientConfig.isUseTls()){
+            return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
+        }else{
+            return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
         }
     }
 
     public LiteMessage request(LiteMessage message, long timeout) throws Exception {
-        if (!started.get()) {
+        if(!started.get()) {
             start();
         }
         Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
-                "proxyMessage[topic] invalid");
+                "eventMeshMessage[topic] invalid");
         Preconditions.checkState(StringUtils.isNotBlank(message.getContent()),
-                "proxyMessage[content] invalid");
+                "eventMeshMessage[content] invalid");
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
@@ -189,39 +187,39 @@ public class LiteProducer extends AbstractLiteClient {
                 .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
         long startTime = System.currentTimeMillis();
-        String target = selectProxy();
+        String target = selectEventMesh();
         String res = "";
         try {
             res = HttpUtil.post(httpClient, target, requestParam);
         } catch (Exception ex) {
-            throw new ProxyException(ex);
+            throw new EventMeshException(ex);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("publish sync message by await, targetProxy:{}, cost:{}ms, message:{}, rtn:{}", target, System.currentTimeMillis() - startTime, message, res);
+        if(logger.isDebugEnabled()) {
+            logger.debug("publish sync message by await, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}", target, System.currentTimeMillis() - startTime, message, res);
         }
 
-        ProxyRetObj ret = JSON.parseObject(res, ProxyRetObj.class);
-        if (ret.getRetCode() == ProxyRetCode.SUCCESS.getRetCode()) {
-            LiteMessage proxyMessage = new LiteMessage();
+        EventMeshRetObj ret = JSON.parseObject(res, EventMeshRetObj.class);
+        if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
+            LiteMessage eventMeshMessage = new LiteMessage();
             SendMessageResponseBody.ReplyMessage replyMessage =
                     JSON.parseObject(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
-            proxyMessage.setContent(replyMessage.body).setProp(replyMessage.properties)
+            eventMeshMessage.setContent(replyMessage.body).setProp(replyMessage.properties)
                     .setTopic(replyMessage.topic);
-            return proxyMessage;
+            return eventMeshMessage;
         }
 
         return null;
     }
 
     public void request(LiteMessage message, RRCallback rrCallback, long timeout) throws Exception {
-        if (!started.get()) {
+        if(!started.get()) {
             start();
         }
         Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
-                "proxyMessage[topic] invalid");
+                "eventMeshMessage[topic] invalid");
         Preconditions.checkState(StringUtils.isNotBlank(message.getContent()),
-                "proxyMessage[content] invalid");
+                "eventMeshMessage[content] invalid");
         Preconditions.checkState(ObjectUtils.allNotNull(rrCallback),
                 "rrCallback invalid");
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
@@ -245,14 +243,14 @@ public class LiteProducer extends AbstractLiteClient {
                 .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
         long startTime = System.currentTimeMillis();
-        String target = selectProxy();
+        String target = selectEventMesh();
         try {
             HttpUtil.post(httpClient, null, target, requestParam, new RRCallbackResponseHandlerAdapter(message, rrCallback, timeout));
         } catch (Exception ex) {
-            throw new ProxyException(ex);
+            throw new EventMeshException(ex);
         }
 
-        if (logger.isDebugEnabled()) {
+        if(logger.isDebugEnabled()) {
             logger.debug("publish sync message by async, target:{}, cost:{}, message:{}", target, System.currentTimeMillis() - startTime, message);
         }
     }
@@ -261,11 +259,11 @@ public class LiteProducer extends AbstractLiteClient {
         SSLContext sslContext = null;
         try {
             String protocol = System.getProperty("ssl.client.protocol", "TLSv1.1");
-            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
+            TrustManager[] tm = new TrustManager[] { new MyX509TrustManager() };
             sslContext = SSLContext.getInstance(protocol);
             sslContext.init(null, tm, new SecureRandom());
-            httpClient = HttpClients.custom().setSSLContext(sslContext)
-                    .setSSLHostnameVerifier(SSLConnectionSocketFactory.getDefaultHostnameVerifier()).build();
+            httpClient = HttpClients.custom().setSslcontext(sslContext)
+                    .setHostnameVerifier(SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER).build();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (KeyManagementException e) {

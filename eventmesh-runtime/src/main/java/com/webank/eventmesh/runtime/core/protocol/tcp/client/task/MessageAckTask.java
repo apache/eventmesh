@@ -18,7 +18,7 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push.ClientAckContext;
-import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshTCPServer;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,8 +29,8 @@ public class MessageAckTask extends AbstractTask {
 
     private final Logger messageLogger = LoggerFactory.getLogger("message");
 
-    public MessageAckTask(Package pkg, ChannelHandlerContext ctx, long startTime, ProxyTCPServer proxyTCPServer) {
-        super(pkg, ctx, startTime, proxyTCPServer);
+    public MessageAckTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+        super(pkg, ctx, startTime, eventMeshTCPServer);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class MessageAckTask extends AbstractTask {
             session.ackMsg(seq);
             session.getClientGroupWrapper().get().getDownstreamMap().remove(seq);
         }
-        messageLogger.info("pkg|c2proxy|cmd={}|seq=[{}]|user={}|wait={}ms|cost={}ms", cmd, seq, session.getClient(),
+        messageLogger.info("pkg|c2eventMesh|cmd={}|seq=[{}]|user={}|wait={}ms|cost={}ms", cmd, seq, session.getClient(),
                 taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
     }
 }

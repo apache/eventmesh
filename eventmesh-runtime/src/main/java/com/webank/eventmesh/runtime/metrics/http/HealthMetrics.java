@@ -17,20 +17,20 @@
 
 package com.webank.eventmesh.runtime.metrics.http;
 
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
 import com.codahale.metrics.MetricRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HealthMetrics {
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
     private MetricRegistry metricRegistry;
 
     public Logger logger = LoggerFactory.getLogger("httpMonitor");
 
-    public HealthMetrics(ProxyHTTPServer proxyHTTPServer, MetricRegistry metricRegistry) {
-        this.proxyHTTPServer = proxyHTTPServer;
+    public HealthMetrics(EventMeshHTTPServer eventMeshHTTPServer, MetricRegistry metricRegistry) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.metricRegistry = metricRegistry;
     }
 }

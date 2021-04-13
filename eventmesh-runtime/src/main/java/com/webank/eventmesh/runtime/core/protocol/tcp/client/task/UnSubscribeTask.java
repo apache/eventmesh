@@ -18,7 +18,7 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import com.webank.eventmesh.runtime.util.Utils;
-import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshTCPServer;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
@@ -35,8 +35,8 @@ public class UnSubscribeTask extends AbstractTask {
 
     private final Logger messageLogger = LoggerFactory.getLogger("message");
 
-    public UnSubscribeTask(Package pkg, ChannelHandlerContext ctx, long startTime, ProxyTCPServer proxyTCPServer) {
-        super(pkg, ctx, startTime, proxyTCPServer);
+    public UnSubscribeTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+        super(pkg, ctx, startTime, eventMeshTCPServer);
     }
 
     @Override
