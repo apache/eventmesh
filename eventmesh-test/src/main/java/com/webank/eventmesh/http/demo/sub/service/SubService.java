@@ -3,7 +3,7 @@ package com.webank.eventmesh.http.demo.sub.service;
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.consumer.LiteConsumer;
 import com.webank.eventmesh.common.IPUtil;
-import com.webank.eventmesh.common.ProxyException;
+import com.webank.eventmesh.common.EventMeshException;
 import com.webank.eventmesh.common.ThreadUtil;
 import com.webank.eventmesh.util.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -23,11 +23,11 @@ public class SubService implements InitializingBean {
 
     private LiteConsumer liteConsumer;
 
-    private String proxyIPPort = "";
+    private String eventMeshIPPort = "";
 
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
-    final List<String> topicList = Arrays.asList("FT0-e-80010000-01-1");
+    final List<String> topicList = Arrays.asList("FT0-e-80010001-01-1");
     final String localIp = IPUtil.getLocalAddress();
     final String localPort = properties.getProperty("server.port");
     final String eventMeshIp = properties.getProperty("eventmesh.ip");
@@ -41,12 +41,12 @@ public class SubService implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        if (StringUtils.isBlank(proxyIPPort)) {
+        if (StringUtils.isBlank(eventMeshIPPort)) {
             // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-            proxyIPPort = eventMeshIp + ":" + eventMeshHttpPort;
+            eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
         }
-        LiteClientConfig weMQProxyClientConfig = new LiteClientConfig();
-        weMQProxyClientConfig.setLiteProxyAddr(proxyIPPort)
+        LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
+        eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
                 .setEnv(env)
                 .setIdc(idc)
                 .setDcn(dcn)
@@ -54,7 +54,7 @@ public class SubService implements InitializingBean {
                 .setSys(subsys)
                 .setPid(String.valueOf(ThreadUtil.getPID()));
 
-        liteConsumer = new LiteConsumer(weMQProxyClientConfig);
+        liteConsumer = new LiteConsumer(eventMeshClientConfig);
         liteConsumer.start();
         liteConsumer.heartBeat(topicList, url);
         liteConsumer.subscribe(topicList, url);
@@ -63,7 +63,7 @@ public class SubService implements InitializingBean {
             logger.info("start destory ....");
             try {
                 liteConsumer.unsubscribe(topicList, url);
-            } catch (ProxyException e) {
+            } catch (EventMeshException e) {
                 e.printStackTrace();
             }
             try {

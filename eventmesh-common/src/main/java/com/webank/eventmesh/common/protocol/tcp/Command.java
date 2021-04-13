@@ -80,7 +80,7 @@ public enum Command {
     UNREGISTER_REQUEST(33),                              //client发送去注册请求给server
     UNREGISTER_RESPONSE(34),                             //server将去注册结果给client
 
-    //client询问proxy推荐连哪个proxy
+    //client询问EventMesh推荐连哪个EventMesh
     RECOMMEND_REQUEST(35),                              //client发送推荐请求给server
     RECOMMEND_RESPONSE(36);                             //server将推荐结果给client
 

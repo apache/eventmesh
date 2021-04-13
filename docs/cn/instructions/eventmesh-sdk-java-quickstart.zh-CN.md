@@ -57,6 +57,8 @@ TCP 和 Http 示例都在**eventmesh-test**模块下
 
 > 生产者将事件发送给下游即可，无需等待响应
 
+- 创建主题FT0-e-80010001-01-1,可以通过rocketmq-console或者rocketmq tools 命令
+
 - 启动消费端，订阅Topic
 
   异步事件消费端为spring boot demo，运行demo即可启动服务并完成Topic订阅

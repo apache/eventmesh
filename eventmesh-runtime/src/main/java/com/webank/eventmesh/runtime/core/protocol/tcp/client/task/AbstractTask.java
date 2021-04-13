@@ -18,7 +18,7 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshTCPServer;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -31,13 +31,13 @@ public abstract class AbstractTask implements Runnable {
     protected ChannelHandlerContext ctx;
     protected Session session;
     protected long startTime;
-    protected ProxyTCPServer proxyTCPServer;
+    protected EventMeshTCPServer eventMeshTCPServer;
 
-    public AbstractTask(Package pkg, ChannelHandlerContext ctx, long startTime, ProxyTCPServer proxyTCPServer) {
-        this.proxyTCPServer = proxyTCPServer;
+    public AbstractTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
         this.pkg = pkg;
         this.ctx = ctx;
-        this.session = proxyTCPServer.getClientSessionGroupMapping().getSession(ctx);
+        this.session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
         this.startTime = startTime;
     }
 }

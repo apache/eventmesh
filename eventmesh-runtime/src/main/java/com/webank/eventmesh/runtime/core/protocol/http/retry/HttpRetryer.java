@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.retry;
 
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,10 +34,10 @@ public class HttpRetryer {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
-    public HttpRetryer(ProxyHTTPServer proxyHTTPServer) {
-        this.proxyHTTPServer = proxyHTTPServer;
+    public HttpRetryer(EventMeshHTTPServer eventMeshHTTPServer) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
     private DelayQueue<DelayRetryable> failed = new DelayQueue<DelayRetryable>();
@@ -47,7 +47,7 @@ public class HttpRetryer {
     private Thread dispatcher;
 
     public void pushRetry(DelayRetryable delayRetryable) {
-        if (failed.size() >= proxyHTTPServer.getProxyConfiguration().proxyServerRetryBlockQSize) {
+        if (failed.size() >= eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize) {
             retryLogger.error("[RETRY-QUEUE] is full!");
             return;
         }
@@ -55,10 +55,10 @@ public class HttpRetryer {
     }
 
     public void init() {
-        pool = new ThreadPoolExecutor(proxyHTTPServer.getProxyConfiguration().proxyServerRetryThreadNum,
-                proxyHTTPServer.getProxyConfiguration().proxyServerRetryThreadNum,
+        pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
                 60000,
-                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(proxyHTTPServer.getProxyConfiguration().proxyServerRetryBlockQSize),
+                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize),
                 new ThreadFactory() {
                     private AtomicInteger ai = new AtomicInteger();
 

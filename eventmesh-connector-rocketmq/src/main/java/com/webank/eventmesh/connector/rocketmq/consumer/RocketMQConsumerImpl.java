@@ -20,10 +20,10 @@ package com.webank.eventmesh.connector.rocketmq.consumer;
 import com.webank.eventmesh.api.AbstractContext;
 import com.webank.eventmesh.api.consumer.MeshMQPushConsumer;
 import com.webank.eventmesh.connector.rocketmq.common.Constants;
-import com.webank.eventmesh.connector.rocketmq.common.ProxyConstants;
+import com.webank.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import com.webank.eventmesh.connector.rocketmq.config.ClientConfiguration;
 import com.webank.eventmesh.connector.rocketmq.config.ConfigurationWraper;
-import com.webank.eventmesh.connector.rocketmq.patch.ProxyConsumeConcurrentlyContext;
+import com.webank.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
 import com.webank.eventmesh.connector.rocketmq.utils.OMSUtil;
 import io.openmessaging.api.*;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
@@ -51,9 +51,9 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     @Override
     public synchronized void init(Properties keyValue) throws Exception {
         ConfigurationWraper configurationWraper =
-                new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
+                new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
                         + File.separator
-                        + ProxyConstants.PROXY_CONF_FILE, false);
+                        + EventMeshConstants.EVENTMESH_CONF_FILE, false);
         final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWraper);
         clientConfiguration.init();
         boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast"));
@@ -117,7 +117,7 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
         for(Message msg : msgs){
             msgExtList.add(OMSUtil.msgConvertExt(msg));
         }
-        ((ConsumeMessageConcurrentlyService) consumeMessageService).updateOffset(msgExtList, (ProxyConsumeConcurrentlyContext) context);
+        ((ConsumeMessageConcurrentlyService) consumeMessageService).updateOffset(msgExtList, (EventMeshConsumeConcurrentlyContext) context);
     }
 
     @Override

@@ -20,7 +20,7 @@ package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.push;
 import com.webank.eventmesh.api.AbstractContext;
 import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.runtime.util.ServerGlobal;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import io.openmessaging.api.Message;
@@ -57,9 +57,9 @@ public class DownStreamMsgContext implements Delayed {
 
     private long expireTime;
 
-    public boolean msgFromOtherProxy;
+    public boolean msgFromOtherEventMesh;
 
-    public DownStreamMsgContext(Message msgExt, Session session, MQConsumerWrapper consumer, AbstractContext consumeConcurrentlyContext, boolean msgFromOtherProxy) {
+    public DownStreamMsgContext(Message msgExt, Session session, MQConsumerWrapper consumer, AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh) {
         this.seq = String.valueOf(ServerGlobal.getInstance().getMsgCounter().incrementAndGet());
         this.msgExt = msgExt;
         this.session = session;
@@ -70,7 +70,7 @@ public class DownStreamMsgContext implements Delayed {
         this.executeTime = System.currentTimeMillis();
         this.createTime = System.currentTimeMillis();
         this.expireTime = System.currentTimeMillis() + Long.parseLong(msgExt.getUserProperties("TTL"));
-        this.msgFromOtherProxy = msgFromOtherProxy;
+        this.msgFromOtherEventMesh = msgFromOtherEventMesh;
     }
 
     public boolean isExpire() {
@@ -85,7 +85,7 @@ public class DownStreamMsgContext implements Delayed {
 //            ConsumeMessageService consumeMessageService = consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, consumeConcurrentlyContext);
             logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION),
-                    msgs.get(0).getSystemProperties(ProxyConstants.PROPERTY_MESSAGE_KEYS));
+                    msgs.get(0).getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_KEYS));
         }else{
             logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",consumer == null, consumeConcurrentlyContext == null, msgExt == null);
         }
@@ -104,9 +104,9 @@ public class DownStreamMsgContext implements Delayed {
                 ",consumer=" + consumer +
 //  todo              ",consumerGroup=" + consumer.getClass().getConsumerGroup() +
                 ",topic=" + msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION) +
-                ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) +
-                ",executeTime=" + DateFormatUtils.format(executeTime, ProxyConstants.DATE_FORMAT) +
-                ",lastPushTime=" + DateFormatUtils.format(lastPushTime, ProxyConstants.DATE_FORMAT) + '}';
+                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) +
+                ",executeTime=" + DateFormatUtils.format(executeTime, EventMeshConstants.DATE_FORMAT) +
+                ",lastPushTime=" + DateFormatUtils.format(lastPushTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
     @Override

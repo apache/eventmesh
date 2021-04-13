@@ -17,13 +17,13 @@
 
 package com.webank.eventmesh.runtime.core.protocol.http.processor;
 
-import com.webank.eventmesh.runtime.boot.ProxyServer;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.boot.EventMeshServer;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import com.webank.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import com.webank.eventmesh.common.IPUtil;
 import com.webank.eventmesh.common.command.HttpCommand;
-import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
@@ -34,25 +34,25 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
 
     public Logger cmdLogger = LoggerFactory.getLogger("cmd");
 
-    private ProxyServer proxyServer;
+    private EventMeshServer eventMeshServer;
 
-    public AdminShutdownProcessor(ProxyServer proxyServer) {
-        this.proxyServer = proxyServer;
+    public AdminShutdownProcessor(EventMeshServer eventMeshServer) {
+        this.eventMeshServer = eventMeshServer;
     }
 
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
 
-        HttpCommand responseProxyCommand;
-        cmdLogger.info("cmd={}|{}|client2proxy|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-                ProxyConstants.PROTOCOL_HTTP,
+        HttpCommand responseEventMeshCommand;
+        cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+                EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
-        proxyServer.shutdown();
+        eventMeshServer.shutdown();
 
-        responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
-                ProxyRetCode.SUCCESS.getRetCode(), ProxyRetCode.SUCCESS.getErrMsg());
-        asyncContext.onComplete(responseProxyCommand);
+        responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                EventMeshRetCode.SUCCESS.getRetCode(), EventMeshRetCode.SUCCESS.getErrMsg());
+        asyncContext.onComplete(responseEventMeshCommand);
     }
 
     @Override

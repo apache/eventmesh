@@ -18,7 +18,7 @@
 package com.webank.eventmesh.common.protocol.tcp.codec;
 
 import com.webank.eventmesh.common.protocol.tcp.Package;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.RedirectInfo;
@@ -46,7 +46,7 @@ public class Codec {
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
     private static Charset UTF8 = Charset.forName("UTF-8");
 
-    private static final byte[] CONSTANT_MAGIC_FLAG = "WEMQ".getBytes(UTF8);
+    private static final byte[] CONSTANT_MAGIC_FLAG = "EventMesh".getBytes(UTF8);
 
     private static final byte[] VERSION = "0000".getBytes(UTF8);
 
@@ -160,17 +160,17 @@ public class Codec {
             case RESPONSE_TO_SERVER:
             case ASYNC_MESSAGE_TO_SERVER:
             case BROADCAST_MESSAGE_TO_SERVER:
-                return jsonMapper.readValue(data, AccessMessage.class);
+                return jsonMapper.readValue(data, EventMeshMessage.class);
             case REQUEST_TO_CLIENT:
             case RESPONSE_TO_CLIENT:
             case ASYNC_MESSAGE_TO_CLIENT:
             case BROADCAST_MESSAGE_TO_CLIENT:
-                return jsonMapper.readValue(data, AccessMessage.class);
+                return jsonMapper.readValue(data, EventMeshMessage.class);
             case REQUEST_TO_CLIENT_ACK:
             case RESPONSE_TO_CLIENT_ACK:
             case ASYNC_MESSAGE_TO_CLIENT_ACK:
             case BROADCAST_MESSAGE_TO_CLIENT_ACK:
-                return jsonMapper.readValue(data, AccessMessage.class);
+                return jsonMapper.readValue(data, EventMeshMessage.class);
             case REDIRECT_TO_CLIENT:
                 return jsonMapper.readValue(data, RedirectInfo.class);
             default:
