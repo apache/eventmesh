@@ -21,7 +21,7 @@ DeFiBus主要包括以下几个组件（模块）：
 
 * **SGS**：服务治理系统（Service Government System）负责全局的服务管理，包括服务的申请、服务部署规划、服务下线等服务全生命周期的管理。在DeFiBus中，服务与Topic一一对应，Topic的名称由对应的服务按照一定的规则来命名。Topic的创建、更新和删除由SGS统一管理。SGS在服务的部署区域对应的Broker集群中创建Topic之后，将更新全局服务路由数据，供GSL定位服务使用。
 
-* **Proxy**：服务代理（Proxy）提供HTTP接入方式，同时允许按照协议规范开发的C、GO、Python等其他语言客户端的接入。
+* **EventMesh**：服务代理（EventMesh）提供HTTP接入方式，同时允许按照协议规范开发的C、GO、Python等其他语言客户端的接入。
 
 ### 服务和Topic的定义
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

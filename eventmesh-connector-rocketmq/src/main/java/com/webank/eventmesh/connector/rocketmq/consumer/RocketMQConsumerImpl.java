@@ -53,7 +53,7 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
         ConfigurationWraper configurationWraper =
                 new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
                         + File.separator
-                        + EventMeshConstants.EVENTMESH_CONF_HOME, false);
+                        + EventMeshConstants.EVENTMESH_CONF_FILE, false);
         final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWraper);
         clientConfiguration.init();
         boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast"));
