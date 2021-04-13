@@ -133,7 +133,7 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     }
 
     /**
-     * 发送事件消息, 只所以有返回值是ACCESS 给了ACK
+     * 发送事件消息, 只所以有返回值是EventMesh 给了ACK
      *
      * @param msg
      * @throws Exception

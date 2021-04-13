@@ -27,7 +27,7 @@ public class SubService implements InitializingBean {
 
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
-    final List<String> topicList = Arrays.asList("FT0-e-80010000-01-1");
+    final List<String> topicList = Arrays.asList("FT0-e-80010001-01-1");
     final String localIp = IPUtil.getLocalAddress();
     final String localPort = properties.getProperty("server.port");
     final String eventMeshIp = properties.getProperty("eventmesh.ip");

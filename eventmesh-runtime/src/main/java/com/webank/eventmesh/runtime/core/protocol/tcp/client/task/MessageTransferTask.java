@@ -64,7 +64,7 @@ public class MessageTransferTask extends AbstractTask {
         EventMeshTcpSendResult sendStatus;
         try {
             if (eventMeshMessage == null) {
-                throw new Exception("accessMessage is null");
+                throw new Exception("eventMeshMessage is null");
             }
 
             if (!cmd.equals(RESPONSE_TO_SERVER) && !eventMeshTCPServer.rateLimiter.tryAcquire(TRY_PERMIT_TIME_OUT, TimeUnit.MILLISECONDS)) {
