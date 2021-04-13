@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.metrics.http;
 
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
 import com.codahale.metrics.MetricRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +31,12 @@ public class SummaryMetrics {
 
     public Logger logger = LoggerFactory.getLogger("httpMonitor");
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
     private MetricRegistry metricRegistry;
 
-    public SummaryMetrics(ProxyHTTPServer proxyHTTPServer, MetricRegistry metricRegistry) {
-        this.proxyHTTPServer = proxyHTTPServer;
+    public SummaryMetrics(EventMeshHTTPServer eventMeshHTTPServer, MetricRegistry metricRegistry) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.metricRegistry = metricRegistry;
     }
 
@@ -58,7 +58,7 @@ public class SummaryMetrics {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    public static final String PROXY_MONITOR_FORMAT_HTTP = "{\"maxHTTPTPS\":\"%.1f\",\"avgHTTPTPS\":\"%.1f\"," +  //PROXY 接受外部HTTP 请求的TPS相关
+    public static final String EVENTMESH_MONITOR_FORMAT_HTTP = "{\"maxHTTPTPS\":\"%.1f\",\"avgHTTPTPS\":\"%.1f\"," +  //EVENTMESH 接受外部HTTP 请求的TPS相关
             "\"maxHTTPCOST\":\"%s\",\"avgHTTPCOST\":\"%.1f\",\"avgHTTPBodyDecodeCost\":\"%.1f\", \"httpDiscard\":\"%s\"}";
 
     private float wholeCost = 0f;
@@ -147,7 +147,7 @@ public class SummaryMetrics {
 
 
     //////////////////////////////////////////////////////////////////////////
-    public static final String PROXY_MONITOR_FORMAT_BATCHSENDMSG = "{\"maxBatchSendMsgTPS\":\"%.1f\",\"avgBatchSendMsgTPS\":\"%.1f\"," +
+    public static final String EVENTMESH_MONITOR_FORMAT_BATCHSENDMSG = "{\"maxBatchSendMsgTPS\":\"%.1f\",\"avgBatchSendMsgTPS\":\"%.1f\"," +
             " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"discard\":\"%s\"}";
 
     private AtomicLong sendBatchMsgNumPerSecond = new AtomicLong(0);
@@ -215,7 +215,7 @@ public class SummaryMetrics {
     }
 
     //////////////////////////////////////////////////////////////////////////
-    public static final String PROXY_MONITOR_FORMAT_SENDMSG = "{\"maxSendMsgTPS\":\"%.1f\",\"avgSendMsgTPS\":\"%.1f\"," +
+    public static final String EVENTMESH_MONITOR_FORMAT_SENDMSG = "{\"maxSendMsgTPS\":\"%.1f\",\"avgSendMsgTPS\":\"%.1f\"," +
             " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"replyMsg\":\"%s\", \"replyFail\":\"%s\"}";
 
     private AtomicLong sendMsgNumSum = new AtomicLong(0);
@@ -294,7 +294,7 @@ public class SummaryMetrics {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    public static final String PROXY_MONITOR_FORMAT_PUSHMSG = "{\"maxPushMsgTPS\":\"%.1f\",\"avgPushMsgTPS\":\"%.1f\"," +
+    public static final String EVENTMESH_MONITOR_FORMAT_PUSHMSG = "{\"maxPushMsgTPS\":\"%.1f\",\"avgPushMsgTPS\":\"%.1f\"," +
             " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.1f\", \"maxClientLatency\":\"%.1f\", \"avgClientLatency\":\"%.1f\"}";
 
     private float wholePushCost = 0f;
@@ -376,11 +376,11 @@ public class SummaryMetrics {
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public static final String PROXY_MONITOR_FORMAT_BLOCKQ = "{\"batchMsgQ\":\"%s\",\"sendMsgQ\":\"%s\"," +
+    public static final String EVENTMESH_MONITOR_FORMAT_BLOCKQ = "{\"batchMsgQ\":\"%s\",\"sendMsgQ\":\"%s\"," +
             "\"pushMsgQ\":\"%s\",\"httpRetryQ\":\"%s\"}";
 
     ///////////////////////////////////////////////////////////////////////////
-    public static final String PROXY_MONITOR_FORMAT_MQ_CLIENT = "{\"batchAvgSend2MQCost\":\"%.1f\", \"avgSend2MQCost\":\"%.1f\", \"avgReply2MQCost\":\"%.1f\"}";
+    public static final String EVENTMESH_MONITOR_FORMAT_MQ_CLIENT = "{\"batchAvgSend2MQCost\":\"%.1f\", \"avgSend2MQCost\":\"%.1f\", \"avgReply2MQCost\":\"%.1f\"}";
 
     private float batchSend2MQWholeCost = 0f;
 

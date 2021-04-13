@@ -28,17 +28,17 @@ public class UnRegResponseHeader extends Header {
 
     private int code;
 
-    private String proxyCluster;
+    private String eventMeshCluster;
 
-    private String proxyIp;
+    private String eventMeshIp;
 
-    private String proxyEnv;
+    private String eventMeshEnv;
 
-    private String proxyRegion;
+    private String eventMeshRegion;
 
-    private String proxyIdc;
+    private String eventMeshIdc;
 
-    private String proxyDcn;
+    private String eventMeshDcn;
 
     public int getCode() {
         return code;
@@ -48,65 +48,65 @@ public class UnRegResponseHeader extends Header {
         this.code = code;
     }
 
-    public String getProxyCluster() {
-        return proxyCluster;
+    public String getEventMeshCluster() {
+        return eventMeshCluster;
     }
 
-    public void setProxyCluster(String proxyCluster) {
-        this.proxyCluster = proxyCluster;
+    public void setEventMeshCluster(String eventMeshCluster) {
+        this.eventMeshCluster = eventMeshCluster;
     }
 
-    public String getProxyIp() {
-        return proxyIp;
+    public String getEventMeshIp() {
+        return eventMeshIp;
     }
 
-    public void setProxyIp(String proxyIp) {
-        this.proxyIp = proxyIp;
+    public void setEventMeshIp(String eventMeshIp) {
+        this.eventMeshIp = eventMeshIp;
     }
 
-    public String getProxyEnv() {
-        return proxyEnv;
+    public String getEventMeshEnv() {
+        return eventMeshEnv;
     }
 
-    public void setProxyEnv(String proxyEnv) {
-        this.proxyEnv = proxyEnv;
+    public void setEventMeshEnv(String eventMeshEnv) {
+        this.eventMeshEnv = eventMeshEnv;
     }
 
-    public String getProxyRegion() {
-        return proxyRegion;
+    public String getEventMeshRegion() {
+        return eventMeshRegion;
     }
 
-    public void setProxyRegion(String proxyRegion) {
-        this.proxyRegion = proxyRegion;
+    public void setEventMeshRegion(String eventMeshRegion) {
+        this.eventMeshRegion = eventMeshRegion;
     }
 
-    public String getProxyIdc() {
-        return proxyIdc;
+    public String getEventMeshIdc() {
+        return eventMeshIdc;
     }
 
-    public void setProxyIdc(String proxyIdc) {
-        this.proxyIdc = proxyIdc;
+    public void setEventMeshIdc(String eventMeshIdc) {
+        this.eventMeshIdc = eventMeshIdc;
     }
 
-    public String getProxyDcn() {
-        return proxyDcn;
+    public String getEventMeshDcn() {
+        return eventMeshDcn;
     }
 
-    public void setProxyDcn(String proxyDcn) {
-        this.proxyDcn = proxyDcn;
+    public void setEventMeshDcn(String eventMeshDcn) {
+        this.eventMeshDcn = eventMeshDcn;
     }
 
-    public static UnRegResponseHeader buildHeader(Integer requestCode, String proxyCluster,
-                                                String proxyIp, String proxyEnv, String proxyRegion,
-                                                  String proxyDcn, String proxyIDC) {
+    public static UnRegResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
+                                                String eventMeshIp, String eventMeshEnv, String eventMeshRegion,
+                                                  String eventMeshDcn, String eventMeshIDC) {
         UnRegResponseHeader regResponseHeader = new UnRegResponseHeader();
         regResponseHeader.setCode(requestCode);
-        regResponseHeader.setProxyCluster(proxyCluster);
-        regResponseHeader.setProxyDcn(proxyDcn);
-        regResponseHeader.setProxyIp(proxyIp);
-        regResponseHeader.setProxyEnv(proxyEnv);
-        regResponseHeader.setProxyRegion(proxyRegion);
-        regResponseHeader.setProxyIdc(proxyIDC);
+        regResponseHeader.setEventMeshCluster(eventMeshCluster);
+        regResponseHeader.setEventMeshDcn(eventMeshDcn);
+        regResponseHeader.setEventMeshIp(eventMeshIp);
+        regResponseHeader.setEventMeshEnv(eventMeshEnv);
+        regResponseHeader.setEventMeshRegion(eventMeshRegion);
+        regResponseHeader.setEventMeshIdc(eventMeshIDC);
         return regResponseHeader;
     }
 
@@ -115,12 +115,12 @@ public class UnRegResponseHeader extends Header {
         StringBuilder sb = new StringBuilder();
         sb.append("nnRegResponseHeader={")
                 .append("code=").append(code).append(",")
-                .append("proxyEnv=").append(proxyEnv).append(",")
-                .append("proxyRegion=").append(proxyRegion).append(",")
-                .append("proxyIdc=").append(proxyIdc).append(",")
-                .append("proxyDcn=").append(proxyDcn).append(",")
-                .append("proxyCluster=").append(proxyCluster).append(",")
-                .append("proxyIp=").append(proxyIp).append("}");
+                .append("eventMeshEnv=").append(eventMeshEnv).append(",")
+                .append("eventMeshRegion=").append(eventMeshRegion).append(",")
+                .append("eventMeshIdc=").append(eventMeshIdc).append(",")
+                .append("eventMeshDcn=").append(eventMeshDcn).append(",")
+                .append("eventMeshCluster=").append(eventMeshCluster).append(",")
+                .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();
     }
 
@@ -128,12 +128,12 @@ public class UnRegResponseHeader extends Header {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(ProtocolKey.REQUEST_CODE, code);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYCLUSTER, proxyCluster);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYIP, proxyIp);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYENV, proxyEnv);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYIDC, proxyIdc);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYREGION, proxyRegion);
-        map.put(ProtocolKey.ProxyInstanceKey.PROXYDCN, proxyDcn);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHREGION, eventMeshRegion);
+        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHDCN, eventMeshDcn);
         return map;
     }
 

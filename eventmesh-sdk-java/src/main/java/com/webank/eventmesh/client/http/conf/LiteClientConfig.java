@@ -19,7 +19,7 @@ package com.webank.eventmesh.client.http.conf;
 
 public class LiteClientConfig {
 
-    private String liteProxyAddr = "127.0.0.1:10105";
+    private String liteEventMeshAddr = "127.0.0.1:10105";
 
     private int consumeThreadCore = 2;
 
@@ -144,12 +144,12 @@ public class LiteClientConfig {
         return this;
     }
 
-    public String getLiteProxyAddr() {
-        return liteProxyAddr;
+    public String getLiteEventMeshAddr() {
+        return liteEventMeshAddr;
     }
 
-    public LiteClientConfig setLiteProxyAddr(String liteProxyAddr) {
-        this.liteProxyAddr = liteProxyAddr;
+    public LiteClientConfig setLiteEventMeshAddr(String liteEventMeshAddr) {
+        this.liteEventMeshAddr = liteEventMeshAddr;
         return this;
     }
 
@@ -165,7 +165,7 @@ public class LiteClientConfig {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("liteClientConfig={")
-                .append("liteProxyAddr=").append(liteProxyAddr).append(",")
+                .append("liteEventMeshAddr=").append(liteEventMeshAddr).append(",")
                 .append("consumeThreadCore=").append(consumeThreadCore).append(",")
                 .append("consumeThreadMax=").append(consumeThreadMax).append(",")
                 .append("env=").append(env).append(",")

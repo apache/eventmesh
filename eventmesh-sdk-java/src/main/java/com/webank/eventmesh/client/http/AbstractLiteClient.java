@@ -18,7 +18,7 @@
 package com.webank.eventmesh.client.http;
 
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
-import com.webank.eventmesh.common.ProxyException;
+import com.webank.eventmesh.common.EventMeshException;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,16 +44,16 @@ public abstract class AbstractLiteClient {
         REGEX_VALIDATE_FOR_RPOXY_DEFAULT = "^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5};)*(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5})$";
     }
 
-    public List<String> proxyServerList = Lists.newArrayList();
+    public List<String> eventMeshServerList = Lists.newArrayList();
 
     public AbstractLiteClient(LiteClientConfig liteClientConfig) {
         this.liteClientConfig = liteClientConfig;
     }
 
     public void start() throws Exception {
-        proxyServerList = process(liteClientConfig.getLiteProxyAddr());
-        if(proxyServerList == null || proxyServerList.size() < 1){
-            throw new ProxyException("liteProxyAddr param illegal,please check");
+        eventMeshServerList = process(liteClientConfig.getLiteEventMeshAddr());
+        if(eventMeshServerList == null || eventMeshServerList.size() < 1){
+            throw new EventMeshException("liteEventMeshAddr param illegal,please check");
         }
     }
 

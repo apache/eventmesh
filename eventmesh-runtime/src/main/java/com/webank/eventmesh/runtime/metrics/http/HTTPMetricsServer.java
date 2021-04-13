@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.metrics.http;
 
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
 import com.codahale.metrics.MetricRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class HTTPMetricsServer {
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
     private MetricRegistry metricRegistry = new MetricRegistry();
 
@@ -46,15 +46,15 @@ public class HTTPMetricsServer {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public HTTPMetricsServer(ProxyHTTPServer proxyHTTPServer) {
-        this.proxyHTTPServer = proxyHTTPServer;
+    public HTTPMetricsServer(EventMeshHTTPServer eventMeshHTTPServer) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
     public void init() throws Exception {
-        summaryMetrics = new SummaryMetrics(this.proxyHTTPServer, this.metricRegistry);
-        topicMetrics = new TopicMetrics(this.proxyHTTPServer, this.metricRegistry);
-        groupMetrics = new GroupMetrics(this.proxyHTTPServer, this.metricRegistry);
-        healthMetrics = new HealthMetrics(this.proxyHTTPServer, this.metricRegistry);
+        summaryMetrics = new SummaryMetrics(this.eventMeshHTTPServer, this.metricRegistry);
+        topicMetrics = new TopicMetrics(this.eventMeshHTTPServer, this.metricRegistry);
+        groupMetrics = new GroupMetrics(this.eventMeshHTTPServer, this.metricRegistry);
+        healthMetrics = new HealthMetrics(this.eventMeshHTTPServer, this.metricRegistry);
         logger.info("HTTPMetricsServer inited......");
     }
 
@@ -68,7 +68,7 @@ public class HTTPMetricsServer {
                     summaryMetrics.snapshotSendMsgTPS();
                     summaryMetrics.snapshotPushMsgTPS();
                 } catch (Exception ex) {
-                    logger.warn("proxy snapshot tps metrics err", ex);
+                    logger.warn("eventMesh snapshot tps metrics err", ex);
                 }
             }
         }, 0, 1000, TimeUnit.MILLISECONDS);
@@ -79,7 +79,7 @@ public class HTTPMetricsServer {
                 try {
                     logPrintServerMetrics();
                 } catch (Exception ex) {
-                    logger.warn("proxy print metrics err", ex);
+                    logger.warn("eventMesh print metrics err", ex);
                 }
             }
         }, 1000, SummaryMetrics.STATIC_PERIOD, TimeUnit.MILLISECONDS);
@@ -98,7 +98,7 @@ public class HTTPMetricsServer {
         @Override
         public Thread newThread(Runnable r) {
             seq.incrementAndGet();
-            Thread t = new Thread(r, "proxy-metrics-" + seq.get());
+            Thread t = new Thread(r, "eventMesh-metrics-" + seq.get());
             t.setDaemon(true);
             return t;
         }
@@ -107,7 +107,7 @@ public class HTTPMetricsServer {
     private void logPrintServerMetrics() {
         httpLogger.info("===========================================SERVER METRICS==================================================");
 
-        httpLogger.info(String.format(SummaryMetrics.PROXY_MONITOR_FORMAT_HTTP,
+        httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_HTTP,
                 summaryMetrics.maxHTTPTPS(),
                 summaryMetrics.avgHTTPTPS(),
                 summaryMetrics.maxHTTPCost(),
@@ -116,7 +116,7 @@ public class HTTPMetricsServer {
                 summaryMetrics.getHttpDiscard()));
         summaryMetrics.httpStatInfoClear();
 
-        httpLogger.info(String.format(SummaryMetrics.PROXY_MONITOR_FORMAT_BATCHSENDMSG,
+        httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_BATCHSENDMSG,
                 summaryMetrics.maxSendBatchMsgTPS(),
                 summaryMetrics.avgSendBatchMsgTPS(),
                 summaryMetrics.getSendBatchMsgNumSum(),
@@ -126,7 +126,7 @@ public class HTTPMetricsServer {
         ));
         summaryMetrics.cleanSendBatchStat();
 
-        httpLogger.info(String.format(SummaryMetrics.PROXY_MONITOR_FORMAT_SENDMSG,
+        httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_SENDMSG,
                 summaryMetrics.maxSendMsgTPS(),
                 summaryMetrics.avgSendMsgTPS(),
                 summaryMetrics.getSendMsgNumSum(),
@@ -137,7 +137,7 @@ public class HTTPMetricsServer {
         ));
         summaryMetrics.cleanSendMsgStat();
 
-        httpLogger.info(String.format(SummaryMetrics.PROXY_MONITOR_FORMAT_PUSHMSG,
+        httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_PUSHMSG,
                 summaryMetrics.maxPushMsgTPS(),
                 summaryMetrics.avgPushMsgTPS(),
                 summaryMetrics.getHttpPushMsgNumSum(),
@@ -148,13 +148,13 @@ public class HTTPMetricsServer {
         ));
         summaryMetrics.cleanHttpPushMsgStat();
 
-        httpLogger.info(String.format(SummaryMetrics.PROXY_MONITOR_FORMAT_BLOCKQ,
-                proxyHTTPServer.getBatchMsgExecutor().getQueue().size(),
-                proxyHTTPServer.getSendMsgExecutor().getQueue().size(),
-                proxyHTTPServer.getPushMsgExecutor().getQueue().size(),
-                proxyHTTPServer.getHttpRetryer().size()));
+        httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_BLOCKQ,
+                eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size(),
+                eventMeshHTTPServer.getSendMsgExecutor().getQueue().size(),
+                eventMeshHTTPServer.getPushMsgExecutor().getQueue().size(),
+                eventMeshHTTPServer.getHttpRetryer().size()));
 
-        httpLogger.info(String.format(SummaryMetrics.PROXY_MONITOR_FORMAT_MQ_CLIENT,
+        httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_MQ_CLIENT,
                 summaryMetrics.avgBatchSendMsgCost(),
                 summaryMetrics.avgSendMsgCost(),
                 summaryMetrics.avgReplyMsgCost()));

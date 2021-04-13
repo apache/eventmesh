@@ -17,7 +17,7 @@
 
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshTCPServer;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
 import com.webank.eventmesh.common.protocol.tcp.Package;
@@ -27,8 +27,8 @@ import static com.webank.eventmesh.common.protocol.tcp.Command.LISTEN_RESPONSE;
 
 public class ListenTask extends AbstractTask {
 
-    public ListenTask(Package pkg, ChannelHandlerContext ctx, long startTime, ProxyTCPServer proxyTCPServer) {
-        super(pkg, ctx, startTime, proxyTCPServer);
+    public ListenTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+        super(pkg, ctx, startTime, eventMeshTCPServer);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class ListenTask extends AbstractTask {
         session.setListenRequestSeq(pkg.getHeader().getSeq());
         try {
             synchronized (session) {
-                proxyTCPServer.getClientSessionGroupMapping().readySession(session);
+                eventMeshTCPServer.getClientSessionGroupMapping().readySession(session);
             }
         } catch (Exception e) {
             logger.error("ListenTask failed|user={}|errMsg={}", session.getClient(), e);

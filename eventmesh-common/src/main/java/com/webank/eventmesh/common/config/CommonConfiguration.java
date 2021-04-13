@@ -25,12 +25,12 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 public class CommonConfiguration {
-    public String proxyEnv = "P";
-    public String proxyRegion = "";
-    public String proxyIDC = "FT";
-    public String proxyDCN = "1C0";
-    public String proxyCluster = "LS";
-    public String proxyName = "";
+    public String eventMeshEnv = "P";
+    public String eventMeshRegion = "";
+    public String eventMeshIDC = "FT";
+    public String eventMeshDCN = "1C0";
+    public String eventMeshCluster = "LS";
+    public String eventMeshName = "";
     public String sysID = "5477";
 
 
@@ -47,9 +47,9 @@ public class CommonConfiguration {
     public Integer pollNameServerInteval = 10 * 1000;
     public Integer heartbeatBrokerInterval = 30 * 1000;
     public Integer rebalanceInterval = 20 * 1000;
-    public Integer proxyRegisterIntervalInMills = 10 * 1000;
-    public Integer proxyFetchRegistryAddrInterval = 10 * 1000;
-    public String proxyServerIp = null;
+    public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
+    public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
+    public String eventMeshServerIp = null;
     protected ConfigurationWraper configurationWraper;
 
     public CommonConfiguration(ConfigurationWraper configurationWraper) {
@@ -57,60 +57,60 @@ public class CommonConfiguration {
     }
 
     public void init() {
-        String proxyEnvStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_ENV);
-        Preconditions.checkState(StringUtils.isNotEmpty(proxyEnvStr), String.format("%s error", ConfKeys.KEYS_PROXY_ENV));
-        proxyEnv = StringUtils.deleteWhitespace(proxyEnvStr);
+        String eventMeshEnvStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ENV);
+        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshEnvStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ENV));
+        eventMeshEnv = StringUtils.deleteWhitespace(eventMeshEnvStr);
 
-        String proxyRegionStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_REGION);
-        Preconditions.checkState(StringUtils.isNotEmpty(proxyRegionStr), String.format("%s error", ConfKeys.KEYS_PROXY_REGION));
-        proxyRegion = StringUtils.deleteWhitespace(proxyRegionStr);
+        String eventMeshRegionStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_REGION);
+        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegionStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_REGION));
+        eventMeshRegion = StringUtils.deleteWhitespace(eventMeshRegionStr);
 
-        String sysIdStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SYSID);
-        Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr), String.format("%s error", ConfKeys.KEYS_PROXY_SYSID));
+        String sysIdStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
+        Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SYSID));
         sysID = StringUtils.deleteWhitespace(sysIdStr);
 
-        String proxyClusterStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_CLUSTER);
-        Preconditions.checkState(StringUtils.isNotEmpty(proxyClusterStr), String.format("%s error", ConfKeys.KEYS_PROXY_SERVER_CLUSTER));
-        proxyCluster = StringUtils.deleteWhitespace(proxyClusterStr);
+        String eventMeshClusterStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
+        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshClusterStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER));
+        eventMeshCluster = StringUtils.deleteWhitespace(eventMeshClusterStr);
 
-        String proxyNameStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_NAME);
-        Preconditions.checkState(StringUtils.isNotEmpty(proxyNameStr), String.format("%s error", ConfKeys.KEYS_PROXY_SERVER_NAME));
-        proxyName = StringUtils.deleteWhitespace(proxyNameStr);
+        String eventMeshNameStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
+        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshNameStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_NAME));
+        eventMeshName = StringUtils.deleteWhitespace(eventMeshNameStr);
 
-        String proxyIDCStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_IDC);
-        Preconditions.checkState(StringUtils.isNotEmpty(proxyIDCStr), String.format("%s error", ConfKeys.KEYS_PROXY_IDC));
-        proxyIDC = StringUtils.deleteWhitespace(proxyIDCStr);
+        String eventMeshIDCStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
+        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIDCStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
+        eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIDCStr);
 
-        String proxyDCNStr = configurationWraper.getProp(ConfKeys.KEYS_PROXY_DCN);
-        Preconditions.checkState(StringUtils.isNotEmpty(proxyDCNStr), String.format("%s error", ConfKeys.KEYS_PROXY_DCN));
-        proxyDCN = StringUtils.deleteWhitespace(proxyDCNStr);
+        String eventMeshDCNStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DCN);
+        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshDCNStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DCN));
+        eventMeshDCN = StringUtils.deleteWhitespace(eventMeshDCNStr);
 
-        proxyServerIp = configurationWraper.getProp(ConfKeys.KEYS_PROXY_SERVER_HOST_IP);
-        if(StringUtils.isBlank(proxyServerIp)) {
-            proxyServerIp = getLocalAddr();
+        eventMeshServerIp = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
+        if(StringUtils.isBlank(eventMeshServerIp)) {
+            eventMeshServerIp = getLocalAddr();
         }
     }
 
     static class ConfKeys {
-        public static String KEYS_PROXY_ENV = "proxy.server.env";
+        public static String KEYS_EVENTMESH_ENV = "eventMesh.server.env";
 
-        public static String KEYS_PROXY_REGION = "proxy.server.region";
+        public static String KEYS_EVENTMESH_REGION = "eventMesh.server.region";
 
-        public static String KEYS_PROXY_IDC = "proxy.server.idc";
+        public static String KEYS_EVENTMESH_IDC = "eventMesh.server.idc";
 
-        public static String KEYS_PROXY_DCN = "proxy.server.dcn";
+        public static String KEYS_EVENTMESH_DCN = "eventMesh.server.dcn";
 
-        public static String KEYS_PROXY_SYSID = "proxy.sysid";
+        public static String KEYS_EVENTMESH_SYSID = "eventMesh.sysid";
 
-        public static String KEYS_PROXY_SERVER_CLUSTER = "proxy.server.cluster";
+        public static String KEYS_EVENTMESH_SERVER_CLUSTER = "eventMesh.server.cluster";
 
-        public static String KEYS_PROXY_SERVER_NAME = "proxy.server.name";
+        public static String KEYS_EVENTMESH_SERVER_NAME = "eventMesh.server.name";
 
-        public static String KEYS_PROXY_SERVER_HOST_IP = "proxy.server.hostIp";
+        public static String KEYS_EVENTMESH_SERVER_HOST_IP = "eventMesh.server.hostIp";
 
-        public static String KEYS_PROXY_SERVER_REGISTER_INTERVAL = "proxy.server.registry.registerIntervalInMills";
+        public static String KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL = "eventMesh.server.registry.registerIntervalInMills";
 
-        public static String KEYS_PROXY_SERVER_FETCH_REGISTRY_ADDR_INTERVAL = "proxy.server.registry.fetchRegistryAddrIntervalInMills";
+        public static String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL = "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
     }
 
     public static String getLocalAddr() {

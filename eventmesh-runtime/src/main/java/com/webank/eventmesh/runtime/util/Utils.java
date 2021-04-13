@@ -17,10 +17,10 @@
 
 package com.webank.eventmesh.runtime.util;
 
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
+import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import io.netty.channel.ChannelFuture;
@@ -61,7 +61,7 @@ public class Utils {
                                 logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
 
                                 if (session != null) {
-                                    session.getClientGroupWrapper().get().getProxyTcpMonitor().getProxy2clientMsgNum().incrementAndGet();
+                                    session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getEventMesh2clientMsgNum().incrementAndGet();
                                 }
                             }
                         }
@@ -85,11 +85,11 @@ public class Utils {
     }
 
     private static void logFailedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime, Throwable e) {
-        if (pkg.getBody() instanceof AccessMessage) {
-            messageLogger.error("pkg|proxy2c|failed|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms|errMsg={}", pkg.getHeader().getCommand(),
-                    printMqMessage((AccessMessage) pkg.getBody()), user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime, e);
+        if (pkg.getBody() instanceof EventMeshMessage) {
+            messageLogger.error("pkg|eventMesh2c|failed|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms|errMsg={}", pkg.getHeader().getCommand(),
+                    printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime, e);
         } else {
-            messageLogger.error("pkg|proxy2c|failed|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms|errMsg={}", pkg.getHeader().getCommand(),
+            messageLogger.error("pkg|eventMesh2c|failed|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms|errMsg={}", pkg.getHeader().getCommand(),
                     pkg, user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime, e);
         }
     }
@@ -102,11 +102,11 @@ public class Utils {
      * @param startTime
      */
     public static void logSucceedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime) {
-        if (pkg.getBody() instanceof AccessMessage) {
-            messageLogger.info("pkg|proxy2c|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCommand(),
-                    printMqMessage((AccessMessage) pkg.getBody()), user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
+        if (pkg.getBody() instanceof EventMeshMessage) {
+            messageLogger.info("pkg|eventMesh2c|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCommand(),
+                    printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
         } else {
-            messageLogger.info("pkg|proxy2c|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCommand(), pkg,
+            messageLogger.info("pkg|eventMesh2c|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCommand(), pkg,
                     user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
         }
     }
@@ -147,19 +147,19 @@ public class Utils {
     /**
      * 打印mq消息的一部分内容
      *
-     * @param accessMessage
+     * @param eventMeshMessage
      * @return
      */
-    public static String printMqMessage(AccessMessage accessMessage) {
-        Map<String, String> properties = accessMessage.getProperties();
+    public static String printMqMessage(EventMeshMessage eventMeshMessage) {
+        Map<String, String> properties = eventMeshMessage.getProperties();
 
-        String bizSeqNo = properties.get(ProxyConstants.KEYS_UPPERCASE);
+        String bizSeqNo = properties.get(EventMeshConstants.KEYS_UPPERCASE);
         if (!StringUtils.isNotBlank(bizSeqNo)) {
-            bizSeqNo = properties.get(ProxyConstants.KEYS_LOWERCASE);
+            bizSeqNo = properties.get(EventMeshConstants.KEYS_LOWERCASE);
         }
 
-        String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", accessMessage
-                .getTopic(), properties.get(ProxyConstants.TTL), properties.get(ProxyConstants.RR_REQUEST_UNIQ_ID), bizSeqNo);
+        String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage
+                .getTopic(), properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), bizSeqNo);
         return result;
     }
 
@@ -173,7 +173,7 @@ public class Utils {
 //        Map<String, String> properties = message.getProperties();
 //        String bizSeqNo = message.getKeys();
 //        String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", message.getTopic()
-//                , properties.get(ProxyConstants.TTL), properties.get(ProxyConstants.RR_REQUEST_UNIQ_ID), bizSeqNo);
+//                , properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), bizSeqNo);
 //        return result;
 //    }
 

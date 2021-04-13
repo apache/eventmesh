@@ -1,8 +1,8 @@
 1.在eventmesh-runtime 中配置
 
 ```
-proxy.properties(添加如下配置)
-proxy.server.useTls.enabled=true   //默认值 false
+eventMesh.properties(添加如下配置)
+eventMesh.server.useTls.enabled=true   //默认值 false
 
 
 config env varible
