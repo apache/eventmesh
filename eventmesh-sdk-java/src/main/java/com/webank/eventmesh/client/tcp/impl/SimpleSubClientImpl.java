@@ -22,7 +22,7 @@ import com.webank.eventmesh.client.tcp.common.MessageUtils;
 import com.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
 import com.webank.eventmesh.client.tcp.common.RequestContext;
 import com.webank.eventmesh.client.tcp.common.TcpClient;
-import com.webank.eventmesh.client.tcp.common.WemqAccessCommon;
+import com.webank.eventmesh.client.tcp.common.EventMeshCommon;
 import com.webank.eventmesh.common.protocol.tcp.Command;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
 import io.netty.channel.ChannelHandler;
@@ -71,7 +71,7 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
         if (!CollectionUtils.isEmpty(topics)) {
             for (String topic : topics) {
                 Package request = MessageUtils.subscribe(topic);
-                this.io(request, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
+                this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             }
         }
         listen();
@@ -96,38 +96,38 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
                         SimpleSubClientImpl.this.reconnect();
                     }
                     Package msg = MessageUtils.heartBeat();
-                    SimpleSubClientImpl.this.io(msg, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
+                    SimpleSubClientImpl.this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
                 } catch (Exception e) {
                 }
             }
-        }, WemqAccessCommon.HEATBEAT, WemqAccessCommon.HEATBEAT, TimeUnit.MILLISECONDS);
+        }, EventMeshCommon.HEATBEAT, EventMeshCommon.HEATBEAT, TimeUnit.MILLISECONDS);
     }
 
     private void goodbye() throws Exception {
         Package msg = MessageUtils.goodbye();
-        this.io(msg, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
+        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 
     private void hello() throws Exception {
         Package msg = MessageUtils.hello(userAgent);
-        this.io(msg, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
+        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 
     public void listen() throws Exception {
         Package request = MessageUtils.listen();
-        this.io(request, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
+        this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 
 
     public void subscribe(String topic) throws Exception {
         topics.add(topic);
         Package request = MessageUtils.subscribe(topic);
-        this.io(request, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
+        this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 
     public void unsubscribe() throws Exception {
         Package request = MessageUtils.unsubscribe();
-        this.io(request, WemqAccessCommon.DEFAULT_TIME_OUT_MILLS);
+        this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 
     public UserAgent getUserAgent() {

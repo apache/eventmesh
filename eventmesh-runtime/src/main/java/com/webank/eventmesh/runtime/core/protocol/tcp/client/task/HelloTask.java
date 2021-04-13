@@ -19,9 +19,9 @@ package com.webank.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import com.webank.eventmesh.runtime.util.Utils;
-import com.webank.eventmesh.runtime.boot.ProxyTCPServer;
+import com.webank.eventmesh.runtime.boot.EventMeshTCPServer;
 import com.webank.eventmesh.runtime.common.ServiceState;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.common.protocol.tcp.Header;
 import com.webank.eventmesh.common.protocol.tcp.OPStatus;
 import com.webank.eventmesh.common.protocol.tcp.Package;
@@ -39,8 +39,8 @@ public class HelloTask extends AbstractTask {
 
     private final Logger messageLogger = LoggerFactory.getLogger("message");
 
-    public HelloTask(Package pkg, ChannelHandlerContext ctx, long startTime, ProxyTCPServer proxyTCPServer) {
-        super(pkg, ctx, startTime, proxyTCPServer);
+    public HelloTask(Package pkg, ChannelHandlerContext ctx, long startTime, EventMeshTCPServer eventMeshTCPServer) {
+        super(pkg, ctx, startTime, eventMeshTCPServer);
     }
 
     @Override
@@ -50,13 +50,13 @@ public class HelloTask extends AbstractTask {
         Session session = null;
         UserAgent user = (UserAgent) pkg.getBody();
         try {
-            if(proxyTCPServer.getProxyServer().getServiceState() != ServiceState.RUNNING){
-                logger.error("server state is not running:{}", proxyTCPServer.getProxyServer().getServiceState());
+            if(eventMeshTCPServer.getEventMeshServer().getServiceState() != ServiceState.RUNNING){
+                logger.error("server state is not running:{}", eventMeshTCPServer.getEventMeshServer().getServiceState());
                 throw new Exception("server state is not running, maybe deploying...");
             }
 
             validateUserAgent(user);
-            session = proxyTCPServer.getClientSessionGroupMapping().createSession(user, ctx);
+            session = eventMeshTCPServer.getClientSessionGroupMapping().createSession(user, ctx);
             res.setHeader(new Header(HELLO_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq()));
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
         } catch (Throwable e) {
@@ -73,7 +73,7 @@ public class HelloTask extends AbstractTask {
                                 Utils.logSucceedMessageFlow(res, user, startTime, taskExecuteTime);
                             }
                             logger.warn("HelloTask failed,close session,addr:{}", ctx.channel().remoteAddress());
-                            proxyTCPServer.getClientSessionGroupMapping().closeSession(ctx);
+                            eventMeshTCPServer.getClientSessionGroupMapping().closeSession(ctx);
                         }
                     }
             );
@@ -90,14 +90,14 @@ public class HelloTask extends AbstractTask {
         }
 
 //        if (user.getUsername() == null) {
-//            throw new Exception("client wemqUser cannot be null");
+//            throw new Exception("client EventMeshUser cannot be null");
 //        }
 //
 //        if (user.getPassword() == null) {
-//            throw new Exception("client wemqPasswd cannot be null");
+//            throw new Exception("client EventMeshPasswd cannot be null");
 //        }
 
-        if (!(StringUtils.equals(ProxyConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(ProxyConstants.PURPOSE_SUB, user.getPurpose()))) {
+        if (!(StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
             throw new Exception("client purpose config is error");
         }
     }

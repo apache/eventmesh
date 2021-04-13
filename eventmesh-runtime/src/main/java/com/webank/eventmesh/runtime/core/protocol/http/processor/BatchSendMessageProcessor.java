@@ -18,21 +18,21 @@
 package com.webank.eventmesh.runtime.core.protocol.http.processor;
 
 import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.runtime.boot.ProxyHTTPServer;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.boot.EventMeshHTTPServer;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import com.webank.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import com.webank.eventmesh.runtime.core.protocol.http.producer.ProxyProducer;
+import com.webank.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
 import com.webank.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 import com.webank.eventmesh.common.IPUtil;
 import com.webank.eventmesh.common.command.HttpCommand;
 import com.webank.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody;
 import com.webank.eventmesh.common.protocol.http.body.message.SendMessageBatchResponseBody;
-import com.webank.eventmesh.common.protocol.http.common.ProxyRetCode;
+import com.webank.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import com.webank.eventmesh.common.protocol.http.common.RequestCode;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
 import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchResponseHeader;
-import com.webank.eventmesh.runtime.util.ProxyUtil;
+import com.webank.eventmesh.runtime.util.EventMeshUtil;
 import com.webank.eventmesh.runtime.util.RemotingHelper;
 import io.netty.channel.ChannelHandlerContext;
 import io.openmessaging.api.Message;
@@ -54,10 +54,10 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
     public Logger cmdLogger = LoggerFactory.getLogger("cmd");
 
-    private ProxyHTTPServer proxyHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
-    public BatchSendMessageProcessor(ProxyHTTPServer proxyHTTPServer) {
-        this.proxyHTTPServer = proxyHTTPServer;
+    public BatchSendMessageProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
     public Logger batchMessageLogger = LoggerFactory.getLogger("batchMessage");
@@ -65,66 +65,66 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
 
-        HttpCommand responseProxyCommand;
+        HttpCommand responseEventMeshCommand;
 
-        cmdLogger.info("cmd={}|{}|client2proxy|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-                ProxyConstants.PROTOCOL_HTTP,
+        cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+                EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
         SendMessageBatchRequestHeader sendMessageBatchRequestHeader = (SendMessageBatchRequestHeader) asyncContext.getRequest().getHeader();
         SendMessageBatchRequestBody sendMessageBatchRequestBody = (SendMessageBatchRequestBody) asyncContext.getRequest().getBody();
 
         SendMessageBatchResponseHeader sendMessageBatchResponseHeader =
-                SendMessageBatchResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), proxyHTTPServer.getProxyConfiguration().proxyCluster,
-                        IPUtil.getLocalAddress(), proxyHTTPServer.getProxyConfiguration().proxyEnv,
-                        proxyHTTPServer.getProxyConfiguration().proxyRegion,
-                        proxyHTTPServer.getProxyConfiguration().proxyDCN, proxyHTTPServer.getProxyConfiguration().proxyIDC);
+                SendMessageBatchResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
+                        IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         if (StringUtils.isBlank(sendMessageBatchRequestHeader.getPid())
                 || !StringUtils.isNumeric(sendMessageBatchRequestHeader.getPid())
                 || StringUtils.isBlank(sendMessageBatchRequestHeader.getSys())) {
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchResponseHeader,
-                    SendMessageBatchResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_HEADER_ERR.getErrMsg()));
-            asyncContext.onComplete(responseProxyCommand);
+                    SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
         if (CollectionUtils.isEmpty(sendMessageBatchRequestBody.getContents())
                 || StringUtils.isBlank(sendMessageBatchRequestBody.getBatchId())
                 || (Integer.valueOf(sendMessageBatchRequestBody.getSize()) != CollectionUtils.size(sendMessageBatchRequestBody.getContents()))) {
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchResponseHeader,
-                    SendMessageBatchResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getErrMsg()));
-            asyncContext.onComplete(responseProxyCommand);
+                    SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
-        if (!proxyHTTPServer.getProxyConfiguration().proxyServerBatchMsgNumLimiter
-                .tryAcquire(Integer.valueOf(sendMessageBatchRequestBody.getSize()), ProxyConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerBatchMsgNumLimiter
+                .tryAcquire(Integer.valueOf(sendMessageBatchRequestBody.getSize()), EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchResponseHeader,
-                    SendMessageBatchResponseBody.buildBody(ProxyRetCode.PROXY_BATCH_SPEED_OVER_LIMIT_ERR.getRetCode(), ProxyRetCode.PROXY_BATCH_SPEED_OVER_LIMIT_ERR.getErrMsg()));
-            proxyHTTPServer.metrics.summaryMetrics
+                    SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR.getErrMsg()));
+            eventMeshHTTPServer.metrics.summaryMetrics
                     .recordSendBatchMsgDiscard(Integer.valueOf(sendMessageBatchRequestBody.getSize()));
-            asyncContext.onComplete(responseProxyCommand);
+            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
         if (StringUtils.isBlank(sendMessageBatchRequestHeader.getDcn())) {
             sendMessageBatchRequestHeader.setDcn("BATCH");
         }
-        String producerGroup = ProxyUtil.buildClientGroup(sendMessageBatchRequestHeader.getSys(),
+        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageBatchRequestHeader.getSys(),
                 sendMessageBatchRequestHeader.getDcn());
-        ProxyProducer batchProxyProducer = proxyHTTPServer.getProducerManager().getProxyProducer(producerGroup);
+        EventMeshProducer batchEventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
-        batchProxyProducer.getMqProducerWrapper().getMeshMQProducer().setExtFields();
+        batchEventMeshProducer.getMqProducerWrapper().getMeshMQProducer().setExtFields();
 
-        if (!batchProxyProducer.getStarted().get()) {
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+        if (!batchEventMeshProducer.getStarted().get()) {
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchResponseHeader,
-                    SendMessageBatchResponseBody.buildBody(ProxyRetCode.PROXY_BATCH_PRODUCER_STOPED_ERR.getRetCode(), ProxyRetCode.PROXY_BATCH_PRODUCER_STOPED_ERR.getErrMsg()));
-            asyncContext.onComplete(responseProxyCommand);
+                    SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_BATCH_PRODUCER_STOPED_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_BATCH_PRODUCER_STOPED_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
@@ -139,7 +139,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             }
 
             if (StringUtils.isBlank(msg.ttl) || !StringUtils.isNumeric(msg.ttl)) {
-                msg.ttl = String.valueOf(ProxyConstants.DEFAULT_MSG_TTL_MILLS);
+                msg.ttl = String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS);
             }
 
             try {
@@ -148,14 +148,14 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 // topic
                 omsMsg.setTopic(msg.topic);
                 // body
-                omsMsg.setBody(msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
+                omsMsg.setBody(msg.msg.getBytes(EventMeshConstants.DEFAULT_CHARSET));
                 if (!StringUtils.isBlank(msg.tag)) {
-                    omsMsg.putUserProperties(ProxyConstants.TAG, msg.tag);
+                    omsMsg.putUserProperties(EventMeshConstants.TAG, msg.tag);
                 }
 //                if (StringUtils.isBlank(msg.tag)) {
-//                    rocketMQMsg = new Message(msg.topic, msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
+//                    rocketMQMsg = new Message(msg.topic, msg.msg.getBytes(EventMeshConstants.DEFAULT_CHARSET));
 //                } else {
-//                    rocketMQMsg = new Message(msg.topic, msg.tag, msg.msg.getBytes(ProxyConstants.DEFAULT_CHARSET));
+//                    rocketMQMsg = new Message(msg.topic, msg.tag, msg.msg.getBytes(EventMeshConstants.DEFAULT_CHARSET));
 //                }
                 omsMsg.putUserProperties("msgType", "persistent");
                 // ttl
@@ -180,16 +180,16 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         }
 
         if (CollectionUtils.isEmpty(msgList)) {
-            responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchResponseHeader,
-                    SendMessageBatchResponseBody.buildBody(ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getRetCode(), ProxyRetCode.PROXY_PROTOCOL_BODY_ERR.getErrMsg()));
-            asyncContext.onComplete(responseProxyCommand);
+                    SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
-        proxyHTTPServer.metrics.summaryMetrics.recordSendBatchMsg(Integer.parseInt(sendMessageBatchRequestBody.getSize()));
+        eventMeshHTTPServer.metrics.summaryMetrics.recordSendBatchMsg(Integer.parseInt(sendMessageBatchRequestBody.getSize()));
 
-        if (proxyHTTPServer.getProxyConfiguration().proxyServerBatchMsgBatchEnabled) {
+        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerBatchMsgBatchEnabled) {
             for (List<Message> batchMsgs : topicBatchMessageMappings.values()) {
                 // TODO:api中的实现，考虑是否放到插件中
                 Message omsMsg = new Message();
@@ -197,7 +197,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 //                    msgBatch = msgBatch.generateFromList(batchMsgs);
 //                    for (Message message : msgBatch.getMessages()) {
 //                        // TODO：未针对不同producer检测消息最大长度
-//                        Validators.checkMessage(message, batchProxyProducer.getMqProducerWrapper().getDefaultMQProducer());
+//                        Validators.checkMessage(message, batchEventMeshProducer.getMqProducerWrapper().getDefaultMQProducer());
 //                        MessageClientIDSetter.setUniqID(message);
 //                    }
 //                    msgBatch.setBody(msgBatch.encode());
@@ -205,9 +205,9 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 //                    continue;
 //                }
 
-                final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageBatchRequestBody.getBatchId(), omsMsg, batchProxyProducer, proxyHTTPServer);
+                final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageBatchRequestBody.getBatchId(), omsMsg, batchEventMeshProducer, eventMeshHTTPServer);
                 sendMessageContext.setMessageList(batchMsgs);
-                batchProxyProducer.send(sendMessageContext, new SendCallback() {
+                batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
                     @Override
                     public void onSuccess(SendResult sendResult) {
                     }
@@ -215,20 +215,20 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                     @Override
                     public void onException(OnExceptionContext context) {
                         batchMessageLogger.warn("", context.getException());
-                        proxyHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+                        eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
                     }
 
 //                    @Override
 //                    public void onException(Throwable e) {
 //                        batchMessageLogger.warn("", e);
-//                        proxyHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+//                        eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
 //                    }
                 });
             }
         } else {
             for (Message msg : msgList) {
-                final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageBatchRequestBody.getBatchId(), msg, batchProxyProducer, proxyHTTPServer);
-                batchProxyProducer.send(sendMessageContext, new SendCallback() {
+                final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageBatchRequestBody.getBatchId(), msg, batchEventMeshProducer, eventMeshHTTPServer);
+                batchEventMeshProducer.send(sendMessageContext, new SendCallback() {
                     @Override
                     public void onSuccess(SendResult sendResult) {
 
@@ -237,30 +237,30 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                     @Override
                     public void onException(OnExceptionContext context) {
                         batchMessageLogger.warn("", context.getException());
-                        proxyHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+                        eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
                     }
 
 //                    @Override
 //                    public void onException(Throwable e) {
 //                        batchMessageLogger.warn("", e);
-//                        proxyHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+//                        eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
 //                    }
                 });
             }
         }
 
         long batchEndTime = System.currentTimeMillis();
-        proxyHTTPServer.metrics.summaryMetrics.recordBatchSendMsgCost(batchEndTime - batchStartTime);
-        batchMessageLogger.debug("batchMessage|proxy2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|msgNum={}|topics={}",
+        eventMeshHTTPServer.metrics.summaryMetrics.recordBatchSendMsgCost(batchEndTime - batchStartTime);
+        batchMessageLogger.debug("batchMessage|eventMesh2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|msgNum={}|topics={}",
                 sendMessageBatchRequestBody.getBatchId(),
                 batchEndTime - batchStartTime,
                 sendMessageBatchRequestBody.getSize(),
                 topicBatchMessageMappings.keySet());
 
-        responseProxyCommand = asyncContext.getRequest().createHttpCommandResponse(
+        responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                 sendMessageBatchResponseHeader,
-                SendMessageBatchResponseBody.buildBody(ProxyRetCode.SUCCESS.getRetCode(), ProxyRetCode.SUCCESS.getErrMsg()));
-        asyncContext.onComplete(responseProxyCommand);
+                SendMessageBatchResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(), EventMeshRetCode.SUCCESS.getErrMsg()));
+        asyncContext.onComplete(responseEventMeshCommand);
 
         return;
     }

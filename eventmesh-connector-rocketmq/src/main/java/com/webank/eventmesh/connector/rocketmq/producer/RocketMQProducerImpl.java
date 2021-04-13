@@ -19,7 +19,7 @@ package com.webank.eventmesh.connector.rocketmq.producer;
 
 import com.webank.eventmesh.api.RRCallback;
 import com.webank.eventmesh.api.producer.MeshMQProducer;
-import com.webank.eventmesh.connector.rocketmq.common.ProxyConstants;
+import com.webank.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import com.webank.eventmesh.connector.rocketmq.config.ClientConfiguration;
 import com.webank.eventmesh.connector.rocketmq.config.ConfigurationWraper;
 import io.openmessaging.api.*;
@@ -44,9 +44,9 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     @Override
     public synchronized void init(Properties keyValue) {
         ConfigurationWraper configurationWraper =
-                new ConfigurationWraper(ProxyConstants.PROXY_CONF_HOME
+                new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
                         + File.separator
-                        + ProxyConstants.PROXY_CONF_FILE, false);
+                        + EventMeshConstants.EVENTMESH_CONF_FILE, false);
         final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWraper);
         clientConfiguration.init();
         String producerGroup = keyValue.getProperty("producerGroup");

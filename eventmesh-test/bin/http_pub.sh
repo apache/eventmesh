@@ -49,7 +49,7 @@ function get_pid {
 			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "com.webank.eventmesh.http.demo.AsyncPublishInstance" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
 			#在Linux服务器上要求尽可能精确识别进程
-			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $PROXY_HOME | grep -i "com.webank.eventmesh.http.demo.AsyncPublishInstance" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "com.webank.eventmesh.http.demo.AsyncPublishInstance" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		fi
 	fi
 	echo "$ppid";
@@ -98,7 +98,7 @@ export JAVA_HOME
 JAVA_OPT=`cat ${DEMO_HOME}/conf/server.env | grep APP_START_JVM_OPTION::: | awk -F ':::' {'print $2'}`
 JAVA_OPT="${JAVA_OPT} -XX:+UseG1GC -XX:G1HeapRegionSize=16m -XX:G1ReservePercent=25 -XX:InitiatingHeapOccupancyPercent=30 -XX:SoftRefLRUPolicyMSPerMB=0 -XX:SurvivorRatio=8 -XX:MaxGCPauseMillis=50"
 JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${DEMO_HOME}/logs/demo_http_pub_gc_%p.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy"
-JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${DEMO_HOME}/logs -XX:ErrorFile=${PROXY_HOME}/logs/hs_err_%p.log"
+JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${DEMO_HOME}/logs -XX:ErrorFile=${EVENTMESH_HOME}/logs/hs_err_%p.log"
 JAVA_OPT="${JAVA_OPT} -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=30m"
 JAVA_OPT="${JAVA_OPT} -XX:-OmitStackTraceInFastThrow"
 JAVA_OPT="${JAVA_OPT} -XX:+AlwaysPreTouch"
@@ -108,7 +108,7 @@ JAVA_OPT="${JAVA_OPT} -Dio.netty.leakDetectionLevel=advanced"
 JAVA_OPT="${JAVA_OPT} -Dio.netty.allocator.type=pooled"
 JAVA_OPT="${JAVA_OPT} -Djava.security.egd=file:/dev/./urandom"
 JAVA_OPT="${JAVA_OPT} -Dlog4j.configurationFile=${DEMO_HOME}/conf/log4j2.xml"
-#JAVA_OPT="${JAVA_OPT} -Dproxy.log.home=${DEMO_LOG_HOME}"
+#JAVA_OPT="${JAVA_OPT} -Deventmesh.log.home=${DEMO_LOG_HOME}"
 JAVA_OPT="${JAVA_OPT} -DconfPath=${DEMO_HOME}/conf"
 JAVA_OPT="${JAVA_OPT} -Dlog4j2.AsyncQueueFullPolicy=Discard"
 JAVA_OPT="${JAVA_OPT} -Drocketmq.client.logUseSlf4j=true"

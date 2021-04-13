@@ -18,7 +18,7 @@
 package com.webank.eventmesh.runtime.core.protocol.tcp.client.session.send;
 
 import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
+import com.webank.eventmesh.runtime.constants.EventMeshConstants;
 import com.webank.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import io.openmessaging.api.Message;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -56,6 +56,6 @@ public class UpStreamMsgContext {
         return "UpStreamMsgContext{seq=" + seq
                 + ",topic=" + msg.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)
                 + ",client=" + session.getClient()
-                + ",createTime=" + DateFormatUtils.format(createTime, ProxyConstants.DATE_FORMAT) + "}";
+                + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}";
     }
 }
