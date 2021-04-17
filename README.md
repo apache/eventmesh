@@ -51,22 +51,19 @@ The protocol of eventmesh is easier and convenient, you can read more [here](doc
 | v1.1.0  |Support RocketMQ as eventstore|
 | v1.1.1  |Support https|
 | v1.2.0  |Support OpenMessaging API，support Plug-in architecture, support http sub, support cloud native deploy|
-| V1.3.0 |Support CloudEvents protocol，support OpenMessaging Connector|
+| V1.3.0  |Support CloudEvents, Event Streaming|
+|         |Support Event function,triggers and bindings|
+|         |Support Event orchestration, Servelss workflow|
 |         |Support Event transaction|
-|         |Support Event filter|
-|         |Support Promethus as metrics|
+|         |Support Event schema|
+|         |Support Event governance, dashboard|
+|         |Support Event security|
 |         |Support multi language SDK(c\go\python\wasm)|
-|         |Support Event orchestration|
-|         |Support Event governance|
+|         |Support Promethus as metrics|
 |         |Support Skywalking as tracing|
-|         |Support Spiffe as security|
-|         |Support Event replay|
-|         |Support openmessaging-storage-dledger as default event store|
-|         |Support Dashboard|
-| |Support schema registry|
-| |Support gRPC protocol|
-| |Support MQTT protocol|
-| |Support routing functions with triggers and bindings|
+|         |Support streaming event store|
+|         |Support gRPC protocol|
+|         |Support MQTT protocol|
 
 ## Quick Start
 1. Build and deploy event-store(RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
