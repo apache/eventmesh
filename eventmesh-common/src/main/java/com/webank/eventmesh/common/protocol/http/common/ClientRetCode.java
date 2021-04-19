@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common.protocol.http.common;
+package org.apache.eventmesh.common.protocol.http.common;
 
 public enum ClientRetCode {
 

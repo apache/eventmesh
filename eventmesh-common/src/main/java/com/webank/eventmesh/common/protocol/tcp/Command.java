@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common.protocol.tcp;
+package org.apache.eventmesh.common.protocol.tcp;
 
 public enum Command {
 

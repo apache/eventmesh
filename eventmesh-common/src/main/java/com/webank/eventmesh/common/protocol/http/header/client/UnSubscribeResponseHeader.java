@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common.protocol.http.header.client;
+package org.apache.eventmesh.common.protocol.http.header.client;
 
-import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
-import com.webank.eventmesh.common.protocol.http.header.Header;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.header.Header;
 
 import java.util.HashMap;
 import java.util.Map;

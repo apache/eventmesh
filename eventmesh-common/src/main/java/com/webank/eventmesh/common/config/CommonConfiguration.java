@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common.config;
+package org.apache.eventmesh.common.config;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
