@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common.protocol.http.body.message;
+package org.apache.eventmesh.common.protocol.http.body.message;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
-import com.webank.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;

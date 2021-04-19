@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common.protocol.http.body.message;
+package org.apache.eventmesh.common.protocol.http.body.message;
 
-import com.webank.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.commons.collections4.MapUtils;
 
 import java.util.HashMap;

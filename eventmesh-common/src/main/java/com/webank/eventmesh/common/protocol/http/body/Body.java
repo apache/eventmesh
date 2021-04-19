@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common.protocol.http.body;
+package org.apache.eventmesh.common.protocol.http.body;
 
 
-import com.webank.eventmesh.common.protocol.http.body.client.*;
-import com.webank.eventmesh.common.protocol.http.common.RequestCode;
-import com.webank.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.message.ReplyMessageRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
-import com.webank.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.client.*;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.message.ReplyMessageRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 
 import java.util.Map;
 

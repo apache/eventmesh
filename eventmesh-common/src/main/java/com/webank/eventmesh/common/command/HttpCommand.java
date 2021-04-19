@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common.command;
+package org.apache.eventmesh.common.command;
 
-import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.common.protocol.http.body.BaseResponseBody;
-import com.webank.eventmesh.common.protocol.http.body.Body;
-import com.webank.eventmesh.common.protocol.http.header.BaseResponseHeader;
-import com.webank.eventmesh.common.protocol.http.header.Header;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.http.body.BaseResponseBody;
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.header.BaseResponseHeader;
+import org.apache.eventmesh.common.protocol.http.header.Header;
 import com.alibaba.fastjson.JSON;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
