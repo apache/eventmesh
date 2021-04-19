@@ -18,8 +18,6 @@
 package org.apache.eventmesh.common.protocol.http.header;
 
 
-import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
-import org.apache.eventmesh.common.protocol.http.body.message.ReplyMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.client.*;
 import org.apache.eventmesh.common.protocol.http.header.message.PushMessageRequestHeader;
