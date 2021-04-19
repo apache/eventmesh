@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common.protocol.http.header;
+package org.apache.eventmesh.common.protocol.http.header;
 
 
-import com.webank.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.message.ReplyMessageRequestBody;
-import com.webank.eventmesh.common.protocol.http.common.RequestCode;
-import com.webank.eventmesh.common.protocol.http.header.client.*;
-import com.webank.eventmesh.common.protocol.http.header.message.PushMessageRequestHeader;
-import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
-import com.webank.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
-import com.webank.eventmesh.common.protocol.http.header.message.ReplyMessageRequestHeader;
-import com.webank.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
+import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.message.ReplyMessageRequestBody;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.protocol.http.header.client.*;
+import org.apache.eventmesh.common.protocol.http.header.message.PushMessageRequestHeader;
+import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
+import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
+import org.apache.eventmesh.common.protocol.http.header.message.ReplyMessageRequestHeader;
+import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
 
 import java.util.Map;
 
