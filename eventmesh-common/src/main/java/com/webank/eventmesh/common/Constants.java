@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common;
+package org.apache.eventmesh.common;
 
 public class Constants {
 

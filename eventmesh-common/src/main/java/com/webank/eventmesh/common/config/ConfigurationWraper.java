@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.webank.eventmesh.common.config;
+package org.apache.eventmesh.common.config;
 
-import com.webank.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
