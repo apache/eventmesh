@@ -92,7 +92,7 @@ dependencies {
 
 **2.3.4 Run**
 
-running `com.webank.eventmesh.starter.StartUp` main method
+running `StartUp` main method
 
 
 

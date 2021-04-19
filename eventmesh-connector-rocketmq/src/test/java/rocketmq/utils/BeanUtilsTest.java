@@ -16,9 +16,9 @@
  */
 package rocketmq.utils;
 
-import com.webank.eventmesh.connector.rocketmq.config.ClientConfig;
-import com.webank.eventmesh.connector.rocketmq.domain.NonStandardKeys;
-import com.webank.eventmesh.connector.rocketmq.utils.BeanUtils;
+import org.apache.eventmesh.connector.rocketmq.config.ClientConfig;
+import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
+import org.apache.eventmesh.connector.rocketmq.utils.BeanUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

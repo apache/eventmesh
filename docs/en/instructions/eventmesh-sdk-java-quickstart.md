@@ -21,14 +21,14 @@ TCP demos and Http demos are both under the **eventmesh-test** module.
 - start consumer ,subscribe topic in previous step. 
 
 ```
-Run the main method of com.webank.eventmesh.tcp.demo.AsyncSubscribe
+Run the main method of AsyncSubscribe
 ```
 
 - start producer, send  message
 
 
 ```
-Run the main method of com.webank.eventmesh.tcp.demo.AsyncPublish
+Run the main method of AsyncPublish
 ```
 
 #### Broadcast msg 
@@ -38,13 +38,13 @@ Run the main method of com.webank.eventmesh.tcp.demo.AsyncPublish
 - start consumer ,subscribe topic in previous step. 
 
 ```
-Run the main method of com.webank.eventmesh.tcp.demo.AsyncSubscribeBroadcast
+Run the main method of AsyncSubscribeBroadcast
 ```
 
 * start producer, send broadcast message
 
 ```
-Run the main method of com.webank.eventmesh.tcp.demo.AsyncPublishBroadcast
+Run the main method of AsyncPublishBroadcast
 ```
 
 ### 2. HTTP DEMO
@@ -64,12 +64,12 @@ Run the main method of com.webank.eventmesh.tcp.demo.AsyncPublishBroadcast
   Async consumer demo is a spring boot application demo,  you can easily run this demo to start service and subscribe the topic.
 
 ```
-Run the main method of com.webank.eventmesh.http.demo.sub.SpringBootDemoApplication
+Run the main method of SpringBootDemoApplication
 ```
 
 - start producer, produce msg
 
 ```
-Run the main method of com.webank.eventmesh.http.demo.AsyncPublishInstance
+Run the main method of AsyncPublishInstance
 ```
 

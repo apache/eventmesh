@@ -16,8 +16,8 @@
  */
 package rocketmq.consumer;
 
-import com.webank.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
-import com.webank.eventmesh.connector.rocketmq.domain.NonStandardKeys;
+import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
+import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
 import io.openmessaging.api.*;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
