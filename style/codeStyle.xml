@@ -15,7 +15,7 @@
   ~ limitations under the License.
   -->
 
-<code_scheme name="DeFiBus">
+<code_scheme name="EventMesh">
     <option name="USE_SAME_INDENTS" value="true"/>
     <option name="IGNORE_SAME_INDENTS_FOR_LANGUAGES" value="true"/>
     <option name="OTHER_INDENT_OPTIONS">
