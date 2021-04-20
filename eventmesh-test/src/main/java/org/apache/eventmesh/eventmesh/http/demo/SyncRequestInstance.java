@@ -1,4 +1,4 @@
-package com.webank.eventmesh.http.demo;
+package org.apache.eventmesh.eventmesh.http.demo;
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.producer.LiteProducer;
 import com.webank.eventmesh.common.IPUtil;
