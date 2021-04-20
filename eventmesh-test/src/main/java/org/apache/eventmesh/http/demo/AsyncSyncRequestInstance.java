@@ -1,10 +1,10 @@
 package org.apache.eventmesh.http.demo;
-import com.webank.eventmesh.client.http.conf.LiteClientConfig;
-import com.webank.eventmesh.client.http.producer.LiteProducer;
-import com.webank.eventmesh.client.http.producer.RRCallback;
-import com.webank.eventmesh.common.IPUtil;
-import com.webank.eventmesh.common.LiteMessage;
-import com.webank.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.client.http.conf.LiteClientConfig;
+import org.apache.eventmesh.client.http.producer.LiteProducer;
+import org.apache.eventmesh.client.http.producer.RRCallback;
+import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.ThreadUtil;
 import org.apache.eventmesh.util.Utils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
