@@ -1,4 +1,4 @@
-package org.apache.eventmesh.eventmesh.tcp.common;
+package org.apache.eventmesh.tcp.common;
 
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import com.webank.eventmesh.common.protocol.tcp.*;

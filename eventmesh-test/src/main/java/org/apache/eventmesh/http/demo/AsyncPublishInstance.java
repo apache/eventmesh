@@ -1,11 +1,11 @@
-package org.apache.eventmesh.eventmesh.http.demo;
+package org.apache.eventmesh.http.demo;
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.producer.LiteProducer;
 import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.common.IPUtil;
 import com.webank.eventmesh.common.LiteMessage;
 import com.webank.eventmesh.common.ThreadUtil;
-import org.apache.eventmesh.eventmesh.util.Utils;
+import org.apache.eventmesh.util.Utils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
