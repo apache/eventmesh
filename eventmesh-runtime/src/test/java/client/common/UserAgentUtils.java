@@ -17,8 +17,8 @@
 
 package client.common;
 
-import com.webank.eventmesh.runtime.constants.EventMeshConstants;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 //import org.apache.rocketmq.common.UtilAll;
 //import org.apache.rocketmq.remoting.common.RemotingUtil;
 
