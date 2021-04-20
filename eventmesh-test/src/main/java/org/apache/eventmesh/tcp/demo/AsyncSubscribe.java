@@ -1,4 +1,4 @@
-package org.apache.eventmesh.eventmesh.tcp.demo;
+package org.apache.eventmesh.tcp.demo;
 
 import com.webank.eventmesh.client.tcp.EventMeshClient;
 import com.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
@@ -6,8 +6,8 @@ import com.webank.eventmesh.client.tcp.impl.DefaultEventMeshClient;
 import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import com.webank.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.eventmesh.tcp.common.EventMeshTestUtils;
-import org.apache.eventmesh.eventmesh.util.Utils;
+import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
+import org.apache.eventmesh.util.Utils;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,11 +1,11 @@
-package org.apache.eventmesh.eventmesh.http.demo;
+package org.apache.eventmesh.http.demo;
 import com.webank.eventmesh.client.http.conf.LiteClientConfig;
 import com.webank.eventmesh.client.http.producer.LiteProducer;
-import com.webank.eventmesh.client.http.producer.RRCallback;
+import com.webank.eventmesh.common.Constants;
 import com.webank.eventmesh.common.IPUtil;
 import com.webank.eventmesh.common.LiteMessage;
 import com.webank.eventmesh.common.ThreadUtil;
-import org.apache.eventmesh.eventmesh.util.Utils;
+import org.apache.eventmesh.util.Utils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -13,18 +13,17 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-public class AsyncSyncRequestInstance {
+public class AsyncPublishInstance {
 
-    public static Logger logger = LoggerFactory.getLogger(AsyncSyncRequestInstance.class);
+    public static Logger logger = LoggerFactory.getLogger(AsyncPublishInstance.class);
 
     public static void main(String[] args) throws Exception {
-
         Properties properties = Utils.readPropertiesFile("application.properties");
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
 
         LiteProducer liteProducer = null;
-        try {
+        try{
 //            String proxyIPPort = args[0];
             String proxyIPPort = eventMeshIp + ":" + eventMeshHttpPort;
 //            final String topic = args[1];
@@ -44,29 +43,22 @@ public class AsyncSyncRequestInstance {
                     .setPid(String.valueOf(ThreadUtil.getPID()));
 
             liteProducer = new LiteProducer(eventMeshClientConfig);
+            liteProducer.start();
+            for(int i = 0; i < 5; i++) {
+                LiteMessage liteMessage = new LiteMessage();
+                liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
+//                    .setContent("contentStr with special protocal")
+                        .setContent("testPublishMessage")
+                        .setTopic(topic)
+                        .setUniqueId(RandomStringUtils.randomNumeric(30))
+                        .addProp(Constants.PROXY_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
 
-            final long startTime = System.currentTimeMillis();
-            final LiteMessage liteMessage = new LiteMessage();
-            liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
-                    .setContent("testAsyncMessage")
-                    .setTopic(topic)
-                    .setUniqueId(RandomStringUtils.randomNumeric(30));
-
-            liteProducer.request(liteMessage, new RRCallback() {
-                @Override
-                public void onSuccess(LiteMessage o) {
-                    logger.debug("sendmsg : {}, return : {}, cost:{}ms", liteMessage.getContent(), o.getContent(), System.currentTimeMillis() - startTime);
-                }
-
-                @Override
-                public void onException(Throwable e) {
-                    logger.debug("sendmsg failed", e);
-                }
-            }, 3000);
-
-            Thread.sleep(2000);
-        } catch (Exception e) {
-            logger.warn("async send msg failed", e);
+                boolean flag = liteProducer.publish(liteMessage);
+                Thread.sleep(1000);
+                logger.info("publish result , {}", flag);
+            }
+        }catch (Exception e){
+            logger.warn("publish msg failed", e);
         }
 
         try{
