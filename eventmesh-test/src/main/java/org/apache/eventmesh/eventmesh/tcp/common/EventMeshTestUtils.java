@@ -1,11 +1,10 @@
-package com.webank.eventmesh.tcp.common;
+package org.apache.eventmesh.eventmesh.tcp.common;
 
 import com.webank.eventmesh.common.protocol.tcp.Package;
 import com.webank.eventmesh.common.protocol.tcp.*;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.webank.eventmesh.tcp.common.EventMeshTestCaseTopicSet.*;
 import static com.webank.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 
 public class EventMeshTestUtils {
@@ -78,7 +77,7 @@ public class EventMeshTestUtils {
 
     private static EventMeshMessage generateSyncRRMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
-        mqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
+        mqMsg.setTopic(EventMeshTestCaseTopicSet.TOPIC_PRX_SyncSubscribeTest);
         mqMsg.getProperties().put("msgType", "persistent");
         mqMsg.getProperties().put("TTL", "300000");
         mqMsg.getProperties().put("KEYS", generateRandomString(16));
@@ -89,7 +88,7 @@ public class EventMeshTestUtils {
 
     private static EventMeshMessage generateAsyncRRMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
-        mqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
+        mqMsg.setTopic(EventMeshTestCaseTopicSet.TOPIC_PRX_SyncSubscribeTest);
         mqMsg.getProperties().put("REPLY_TO", "127.0.0.1@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         mqMsg.getProperties().put("TTL", "300000");
         mqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
@@ -99,7 +98,7 @@ public class EventMeshTestUtils {
 
     private static EventMeshMessage generateAsyncEventMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
-        mqMsg.setTopic(TOPIC_PRX_WQ2ClientUniCast);
+        mqMsg.setTopic(EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast);
         mqMsg.getProperties().put("REPLY_TO", "127.0.0.1@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         mqMsg.getProperties().put("TTL", "30000");
         mqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
@@ -109,7 +108,7 @@ public class EventMeshTestUtils {
 
     private static EventMeshMessage generateBroadcastMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
-        mqMsg.setTopic(TOPIC_PRX_WQ2ClientBroadCast);
+        mqMsg.setTopic(EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientBroadCast);
         mqMsg.getProperties().put("REPLY_TO", "127.0.0.1@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         mqMsg.getProperties().put("TTL", "30000");
         mqMsg.getProperties().put("PROPERTY_MESSAGE_REPLY_TO", "notnull");
