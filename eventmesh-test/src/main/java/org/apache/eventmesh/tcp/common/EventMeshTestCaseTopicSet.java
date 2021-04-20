@@ -1,4 +1,4 @@
-package org.apache.eventmesh.eventmesh.tcp.common;
+package org.apache.eventmesh.tcp.common;
 
 /**
  * Testcase set

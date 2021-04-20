@@ -1,4 +1,4 @@
-package org.apache.eventmesh.eventmesh.util;
+package org.apache.eventmesh.util;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;

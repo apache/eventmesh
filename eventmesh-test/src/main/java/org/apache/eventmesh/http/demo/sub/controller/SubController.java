@@ -1,4 +1,4 @@
-package org.apache.eventmesh.eventmesh.http.demo.sub.controller;
+package org.apache.eventmesh.http.demo.sub.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
