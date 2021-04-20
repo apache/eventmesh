@@ -17,8 +17,8 @@
 
 package client.common;
 
-import com.webank.eventmesh.runtime.boot.EventMeshServer;
-import com.webank.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.boot.EventMeshServer;
+import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 
 public class Server {
 
