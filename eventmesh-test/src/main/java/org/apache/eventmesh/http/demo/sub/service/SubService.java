@@ -1,10 +1,10 @@
 package org.apache.eventmesh.http.demo.sub.service;
 
-import com.webank.eventmesh.client.http.conf.LiteClientConfig;
-import com.webank.eventmesh.client.http.consumer.LiteConsumer;
-import com.webank.eventmesh.common.IPUtil;
-import com.webank.eventmesh.common.EventMeshException;
-import com.webank.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.client.http.conf.LiteClientConfig;
+import org.apache.eventmesh.client.http.consumer.LiteConsumer;
+import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.EventMeshException;
+import org.apache.eventmesh.common.ThreadUtil;
 import org.apache.eventmesh.util.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
