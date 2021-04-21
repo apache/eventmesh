@@ -1,12 +1,12 @@
-package com.webank.eventmesh.tcp.demo;
+package org.apache.eventmesh.tcp.demo;
 
-import com.webank.eventmesh.client.tcp.EventMeshClient;
-import com.webank.eventmesh.client.tcp.common.EventMeshCommon;
-import com.webank.eventmesh.client.tcp.impl.DefaultEventMeshClient;
-import com.webank.eventmesh.common.protocol.tcp.Package;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
-import com.webank.eventmesh.tcp.common.EventMeshTestUtils;
-import com.webank.eventmesh.util.Utils;
+import org.apache.eventmesh.client.tcp.EventMeshClient;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
+import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

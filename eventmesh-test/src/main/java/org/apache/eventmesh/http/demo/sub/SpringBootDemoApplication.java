@@ -1,4 +1,4 @@
-package com.webank.eventmesh.http.demo.sub;
+package org.apache.eventmesh.http.demo.sub;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
