@@ -1,4 +1,4 @@
-package com.webank.eventmesh.api;
+package org.apache.eventmesh.api;
 
 import io.openmessaging.api.Message;
 
