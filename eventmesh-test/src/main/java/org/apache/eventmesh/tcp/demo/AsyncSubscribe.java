@@ -1,26 +1,26 @@
-package com.webank.eventmesh.tcp.demo;
+package org.apache.eventmesh.tcp.demo;
 
-import com.webank.eventmesh.client.tcp.EventMeshClient;
-import com.webank.eventmesh.client.tcp.common.ReceiveMsgHook;
-import com.webank.eventmesh.client.tcp.impl.DefaultEventMeshClient;
-import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
-import com.webank.eventmesh.common.protocol.tcp.Package;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
-import com.webank.eventmesh.tcp.common.EventMeshTestUtils;
-import com.webank.eventmesh.util.Utils;
+import org.apache.eventmesh.client.tcp.EventMeshClient;
+import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
+import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
+import org.apache.eventmesh.util.Utils;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
+public class AsyncSubscribe implements ReceiveMsgHook {
 
-    public static Logger logger = LoggerFactory.getLogger(AsyncSubscribeBroadcast.class);
+    public static Logger logger = LoggerFactory.getLogger(AsyncSubscribe.class);
 
     private static EventMeshClient client;
 
-    public static AsyncSubscribeBroadcast handler = new AsyncSubscribeBroadcast();
+    public static AsyncSubscribe handler = new AsyncSubscribe();
 
     public static void main(String[] agrs)throws Exception{
         Properties properties = Utils.readPropertiesFile("application.properties");
@@ -32,7 +32,7 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
             client.init();
             client.heartbeat();
 
-            client.subscribe("FT0-e-80030000-01-3");
+            client.subscribe("FT0-e-80010000-01-1");
             client.registerSubBusiHandler(handler);
 
             client.listen();
@@ -42,13 +42,13 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
             //退出,销毁资源
 //            client.close();
         }catch (Exception e){
-            logger.warn("AsyncSubscribeBroadcast failed", e);
+            logger.warn("AsyncSubscribe failed", e);
         }
     }
 
     @Override
     public void handle(Package msg, ChannelHandlerContext ctx) {
         EventMeshMessage eventMeshMessage = (EventMeshMessage)msg.getBody();
-        logger.info("receive broadcast msg==============={}", eventMeshMessage);
+        logger.info("receive async msg====================={}", eventMeshMessage);
     }
 }
