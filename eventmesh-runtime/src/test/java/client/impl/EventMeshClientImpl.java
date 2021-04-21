@@ -22,8 +22,8 @@ import client.PubClient;
 import client.SubClient;
 import client.common.UserAgentUtils;
 import client.hook.ReceiveMsgHook;
-import com.webank.eventmesh.common.protocol.tcp.Package;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 public class EventMeshClientImpl implements EventMeshClient {
     protected UserAgent agent;
