@@ -1,4 +1,4 @@
-package com.webank.eventmesh.api;
+package org.apache.eventmesh.api;
 
 public interface AbstractContext {
 }
