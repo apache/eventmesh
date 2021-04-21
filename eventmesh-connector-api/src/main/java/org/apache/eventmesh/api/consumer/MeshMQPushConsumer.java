@@ -1,6 +1,5 @@
-package com.webank.eventmesh.api.consumer;
+package org.apache.eventmesh.api.consumer;
 
-import com.webank.eventmesh.api.AbstractContext;
 import io.openmessaging.api.AsyncMessageListener;
 import io.openmessaging.api.MessageListener;
 import io.openmessaging.api.Message;
@@ -8,6 +7,8 @@ import io.openmessaging.api.Consumer;
 
 import java.util.List;
 import java.util.Properties;
+
+import org.apache.eventmesh.api.AbstractContext;
 
 public interface MeshMQPushConsumer extends Consumer {
 
