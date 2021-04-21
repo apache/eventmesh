@@ -1,12 +1,12 @@
-package com.webank.eventmesh.tcp.common;
+package org.apache.eventmesh.tcp.common;
 
-import com.webank.eventmesh.common.protocol.tcp.Package;
-import com.webank.eventmesh.common.protocol.tcp.*;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.*;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.webank.eventmesh.tcp.common.EventMeshTestCaseTopicSet.*;
-import static com.webank.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
+import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.*;
+import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 
 public class EventMeshTestUtils {
     private static final int seqLength = 10;
