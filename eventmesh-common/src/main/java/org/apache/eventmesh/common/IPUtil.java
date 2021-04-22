@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.common;
 
-import io.netty.channel.Channel;
-
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -29,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import io.netty.channel.Channel;
 
 public class IPUtil {
 
@@ -107,8 +107,7 @@ public class IPUtil {
         return null;
     }
 
-    public static boolean isValidIPV4Address(String ip)
-    {
+    public static boolean isValidIPV4Address(String ip) {
 
         // Regex for digit from 0 to 255.
         String zeroTo255

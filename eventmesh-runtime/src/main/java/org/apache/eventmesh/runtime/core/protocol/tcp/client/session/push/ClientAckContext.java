@@ -17,18 +17,19 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
-import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
+import java.util.List;
+
 import io.openmessaging.api.Message;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class ClientAckContext {
 
@@ -109,8 +110,8 @@ public class ClientAckContext {
 //            ConsumeMessageService consumeMessageService = consumer..getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, context);
             logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), EventMeshUtil.getMessageBizSeq(msgs.get(0)));
-        }else{
-            logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",consumer == null, context == null, msgs == null);
+        } else {
+            logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}", consumer == null, context == null, msgs == null);
         }
     }
 

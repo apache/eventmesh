@@ -12,8 +12,8 @@ config env varible
 
 ```
 
+2.config in eventmesh-sdk-java
 
-2.config in eventmesh-sdk-java 
 ```
 // create producer
 LiteClientConfig liteClientConfig = new liteClientConfig();

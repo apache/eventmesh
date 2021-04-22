@@ -67,8 +67,8 @@ eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里]
 ## 贡献
 永远欢迎参与共建, 请参阅[贡献](CONTRIBUTING.zh-CN.md)了解详细指南
 
-您可以从问题开始. 
-[GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
+您可以从问题开始.
+[GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
 
 ## License
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation

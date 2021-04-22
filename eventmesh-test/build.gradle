@@ -53,13 +53,13 @@ List junit = [
 dependencies {
 //    compile log4j2, sl4j
 //    testCompile log4j2, sl4j
-    compile project(":eventmesh-sdk-java"),spring_framework,apache_common
+    compile project(":eventmesh-sdk-java"), spring_framework, apache_common, project(":eventmesh-connector-api")
     //Spring模块
-    testCompile junit,apache_common
+    testCompile junit, apache_common
 
 }
 
-configurations.all{
+configurations.all {
     exclude group: "ch.qos.logback"
     exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 }
@@ -72,10 +72,10 @@ clean.doFirst {
 task testdist(dependsOn: ['jar']) {
 
     doFirst {
-        new File(projectDir.getPath() , 'dist/bin').mkdirs()
-        new File(projectDir.getPath() , 'dist/apps').mkdirs()
-        new File(projectDir.getPath() , 'dist/conf').mkdirs()
-        new File(projectDir.getPath() , 'dist/lib').mkdirs()
+        new File(projectDir.getPath(), 'dist/bin').mkdirs()
+        new File(projectDir.getPath(), 'dist/apps').mkdirs()
+        new File(projectDir.getPath(), 'dist/conf').mkdirs()
+        new File(projectDir.getPath(), 'dist/lib').mkdirs()
     }
 
     doLast {

@@ -16,16 +16,16 @@
  */
 package org.apache.eventmesh.connector.rocketmq.utils;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.log.ClientLogger;
-import org.apache.rocketmq.logging.InternalLogger;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.client.log.ClientLogger;
+import org.apache.rocketmq.logging.InternalLogger;
 
 public final class BeanUtils {
     final static InternalLogger log = ClientLogger.getLog();
@@ -78,9 +78,9 @@ public final class BeanUtils {
      * to have more than one setter method (with different argument
      * signatures) for the same property.</p>
      *
-     * @param clazz JavaBean class whose properties are being populated
+     * @param clazz      JavaBean class whose properties are being populated
      * @param properties Map keyed by property name, with the corresponding (String or String[]) value(s) to be set
-     * @param <T> Class type
+     * @param <T>        Class type
      * @return Class instance
      */
     public static <T> T populate(final Properties properties, final Class<T> clazz) {
@@ -116,7 +116,7 @@ public final class BeanUtils {
     }
 
     public static void setProperties(Class<?> clazz, Object obj, String methodName,
-        Object value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+                                     Object value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Class<?> parameterClass = getMethodClass(clazz, methodName);
         Method setterMethod = clazz.getMethod(methodName, parameterClass);
         if (parameterClass == Boolean.TYPE) {

@@ -1,4 +1,5 @@
 ## 自动伸缩Queue
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 在同一个消费组内，每个队列只由一个实例消费。当队列数小于消费者实例数时，会有部分消费者实例分不到队列；反之，当队列数大于消费者实例数时，每个消费者需要消费多个队列。队列数不是消费者实例数的整数倍时，则会出现部分实例需要消费比同组内的其他实例更多的队列，出现负载不均衡问题。
 
@@ -24,7 +25,9 @@ DeFiBus提供了队列数量自动调整的特性。当有Consumer新注册或�
 
 
 ---
+
 #### Links:
+
 * [架构介绍](../../../README.md)
 * [Request-Reply调用](docs/cn/features/1-request-response-call.md)
 * [灰度发布](docs/cn/features/2-dark-launch.md)

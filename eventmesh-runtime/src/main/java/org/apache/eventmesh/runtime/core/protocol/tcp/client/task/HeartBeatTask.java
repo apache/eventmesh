@@ -17,14 +17,15 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import org.apache.eventmesh.runtime.util.Utils;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import static org.apache.eventmesh.common.protocol.tcp.Command.HEARTBEAT_RESPONSE;
+
+import io.netty.channel.ChannelHandlerContext;
+
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import io.netty.channel.ChannelHandlerContext;
-
-import static org.apache.eventmesh.common.protocol.tcp.Command.HEARTBEAT_RESPONSE;
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.util.Utils;
 
 public class HeartBeatTask extends AbstractTask {
 
@@ -41,11 +42,11 @@ public class HeartBeatTask extends AbstractTask {
                 session.notifyHeartbeat(startTime);
             }
             res.setHeader(new Header(HEARTBEAT_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq()));
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("HeartBeatTask failed|user={}|errMsg={}", session.getClient(), e);
             res.setHeader(new Header(HEARTBEAT_RESPONSE, OPStatus.FAIL.getCode(), "exception while " +
                     "heartbeating", pkg.getHeader().getSeq()));
-        }finally {
+        } finally {
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
         }
     }

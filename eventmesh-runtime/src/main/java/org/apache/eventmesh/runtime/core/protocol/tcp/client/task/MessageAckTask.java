@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.ClientAckContext;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import io.netty.channel.ChannelHandlerContext;
+
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import io.netty.channel.ChannelHandlerContext;
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.ClientAckContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ public class MessageAckTask extends AbstractTask {
             return;
         }
         ClientAckContext clientAckContext = session.getPusher().getPushContext().getUnAckMsg().get(seq);
-        if(clientAckContext != null) {
+        if (clientAckContext != null) {
             session.ackMsg(seq);
             session.getClientGroupWrapper().get().getDownstreamMap().remove(seq);
         }

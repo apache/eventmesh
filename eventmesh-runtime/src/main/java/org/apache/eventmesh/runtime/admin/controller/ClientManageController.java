@@ -17,20 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.controller;
 
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -49,17 +35,32 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ClientManageController {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientManageController.class);
 
     private EventMeshTCPServer eventMeshTCPServer;
 
-    public ClientManageController(EventMeshTCPServer eventMeshTCPServer){
+    public ClientManageController(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
-    public  void start() throws IOException {
+    public void start() throws IOException {
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/clientManage/showClient", new ShowClientHandler());
@@ -82,7 +83,7 @@ public class ClientManageController {
         Map<String, Object> parameters = new HashMap<>();
         if ("post".equalsIgnoreCase(exchange.getRequestMethod())) {
             InputStreamReader isr =
-                    new InputStreamReader(exchange.getRequestBody(),"utf-8");
+                    new InputStreamReader(exchange.getRequestBody(), "utf-8");
             BufferedReader br = new BufferedReader(isr);
             String query = br.readLine();
             parseQuery(query, parameters);
@@ -103,21 +104,21 @@ public class ClientManageController {
                 String key = null;
                 String value = null;
                 if (param.length > 0) {
-                    key = URLDecoder.decode(param[0],"UTF-8");
+                    key = URLDecoder.decode(param[0], "UTF-8");
                 }
 
                 if (param.length > 1) {
-                    value = URLDecoder.decode(param[1],"UTF-8");
+                    value = URLDecoder.decode(param[1], "UTF-8");
                 }
 
                 if (parameters.containsKey(key)) {
                     Object obj = parameters.get(key);
-                    if(obj instanceof List<?>) {
-                        List<String> values = (List<String>)obj;
+                    if (obj instanceof List<?>) {
+                        List<String> values = (List<String>) obj;
                         values.add(value);
-                    } else if(obj instanceof String) {
+                    } else if (obj instanceof String) {
                         List<String> values = new ArrayList<String>();
-                        values.add((String)obj);
+                        values.add((String) obj);
                         values.add(value);
                         parameters.put(key, values);
                     }
@@ -133,12 +134,12 @@ public class ClientManageController {
      *
      * @return
      */
-    class ShowClientHandler implements HttpHandler{
+    class ShowClientHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "";
             OutputStream out = httpExchange.getResponseBody();
-            try{
+            try {
                 String newLine = System.getProperty("line.separator");
                 logger.info("showAllClient=================");
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
@@ -157,13 +158,13 @@ public class ClientManageController {
                 }
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("ShowClientHandler fail...", e);
-            }finally {
-                if(out != null){
+            } finally {
+                if (out != null) {
                     try {
                         out.close();
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         logger.warn("out close failed...", e);
                     }
                 }
@@ -184,19 +185,19 @@ public class ClientManageController {
      *
      * @return
      */
-    class ShowClientBySystemAndDcnHandler implements HttpHandler{
+    class ShowClientBySystemAndDcnHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "";
             OutputStream out = httpExchange.getResponseBody();
-            try{
-                String queryString =  httpExchange.getRequestURI().getQuery();
-                Map<String,String> queryStringInfo = formData2Dic(queryString);
+            try {
+                String queryString = httpExchange.getRequestURI().getQuery();
+                Map<String, String> queryStringInfo = formData2Dic(queryString);
                 String dcn = queryStringInfo.get(EventMeshConstants.MANAGE_DCN);
                 String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
                 String newLine = System.getProperty("line.separator");
-                logger.info("showClientBySubsysAndDcn,subsys:{},dcn:{}=================",subSystem,dcn);
+                logger.info("showClientBySubsysAndDcn,subsys:{},dcn:{}=================", subSystem, dcn);
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 if (!sessionMap.isEmpty()) {
@@ -210,13 +211,13 @@ public class ClientManageController {
                 }
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("ShowClientBySystemAndDcnHandler fail...", e);
-            }finally {
-                if(out != null){
+            } finally {
+                if (out != null) {
                     try {
                         out.close();
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         logger.warn("out close failed...", e);
                     }
                 }
@@ -228,28 +229,27 @@ public class ClientManageController {
 
     /**
      * query client subscription by topic
-     *
      */
-    class ShowListenClientByTopicHandler implements HttpHandler{
+    class ShowListenClientByTopicHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "";
             OutputStream out = httpExchange.getResponseBody();
-            try{
-                String queryString =  httpExchange.getRequestURI().getQuery();
-                Map<String,String> queryStringInfo = formData2Dic(queryString);
+            try {
+                String queryString = httpExchange.getRequestURI().getQuery();
+                Map<String, String> queryStringInfo = formData2Dic(queryString);
                 String topic = queryStringInfo.get(EventMeshConstants.MANAGE_TOPIC);
 
                 String newLine = System.getProperty("line.separator");
-                logger.info("showListeningClientByTopic,topic:{}=================",topic);
+                logger.info("showListeningClientByTopic,topic:{}=================", topic);
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<String, ClientGroupWrapper> clientGroupMap = clientSessionGroupMapping.getClientGroupMap();
                 if (!clientGroupMap.isEmpty()) {
                     for (ClientGroupWrapper cgw : clientGroupMap.values()) {
                         Set<Session> listenSessionSet = cgw.getTopic2sessionInGroupMapping().get(topic);
                         if (listenSessionSet != null && listenSessionSet.size() > 0) {
-                            result += String.format("group:%s",cgw.getGroupName()) + newLine;
-                            for(Session session : listenSessionSet) {
+                            result += String.format("group:%s", cgw.getGroupName()) + newLine;
+                            for (Session session : listenSessionSet) {
                                 UserAgent userAgent = session.getClient();
                                 result += String.format("pid=%s | ip=%s | port=%s | path=%s | version=%s", userAgent.getPid(), userAgent
                                         .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getVersion()) + newLine;
@@ -259,13 +259,13 @@ public class ClientManageController {
                 }
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("ShowListenClientByTopicHandler fail...", e);
-            }finally {
-                if(out != null){
+            } finally {
+                if (out != null) {
                     try {
                         out.close();
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         logger.warn("out close failed...", e);
                     }
                 }
@@ -280,12 +280,12 @@ public class ClientManageController {
      *
      * @return
      */
-    class RejectAllClientHandler implements HttpHandler{
+    class RejectAllClientHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "";
             OutputStream out = httpExchange.getResponseBody();
-            try{
+            try {
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
@@ -311,13 +311,13 @@ public class ClientManageController {
                         (), printClients(successRemoteAddrs));
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("rejectAllClient fail...", e);
-            }finally {
-                if(out != null){
+            } finally {
+                if (out != null) {
                     try {
                         out.close();
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         logger.warn("out close failed...", e);
                     }
                 }
@@ -331,14 +331,14 @@ public class ClientManageController {
      *
      * @return
      */
-    class RejectClientByIpPortHandler implements HttpHandler{
+    class RejectClientByIpPortHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "";
             OutputStream out = httpExchange.getResponseBody();
-            try{
-                String queryString =  httpExchange.getRequestURI().getQuery();
-                Map<String,String> queryStringInfo = formData2Dic(queryString);
+            try {
+                String queryString = httpExchange.getRequestURI().getQuery();
+                Map<String, String> queryStringInfo = formData2Dic(queryString);
                 String ip = queryStringInfo.get(EventMeshConstants.MANAGE_IP);
                 String port = queryStringInfo.get(EventMeshConstants.MANAGE_PORT);
 
@@ -348,7 +348,7 @@ public class ClientManageController {
                     out.write(result.getBytes());
                     return;
                 }
-                logger.info("rejectClientByIpPort in admin,ip:{},port:{}====================",ip,port);
+                logger.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
@@ -376,13 +376,13 @@ public class ClientManageController {
                         (successRemoteAddrs));
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("rejectClientByIpPort fail...", e);
-            }finally {
-                if(out != null){
+            } finally {
+                if (out != null) {
                     try {
                         out.close();
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         logger.warn("out close failed...", e);
                     }
                 }
@@ -397,14 +397,14 @@ public class ClientManageController {
      *
      * @return
      */
-    class RejectClientBySubSystemHandler implements HttpHandler{
+    class RejectClientBySubSystemHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "";
             OutputStream out = httpExchange.getResponseBody();
-            try{
-                String queryString =  httpExchange.getRequestURI().getQuery();
-                Map<String,String> queryStringInfo = formData2Dic(queryString);
+            try {
+                String queryString = httpExchange.getRequestURI().getQuery();
+                Map<String, String> queryStringInfo = formData2Dic(queryString);
                 String dcn = queryStringInfo.get(EventMeshConstants.MANAGE_DCN);
                 String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
@@ -415,7 +415,7 @@ public class ClientManageController {
                     return;
                 }
 
-                logger.info("rejectClientBySubSystem in admin,subsys:{},dcn:{}====================",subSystem,dcn);
+                logger.info("rejectClientBySubSystem in admin,subsys:{},dcn:{}====================", subSystem, dcn);
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
@@ -443,13 +443,13 @@ public class ClientManageController {
                         "port=%s}", sessionMap.size(), printClients(successRemoteAddrs), dcn, subSystem);
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("rejectClientBySubSystem fail...", e);
-            }finally {
-                if(out != null){
+            } finally {
+                if (out != null) {
                     try {
                         out.close();
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         logger.warn("out close failed...", e);
                     }
                 }
@@ -463,14 +463,14 @@ public class ClientManageController {
      *
      * @return
      */
-    class RedirectClientBySubSystemHandler implements HttpHandler{
+    class RedirectClientBySubSystemHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "";
             OutputStream out = httpExchange.getResponseBody();
-            try{
-                String queryString =  httpExchange.getRequestURI().getQuery();
-                Map<String,String> queryStringInfo = formData2Dic(queryString);
+            try {
+                String queryString = httpExchange.getRequestURI().getQuery();
+                Map<String, String> queryStringInfo = formData2Dic(queryString);
                 String dcn = queryStringInfo.get(EventMeshConstants.MANAGE_DCN);
                 String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
                 String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
@@ -484,7 +484,7 @@ public class ClientManageController {
                     out.write(result.getBytes());
                     return;
                 }
-                logger.info("redirectClientBySubSystem in admin,subsys:{},dcn:{},destIp:{},destPort:{}====================",subSystem,dcn,destEventMeshIp,destEventMeshPort);
+                logger.info("redirectClientBySubSystem in admin,subsys:{},dcn:{},destIp:{},destPort:{}====================", subSystem, dcn, destEventMeshIp, destEventMeshPort);
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 String redirectResult = "";
@@ -514,13 +514,13 @@ public class ClientManageController {
                         sessionMap.size(), dcn, subSystem, destEventMeshIp, destEventMeshPort, redirectResult);
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("redirectClientBySubSystem fail...", e);
-            }finally {
-                if(out != null){
+            } finally {
+                if (out != null) {
                     try {
                         out.close();
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         logger.warn("out close failed...", e);
                     }
                 }
@@ -528,20 +528,20 @@ public class ClientManageController {
 
         }
     }
-    
+
     /**
      * redirect subsystem for path
      *
      * @return
      */
-    class RedirectClientByPathHandler implements HttpHandler{
+    class RedirectClientByPathHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "";
             OutputStream out = httpExchange.getResponseBody();
-            try{
-                String queryString =  httpExchange.getRequestURI().getQuery();
-                Map<String,String> queryStringInfo = formData2Dic(queryString);
+            try {
+                String queryString = httpExchange.getRequestURI().getQuery();
+                Map<String, String> queryStringInfo = formData2Dic(queryString);
                 String path = queryStringInfo.get(EventMeshConstants.MANAGE_PATH);
                 String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
                 String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
@@ -553,7 +553,7 @@ public class ClientManageController {
                     out.write(result.getBytes());
                     return;
                 }
-                logger.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================",path,destEventMeshIp,destEventMeshPort);
+                logger.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path, destEventMeshIp, destEventMeshPort);
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 String redirectResult = "";
@@ -583,13 +583,13 @@ public class ClientManageController {
                         sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("redirectClientByPath fail...", e);
-            }finally {
-                if(out != null){
+            } finally {
+                if (out != null) {
                     try {
                         out.close();
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         logger.warn("out close failed...", e);
                     }
                 }
@@ -603,14 +603,14 @@ public class ClientManageController {
      *
      * @return
      */
-    class RedirectClientByIpPortHandler implements HttpHandler{
+    class RedirectClientByIpPortHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "";
             OutputStream out = httpExchange.getResponseBody();
-            try{
-                String queryString =  httpExchange.getRequestURI().getQuery();
-                Map<String,String> queryStringInfo = formData2Dic(queryString);
+            try {
+                String queryString = httpExchange.getRequestURI().getQuery();
+                Map<String, String> queryStringInfo = formData2Dic(queryString);
                 String ip = queryStringInfo.get(EventMeshConstants.MANAGE_IP);
                 String port = queryStringInfo.get(EventMeshConstants.MANAGE_PORT);
                 String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
@@ -624,7 +624,7 @@ public class ClientManageController {
                     out.write(result.getBytes());
                     return;
                 }
-                logger.info("redirectClientByIpPort in admin,ip:{},port:{},destIp:{},destPort:{}====================",ip,port,destEventMeshIp,destEventMeshPort);
+                logger.info("redirectClientByIpPort in admin,ip:{},port:{},destIp:{},destPort:{}====================", ip, port, destEventMeshIp, destEventMeshPort);
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 String redirectResult = "";
@@ -654,13 +654,13 @@ public class ClientManageController {
                         sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult);
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("redirectClientByIpPort fail...", e);
-            }finally {
-                if(out != null){
+            } finally {
+                if (out != null) {
                     try {
                         out.close();
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         logger.warn("out close failed...", e);
                     }
                 }
@@ -680,20 +680,20 @@ public class ClientManageController {
         return sb.toString();
     }
 
-    private Map<String,String> formData2Dic(String formData) {
-        Map<String,String> result = new HashMap<>();
-        if(formData== null || formData.trim().length() == 0) {
+    private Map<String, String> formData2Dic(String formData) {
+        Map<String, String> result = new HashMap<>();
+        if (formData == null || formData.trim().length() == 0) {
             return result;
         }
         final String[] items = formData.split("&");
-        Arrays.stream(items).forEach(item ->{
+        Arrays.stream(items).forEach(item -> {
             final String[] keyAndVal = item.split("=");
-            if( keyAndVal.length == 2) {
-                try{
-                    final String key = URLDecoder.decode( keyAndVal[0],"utf8");
-                    final String val = URLDecoder.decode( keyAndVal[1],"utf8");
-                    result.put(key,val);
-                }catch (UnsupportedEncodingException e) {
+            if (keyAndVal.length == 2) {
+                try {
+                    final String key = URLDecoder.decode(keyAndVal[0], "utf8");
+                    final String val = URLDecoder.decode(keyAndVal[1], "utf8");
+                    result.put(key, val);
+                } catch (UnsupportedEncodingException e) {
                     logger.warn("formData2Dic:param decode failed...", e);
                 }
             }
@@ -701,12 +701,12 @@ public class ClientManageController {
         return result;
     }
 
-    class EventMeshMsgDownStreamHandler implements HttpHandler{
+    class EventMeshMsgDownStreamHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "false";
             OutputStream out = httpExchange.getResponseBody();
-            try{
+            try {
 //                Map<String, Object> queryStringInfo =  parsePostParameters(httpExchange);
 //                String msgStr = (String)queryStringInfo.get("msg");
 //                String groupName = (String)queryStringInfo.get("group");
@@ -758,13 +758,13 @@ public class ClientManageController {
 //                httpExchange.sendResponseHeaders(200, 0);
 //                out.write(result.getBytes());
 
-            }catch (Exception e){
+            } catch (Exception e) {
                 logger.error("EventMeshMsgDownStreamHandler handle fail...", e);
-            }finally {
-                if(out != null){
+            } finally {
+                if (out != null) {
                     try {
                         out.close();
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         logger.warn("out close failed...", e);
                     }
                 }

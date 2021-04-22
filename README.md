@@ -68,13 +68,13 @@ The protocol of eventmesh is easier and convenient, you can read more [here](doc
 ## Quick Start
 1. Build and deploy event-store(RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
 2. Build and deploy eventmesh-runtime, see instruction ['eventmesh-runtime quickstart'](docs/en/instructions/eventmesh-runtime-quickstart.md).
-3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md). 
+3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
 
 ## Contributing
 Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.
 
-You can start with the issues labeled with good first issue. 
-[GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
+You can start with the issues labeled with good first issue.
+[GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
 
 ## License
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation.
@@ -85,6 +85,7 @@ WeChat group：
 ![wechat_qr](docs/images/mesh-helper.png)
 
 Mailing Lists:
+
 | Name | Description |Subscribe	|Unsubscribe|Archive
 | ----    | ----    |----    | ----    | ----    |
 |Users	|User support and questions mailing list|	[Subscribe](mailto:users-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:users-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?users@eventmesh.apache.org)|

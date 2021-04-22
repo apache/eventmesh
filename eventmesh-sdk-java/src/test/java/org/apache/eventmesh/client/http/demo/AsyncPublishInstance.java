@@ -1,12 +1,13 @@
 package org.apache.eventmesh.client.http.demo;
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.client.http.producer.LiteProducer;
-import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.common.IPUtil;
-import com.webank.eventmesh.common.LiteMessage;
-import com.webank.eventmesh.common.ThreadUtil;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.client.http.conf.LiteClientConfig;
+import org.apache.eventmesh.client.http.producer.LiteProducer;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,7 @@ public class AsyncPublishInstance {
     public static void main(String[] args) throws Exception {
 
         LiteProducer liteProducer = null;
-        try{
+        try {
 //            String eventMeshIPPort = args[0];
             String eventMeshIPPort = "";
 //            final String topic = args[1];
@@ -38,7 +39,7 @@ public class AsyncPublishInstance {
 
             liteProducer = new LiteProducer(eventMeshClientConfig);
             liteProducer.start();
-            for(int i = 0; i < 1; i++) {
+            for (int i = 0; i < 1; i++) {
                 LiteMessage liteMessage = new LiteMessage();
                 liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
 //                    .setContent("contentStr with special protocal")
@@ -51,16 +52,16 @@ public class AsyncPublishInstance {
                 Thread.sleep(1000);
                 logger.info("publish result , {}", flag);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.warn("publish msg failed", e);
         }
 
-        try{
+        try {
             Thread.sleep(30000);
-            if(liteProducer != null){
+            if (liteProducer != null) {
                 liteProducer.shutdown();
             }
-        }catch (Exception e1){
+        } catch (Exception e1) {
             logger.warn("producer shutdown exception", e1);
         }
     }

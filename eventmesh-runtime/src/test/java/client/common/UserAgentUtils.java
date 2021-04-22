@@ -17,12 +17,10 @@
 
 package client.common;
 
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-//import org.apache.rocketmq.common.UtilAll;
-//import org.apache.rocketmq.remoting.common.RemotingUtil;
-
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 public class UserAgentUtils {
     public static UserAgent createPubUserAgent() {

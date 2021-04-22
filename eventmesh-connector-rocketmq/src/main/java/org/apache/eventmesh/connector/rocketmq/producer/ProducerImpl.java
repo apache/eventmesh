@@ -16,14 +16,19 @@
  */
 package org.apache.eventmesh.connector.rocketmq.producer;
 
-import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
-import io.openmessaging.api.*;
-import io.openmessaging.api.exception.OMSRuntimeException;
-import org.apache.rocketmq.common.message.MessageClientIDSetter;
-
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 
+import io.openmessaging.api.Message;
+import io.openmessaging.api.MessageBuilder;
+import io.openmessaging.api.OnExceptionContext;
+import io.openmessaging.api.Producer;
+import io.openmessaging.api.SendCallback;
+import io.openmessaging.api.SendResult;
+import io.openmessaging.api.exception.OMSRuntimeException;
+
+import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
+import org.apache.rocketmq.common.message.MessageClientIDSetter;
 
 
 public class ProducerImpl extends AbstractOMSProducer implements Producer {
@@ -38,7 +43,7 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
         return properties;
     }
 
-    public void setExtFields(){
+    public void setExtFields() {
         super.getRocketmqProducer().setRetryTimesWhenSendFailed(0);
         super.getRocketmqProducer().setRetryTimesWhenSendAsyncFailed(0);
         super.getRocketmqProducer().setPollNameServerInterval(60000);

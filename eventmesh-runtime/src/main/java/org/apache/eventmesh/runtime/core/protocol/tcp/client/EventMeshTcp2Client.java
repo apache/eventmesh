@@ -17,28 +17,29 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client;
 
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
-import org.apache.eventmesh.runtime.util.RemotingHelper;
-import org.apache.eventmesh.runtime.util.Utils;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.OPStatus;
-import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
-import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.eventmesh.common.protocol.tcp.Command.REDIRECT_TO_CLIENT;
+import static org.apache.eventmesh.common.protocol.tcp.Command.SERVER_GOODBYE_REQUEST;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.eventmesh.common.protocol.tcp.Command.REDIRECT_TO_CLIENT;
-import static org.apache.eventmesh.common.protocol.tcp.Command.SERVER_GOODBYE_REQUEST;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
+import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
+import org.apache.eventmesh.runtime.util.RemotingHelper;
+import org.apache.eventmesh.runtime.util.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventMeshTcp2Client {
 
@@ -46,7 +47,7 @@ public class EventMeshTcp2Client {
 
     public static InetSocketAddress serverGoodby2Client(Session session, ClientSessionGroupMapping mapping) {
         logger.info("serverGoodby2Client client[{}]", session.getClient());
-        try{
+        try {
             long startTime = System.currentTimeMillis();
             Package msg = new Package();
             msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(), "graceful normal quit from eventmesh",
@@ -63,7 +64,7 @@ public class EventMeshTcp2Client {
 
             closeSessionIfTimeout(session, mapping);
             return address;
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("exception occur while serverGoodby2Client", e);
             return null;
         }
@@ -76,7 +77,7 @@ public class EventMeshTcp2Client {
         try {
             long startTime = System.currentTimeMillis();
             Package msg = new Package();
-            msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, eventMeshStatus, errMsg,null));
+            msg.setHeader(new Header(SERVER_GOODBYE_REQUEST, eventMeshStatus, errMsg, null));
             EventMeshTCPServer.scheduler.schedule(new Runnable() {
                 @Override
                 public void run() {
@@ -147,7 +148,7 @@ public class EventMeshTcp2Client {
             @Override
             public void run() {
                 try {
-                    if(!session.getSessionState().equals(SessionState.CLOSED)){
+                    if (!session.getSessionState().equals(SessionState.CLOSED)) {
                         mapping.closeSession(session.getContext());
                         logger.info("closeSessionIfTimeout success, session[{}]", session.getClient());
                     }

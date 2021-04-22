@@ -1,6 +1,7 @@
 package org.apache.eventmesh.http.demo.sub.controller;
 
 import com.alibaba.fastjson.JSONObject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +17,7 @@ public class SubController {
     public static Logger logger = LoggerFactory.getLogger(SubController.class);
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
-    public String subTest(@RequestBody String message){
+    public String subTest(@RequestBody String message) {
         logger.info("=======receive message======= {}", JSONObject.toJSONString(message));
         JSONObject result = new JSONObject();
         result.put("retCode", 1);

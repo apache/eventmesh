@@ -16,7 +16,6 @@
  */
 
 package org.apache.eventmesh.client.tcp.common;
-import com.webank.eventmesh.common.protocol.tcp.Package;
 
 public interface AsyncRRCallback {
     void callback(Package msg);

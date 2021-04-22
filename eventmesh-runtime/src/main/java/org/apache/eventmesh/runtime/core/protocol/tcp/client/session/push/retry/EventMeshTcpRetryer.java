@@ -17,25 +17,26 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.retry;
 
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.constants.DeFiBusConstant;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
-//import org.apache.eventmesh.connector.defibus.common.Constants;
-import io.openmessaging.api.Message;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import io.openmessaging.api.Message;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.constants.DeFiBusConstant;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
+import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventMeshTcpRetryer {
 
@@ -49,7 +50,7 @@ public class EventMeshTcpRetryer {
             3,
             60000,
             TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(1000),
-            new EventMeshThreadFactoryImpl("eventMesh-tcp-retry",true),
+            new EventMeshThreadFactoryImpl("eventMesh-tcp-retry", true),
             new ThreadPoolExecutor.AbortPolicy());
 
     private Thread dispatcher;
@@ -82,7 +83,7 @@ public class EventMeshTcpRetryer {
         }
 
         retrys.offer(downStreamMsgContext);
-        logger.info("pushRetry success,seq:{}, retryTimes:{}, bizSeq:{}",downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+        logger.info("pushRetry success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
     }
 
     public void init() {
@@ -106,11 +107,11 @@ public class EventMeshTcpRetryer {
         logger.info("EventMeshTcpRetryer inited......");
     }
 
-    private void retryHandle(DownStreamMsgContext downStreamMsgContext){
+    private void retryHandle(DownStreamMsgContext downStreamMsgContext) {
         try {
-            logger.info("retry downStream msg start,seq:{},retryTimes:{},bizSeq:{}",downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+            logger.info("retry downStream msg start,seq:{},retryTimes:{},bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
-            if(isRetryMsgTimeout(downStreamMsgContext)){
+            if (isRetryMsgTimeout(downStreamMsgContext)) {
                 return;
             }
             downStreamMsgContext.retryTimes++;
@@ -118,17 +119,17 @@ public class EventMeshTcpRetryer {
 
             Session rechoosen = null;
             String topic = downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
-            if(!EventMeshUtil.isBroadcast(topic)){
+            if (!EventMeshUtil.isBroadcast(topic)) {
                 rechoosen = downStreamMsgContext.session.getClientGroupWrapper()
                         .get().getDownstreamDispatchStrategy().select(downStreamMsgContext.session.getClientGroupWrapper().get().getGroupName()
                                 , topic
                                 , downStreamMsgContext.session.getClientGroupWrapper().get().getGroupConsumerSessions());
-            }else{
+            } else {
                 rechoosen = downStreamMsgContext.session;
             }
 
 
-            if(rechoosen == null){
+            if (rechoosen == null) {
                 logger.warn("retry, found no session to downstream msg,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
 //                //需要手动ack掉没有下发成功的消息
@@ -143,13 +144,13 @@ public class EventMeshTcpRetryer {
 //                    //TODO 将消息推给其它eventMesh，待定
 //                    sendMsgToOtherEventMesh(finalDownStreamMsgContext.msgExt, bizSeqNo, uniqueId);
 //                }
-            }else {
+            } else {
                 downStreamMsgContext.session = rechoosen;
 
                 if (rechoosen.isCanDownStream()) {
                     rechoosen.downstreamMsg(downStreamMsgContext);
-                    logger.info("retry downStream msg end,seq:{},retryTimes:{},bizSeq:{}",downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
-                }else{
+                    logger.info("retry downStream msg end,seq:{},retryTimes:{},bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+                } else {
                     logger.warn("session is busy,push retry again,seq:{}, session:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.session.getClient(), EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
                     long delayTime = EventMeshUtil.isService(topic) ? 0 : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryDelayInMills;
                     downStreamMsgContext.delay(delayTime);
@@ -161,8 +162,8 @@ public class EventMeshTcpRetryer {
         }
     }
 
-    private boolean isRetryMsgTimeout(DownStreamMsgContext downStreamMsgContext){
-        boolean flag =false;
+    private boolean isRetryMsgTimeout(DownStreamMsgContext downStreamMsgContext) {
+        boolean flag = false;
         long ttl = Long.parseLong(downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL));
         //TODO 关注是否能取到
         long storeTimestamp = Long.parseLong(downStreamMsgContext.msgExt.getUserProperties(DeFiBusConstant.STORE_TIME));
@@ -190,7 +191,7 @@ public class EventMeshTcpRetryer {
         logger.info("EventMeshTcpRetryer shutdown......");
     }
 
-    public int getRetrySize(){
+    public int getRetrySize() {
         return retrys.size();
     }
 
@@ -199,17 +200,17 @@ public class EventMeshTcpRetryer {
      *
      * @param downStreamMsgContext
      */
-    private void eventMeshAckMsg(DownStreamMsgContext downStreamMsgContext){
+    private void eventMeshAckMsg(DownStreamMsgContext downStreamMsgContext) {
         List<Message> msgExts = new ArrayList<Message>();
         msgExts.add(downStreamMsgContext.msgExt);
-        logger.warn("eventMeshAckMsg topic:{}, seq:{}, bizSeq:{}",downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION),
+        logger.warn("eventMeshAckMsg topic:{}, seq:{}, bizSeq:{}", downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION),
                 downStreamMsgContext.seq, downStreamMsgContext.msgExt.getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_KEYS));
         downStreamMsgContext.consumer.updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);
 //        ConsumeMessageService consumeMessageService = downStreamMsgContext.consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //        ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgExts, downStreamMsgContext.consumeConcurrentlyContext);
     }
 
-    public void printRetryThreadPoolState(){
+    public void printRetryThreadPoolState() {
 //        ThreadPoolHelper.printState(pool);
     }
 }

@@ -19,7 +19,7 @@ package org.apache.eventmesh.client.tcp;
 
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
-import com.webank.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.Package;
 
 public interface EventMeshClient {
 

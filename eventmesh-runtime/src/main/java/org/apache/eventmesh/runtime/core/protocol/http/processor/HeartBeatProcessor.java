@@ -17,6 +17,16 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import io.netty.channel.ChannelHandlerContext;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
@@ -33,14 +43,8 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-import io.netty.channel.ChannelHandlerContext;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class HeartBeatProcessor implements HttpRequestProcessor {
 
@@ -101,7 +105,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         String consumerGroup = EventMeshUtil.buildClientGroup(heartbeatRequestHeader.getSys(),
                 heartbeatRequestHeader.getDcn());
         List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = heartbeatRequestBody.getHeartbeatEntities();
-        for (HeartbeatRequestBody.HeartbeatEntity heartbeatEntity : heartbeatEntities){
+        for (HeartbeatRequestBody.HeartbeatEntity heartbeatEntity : heartbeatEntities) {
             String topic = heartbeatEntity.topic;
             String url = heartbeatEntity.url;
             Client client = new Client();
@@ -117,30 +121,30 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
             client.lastUpTime = new Date();
 
-            if (StringUtils.isBlank(client.topic)){
+            if (StringUtils.isBlank(client.topic)) {
                 continue;
             }
 
-            if (StringUtils.isBlank(client.url)){
+            if (StringUtils.isBlank(client.url)) {
                 continue;
             }
 
             String groupTopicKey = client.consumerGroup + "@" + client.topic;
 
-            if (tmp.containsKey(groupTopicKey)){
+            if (tmp.containsKey(groupTopicKey)) {
                 tmp.get(groupTopicKey).add(client);
-            }else {
+            } else {
                 List<Client> clients = new ArrayList<>();
                 clients.add(client);
                 tmp.put(groupTopicKey, clients);
             }
         }
-        synchronized (eventMeshHTTPServer.localClientInfoMapping){
+        synchronized (eventMeshHTTPServer.localClientInfoMapping) {
             for (Map.Entry<String, List<Client>> groupTopicClientMapping : tmp.entrySet()) {
-                List<Client> localClientList =  eventMeshHTTPServer.localClientInfoMapping.get(groupTopicClientMapping.getKey());
-                if (CollectionUtils.isEmpty(localClientList)){
+                List<Client> localClientList = eventMeshHTTPServer.localClientInfoMapping.get(groupTopicClientMapping.getKey());
+                if (CollectionUtils.isEmpty(localClientList)) {
                     eventMeshHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), groupTopicClientMapping.getValue());
-                }else {
+                } else {
                     List<Client> tmpClientList = groupTopicClientMapping.getValue();
                     supplyClientInfoList(tmpClientList, localClientList);
                     eventMeshHTTPServer.localClientInfoMapping.put(groupTopicClientMapping.getKey(), localClientList);
@@ -185,16 +189,16 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
     }
 
     private void supplyClientInfoList(List<Client> tmpClientList, List<Client> localClientList) {
-        for (Client tmpClient : tmpClientList){
+        for (Client tmpClient : tmpClientList) {
             boolean isContains = false;
-            for (Client localClient : localClientList){
-                if (StringUtils.equals(localClient.url, tmpClient.url)){
+            for (Client localClient : localClientList) {
+                if (StringUtils.equals(localClient.url, tmpClient.url)) {
                     isContains = true;
                     localClient.lastUpTime = tmpClient.lastUpTime;
                     break;
                 }
             }
-            if (!isContains){
+            if (!isContains) {
                 localClientList.add(tmpClient);
             }
         }

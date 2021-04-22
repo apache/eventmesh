@@ -17,33 +17,39 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group;
 
+import java.lang.ref.WeakReference;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.FreePriorityDispatchStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.ClientAckContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
-import org.apache.eventmesh.common.ThreadUtil;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.ref.WeakReference;
-import java.net.InetSocketAddress;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ClientSessionGroupMapping {
 
@@ -88,13 +94,13 @@ public class ClientSessionGroupMapping {
         user.setHost(addr.getHostString());
         user.setPort(addr.getPort());
         Session session = null;
-        if(!sessionTable.containsKey(addr)){
+        if (!sessionTable.containsKey(addr)) {
             logger.info("createSession client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
             session = new Session(user, ctx, eventMeshTCPServer.getEventMeshTCPConfiguration());
             initClientGroupWrapper(user, session);
             sessionTable.put(addr, session);
             sessionLogger.info("session|open|succeed|user={}", user);
-        }else {
+        } else {
             session = sessionTable.get(addr);
             sessionLogger.error("session|open|failed|user={}|msg={}", user, "session has been created!");
         }
@@ -142,7 +148,7 @@ public class ClientSessionGroupMapping {
         }
 
         //session must be synchronized to avoid SessionState be confound, for example adding subscribe when session closing
-        synchronized (session){
+        synchronized (session) {
 
             if (SessionState.CLOSED == session.getSessionState()) {
                 logger.info("session has been closed in sync, addr:{}", remoteAddress);
@@ -153,9 +159,9 @@ public class ClientSessionGroupMapping {
 
             if (EventMeshConstants.PURPOSE_SUB.equals(session.getClient().getPurpose())) {
                 cleanClientGroupWrapperByCloseSub(session);
-            }else if (EventMeshConstants.PURPOSE_PUB.equals(session.getClient().getPurpose())) {
+            } else if (EventMeshConstants.PURPOSE_PUB.equals(session.getClient().getPurpose())) {
                 cleanClientGroupWrapperByClosePub(session);
-            }else{
+            } else {
                 logger.error("client purpose config is error:{}", session.getClient().getPurpose());
             }
 
@@ -172,11 +178,11 @@ public class ClientSessionGroupMapping {
         }
     }
 
-    private void  initClientGroupWrapper(UserAgent user, Session session) throws Exception {
+    private void initClientGroupWrapper(UserAgent user, Session session) throws Exception {
         final String clientGroup = EventMeshUtil.buildClientGroup(user.getSubsystem(), user.getDcn());
-        if(!lockMap.containsKey(clientGroup)){
+        if (!lockMap.containsKey(clientGroup)) {
             Object obj = lockMap.putIfAbsent(clientGroup, new Object());
-            if(obj == null) {
+            if (obj == null) {
                 logger.info("add lock to map for group:{}", clientGroup);
             }
         }
@@ -190,11 +196,11 @@ public class ClientSessionGroupMapping {
 
             ClientGroupWrapper cgw = clientGroupMap.get(clientGroup);
 
-            if (EventMeshConstants.PURPOSE_PUB.equals(user.getPurpose())){
+            if (EventMeshConstants.PURPOSE_PUB.equals(user.getPurpose())) {
                 startClientGroupProducer(cgw, session);
-            }else if (EventMeshConstants.PURPOSE_SUB.equals(user.getPurpose())) {
+            } else if (EventMeshConstants.PURPOSE_SUB.equals(user.getPurpose())) {
                 initClientGroupConsumser(cgw);
-            }else{
+            } else {
                 logger.error("unknown client purpose:{}", user.getPurpose());
                 throw new Exception("client purpose config is error");
             }
@@ -208,7 +214,7 @@ public class ClientSessionGroupMapping {
             cgw.startClientGroupProducer();
         }
         boolean flag = cgw.addGroupProducerSession(session);
-        if(!flag){
+        if (!flag) {
             throw new Exception("addGroupProducerSession fail");
         }
         session.setSessionState(SessionState.RUNNING);
@@ -230,7 +236,7 @@ public class ClientSessionGroupMapping {
 
     private void startClientGroupConsumer(Session session) throws Exception {
         final String clientGroup = EventMeshUtil.buildClientGroup(session.getClient().getSubsystem(), session.getClient().getDcn());
-        if(!lockMap.containsKey(clientGroup)){
+        if (!lockMap.containsKey(clientGroup)) {
             lockMap.putIfAbsent(clientGroup, new Object());
         }
         synchronized (lockMap.get(clientGroup)) {
@@ -238,7 +244,7 @@ public class ClientSessionGroupMapping {
             ClientGroupWrapper cgw = session.getClientGroupWrapper().get();
 
             boolean flag = cgw.addGroupConsumerSession(session);
-            if(!flag){
+            if (!flag) {
                 throw new Exception("addGroupConsumerSession fail");
             }
 
@@ -283,22 +289,22 @@ public class ClientSessionGroupMapping {
      *
      * @param session
      */
-    private void handleUnackMsgsInSession(Session session){
+    private void handleUnackMsgsInSession(Session session) {
         ConcurrentHashMap<String /** seq */, ClientAckContext> unAckMsg = session.getPusher().getPushContext().getUnAckMsg();
-        if(unAckMsg.size() > 0 && session.getClientGroupWrapper().get().getGroupConsumerSessions().size() > 0){
-            for(Map.Entry<String , ClientAckContext> entry : unAckMsg.entrySet()){
+        if (unAckMsg.size() > 0 && session.getClientGroupWrapper().get().getGroupConsumerSessions().size() > 0) {
+            for (Map.Entry<String, ClientAckContext> entry : unAckMsg.entrySet()) {
                 ClientAckContext ackContext = entry.getValue();
-                if(EventMeshUtil.isBroadcast(ackContext.getMsgs().get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))){
-                    logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}",ackContext.getSeq(), EventMeshUtil.getMessageBizSeq(ackContext.getMsgs().get(0)),session.getClient());
+                if (EventMeshUtil.isBroadcast(ackContext.getMsgs().get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))) {
+                    logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}", ackContext.getSeq(), EventMeshUtil.getMessageBizSeq(ackContext.getMsgs().get(0)), session.getClient());
                     continue;
                 }
                 List<Session> list = new ArrayList(session.getClientGroupWrapper().get().getGroupConsumerSessions());
                 Collections.shuffle(list);
-                DownStreamMsgContext downStreamMsgContext= new DownStreamMsgContext(ackContext.getMsgs().get(0),list.get(0),ackContext.getConsumer(), ackContext.getContext(), false);
+                DownStreamMsgContext downStreamMsgContext = new DownStreamMsgContext(ackContext.getMsgs().get(0), list.get(0), ackContext.getConsumer(), ackContext.getContext(), false);
 
                 downStreamMsgContext.delay(0L);
                 eventMeshTCPServer.getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
-                logger.warn("rePush msg form unAckMsgs,seq:{},rePushSeq:{},rePushClient:{}",entry.getKey(), downStreamMsgContext.seq, downStreamMsgContext.session.getClient());
+                logger.warn("rePush msg form unAckMsgs,seq:{},rePushSeq:{},rePushClient:{}", entry.getKey(), downStreamMsgContext.seq, downStreamMsgContext.session.getClient());
             }
         }
     }
@@ -455,11 +461,11 @@ public class ClientSessionGroupMapping {
         HashMap<String, AtomicInteger> result = new HashMap<String, AtomicInteger>();
         if (!sessionTable.isEmpty()) {
             for (Session session : sessionTable.values()) {
-                if(!StringUtils.equals(session.getClient().getPurpose(), purpose)){
+                if (!StringUtils.equals(session.getClient().getPurpose(), purpose)) {
                     continue;
                 }
 
-                String key = session.getClient().getDcn() + "|" + session.getClient().getSubsystem()+ "|" + purpose;
+                String key = session.getClient().getDcn() + "|" + session.getClient().getSubsystem() + "|" + purpose;
                 if (!result.containsKey(key)) {
                     result.put(key, new AtomicInteger(1));
                 } else {
@@ -470,15 +476,15 @@ public class ClientSessionGroupMapping {
         return result;
     }
 
-    public Map<String, Map<String, Integer>> prepareEventMeshClientDistributionData(){
+    public Map<String, Map<String, Integer>> prepareEventMeshClientDistributionData() {
         Map<String, Map<String, Integer>> result = null;
 
-        if(!clientGroupMap.isEmpty()){
+        if (!clientGroupMap.isEmpty()) {
             result = new HashMap<>();
-            for(Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()){
+            for (Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()) {
                 Map<String, Integer> map = new HashMap();
-                map.put(EventMeshConstants.PURPOSE_SUB,entry.getValue().getGroupConsumerSessions().size());
-                map.put(EventMeshConstants.PURPOSE_PUB,entry.getValue().getGroupProducerSessions().size());
+                map.put(EventMeshConstants.PURPOSE_SUB, entry.getValue().getGroupConsumerSessions().size());
+                map.put(EventMeshConstants.PURPOSE_PUB, entry.getValue().getGroupProducerSessions().size());
                 result.put(entry.getKey(), map);
             }
         }
