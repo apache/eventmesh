@@ -53,7 +53,7 @@ List junit = [
 dependencies {
 //    compile log4j2, sl4j
 //    testCompile log4j2, sl4j
-    compile project(":eventmesh-sdk-java"),spring_framework,apache_common
+    compile project(":eventmesh-sdk-java"),spring_framework,apache_common,project(":eventmesh-connector-api")
     //Spring模块
     testCompile junit,apache_common
 
