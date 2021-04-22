@@ -16,28 +16,37 @@
  */
 package org.apache.eventmesh.connector.rocketmq.consumer;
 
-import com.webank.eventmesh.common.Constants;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.openmessaging.api.Action;
+import io.openmessaging.api.AsyncConsumeContext;
+import io.openmessaging.api.AsyncGenericMessageListener;
+import io.openmessaging.api.AsyncMessageListener;
+import io.openmessaging.api.Consumer;
+import io.openmessaging.api.GenericMessageListener;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.MessageListener;
+import io.openmessaging.api.MessageSelector;
+import io.openmessaging.api.exception.OMSRuntimeException;
+
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
+import org.apache.eventmesh.connector.rocketmq.config.ClientConfig;
 import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
 import org.apache.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
 import org.apache.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyStatus;
 import org.apache.eventmesh.connector.rocketmq.patch.EventMeshMessageListenerConcurrently;
 import org.apache.eventmesh.connector.rocketmq.utils.BeanUtils;
 import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
-import org.apache.eventmesh.connector.rocketmq.config.ClientConfig;
-import com.webank.eventmesh.api.AbstractContext;
-import io.openmessaging.api.*;
-import io.openmessaging.api.exception.OMSRuntimeException;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
-
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PushConsumerImpl implements Consumer {
     private final DefaultMQPushConsumer rocketmqPushConsumer;
@@ -78,13 +87,13 @@ public class PushConsumerImpl implements Consumer {
         properties.put("CONSUMER_ID", consumerId);
         this.rocketmqPushConsumer.setLanguage(LanguageCode.OMS);
 
-        if (clientConfig.getMessageModel().equalsIgnoreCase(MessageModel.BROADCASTING.name())){
+        if (clientConfig.getMessageModel().equalsIgnoreCase(MessageModel.BROADCASTING.name())) {
             rocketmqPushConsumer.registerMessageListener(new EventMeshMessageListenerConcurrently() {
 
                 @Override
                 public EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg, EventMeshConsumeConcurrentlyContext context) {
                     PushConsumerImpl.this.setContext(context);
-                    if (msg == null){
+                    if (msg == null) {
                         return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                     }
 
@@ -118,7 +127,7 @@ public class PushConsumerImpl implements Consumer {
                     return EventMeshConsumeConcurrentlyStatus.valueOf(contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
                 }
             });
-        }else {
+        } else {
             rocketmqPushConsumer.registerMessageListener(new EventMeshMessageListenerConcurrently() {
 
                 @Override

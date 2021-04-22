@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.consumergroup;
 
-import com.google.common.collect.Maps;
-
 import java.util.Map;
 import java.util.Objects;
+
+import com.google.common.collect.Maps;
 
 public class ConsumerGroupConf {
     //eg . 5013-1A0

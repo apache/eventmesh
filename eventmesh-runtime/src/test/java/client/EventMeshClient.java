@@ -17,8 +17,10 @@
 
 package client;
 
-import client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+
+import client.hook.ReceiveMsgHook;
+
 public interface EventMeshClient {
 
     Package rr(Package msg, long timeout) throws Exception;

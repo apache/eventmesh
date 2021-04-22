@@ -18,15 +18,19 @@
 package org.apache.eventmesh.common.protocol.http.body;
 
 
-import org.apache.eventmesh.common.protocol.http.body.client.*;
-import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import java.util.Map;
+
+import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.client.RegRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.client.UnRegRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.client.UnSubscribeRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.ReplyMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
-
-import java.util.Map;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 
 public abstract class Body {
 
@@ -35,7 +39,8 @@ public abstract class Body {
     public static Body buildBody(String requestCode, Map<String, Object> originalMap) throws Exception {
         if (String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()).equals(requestCode)) {
             return SendMessageBatchRequestBody.buildBody(originalMap);
-        } if (String.valueOf(RequestCode.MSG_BATCH_SEND_V2.getRequestCode()).equals(requestCode)) {
+        }
+        if (String.valueOf(RequestCode.MSG_BATCH_SEND_V2.getRequestCode()).equals(requestCode)) {
             return SendMessageBatchV2RequestBody.buildBody(originalMap);
         } else if (String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()).equals(requestCode)) {
             return SendMessageRequestBody.buildBody(originalMap);

@@ -1,15 +1,21 @@
 package org.apache.eventmesh.client.tcp.common;
 
-import com.webank.eventmesh.common.protocol.tcp.EventMeshMessage;
-import com.webank.eventmesh.common.protocol.tcp.Command;
-import com.webank.eventmesh.common.protocol.tcp.Header;
-import com.webank.eventmesh.common.protocol.tcp.Package;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+import static org.apache.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_SyncSubscribeTest;
+import static org.apache.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientBroadCast;
+import static org.apache.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static com.webank.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
-import static org.apache.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.*;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+
+import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
+
+
+
 
 public class EventMeshTestUtils {
     private static final int seqLength = 10;

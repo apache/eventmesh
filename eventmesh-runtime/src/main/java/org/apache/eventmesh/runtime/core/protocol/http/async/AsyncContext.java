@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.async;
 
-import com.google.common.base.Preconditions;
-
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.google.common.base.Preconditions;
 
 public class AsyncContext<T> {
 

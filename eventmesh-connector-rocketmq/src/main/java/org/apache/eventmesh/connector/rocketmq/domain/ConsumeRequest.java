@@ -27,7 +27,7 @@ public class ConsumeRequest {
     private long startConsumeTimeMillis;
 
     public ConsumeRequest(final MessageExt messageExt, final MessageQueue messageQueue,
-        final ProcessQueue processQueue) {
+                          final ProcessQueue processQueue) {
         this.messageExt = messageExt;
         this.messageQueue = messageQueue;
         this.processQueue = processQueue;

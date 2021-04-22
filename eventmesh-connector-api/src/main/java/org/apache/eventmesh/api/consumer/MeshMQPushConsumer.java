@@ -1,12 +1,11 @@
 package org.apache.eventmesh.api.consumer;
 
-import io.openmessaging.api.AsyncMessageListener;
-import io.openmessaging.api.MessageListener;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.Consumer;
-
 import java.util.List;
 import java.util.Properties;
+
+import io.openmessaging.api.AsyncMessageListener;
+import io.openmessaging.api.Consumer;
+import io.openmessaging.api.Message;
 
 import org.apache.eventmesh.api.AbstractContext;
 

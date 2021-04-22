@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.rocketmq.config;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class ClientConfiguration {
@@ -59,61 +60,61 @@ public class ClientConfiguration {
         namesrvAddr = StringUtils.trim(namesrvAddrStr);
 
         String consumeThreadPoolMinStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MIN);
-        if(StringUtils.isNotEmpty(consumeThreadPoolMinStr)){
+        if (StringUtils.isNotEmpty(consumeThreadPoolMinStr)) {
             Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMinStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MIN));
             consumeThreadMin = Integer.valueOf(consumeThreadPoolMinStr);
         }
 
         String consumeThreadPoolMaxStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MAX);
-        if(StringUtils.isNotEmpty(consumeThreadPoolMaxStr)){
+        if (StringUtils.isNotEmpty(consumeThreadPoolMaxStr)) {
             Preconditions.checkState(StringUtils.isNumeric(consumeThreadPoolMaxStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MAX));
             consumeThreadMax = Integer.valueOf(consumeThreadPoolMaxStr);
         }
 
         String consumerThreadPoolQueueSizeStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_QUEUESIZE);
-        if(StringUtils.isNotEmpty(consumerThreadPoolQueueSizeStr)){
+        if (StringUtils.isNotEmpty(consumerThreadPoolQueueSizeStr)) {
             Preconditions.checkState(StringUtils.isNumeric(consumerThreadPoolQueueSizeStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_QUEUESIZE));
             consumeQueueSize = Integer.valueOf(consumerThreadPoolQueueSizeStr);
         }
 
         String clientAckWindowStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_ACK_WINDOW);
-        if(StringUtils.isNotEmpty(clientAckWindowStr)){
+        if (StringUtils.isNotEmpty(clientAckWindowStr)) {
             Preconditions.checkState(StringUtils.isNumeric(clientAckWindowStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_ACK_WINDOW));
             ackWindow = Integer.valueOf(clientAckWindowStr);
         }
 
         String clientPubWindowStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_PUB_WINDOW);
-        if(StringUtils.isNotEmpty(clientPubWindowStr)){
+        if (StringUtils.isNotEmpty(clientPubWindowStr)) {
             Preconditions.checkState(StringUtils.isNumeric(clientPubWindowStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_PUB_WINDOW));
             pubWindow = Integer.valueOf(clientPubWindowStr);
         }
 
         String consumeTimeoutStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_CONSUME_TIMEOUT);
-        if(StringUtils.isNotBlank(consumeTimeoutStr)) {
+        if (StringUtils.isNotBlank(consumeTimeoutStr)) {
             Preconditions.checkState(StringUtils.isNumeric(consumeTimeoutStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_CONSUME_TIMEOUT));
             consumeTimeout = Long.valueOf(consumeTimeoutStr);
         }
 
         String clientPullBatchSizeStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_PULL_BATCHSIZE);
-        if(StringUtils.isNotEmpty(clientPullBatchSizeStr)){
+        if (StringUtils.isNotEmpty(clientPullBatchSizeStr)) {
             Preconditions.checkState(StringUtils.isNumeric(clientPullBatchSizeStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_PULL_BATCHSIZE));
             pullBatchSize = Integer.valueOf(clientPullBatchSizeStr);
         }
 
         String clientPollNamesrvIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL);
-        if(StringUtils.isNotEmpty(clientPollNamesrvIntervalStr)){
+        if (StringUtils.isNotEmpty(clientPollNamesrvIntervalStr)) {
             Preconditions.checkState(StringUtils.isNumeric(clientPollNamesrvIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL));
             pollNameServerInteval = Integer.valueOf(clientPollNamesrvIntervalStr);
         }
 
         String clientHeartbeatBrokerIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVEL);
-        if(StringUtils.isNotEmpty(clientHeartbeatBrokerIntervalStr)){
+        if (StringUtils.isNotEmpty(clientHeartbeatBrokerIntervalStr)) {
             Preconditions.checkState(StringUtils.isNumeric(clientHeartbeatBrokerIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVEL));
             heartbeatBrokerInterval = Integer.valueOf(clientHeartbeatBrokerIntervalStr);
         }
 
         String clientRebalanceIntervalIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_REBALANCE_INTERVEL);
-        if(StringUtils.isNotEmpty(clientRebalanceIntervalIntervalStr)){
+        if (StringUtils.isNotEmpty(clientRebalanceIntervalIntervalStr)) {
             Preconditions.checkState(StringUtils.isNumeric(clientRebalanceIntervalIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_REBALANCE_INTERVEL));
             rebalanceInterval = Integer.valueOf(clientRebalanceIntervalIntervalStr);
         }

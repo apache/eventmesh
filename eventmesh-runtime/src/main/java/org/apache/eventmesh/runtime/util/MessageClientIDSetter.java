@@ -18,8 +18,6 @@
  */
 package org.apache.eventmesh.runtime.util;
 
-import io.openmessaging.api.Message;
-
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.Inet4Address;
@@ -29,6 +27,8 @@ import java.nio.ByteBuffer;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import io.openmessaging.api.Message;
 
 public class MessageClientIDSetter {
 

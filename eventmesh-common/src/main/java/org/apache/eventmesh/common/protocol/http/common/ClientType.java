@@ -44,8 +44,8 @@ public enum ClientType {
 
     public static boolean contains(Integer clientType) {
         boolean flag = false;
-        for(ClientType ct:ClientType.values()) {
-            if(ct.type == clientType.intValue()) {
+        for (ClientType ct : ClientType.values()) {
+            if (ct.type == clientType.intValue()) {
                 flag = true;
                 break;
             }

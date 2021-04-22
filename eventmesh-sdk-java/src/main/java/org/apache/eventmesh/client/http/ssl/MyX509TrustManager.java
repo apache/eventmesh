@@ -1,6 +1,5 @@
 package org.apache.eventmesh.client.http.ssl;
 
-import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,15 +11,18 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+
+import org.apache.commons.lang3.StringUtils;
+
 public class MyX509TrustManager implements X509TrustManager {
     X509TrustManager myTrustManager;
 
     public MyX509TrustManager() throws Exception {
         KeyStore keyStore = KeyStore.getInstance("JKS");
-        String fileName = System.getProperty("ssl.client.cer","sChat2.jks");
+        String fileName = System.getProperty("ssl.client.cer", "sChat2.jks");
         String pass = System.getProperty("ssl.client.pass", "sNetty");
         char[] filePass = null;
-        if(StringUtils.isNotBlank(pass)){
+        if (StringUtils.isNotBlank(pass)) {
             filePass = pass.toCharArray();
         }
         keyStore.load(Files.newInputStream(Paths.get(System.getProperty("confPath", System.getenv("confPath"))

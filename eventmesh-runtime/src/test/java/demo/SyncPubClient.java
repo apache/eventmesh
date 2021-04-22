@@ -17,11 +17,12 @@
 
 package demo;
 
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+
 import client.common.MessageUtils;
 import client.common.UserAgentUtils;
 import client.impl.PubClientImpl;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Package;
 
 public class SyncPubClient {
     public static void main(String[] args) throws Exception {

@@ -96,11 +96,11 @@ public class EventMeshConstants {
     public static final String MANAGE_PURPOSE = "purpose";
     public static final String MANAGE_TOPIC = "topic";
 
-    public static final String  EventMesh_SEND_BACK_TIMES= "EventMeshSendBackTimes";
+    public static final String EventMesh_SEND_BACK_TIMES = "EventMeshSendBackTimes";
 
-    public static final String  EventMesh_SEND_BACK_IP= "EventMeshSendBackIp";
+    public static final String EventMesh_SEND_BACK_IP = "EventMeshSendBackIp";
 
-    public static final String  EventMesh_REGISTRY_ADDR_KEY= "EventMeshRegistryAddr";
+    public static final String EventMesh_REGISTRY_ADDR_KEY = "EventMeshRegistryAddr";
 
     public static int DEFAULT_TIME_OUT_MILLS = 5 * 1000;
 

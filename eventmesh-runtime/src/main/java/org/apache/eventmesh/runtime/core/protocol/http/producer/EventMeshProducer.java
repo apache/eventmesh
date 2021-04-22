@@ -17,18 +17,19 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.producer;
 
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.openmessaging.api.Message;
+import io.openmessaging.api.SendCallback;
+
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.SendCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EventMeshProducer {
 

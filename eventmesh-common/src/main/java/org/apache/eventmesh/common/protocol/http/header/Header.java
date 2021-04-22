@@ -18,15 +18,19 @@
 package org.apache.eventmesh.common.protocol.http.header;
 
 
+import java.util.Map;
+
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.protocol.http.header.client.*;
+import org.apache.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
+import org.apache.eventmesh.common.protocol.http.header.client.RegRequestHeader;
+import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
+import org.apache.eventmesh.common.protocol.http.header.client.UnRegRequestHeader;
+import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.PushMessageRequestHeader;
-import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
-import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.ReplyMessageRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
-
-import java.util.Map;
+import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
+import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 
 public abstract class Header {
 
@@ -35,7 +39,8 @@ public abstract class Header {
     public static Header buildHeader(String requestCode, Map<String, Object> originalMap) throws Exception {
         if (String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()).equals(requestCode)) {
             return SendMessageBatchRequestHeader.buildHeader(originalMap);
-        } if (String.valueOf(RequestCode.MSG_BATCH_SEND_V2.getRequestCode()).equals(requestCode)) {
+        }
+        if (String.valueOf(RequestCode.MSG_BATCH_SEND_V2.getRequestCode()).equals(requestCode)) {
             return SendMessageBatchV2RequestHeader.buildHeader(originalMap);
         } else if (String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()).equals(requestCode)) {
             return SendMessageRequestHeader.buildHeader(originalMap);

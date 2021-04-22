@@ -15,7 +15,13 @@
  * limitations under the License.
  */
 
-package test;
+package org.apache.eventmesh.connector.memory.consumer;
+
+import io.netty.channel.ChannelHandlerContext;
+
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.junit.Test;
 
 import client.EventMeshClient;
 import client.PubClient;
@@ -25,10 +31,6 @@ import client.hook.ReceiveMsgHook;
 import client.impl.EventMeshClientImpl;
 import client.impl.PubClientImpl;
 import client.impl.SubClientImpl;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Package;
-import io.netty.channel.ChannelHandlerContext;
-import org.junit.Test;
 
 public class BasicTest {
     @Test

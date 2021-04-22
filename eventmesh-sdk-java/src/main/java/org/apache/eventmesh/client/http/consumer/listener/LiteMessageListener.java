@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.client.http.consumer.listener;
 
+
 import org.apache.eventmesh.client.http.consumer.HandleResult;
 import org.apache.eventmesh.client.http.consumer.context.LiteConsumeContext;
-import com.webank.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.LiteMessage;
 
 public interface LiteMessageListener {
 

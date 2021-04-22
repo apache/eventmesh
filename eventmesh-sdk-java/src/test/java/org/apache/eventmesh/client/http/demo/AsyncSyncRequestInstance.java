@@ -1,12 +1,14 @@
 package org.apache.eventmesh.client.http.demo;
+
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.producer.LiteProducer;
 import org.apache.eventmesh.client.http.producer.RRCallback;
-import com.webank.eventmesh.common.IPUtil;
-import com.webank.eventmesh.common.LiteMessage;
-import com.webank.eventmesh.common.ThreadUtil;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,12 +64,12 @@ public class AsyncSyncRequestInstance {
             logger.warn("async send msg failed", e);
         }
 
-        try{
+        try {
             Thread.sleep(30000);
-            if(liteProducer != null){
+            if (liteProducer != null) {
                 liteProducer.shutdown();
             }
-        }catch (Exception e1){
+        } catch (Exception e1) {
             logger.warn("producer shutdown exception", e1);
         }
     }

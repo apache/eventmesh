@@ -1,12 +1,17 @@
 package org.apache.eventmesh.tcp.common;
 
-import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.*;
+import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
+import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_SyncSubscribeTest;
+import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientBroadCast;
+import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.*;
-import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 public class EventMeshTestUtils {
     private static final int seqLength = 10;

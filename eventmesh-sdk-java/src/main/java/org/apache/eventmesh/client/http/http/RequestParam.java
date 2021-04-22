@@ -17,15 +17,16 @@
 
 package org.apache.eventmesh.client.http.http;
 
-import io.netty.handler.codec.http.HttpMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.netty.handler.codec.http.HttpMethod;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RequestParam {
 
