@@ -49,7 +49,7 @@ public class EventMeshServer {
         eventMeshHTTPServer = new EventMeshHTTPServer(this, eventMeshHttpConfiguration);
         eventMeshHTTPServer.init();
         eventMeshTCPServer = new EventMeshTCPServer(this, eventMeshTCPConfiguration);
-        if (eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTCPConfiguration!=null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.init();
         }
 
@@ -63,7 +63,7 @@ public class EventMeshServer {
 
     public void start() throws Exception {
         eventMeshHTTPServer.start();
-        if (eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTCPConfiguration!=null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.start();
         }
         serviceState = ServiceState.RUNNING;
@@ -74,7 +74,7 @@ public class EventMeshServer {
         serviceState = ServiceState.STOPING;
         logger.info("server state:{}",serviceState);
         eventMeshHTTPServer.shutdown();
-        if (eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTCPConfiguration!=null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.shutdown();
         }
         serviceState = ServiceState.STOPED;
