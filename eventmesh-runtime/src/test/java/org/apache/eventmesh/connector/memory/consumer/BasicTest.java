@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package test;
+package org.apache.eventmesh.connector.memory.consumer;
 
 import client.EventMeshClient;
 import client.PubClient;
