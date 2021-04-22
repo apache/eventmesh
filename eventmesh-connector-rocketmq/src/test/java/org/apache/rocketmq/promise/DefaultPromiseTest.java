@@ -16,7 +16,7 @@
 // */
 //package rocketmq.promise;
 //
-//import com.webank.eventmesh.connector.rocketmq.promise.DefaultPromise;
+//import org.apache.eventmesh.connector.rocketmq.promise.DefaultPromise;
 //import io.openmessaging.Future;
 //import io.openmessaging.FutureListener;
 //import io.openmessaging.Promise;

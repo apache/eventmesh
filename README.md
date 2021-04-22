@@ -74,7 +74,7 @@ The protocol of eventmesh is easier and convenient, you can read more [here](doc
 Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.
 
 You can start with the issues labeled with good first issue.
-[GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
+[GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
 
 ## License
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation.
@@ -85,6 +85,7 @@ WeChat group：
 ![wechat_qr](docs/images/mesh-helper.png)
 
 Mailing Lists:
+
 | Name | Description |Subscribe	|Unsubscribe|Archive
 | ----    | ----    |----    | ----    | ----    |
 |Users	|User support and questions mailing list|	[Subscribe](mailto:users-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:users-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?users@eventmesh.apache.org)|
