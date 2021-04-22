@@ -1,5 +1,3 @@
-import java.util.concurrent.TimeUnit
-
 apply plugin: 'java'
 apply plugin: "maven"
 apply plugin: "eclipse"

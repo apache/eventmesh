@@ -70,7 +70,7 @@ List netty = [
 
 dependencies {
     compile apache_commons, httpclient, guava, netty, fastjson, jackson
-    testCompile apache_commons, httpclient, guava, netty, fastjson,  jackson
+    testCompile apache_commons, httpclient, guava, netty, fastjson, jackson
 }
 
 uploadArchives {
