@@ -58,7 +58,7 @@ public class ProducerImplTest {
     @Before
     public void before() throws NoSuchFieldException, IllegalAccessException {
         Properties config = new Properties();
-        config.setProperty(OMSBuiltinKeys.DRIVER_IMPL, "com.webank.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
+        config.setProperty(OMSBuiltinKeys.DRIVER_IMPL, "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
         config.setProperty("access_points", "IP1:9876,IP2:9876");
         final MessagingAccessPoint messagingAccessPoint = OMS.builder().build(config);//.endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build(config);
         producer = messagingAccessPoint.createProducer(config);
