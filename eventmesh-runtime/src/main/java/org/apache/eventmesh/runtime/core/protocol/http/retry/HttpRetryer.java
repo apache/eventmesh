@@ -17,16 +17,16 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.retry;
 
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HttpRetryer {
 
@@ -81,7 +81,7 @@ public class HttpRetryer {
                         pool.execute(() -> {
                             try {
                                 delayRetryable.retry();
-                                if(retryLogger.isDebugEnabled()) {
+                                if (retryLogger.isDebugEnabled()) {
                                     retryLogger.debug("retryObj : {}", delayRetryable);
                                 }
                             } catch (Exception e) {

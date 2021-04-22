@@ -18,7 +18,7 @@
 package org.apache.eventmesh.client.tcp.common;
 
 import io.netty.channel.ChannelHandlerContext;
-import com.webank.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.Package;
 
 public interface ReceiveMsgHook {
     void handle(Package msg, ChannelHandlerContext ctx);

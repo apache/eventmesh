@@ -18,10 +18,10 @@
 package org.apache.eventmesh.common.protocol.http.header;
 
 
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
 public class BaseResponseHeader extends Header {
 
@@ -41,7 +41,7 @@ public class BaseResponseHeader extends Header {
         return baseResponseHeader;
     }
 
-        @Override
+    @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put(ProtocolKey.REQUEST_CODE, code);

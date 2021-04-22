@@ -18,7 +18,7 @@
 package org.apache.eventmesh.client.http.producer;
 
 
-import com.webank.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.LiteMessage;
 
 public interface RRCallback {
 

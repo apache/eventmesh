@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.common;
 
-import org.apache.commons.lang3.time.DateFormatUtils;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 public class LiteMessage {
 

@@ -29,9 +29,9 @@ public enum ProtocolVersion {
     }
 
     public static ProtocolVersion get(String version) {
-        if(V1.version.equals(version)) {
+        if (V1.version.equals(version)) {
             return V1;
-        } else if(V2.version.equals(version)) {
+        } else if (V2.version.equals(version)) {
             return V2;
         } else {
             return null;

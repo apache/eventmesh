@@ -17,12 +17,17 @@
 
 package org.apache.eventmesh.common.config;
 
-import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.StringUtils;
-
-import java.net.*;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+
+import com.google.common.base.Preconditions;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class CommonConfiguration {
     public String eventMeshEnv = "P";
@@ -57,37 +62,40 @@ public class CommonConfiguration {
     }
 
     public void init() {
-        String eventMeshEnvStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ENV);
-        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshEnvStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ENV));
-        eventMeshEnv = StringUtils.deleteWhitespace(eventMeshEnvStr);
 
-        String eventMeshRegionStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_REGION);
-        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegionStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_REGION));
-        eventMeshRegion = StringUtils.deleteWhitespace(eventMeshRegionStr);
+        if (configurationWraper != null) {
+            String eventMeshEnvStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ENV);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshEnvStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ENV));
+            eventMeshEnv = StringUtils.deleteWhitespace(eventMeshEnvStr);
 
-        String sysIdStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
-        Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SYSID));
-        sysID = StringUtils.deleteWhitespace(sysIdStr);
+            String eventMeshRegionStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_REGION);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegionStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_REGION));
+            eventMeshRegion = StringUtils.deleteWhitespace(eventMeshRegionStr);
 
-        String eventMeshClusterStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
-        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshClusterStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER));
-        eventMeshCluster = StringUtils.deleteWhitespace(eventMeshClusterStr);
+            String sysIdStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
+            Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SYSID));
+            sysID = StringUtils.deleteWhitespace(sysIdStr);
 
-        String eventMeshNameStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
-        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshNameStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_NAME));
-        eventMeshName = StringUtils.deleteWhitespace(eventMeshNameStr);
+            String eventMeshClusterStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshClusterStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER));
+            eventMeshCluster = StringUtils.deleteWhitespace(eventMeshClusterStr);
 
-        String eventMeshIDCStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
-        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIDCStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
-        eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIDCStr);
+            String eventMeshNameStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshNameStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_NAME));
+            eventMeshName = StringUtils.deleteWhitespace(eventMeshNameStr);
 
-        String eventMeshDCNStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DCN);
-        Preconditions.checkState(StringUtils.isNotEmpty(eventMeshDCNStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DCN));
-        eventMeshDCN = StringUtils.deleteWhitespace(eventMeshDCNStr);
+            String eventMeshIDCStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIDCStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
+            eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIDCStr);
 
-        eventMeshServerIp = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
-        if(StringUtils.isBlank(eventMeshServerIp)) {
-            eventMeshServerIp = getLocalAddr();
+            String eventMeshDCNStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DCN);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshDCNStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DCN));
+            eventMeshDCN = StringUtils.deleteWhitespace(eventMeshDCNStr);
+
+            eventMeshServerIp = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
+            if (StringUtils.isBlank(eventMeshServerIp)) {
+                eventMeshServerIp = getLocalAddr();
+            }
         }
     }
 

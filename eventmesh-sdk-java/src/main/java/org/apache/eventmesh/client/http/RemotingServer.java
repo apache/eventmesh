@@ -16,37 +16,6 @@
  */
 
 package org.apache.eventmesh.client.http;
-import org.apache.eventmesh.client.http.consumer.HandleResult;
-import org.apache.eventmesh.client.http.consumer.context.LiteConsumeContext;
-import org.apache.eventmesh.client.http.consumer.listener.LiteMessageListener;
-import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.common.IPUtil;
-import com.webank.eventmesh.common.LiteMessage;
-import com.webank.eventmesh.common.ThreadUtil;
-import com.webank.eventmesh.common.command.HttpCommand;
-import com.webank.eventmesh.common.protocol.http.body.Body;
-import com.webank.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
-import com.webank.eventmesh.common.protocol.http.common.ClientRetCode;
-import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
-import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
-import com.webank.eventmesh.common.protocol.http.common.RequestCode;
-import com.webank.eventmesh.common.protocol.http.header.Header;
-import com.webank.eventmesh.common.protocol.http.header.message.PushMessageRequestHeader;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.*;
-import io.netty.handler.codec.http.multipart.Attribute;
-import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +24,56 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.multipart.Attribute;
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.client.http.consumer.HandleResult;
+import org.apache.eventmesh.client.http.consumer.context.LiteConsumeContext;
+import org.apache.eventmesh.client.http.consumer.listener.LiteMessageListener;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
+import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.protocol.http.header.Header;
+import org.apache.eventmesh.common.protocol.http.header.message.PushMessageRequestHeader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RemotingServer {
 
@@ -138,9 +157,6 @@ public class RemotingServer {
     }
 
 
-
-
-
     class HTTPHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
         /**
@@ -213,7 +229,7 @@ public class RemotingServer {
                 if (StringUtils.isBlank(requestCode)
                         || !StringUtils.isNumeric(requestCode)
                         || (!String.valueOf(RequestCode.HTTP_PUSH_CLIENT_ASYNC.getRequestCode()).equals(requestCode)
-                                && !String.valueOf(RequestCode.HTTP_PUSH_CLIENT_SYNC.getRequestCode()).equals(requestCode))) {
+                        && !String.valueOf(RequestCode.HTTP_PUSH_CLIENT_SYNC.getRequestCode()).equals(requestCode))) {
                     logger.error("receive invalid requestCode, {}", requestCode);
                     responseCommand = requestCommand.createHttpCommandResponse(ClientRetCode.OK.getRetCode(), ClientRetCode.OK.getErrMsg());
                     sendResponse(ctx, responseCommand.httpResponse());

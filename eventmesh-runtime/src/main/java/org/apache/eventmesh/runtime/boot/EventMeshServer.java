@@ -18,10 +18,9 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.runtime.common.ServiceState;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-//import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +48,7 @@ public class EventMeshServer {
         eventMeshHTTPServer = new EventMeshHTTPServer(this, eventMeshHttpConfiguration);
         eventMeshHTTPServer.init();
         eventMeshTCPServer = new EventMeshTCPServer(this, eventMeshTCPConfiguration);
-        if (eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.init();
         }
 
@@ -58,27 +57,27 @@ public class EventMeshServer {
 //        logger.info("load custom {} class for eventMesh", ConsumeMessageConcurrentlyService.class.getCanonicalName());
 
         serviceState = ServiceState.INITED;
-        logger.info("server state:{}",serviceState);
+        logger.info("server state:{}", serviceState);
     }
 
     public void start() throws Exception {
         eventMeshHTTPServer.start();
-        if (eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.start();
         }
         serviceState = ServiceState.RUNNING;
-        logger.info("server state:{}",serviceState);
+        logger.info("server state:{}", serviceState);
     }
 
     public void shutdown() throws Exception {
         serviceState = ServiceState.STOPING;
-        logger.info("server state:{}",serviceState);
+        logger.info("server state:{}", serviceState);
         eventMeshHTTPServer.shutdown();
-        if (eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.shutdown();
         }
         serviceState = ServiceState.STOPED;
-        logger.info("server state:{}",serviceState);
+        logger.info("server state:{}", serviceState);
     }
 
     public EventMeshHTTPServer getEventMeshHTTPServer() {
@@ -89,5 +88,7 @@ public class EventMeshServer {
         return eventMeshTCPServer;
     }
 
-    public ServiceState getServiceState() { return serviceState; }
+    public ServiceState getServiceState() {
+        return serviceState;
+    }
 }

@@ -17,23 +17,24 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.OPStatus;
-import org.apache.eventmesh.common.protocol.tcp.Package;
+import java.util.ArrayList;
+import java.util.List;
+
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.openmessaging.api.Message;
+
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SessionPusher {
 
@@ -134,10 +135,10 @@ public class SessionPusher {
                                 session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {
                                 pushContext.deliveredMsgCount();
-                                logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+                                logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
                                 session.getClientGroupWrapper().get().getDownstreamMap().remove(downStreamMsgContext.seq);
-                                if(session.isIsolated()){
+                                if (session.isIsolated()) {
                                     logger.info("cancel isolated,client:{}", session.getClient());
                                     session.setIsolateTime(System.currentTimeMillis());
                                 }

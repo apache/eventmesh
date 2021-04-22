@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.rocketmq.patch;
 
-import com.webank.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.api.AbstractContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.impl.consumer.ProcessQueue;
 import org.apache.rocketmq.common.message.MessageQueue;

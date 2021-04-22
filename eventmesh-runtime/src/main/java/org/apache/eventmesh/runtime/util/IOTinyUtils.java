@@ -17,18 +17,28 @@
 
 package org.apache.eventmesh.runtime.util;
 
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.CharArrayWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 public class IOTinyUtils {
 
     static public String toString(InputStream input, String encoding) throws IOException {
         return (null == encoding) ? toString(new InputStreamReader(input, EventMeshConstants.DEFAULT_CHARSET)) : toString(new InputStreamReader(
-            input, encoding));
+                input, encoding));
     }
 
     static public String toString(Reader reader) throws IOException {

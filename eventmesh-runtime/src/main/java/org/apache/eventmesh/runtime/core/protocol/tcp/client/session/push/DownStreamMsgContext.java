@@ -17,21 +17,22 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
-import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.runtime.util.ServerGlobal;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import io.openmessaging.api.Message;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
+
+import io.openmessaging.api.Message;
+
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.util.ServerGlobal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DownStreamMsgContext implements Delayed {
 
@@ -86,8 +87,8 @@ public class DownStreamMsgContext implements Delayed {
 //            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, consumeConcurrentlyContext);
             logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION),
                     msgs.get(0).getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_KEYS));
-        }else{
-            logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",consumer == null, consumeConcurrentlyContext == null, msgExt == null);
+        } else {
+            logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}", consumer == null, consumeConcurrentlyContext == null, msgExt == null);
         }
     }
 

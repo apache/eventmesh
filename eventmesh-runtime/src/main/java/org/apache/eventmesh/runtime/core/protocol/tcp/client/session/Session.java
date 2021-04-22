@@ -17,35 +17,36 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session;
 
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.SessionPusher;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.SessionSender;
-import org.apache.eventmesh.runtime.util.Utils;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
-import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.OPStatus;
-import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.runtime.util.RemotingHelper;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.SendCallback;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.eventmesh.common.protocol.tcp.Command.LISTEN_RESPONSE;
 
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.apache.eventmesh.common.protocol.tcp.Command.LISTEN_RESPONSE;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.SendCallback;
+
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.SessionPusher;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.SessionSender;
+import org.apache.eventmesh.runtime.util.RemotingHelper;
+import org.apache.eventmesh.runtime.util.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Session {
 
@@ -207,7 +208,7 @@ public class Session {
         return pusher.isCanDownStream();
     }
 
-    public boolean isIsolated(){
+    public boolean isIsolated() {
         return System.currentTimeMillis() < isolateTime;
     }
 
@@ -223,7 +224,7 @@ public class Session {
                         public void operationComplete(ChannelFuture future) throws Exception {
                             if (!future.isSuccess()) {
                                 messageLogger.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
-                            }else{
+                            } else {
                                 clientGroupWrapper.get().getEventMeshTcpMonitor().getEventMesh2clientMsgNum().incrementAndGet();
                             }
                         }
@@ -332,18 +333,18 @@ public class Session {
         this.isolateTime = isolateTime;
     }
 
-    public boolean isAvailable(String topic){
-        if(SessionState.CLOSED == sessionState){
+    public boolean isAvailable(String topic) {
+        if (SessionState.CLOSED == sessionState) {
             logger.warn("session is not available because session has been closed");
             return false;
         }
 
-        if(!sessionContext.subscribeTopics.containsKey(topic)){
-            logger.warn("session is not available because session has not subscribe topic:{}",topic);
+        if (!sessionContext.subscribeTopics.containsKey(topic)) {
+            logger.warn("session is not available because session has not subscribe topic:{}", topic);
             return false;
         }
-        if(isIsolated()){
-            logger.warn("session is not available because session is isolated,isolateTime:{}",isolateTime);
+        if (isIsolated()) {
+            logger.warn("session is not available because session is isolated,isolateTime:{}", isolateTime);
             return false;
         }
         return true;

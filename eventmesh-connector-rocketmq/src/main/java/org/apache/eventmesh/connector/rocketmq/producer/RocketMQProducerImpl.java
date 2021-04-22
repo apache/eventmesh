@@ -17,21 +17,28 @@
 
 package org.apache.eventmesh.connector.rocketmq.producer;
 
-import com.webank.eventmesh.api.RRCallback;
-import com.webank.eventmesh.api.producer.MeshMQProducer;
+import java.io.File;
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+
+import io.openmessaging.api.Message;
+import io.openmessaging.api.MessageBuilder;
+import io.openmessaging.api.MessagingAccessPoint;
+import io.openmessaging.api.OMS;
+import io.openmessaging.api.OMSBuiltinKeys;
+import io.openmessaging.api.SendCallback;
+import io.openmessaging.api.SendResult;
+
+import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.api.producer.MeshMQProducer;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWraper;
-import io.openmessaging.api.*;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
 
 public class RocketMQProducerImpl implements MeshMQProducer {
 
@@ -39,7 +46,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
     private ProducerImpl producer;
 
-    public final String DEFAULT_ACCESS_DRIVER = "com.webank.eventmesh.connector.rocketmq.MessagingAccessPointImpl";
+    public final String DEFAULT_ACCESS_DRIVER = "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl";
 
     @Override
     public synchronized void init(Properties keyValue) {

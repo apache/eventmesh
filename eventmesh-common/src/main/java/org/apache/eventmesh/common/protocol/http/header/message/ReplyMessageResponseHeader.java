@@ -18,11 +18,11 @@
 package org.apache.eventmesh.common.protocol.http.header.message;
 
 
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.apache.eventmesh.common.protocol.http.header.Header;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.header.Header;
 
 public class ReplyMessageResponseHeader extends Header {
 
@@ -104,7 +104,7 @@ public class ReplyMessageResponseHeader extends Header {
     }
 
     public static ReplyMessageResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                        String eventMeshIp, String eventMeshEnv, String eventMeshRegion,
+                                                         String eventMeshIp, String eventMeshEnv, String eventMeshRegion,
                                                          String eventMeshDcn, String eventMeshIDC) {
         ReplyMessageResponseHeader replyMessageResponseHeader = new ReplyMessageResponseHeader();
         replyMessageResponseHeader.setCode(requestCode);

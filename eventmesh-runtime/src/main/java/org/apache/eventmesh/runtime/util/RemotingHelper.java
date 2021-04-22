@@ -18,9 +18,11 @@
  */
 package org.apache.eventmesh.runtime.util;
 
-import io.netty.channel.Channel;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+
+import io.netty.channel.Channel;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

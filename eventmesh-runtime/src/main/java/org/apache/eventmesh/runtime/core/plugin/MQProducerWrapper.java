@@ -17,15 +17,16 @@
 
 package org.apache.eventmesh.runtime.core.plugin;
 
-import org.apache.eventmesh.api.RRCallback;
-import org.apache.eventmesh.api.producer.MeshMQProducer;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.SendCallback;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Properties;
 import java.util.ServiceLoader;
+
+import io.openmessaging.api.Message;
+import io.openmessaging.api.SendCallback;
+
+import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.api.producer.MeshMQProducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MQProducerWrapper extends MQWrapper {
 
@@ -33,13 +34,13 @@ public class MQProducerWrapper extends MQWrapper {
 
     protected MeshMQProducer meshMQProducer;
 
-    public synchronized void init(Properties keyValue) throws Exception{
+    public synchronized void init(Properties keyValue) throws Exception {
         if (inited.get()) {
             return;
         }
 
         meshMQProducer = getSpiMeshMQProducer();
-        if (meshMQProducer == null){
+        if (meshMQProducer == null) {
             logger.error("can't load the meshMQProducer plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
         }
@@ -50,7 +51,7 @@ public class MQProducerWrapper extends MQWrapper {
 
     private MeshMQProducer getSpiMeshMQProducer() {
         ServiceLoader<MeshMQProducer> meshMQProducerServiceLoader = ServiceLoader.load(MeshMQProducer.class);
-        if (meshMQProducerServiceLoader.iterator().hasNext()){
+        if (meshMQProducerServiceLoader.iterator().hasNext()) {
             return meshMQProducerServiceLoader.iterator().next();
         }
         return null;

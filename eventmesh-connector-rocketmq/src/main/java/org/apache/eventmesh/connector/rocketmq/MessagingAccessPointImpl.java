@@ -16,8 +16,8 @@
  */
 package org.apache.eventmesh.connector.rocketmq;
 
-import org.apache.eventmesh.connector.rocketmq.producer.ProducerImpl;
-import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
+import java.util.Properties;
+
 import io.openmessaging.api.Consumer;
 import io.openmessaging.api.MessagingAccessPoint;
 import io.openmessaging.api.Producer;
@@ -28,7 +28,8 @@ import io.openmessaging.api.order.OrderProducer;
 import io.openmessaging.api.transaction.LocalTransactionChecker;
 import io.openmessaging.api.transaction.TransactionProducer;
 
-import java.util.Properties;
+import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
+import org.apache.eventmesh.connector.rocketmq.producer.ProducerImpl;
 
 public class MessagingAccessPointImpl implements MessagingAccessPoint {
 

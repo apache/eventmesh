@@ -16,8 +16,9 @@
  */
 package org.apache.eventmesh.connector.rocketmq.config;
 
-import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
 import io.openmessaging.api.OMSBuiltinKeys;
+
+import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
 
 public class ClientConfig implements OMSBuiltinKeys, NonStandardKeys {
     private String driverImpl;

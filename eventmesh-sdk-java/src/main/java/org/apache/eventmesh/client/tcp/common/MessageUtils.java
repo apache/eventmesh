@@ -17,14 +17,15 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
-import com.webank.eventmesh.common.protocol.tcp.Command;
-import com.webank.eventmesh.common.protocol.tcp.Header;
-import com.webank.eventmesh.common.protocol.tcp.Subscription;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
-import com.webank.eventmesh.common.protocol.tcp.Package;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.Subscription;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.protocol.tcp.Package;
 
 public class MessageUtils {
     private static final int seqLength = 10;
@@ -145,4 +146,3 @@ public class MessageUtils {
         return builder.toString();
     }
 }
-

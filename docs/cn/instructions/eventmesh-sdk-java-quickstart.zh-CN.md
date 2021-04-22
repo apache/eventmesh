@@ -26,7 +26,6 @@ TCP 和 Http 示例都在**eventmesh-test**模块下
 
 - 启动发送端，发送消息
 
-
 ```
 运行com.webank.eventmesh.tcp.demo.AsyncPublish的主要方法
 ```
@@ -49,7 +48,7 @@ TCP 和 Http 示例都在**eventmesh-test**模块下
 
 ### 2. HTTP演示
 
->对于http，eventmesh-sdk-java对对于异步事件实现了发送与订阅
+> 对于http，eventmesh-sdk-java对对于异步事件实现了发送与订阅
 >
 >在演示中，Java类`LiteMessage`的`content`字段表示一个特殊的协议，因此，如果您要使用eventmesh-sdk-java的http-client，则只需设计协议的内容并在同一时间提供消费者的应用程序。
 

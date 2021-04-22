@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.api.producer;
 
+import java.util.Properties;
+
 import io.openmessaging.api.Message;
 import io.openmessaging.api.Producer;
 import io.openmessaging.api.SendCallback;
-
-import java.util.Properties;
 
 import org.apache.eventmesh.api.RRCallback;
 

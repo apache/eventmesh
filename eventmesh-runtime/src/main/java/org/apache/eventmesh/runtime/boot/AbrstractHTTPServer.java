@@ -17,39 +17,6 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import com.google.common.base.Preconditions;
-import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.apache.eventmesh.runtime.util.RemotingHelper;
-import org.apache.eventmesh.runtime.common.Pair;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
-import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.common.command.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
-import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
-import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.protocol.http.header.Header;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.http.*;
-import io.netty.handler.codec.http.multipart.*;
-import io.netty.handler.ssl.SslHandler;
-import io.netty.handler.timeout.IdleState;
-import io.netty.handler.timeout.IdleStateEvent;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +24,63 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+
+import com.google.common.base.Preconditions;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.multipart.Attribute;
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+import io.netty.handler.codec.http.multipart.DiskAttribute;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.protocol.http.header.Header;
+import org.apache.eventmesh.runtime.common.Pair;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
+import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.runtime.util.RemotingHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
 
@@ -398,7 +422,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
             ChannelPipeline pipeline = channel.pipeline();
 
 
-            if(sslContext != null && useTLS){
+            if (sslContext != null && useTLS) {
                 SSLEngine sslEngine = sslContext.createSSLEngine();
                 sslEngine.setUseClientMode(false);
                 pipeline.addFirst("ssl", new SslHandler(sslEngine));

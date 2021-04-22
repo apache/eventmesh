@@ -18,22 +18,7 @@
 package org.apache.eventmesh.runtime.util;
 
 
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.constants.EventMeshVersion;
-import org.apache.eventmesh.common.ThreadUtil;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import io.openmessaging.api.Message;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.eventmesh.runtime.util.OMSUtil.isOMSHeader;
 
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -41,9 +26,31 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TimeZone;
 
-import static org.apache.eventmesh.runtime.util.OMSUtil.isOMSHeader;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
+import io.openmessaging.api.Message;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.constants.EventMeshVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventMeshUtil {
 
@@ -91,6 +98,7 @@ public class EventMeshUtil {
     public static String buildPersistentClientConsumerGroup(String systemId, String dcn) {
         return EventMeshConstants.CONSUMER_GROUP_NAME_PREFIX + systemId + "-" + dcn;
     }
+
     public static String buildClientGroup(String systemId, String dcn) {
         return systemId + "-" + dcn;
     }
@@ -290,9 +298,9 @@ public class EventMeshUtil {
 
         if (sysHeaders.containsKey("START_TIME")) {
             long deliverTime;
-            if (StringUtils.isBlank(sysHeaders.getProperty("START_TIME"))){
+            if (StringUtils.isBlank(sysHeaders.getProperty("START_TIME"))) {
                 deliverTime = 0;
-            }else {
+            } else {
                 deliverTime = Long.parseLong(sysHeaders.getProperty("START_TIME"));
             }
 
@@ -406,8 +414,8 @@ public class EventMeshUtil {
         }
     }
 
-    public static String buildUserAgentClientId(UserAgent client){
-        if(client == null){
+    public static String buildUserAgentClientId(UserAgent client) {
+        if (client == null) {
             return null;
         }
         StringBuilder sb = new StringBuilder();

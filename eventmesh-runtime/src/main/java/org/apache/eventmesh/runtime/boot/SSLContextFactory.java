@@ -18,17 +18,18 @@
  */
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.KeyStore;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SSLContextFactory {
     private static Logger httpLogger = LoggerFactory.getLogger("http");
@@ -40,16 +41,16 @@ public class SSLContextFactory {
     private static String pass;
 
 
-    public static SSLContext getSslContext(){
+    public static SSLContext getSslContext() {
         SSLContext sslContext = null;
-        try{
+        try {
             protocol = System.getProperty("ssl.server.protocol", "TLSv1.1");
 
-            fileName = System.getProperty("ssl.server.cer","sChat2.jks");
+            fileName = System.getProperty("ssl.server.cer", "sChat2.jks");
 
             char[] filePass = null;
-            pass = System.getProperty("ssl.server.pass","sNetty");
-            if(StringUtils.isNotBlank(pass)){
+            pass = System.getProperty("ssl.server.pass", "sNetty");
+            if (StringUtils.isNotBlank(pass)) {
                 filePass = pass.toCharArray();
             }
             sslContext = SSLContext.getInstance(protocol);
@@ -60,7 +61,7 @@ public class SSLContextFactory {
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(keyStore, filePass);
             sslContext.init(kmf.getKeyManagers(), null, null);
-        }catch (Exception e){
+        } catch (Exception e) {
             httpLogger.warn("sslContext init failed", e);
             sslContext = null;
         }

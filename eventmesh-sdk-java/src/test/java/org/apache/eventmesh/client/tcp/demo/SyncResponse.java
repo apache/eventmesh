@@ -1,12 +1,13 @@
 package org.apache.eventmesh.client.tcp.demo;
 
+import io.netty.channel.ChannelHandlerContext;
+
 import org.apache.eventmesh.client.tcp.EventMeshClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
-import com.webank.eventmesh.common.protocol.tcp.Package;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
-import io.netty.channel.ChannelHandlerContext;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,10 +19,10 @@ public class SyncResponse implements ReceiveMsgHook {
 
     public static SyncResponse handler = new SyncResponse();
 
-    public static void main(String[] agrs)throws Exception{
-        try{
+    public static void main(String[] agrs) throws Exception {
+        try {
             UserAgent userAgent = EventMeshTestUtils.generateClient2();
-            client = new DefaultEventMeshClient("127.0.0.1",10000,userAgent);
+            client = new DefaultEventMeshClient("127.0.0.1", 10000, userAgent);
             client.init();
             client.heartbeat();
 
@@ -35,7 +36,7 @@ public class SyncResponse implements ReceiveMsgHook {
 
             //退出,销毁资源
 //            client.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.warn("SyncResponse failed", e);
         }
     }

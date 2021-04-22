@@ -18,10 +18,10 @@
  */
 package org.apache.eventmesh.runtime.core.plugin;
 
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 public abstract class MQWrapper {
 
