@@ -53,7 +53,7 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
 
     public Logger messageLogger = LoggerFactory.getLogger("message");
 
-    public final String DEFAULT_ACCESS_DRIVER = "com.webank.eventmesh.connector.rocketmq.MessagingAccessPointImpl";
+    public final String DEFAULT_ACCESS_DRIVER = "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl";
 
     private PushConsumerImpl pushConsumer;
 
