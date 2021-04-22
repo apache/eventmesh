@@ -15,7 +15,7 @@
 // * limitations under the License.
 // */
 //
-//package com.webank.runtime.configuration;
+//package org.apache.runtime.configuration;
 //
 //import org.apache.eventmesh.common.ThreadPoolFactory;
 //import org.apache.commons.lang3.StringUtils;

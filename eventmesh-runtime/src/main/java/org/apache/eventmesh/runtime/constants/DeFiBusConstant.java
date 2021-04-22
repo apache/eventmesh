@@ -34,7 +34,7 @@ public class DeFiBusConstant {
 
     public static final String REDIRECT_FLAG = "REDIRECT_FLAG";
 
-    public static final String PLUGIN_CLASS_NAME = "com.webank.defibus.broker.plugin.DeFiPluginMessageStore";
+    public static final String PLUGIN_CLASS_NAME = "org.apache.defibus.broker.plugin.DeFiPluginMessageStore";
 
     public static final String RR_REPLY_TOPIC = "rr-reply-topic";   //post fix for reply topic
 
