@@ -22,10 +22,12 @@ import io.openmessaging.api.*;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.lang.reflect.Field;
@@ -43,20 +45,32 @@ public class PushConsumerImplTest {
     private DefaultMQPushConsumer rocketmqPushConsumer;
 
     @Before
-    public void init() throws NoSuchFieldException, IllegalAccessException {
-
-        final MessagingAccessPoint messagingAccessPoint = OMS.builder().endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build();
+    public void before() throws Exception{
         Properties consumerProp = new Properties();
+        consumerProp.setProperty(OMSBuiltinKeys.DRIVER_IMPL,"com.webank.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
+        consumerProp.setProperty("access_points","IP1:9876,IP2:9876");
+        final MessagingAccessPoint messagingAccessPoint = OMS.builder().build(consumerProp);//.endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build(config);
+
+        consumerProp.setProperty("message.model","CLUSTERING");
+
+        //Properties consumerProp = new Properties();
         consumerProp.put("CONSUMER_ID", "TestGroup");
         consumer = messagingAccessPoint.createConsumer(consumerProp);
+
 
         Field field = PushConsumerImpl.class.getDeclaredField("rocketmqPushConsumer");
         field.setAccessible(true);
         DefaultMQPushConsumer innerConsumer = (DefaultMQPushConsumer) field.get(consumer);
         field.set(consumer, rocketmqPushConsumer); //Replace
 
-        when(rocketmqPushConsumer.getMessageListener()).thenReturn(innerConsumer.getMessageListener());
+        Mockito.when(rocketmqPushConsumer.getMessageListener()).thenReturn(innerConsumer.getMessageListener());
         consumer.start();
+    }
+
+    @After
+    public void after() throws Exception{
+        Mockito.verify(rocketmqPushConsumer).getMessageListener();
+        consumer.shutdown();
     }
 
     @Test
@@ -78,5 +92,7 @@ public class PushConsumerImplTest {
         });
         ((MessageListenerConcurrently) rocketmqPushConsumer
             .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
+
+
     }
 }

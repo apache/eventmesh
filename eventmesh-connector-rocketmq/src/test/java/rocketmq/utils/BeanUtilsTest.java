@@ -62,12 +62,12 @@ public class BeanUtilsTest {
             this.longTest = longTest;
         }
 
-        CustomizedConfig() {
+        public CustomizedConfig() {
         }
     }
 
     @Before
-    public void init() {
+    public void before() {
         properties.put(NonStandardKeys.MAX_REDELIVERY_TIMES, 120);
         properties.put(CustomizedConfig.STRING_TEST, "kaka");
         properties.put(NonStandardKeys.CONSUMER_GROUP, "Default_Consumer_Group");
