@@ -17,17 +17,19 @@
 
 package protocol;
 
+import io.netty.channel.ChannelHandlerContext;
+
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import client.SubClient;
 import client.common.Server;
 import client.common.UserAgentUtils;
 import client.hook.ReceiveMsgHook;
 import client.impl.SubClientImpl;
-import com.webank.eventmesh.common.protocol.tcp.Package;
-import io.netty.channel.ChannelHandlerContext;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Cmd Test: TRACE_LOG_TO_LOGSERVER
