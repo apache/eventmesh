@@ -1,7 +1,6 @@
 <h1>Eventmesh-runtime快速入门说明</h1>
 
-
-##  1 远程部署
+## 1 远程部署
 
 ### 1.1 依赖
 
@@ -11,7 +10,7 @@
 Gradle至少为5.6, 推荐 5.6.*
 ```
 
-### 1.2 下载源码 
+### 1.2 下载源码
 
 [https://github.com/WeBankFinTech/EventMesh](https://github.com/WeBankFinTech/EventMesh)
 您将获得**EventMesh-master.zip**
@@ -23,12 +22,12 @@ unzip EventMesh-master.zip
 cd / *您的部署路径* /EventMesh-master/eventmesh-runtime
 gradle clean dist tar -x test
 ```
+
 您将在目录/ *您的部署路径* /EventMesh-master/eventmesh-runtime/dist中获得**eventmesh-runtime_1.0.0.tar.gz**
 
 ### 1.4 部署
 
 - 部署eventmesh-runtime
-
 
 ```$ xslt
 upload eventmesh-runtime_1.0.0.tar.gz
@@ -38,9 +37,8 @@ cd bin
 cd ../bin
 sh start.sh
 ```
+
 如果看到"EventMeshTCPServer[port=10000] started...."，则说明设置成功。
-
-
 
 ## 2 本地构建运行
 
@@ -48,7 +46,7 @@ sh start.sh
 
 同上述步骤 1.1
 
-### 2.2 下载源码 
+### 2.2 下载源码
 
 同上述步骤 1.2
 
@@ -57,6 +55,7 @@ sh start.sh
 **2.3.1 项目结构说明：**
 
 ![project-structure](../../images/project-structure.png)
+
 - eventmesh-common : eventmesh公共类与方法模块
 - eventmesh-connector-api : eventmesh插件接口定义模块
 - eventmesh-connector-rocketmq : eventmesh rocketmq插件模块
@@ -95,8 +94,6 @@ dependencies {
 运行com.webank.eventmesh.starter.StartUp的主要方法
 ```
 
-
-
 ## 3 Docker 运行
 
 ### 3.1 拉取镜像
@@ -113,7 +110,7 @@ dependencies {
 
 在运行容器之前，你需要配置如下文件：
 
-**eventMesh.properties** 
+**eventMesh.properties**
 
 | 配置项                 | 默认值 | 备注                    |
 | ---------------------- | ------ | ----------------------- |
@@ -137,7 +134,8 @@ vi eventMesh.properties
 vi rocketmq-client.properties
 ```
 
-这两个文件内容可以参考 [eventMesh.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/eventMesh.properties) 和 [rocketmq-client.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/rocketmq-client.properties)
+这两个文件内容可以参考 [eventMesh.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/eventMesh.properties)
+和 [rocketmq-client.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/rocketmq-client.properties)
 
 ### 3.3 运行
 
@@ -192,7 +190,8 @@ docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs
 
 Windows
 
-- Windows系统下运行示例可以参考[这里](https://github.com/WeBankFinTech/EventMesh/blob/develop/docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
+-
+Windows系统下运行示例可以参考[这里](https://github.com/WeBankFinTech/EventMesh/blob/develop/docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
 
 Linux
 
@@ -207,7 +206,7 @@ Linux
   gradle clean testdist testtar -x test`
   ```
 
-  可以在 `/eventmesh-test/build` 目录下获得 **eventmesh-test_1.2.0-SNAPSHOT.tar.gz** 
+  可以在 `/eventmesh-test/build` 目录下获得 **eventmesh-test_1.2.0-SNAPSHOT.tar.gz**
 
 - **修改配置文件**
 
@@ -223,7 +222,7 @@ Linux
 
 - **运行**
 
-  TCP Sub 
+  TCP Sub
 
   ```shell
   cd bin

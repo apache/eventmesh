@@ -17,11 +17,12 @@
 
 package demo;
 
+import org.apache.eventmesh.common.ThreadUtil;
+
 import client.common.ClientConstants;
 import client.common.MessageUtils;
 import client.common.UserAgentUtils;
 import client.impl.PubClientImpl;
-import com.webank.eventmesh.common.ThreadUtil;
 
 public class BroadCastPubClient {
     public static void main(String[] args) throws Exception {

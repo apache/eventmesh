@@ -12,8 +12,8 @@ config env varible
 
 ```
 
-
 2.在eventmesh-sdk-java 中配置
+
 ```
 //创建producer
 LiteClientConfig liteClientConfig = new liteClientConfig();

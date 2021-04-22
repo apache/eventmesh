@@ -17,6 +17,13 @@
 
 package protocol;
 
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import client.PubClient;
 import client.SubClient;
 import client.common.MessageUtils;
@@ -24,12 +31,6 @@ import client.common.Server;
 import client.common.UserAgentUtils;
 import client.impl.PubClientImpl;
 import client.impl.SubClientImpl;
-import com.webank.eventmesh.common.protocol.tcp.Command;
-import com.webank.eventmesh.common.protocol.tcp.Package;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class CmdSendRRTest {
 

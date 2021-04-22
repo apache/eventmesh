@@ -17,8 +17,9 @@
 
 package protocol;
 
-import client.common.Server;
 import org.junit.Test;
+
+import client.common.Server;
 
 public class CmdHelloTest {
 
