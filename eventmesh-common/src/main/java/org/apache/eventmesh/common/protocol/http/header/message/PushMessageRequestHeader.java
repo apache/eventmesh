@@ -18,14 +18,14 @@
 package org.apache.eventmesh.common.protocol.http.header.message;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
-import org.apache.commons.collections4.MapUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class PushMessageRequestHeader extends Header {
 

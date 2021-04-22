@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.consumer;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConsumerGroupManager {
 
@@ -52,7 +52,7 @@ public class ConsumerGroupManager {
     }
 
     private synchronized void setupEventMeshConsumer(ConsumerGroupConf consumerGroupConfig) throws Exception {
-        for(String topic:consumerGroupConfig.getConsumerGroupTopicConf().keySet()) {
+        for (String topic : consumerGroupConfig.getConsumerGroupTopicConf().keySet()) {
             eventMeshConsumer.subscribe(topic);
         }
     }
@@ -64,11 +64,11 @@ public class ConsumerGroupManager {
 
     public synchronized void refresh(ConsumerGroupConf consumerGroupConfig) throws Exception {
 
-        if(consumerGroupConfig == null || this.consumerGroupConfig.equals(consumerGroupConfig)) {
+        if (consumerGroupConfig == null || this.consumerGroupConfig.equals(consumerGroupConfig)) {
             return;
         }
 
-        if(started.get()) {
+        if (started.get()) {
             shutdown();
         }
 

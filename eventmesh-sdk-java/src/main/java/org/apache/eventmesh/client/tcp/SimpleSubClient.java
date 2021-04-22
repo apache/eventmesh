@@ -19,24 +19,24 @@ package org.apache.eventmesh.client.tcp;
 
 
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 public interface SimpleSubClient {
-     void init() throws Exception;
+    void init() throws Exception;
 
-     void close();
+    void close();
 
-     void heartbeat() throws Exception;
+    void heartbeat() throws Exception;
 
-     void reconnect() throws Exception;
+    void reconnect() throws Exception;
 
-     void subscribe(String topic) throws Exception;
+    void subscribe(String topic) throws Exception;
 
-     void unsubscribe() throws Exception;
+    void unsubscribe() throws Exception;
 
-     void listen() throws Exception;
+    void listen() throws Exception;
 
-     void registerBusiHandler(ReceiveMsgHook handler) throws Exception;
+    void registerBusiHandler(ReceiveMsgHook handler) throws Exception;
 
-     UserAgent getUserAgent();
+    UserAgent getUserAgent();
 }

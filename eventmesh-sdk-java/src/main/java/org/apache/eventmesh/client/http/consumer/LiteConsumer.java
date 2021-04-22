@@ -17,8 +17,22 @@
 
 package org.apache.eventmesh.client.http.consumer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+
+import io.netty.handler.codec.http.HttpMethod;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.eventmesh.client.http.AbstractLiteClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.client.http.RemotingServer;
@@ -28,28 +42,20 @@ import org.apache.eventmesh.client.http.http.HttpUtil;
 import org.apache.eventmesh.client.http.http.RequestParam;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.EventMeshThreadFactoryImpl;
-import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.common.EventMeshException;
-import com.webank.eventmesh.common.ThreadPoolFactory;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.webank.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
-import com.webank.eventmesh.common.protocol.http.common.*;
-import io.netty.handler.codec.http.HttpMethod;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.RandomUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshException;
+import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
+import org.apache.eventmesh.common.protocol.http.common.ClientType;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LiteConsumer extends AbstractLiteClient {
 
@@ -111,7 +117,7 @@ public class LiteConsumer extends AbstractLiteClient {
 
     public boolean subscribe(List<String> topicList, String url) throws Exception {
         subscription.addAll(topicList);
-        if(!started.get()) {
+        if (!started.get()) {
             start();
         }
 
@@ -129,7 +135,7 @@ public class LiteConsumer extends AbstractLiteClient {
             throw new EventMeshException(ex);
         }
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("subscribe message by await, targetEventMesh:{}, cost:{}ms, subscribeParam:{}, rtn:{}", target, System.currentTimeMillis() - startTime, JSON.toJSONString(subscribeParam), subRes);
         }
 
@@ -169,7 +175,7 @@ public class LiteConsumer extends AbstractLiteClient {
 
     private RequestParam generateHeartBeatRequestParam(List<String> topics, String url) {
         List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = new ArrayList<>();
-        for (String topic : topics){
+        for (String topic : topics) {
             HeartbeatRequestBody.HeartbeatEntity heartbeatEntity = new HeartbeatRequestBody.HeartbeatEntity();
             heartbeatEntity.topic = topic;
             heartbeatEntity.url = url;
@@ -200,7 +206,7 @@ public class LiteConsumer extends AbstractLiteClient {
             @Override
             public void run() {
                 try {
-                    if(!started.get()) {
+                    if (!started.get()) {
                         start();
                     }
                     RequestParam requestParam = generateHeartBeatRequestParam(topicList, url);
@@ -214,7 +220,7 @@ public class LiteConsumer extends AbstractLiteClient {
                         throw new EventMeshException(ex);
                     }
 
-                    if(logger.isDebugEnabled()) {
+                    if (logger.isDebugEnabled()) {
                         logger.debug("heartBeat message by await, targetEventMesh:{}, cost:{}ms, rtn:{}", target, System.currentTimeMillis() - startTime, res);
                     }
 
@@ -247,7 +253,7 @@ public class LiteConsumer extends AbstractLiteClient {
             throw new EventMeshException(ex);
         }
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("unSubscribe message by await, targetEventMesh:{}, cost:{}ms, unSubscribeParam:{}, rtn:{}", target, System.currentTimeMillis() - startTime, JSON.toJSONString(unSubscribeParam), unSubRes);
         }
 
@@ -289,9 +295,9 @@ public class LiteConsumer extends AbstractLiteClient {
         if (CollectionUtils.isEmpty(eventMeshServerList)) {
             return null;
         }
-        if(liteClientConfig.isUseTls()){
+        if (liteClientConfig.isUseTls()) {
             return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
-        }else{
+        } else {
             return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
         }
     }

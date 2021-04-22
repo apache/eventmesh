@@ -17,15 +17,29 @@
 
 package org.apache.eventmesh.connector.rocketmq.consumer;
 
-import com.webank.eventmesh.api.AbstractContext;
-import com.webank.eventmesh.api.consumer.MeshMQPushConsumer;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import io.openmessaging.api.AsyncGenericMessageListener;
+import io.openmessaging.api.AsyncMessageListener;
+import io.openmessaging.api.GenericMessageListener;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.MessageListener;
+import io.openmessaging.api.MessageSelector;
+import io.openmessaging.api.MessagingAccessPoint;
+import io.openmessaging.api.OMS;
+import io.openmessaging.api.OMSBuiltinKeys;
+
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.api.consumer.MeshMQPushConsumer;
 import org.apache.eventmesh.connector.rocketmq.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWraper;
 import org.apache.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
 import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
-import io.openmessaging.api.*;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -33,18 +47,13 @@ import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 public class RocketMQConsumerImpl implements MeshMQPushConsumer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public Logger messageLogger = LoggerFactory.getLogger("message");
 
-    public final String DEFAULT_ACCESS_DRIVER = "com.webank.eventmesh.connector.rocketmq.MessagingAccessPointImpl";
+    public final String DEFAULT_ACCESS_DRIVER = "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl";
 
     private PushConsumerImpl pushConsumer;
 
@@ -61,9 +70,9 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
         String instanceName = keyValue.getProperty("instanceName");
 
 
-        if(isBroadcast){
+        if (isBroadcast) {
             consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + Constants.BROADCAST_PREFIX + consumerGroup;
-        }else {
+        } else {
             consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup;
         }
 
@@ -75,13 +84,13 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
         properties.put("REGION", "namespace");
         properties.put("instanceName", instanceName);
         properties.put("CONSUMER_ID", consumerGroup);
-        if (isBroadcast){
+        if (isBroadcast) {
             properties.put("MESSAGE_MODEL", MessageModel.BROADCASTING.name());
-        }else {
+        } else {
             properties.put("MESSAGE_MODEL", MessageModel.CLUSTERING.name());
         }
         MessagingAccessPoint messagingAccessPoint = OMS.builder().build(properties);
-        pushConsumer = (PushConsumerImpl)messagingAccessPoint.createConsumer(properties);
+        pushConsumer = (PushConsumerImpl) messagingAccessPoint.createConsumer(properties);
     }
 
     @Override
@@ -114,7 +123,7 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     public void updateOffset(List<Message> msgs, AbstractContext context) {
         ConsumeMessageService consumeMessageService = pushConsumer.getRocketmqPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
         List<MessageExt> msgExtList = new ArrayList<>(msgs.size());
-        for(Message msg : msgs){
+        for (Message msg : msgs) {
             msgExtList.add(OMSUtil.msgConvertExt(msg));
         }
         ((ConsumeMessageConcurrentlyService) consumeMessageService).updateOffset(msgExtList, (EventMeshConsumeConcurrentlyContext) context);

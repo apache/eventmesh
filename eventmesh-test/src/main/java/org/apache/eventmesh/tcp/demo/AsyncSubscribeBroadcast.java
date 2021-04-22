@@ -1,5 +1,9 @@
 package org.apache.eventmesh.tcp.demo;
 
+import java.util.Properties;
+
+import io.netty.channel.ChannelHandlerContext;
+
 import org.apache.eventmesh.client.tcp.EventMeshClient;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
@@ -8,11 +12,8 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
-import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Properties;
 
 public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
 
@@ -22,13 +23,13 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
 
     public static AsyncSubscribeBroadcast handler = new AsyncSubscribeBroadcast();
 
-    public static void main(String[] agrs)throws Exception{
+    public static void main(String[] agrs) throws Exception {
         Properties properties = Utils.readPropertiesFile("application.properties");
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
-        try{
+        try {
             UserAgent userAgent = EventMeshTestUtils.generateClient2();
-            client = new DefaultEventMeshClient(eventMeshIp,eventMeshTcpPort,userAgent);
+            client = new DefaultEventMeshClient(eventMeshIp, eventMeshTcpPort, userAgent);
             client.init();
             client.heartbeat();
 
@@ -41,14 +42,14 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
 
             //退出,销毁资源
 //            client.close();
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.warn("AsyncSubscribeBroadcast failed", e);
         }
     }
 
     @Override
     public void handle(Package msg, ChannelHandlerContext ctx) {
-        EventMeshMessage eventMeshMessage = (EventMeshMessage)msg.getBody();
+        EventMeshMessage eventMeshMessage = (EventMeshMessage) msg.getBody();
         logger.info("receive broadcast msg==============={}", eventMeshMessage);
     }
 }

@@ -17,21 +17,21 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import java.io.File;
+
 import org.apache.eventmesh.common.config.ConfigurationWraper;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 public class EventMeshStartup {
 
     public static Logger logger = LoggerFactory.getLogger(EventMeshStartup.class);
 
     public static void main(String[] args) throws Exception {
-        try{
+        try {
             ConfigurationWraper configurationWraper =
                     new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
                             + File.separator
@@ -54,7 +54,7 @@ public class EventMeshStartup {
                     logger.error("exception when shutdown...", e);
                 }
             }));
-        }catch (Throwable e){
+        } catch (Throwable e) {
             logger.error("EventMesh start fail.", e);
             e.printStackTrace();
         }

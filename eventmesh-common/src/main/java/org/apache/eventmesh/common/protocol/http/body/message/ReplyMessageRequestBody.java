@@ -17,14 +17,15 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class ReplyMessageRequestBody extends Body {
 
@@ -94,7 +95,7 @@ public class ReplyMessageRequestBody extends Body {
         body.setOrigTopic(MapUtils.getString(bodyParam, ORIGTOPIC));
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
         if (StringUtils.isNotBlank(extFields)) {
-            body.setExtFields((HashMap<String,String>)JSONObject.parseObject(extFields, HashMap.class));
+            body.setExtFields((HashMap<String, String>) JSONObject.parseObject(extFields, HashMap.class));
         }
         return body;
     }

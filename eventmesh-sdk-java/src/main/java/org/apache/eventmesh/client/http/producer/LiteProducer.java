@@ -17,40 +17,43 @@
 
 package org.apache.eventmesh.client.http.producer;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
+
+import com.alibaba.fastjson.JSON;
+import com.google.common.base.Preconditions;
+
+import io.netty.handler.codec.http.HttpMethod;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.AbstractLiteClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.http.HttpUtil;
 import org.apache.eventmesh.client.http.http.RequestParam;
 import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
-import com.webank.eventmesh.common.Constants;
-import com.webank.eventmesh.common.LiteMessage;
-import com.webank.eventmesh.common.EventMeshException;
-import com.webank.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
-import com.webank.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
-import com.webank.eventmesh.common.protocol.http.common.ProtocolKey;
-import com.webank.eventmesh.common.protocol.http.common.ProtocolVersion;
-import com.webank.eventmesh.common.protocol.http.common.EventMeshRetCode;
-import com.webank.eventmesh.common.protocol.http.common.RequestCode;
-import com.alibaba.fastjson.JSON;
-import com.google.common.base.Preconditions;
-import io.netty.handler.codec.http.HttpMethod;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshException;
+import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LiteProducer extends AbstractLiteClient {
 
@@ -60,7 +63,7 @@ public class LiteProducer extends AbstractLiteClient {
 
     public LiteProducer(LiteClientConfig liteClientConfig) {
         super(liteClientConfig);
-        if(liteClientConfig.isUseTls()){
+        if (liteClientConfig.isUseTls()) {
             setHttpClient();
         }
     }
@@ -71,7 +74,7 @@ public class LiteProducer extends AbstractLiteClient {
     public void start() throws Exception {
         Preconditions.checkState(liteClientConfig != null, "liteClientConfig can't be null");
         Preconditions.checkState(liteClientConfig.getLiteEventMeshAddr() != null, "liteClientConfig.liteServerAddr can't be null");
-        if(started.get()) {
+        if (started.get()) {
             return;
         }
         logger.info("LiteProducer starting");
@@ -82,7 +85,7 @@ public class LiteProducer extends AbstractLiteClient {
 
     @Override
     public void shutdown() throws Exception {
-        if(!started.get()) {
+        if (!started.get()) {
             return;
         }
         logger.info("LiteProducer shutting down");
@@ -133,7 +136,7 @@ public class LiteProducer extends AbstractLiteClient {
             throw new EventMeshException(ex);
         }
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("publish async message, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}",
                     target, System.currentTimeMillis() - startTime, message, res);
         }
@@ -151,15 +154,15 @@ public class LiteProducer extends AbstractLiteClient {
         if (CollectionUtils.isEmpty(eventMeshServerList)) {
             return null;
         }
-        if(liteClientConfig.isUseTls()){
+        if (liteClientConfig.isUseTls()) {
             return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
-        }else{
+        } else {
             return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
         }
     }
 
     public LiteMessage request(LiteMessage message, long timeout) throws Exception {
-        if(!started.get()) {
+        if (!started.get()) {
             start();
         }
         Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
@@ -195,7 +198,7 @@ public class LiteProducer extends AbstractLiteClient {
             throw new EventMeshException(ex);
         }
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("publish sync message by await, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}", target, System.currentTimeMillis() - startTime, message, res);
         }
 
@@ -213,7 +216,7 @@ public class LiteProducer extends AbstractLiteClient {
     }
 
     public void request(LiteMessage message, RRCallback rrCallback, long timeout) throws Exception {
-        if(!started.get()) {
+        if (!started.get()) {
             start();
         }
         Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
@@ -250,7 +253,7 @@ public class LiteProducer extends AbstractLiteClient {
             throw new EventMeshException(ex);
         }
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("publish sync message by async, target:{}, cost:{}, message:{}", target, System.currentTimeMillis() - startTime, message);
         }
     }
@@ -259,7 +262,7 @@ public class LiteProducer extends AbstractLiteClient {
         SSLContext sslContext = null;
         try {
             String protocol = System.getProperty("ssl.client.protocol", "TLSv1.1");
-            TrustManager[] tm = new TrustManager[] { new MyX509TrustManager() };
+            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
             sslContext = SSLContext.getInstance(protocol);
             sslContext.init(null, tm, new SecureRandom());
             httpClient = HttpClients.custom().setSslcontext(sslContext)

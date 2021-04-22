@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import java.util.concurrent.TimeUnit
-
 apply plugin: 'java'
 apply plugin: "maven"
 apply plugin: "eclipse"
@@ -38,26 +35,26 @@ repositories {
 //]
 
 List junit = [
-    "junit:junit:4.12"
+        "junit:junit:4.12"
 ]
 
 List log4j2 = [
-    "org.apache.logging.log4j:log4j-api:2.13.3",
-    "org.apache.logging.log4j:log4j-core:2.13.3",
-    "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
-    "org.apache.logging.log4j:log4j-web:2.13.3",
-    "com.lmax:disruptor:3.4.2"
+        "org.apache.logging.log4j:log4j-api:2.13.3",
+        "org.apache.logging.log4j:log4j-core:2.13.3",
+        "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
+        "org.apache.logging.log4j:log4j-web:2.13.3",
+        "com.lmax:disruptor:3.4.2"
 ]
 
 List sl4j = [
-    "org.slf4j:slf4j-api:1.7.30"
+        "org.slf4j:slf4j-api:1.7.30"
 ]
 
 List metrics = [
-    "io.dropwizard.metrics:metrics-core:4.1.0",
-    "io.dropwizard.metrics:metrics-healthchecks:4.1.0",
-    "io.dropwizard.metrics:metrics-annotation:4.1.0",
-    "io.dropwizard.metrics:metrics-json:4.1.0"
+        "io.dropwizard.metrics:metrics-core:4.1.0",
+        "io.dropwizard.metrics:metrics-healthchecks:4.1.0",
+        "io.dropwizard.metrics:metrics-annotation:4.1.0",
+        "io.dropwizard.metrics:metrics-json:4.1.0"
 ]
 
 List apache_common = [
@@ -66,8 +63,8 @@ List apache_common = [
 
 
 dependencies {
-    compile project(":eventmesh-connector-api"),apache_common,metrics, log4j2, sl4j
-    testCompile project(":eventmesh-connector-api"),apache_common,metrics, log4j2, sl4j, junit
+    compile project(":eventmesh-connector-api"), apache_common, metrics, log4j2, sl4j
+    testCompile project(":eventmesh-connector-api"), apache_common, metrics, log4j2, sl4j, junit
 }
 
 clean.doFirst {

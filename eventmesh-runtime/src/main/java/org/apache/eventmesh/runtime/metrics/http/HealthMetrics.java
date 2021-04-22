@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.runtime.metrics.http;
 
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import com.codahale.metrics.MetricRegistry;
+
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

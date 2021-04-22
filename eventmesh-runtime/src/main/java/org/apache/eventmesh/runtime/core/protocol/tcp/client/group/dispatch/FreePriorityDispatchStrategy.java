@@ -17,16 +17,16 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch;
 
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy {
 
@@ -34,7 +34,7 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
 
     @Override
     public Session select(String group, String topic, Set<Session> groupConsumerSessions) {
-        if(CollectionUtils.isEmpty(groupConsumerSessions)
+        if (CollectionUtils.isEmpty(groupConsumerSessions)
                 || StringUtils.isBlank(topic)
                 || StringUtils.isBlank(group)) {
             return null;
@@ -46,7 +46,7 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
             if (!session.isAvailable(topic)) {
                 continue;
             }
-            if(session.isDownStreamBusy()){
+            if (session.isDownStreamBusy()) {
                 canDownSessions.add(session);
                 continue;
             }
@@ -54,11 +54,11 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
         }
 
         if (CollectionUtils.isEmpty(filtered)) {
-            if(CollectionUtils.isEmpty(canDownSessions)){
+            if (CollectionUtils.isEmpty(canDownSessions)) {
                 logger.warn("all sessions can't downstream msg");
                 return null;
-            }else{
-                logger.warn("all sessions are busy,group:{},topic:{}",group,topic);
+            } else {
+                logger.warn("all sessions are busy,group:{},topic:{}", group, topic);
                 filtered.addAll(canDownSessions);
             }
         }

@@ -17,15 +17,16 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class SendMessageBatchRequestBody extends Body {
 
@@ -100,7 +101,7 @@ public class SendMessageBatchRequestBody extends Body {
         String batchId = MapUtils.getString(bodyParam,
                 BATCHID);
         String size = StringUtils.isBlank(MapUtils.getString(bodyParam,
-                SIZE)) ?  "1" : MapUtils.getString(bodyParam,
+                SIZE)) ? "1" : MapUtils.getString(bodyParam,
                 SIZE);
         String contents = MapUtils.getString(bodyParam,
                 CONTENTS, null);

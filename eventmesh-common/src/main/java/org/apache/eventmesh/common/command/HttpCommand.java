@@ -17,12 +17,11 @@
 
 package org.apache.eventmesh.common.command;
 
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.body.BaseResponseBody;
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.protocol.http.header.BaseResponseHeader;
-import org.apache.eventmesh.common.protocol.http.header.Header;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+
 import com.alibaba.fastjson.JSON;
+
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -30,11 +29,14 @@ import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.http.body.BaseResponseBody;
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.header.BaseResponseHeader;
+import org.apache.eventmesh.common.protocol.http.header.Header;
 
 public class HttpCommand {
 
@@ -75,7 +77,7 @@ public class HttpCommand {
 
     public HttpCommand createHttpCommandResponse(Header header,
                                                  Body body) {
-        if(StringUtils.isBlank(requestCode)) {
+        if (StringUtils.isBlank(requestCode)) {
             return null;
         }
         HttpCommand response = new HttpCommand(this.httpMethod, this.httpVersion, this.requestCode);
@@ -89,7 +91,7 @@ public class HttpCommand {
     }
 
     public HttpCommand createHttpCommandResponse(Integer retCode, String retMsg) {
-        if(StringUtils.isBlank(requestCode)) {
+        if (StringUtils.isBlank(requestCode)) {
             return null;
         }
         HttpCommand response = new HttpCommand(this.httpMethod, this.httpVersion, this.requestCode);

@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.client.http.consumer.context;
 
-import com.webank.eventmesh.common.Constants;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.eventmesh.common.Constants;
 
 public class LiteConsumeContext {
 
@@ -40,7 +40,7 @@ public class LiteConsumeContext {
     private long createTime = System.currentTimeMillis();
 
     public LiteConsumeContext(String eventMeshIp, String eventMeshEnv,
-                              String eventMeshIdc,String eventMeshRegion,
+                              String eventMeshIdc, String eventMeshRegion,
                               String eventMeshCluster, String eventMeshDcn) {
         this.eventMeshIp = eventMeshIp;
         this.eventMeshEnv = eventMeshEnv;

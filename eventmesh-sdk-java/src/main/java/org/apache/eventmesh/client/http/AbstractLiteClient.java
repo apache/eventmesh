@@ -17,18 +17,19 @@
 
 package org.apache.eventmesh.client.http;
 
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import com.webank.eventmesh.common.EventMeshException;
+import java.util.Arrays;
+import java.util.List;
+
 import com.google.common.collect.Lists;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.client.http.conf.LiteClientConfig;
+import org.apache.eventmesh.common.EventMeshException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.List;
 
 public abstract class AbstractLiteClient {
 
@@ -52,7 +53,7 @@ public abstract class AbstractLiteClient {
 
     public void start() throws Exception {
         eventMeshServerList = process(liteClientConfig.getLiteEventMeshAddr());
-        if(eventMeshServerList == null || eventMeshServerList.size() < 1){
+        if (eventMeshServerList == null || eventMeshServerList.size() < 1) {
             throw new EventMeshException("liteEventMeshAddr param illegal,please check");
         }
     }

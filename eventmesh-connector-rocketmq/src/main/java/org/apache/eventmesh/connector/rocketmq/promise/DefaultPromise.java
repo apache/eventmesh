@@ -16,14 +16,15 @@
  */
 package org.apache.eventmesh.connector.rocketmq.promise;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.openmessaging.api.Future;
 import io.openmessaging.api.FutureListener;
 import io.openmessaging.api.exception.OMSRuntimeException;
+
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class DefaultPromise<V> implements Future<V> {
     private static final InternalLogger LOG = InternalLoggerFactory.getLogger(DefaultPromise.class);
@@ -105,7 +106,7 @@ public class DefaultPromise<V> implements Future<V> {
     }
 
     public boolean set(final V value) {
-        if (value == null){
+        if (value == null) {
             return false;
         }
         this.result = value;
@@ -113,7 +114,7 @@ public class DefaultPromise<V> implements Future<V> {
     }
 
     public boolean setFailure(final Throwable cause) {
-        if (cause == null){
+        if (cause == null) {
             return false;
         }
         this.exception = cause;

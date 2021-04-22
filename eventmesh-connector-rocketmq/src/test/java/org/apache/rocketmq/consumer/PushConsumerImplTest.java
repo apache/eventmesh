@@ -16,24 +16,33 @@
  */
 package org.apache.rocketmq.consumer;
 
-import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
-import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
-import io.openmessaging.api.*;
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
-import org.apache.rocketmq.common.message.MessageExt;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import io.openmessaging.api.Action;
+import io.openmessaging.api.AsyncConsumeContext;
+import io.openmessaging.api.AsyncMessageListener;
+import io.openmessaging.api.Consumer;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.MessagingAccessPoint;
+import io.openmessaging.api.OMS;
+import io.openmessaging.api.OMSBuiltinKeys;
+
+import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
+import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import org.apache.rocketmq.common.message.MessageExt;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PushConsumerImplTest {
@@ -43,25 +52,37 @@ public class PushConsumerImplTest {
     private DefaultMQPushConsumer rocketmqPushConsumer;
 
     @Before
-    public void init() throws NoSuchFieldException, IllegalAccessException {
-
-        final MessagingAccessPoint messagingAccessPoint = OMS.builder().endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build();
+    public void before() throws Exception {
         Properties consumerProp = new Properties();
+        consumerProp.setProperty(OMSBuiltinKeys.DRIVER_IMPL, "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
+        consumerProp.setProperty("access_points", "IP1:9876,IP2:9876");
+        final MessagingAccessPoint messagingAccessPoint = OMS.builder().build(consumerProp);//.endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build(config);
+
+        consumerProp.setProperty("message.model", "CLUSTERING");
+
+        //Properties consumerProp = new Properties();
         consumerProp.put("CONSUMER_ID", "TestGroup");
         consumer = messagingAccessPoint.createConsumer(consumerProp);
+
 
         Field field = PushConsumerImpl.class.getDeclaredField("rocketmqPushConsumer");
         field.setAccessible(true);
         DefaultMQPushConsumer innerConsumer = (DefaultMQPushConsumer) field.get(consumer);
         field.set(consumer, rocketmqPushConsumer); //Replace
 
-        when(rocketmqPushConsumer.getMessageListener()).thenReturn(innerConsumer.getMessageListener());
+        Mockito.when(rocketmqPushConsumer.getMessageListener()).thenReturn(innerConsumer.getMessageListener());
         consumer.start();
+    }
+
+    @After
+    public void after() throws Exception {
+        Mockito.verify(rocketmqPushConsumer).getMessageListener();
+        consumer.shutdown();
     }
 
     @Test
     public void testConsumeMessage() {
-        final byte[] testBody = new byte[] {'a', 'b'};
+        final byte[] testBody = new byte[]{'a', 'b'};
 
         MessageExt consumedMsg = new MessageExt();
         consumedMsg.setMsgId("NewMsgId");
@@ -77,6 +98,8 @@ public class PushConsumerImplTest {
             }
         });
         ((MessageListenerConcurrently) rocketmqPushConsumer
-            .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
+                .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
+
+
     }
 }

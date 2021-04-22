@@ -1,4 +1,5 @@
 ## 隔离机制
+
 Producer在往Topic发送消息时，会按照MessageQueueSelector定义的选择策略，从Topic的所有MessageQueue中选择一个作为目标队列发送消息。
 当队列发生熔断，或者Broker故障导致队列发送消息异常时，如果没有对这些队列进行特殊处理，下次再轮到发这个队列的时候仍然可能失败。
 
@@ -6,13 +7,15 @@ DeFiBus提供异常队列的隔离机制，当往某个队列发送消息失败�
 
 异常队列隔离机制分为两步：  
 **-发现并标记队列为隔离**  
-在发送回调中更新发送队列的健康状态，如果执行的是onSuccess分支，则标记队列为健康，去除队列的隔离标记；如果执行的是onException分支，则标记队列为隔离状态。  
+在发送回调中更新发送队列的健康状态，如果执行的是onSuccess分支，则标记队列为健康，去除队列的隔离标记；如果执行的是onException分支，则标记队列为隔离状态。
 
 **-不选择隔离中的队列发送消息**  
 在MessageQueueSelector中实现隔离机制的过滤逻辑，每次进行队列的选择时，优先从没有标记为隔离的队列中选择。当所有队列都被标记为隔离时，则从所有队列中选择，保证每次都要选出一个队列。
 
 ---
+
 #### Links:
+
 * [架构介绍](../../../README.md)
 * [Request-Reply调用](docs/cn/features/1-request-response-call.md)
 * [灰度发布](docs/cn/features/2-dark-launch.md)

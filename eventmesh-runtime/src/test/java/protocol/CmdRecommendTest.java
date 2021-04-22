@@ -17,16 +17,17 @@
 
 package protocol;
 
-import client.PubClient;
-import client.common.Server;
-import client.common.UserAgentUtils;
-import client.impl.PubClientImpl;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import client.PubClient;
+import client.common.Server;
+import client.common.UserAgentUtils;
+import client.impl.PubClientImpl;
 
 public class CmdRecommendTest {
     public static Server server = new Server();

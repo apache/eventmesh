@@ -40,7 +40,7 @@ public class EventMeshThreadFactoryImpl implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable r) {
-        Thread t = new Thread(r, threadNamePrefix +'-'+ this.threadIndex.incrementAndGet());
+        Thread t = new Thread(r, threadNamePrefix + '-' + this.threadIndex.incrementAndGet());
         if (isDaemonSpecified != null) {
             t.setDaemon(isDaemonSpecified);
         }

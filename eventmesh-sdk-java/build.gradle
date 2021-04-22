@@ -84,7 +84,7 @@ dependencies {
 //    }
 }
 
-configurations.all{
+configurations.all {
     exclude group: "ch.qos.logback"
 }
 

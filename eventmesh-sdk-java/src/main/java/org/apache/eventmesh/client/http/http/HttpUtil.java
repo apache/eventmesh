@@ -16,11 +16,22 @@
  */
 
 package org.apache.eventmesh.client.http.http;
-import com.webank.eventmesh.common.Constants;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import com.google.common.base.Preconditions;
+
 import io.netty.handler.codec.http.HttpMethod;
+
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.Constants;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -34,14 +45,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 public class HttpUtil {
 
@@ -133,7 +136,7 @@ public class HttpUtil {
                 .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
                 .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
 
-        if(forwardAgent != null) {
+        if (forwardAgent != null) {
             configBuilder.setProxy(forwardAgent);
         }
 
@@ -176,7 +179,7 @@ public class HttpUtil {
                 .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
                 .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
 
-        if(forwardAgent != null) {
+        if (forwardAgent != null) {
             configBuilder.setProxy(forwardAgent);
         }
 

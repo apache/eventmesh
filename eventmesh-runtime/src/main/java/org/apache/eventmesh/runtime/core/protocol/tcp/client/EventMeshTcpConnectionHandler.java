@@ -17,16 +17,17 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client;
 
-import org.apache.eventmesh.runtime.util.RemotingHelper;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
 
