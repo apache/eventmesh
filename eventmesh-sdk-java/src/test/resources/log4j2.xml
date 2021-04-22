@@ -28,7 +28,7 @@
             <AppenderRef ref="console"/>
         </AsyncRoot>
 
-        <AsyncLogger name="com.webank.eventmesh.client" level="debug" additivity="false" includeLocation="true">
+        <AsyncLogger name="org.apache.eventmesh.client" level="debug" additivity="false" includeLocation="true">
             <AppenderRef ref="console"/>
         </AsyncLogger>
     </Loggers>

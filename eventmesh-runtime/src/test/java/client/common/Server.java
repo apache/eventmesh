@@ -17,8 +17,8 @@
 
 package client.common;
 
-import com.webank.eventmesh.runtime.boot.EventMeshServer;
-import com.webank.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.boot.EventMeshServer;
+import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 
 public class Server {
 
@@ -34,7 +34,7 @@ public class Server {
     public void startAccessServer() throws Exception {
         EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(null);
         eventMeshHttpConfiguration.init();
-        server = new EventMeshServer(eventMeshHttpConfiguration, null);
+        server = new EventMeshServer(eventMeshHttpConfiguration, CommonConfigurationnull);
         server.init();
         server.start();
     }

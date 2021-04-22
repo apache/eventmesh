@@ -17,8 +17,10 @@
 
 package client;
 
+import org.apache.eventmesh.common.protocol.tcp.Package;
+
 import client.hook.ReceiveMsgHook;
-import com.webank.eventmesh.common.protocol.tcp.Package;
+
 public interface EventMeshClient {
 
     Package rr(Package msg, long timeout) throws Exception;
