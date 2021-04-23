@@ -32,7 +32,6 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.runtime.constants.DeFiBusConstant;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -81,13 +80,13 @@ public class SessionSender {
                 UpStreamMsgContext upStreamMsgContext = null;
                 Command cmd = header.getCommand();
                 if (Command.REQUEST_TO_SERVER == cmd) {
-                    long ttl = msg.getSystemProperties(DeFiBusConstant.PROPERTY_MESSAGE_TTL) != null ? Long.parseLong(msg.getSystemProperties(DeFiBusConstant.PROPERTY_MESSAGE_TTL)) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
+                    long ttl = msg.getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL) != null ? Long.parseLong(msg.getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL)) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
                     upStreamMsgContext = new UpStreamMsgContext(header.getSeq(), session, msg);
                     session.getClientGroupWrapper().get().request(upStreamMsgContext, sendCallback, initSyncRRCallback(header, startTime, taskExecuteTime), ttl);
                 } else if (Command.RESPONSE_TO_SERVER == cmd) {
-                    String cluster = msg.getUserProperties(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER);
+                    String cluster = msg.getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER);
                     if (!StringUtils.isEmpty(cluster)) {
-                        String replyTopic = DeFiBusConstant.RR_REPLY_TOPIC;
+                        String replyTopic = EventMeshConstants.RR_REPLY_TOPIC;
                         replyTopic = cluster + "-" + replyTopic;
                         msg.getSystemProperties().put(Constants.PROPERTY_MESSAGE_DESTINATION, replyTopic);
                     }
