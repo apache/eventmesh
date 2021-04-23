@@ -29,7 +29,6 @@ import io.openmessaging.api.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.constants.DeFiBusConstant;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
@@ -166,11 +165,11 @@ public class EventMeshTcpRetryer {
         boolean flag = false;
         long ttl = Long.parseLong(downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL));
         //TODO 关注是否能取到
-        long storeTimestamp = Long.parseLong(downStreamMsgContext.msgExt.getUserProperties(DeFiBusConstant.STORE_TIME));
-        String leaveTimeStr = downStreamMsgContext.msgExt.getUserProperties(DeFiBusConstant.LEAVE_TIME);
+        long storeTimestamp = Long.parseLong(downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.STORE_TIME));
+        String leaveTimeStr = downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.LEAVE_TIME);
         long brokerCost = StringUtils.isNumeric(leaveTimeStr) ? Long.parseLong(leaveTimeStr) - storeTimestamp : 0;
 
-        String arriveTimeStr = downStreamMsgContext.msgExt.getUserProperties(DeFiBusConstant.ARRIVE_TIME);
+        String arriveTimeStr = downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.ARRIVE_TIME);
         long accessCost = StringUtils.isNumeric(arriveTimeStr) ? System.currentTimeMillis() - Long.parseLong(arriveTimeStr) : 0;
         double elapseTime = brokerCost + accessCost;
         if (elapseTime >= ttl) {
