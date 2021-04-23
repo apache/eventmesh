@@ -112,4 +112,12 @@ public class EventMeshConstants {
 
     public static final String PROPERTY_MESSAGE_KEYS = "KEYS";
 
+    public static final String PROPERTY_MESSAGE_REPLY_TO = "REPLY_TO";  //requester clientId
+
+    public static final String PROPERTY_RR_REQUEST_ID = "RR_REQUEST_UNIQ_ID";
+
+    public static final String LEAVE_TIME = "LEAVE_TIME";            //leaveBrokerTime
+    public static final String ARRIVE_TIME = "ARRIVE_TIME";
+    public static final String STORE_TIME = "STORE_TIME";
+
 }
