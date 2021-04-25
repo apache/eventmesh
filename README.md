@@ -6,7 +6,7 @@
 [点我查看中文版](README.zh-CN.md)
 
 ## What is EventMesh?
-EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
+EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
 **EventMesh Ecosystem:**
 
@@ -20,15 +20,17 @@ EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the 
 
 ![architecture2](docs/images/eventmesh-panels.png)
 
-The EventMesh allows events from one application to be dynamically routed to any other application.
+The EventMesh(incubating) allows events from one application to be dynamically routed to any other application.
 General functions of the eventmesh:
 
 * Event driven;
 * Event governance;
-* Dynamic routing;
+* Event routing;
+* Flow control;
+* Load balance;
+* Pluggable;
 * Cloud native；
-* Flow control；
-* Load balance
+* Gateway
 
 **Support connecting event store:**
 
@@ -66,7 +68,7 @@ The protocol of eventmesh is easier and convenient, you can read more [here](doc
 |         |Support MQTT protocol|
 
 ## Quick Start
-1. Build and deploy event-store(RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
+1. Build and deploy event-store(default RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
 2. Build and deploy eventmesh-runtime, see instruction ['eventmesh-runtime quickstart'](docs/en/instructions/eventmesh-runtime-quickstart.md).
 3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
 
