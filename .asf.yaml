@@ -30,7 +30,7 @@ github:
     - serverless-workflow
     - esb
     - message-bus
-    - CQRS
+    - cqrs
   enabled_merge_buttons:
     squash:  true
     merge:   false
