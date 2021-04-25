@@ -25,6 +25,7 @@ github:
     - event-streaming
     - event-sourcing
     - event-governance
+    - event-routing
     - cloud-native
     - serverless
     - serverless-workflow
