@@ -27,7 +27,7 @@ github:
     - event-governance
     - cloud-native
     - serverless
-    - workflow-serverless
+    - serverless-workflow
     - esb
     - message-bus
     - CQRS
