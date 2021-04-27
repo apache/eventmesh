@@ -61,12 +61,24 @@ List apache_common = [
         "org.apache.commons:commons-text:1.9"
 ]
 
+List netty = [
+        "io.netty:netty-all:4.1.49.Final"
+]
+
+
+List open_message = [
+        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
+]
+
+List httpclient = [
+        "org.apache.httpcomponents:httpclient:4.5.2"
+]
 
 dependencies {
-    compileOnly project(":eventmesh-connector-api")
-    implementation apache_common, metrics, log4j2, sl4j
-    testCompileOnly project(":eventmesh-connector-api")
-    testImplementation apache_common, metrics, log4j2, sl4j, junit
+    compileOnly project(":eventmesh-connector-api"),project(":eventmesh-common")
+    implementation apache_common, metrics, log4j2, sl4j,netty,open_message,httpclient
+    testCompileOnly project(":eventmesh-connector-api"),project(":eventmesh-common")
+    testImplementation apache_common, metrics, log4j2, sl4j, junit,netty,open_message,httpclient
 }
 
 clean.doFirst {

@@ -25,6 +25,7 @@ sourceCompatibility = 1.8
 configurations {
     implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
 }
+
 repositories {
     mavenLocal()
     maven {
@@ -73,11 +74,20 @@ List metrics = [
         "io.dropwizard.metrics:metrics-json:4.1.0"
 ]
 
+List open_message = [
+        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
+]
+
+List netty = [
+        "io.netty:netty-all:4.1.49.Final"
+]
+
+
 dependencies {
-    compileOnly project(":eventmesh-connector-api")
-    testCompileOnly project(":eventmesh-connector-api")
-    implementation rocketmq, metrics, log4j2, sl4j
-    testImplementation rocketmq, metrics, log4j2, sl4j, junit
+    compileOnly project(":eventmesh-connector-api"),project(":eventmesh-common")
+    testCompileOnly project(":eventmesh-connector-api"),project(":eventmesh-common")
+    implementation rocketmq, metrics, log4j2, sl4j,open_message,netty
+    testImplementation rocketmq, metrics, log4j2, sl4j, junit,open_message,netty
 }
 
 clean.doFirst {

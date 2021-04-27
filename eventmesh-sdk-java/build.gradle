@@ -62,9 +62,19 @@ List sl4j = [
         "org.slf4j:slf4j-api:1.7.30"
 ]
 
+List httpclient = [
+        "org.apache.httpcomponents:httpclient:4.5.2"
+]
+
+
+List netty = [
+        "io.netty:netty-all:4.1.49.Final"
+]
+
+
 dependencies {
-    implementation log4j2, sl4j
-    testImplementation log4j2, sl4j
+    implementation log4j2, sl4j,httpclient,netty
+    testImplementation log4j2, sl4j,httpclient,netty
     compileOnly project(":eventmesh-common")
     testCompileOnly project(":eventmesh-common")
 

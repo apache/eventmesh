@@ -16,6 +16,7 @@
  */
 
 import java.util.concurrent.TimeUnit
+
 //import com.github.spotbugs.snom.SpotBugsTask
 
 buildscript {
@@ -92,7 +93,6 @@ task zip(type: Zip) {
         from 'dist'
     }
 }
-
 
 
 subprojects {
@@ -178,6 +178,33 @@ subprojects {
 //        }
 //    }
 
+//    sourceSets {
+//        main {
+//            java {
+//                srcDir 'src/main/java'
+//            }
+//
+//            resources {
+//                srcDir 'src/main/resources'
+//            }
+//
+//        }
+//
+//        test {
+//            java {
+//                srcDir 'src/test/java'
+//            }
+//
+//            resources {
+//                srcDir 'src/test/resources'
+//            }
+//
+//        }
+//
+//
+//    }
+
+
     spotbugs {
         toolVersion = '4.2.3'
         ignoreFailures = true
@@ -190,15 +217,16 @@ subprojects {
         reportsDir = file("$buildDir/reports/spotbugs")
         //includeFilter = file('spotbugs-include.xml')
         //excludeFilter = file('spotbugs-exclude.xml')
-        //onlyAnalyze = ['org.apache.eventmesh.*']
+        onlyAnalyze = ['org/apache/eventmesh/**']
         projectName = rootProject.name
         release = version
         //extraArgs = [ '-nested:false' ]
         //jvmArgs = [ '-Duser.language=zh' ]
         maxHeapSize = '256m'
 
-
+        getProject().addSourceDir(files(rootProject.sourceSets.main.java))
     }
+
 
 //    tasks.withType(com.github.spotbugs.SpotBugsTask) {
 //        sourceDirs = [sourceSets.main]
@@ -210,6 +238,7 @@ subprojects {
 
 
     spotbugsMain {
+
         reports {
             xml.enabled = false
             html {

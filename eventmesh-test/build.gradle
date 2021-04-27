@@ -68,14 +68,17 @@ List junit = [
 //List sl4j = [
 //        "org.slf4j:slf4j-api:1.7.30"
 //]
+List netty = [
+        "io.netty:netty-all:4.1.49.Final"
+]
 
 dependencies {
 //    compile log4j2, sl4j
 //    testCompile log4j2, sl4j
-    compileOnly project(":eventmesh-sdk-java"),project(":eventmesh-connector-api")
-    implementation spring_framework, apache_common
+    compileOnly project(":eventmesh-sdk-java"),project(":eventmesh-connector-api"),project(":eventmesh-common")
+    implementation spring_framework, apache_common,netty
     //Spring模块
-    testImplementation junit, apache_common
+    testImplementation junit, apache_common,netty
 
 }
 
