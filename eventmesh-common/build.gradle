@@ -16,18 +16,18 @@
  */
 
 apply plugin: 'java'
-apply plugin: "maven"
 apply plugin: "eclipse"
 apply plugin: "idea"
 
-if (project.findProperty("jdk") == "1.7") {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
-} else {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-    version = version + "-jdk8"
-}
+//if (project.findProperty("jdk") == "1.7") {
+//    sourceCompatibility = 1.7
+//    targetCompatibility = 1.7
+//    version = version + "-jdk7"
+//} else {
+//    sourceCompatibility = 1.8
+//    targetCompatibility = 1.8
+//    version = version + "-jdk8"
+//}
 
 if (project.findProperty("snapshot") instanceof String) {
     if (project.property("snapshot").toBoolean()) version = version + "-SNAPSHOT"
@@ -69,23 +69,25 @@ List netty = [
 ]
 
 dependencies {
-    compile apache_commons, httpclient, guava, netty, fastjson, jackson
-    testCompile apache_commons, httpclient, guava, netty, fastjson, jackson
+    implementation apache_commons, httpclient, guava, netty, fastjson, jackson
+    testImplementation apache_commons, httpclient, guava, netty, fastjson, jackson
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            snapshotRepository(url: 'Your target repo address') {
-                authentication(userName: 'Your user name', password: 'Your password')
-            }
-            repository(url: 'Your target repo address') {
-                authentication(userName: 'Your user name', password: 'Your password')
-            }
-        }
-    }
-}
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            snapshotRepository(url: 'Your target repo address') {
+//                authentication(userName: 'Your user name', password: 'Your password')
+//            }
+//            repository(url: 'Your target repo address') {
+//                authentication(userName: 'Your user name', password: 'Your password')
+//            }
+//        }
+//    }
+//}
 
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-}
+//tasks.withType(JavaCompile) {
+//    options.encoding = "UTF-8"
+//}
+
+

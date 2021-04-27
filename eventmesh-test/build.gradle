@@ -28,8 +28,10 @@ buildscript {
 
 //apply plugin: 'org.springframework.boot'
 //apply plugin: "io.spring.dependency-management"
+
+
 apply plugin: 'java'
-apply plugin: "maven"
+//apply plugin: "maven"
 apply plugin: "eclipse"
 apply plugin: "idea"
 
@@ -39,6 +41,7 @@ version '1.2.0-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
+    maven { url 'https://maven.aliyun.com/repository/public' }
     mavenCentral()
 }
 
@@ -69,9 +72,10 @@ List junit = [
 dependencies {
 //    compile log4j2, sl4j
 //    testCompile log4j2, sl4j
-    compile project(":eventmesh-sdk-java"), spring_framework, apache_common, project(":eventmesh-connector-api")
+    compileOnly project(":eventmesh-sdk-java"),project(":eventmesh-connector-api")
+    implementation spring_framework, apache_common
     //Spring模块
-    testCompile junit, apache_common
+    testImplementation junit, apache_common
 
 }
 

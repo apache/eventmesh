@@ -16,14 +16,14 @@
  */
 
 apply plugin: 'java'
-apply plugin: "maven"
+//apply plugin: "maven"
 apply plugin: "eclipse"
 apply plugin: "idea"
 
 sourceCompatibility = 1.8
 
 configurations {
-    compile.exclude group: 'ch.qos.logback', module: 'logback-classic'
+    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
 }
 repositories {
     mavenLocal()
@@ -74,10 +74,10 @@ List metrics = [
 ]
 
 dependencies {
-    compile project(":eventmesh-connector-api")
-    testCompile project(":eventmesh-connector-api")
-    compile rocketmq, metrics, log4j2, sl4j
-    testCompile rocketmq, metrics, log4j2, sl4j, junit
+    compileOnly project(":eventmesh-connector-api")
+    testCompileOnly project(":eventmesh-connector-api")
+    implementation rocketmq, metrics, log4j2, sl4j
+    testImplementation rocketmq, metrics, log4j2, sl4j, junit
 }
 
 clean.doFirst {

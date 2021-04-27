@@ -22,7 +22,7 @@
 
 
 apply plugin: 'java'
-apply plugin: "maven"
+//apply plugin: "maven"
 apply plugin: "eclipse"
 apply plugin: "idea"
 
@@ -63,10 +63,10 @@ List sl4j = [
 ]
 
 dependencies {
-    compile log4j2, sl4j
-    testCompile log4j2, sl4j
-    compile project(":eventmesh-common")
-    testCompile project(":eventmesh-common")
+    implementation log4j2, sl4j
+    testImplementation log4j2, sl4j
+    compileOnly project(":eventmesh-common")
+    testCompileOnly project(":eventmesh-common")
 
 //    //Spring依赖的第三方模块(2.1.6依赖的是3.8.1)
 //    compile("org.apache.commons:commons-lang3")
@@ -84,9 +84,15 @@ dependencies {
 //    }
 }
 
-configurations.all {
-    exclude group: "ch.qos.logback"
-}
+//configurations.all {
+//    compile.exclude group: "ch.qos.logback"
+//}
+
+//implementation ('org.activiti:activiti-json-converter:6.0.0'){
+//    exclude group:'org.activiti',module:'activiti-bpmn-model'
+//    exclude group:'org.springframework.security',module:'spring-security-config'
+//}
+
 
 //uploadArchives {
 //    repositories {

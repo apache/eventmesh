@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 apply plugin: 'java'
-apply plugin: "maven"
+//apply plugin: "maven"
 apply plugin: "eclipse"
 apply plugin: "idea"
 
@@ -63,8 +63,10 @@ List apache_common = [
 
 
 dependencies {
-    compile project(":eventmesh-connector-api"), apache_common, metrics, log4j2, sl4j
-    testCompile project(":eventmesh-connector-api"), apache_common, metrics, log4j2, sl4j, junit
+    compileOnly project(":eventmesh-connector-api")
+    implementation apache_common, metrics, log4j2, sl4j
+    testCompileOnly project(":eventmesh-connector-api")
+    testImplementation apache_common, metrics, log4j2, sl4j, junit
 }
 
 clean.doFirst {
@@ -95,7 +97,7 @@ task zip(type: Zip, dependsOn: ['clean', 'jar']) {
     }
 
     into('lib') {
-        from project.configurations.runtime
+        from project.configurations.implementation
         exclude '**/*.properties*'
         exclude '**/*testng*.jar'
         exclude '**/*powermock*.jar'
@@ -130,7 +132,7 @@ task tar(type: Tar, dependsOn: ['clean', 'jar']) {
     }
 
     into('lib') {
-        from project.configurations.runtime
+        from project.configurations.implementation
         exclude '**/*.properties*'
         exclude '**/*testng*.jar'
         exclude '**/*powermock*.jar'
@@ -146,15 +148,15 @@ task tar(type: Tar, dependsOn: ['clean', 'jar']) {
     }
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            snapshotRepository(url: 'Your target repo address') {
-                authentication(userName: 'Your user name', password: 'Your password')
-            }
-            repository(url: 'Your target repo address') {
-                authentication(userName: 'Your user name', password: 'Your password')
-            }
-        }
-    }
-}
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            snapshotRepository(url: 'Your target repo address') {
+//                authentication(userName: 'Your user name', password: 'Your password')
+//            }
+//            repository(url: 'Your target repo address') {
+//                authentication(userName: 'Your user name', password: 'Your password')
+//            }
+//        }
+//    }
+//}
