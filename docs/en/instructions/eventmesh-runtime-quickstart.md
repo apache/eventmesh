@@ -91,7 +91,7 @@ dependencies {
 
 **2.3.4 Run**
 
-running `com.webank.eventmesh.starter.StartUp` main method
+running `org.apache.eventmesh.starter.StartUp` main method
 
 ## 3 Run with Docker
 
