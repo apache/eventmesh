@@ -15,10 +15,10 @@
 // * limitations under the License.
 // */
 //
-//package org.apache.runtime.configuration;
+//package com.webank.runtime.configuration;
 //
 //import com.google.common.base.Preconditions;
-//import org.apache.runtime.util.EventMeshUtil;
+//import com.webank.runtime.util.EventMeshUtil;
 //import org.apache.commons.lang3.StringUtils;
 //
 //public class CommonConfiguration {
