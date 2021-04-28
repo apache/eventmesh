@@ -56,7 +56,7 @@ List open_message = [
 
 dependencies {
     compileOnly project(":eventmesh-connector-api"),project(":eventmesh-common")
-    testCompileOnly project(":eventmesh-connector-api"),project(":eventmesh-common")
+    testCompileOnly project(":eventmesh-common")
     implementation rocketmq, metrics,open_message
-    testImplementation rocketmq, metrics,open_message
+    testImplementation rocketmq, metrics,open_message,project(":eventmesh-connector-api")
 }
