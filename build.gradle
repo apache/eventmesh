@@ -32,9 +32,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.0"
-        //implementation "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.0"
-        //compileOnly 'com.github.spotbugs:spotbugs:4.0.0'
+        classpath "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.1"
     }
 }
 
@@ -45,6 +43,10 @@ allprojects {
     apply plugin: "project-reports"
     apply plugin: "maven-publish"
     apply plugin: "com.github.spotbugs"
+    apply plugin: "project-reports"
+    apply plugin: "jacoco"
+    apply plugin: "pmd"
+    apply plugin: "java-library"
 
     if (project.findProperty("jdk") == "1.7") {
         sourceCompatibility = 1.7
@@ -57,7 +59,6 @@ allprojects {
     }
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
-
 
     compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 
@@ -96,35 +97,42 @@ task zip(type: Zip) {
 
 
 subprojects {
-    apply plugin: "com.github.spotbugs-base"
-    apply plugin: "project-reports"
-    apply plugin: "jacoco"
-    apply plugin: "pmd"
 
+    List fastjson = [
+            "com.alibaba:fastjson:1.2.71"
+    ]
 
-    List junit = [
-            "junit:junit:4.12"
+    List jackson = [
+            'com.fasterxml.jackson.core:jackson-databind:2.11.0',
+            'com.fasterxml.jackson.core:jackson-core:2.11.0',
+            'com.fasterxml.jackson.core:jackson-annotations:2.11.0'
     ]
 
     List apache_commons = [
-            "org.apache.commons:commons-collections4:4.1",
-            "commons-beanutils:commons-beanutils:1.9.3",
             "org.apache.commons:commons-lang3:3.6",
-            "commons-codec:commons-codec:1.10"
-
+            "org.apache.commons:commons-collections4:4.1"
     ]
 
-    List log = [
-            "org.slf4j:slf4j-api:1.7.30"
+    List httpclient = [
+            "org.apache.httpcomponents:httpclient:4.5.2"
     ]
 
     List guava = [
             "com.google.guava:guava:29.0-jre"
     ]
 
-    List fastjson = [
-            "com.alibaba:fastjson:1.2.71"
+    List netty = [
+            "io.netty:netty-all:4.1.49.Final"
     ]
+
+    List junit = [
+            "junit:junit:4.12"
+    ]
+
+    List log = [
+            "org.slf4j:slf4j-api:1.7.30"
+    ]
+
 
     List common_io = [
             "commons-io:commons-io:2.4"
@@ -141,10 +149,26 @@ subprojects {
     ]
 
     dependencies {
-        implementation apache_commons, guava, log, fastjson, common_io
-        testImplementation apache_commons, guava, log, fastjson, common_io, junit, assertj, mock
+        implementation apache_commons, guava, log, fastjson, jackson, common_io, httpclient, netty
+        testImplementation apache_commons, guava, log, fastjson, jackson, common_io, junit, assertj, mock, httpclient, netty
         spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
         spotbugsPlugins 'com.mebigfatguy.fb-contrib:fb-contrib:7.4.7'
+    }
+
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java']
+        }
+
+        test {
+            java.srcDirs = ['src/test/java']
+        }
+    }
+
+    clean.doFirst {
+        delete 'build'
+        delete 'dist'
     }
 
     jacoco {
@@ -206,36 +230,25 @@ subprojects {
 
 
     spotbugs {
-        toolVersion = '4.2.3'
+        //toolVersion = '4.2.3'
         ignoreFailures = true
         showProgress = true
         showStackTraces = true
-        reportLevel = 'default'
+        //reportLevel = 'default'
         effort = 'default'
         //visitors = [ 'FindSqlInjection', 'SwitchFallthrough' ]
         //omitVisitors = [ 'FindNonShortCircuit' ]
         reportsDir = file("$buildDir/reports/spotbugs")
         //includeFilter = file('spotbugs-include.xml')
         //excludeFilter = file('spotbugs-exclude.xml')
-        onlyAnalyze = ['org/apache/eventmesh/**']
+        //onlyAnalyze = ['org/apache/eventmesh/**']
         projectName = rootProject.name
         release = version
-        //extraArgs = [ '-nested:false' ]
+        extraArgs = ['-nested:false']
         //jvmArgs = [ '-Duser.language=zh' ]
         maxHeapSize = '256m'
 
-        getProject().addSourceDir(files(rootProject.sourceSets.main.java))
     }
-
-
-//    tasks.withType(com.github.spotbugs.SpotBugsTask) {
-//        sourceDirs = [sourceSets.main]
-//        reports {
-//            xml.enabled = false
-//            html.enabled = true
-//        }
-//    }
-
 
     spotbugsMain {
 
@@ -260,12 +273,12 @@ subprojects {
         }
     }
 
-    tasks.withType(Pmd) {
-        reports {
-            xml.enabled = false
-            html.enabled = true
-        }
-    }
+//        tasks.withType(Pmd) {
+//            reports {
+//                xml.enabled = false
+//                html.enabled = true
+//            }
+//        }
 
 
     pmd {
@@ -362,7 +375,9 @@ subprojects {
     repositories {
         maven { url "https://maven.aliyun.com/repository/public" }
         mavenCentral()
+        jcenter()
     }
+
 
     configurations.all {
         resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS

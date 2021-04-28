@@ -21,60 +21,12 @@
 //}
 
 
-apply plugin: 'java'
-//apply plugin: "maven"
-apply plugin: "eclipse"
-apply plugin: "idea"
-
-
-if (project.findProperty("jdk") == "1.7") {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
-} else {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-    version = version + "-jdk8"
-}
-
-if (project.findProperty("snapshot") instanceof String) {
-    if (project.property("snapshot").toBoolean()) version = version + "-SNAPSHOT"
-}
-
-repositories {
-    mavenLocal()
-    maven {
-        url "https://maven.aliyun.com/repository/public"
-    }
-    mavenCentral()
-}
-
-ext['commons-pool2.version'] = '2.6.1'
-
-List log4j2 = [
-        "org.apache.logging.log4j:log4j-api:2.13.3",
-        "org.apache.logging.log4j:log4j-core:2.13.3",
-        "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
-        "org.apache.logging.log4j:log4j-web:2.13.3",
-        "com.lmax:disruptor:3.4.2"
-]
-
-List sl4j = [
-        "org.slf4j:slf4j-api:1.7.30"
-]
-
-List httpclient = [
-        "org.apache.httpcomponents:httpclient:4.5.2"
-]
-
-
-List netty = [
-        "io.netty:netty-all:4.1.49.Final"
-]
+//ext['commons-pool2.version'] = '2.6.1'
 
 
 dependencies {
-    implementation log4j2, sl4j,httpclient,netty
-    testImplementation log4j2, sl4j,httpclient,netty
+    //implementation log4j2, sl4j,httpclient,netty
+    //testImplementation log4j2, sl4j,httpclient,netty
     compileOnly project(":eventmesh-common")
     testCompileOnly project(":eventmesh-common")
 
@@ -117,26 +69,22 @@ dependencies {
 //    }
 //}
 
-task zip(type: Zip, dependsOn: ['clean', 'jar']) {
-    extension = 'zip'
-    archiveName = project.name + '_' + version + '.' + extension
-    destinationDir = new File(projectDir, 'dist')
-
-    into("/") {
-        from project.jar.getArchivePath()
-    }
-}
-
-task tar(type: Tar, dependsOn: ['clean', 'jar']) {
-    extension = 'tar.gz'
-    compression = Compression.GZIP
-    archiveName = project.name + '_' + version + '.' + extension
-    destinationDir = new File(projectDir, 'dist')
-    into("/") {
-        from project.jar.getArchivePath()
-    }
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-}
+//task zip(type: Zip, dependsOn: ['clean', 'jar']) {
+//    extension = 'zip'
+//    archiveName = project.name + '_' + version + '.' + extension
+//    destinationDir = new File(projectDir, 'dist')
+//
+//    into("/") {
+//        from project.jar.getArchivePath()
+//    }
+//}
+//
+//task tar(type: Tar, dependsOn: ['clean', 'jar']) {
+//    extension = 'tar.gz'
+//    compression = Compression.GZIP
+//    archiveName = project.name + '_' + version + '.' + extension
+//    destinationDir = new File(projectDir, 'dist')
+//    into("/") {
+//        from project.jar.getArchivePath()
+//    }
+//}
