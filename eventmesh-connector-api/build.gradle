@@ -15,55 +15,12 @@
  * limitations under the License.
  */
 
-apply plugin: 'java'
-apply plugin: "maven"
-apply plugin: "eclipse"
-apply plugin: "idea"
-
-if (project.findProperty("jdk") == "1.7") {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
-} else {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-    version = version + "-jdk8"
-}
-
-if (project.findProperty("snapshot") instanceof String) {
-    if (project.property("snapshot").toBoolean()) version = version + "-SNAPSHOT"
-}
-
-repositories {
-    mavenLocal()
-    maven {
-        url "https://maven.aliyun.com/repository/public"
-    }
-    mavenCentral()
-}
-
 List open_message = [
         "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 ]
 
 dependencies {
-    compile project(":eventmesh-common")
-    compile open_message
-    testCompile group: 'junit', name: 'junit', version: '4.12', open_message
+    implementation open_message,project(":eventmesh-common")
+    testImplementation open_message,project(":eventmesh-common")
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            snapshotRepository(url: 'Your target repo address') {
-                authentication(userName: 'Your user name', password: 'Your password')
-            }
-            repository(url: 'Your target repo address') {
-                authentication(userName: 'Your user name', password: 'Your password')
-            }
-        }
-    }
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-}

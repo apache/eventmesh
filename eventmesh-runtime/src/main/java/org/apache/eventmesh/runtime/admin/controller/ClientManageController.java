@@ -673,7 +673,7 @@ public class ClientManageController {
         if (clients.isEmpty()) {
             return "no session had been closed";
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (InetSocketAddress addr : clients) {
             sb.append(addr).append("|");
         }
