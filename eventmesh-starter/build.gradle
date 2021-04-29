@@ -14,17 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-plugins {
-    id 'java'
-}
-
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
-    compile project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
+    //testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
