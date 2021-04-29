@@ -27,10 +27,9 @@ List spring_framework = [
 dependencies {
 //    compile log4j2, sl4j
 //    testCompile log4j2, sl4j
-    compileOnly project(":eventmesh-sdk-java"),project(":eventmesh-connector-api"),project(":eventmesh-common")
-    implementation spring_framework
+    implementation project(":eventmesh-sdk-java"),project(":eventmesh-connector-api"),project(":eventmesh-common"),spring_framework
     //Spring模块
-    testImplementation spring_framework
+    testImplementation project(":eventmesh-sdk-java"),project(":eventmesh-connector-api"),project(":eventmesh-common"),spring_framework
 
 }
 
@@ -41,7 +40,7 @@ configurations.all {
 
 task testdist(dependsOn: ['jar']) {
 
-    doFirst {
+    doFirst {BasicTest
         new File(projectDir.getPath(), 'dist/bin').mkdirs()
         new File(projectDir.getPath(), 'dist/apps').mkdirs()
         new File(projectDir.getPath(), 'dist/conf').mkdirs()

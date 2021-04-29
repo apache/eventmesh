@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-apply plugin: 'java'
-//apply plugin: "maven"
-apply plugin: "eclipse"
-apply plugin: "idea"
-
-sourceCompatibility = 1.8
+//apply plugin: 'java'
+////apply plugin: "maven"
+//apply plugin: "eclipse"
+//apply plugin: "idea"
+//
+//sourceCompatibility = 1.8
 
 configurations {
     implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
@@ -55,8 +55,6 @@ List open_message = [
 ]
 
 dependencies {
-    compileOnly project(":eventmesh-connector-api"),project(":eventmesh-common")
-    testCompileOnly project(":eventmesh-common")
-    implementation rocketmq, metrics,open_message
-    testImplementation rocketmq, metrics,open_message,project(":eventmesh-connector-api")
+    implementation rocketmq, metrics,open_message,project(":eventmesh-connector-api"),project(":eventmesh-common")
+    testImplementation rocketmq, metrics,open_message,project(":eventmesh-connector-api"),project(":eventmesh-common")
 }

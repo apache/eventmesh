@@ -26,9 +26,9 @@
 
 dependencies {
     //implementation log4j2, sl4j,httpclient,netty
-    //testImplementation log4j2, sl4j,httpclient,netty
-    compileOnly project(":eventmesh-common")
-    testCompileOnly project(":eventmesh-common")
+    // log4j2, sl4j,httpclient,netty
+    implementation project(":eventmesh-common")
+    testImplementation project(":eventmesh-common")
 
 //    //Spring依赖的第三方模块(2.1.6依赖的是3.8.1)
 //    compile("org.apache.commons:commons-lang3")

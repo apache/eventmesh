@@ -134,8 +134,9 @@ subprojects {
     ]
 
 
-    List common_io = [
-            "commons-io:commons-io:2.4"
+    List common = [
+            "commons-io:commons-io:2.4",
+            "org.apache.commons:commons-text:1.9"
     ]
 
     List assertj = [
@@ -149,8 +150,8 @@ subprojects {
     ]
 
     dependencies {
-        implementation apache_commons, guava, log, fastjson, jackson, common_io, httpclient, netty
-        testImplementation apache_commons, guava, log, fastjson, jackson, common_io, junit, assertj, mock, httpclient, netty
+        implementation apache_commons, guava, log, fastjson, jackson, common, httpclient, netty
+        testImplementation apache_commons, guava, log, fastjson, jackson, common, junit, assertj, mock, httpclient, netty
         spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
         spotbugsPlugins 'com.mebigfatguy.fb-contrib:fb-contrib:7.4.7'
     }

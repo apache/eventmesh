@@ -32,7 +32,7 @@ public class RemotingHelper {
     public static Logger logger = LoggerFactory.getLogger(RemotingHelper.class);
 
     public static String exceptionSimpleDesc(final Throwable e) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (e != null) {
             sb.append(e.toString());
 

@@ -32,10 +32,8 @@ List open_message = [
 
 
 dependencies {
-    compileOnly project(":eventmesh-connector-api"),project(":eventmesh-common")
-    implementation  metrics, open_message
-    testCompileOnly project(":eventmesh-connector-api"),project(":eventmesh-common")
-    testImplementation metrics,open_message
+    implementation  metrics, open_message,project(":eventmesh-connector-api"),project(":eventmesh-common")
+    testImplementation metrics,open_message,project(":eventmesh-common"),project(":eventmesh-connector-api")
 }
 
 
