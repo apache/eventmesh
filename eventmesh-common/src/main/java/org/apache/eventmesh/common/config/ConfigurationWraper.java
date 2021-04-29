@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.Charsets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.slf4j.Logger;
@@ -64,7 +65,7 @@ public class ConfigurationWraper {
         try {
             logger.info("loading config: {}", file);
             properties.load(new BufferedReader(new FileReader(
-                    new File(file))));
+                    file, Charsets.UTF_8)));
         } catch (IOException e) {
             logger.error("loading properties [{}] error", file, e);
         }
