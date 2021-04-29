@@ -12,7 +12,7 @@ Gradle at least 5.6, eg 5.6.*
 
 ### 1.2 download sources
 
-download source code from [https://github.com/WeBankFinTech/EventMesh](https://github.com/WeBankFinTech/EventMesh)  
+download source code from [https://github.com/apache/incubator-eventmesh](https://github.com/apache/incubator-eventmesh)  
 You will get **EventMesh-master.zip**
 
 ### 1.3 build sources
