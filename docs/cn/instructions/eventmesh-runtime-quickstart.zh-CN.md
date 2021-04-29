@@ -12,7 +12,7 @@ Gradle至少为5.6, 推荐 5.6.*
 
 ### 1.2 下载源码
 
-[https://github.com/WeBankFinTech/EventMesh](https://github.com/WeBankFinTech/EventMesh)
+[https://github.com/apache/incubator-eventmesh](https://github.com/apache/incubator-eventmesh)
 您将获得**EventMesh-master.zip**
 
 ### 1.3 构建源码
@@ -134,8 +134,8 @@ vi eventMesh.properties
 vi rocketmq-client.properties
 ```
 
-这两个文件内容可以参考 [eventMesh.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/eventMesh.properties)
-和 [rocketmq-client.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/rocketmq-client.properties)
+这两个文件内容可以参考 [eventMesh.properties](https://github.com/apache/incubator-eventmesh/blob/develop/eventmesh-runtime/conf/eventMesh.properties)
+和 [rocketmq-client.properties](https://github.com/apache/incubator-eventmesh/blob/develop/eventmesh-runtime/conf/rocketmq-client.properties)
 
 ### 3.3 运行
 
@@ -191,7 +191,7 @@ docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs
 Windows
 
 -
-Windows系统下运行示例可以参考[这里](https://github.com/WeBankFinTech/EventMesh/blob/develop/docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
+Windows系统下运行示例可以参考[这里](https://github.com/apache/incubator-eventmesh/blob/develop/docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
 
 Linux
 
