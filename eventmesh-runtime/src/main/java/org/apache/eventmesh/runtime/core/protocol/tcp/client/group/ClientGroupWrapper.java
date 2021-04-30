@@ -733,7 +733,7 @@ public class ClientGroupWrapper {
         return sysId;
     }
 
-    private String pushMsgToEventMesh(Message msg, String ip, int port) {
+    private String pushMsgToEventMesh(Message msg, String ip, int port) throws Exception {
         StringBuilder targetUrl = new StringBuilder();
         targetUrl.append("http://").append(ip).append(":").append(port).append("/eventMesh/msg/push");
         HttpTinyClient.HttpResult result = null;
@@ -753,14 +753,16 @@ public class ClientGroupWrapper {
                     "UTF-8",
                     3000);
         } catch (Exception e) {
-            throw new RuntimeException("httpPost " + targetUrl + " is fail," + e);
+            logger.error("httpPost " + targetUrl + " is fail,", e);
+            //throw new RuntimeException("httpPost " + targetUrl + " is fail," , e);
+            throw e;
         }
 
         if (200 == result.code && result.content != null) {
             return result.content;
 
         } else {
-            throw new RuntimeException("httpPost targetUrl[" + targetUrl + "] is not OK when getContentThroughHttp, httpResult: " + result + ".");
+            throw new Exception("httpPost targetUrl[" + targetUrl + "] is not OK when getContentThroughHttp, httpResult: " + result + ".");
         }
     }
 
@@ -768,7 +770,7 @@ public class ClientGroupWrapper {
         return persistentMsgConsumer;
     }
 
-    private void sendMsgBackToBroker(Message msg, String bizSeqNo) {
+    private void sendMsgBackToBroker(Message msg, String bizSeqNo) throws Exception {
         try {
             String topic = msg.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
             logger.warn("send msg back to broker, bizSeqno:{}, topic:{}", bizSeqNo, topic);
@@ -792,6 +794,7 @@ public class ClientGroupWrapper {
             eventMeshTcpMonitor.getEventMesh2mqMsgNum().incrementAndGet();
         } catch (Exception e) {
             logger.warn("try send msg back to broker failed");
+            throw e;
         }
     }
 }
