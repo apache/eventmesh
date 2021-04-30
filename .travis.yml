@@ -5,10 +5,10 @@ jdk:
   - oraclejdk8
 
 script:
-  - travis_retry gradle check
+  - travis_retry ./gradlew clean build
 
-after_success:
-  - gradle clean test jacocoAllTestReport coveralls
+#after_success:
+#  - ./gradlew clean
 
 env:
   global:
