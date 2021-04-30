@@ -374,9 +374,19 @@ subprojects {
         archives packageSources
     }
 
+    if (!Boolean.valueOf(signEnabled)) {
+        tasks.whenTaskAdded {task ->
+            if(task.name.contains("sign")) {
+                task.enabled = false
+            }
+        }
+    }
+
     signing {
         sign packageJavadoc, packageSources, jar
     }
+
+
 
     repositories {
         maven { url "https://maven.aliyun.com/repository/public" }
