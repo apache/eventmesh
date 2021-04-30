@@ -23,4 +23,3 @@ dependencies {
     implementation open_message,project(":eventmesh-common")
     testImplementation open_message,project(":eventmesh-common")
 }
-

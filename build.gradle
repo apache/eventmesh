@@ -47,6 +47,7 @@ allprojects {
     apply plugin: "jacoco"
     apply plugin: "pmd"
     apply plugin: "java-library"
+    apply plugin: 'signing'
 
     if (project.findProperty("jdk") == "1.7") {
         sourceCompatibility = 1.7
@@ -69,7 +70,8 @@ allprojects {
         delete 'out'
     }
 
-    if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot")))) {
+    if ((project.findProperty("snapshot") instanceof String) &&
+            (Boolean.valueOf(project.property("snapshot")))) {
         version = version + "-SNAPSHOT"
     }
 
@@ -373,10 +375,24 @@ subprojects {
         archives packageSources
     }
 
+    if (!Boolean.valueOf(signEnabled)) {
+        tasks.whenTaskAdded {task ->
+            if(task.name.contains("sign")) {
+                task.enabled = false
+            }
+        }
+    }
+
+    signing {
+        sign packageJavadoc, packageSources, jar
+    }
+
+
+
     repositories {
         maven { url "https://maven.aliyun.com/repository/public" }
         mavenCentral()
-        jcenter()
+        mavenLocal()
     }
 
 
@@ -386,24 +402,55 @@ subprojects {
     }
 
 
-    subprojects {
-        publishing {
-            publications {
-                mavenJava(MavenPublication) {
-                    from components.java
-                    artifactId = jar.archiveBaseName
-                }
-            }
-        }
-
-        repositories {
-            maven {
-                def releasesRepoUrl = layout.buildDirectory.dir('repos/releases')
-                def snapshotsRepoUrl = layout.buildDirectory.dir('repos/snapshots')
-                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-            }
-        }
-    }
+//    uploadArchives {
+//        repositories {
+//            mavenDeployer {
+//                beforeDeployment {
+//                    MavenDeployment deployment -> signing.signPom(deployment)
+//                }
+//                // 指定上传的路径
+//                def releaseRepo = 'https://repository.apache.org/content/repositories/releases/'
+//                def snapshotsRepo = 'https://repository.apache.org/content/repositories/snapshots/'
+//                repository(url: releaseRepo) {
+//                    authentication(userName: apacheUserName, password: apachePassWord)
+//                }
+//
+//                snapshotRepository(url: snapshotsRepo) {
+//                    authentication(userName: apacheUserName, password: apachePassWord)
+//                }
+//
+//
+//                pom.project {
+//                    name 'Apache EventMesh'
+//                    packaging 'jar'
+//                    // optionally artifactId can be defined here
+//                    description 'Apache EventMesh'
+//                    url 'https://github.com/apache/incubator-eventmesh'
+//
+//                    scm {
+//                        connection 'scm:git:git@github.com:apache/incubator-eventmesh.git'
+//                        developerConnection 'scm:git:git@github.com:apache/incubator-eventmesh.git'
+//                        url 'https://github.com/apache/incubator-eventmesh'
+//                    }
+//
+//                    licenses {
+//                        license {
+//                            name 'The Apache License, Version 2.0'
+//                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//                        }
+//                    }
+//
+//                    developers {
+//                        developer {
+//                            id 'Apache EventMesh(incubating)'
+//                            name 'Apache EventMesh(incubating) of ASF'
+//                            url 'https://eventmesh.apache.org/'
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
 }
 
