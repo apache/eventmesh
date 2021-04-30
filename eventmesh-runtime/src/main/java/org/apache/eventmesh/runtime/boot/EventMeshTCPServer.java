@@ -64,13 +64,53 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     private GlobalTrafficShapingHandler globalTrafficShapingHandler;
 
-    public static ScheduledExecutorService scheduler;
+    private ScheduledExecutorService scheduler;
 
-    public static ExecutorService taskHandleExecutorService;
+    private ExecutorService taskHandleExecutorService;
 
-    public ScheduledFuture<?> tcpRegisterTask;
+    public void setClientSessionGroupMapping(ClientSessionGroupMapping clientSessionGroupMapping) {
+        this.clientSessionGroupMapping = clientSessionGroupMapping;
+    }
 
-    public RateLimiter rateLimiter;
+    public ClientManageController getClientManageController() {
+        return clientManageController;
+    }
+
+    public void setClientManageController(ClientManageController clientManageController) {
+        this.clientManageController = clientManageController;
+    }
+
+    public ScheduledExecutorService getScheduler() {
+        return scheduler;
+    }
+
+    public void setScheduler(ScheduledExecutorService scheduler) {
+        this.scheduler = scheduler;
+    }
+
+    public ExecutorService getTaskHandleExecutorService() {
+        return taskHandleExecutorService;
+    }
+
+    public void setTaskHandleExecutorService(ExecutorService taskHandleExecutorService) {
+        this.taskHandleExecutorService = taskHandleExecutorService;
+    }
+
+    public RateLimiter getRateLimiter() {
+        return rateLimiter;
+    }
+
+    public void setRateLimiter(RateLimiter rateLimiter) {
+        this.rateLimiter = rateLimiter;
+    }
+
+    private ScheduledFuture<?> tcpRegisterTask;
+
+    private RateLimiter rateLimiter;
+
+    private EventMeshTcpMessageDispatcher eventMeshTcpMessageDispatcher = new EventMeshTcpMessageDispatcher(EventMeshTCPServer.this);
+    private EventMeshTcpExceptionHandler eventMeshTcpExceptionHandler = new EventMeshTcpExceptionHandler(EventMeshTCPServer.this);
+
 
     public EventMeshTCPServer(EventMeshServer eventMeshServer,
                               EventMeshTCPConfiguration eventMeshTCPConfiguration) {
@@ -107,8 +147,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                                     .addLast(workerGroup, new IdleStateHandler(eventMeshTCPConfiguration.eventMeshTcpIdleReadSeconds,
                                                     eventMeshTCPConfiguration.eventMeshTcpIdleWriteSeconds,
                                                     eventMeshTCPConfiguration.eventMeshTcpIdleAllSeconds),
-                                            new EventMeshTcpMessageDispatcher(EventMeshTCPServer.this),
-                                            new EventMeshTcpExceptionHandler(EventMeshTCPServer.this)
+                                            eventMeshTcpMessageDispatcher,
+                                            eventMeshTcpExceptionHandler
                                     );
                         }
                     });

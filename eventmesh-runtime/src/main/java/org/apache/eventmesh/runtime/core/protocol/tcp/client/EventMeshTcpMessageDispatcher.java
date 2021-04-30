@@ -59,7 +59,7 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
             if (cmd.equals(Command.HELLO_REQUEST)) {
                 messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                 task = new HelloTask(pkg, ctx, startTime, eventMeshTCPServer);
-                EventMeshTCPServer.taskHandleExecutorService.submit(task);
+                eventMeshTCPServer.getTaskHandleExecutorService().submit(task);
                 return;
             }
 
@@ -140,6 +140,6 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
             default:
                 throw new Exception("unknown cmd");
         }
-        EventMeshTCPServer.taskHandleExecutorService.submit(task);
+        eventMeshTCPServer.getTaskHandleExecutorService().submit(task);
     }
 }

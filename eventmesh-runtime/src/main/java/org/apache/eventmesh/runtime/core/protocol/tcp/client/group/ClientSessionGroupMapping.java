@@ -41,6 +41,7 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.DownstreamDispatchStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.FreePriorityDispatchStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
@@ -178,6 +179,13 @@ public class ClientSessionGroupMapping {
         }
     }
 
+    private ClientGroupWrapper constructClientGroupWrapper(String sysId, String dcn,
+                                                           EventMeshTCPServer eventMeshTCPServer,
+                                                           DownstreamDispatchStrategy downstreamDispatchStrategy) {
+        return new ClientGroupWrapper(sysId, dcn
+                , eventMeshTCPServer, downstreamDispatchStrategy);
+    }
+
     private void initClientGroupWrapper(UserAgent user, Session session) throws Exception {
         final String clientGroup = EventMeshUtil.buildClientGroup(user.getSubsystem(), user.getDcn());
         if (!lockMap.containsKey(clientGroup)) {
@@ -188,7 +196,7 @@ public class ClientSessionGroupMapping {
         }
         synchronized (lockMap.get(clientGroup)) {
             if (!clientGroupMap.containsKey(clientGroup)) {
-                ClientGroupWrapper cgw = new ClientGroupWrapper(user.getSubsystem(), user.getDcn()
+                ClientGroupWrapper cgw = constructClientGroupWrapper(user.getSubsystem(), user.getDcn()
                         , eventMeshTCPServer, new FreePriorityDispatchStrategy());
                 clientGroupMap.put(clientGroup, cgw);
                 logger.info("create new ClientGroupWrapper,group:{}", clientGroup);
@@ -344,7 +352,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void initSessionCleaner() {
-        EventMeshTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
+        eventMeshTCPServer.getScheduler().scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 Iterator<Session> sessionIterator = sessionTable.values().iterator();
@@ -364,7 +372,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void initSessionAckContextCleaner() {
-        eventMeshTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
+        eventMeshTCPServer.getScheduler().scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 Iterator<Session> sessionIterator = sessionTable.values().iterator();
@@ -387,7 +395,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void initDownStreamMsgContextCleaner() {
-        EventMeshTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
+        eventMeshTCPServer.getScheduler().scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 Iterator<ClientGroupWrapper> cgwIterator = clientGroupMap.values().iterator();
@@ -425,7 +433,7 @@ public class ClientSessionGroupMapping {
         logger.info("begin to close sessions gracefully");
         sessionTable.values().parallelStream().forEach(itr -> {
             try {
-                EventMeshTcp2Client.serverGoodby2Client(itr, this);
+                EventMeshTcp2Client.serverGoodby2Client(this.eventMeshTCPServer,itr, this);
             } catch (Exception e) {
                 logger.error("say goodbye to session error! {}", itr, e);
             }
