@@ -73,19 +73,6 @@ dependencies {
     testCompile apache_commons, httpclient, guava, netty, fastjson, jackson
 }
 
-//uploadArchives {
-//    repositories {
-//        mavenDeployer {
-//            snapshotRepository(url: 'Your target repo address') {
-//                authentication(userName: 'Your user name', password: 'Your password')
-//            }
-//            repository(url: 'Your target repo address') {
-//                authentication(userName: 'Your user name', password: 'Your password')
-//            }
-//        }
-//    }
-//}
-
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
 }
