@@ -64,11 +64,7 @@
             <AppenderRef ref="console"/>
         </AsyncLogger>
 
-        <AsyncLogger name="com.webank.runtime" level="debug" additivity="false" includeLocation="true">
-            <AppenderRef ref="console"/>
-        </AsyncLogger>
-
-        <AsyncLogger name="com.webank.defibus" level="debug" additivity="false" includeLocation="true">
+        <AsyncLogger name="org.apache.eventmesh.runtime" level="debug" additivity="false" includeLocation="true">
             <AppenderRef ref="console"/>
         </AsyncLogger>
 
