@@ -192,9 +192,9 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             }
         };
 
-        LiteMessage liteMessage = new LiteMessage(replyMessageRequestBody.getBizSeqNo(),
-                replyMessageRequestBody.getUniqueId(), replyMessageRequestBody.getOrigTopic(),
-                replyMessageRequestBody.getContent());
+//        LiteMessage liteMessage = new LiteMessage(replyMessageRequestBody.getBizSeqNo(),
+//                replyMessageRequestBody.getUniqueId(), replyMessageRequestBody.getOrigTopic(),
+//                replyMessageRequestBody.getContent());
 
         try {
             sendMessageContext.getMsg().getUserProperties().put(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));

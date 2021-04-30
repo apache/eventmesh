@@ -67,7 +67,7 @@ public class MessageTransferTask extends AbstractTask {
                 throw new Exception("eventMeshMessage is null");
             }
 
-            if (!cmd.equals(RESPONSE_TO_SERVER) && !eventMeshTCPServer.rateLimiter.tryAcquire(TRY_PERMIT_TIME_OUT, TimeUnit.MILLISECONDS)) {
+            if (!cmd.equals(RESPONSE_TO_SERVER) && !eventMeshTCPServer.getRateLimiter().tryAcquire(TRY_PERMIT_TIME_OUT, TimeUnit.MILLISECONDS)) {
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), "Tps overload, global flow control", pkg.getHeader().getSeq()));
                 ctx.writeAndFlush(msg).addListener(
                         new ChannelFutureListener() {
@@ -77,7 +77,7 @@ public class MessageTransferTask extends AbstractTask {
                             }
                         }
                 );
-                logger.warn("======Tps overload, global flow control, rate:{}! PLEASE CHECK!========", eventMeshTCPServer.rateLimiter.getRate());
+                logger.warn("======Tps overload, global flow control, rate:{}! PLEASE CHECK!========", eventMeshTCPServer.getRateLimiter().getRate());
                 return;
             }
 
