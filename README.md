@@ -8,6 +8,8 @@
 ## What is EventMesh?
 EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
+![architecture1](docs/images/eventmesh-multi-runtime.png)
+
 **EventMesh Ecosystem:**
 
 ![architecture1](docs/images/eventmesh-define.png)

@@ -55,7 +55,7 @@ function is_java8 {
 #0(not running),  1(is running)
 #function is_proxyRunning {
 #        local _pid="$1"
-#        local pid=`ps ax | grep -i 'com.webank.runtime.boot.EventMeshStartup' |grep java | grep -v grep | awk '{print $1}'|grep $_pid`
+#        local pid=`ps ax | grep -i 'org.apache.eventmesh.runtime.boot.EventMeshStartup' |grep java | grep -v grep | awk '{print $1}'|grep $_pid`
 #        if [ -z "$pid" ] ; then
 #            return 0
 #        else
