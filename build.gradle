@@ -316,19 +316,18 @@ subprojects {
                 beforeDeployment {
                     MavenDeployment deployment -> signing.signPom(deployment)
                 }
-//                def releaseRepo = 'https://repository.apache.org/content/repositories/releases/'
-//                def snapshotsRepo = 'https://repository.apache.org/content/repositories/snapshots/'
-//                repository(url: releaseRepo) {
-//                    authentication(userName: apacheUserName, password: apachePassWord)
-//                }
-//
-//                snapshotRepository(url: snapshotsRepo) {
-//                    authentication(userName: apacheUserName, password: apachePassWord)
-//                }
                 // 指定上传的路径
-//                def localMavenRepo = 'file://' + new File(System.getProperty('user.home'), '.m2/repository').absolutePath
-                def localMavenRepo = 'file://D:/repo'
-                repository(url: localMavenRepo)
+                def releaseRepo = 'https://repository.apache.org/content/repositories/releases/'
+                def snapshotsRepo = 'https://repository.apache.org/content/repositories/snapshots/'
+                repository(url: releaseRepo) {
+                    authentication(userName: apacheUserName, password: apachePassWord)
+                }
+
+                snapshotRepository(url: snapshotsRepo) {
+                    authentication(userName: apacheUserName, password: apachePassWord)
+                }
+
+
                 pom.project {
                     name 'Apache EventMesh'
                     packaging 'jar'
