@@ -29,11 +29,6 @@ repositories {
     mavenCentral()
 }
 
-//List defibus = [
-//    "com.webank.defibus:defibus-client:$defibus_version",
-//    "com.webank.defibus:defibus-common:$defibus_version"
-//]
-
 List junit = [
         "junit:junit:4.12"
 ]
@@ -146,15 +141,15 @@ task tar(type: Tar, dependsOn: ['clean', 'jar']) {
     }
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            snapshotRepository(url: 'Your target repo address') {
-                authentication(userName: 'Your user name', password: 'Your password')
-            }
-            repository(url: 'Your target repo address') {
-                authentication(userName: 'Your user name', password: 'Your password')
-            }
-        }
-    }
-}
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            snapshotRepository(url: 'Your target repo address') {
+//                authentication(userName: 'Your user name', password: 'Your password')
+//            }
+//            repository(url: 'Your target repo address') {
+//                authentication(userName: 'Your user name', password: 'Your password')
+//            }
+//        }
+//    }
+//}
