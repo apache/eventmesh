@@ -41,6 +41,7 @@ allprojects {
     apply plugin: "eclipse"
     apply plugin: "idea"
     apply plugin: "project-reports"
+    apply plugin: "maven"
     apply plugin: "maven-publish"
     apply plugin: "com.github.spotbugs"
     apply plugin: "project-reports"
@@ -49,15 +50,15 @@ allprojects {
     apply plugin: "java-library"
     apply plugin: 'signing'
 
-    if (project.findProperty("jdk") == "1.7") {
-        sourceCompatibility = 1.7
-        targetCompatibility = 1.7
-        version = version + "-jdk7"
-    } else {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-        version = version + "-jdk8"
-    }
+//    if (project.findProperty("jdk") == "1.7") {
+//        sourceCompatibility = 1.7
+//        targetCompatibility = 1.7
+//        version = version + "-jdk7"
+//    } else {
+//        sourceCompatibility = 1.8
+//        targetCompatibility = 1.8
+//        version = version + "-jdk8"
+//    }
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
@@ -294,10 +295,10 @@ subprojects {
     jar {
         manifest {
             attributes("Specification-Version": project.version,
-                    "Specification-Vendor": "WeBank, Inc.",
+                    "Specification-Vendor": "Apache",
                     "Specification-Title": project.name,
                     "Implementation-Version": project.version,
-                    "Implementation-Vendor": "WeBank, Inc.",
+                    "Implementation-Vendor": "Apache",
                     "Implementation-Title": project.name,
                     "Build-Jdk": project.findProperty("jdk")
             )
@@ -401,55 +402,55 @@ subprojects {
     }
 
 
-//    uploadArchives {
-//        repositories {
-//            mavenDeployer {
-//                beforeDeployment {
-//                    MavenDeployment deployment -> signing.signPom(deployment)
-//                }
-//                // 指定上传的路径
-//                def releaseRepo = 'https://repository.apache.org/content/repositories/releases/'
-//                def snapshotsRepo = 'https://repository.apache.org/content/repositories/snapshots/'
-//                repository(url: releaseRepo) {
-//                    authentication(userName: apacheUserName, password: apachePassWord)
-//                }
-//
-//                snapshotRepository(url: snapshotsRepo) {
-//                    authentication(userName: apacheUserName, password: apachePassWord)
-//                }
-//
-//
-//                pom.project {
-//                    name 'Apache EventMesh'
-//                    packaging 'jar'
-//                    // optionally artifactId can be defined here
-//                    description 'Apache EventMesh'
-//                    url 'https://github.com/apache/incubator-eventmesh'
-//
-//                    scm {
-//                        connection 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-//                        developerConnection 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-//                        url 'https://github.com/apache/incubator-eventmesh'
-//                    }
-//
-//                    licenses {
-//                        license {
-//                            name 'The Apache License, Version 2.0'
-//                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-//                        }
-//                    }
-//
-//                    developers {
-//                        developer {
-//                            id 'Apache EventMesh(incubating)'
-//                            name 'Apache EventMesh(incubating) of ASF'
-//                            url 'https://eventmesh.apache.org/'
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                beforeDeployment {
+                    MavenDeployment deployment -> signing.signPom(deployment)
+                }
+                // 指定上传的路径
+                def releaseRepo = 'https://repository.apache.org/content/repositories/releases/'
+                def snapshotsRepo = 'https://repository.apache.org/content/repositories/snapshots/'
+                repository(url: releaseRepo) {
+                    authentication(userName: apacheUserName, password: apachePassWord)
+                }
+
+                snapshotRepository(url: snapshotsRepo) {
+                    authentication(userName: apacheUserName, password: apachePassWord)
+                }
+
+
+                pom.project {
+                    name 'Apache EventMesh'
+                    packaging 'jar'
+                    // optionally artifactId can be defined here
+                    description 'Apache EventMesh'
+                    url 'https://github.com/apache/incubator-eventmesh'
+
+                    scm {
+                        connection 'scm:git:git@github.com:apache/incubator-eventmesh.git'
+                        developerConnection 'scm:git:git@github.com:apache/incubator-eventmesh.git'
+                        url 'https://github.com/apache/incubator-eventmesh'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'Apache EventMesh(incubating)'
+                            name 'Apache EventMesh(incubating) of ASF'
+                            url 'https://eventmesh.apache.org/'
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 }
 
