@@ -51,7 +51,7 @@ public class GoodbyeTask extends AbstractTask {
             msg.setHeader(new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.FAIL.getCode(), e.getStackTrace().toString(), pkg
                     .getHeader().getSeq()));
         } finally {
-            EventMeshTCPServer.scheduler.submit(new Runnable() {
+            this.eventMeshTCPServer.getScheduler().submit(new Runnable() {
                 @Override
                 public void run() {
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
@@ -59,6 +59,6 @@ public class GoodbyeTask extends AbstractTask {
             });
             //session.write2Client(msg);
         }
-        EventMeshTcp2Client.closeSessionIfTimeout(session, eventMeshTCPServer.getClientSessionGroupMapping());
+        EventMeshTcp2Client.closeSessionIfTimeout(this.eventMeshTCPServer,session, eventMeshTCPServer.getClientSessionGroupMapping());
     }
 }

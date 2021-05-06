@@ -80,7 +80,7 @@ public class EventMeshTcpMonitor {
     }
 
     public void start() throws Exception {
-        monitorTpsTask = eventMeshTCPServer.scheduler.scheduleAtFixedRate((new Runnable() {
+        monitorTpsTask = eventMeshTCPServer.getScheduler().scheduleAtFixedRate((new Runnable() {
             @Override
             public void run() {
                 int msgNum = client2eventMeshMsgNum.intValue();
@@ -132,7 +132,7 @@ public class EventMeshTcpMonitor {
             }
         }), delay, period, TimeUnit.MILLISECONDS);
 
-        monitorThreadPoolTask = eventMeshTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
+        monitorThreadPoolTask = eventMeshTCPServer.getScheduler().scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
 //                ThreadPoolHelper.printThreadPoolState();
