@@ -5,6 +5,7 @@
 
 ## 什么是Event Mesh？
 EventMesh是一个动态的云原生事件驱动架构基础设施，用于分离应用程序和后端中间件层，它支持广泛的用例，包括复杂的混合云、使用了不同技术栈的分布式架构。
+
 ![architecture1](docs/images/eventmesh-multi-runtime.png)
 
 **EventMesh生态:**
@@ -17,15 +18,6 @@ EventMesh是一个动态的云原生事件驱动架构基础设施，用于分�
 **EventMesh云原生结构：**
 
 ![architecture2](docs/images/eventmesh-panels.png)
-
-Event Mesh允许将来自一个应用程序的事件动态路由到任何其他应用程序.
-Event Mesh的一般功能:
-* 事件驱动;
-* 事件治理;
-* 动态路由;
-* 云原生;
-* 流控；
-* 负载均衡
 
 **支持连接的事件存储：**
 
