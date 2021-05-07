@@ -239,37 +239,4 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
     public boolean rejectRequest() {
         return false;
     }
-
-    /**
-     * notify ConsumerManager 组级别
-     */
-    private void notifyConsumerManager(String consumerGroup, ConsumerGroupConf latestConsumerGroupConfig,
-                                       ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping) throws Exception {
-        ConsumerGroupManager cgm = eventMeshHTTPServer.getConsumerManager().getConsumer(consumerGroup);
-        if (cgm == null) {
-            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW;
-            notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig;
-            eventMeshHTTPServer.getEventBus().post(notification);
-            return;
-        }
-
-        if (!latestConsumerGroupConfig.equals(cgm.getConsumerGroupConfig())) {
-            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.CHANGE;
-            notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig;
-            eventMeshHTTPServer.getEventBus().post(notification);
-            return;
-        }
-
-        if (latestConsumerGroupConfig == null) {
-            ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
-            notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.DELETE;
-            notification.consumerGroup = consumerGroup;
-            eventMeshHTTPServer.getEventBus().post(notification);
-        }
-        return;
-    }
 }

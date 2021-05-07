@@ -84,7 +84,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    public Logger httpServerLogger = LoggerFactory.getLogger(this.getClass());
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
@@ -158,15 +158,15 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new HttpsServerInitializer(SSLContextFactory.getSslContext())).childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
             try {
-                logger.info("HTTPServer[port={}] started......", this.port);
+                httpServerLogger.info("HTTPServer[port={}] started......", this.port);
                 ChannelFuture future = b.bind(this.port).sync();
                 future.channel().closeFuture().sync();
             } catch (Exception e) {
-                logger.error("HTTPServer start Err!", e);
+                httpServerLogger.error("HTTPServer start Err!", e);
                 try {
                     shutdown();
                 } catch (Exception e1) {
-                    logger.error("HTTPServer shutdown Err!", e);
+                    httpServerLogger.error("HTTPServer shutdown Err!", e);
                 }
                 return;
             }
@@ -290,7 +290,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
                 AsyncContext<HttpCommand> asyncContext = new AsyncContext<HttpCommand>(requestCommand, responseCommand, asyncContextCompleteHandler);
                 processEventMeshRequest(ctx, asyncContext);
             } catch (Exception ex) {
-                logger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
+                httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
             } finally {
                 try {
                     decoder.destroy();
@@ -330,7 +330,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
 
                         sendResponse(ctx, asyncContext.getResponse().httpResponse());
                     } catch (Exception e) {
-                        logger.error("process error", e);
+                        httpServerLogger.error("process error", e);
                     }
                 });
             } catch (RejectedExecutionException re) {
@@ -376,7 +376,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
             final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             int c = connections.incrementAndGet();
             if (c > 20000) {
-                logger.warn("client|http|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client(20000) connect " +
+                httpServerLogger.warn("client|http|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client(20000) connect " +
                         "this eventMesh server");
                 ctx.close();
                 return;
@@ -399,7 +399,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
                 IdleStateEvent event = (IdleStateEvent) evt;
                 if (event.state().equals(IdleState.ALL_IDLE)) {
                     final String remoteAddress = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                    logger.info("client|http|userEventTriggered|remoteAddress={}|msg={}", remoteAddress, evt.getClass()
+                    httpServerLogger.info("client|http|userEventTriggered|remoteAddress={}|msg={}", remoteAddress, evt.getClass()
                             .getName());
                     ctx.close();
                 }
