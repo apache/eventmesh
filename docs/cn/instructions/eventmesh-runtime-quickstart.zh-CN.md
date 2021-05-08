@@ -7,7 +7,7 @@
 ```
 建议使用64位操作系统，建议使用Linux / Unix；
 64位JDK 1.8+;
-Gradle至少为5.6, 推荐 5.6.*
+Gradle至少为7.0, 推荐 7.0.*
 ```
 
 ### 1.2 下载源码
@@ -19,7 +19,7 @@ Gradle至少为5.6, 推荐 5.6.*
 
 ```$ xslt
 unzip EventMesh-master.zip
-cd / *您的部署路径* /EventMesh-master/eventmesh-runtime
+cd / *您的部署路径* /EventMesh-master
 gradle clean dist tar -x test
 ```
 

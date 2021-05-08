@@ -324,7 +324,7 @@ subprojects {
             }
             copy {
                 into '../dist/lib'
-                from project.configurations.runtime
+                from project.configurations.runtimeClasspath
                 exclude '**/*.properties*'
                 exclude '**/*testng*.jar'
                 exclude '**/*powermock*.jar'
