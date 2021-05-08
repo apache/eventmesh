@@ -7,7 +7,7 @@
 ```
 64bit OS, Linux/Unix is recommended;
 64bit JDK 1.8+;
-Gradle at least 5.6, eg 5.6.*
+Gradle at least 7.0, eg 7.0.*
 ```
 
 ### 1.2 download sources
@@ -19,8 +19,8 @@ You will get **EventMesh-master.zip**
 
 ```$xslt
 unzip EventMesh-master.zip
-cd /*YOUR DEPLOY PATH*/EventMesh-master/eventmesh-runtime
-gradle clean tar -x test
+cd /*YOUR DEPLOY PATH*/EventMesh-master
+gradle clean dist tar -x test
 ```
 
 You will get **EventMesh_1.2.0.tar.gz** in directory /* YOUR DEPLOY PATH */EventMesh-master/build
