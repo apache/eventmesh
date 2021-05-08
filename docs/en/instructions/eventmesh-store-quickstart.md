@@ -16,7 +16,7 @@ You will get **DefiBus-master.zip**
 
 ### build sources
 
-The eventmesh-store takes DeFiBus for example at the follwing parts, because eventmesh depends on defibus as store layer
+The eventmesh-store takes DeFiBus for example at the following parts, because eventmesh depends on defibus as store layer
 by default, other implements such as Rocketmq etc. is coming soon.
 
 ```
