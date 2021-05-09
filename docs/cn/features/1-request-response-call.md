@@ -9,6 +9,7 @@
 </div>
 
 整个调用过程包含了两个消息的产生和消费过程。  
+
 **1.请求方产生请求消息，服务响应方消费这条请求消息**  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 请求方根据服务提供方的协议将请求内容设置到消息体中，并将消息发送到Broker上。服务响应方订阅相应的Topic，从Broker上获取到请求消息，并消费。
 
@@ -24,11 +25,11 @@ DeFiBus在每条请求消息中增加REPLY_TO属性来唯一标识每一个请�
 
 #### Links:
 
-* [架构介绍](../../../README.md)
-* [Request-Reply调用](docs/cn/features/1-request-response-call.md)
-* [灰度发布](docs/cn/features/2-dark-launch.md)
-* [熔断机制](docs/cn/features/3-circuit-break-mechanism.md)
-* [服务就近](docs/cn/features/4-invoke-service-nearby.md)
-* [应用多活](docs/cn/features/5-multi-active.md)
-* [动态扩缩队列](docs/cn/features/6-dynamic-adjust-queue.md)
-* [容错机制](docs/cn/features/8-fault-tolerant.md)
+* [架构介绍](../../../README.zh-CN.md)
+* [Request-Reply调用](../features/1-request-response-call.md)
+* [灰度发布](../features/2-dark-launch.md)
+* [熔断机制](../features/3-circuit-break-mechanism.md)
+* [服务就近](../features/4-invoke-service-nearby.md)
+* [应用多活](../features/5-multi-active.md)
+* [动态扩缩队列](../features/6-dynamic-adjust-queue.md)
+* [容错机制](../features/8-fault-tolerant.md)

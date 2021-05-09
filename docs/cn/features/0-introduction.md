@@ -1,8 +1,6 @@
 # DeFiBus
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-**
-DeFiBus=RPC+MQ，是基于开源消息中间件打造的安全可靠的分布式金融级消息总线。DeFibus不仅提供了RPC同步调用，还提供了MQ的异步事件通知、事件组播和广播等常用服务调用和消息模式，同时增加了应用多中心多活、服务就近、灰度发布等分布式场景下的高可用能力。在对于机器故障的容错能力方面的增强，也让消息总线的服务更加稳定可靠，为业务提供7x24的服务。**
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**DeFiBus=RPC+MQ，是基于开源消息中间件打造的安全可靠的分布式金融级消息总线。DeFibus不仅提供了RPC同步调用，还提供了MQ的异步事件通知、事件组播和广播等常用服务调用和消息模式，同时增加了应用多中心多活、服务就近、灰度发布等分布式场景下的高可用能力。在对于机器故障的容错能力方面的增强，也让消息总线的服务更加稳定可靠，为业务提供7x24的服务。**
 
 ### 整体架构
 
@@ -38,18 +36,19 @@ Topic按照如下格式来命名：
 [区域代码]-[服务唯一ID]
 ```
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 比如，余额查询服务的服务ID为20190001表示，部署在“A10”这个区域，那么该服务在A10区域的Topic就命名为“A10-20190001”。Topic的命名规则
 
 ### 特性列表:
 
-* [RPC调用：即“Request-Reply”模式，支持系统间的同步调用](docs/cn/features/1-request-response-call.md)
+* [RPC调用：即“Request-Reply”模式，支持系统间的同步调用](../features/1-request-response-call.md)
 * 消息发布/订阅：消息的发布和订阅
-* [灰度发布：服务级别的灰度发布](docs/cn/features/2-dark-launch.md)
-* [熔断机制：应用实例级别的熔断](docs/cn/features/3-circuit-break-mechanism.md)
-* [服务就近：就近进行服务的请求和响应，减少跨区调用](docs/cn/features/4-invoke-service-nearby.md)
-* [应用多活：应用多中心多活](docs/cn/features/5-multi-active.md)
-* [动态扩缩队列 ：自适应应用实例数量，动态调整队列个数](docs/cn/features/6-dynamic-adjust-queue.md)
-* [容错机制：故障和错误隔离](docs/cn/features/8-fault-tolerant.md)
+* [灰度发布：服务级别的灰度发布](../features/2-dark-launch.md)
+* [熔断机制：应用实例级别的熔断](../features/3-circuit-break-mechanism.md)
+* [服务就近：就近进行服务的请求和响应，减少跨区调用](../features/4-invoke-service-nearby.md)
+* [应用多活：应用多中心多活](../features/5-multi-active.md)
+* [动态扩缩队列 ：自适应应用实例数量，动态调整队列个数](../features/6-dynamic-adjust-queue.md)
+* [容错机制：故障和错误隔离](../features/8-fault-tolerant.md)
 * 服务路由和定位：动态路由及定位(后续开源)
 * 服务代理：HTTP及多语言的代理(后续开源)
 * 服务治理：服务元数据的管理(后续开源)

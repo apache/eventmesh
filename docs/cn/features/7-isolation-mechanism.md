@@ -16,11 +16,11 @@ DeFiBus提供异常队列的隔离机制，当往某个队列发送消息失败�
 
 #### Links:
 
-* [架构介绍](../../../README.md)
-* [Request-Reply调用](docs/cn/features/1-request-response-call.md)
-* [灰度发布](docs/cn/features/2-dark-launch.md)
-* [熔断机制](docs/cn/features/3-circuit-break-mechanism.md)
-* [服务就近](docs/cn/features/4-invoke-service-nearby.md)
-* [应用多活](docs/cn/features/5-multi-active.md)
-* [动态扩缩队列](docs/cn/features/6-dynamic-adjust-queue.md)
-* [容错机制](docs/cn/features/8-fault-tolerant.md)
+* [架构介绍](../../../README.zh-CN.md)
+* [Request-Reply调用](../features/1-request-response-call.md)
+* [灰度发布](../features/2-dark-launch.md)
+* [熔断机制](../features/3-circuit-break-mechanism.md)
+* [服务就近](../features/4-invoke-service-nearby.md)
+* [应用多活](../features/5-multi-active.md)
+* [动态扩缩队列](../features/6-dynamic-adjust-queue.md)
+* [容错机制](../features/8-fault-tolerant.md)
