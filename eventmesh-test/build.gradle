@@ -1,81 +1,50 @@
-buildscript {
-    repositories {
-        // 优先使用国内源
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        mavenCentral()
-    }
-//    dependencies {
-//        // 让spring-boot支持gradle
-//        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.6.RELEASE")
-//    }
-}
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-//apply plugin: 'org.springframework.boot'
-//apply plugin: "io.spring.dependency-management"
-apply plugin: 'java'
-apply plugin: "maven"
-apply plugin: "eclipse"
-apply plugin: "idea"
 
-group 'com.webank.eventmesh'
-version '1.2.0-SNAPSHOT'
+//group 'org.apache.eventmesh'
+//version '1.2.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-}
-
-List apache_common = [
-        "org.apache.commons:commons-text:1.9"
-]
 
 List spring_framework = [
         "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
 ]
 
-List junit = [
-        "junit:junit:4.12"
-]
-
-//List log4j2 = [
-//        "org.apache.logging.log4j:log4j-api:2.13.3",
-//        "org.apache.logging.log4j:log4j-core:2.13.3",
-//        "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
-//        "org.apache.logging.log4j:log4j-web:2.13.3",
-//        "com.lmax:disruptor:3.4.2"
-//]
-//
-//List sl4j = [
-//        "org.slf4j:slf4j-api:1.7.30"
-//]
-
 dependencies {
 //    compile log4j2, sl4j
 //    testCompile log4j2, sl4j
-    compile project(":eventmesh-sdk-java"),spring_framework,apache_common
+    implementation project(":eventmesh-sdk-java"),project(":eventmesh-connector-api"),project(":eventmesh-common"),spring_framework
     //Spring模块
-    testCompile junit,apache_common
+    testImplementation project(":eventmesh-sdk-java"),project(":eventmesh-connector-api"),project(":eventmesh-common"),spring_framework
 
 }
 
-configurations.all{
+configurations.all {
     exclude group: "ch.qos.logback"
     exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
 }
 
-clean.doFirst {
-    delete 'build'
-    delete 'dist'
-}
-
 task testdist(dependsOn: ['jar']) {
 
-    doFirst {
-        new File(projectDir.getPath() , 'dist/bin').mkdirs()
-        new File(projectDir.getPath() , 'dist/apps').mkdirs()
-        new File(projectDir.getPath() , 'dist/conf').mkdirs()
-        new File(projectDir.getPath() , 'dist/lib').mkdirs()
+    doFirst {BasicTest
+        new File(projectDir.getPath(), 'dist/bin').mkdirs()
+        new File(projectDir.getPath(), 'dist/apps').mkdirs()
+        new File(projectDir.getPath(), 'dist/conf').mkdirs()
+        new File(projectDir.getPath(), 'dist/lib').mkdirs()
     }
 
     doLast {

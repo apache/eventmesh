@@ -14,9 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.rocketmq.client.impl.consumer;
 
-import com.webank.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -35,9 +50,6 @@ import org.apache.rocketmq.common.protocol.body.CMResult;
 import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
-
-import java.util.*;
-import java.util.concurrent.*;
 
 public class ConsumeMessageConcurrentlyService implements ConsumeMessageService {
     private static final InternalLogger log = ClientLogger.getLog();
@@ -342,7 +354,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             log.debug("update offset, msg: {} {} {}", m.getTopic(), m.getQueueId(), m.getQueueOffset());
         }
         MessageQueue messageQueue = context.getMessageQueue();
-        ProcessQueue processQueue = ((EventMeshConsumeConcurrentlyContext)context).getProcessQueue();
+        ProcessQueue processQueue = ((EventMeshConsumeConcurrentlyContext) context).getProcessQueue();
         long offset = processQueue.removeMessage(msgs);
         if (offset >= 0) {
             log.debug("update offset={}", offset);
@@ -464,6 +476,8 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                     for (MessageExt msg : msgs) {
                         MessageAccessor.setConsumeStartTimeStamp(msg, String.valueOf(System.currentTimeMillis()));
                     }
+
+
                 }
                 status = listener.consumeMessage(Collections.unmodifiableList(msgs), context);
             } catch (Throwable e) {
