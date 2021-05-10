@@ -29,7 +29,7 @@
 7. 创建PR合并请求
 
 请遵循[Pull Requests模板](./.github/PULL_REQUEST_TEMPLATE.md).
-请确保PR对应有相应的问题. [GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
+请确保PR对应有相应的问题. [GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
 
 创建PR后，将为拉取请求分配一个或多个审阅者。 审阅者将审阅代码。
 
@@ -38,10 +38,10 @@
 ### 打开问题/ PR
 
 我们将使用Issues和Pull Requests作为跟踪器
-[GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
-[Pull Requests](https://github.com/WeBankFinTech/EventMesh/pulls)
+[GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
+[Pull Requests](https://github.com/apache/incubator-eventmesh/pulls)
 
-如果您在文档中发现拼写错误，在代码中发现错误，想要新功能或提出建议， 您可以提出问题[在GitHub上打开问题](https://github.com/WeBankFinTech/EventMesh/issues/new)
+如果您在文档中发现拼写错误，在代码中发现错误，想要新功能或提出建议， 您可以提出问题[在GitHub上打开问题](https://github.com/apache/incubator-eventmesh/issues/new)
 请按照问题模板中的准则消息进行操作。
 
 如果您想贡献，请遵循[贡献工作流程](#github-workflow)并创建一个新的拉取请求。 如果您的PR包含较大的更改，例如组件重构或新组件，请写详细文档 有关其设计和使用的信息。
