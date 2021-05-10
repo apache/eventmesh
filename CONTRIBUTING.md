@@ -32,7 +32,7 @@ Here are the workflow for contributors:
 7. Create a pull request
 
 Please follow [the pull request template](./.github/PULL_REQUEST_TEMPLATE.md). Please make sure the PR has a
-corresponding issue. [GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
+corresponding issue. [GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
 
 After creating a PR, one or more reviewers will be assigned to the pull request. The reviewers will review the code.
 
@@ -41,11 +41,11 @@ message should be clear and concise.
 
 ### Open an issue / PR
 
-We use [GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
-and [Pull Requests](https://github.com/WeBankFinTech/EventMesh/pulls) for trackers.
+We use [GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
+and [Pull Requests](https://github.com/apache/incubator-eventmesh/pulls) for trackers.
 
 If you find a typo in a document, find a bug in code, or want new features, or want to give suggestions, you
-can [open an issue on GitHub](https://github.com/WeBankFinTech/EventMesh/issues/new) to report it. Please follow the
+can [open an issue on GitHub](https://github.com/apache/incubator-eventmesh/issues/new) to report it. Please follow the
 guideline message in the issue template.
 
 If you want to contribute, please follow the [contribution workflow](#github-workflow) and create a new pull request. If

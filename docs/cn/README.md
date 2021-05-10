@@ -1,6 +1,6 @@
-[![Build Status](https://www.travis-ci.org/WeBankFinTech/DeFiBus.svg?branch=master)](https://www.travis-ci.org/WeBankFinTech/EventMesh)
-[![Coverage Status](https://coveralls.io/repos/github/WeBankFinTech/DeFiBus/badge.svg?branch=master)](https://coveralls.io/github/WeBankFinTech/EventMesh?branch=master)
-[![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/WeBankFinTech/EventMesh/releases)
+# Apache EventMesh (Incubating)
+[![Build Status](https://www.travis-ci.org/apache/incubator-eventmesh.svg?branch=develop)](https://www.travis-ci.org/github/apache/incubator-eventmesh.svg?branch=develop)
+[![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/apache/incubator-eventmesh/releases)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## 什么是Event Mesh？
@@ -56,15 +56,15 @@ Event Mesh允许将来自一个应用程序的事件动态路由到任何其他�
 ## 快速开始
 
 1. 构建并部署event-store(RocketMQ), 请参见[说明](https://rocketmq.apache.org/docs/quick-start/)
-2. 构建并部署eventmesh-runtime，请参见说明['eventmesh-runtime quickstart'](   instructions/eventmesh-runtime-quickstart.md)
-3. 运行eventmesh-sdk-java演示，请参见说明['eventmesh-sdk-java quickstart'](instructions/eventmesh-sdk-java-quickstart.md)
+2. 构建并部署eventmesh-runtime，请参见说明['eventmesh-runtime quickstart'](instructions/eventmesh-runtime-quickstart.zh-CN.md)
+3. 运行eventmesh-sdk-java演示，请参见说明['eventmesh-sdk-java quickstart'](instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
 
 ## 贡献
 
-永远欢迎参与共建, 请参阅[贡献](CONTRIBUTING.md)了解详细指南
+永远欢迎参与共建, 请参阅[贡献](../../CONTRIBUTING.zh-CN.md)了解详细指南
 
 您可以从问题开始.
-[GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
+[GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
 
 ## License
 
