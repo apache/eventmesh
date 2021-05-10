@@ -68,11 +68,12 @@ sh start.sh
 **2.3.2 配置VM启动参数**
 
 ```java
--Dlog4j.configurationFile=..\eventmesh-runtime\conf\log4j2.xml
--Deventmesh.log.home=..\eventmesh-runtime\logs
--Deventmesh.home=..\eventmesh-runtime
--DconfPath=..\eventmesh-runtime\conf
+-Dlog4j.configurationFile=eventmesh-runtime/conf/log4j2.xml
+-Deventmesh.log.home=eventmesh-runtime/logs
+-Deventmesh.home=eventmesh-runtime
+-DconfPath=eventmesh-runtime/conf
 ```
+> 注：如果操作系统为Windows, 可能需要将文件分隔符换成\
 
 **2.3.3 配置build.gradle文件**
 
@@ -190,8 +191,7 @@ docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs
 
 Windows
 
--
-Windows系统下运行示例可以参考[这里](https://github.com/apache/incubator-eventmesh/blob/develop/docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
+- Windows系统下运行示例可以参考[这里](https://github.com/apache/incubator-eventmesh/blob/develop/docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
 
 Linux
 
