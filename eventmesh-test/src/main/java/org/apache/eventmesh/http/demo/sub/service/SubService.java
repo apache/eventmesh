@@ -84,6 +84,6 @@ public class SubService implements InitializingBean {
             System.exit(0);
         });
 
-       stopThread.start();
+      // stopThread.start();
     }
 }
