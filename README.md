@@ -22,17 +22,6 @@ EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to d
 
 ![architecture2](docs/images/eventmesh-panels.png)
 
-The EventMesh(incubating) allows events from one application to be dynamically routed to any other application.
-General functions of the eventmesh:
-
-* Event driven;
-* Event governance;
-* Event routing;
-* Flow control;
-* Load balance;
-* Pluggable;
-* Cloud native；
-* Gateway
 
 **Support connecting event store:**
 
