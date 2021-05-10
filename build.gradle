@@ -134,6 +134,14 @@ subprojects {
             "org.slf4j:slf4j-api:1.7.30"
     ]
 
+    List log4j2 = [
+            "org.apache.logging.log4j:log4j-api:2.13.3",
+            "org.apache.logging.log4j:log4j-core:2.13.3",
+            "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
+            "org.apache.logging.log4j:log4j-web:2.13.3",
+            "com.lmax:disruptor:3.4.2"
+    ]
+
 
     List common = [
             "commons-io:commons-io:2.4",
@@ -151,8 +159,8 @@ subprojects {
     ]
 
     dependencies {
-        implementation apache_commons, guava, log, fastjson, jackson, common, httpclient, netty
-        testImplementation apache_commons, guava, log, fastjson, jackson, common, junit, assertj, mock, httpclient, netty
+        implementation apache_commons, guava, log, log4j2, fastjson, jackson, common, httpclient, netty
+        testImplementation apache_commons, guava, log, log4j2, fastjson, jackson, common, junit, assertj, mock, httpclient, netty
         spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
         spotbugsPlugins 'com.mebigfatguy.fb-contrib:fb-contrib:7.4.7'
     }
