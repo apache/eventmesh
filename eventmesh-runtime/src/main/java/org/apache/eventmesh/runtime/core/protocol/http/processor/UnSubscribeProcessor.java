@@ -17,13 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.fastjson.JSONObject;
@@ -38,6 +32,7 @@ import org.apache.eventmesh.common.protocol.http.body.client.UnSubscribeRequestB
 import org.apache.eventmesh.common.protocol.http.body.client.UnSubscribeResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeResponseHeader;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
@@ -133,6 +128,11 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
             boolean isChange = true;
             for (String unSubTopic : unSubTopicList) {
                 List<Client> groupTopicClients = eventMeshHTTPServer.localClientInfoMapping.get(consumerGroup + "@" + unSubTopic);
+
+                if (CollectionUtils.isEmpty(groupTopicClients)) {
+                    httpLogger.warn("group {} topic {} clients is empty", consumerGroup, unSubTopic);
+                    groupTopicClients = registerClient(unSubscribeRequestHeader, consumerGroup, unSubTopic, unSubscribeUrl);
+                }
                 Iterator<Client> clientIterator = groupTopicClients.iterator();
                 while (clientIterator.hasNext()) {
                     Client client = clientIterator.next();
@@ -238,5 +238,26 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
     @Override
     public boolean rejectRequest() {
         return false;
+    }
+
+    private List<Client> registerClient(UnSubscribeRequestHeader unSubscribeRequestHeader, String consumerGroup,
+                                        String topic, String url) {
+        Client client = new Client();
+        client.env = unSubscribeRequestHeader.getEnv();
+        client.dcn = unSubscribeRequestHeader.getDcn();
+        client.idc = unSubscribeRequestHeader.getIdc();
+        client.sys = unSubscribeRequestHeader.getSys();
+        client.ip = unSubscribeRequestHeader.getIp();
+        client.pid = unSubscribeRequestHeader.getPid();
+        client.consumerGroup = consumerGroup;
+        client.topic = topic;
+        client.url = url;
+        client.lastUpTime = new Date();
+
+        String groupTopicKey = client.consumerGroup + "@" + client.topic;
+        List<Client> clients = new ArrayList<>();
+        clients.add(client);
+        eventMeshHTTPServer.localClientInfoMapping.put(groupTopicKey, clients);
+        return clients;
     }
 }
