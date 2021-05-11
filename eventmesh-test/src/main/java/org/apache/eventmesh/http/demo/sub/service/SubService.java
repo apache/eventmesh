@@ -3,6 +3,9 @@ package org.apache.eventmesh.http.demo.sub.service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
@@ -10,11 +13,14 @@ import org.apache.eventmesh.client.http.consumer.LiteConsumer;
 import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.http.demo.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PreDestroy;
 
 @Component
 public class SubService implements InitializingBean {
@@ -38,6 +44,11 @@ public class SubService implements InitializingBean {
     final String dcn = "FT0";
     final String subsys = "1234";
 
+    // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
+    private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(5);
+
     @Override
     public void afterPropertiesSet() throws Exception {
 
@@ -59,31 +70,41 @@ public class SubService implements InitializingBean {
         liteConsumer.heartBeat(topicList, url);
         liteConsumer.subscribe(topicList, url);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("start destory ....");
+        // Wait for all messaged to be consumed
+        executorService.submit(() ->{
             try {
-                liteConsumer.unsubscribe(topicList, url);
-            } catch (EventMeshException e) {
-                e.printStackTrace();
-            }
-            try {
-                liteConsumer.shutdown();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            logger.info("end destory.");
-        }));
-
-        Thread stopThread = new Thread(() -> {
-            try {
-                Thread.sleep(5 * 60 * 1000);
+                countDownLatch.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             logger.info("stopThread start....");
             System.exit(0);
         });
+    }
 
-       stopThread.start();
+    @PreDestroy
+    public void cleanup() {
+        logger.info("start destory ....");
+        try {
+            liteConsumer.unsubscribe(topicList, url);
+        } catch (EventMeshException e) {
+            e.printStackTrace();
+        }
+        try {
+            liteConsumer.shutdown();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        executorService.shutdown();
+        logger.info("end destory.");
+    }
+
+    /**
+     * Count the message already consumed
+     */
+    public void consumeMessage(String msg) {
+        logger.info("consume message {}", msg);
+        countDownLatch.countDown();
+        logger.info("remaining number of messages to be consumed {}", countDownLatch.getCount());
     }
 }
