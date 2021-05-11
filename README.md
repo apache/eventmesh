@@ -1,4 +1,4 @@
-# Apache EventMesh (Incubating)
+# Apache EventMesh (incubating)
 [![Build Status](https://www.travis-ci.org/apache/incubator-eventmesh.svg?branch=develop)](https://www.travis-ci.org/github/apache/incubator-eventmesh.svg?branch=develop)
 [![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/apache/incubator-eventmesh/releases)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
@@ -30,12 +30,12 @@ EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to d
 **Components:**
 
 * **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
-* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols, and will support gRPC in the future.
+* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols.
 * **eventmesh-connector-rocketmq** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from RocketMQ Event Store.
 
 **Protocol:**
 
-The protocol of eventmesh is easier and convenient, you can read more [here](docs/en/instructions/eventmesh-runtime-protocol.md)
+The protocol of eventmesh is easier and more convenient, you can read more [here](docs/en/instructions/eventmesh-runtime-protocol.md)
 
 ## RoadMap
 | version | feature |
