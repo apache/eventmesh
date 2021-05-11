@@ -75,12 +75,15 @@ public class SubService implements InitializingBean {
         }));
 
         Thread stopThread = new Thread(() -> {
+            try {
+                Thread.sleep(5 * 60 * 1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             logger.info("stopThread start....");
             System.exit(0);
         });
 
-        Thread.sleep(5 * 60 * 1000);
-
-//        stopThread.start();
+       stopThread.start();
     }
 }
