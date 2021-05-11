@@ -63,17 +63,18 @@ Same with 1.2
 - eventmesh-sdk-java : eventmesh java client sdk
 - eventmesh-starter : eventmesh project local start entry
 
-ps：The loading of connector plugin follows the Java SPI mechanism, it's necessary to configure the mapping file of
+> ps: The loading of connector plugin follows the Java SPI mechanism, it's necessary to configure the mapping file of
 related interface and implementation class under /main/resources/meta-inf/services in the corresponding module
 
 **2.3.2 Configure VM Options**
 
 ```java
--Dlog4j.configurationFile=..\eventmesh-runtime\conf\log4j2.xml
--Deventmesh.log.home=..\eventmesh-runtime\logs
--Deventmesh.home=..\eventmesh-runtime
--DconfPath=..\eventmesh-runtime\conf
+-Dlog4j.configurationFile=eventmesh-runtime/conf/log4j2.xml
+-Deventmesh.log.home=eventmesh-runtime/logs
+-Deventmesh.home=eventmesh-runtime
+-DconfPath=eventmesh-runtime/conf
 ```
+> ps: If you use Windows, you may need to replace the file separator to \
 
 **2.3.3 Configure build.gradle file**
 

@@ -9,7 +9,6 @@ config env varible
 -Dssl.server.protocol=TLSv1.1   //默认值 TLSv1.1 
 -Dssl.server.cer=sChat2.jks     //把文件放到启动脚本start.sh 指定的conPath目录下
 -Dssl.server.pass=sNetty
-
 ```
 
 2.在eventmesh-sdk-java 中配置
