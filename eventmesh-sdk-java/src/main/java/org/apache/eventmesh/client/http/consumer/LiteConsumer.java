@@ -292,13 +292,10 @@ public class LiteConsumer extends AbstractLiteClient {
     }
 
     public String selectEventMesh() {
-        if (CollectionUtils.isEmpty(eventMeshServerList)) {
-            return null;
-        }
         if (liteClientConfig.isUseTls()) {
-            return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
+            return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerSelector.select();
         } else {
-            return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
+            return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerSelector.select();
         }
     }
 }
