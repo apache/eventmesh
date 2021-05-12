@@ -4,9 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.consumer.LiteConsumer;
@@ -19,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
-
 import javax.annotation.PreDestroy;
 
 @Component
@@ -47,8 +43,6 @@ public class SubService implements InitializingBean {
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
 
-    private ExecutorService executorService = Executors.newFixedThreadPool(5);
-
     @Override
     public void afterPropertiesSet() throws Exception {
 
@@ -71,7 +65,7 @@ public class SubService implements InitializingBean {
         liteConsumer.subscribe(topicList, url);
 
         // Wait for all messaged to be consumed
-        executorService.submit(() ->{
+        Thread stopThread = new Thread(() -> {
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
@@ -80,6 +74,7 @@ public class SubService implements InitializingBean {
             logger.info("stopThread start....");
             System.exit(0);
         });
+        stopThread.start();
     }
 
     @PreDestroy
@@ -95,7 +90,6 @@ public class SubService implements InitializingBean {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        executorService.shutdown();
         logger.info("end destory.");
     }
 

@@ -41,11 +41,11 @@ public class SubController {
     @RequestMapping(value = "/test", method = RequestMethod.POST)
     public String subTest(@RequestBody String message) {
         logger.info("=======receive message======= {}", JSONObject.toJSONString(message));
+        subService.consumeMessage(message);
+
         JSONObject result = new JSONObject();
         result.put("retCode", 1);
-        String strResult = result.toJSONString();
-        subService.consumeMessage(strResult);
-        return strResult;
+        return result.toJSONString();
     }
 
 }
