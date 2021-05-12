@@ -131,10 +131,6 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
 
             for (String unSubTopic : unSubTopicList) {
                 List<Client> groupTopicClients = eventMeshHTTPServer.localClientInfoMapping.get(consumerGroup + "@" + unSubTopic);
-
-                if (CollectionUtils.isEmpty(groupTopicClients)) {
-                    httpLogger.warn("group {} topic {} clients is empty", consumerGroup, unSubTopic);
-                }
                 Iterator<Client> clientIterator = groupTopicClients.iterator();
                 while (clientIterator.hasNext()) {
                     Client client = clientIterator.next();

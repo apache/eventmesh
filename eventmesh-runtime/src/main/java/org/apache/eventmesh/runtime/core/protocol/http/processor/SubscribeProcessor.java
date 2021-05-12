@@ -112,7 +112,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 List<Client> groupTopicClients = eventMeshHTTPServer.localClientInfoMapping.get(consumerGroup + "@" + subTopic);
 
                 if (CollectionUtils.isEmpty(groupTopicClients)) {
-                    httpLogger.warn("group {} topic {} clients is empty", consumerGroup, subTopic);
+                    httpLogger.error("group {} topic {} clients is empty", consumerGroup, subTopic);
                 }
 
                 Map<String, List<String>> idcUrls = new HashMap<>();
