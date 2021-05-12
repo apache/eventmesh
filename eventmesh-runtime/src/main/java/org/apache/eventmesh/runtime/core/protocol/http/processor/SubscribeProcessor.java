@@ -106,12 +106,13 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
         synchronized (eventMeshHTTPServer.localClientInfoMapping) {
 
+            registerClient(subscribeRequestHeader, consumerGroup, subTopicList, url);
+
             for (String subTopic : subTopicList) {
                 List<Client> groupTopicClients = eventMeshHTTPServer.localClientInfoMapping.get(consumerGroup + "@" + subTopic);
 
                 if (CollectionUtils.isEmpty(groupTopicClients)) {
                     httpLogger.warn("group {} topic {} clients is empty", consumerGroup, subTopic);
-                    groupTopicClients = registerClient(subscribeRequestHeader, consumerGroup, subTopic, url);
                 }
 
                 Map<String, List<String>> idcUrls = new HashMap<>();
@@ -204,24 +205,41 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         return false;
     }
 
-    private List<Client> registerClient(SubscribeRequestHeader subscribeRequestHeader, String consumerGroup,
-                                      String topic, String url) {
-        Client client = new Client();
-        client.env = subscribeRequestHeader.getEnv();
-        client.dcn = subscribeRequestHeader.getDcn();
-        client.idc = subscribeRequestHeader.getIdc();
-        client.sys = subscribeRequestHeader.getSys();
-        client.ip = subscribeRequestHeader.getIp();
-        client.pid = subscribeRequestHeader.getPid();
-        client.consumerGroup = consumerGroup;
-        client.topic = topic;
-        client.url = url;
-        client.lastUpTime = new Date();
+    private void registerClient(SubscribeRequestHeader subscribeRequestHeader, String consumerGroup,
+                                      List<String> topicList, String url) {
+        for(String topic: topicList) {
+            Client client = new Client();
+            client.env = subscribeRequestHeader.getEnv();
+            client.dcn = subscribeRequestHeader.getDcn();
+            client.idc = subscribeRequestHeader.getIdc();
+            client.sys = subscribeRequestHeader.getSys();
+            client.ip = subscribeRequestHeader.getIp();
+            client.pid = subscribeRequestHeader.getPid();
+            client.consumerGroup = consumerGroup;
+            client.topic = topic;
+            client.url = url;
+            client.lastUpTime = new Date();
 
-        String groupTopicKey = client.consumerGroup + "@" + client.topic;
-        List<Client> clients = new ArrayList<>();
-        clients.add(client);
-        eventMeshHTTPServer.localClientInfoMapping.put(groupTopicKey, clients);
-        return clients;
+            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+
+            if (eventMeshHTTPServer.localClientInfoMapping.contains(groupTopicKey)) {
+                List<Client> localClients = eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
+                boolean isContains = false;
+                for (Client localClient : localClients) {
+                    if (StringUtils.equals(localClient.url, client.url)) {
+                        isContains = true;
+                        localClient.lastUpTime = client.lastUpTime;
+                        break;
+                    }
+                }
+                if (!isContains) {
+                    localClients.add(client);
+                }
+            } else {
+                List<Client> clients = new ArrayList<>();
+                clients.add(client);
+                eventMeshHTTPServer.localClientInfoMapping.put(groupTopicKey, clients);
+            }
+        }
     }
 }
