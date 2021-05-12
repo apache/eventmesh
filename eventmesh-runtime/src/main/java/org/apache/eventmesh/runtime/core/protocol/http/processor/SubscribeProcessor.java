@@ -17,18 +17,19 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import com.alibaba.fastjson.JSONObject;
-
 import io.netty.channel.ChannelHandlerContext;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.command.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
@@ -45,7 +46,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

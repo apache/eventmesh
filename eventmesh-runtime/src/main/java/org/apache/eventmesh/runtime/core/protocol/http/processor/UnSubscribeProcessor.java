@@ -17,13 +17,16 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import com.alibaba.fastjson.JSONObject;
-
 import io.netty.channel.ChannelHandlerContext;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.IPUtil;
@@ -32,17 +35,14 @@ import org.apache.eventmesh.common.protocol.http.body.client.UnSubscribeRequestB
 import org.apache.eventmesh.common.protocol.http.body.client.UnSubscribeResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.UnSubscribeResponseHeader;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
-import org.apache.eventmesh.runtime.core.consumergroup.event.ConsumerGroupStateEvent;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerGroupManager;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
