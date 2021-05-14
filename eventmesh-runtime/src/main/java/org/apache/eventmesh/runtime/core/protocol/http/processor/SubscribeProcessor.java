@@ -222,7 +222,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
             String groupTopicKey = client.consumerGroup + "@" + client.topic;
 
-            if (eventMeshHTTPServer.localClientInfoMapping.contains(groupTopicKey)) {
+            if (eventMeshHTTPServer.localClientInfoMapping.containsKey(groupTopicKey)) {
                 List<Client> localClients = eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
                 boolean isContains = false;
                 for (Client localClient : localClients) {

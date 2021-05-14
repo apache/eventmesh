@@ -217,7 +217,7 @@ public class ConsumerManager {
      * restart consumer
      */
     public synchronized void restartConsumer(String consumerGroup, ConsumerGroupConf consumerGroupConfig) throws Exception {
-        if(consumerTable.contains(consumerGroup)) {
+        if(consumerTable.containsKey(consumerGroup)) {
             ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
             cgm.refresh(consumerGroupConfig);
         }
@@ -237,7 +237,7 @@ public class ConsumerManager {
      * @param consumerGroup
      */
     public synchronized void delConsumer(String consumerGroup) throws Exception {
-        if(consumerTable.contains(consumerGroup)) {
+        if(consumerTable.containsKey(consumerGroup)) {
             ConsumerGroupManager cgm = consumerTable.remove(consumerGroup);
             cgm.shutdown();
         }

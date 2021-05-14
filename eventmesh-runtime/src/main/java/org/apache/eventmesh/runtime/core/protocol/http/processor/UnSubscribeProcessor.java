@@ -134,7 +134,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                 Iterator<Client> clientIterator = groupTopicClients.iterator();
                 while (clientIterator.hasNext()) {
                     Client client = clientIterator.next();
-                    if (StringUtils.equals(client.ip, ip)) {
+                    if (StringUtils.equals(client.ip, ip) && StringUtils.equals(client.url, unSubscribeUrl)) {
                         httpLogger.warn("client {} start unsubscribe", JSONObject.toJSONString(client));
                         clientIterator.remove();
                     }
@@ -254,7 +254,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
             client.lastUpTime = new Date();
 
             String groupTopicKey = client.consumerGroup + "@" + client.topic;
-            if (eventMeshHTTPServer.localClientInfoMapping.contains(groupTopicKey)) {
+            if (eventMeshHTTPServer.localClientInfoMapping.containsKey(groupTopicKey)) {
                 List<Client> localClients = eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
                 boolean isContains = false;
                 for (Client localClient : localClients) {
