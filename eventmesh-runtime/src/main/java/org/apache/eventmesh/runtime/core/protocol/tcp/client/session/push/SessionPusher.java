@@ -17,13 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import io.openmessaging.api.Message;
-
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
@@ -42,20 +37,10 @@ public class SessionPusher {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private Integer unack;
-
     private PushContext pushContext = new PushContext(this);
 
     public PushContext getPushContext() {
         return pushContext;
-    }
-
-    public boolean isBusy() {
-        return pushContext.getTotalUnackMsgs() >= Math.floor(3 * unack / 4);
-    }
-
-    public boolean isCanDownStream() {
-        return pushContext.getTotalUnackMsgs() < unack;
     }
 
     public void setPushContext(PushContext pushContext) {
@@ -66,15 +51,11 @@ public class SessionPusher {
 
     public SessionPusher(Session session) {
         this.session = session;
-        unack = (0 == session.getClient().getUnack()) ? session.getEventMeshTCPConfiguration().eventMeshTcpSessionDownstreamUnackSize : session.getClient().getUnack();
     }
 
     @Override
     public String toString() {
-        return "SessionPusher{unack=" + unack
-                + ",busy=" + isBusy()
-                + ",canDownStream=" + isCanDownStream()
-                + ",pushContext=" + pushContext + "}";
+        return "SessionPusher{pushContext=" + pushContext + "}";
     }
 
     public void push(final DownStreamMsgContext downStreamMsgContext) {
@@ -103,15 +84,11 @@ public class SessionPusher {
             retMsg = e.toString();
         } finally {
             session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getEventMesh2clientMsgNum().incrementAndGet();
-            pushContext.deliveredMsgCount();
 
             //avoid ack arrives to server prior to callback of the method writeAndFlush,may cause ack problem
-            List<Message> msgExts = new ArrayList<Message>();
-            msgExts.add(downStreamMsgContext.msgExt);
-            pushContext.unAckMsg(downStreamMsgContext.seq,
-                    msgExts,
-                    downStreamMsgContext.consumeConcurrentlyContext,
-                    downStreamMsgContext.consumer);
+            if(!EventMeshUtil.isBroadcast(downStreamMsgContext.msgExt.getTopic())){
+                pushContext.unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
+            }
 
             session.getContext().writeAndFlush(pkg).addListener(
                     new ChannelFutureListener() {
@@ -120,9 +97,6 @@ public class SessionPusher {
                             if (!future.isSuccess()) {
                                 logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, msg:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, downStreamMsgContext.msgExt);
                                 pushContext.deliverFailMsgCount();
-
-                                //push msg failed, remove the msg from unackMap
-                                pushContext.getUnAckMsg().remove(downStreamMsgContext.seq);
 
                                 //how long to isolate client when push fail
                                 long isolateTime = System.currentTimeMillis() + session.getEventMeshTCPConfiguration().eventMeshTcpPushFailIsolateTimeInMills;
@@ -137,7 +111,6 @@ public class SessionPusher {
                                 pushContext.deliveredMsgCount();
                                 logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
-                                session.getClientGroupWrapper().get().getDownstreamMap().remove(downStreamMsgContext.seq);
                                 if (session.isIsolated()) {
                                     logger.info("cancel isolated,client:{}", session.getClient());
                                     session.setIsolateTime(System.currentTimeMillis());

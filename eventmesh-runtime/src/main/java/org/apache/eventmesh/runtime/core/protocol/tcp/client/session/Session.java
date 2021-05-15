@@ -200,14 +200,6 @@ public class Session {
         pusher.push(downStreamMsgContext);
     }
 
-    public boolean isDownStreamBusy() {
-        return pusher.isBusy();
-    }
-
-    public boolean isCanDownStream() {
-        return pusher.isCanDownStream();
-    }
-
     public boolean isIsolated() {
         return System.currentTimeMillis() < isolateTime;
     }
@@ -233,17 +225,6 @@ public class Session {
         } catch (Exception e) {
             logger.error("exception while write2Client", e);
         }
-    }
-
-    /**
-     * ACK MSG
-     *
-     * @param seq
-     */
-    public void ackMsg(String seq) {
-        logger.info("ackMsg start,seq:{}", seq);
-        pusher.getPushContext().ackMsg(seq);
-        logger.info("ackMsg end,seq:{}", seq);
     }
 
     @Override

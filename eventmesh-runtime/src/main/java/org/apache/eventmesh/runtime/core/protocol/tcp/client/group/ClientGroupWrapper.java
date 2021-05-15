@@ -538,6 +538,11 @@ public class ClientGroupWrapper {
 
                     Iterator<Session> sessionsItr = groupConsumerSessions.iterator();
 
+                    DownStreamMsgContext downStreamMsgContext =
+                            new DownStreamMsgContext(message, null, broadCastMsgConsumer, broadCastMsgConsumer.getContext(), false);
+
+                    //broadcast msg store in group level, others msg store in session level, reduce memory cost
+                    downstreamMap.put(downStreamMsgContext.seq, downStreamMsgContext);
                     while (sessionsItr.hasNext()) {
                         Session session = sessionsItr.next();
 
@@ -546,18 +551,8 @@ public class ClientGroupWrapper {
                             continue;
                         }
 
-                        DownStreamMsgContext downStreamMsgContext =
-                                new DownStreamMsgContext(message, session, broadCastMsgConsumer, broadCastMsgConsumer.getContext(), false);
-
-                        if (session.isCanDownStream()) {
-                            session.downstreamMsg(downStreamMsgContext);
-                            continue;
-                        }
-
-                        logger.warn("downstream broadcast msg,session is busy,dispatch retry,seq:{}, session:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.session.getClient(), EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
-                        long delayTime = EventMeshUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryDelayInMills;
-                        downStreamMsgContext.delay(delayTime);
-                        eventMeshTcpRetryer.pushRetry(downStreamMsgContext);
+                        downStreamMsgContext.session = session;
+                        session.downstreamMsg(downStreamMsgContext);
                     }
 
 //                    context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
@@ -588,14 +583,14 @@ public class ClientGroupWrapper {
                                 sendBackFromEventMeshIp = message.getSystemProperties(EventMeshConstants.EVENTMESH_SEND_BACK_IP);
                             }
 
-                            logger.error("found no session to downstream msg,groupName:{}, topic:{}, bizSeqNo:{}", groupName, topic, bizSeqNo);
+                            logger.error("found no session to downstream msg,groupName:{}, topic:{}, bizSeqNo:{}, sendBackTimes:{}, sendBackFromEventMeshIp:{}", groupName, topic, bizSeqNo, sendBackTimes, sendBackFromEventMeshIp);
 
                             if (sendBackTimes >= eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSendBackMaxTimes) {
                                 logger.error("sendBack to broker over max times:{}, groupName:{}, topic:{}, bizSeqNo:{}", eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSendBackMaxTimes, groupName, topic, bizSeqNo);
                             } else {
                                 sendBackTimes++;
                                 message.getSystemProperties().put(EventMeshConstants.EVENTMESH_SEND_BACK_TIMES, sendBackTimes.toString());
-                                message.getSystemProperties().put(EventMeshConstants.EVENTMESH_SEND_BACK_IP, sendBackFromEventMeshIp);
+                                message.getSystemProperties().put(EventMeshConstants.EVENTMESH_SEND_BACK_IP, eventMeshTCPConfiguration.eventMeshServerIp);
                                 sendMsgBackToBroker(message, bizSeqNo);
                             }
                         } catch (Exception e) {
@@ -611,25 +606,7 @@ public class ClientGroupWrapper {
                     DownStreamMsgContext downStreamMsgContext =
                             new DownStreamMsgContext(message, session, persistentMsgConsumer, persistentMsgConsumer.getContext(), false);
 
-                    if (downstreamMap.size() < eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpDownStreamMapSize) {
-                        downstreamMap.putIfAbsent(downStreamMsgContext.seq, downStreamMsgContext);
-                    } else {
-                        logger.warn("downStreamMap is full,group:{}", groupName);
-                    }
-
-                    if (session.isCanDownStream()) {
-                        session.downstreamMsg(downStreamMsgContext);
-//                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
-//                        context.ack();
-                        context.commit(Action.CommitMessage);
-                        return;
-                    }
-
-                    logger.warn("session is busy,dispatch retry,seq:{}, session:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.session.getClient(), bizSeqNo);
-                    long delayTime = EventMeshUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 0 : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryDelayInMills;
-                    downStreamMsgContext.delay(delayTime);
-                    eventMeshTcpRetryer.pushRetry(downStreamMsgContext);
-
+                    session.downstreamMsg(downStreamMsgContext);
 //                    context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
 //                    context.ack();
                     context.commit(Action.CommitMessage);
