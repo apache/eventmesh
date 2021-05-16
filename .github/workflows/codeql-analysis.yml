@@ -50,8 +50,7 @@ jobs:
           # queries: ./path/to/local/query, your-org/your-repo/queries@main
           languages: ${{ matrix.language }}
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v1
+      - run: ./gradlew clean build
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
