@@ -53,8 +53,8 @@ public class WeightRoundRobinLoadBalanceSelectorTest {
         addressToNum.forEach((key, value) -> {
             logger.info("{}: {}", key, value);
         });
-        // just assert success if no exception
-        Assert.assertTrue(true);
+        Assert.assertTrue(addressToNum.get("B") > addressToNum.get("A"));
+        Assert.assertTrue(addressToNum.get("C") > addressToNum.get("B"));
     }
 
     @Test

@@ -19,6 +19,8 @@ package org.apache.eventmesh.common.loadbalance;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -30,6 +32,8 @@ import java.util.List;
  */
 public class RandomLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
 
+    private final Logger logger = LoggerFactory.getLogger(RandomLoadBalanceSelector.class);
+
     private final List<T> clusterGroup;
 
     public RandomLoadBalanceSelector(List<T> clusterGroup) {
@@ -39,6 +43,7 @@ public class RandomLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
     @Override
     public T select() {
         if (CollectionUtils.isEmpty(clusterGroup)) {
+            logger.warn("No servers available");
             return null;
         }
         return clusterGroup.get(RandomUtils.nextInt(0, clusterGroup.size()));
