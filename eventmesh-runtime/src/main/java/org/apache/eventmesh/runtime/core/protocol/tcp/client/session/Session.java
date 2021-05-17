@@ -316,18 +316,15 @@ public class Session {
 
     public boolean isAvailable(String topic) {
         if (SessionState.CLOSED == sessionState) {
-            logger.warn("session is not available because session has been closed");
+            logger.warn("session is not available because session has been closed,topic:{},client:{}", topic, client);
             return false;
         }
 
         if (!sessionContext.subscribeTopics.containsKey(topic)) {
-            logger.warn("session is not available because session has not subscribe topic:{}", topic);
+            logger.warn("session is not available because session has not subscribe topic:{},client:{}", topic,client);
             return false;
         }
-        if (isIsolated()) {
-            logger.warn("session is not available because session is isolated,isolateTime:{}", isolateTime);
-            return false;
-        }
+
         return true;
     }
 
