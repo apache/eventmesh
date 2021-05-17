@@ -19,9 +19,15 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ develop ]
+    branches:
+      - develop
+    paths-ignore:
+      - 'docs/**'
   pull_request:
-    branches: [ develop ]
+    branches:
+      - develop
+    paths-ignore:
+      - 'docs/**'
   schedule:
     - cron: '16 7 * * 5'
 
@@ -33,14 +39,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # https://docs.github.com/en/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#overriding-automatic-language-detection
         language: [ 'java' ]
+        java: [ 8 ]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v1
         with:
@@ -50,6 +55,12 @@ jobs:
           # queries: ./path/to/local/query, your-org/your-repo/queries@main
           languages: ${{ matrix.language }}
 
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+
+      - name: Build
       - run: ./gradlew clean build
 
       - name: Perform CodeQL Analysis
