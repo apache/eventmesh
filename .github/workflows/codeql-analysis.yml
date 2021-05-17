@@ -28,8 +28,6 @@ on:
       - develop
     paths-ignore:
       - 'docs/**'
-  schedule:
-    - cron: '16 7 * * 5'
 
 jobs:
   analyze:
@@ -61,7 +59,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Build
-      - run: ./gradlew clean build
+        run: ./gradlew clean build
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v1
