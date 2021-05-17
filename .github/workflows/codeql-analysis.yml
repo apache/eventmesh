@@ -28,6 +28,9 @@ on:
       - develop
     paths-ignore:
       - 'docs/**'
+  schedule:
+    - cron: '30 5 * * *'
+  workflow_dispatch:
 
 jobs:
   analyze:
