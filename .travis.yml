@@ -1,3 +1,20 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 dist: trusty
 
 language: java
@@ -9,7 +26,3 @@ script:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash) || echo 'Codecov failed to upload'
-
-env:
-  global:
-    - secure: "T1QAuaAzcB7K8YjAAVVb4P9+W0JAdOFbyBwRxliyyoSZUShlIqa0eE7ioXHXWBP/d5f3XtROse6lq2qILqcU9sFSncKE2vRJlwJ5p7R23WIsCXdV70A9AVE2gLJcIJiOTMwd/YYYzNDrGLp3CSJNcKo8t7t70V2j/11I9xPTOHnaZ8FHGC3d/7bjfR/+g/3d4EOCvV8Vm6ndEmmailmF8OJ/kcbuRbArKIehjUwNDyQZfwAc9+vvPZlHgnQvR1pJ/KiK6muEIi7RQohDq7lMTmcc2LZSYgy/+aqFrmBcQwXScABFmSwysQ4KMXfrCqqMsBdmvno/NoKVGofHHKdym/oauv/G3lxLx5sgM9A7ZSFBK08x08r7u/6TDsTFmQ9LzVFDNo/OLZhxs3dr9x2C9Pa2A7IP1i1oVbbYkwBJv4z6o3khWpQAAY/IWijlCZ9vkjFfqdIXbvlPqamEaFRAmK5I3MVqL2+eBF+2Or/zwv4rXjo+v5LUKTfmDl77QUshPv6J+hblbBR0cJ/ZTSh9rHgdqhEzPGSt3e0YrEefkKWfinBr8TjIsHgQgmfU8Kz7gf7tvioOuAgKj4WlgEQJs3dPp7J5zxFVNMM6teAMFy8c2MtAdzKrs13Ri1qZWtL6B7JWlH6yhHqhKghyJhRjUFNVZnBkA/z9gzDKZ+tz2m8="
