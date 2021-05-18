@@ -18,6 +18,8 @@
 package org.apache.eventmesh.common.loadbalance;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -28,6 +30,8 @@ import java.util.List;
  * @param <T>
  */
 public class WeightRoundRobinLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
+
+    private final Logger logger = LoggerFactory.getLogger(WeightRoundRobinLoadBalanceSelector.class);
 
     private final List<Weight<T>> clusterGroup;
 
@@ -47,6 +51,7 @@ public class WeightRoundRobinLoadBalanceSelector<T> implements LoadBalanceSelect
     @SuppressWarnings("ConstantConditions")
     public T select() {
         if (CollectionUtils.isEmpty(clusterGroup)) {
+            logger.warn("No servers available");
             return null;
         }
         Weight<T> targetWeight = null;
