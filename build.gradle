@@ -28,7 +28,6 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
-
     }
 
     dependencies {
@@ -63,7 +62,6 @@ allprojects {
 
     compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 
-
     clean.doFirst {
         delete 'build'
         delete 'dist'
@@ -73,7 +71,6 @@ allprojects {
     if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot")))) {
         version = version + "-SNAPSHOT"
     }
-
 }
 
 task tar(type: Tar) {
@@ -95,7 +92,6 @@ task zip(type: Zip) {
         from 'dist'
     }
 }
-
 
 subprojects {
 
@@ -142,7 +138,6 @@ subprojects {
             "com.lmax:disruptor:3.4.2"
     ]
 
-
     List common = [
             "commons-io:commons-io:2.4",
             "org.apache.commons:commons-text:1.9"
@@ -165,7 +160,6 @@ subprojects {
         spotbugsPlugins 'com.mebigfatguy.fb-contrib:fb-contrib:7.4.7'
     }
 
-
     sourceSets {
         main {
             java.srcDirs = ['src/main/java']
@@ -183,17 +177,13 @@ subprojects {
 
     jacoco {
         toolVersion = "0.8.6"
-        reportsDir = file("$buildDir/reports/jacoco")
     }
 
     jacocoTestReport {
-//        sourceSets sourceSets.main
-//        executionData files("$buildDir/jacoco/jacocoTest.exec")
-
         reports {
-            xml.enabled false
+            xml.enabled true
             csv.enabled false
-            html.destination file("${buildDir}/reports/jacoco/html")
+            html.enabled false
         }
     }
 
@@ -211,7 +201,7 @@ subprojects {
 //            html.enabled true
 //        }
 //    }
-
+//
 //    sourceSets {
 //        main {
 //            java {
@@ -234,10 +224,7 @@ subprojects {
 //            }
 //
 //        }
-//
-//
 //    }
-
 
     spotbugs {
         //toolVersion = '4.2.3'
