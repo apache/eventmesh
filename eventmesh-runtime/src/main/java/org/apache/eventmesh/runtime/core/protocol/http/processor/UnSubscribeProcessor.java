@@ -134,7 +134,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                 Iterator<Client> clientIterator = groupTopicClients.iterator();
                 while (clientIterator.hasNext()) {
                     Client client = clientIterator.next();
-                    if (StringUtils.equals(client.ip, ip) && StringUtils.equals(client.url, unSubscribeUrl)) {
+                    if (StringUtils.equals(client.pid, pid) && StringUtils.equals(client.url, unSubscribeUrl)) {
                         httpLogger.warn("client {} start unsubscribe", JSONObject.toJSONString(client));
                         clientIterator.remove();
                     }
