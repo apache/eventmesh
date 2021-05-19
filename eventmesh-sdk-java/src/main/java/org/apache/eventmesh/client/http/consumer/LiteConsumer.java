@@ -121,15 +121,12 @@ public class LiteConsumer extends AbstractLiteClient {
             start();
         }
 
-        RequestParam heartBeatParam = generateHeartBeatRequestParam(topicList, url);
         RequestParam subscribeParam = generateSubscribeRequestParam(topicList, url);
 
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String subRes = "";
-        String heartRes = "";
         try {
-            heartRes = HttpUtil.post(httpClient, target, heartBeatParam);
             subRes = HttpUtil.post(httpClient, target, subscribeParam);
         } catch (Exception ex) {
             throw new EventMeshException(ex);
@@ -239,15 +236,12 @@ public class LiteConsumer extends AbstractLiteClient {
 
     public boolean unsubscribe(List<String> topicList, String url) throws EventMeshException {
         subscription.removeAll(topicList);
-        RequestParam heartBeatParam = generateHeartBeatRequestParam(topicList, url);
         RequestParam unSubscribeParam = generateUnSubscribeRequestParam(topicList, url);
 
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String unSubRes = "";
-        String heartRes = "";
         try {
-            heartRes = HttpUtil.post(httpClient, target, heartBeatParam);
             unSubRes = HttpUtil.post(httpClient, target, unSubscribeParam);
         } catch (Exception ex) {
             throw new EventMeshException(ex);
