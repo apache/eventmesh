@@ -18,18 +18,15 @@
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.alibaba.fastjson.JSONObject;
-
 import io.netty.channel.ChannelHandlerContext;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.IPUtil;
@@ -44,10 +41,8 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
-import org.apache.eventmesh.runtime.core.consumergroup.event.ConsumerGroupStateEvent;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerGroupManager;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -131,12 +126,15 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
 
         synchronized (eventMeshHTTPServer.localClientInfoMapping) {
             boolean isChange = true;
+
+            registerClient(unSubscribeRequestHeader, consumerGroup, unSubTopicList, unSubscribeUrl);
+
             for (String unSubTopic : unSubTopicList) {
                 List<Client> groupTopicClients = eventMeshHTTPServer.localClientInfoMapping.get(consumerGroup + "@" + unSubTopic);
                 Iterator<Client> clientIterator = groupTopicClients.iterator();
                 while (clientIterator.hasNext()) {
                     Client client = clientIterator.next();
-                    if (StringUtils.equals(client.ip, ip)) {
+                    if (StringUtils.equals(client.pid, pid) && StringUtils.equals(client.url, unSubscribeUrl)) {
                         httpLogger.warn("client {} start unsubscribe", JSONObject.toJSONString(client));
                         clientIterator.remove();
                     }
@@ -238,5 +236,42 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
     @Override
     public boolean rejectRequest() {
         return false;
+    }
+
+    private void registerClient(UnSubscribeRequestHeader unSubscribeRequestHeader, String consumerGroup,
+                                        List<String> topicList, String url) {
+        for(String topic: topicList) {
+            Client client = new Client();
+            client.env = unSubscribeRequestHeader.getEnv();
+            client.dcn = unSubscribeRequestHeader.getDcn();
+            client.idc = unSubscribeRequestHeader.getIdc();
+            client.sys = unSubscribeRequestHeader.getSys();
+            client.ip = unSubscribeRequestHeader.getIp();
+            client.pid = unSubscribeRequestHeader.getPid();
+            client.consumerGroup = consumerGroup;
+            client.topic = topic;
+            client.url = url;
+            client.lastUpTime = new Date();
+
+            String groupTopicKey = client.consumerGroup + "@" + client.topic;
+            if (eventMeshHTTPServer.localClientInfoMapping.containsKey(groupTopicKey)) {
+                List<Client> localClients = eventMeshHTTPServer.localClientInfoMapping.get(groupTopicKey);
+                boolean isContains = false;
+                for (Client localClient : localClients) {
+                    if (StringUtils.equals(localClient.url, client.url)) {
+                        isContains = true;
+                        localClient.lastUpTime = client.lastUpTime;
+                        break;
+                    }
+                }
+                if (!isContains) {
+                    localClients.add(client);
+                }
+            } else {
+                List<Client> clients = new ArrayList<>();
+                clients.add(client);
+                eventMeshHTTPServer.localClientInfoMapping.put(groupTopicKey, clients);
+            }
+        }
     }
 }

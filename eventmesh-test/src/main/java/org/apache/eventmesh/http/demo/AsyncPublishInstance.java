@@ -35,6 +35,9 @@ public class AsyncPublishInstance {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncPublishInstance.class);
 
+    // This messageSize is also used in SubService.java (Subscriber)
+    public static int messageSize = 5;
+
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile("application.properties");
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
@@ -62,7 +65,7 @@ public class AsyncPublishInstance {
 
             liteProducer = new LiteProducer(eventMeshClientConfig);
             liteProducer.start();
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < messageSize; i++) {
                 LiteMessage liteMessage = new LiteMessage();
                 liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
 //                    .setContent("contentStr with special protocal")
