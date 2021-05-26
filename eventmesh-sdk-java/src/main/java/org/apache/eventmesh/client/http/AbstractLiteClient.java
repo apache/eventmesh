@@ -18,10 +18,17 @@
 package org.apache.eventmesh.client.http;
 
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
+import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
 import org.apache.eventmesh.client.http.util.HttpLoadBalanceUtils;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import java.security.SecureRandom;
 
 public abstract class AbstractLiteClient {
 
@@ -45,5 +52,23 @@ public abstract class AbstractLiteClient {
 
     public void shutdown() throws Exception {
         logger.info("AbstractLiteClient shutdown");
+    }
+
+    public CloseableHttpClient setHttpClient() throws Exception {
+        if (!liteClientConfig.isUseTls()) {
+            return HttpClients.createDefault();
+        }
+        SSLContext sslContext = null;
+        try {
+            String protocol = System.getProperty("ssl.client.protocol", "TLSv1.1");
+            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
+            sslContext = SSLContext.getInstance(protocol);
+            sslContext.init(null, tm, new SecureRandom());
+            return HttpClients.custom().setSSLContext(sslContext)
+                    .setSSLHostnameVerifier(new DefaultHostnameVerifier()).build();
+        } catch (Exception e) {
+            logger.error("Error in creating HttpClient.", e);
+            throw e;
+        }
     }
 }

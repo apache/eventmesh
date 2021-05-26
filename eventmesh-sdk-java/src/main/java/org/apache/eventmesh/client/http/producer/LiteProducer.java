@@ -61,13 +61,8 @@ public class LiteProducer extends AbstractLiteClient {
 
     public Logger logger = LoggerFactory.getLogger(LiteProducer.class);
 
-    private static CloseableHttpClient httpClient = HttpClients.createDefault();
-
     public LiteProducer(LiteClientConfig liteClientConfig) {
         super(liteClientConfig);
-        if (liteClientConfig.isUseTls()) {
-            setHttpClient();
-        }
     }
 
     private AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
@@ -92,7 +87,6 @@ public class LiteProducer extends AbstractLiteClient {
         }
         logger.info("LiteProducer shutting down");
         super.shutdown();
-        httpClient.close();
         started.compareAndSet(true, false);
         logger.info("LiteProducer shutdown");
     }
@@ -132,10 +126,13 @@ public class LiteProducer extends AbstractLiteClient {
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String res = "";
+        CloseableHttpClient httpClient = setHttpClient();
         try {
             res = HttpUtil.post(httpClient, target, requestParam);
         } catch (Exception ex) {
             throw new EventMeshException(ex);
+        } finally {
+            httpClient.close();
         }
 
         if (logger.isDebugEnabled()) {
@@ -191,10 +188,13 @@ public class LiteProducer extends AbstractLiteClient {
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String res = "";
+        CloseableHttpClient httpClient = setHttpClient();
         try {
             res = HttpUtil.post(httpClient, target, requestParam);
         } catch (Exception ex) {
             throw new EventMeshException(ex);
+        } finally {
+            httpClient.close();
         }
 
         if (logger.isDebugEnabled()) {
@@ -246,32 +246,17 @@ public class LiteProducer extends AbstractLiteClient {
 
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
+        CloseableHttpClient httpClient = setHttpClient();
         try {
             HttpUtil.post(httpClient, null, target, requestParam, new RRCallbackResponseHandlerAdapter(message, rrCallback, timeout));
         } catch (Exception ex) {
             throw new EventMeshException(ex);
+        } finally {
+            httpClient.close();
         }
 
         if (logger.isDebugEnabled()) {
             logger.debug("publish sync message by async, target:{}, cost:{}, message:{}", target, System.currentTimeMillis() - startTime, message);
-        }
-    }
-
-    public static void setHttpClient() {
-        SSLContext sslContext = null;
-        try {
-            String protocol = System.getProperty("ssl.client.protocol", "TLSv1.1");
-            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
-            sslContext = SSLContext.getInstance(protocol);
-            sslContext.init(null, tm, new SecureRandom());
-            httpClient = HttpClients.custom().setSSLContext(sslContext)
-                    .setSSLHostnameVerifier(new DefaultHostnameVerifier()).build();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }
