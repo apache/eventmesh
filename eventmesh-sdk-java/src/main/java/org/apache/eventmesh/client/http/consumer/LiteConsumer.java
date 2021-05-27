@@ -127,13 +127,9 @@ public class LiteConsumer extends AbstractLiteClient {
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String subRes = "";
-        CloseableHttpClient httpClient = setHttpClient();
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()){
             subRes = HttpUtil.post(httpClient, target, subscribeParam);
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
-        } finally {
-            httpClient.close();
         }
 
         if (logger.isDebugEnabled()) {
@@ -215,13 +211,9 @@ public class LiteConsumer extends AbstractLiteClient {
                     long startTime = System.currentTimeMillis();
                     String target = selectEventMesh();
                     String res = "";
-                    CloseableHttpClient httpClient = setHttpClient();
-                    try {
+
+                    try (CloseableHttpClient httpClient = setHttpClient()) {
                         res = HttpUtil.post(httpClient, target, requestParam);
-                    } catch (Exception ex) {
-                        throw new EventMeshException(ex);
-                    } finally {
-                        httpClient.close();
                     }
 
                     if (logger.isDebugEnabled()) {
@@ -248,13 +240,9 @@ public class LiteConsumer extends AbstractLiteClient {
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String unSubRes = "";
-        CloseableHttpClient httpClient = setHttpClient();
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()) {
             unSubRes = HttpUtil.post(httpClient, target, unSubscribeParam);
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
-        } finally {
-            httpClient.close();
         }
 
         if (logger.isDebugEnabled()) {

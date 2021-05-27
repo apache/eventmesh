@@ -126,13 +126,9 @@ public class LiteProducer extends AbstractLiteClient {
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String res = "";
-        CloseableHttpClient httpClient = setHttpClient();
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()) {
             res = HttpUtil.post(httpClient, target, requestParam);
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
-        } finally {
-            httpClient.close();
         }
 
         if (logger.isDebugEnabled()) {
@@ -188,13 +184,9 @@ public class LiteProducer extends AbstractLiteClient {
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String res = "";
-        CloseableHttpClient httpClient = setHttpClient();
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()) {
             res = HttpUtil.post(httpClient, target, requestParam);
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
-        } finally {
-            httpClient.close();
         }
 
         if (logger.isDebugEnabled()) {
@@ -246,13 +238,9 @@ public class LiteProducer extends AbstractLiteClient {
 
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
-        CloseableHttpClient httpClient = setHttpClient();
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()) {
             HttpUtil.post(httpClient, null, target, requestParam, new RRCallbackResponseHandlerAdapter(message, rrCallback, timeout));
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
-        } finally {
-            httpClient.close();
         }
 
         if (logger.isDebugEnabled()) {
