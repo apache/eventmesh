@@ -60,7 +60,7 @@ public abstract class AbstractLiteClient {
         }
         SSLContext sslContext = null;
         try {
-            String protocol = System.getProperty("ssl.client.protocol", "TLSv1.1");
+            String protocol = System.getProperty("ssl.client.protocol", "TLSv1.2");
             TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
             sslContext = SSLContext.getInstance(protocol);
             sslContext.init(null, tm, new SecureRandom());
