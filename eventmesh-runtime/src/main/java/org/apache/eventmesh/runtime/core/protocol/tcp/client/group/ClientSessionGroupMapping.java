@@ -294,7 +294,7 @@ public class ClientSessionGroupMapping {
      * @param session
      */
     private void handleUnackMsgsInSession(Session session) {
-        ConcurrentHashMap<String /** seq */, DownStreamMsgContext> unAckMsg = session.getPusher().getPushContext().getUnAckMsg();
+        ConcurrentHashMap<String /** seq */, DownStreamMsgContext> unAckMsg = session.getPusher().getUnAckMsg();
         if (unAckMsg.size() > 0 && session.getClientGroupWrapper().get().getGroupConsumerSessions().size() > 0) {
             for (Map.Entry<String, DownStreamMsgContext> entry : unAckMsg.entrySet()) {
                 DownStreamMsgContext downStreamMsgContext = entry.getValue();
@@ -379,33 +379,16 @@ public class ClientSessionGroupMapping {
                 Iterator<Session> sessionIterator = sessionTable.values().iterator();
                 while (sessionIterator.hasNext()) {
                     Session tmp = sessionIterator.next();
-                    for (Map.Entry<String, DownStreamMsgContext> entry : tmp.getPusher().getPushContext().getUnAckMsg().entrySet()) {
+                    for (Map.Entry<String, DownStreamMsgContext> entry : tmp.getPusher().getUnAckMsg().entrySet()) {
                         String seqKey = entry.getKey();
                         DownStreamMsgContext downStreamMsgContext = entry.getValue();
                         if (!downStreamMsgContext.isExpire()) {
                             continue;
                         }
                         downStreamMsgContext.ackMsg();
-                        tmp.getPusher().getPushContext().getUnAckMsg().remove(seqKey);
+                        tmp.getPusher().getUnAckMsg().remove(seqKey);
                         logger.warn("remove expire downStreamMsgContext, session:{}, topic:{}, seq:{}", tmp,
                                 downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), seqKey);
-                    }
-                }
-
-                //scan broadcast msg
-                Iterator<ClientGroupWrapper> cgwIterator = clientGroupMap.values().iterator();
-                while (cgwIterator.hasNext()) {
-                    ClientGroupWrapper cgw = cgwIterator.next();
-                    for (Map.Entry<String, DownStreamMsgContext> entry : cgw.getDownstreamMap().entrySet()) {
-                        String seq = entry.getKey();
-                        DownStreamMsgContext downStreamMsgContext = entry.getValue();
-                        if (!downStreamMsgContext.isExpire()) {
-                            continue;
-                        }
-                        cgw.getDownstreamMap().get(seq).ackMsg();
-                        cgw.getDownstreamMap().remove(seq);
-                        logger.warn("remove expire DownStreamMsgContext,group:{}, topic:{}, seq:{}", cgw.getGroupName(),
-                                downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), seq);
                     }
                 }
             }

@@ -45,16 +45,12 @@ public class MessageAckTask extends AbstractTask {
             logger.error("MessageAckTask failed, seq cannot be null|user={}", session.getClient());
             return;
         }
-        DownStreamMsgContext downStreamMsgContext = session.getPusher().getPushContext().getUnAckMsg().get(seq);
+        DownStreamMsgContext downStreamMsgContext = session.getPusher().getUnAckMsg().get(seq);
         if (downStreamMsgContext != null) {// ack non-broadcast msg
             downStreamMsgContext.ackMsg();
-            session.getPusher().getPushContext().getUnAckMsg().remove(seq);
+            session.getPusher().getUnAckMsg().remove(seq);
         }else {
-            downStreamMsgContext = session.getClientGroupWrapper().get().getDownstreamMap().get(seq);
-            if(downStreamMsgContext != null){// ack broadcast msg
-                downStreamMsgContext.ackMsg();
-                session.getClientGroupWrapper().get().getDownstreamMap().remove(seq);
-            }
+           logger.warn("MessageAckTask, seq:{}, downStreamMsgContext not in downStreamMap,client:{}", seq, session.getClient());
         }
         messageLogger.info("pkg|c2eventMesh|cmd={}|seq=[{}]|user={}|wait={}ms|cost={}ms", cmd, seq, session.getClient(),
                 taskExecuteTime - startTime, System.currentTimeMillis() - startTime);

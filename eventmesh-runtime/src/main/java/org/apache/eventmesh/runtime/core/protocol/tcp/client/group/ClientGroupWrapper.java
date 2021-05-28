@@ -98,12 +98,6 @@ public class ClientGroupWrapper {
 
     private ConcurrentHashMap<String, Set<Session>> topic2sessionInGroupMapping = new ConcurrentHashMap<String, Set<Session>>();
 
-    private ConcurrentHashMap<String, DownStreamMsgContext> downstreamMap = new ConcurrentHashMap<String, DownStreamMsgContext>();
-
-    public ConcurrentHashMap<String, DownStreamMsgContext> getDownstreamMap() {
-        return downstreamMap;
-    }
-
     public AtomicBoolean producerStarted = new AtomicBoolean(Boolean.FALSE);
 
     public ClientGroupWrapper(String sysId, String dcn,
@@ -541,8 +535,6 @@ public class ClientGroupWrapper {
                     DownStreamMsgContext downStreamMsgContext =
                             new DownStreamMsgContext(message, null, broadCastMsgConsumer, broadCastMsgConsumer.getContext(), false);
 
-                    //broadcast msg store in group level, others msg store in session level, reduce memory cost
-                    downstreamMap.put(downStreamMsgContext.seq, downStreamMsgContext);
                     while (sessionsItr.hasNext()) {
                         Session session = sessionsItr.next();
 
@@ -552,6 +544,8 @@ public class ClientGroupWrapper {
                         }
 
                         downStreamMsgContext.session = session;
+                        //msg put in eventmesh,waiting client ack
+                        session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                         session.downstreamMsg(downStreamMsgContext);
                     }
 
@@ -605,7 +599,8 @@ public class ClientGroupWrapper {
 
                     DownStreamMsgContext downStreamMsgContext =
                             new DownStreamMsgContext(message, session, persistentMsgConsumer, persistentMsgConsumer.getContext(), false);
-
+                    //msg put in eventmesh,waiting client ack
+                    session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     session.downstreamMsg(downStreamMsgContext);
 //                    context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
 //                    context.ack();
@@ -646,28 +641,11 @@ public class ClientGroupWrapper {
     }
 
     public Set<Session> getGroupConsumerSessions() {
-        Set<Session> res = null;
-        try {
-            this.groupLock.readLock().lockInterruptibly();
-            res = groupConsumerSessions;
-        } catch (Exception e) {
-        } finally {
-            this.groupLock.readLock().unlock();
-        }
-        return res;
+        return groupConsumerSessions;
     }
 
-
     public Set<Session> getGroupProducerSessions() {
-        Set<Session> res = null;
-        try {
-            this.groupLock.readLock().lockInterruptibly();
-            res = groupProducerSessions;
-        } catch (Exception e) {
-        } finally {
-            this.groupLock.readLock().unlock();
-        }
-        return res;
+        return groupProducerSessions;
     }
 
     public void setGroupName(String groupName) {

@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
@@ -31,21 +32,20 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 public class SessionPusher {
 
     private final Logger messageLogger = LoggerFactory.getLogger("message");
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private PushContext pushContext = new PushContext(this);
+    private AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
-    public PushContext getPushContext() {
-        return pushContext;
-    }
+    private AtomicLong deliverFailMsgsCount = new AtomicLong(0);
 
-    public void setPushContext(PushContext pushContext) {
-        this.pushContext = pushContext;
-    }
+    private ConcurrentHashMap<String /** seq */, DownStreamMsgContext> downStreamMap = new ConcurrentHashMap<String, DownStreamMsgContext>();
 
     private Session session;
 
@@ -55,7 +55,10 @@ public class SessionPusher {
 
     @Override
     public String toString() {
-        return "SessionPusher{pushContext=" + pushContext + "}";
+        return "SessionPusher{" +
+                "deliveredMsgsCount=" + deliveredMsgsCount.longValue() +
+                ",deliverFailCount=" + deliverFailMsgsCount.longValue() +
+                ",unAckMsg=" + CollectionUtils.size(downStreamMap) + '}';
     }
 
     public void push(final DownStreamMsgContext downStreamMsgContext) {
@@ -85,18 +88,13 @@ public class SessionPusher {
         } finally {
             session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getEventMesh2clientMsgNum().incrementAndGet();
 
-            //avoid ack arrives to server prior to callback of the method writeAndFlush,may cause ack problem
-            if(!EventMeshUtil.isBroadcast(downStreamMsgContext.msgExt.getTopic())){
-                pushContext.unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
-            }
-
             session.getContext().writeAndFlush(pkg).addListener(
                     new ChannelFutureListener() {
                         @Override
                         public void operationComplete(ChannelFuture future) throws Exception {
                             if (!future.isSuccess()) {
                                 logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, msg:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, downStreamMsgContext.msgExt);
-                                pushContext.deliverFailMsgCount();
+                                deliverFailMsgsCount.incrementAndGet();
 
                                 //how long to isolate client when push fail
                                 long isolateTime = System.currentTimeMillis() + session.getEventMeshTCPConfiguration().eventMeshTcpPushFailIsolateTimeInMills;
@@ -108,7 +106,7 @@ public class SessionPusher {
                                 downStreamMsgContext.delay(delayTime);
                                 session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {
-                                pushContext.deliveredMsgCount();
+                                deliveredMsgsCount.incrementAndGet();
                                 logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
                                 if (session.isIsolated()) {
@@ -120,5 +118,26 @@ public class SessionPusher {
                     }
             );
         }
+    }
+
+    public void unAckMsg(String seq, DownStreamMsgContext downStreamMsgContext) {
+        downStreamMap.put(seq, downStreamMsgContext);
+        logger.info("put msg in unAckMsg,seq:{},unAckMsgSize:{}", seq, getTotalUnackMsgs());
+    }
+
+    public int getTotalUnackMsgs() {
+        return downStreamMap.size();
+    }
+
+    public ConcurrentHashMap<String, DownStreamMsgContext> getUnAckMsg() {
+        return downStreamMap;
+    }
+
+    public AtomicLong getDeliveredMsgsCount() {
+        return deliveredMsgsCount;
+    }
+
+    public AtomicLong getDeliverFailMsgsCount() {
+        return deliverFailMsgsCount;
     }
 }

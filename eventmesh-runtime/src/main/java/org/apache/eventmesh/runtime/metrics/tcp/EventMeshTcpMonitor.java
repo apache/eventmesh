@@ -107,9 +107,9 @@ public class EventMeshTcpMonitor {
                 Set<String> topicSet = new HashSet<>();
                 while (sessionIterator.hasNext()) {
                     Session session = sessionIterator.next();
-                    AtomicLong deliveredMsgsCount = session.getPusher().getPushContext().deliveredMsgsCount;
-                    AtomicLong deliveredFailCount = session.getPusher().getPushContext().deliverFailMsgsCount;
-                    int unAckMsgsCount = session.getPusher().getPushContext().getTotalUnackMsgs();
+                    AtomicLong deliveredMsgsCount = session.getPusher().getDeliveredMsgsCount();
+                    AtomicLong deliveredFailCount = session.getPusher().getDeliverFailMsgsCount();
+                    int unAckMsgsCount = session.getPusher().getTotalUnackMsgs();
                     int sendTopics = session.getSessionContext().sendTopics.size();
                     int subscribeTopics = session.getSessionContext().subscribeTopics.size();
 
