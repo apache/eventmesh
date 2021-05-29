@@ -47,7 +47,7 @@ public class OMSProducerAdaptor implements MeshMQProducer {
     private ConfigurationWrapper configurationWrapper;
 
     /**
-     * More detail about the properties, you can see {@link EventMeshProducer}
+     * More detail about the properties, you can see EventMeshProducer
      * <ol>
      *     <li>producerGroup</li>
      *     <li>instanceName</li>

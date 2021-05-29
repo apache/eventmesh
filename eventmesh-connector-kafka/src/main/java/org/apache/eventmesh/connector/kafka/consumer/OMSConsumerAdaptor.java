@@ -50,7 +50,7 @@ public class OMSConsumerAdaptor implements MeshMQPushConsumer {
     private ConfigurationWrapper configurationWrapper;
 
     /**
-     * More detail about the properties, you can see {@link EventMeshConsumer}
+     * More detail about the properties, you can see EventMeshConsumer
      * <ol>
      *     <li>isBroadcast</li>
      *     <li>consumerGroup</li>

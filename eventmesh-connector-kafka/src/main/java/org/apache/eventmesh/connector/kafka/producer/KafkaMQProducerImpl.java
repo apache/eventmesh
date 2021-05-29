@@ -47,7 +47,7 @@ public class KafkaMQProducerImpl implements Producer {
     private String clientId;
 
     /**
-     * More detail about the properties, you can see {@link EventMeshProducer}
+     * More detail about the properties, you can see EventMeshProducer
      * <ol>
      *     <li>producerGroup</li>
      *     <li>instanceName</li>
