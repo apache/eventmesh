@@ -219,6 +219,7 @@ subprojects {
                 exclude '**/spring-boot-devtools*.jar'
                 exclude '**/mumble-sdk-test*.jar'
                 exclude '*connector-rocketmq*.jar'
+                exclude '*connector-kafka*.jar'
                 exclude 'eventmesh-runtime*.jar'
                 exclude 'commons-collections-3.2.2.jar'
             }

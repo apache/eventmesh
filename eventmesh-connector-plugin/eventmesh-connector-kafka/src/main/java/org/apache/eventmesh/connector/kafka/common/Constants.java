@@ -15,15 +15,11 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-connector-plugin:eventmesh-connector-kafka'
+package org.apache.eventmesh.connector.kafka.common;
 
+public enum Constants {
+    ;
+    public static final String EVENTMESH_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
+
+    public static final String KAFKA_CONF_FILE = "kafka-client.properties";
+}
