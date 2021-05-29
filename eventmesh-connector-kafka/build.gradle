@@ -15,14 +15,26 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime',
-        'eventmesh-connector-rocketmq',
-        'eventmesh-connector-kafka',
-        'eventmesh-sdk-java',
-        'eventmesh-common',
-        'eventmesh-connector-api',
-        'eventmesh-starter',
-        'eventmesh-test'
+configurations {
+    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
+}
 
+List kafka = [
+        "org.apache.kafka:kafka-clients:$kafka_version",
+]
+
+List metrics = [
+        "io.dropwizard.metrics:metrics-core:4.1.0",
+        "io.dropwizard.metrics:metrics-healthchecks:4.1.0",
+        "io.dropwizard.metrics:metrics-annotation:4.1.0",
+        "io.dropwizard.metrics:metrics-json:4.1.0"
+]
+
+List open_message = [
+        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
+]
+
+dependencies {
+    implementation kafka, metrics, open_message, project(":eventmesh-connector-api"), project(":eventmesh-common")
+    testImplementation kafka, metrics, open_message, project(":eventmesh-connector-api"), project(":eventmesh-common")
+}

@@ -15,14 +15,20 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime',
-        'eventmesh-connector-rocketmq',
-        'eventmesh-connector-kafka',
-        'eventmesh-sdk-java',
-        'eventmesh-common',
-        'eventmesh-connector-api',
-        'eventmesh-starter',
-        'eventmesh-test'
+package org.apache.eventmesh.connector.kafka.config;
 
+import org.apache.eventmesh.connector.kafka.common.Constants;
+import org.junit.Assert;
+import org.junit.Test;
+
+public class ConfigurationWrapperTest {
+
+    @Test
+    public void getProperty() {
+        String filePath = this.getClass().getClassLoader().getResource(Constants.KAFKA_CONF_FILE).getPath();
+        ConfigurationWrapper configurationWrapper = new ConfigurationWrapper(filePath, true);
+        String value = configurationWrapper.getProperty("test");
+        Assert.assertEquals("123", value);
+
+    }
+}
