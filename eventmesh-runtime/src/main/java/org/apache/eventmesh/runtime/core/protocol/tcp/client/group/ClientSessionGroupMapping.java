@@ -19,11 +19,8 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.group;
 
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +42,6 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.Down
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.FreePriorityDispatchStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.ClientAckContext;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
@@ -298,21 +294,24 @@ public class ClientSessionGroupMapping {
      * @param session
      */
     private void handleUnackMsgsInSession(Session session) {
-        ConcurrentHashMap<String /** seq */, ClientAckContext> unAckMsg = session.getPusher().getPushContext().getUnAckMsg();
+        ConcurrentHashMap<String /** seq */, DownStreamMsgContext> unAckMsg = session.getPusher().getUnAckMsg();
         if (unAckMsg.size() > 0 && session.getClientGroupWrapper().get().getGroupConsumerSessions().size() > 0) {
-            for (Map.Entry<String, ClientAckContext> entry : unAckMsg.entrySet()) {
-                ClientAckContext ackContext = entry.getValue();
-                if (EventMeshUtil.isBroadcast(ackContext.getMsgs().get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))) {
-                    logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}", ackContext.getSeq(), EventMeshUtil.getMessageBizSeq(ackContext.getMsgs().get(0)), session.getClient());
+            for (Map.Entry<String, DownStreamMsgContext> entry : unAckMsg.entrySet()) {
+                DownStreamMsgContext downStreamMsgContext = entry.getValue();
+                if (EventMeshUtil.isBroadcast(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))) {
+                    logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}", downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt), session.getClient());
                     continue;
                 }
-                List<Session> list = new ArrayList<>(session.getClientGroupWrapper().get().getGroupConsumerSessions());
-                Collections.shuffle(list);
-                DownStreamMsgContext downStreamMsgContext = new DownStreamMsgContext(ackContext.getMsgs().get(0), list.get(0), ackContext.getConsumer(), ackContext.getContext(), false);
-
-                downStreamMsgContext.delay(0L);
-                eventMeshTCPServer.getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
-                logger.warn("rePush msg form unAckMsgs,seq:{},rePushSeq:{},rePushClient:{}", entry.getKey(), downStreamMsgContext.seq, downStreamMsgContext.session.getClient());
+                Session reChooseSession = session.getClientGroupWrapper().get().getDownstreamDispatchStrategy().select(session.getClientGroupWrapper().get().getGroupName()
+                        , downStreamMsgContext.msgExt.getTopic()
+                        , session.getClientGroupWrapper().get().groupConsumerSessions);
+                if(reChooseSession != null){
+                    downStreamMsgContext.session = reChooseSession;
+                    reChooseSession.downstreamMsg(downStreamMsgContext);
+                    logger.info("rePush msg form unAckMsgs,seq:{},rePushClient:{}", entry.getKey(), downStreamMsgContext.session.getClient());
+                }else{
+                    logger.warn("select session fail in handleUnackMsgsInSession,seq:{},topic:{}", entry.getKey(), downStreamMsgContext.msgExt.getTopic());
+                }
             }
         }
     }
@@ -371,46 +370,25 @@ public class ClientSessionGroupMapping {
         }, 1000, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills, TimeUnit.MILLISECONDS);
     }
 
-    private void initSessionAckContextCleaner() {
-        eventMeshTCPServer.getScheduler().scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                Iterator<Session> sessionIterator = sessionTable.values().iterator();
-                while (sessionIterator.hasNext()) {
-                    Session tmp = sessionIterator.next();
-                    for (Map.Entry<String, ClientAckContext> entry : tmp.getPusher().getPushContext().getUnAckMsg().entrySet()) {
-                        String seqKey = entry.getKey();
-                        ClientAckContext clientAckContext = entry.getValue();
-                        if (!clientAckContext.isExpire()) {
-                            continue;
-                        }
-                        tmp.getPusher().getPushContext().ackMsg(seqKey);
-                        tmp.getPusher().getPushContext().getUnAckMsg().remove(seqKey);
-                        logger.warn("remove expire clientAckContext, session:{}, topic:{}, seq:{}", tmp,
-                                clientAckContext.getMsgs().get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), seqKey);
-                    }
-                }
-            }
-        }, 1000, 5 * 1000, TimeUnit.MILLISECONDS);
-    }
-
     private void initDownStreamMsgContextCleaner() {
         eventMeshTCPServer.getScheduler().scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                Iterator<ClientGroupWrapper> cgwIterator = clientGroupMap.values().iterator();
-                while (cgwIterator.hasNext()) {
-                    ClientGroupWrapper cgw = cgwIterator.next();
-                    for (Map.Entry<String, DownStreamMsgContext> entry : cgw.getDownstreamMap().entrySet()) {
-                        String seq = entry.getKey();
+
+                //scan non-broadcast msg
+                Iterator<Session> sessionIterator = sessionTable.values().iterator();
+                while (sessionIterator.hasNext()) {
+                    Session tmp = sessionIterator.next();
+                    for (Map.Entry<String, DownStreamMsgContext> entry : tmp.getPusher().getUnAckMsg().entrySet()) {
+                        String seqKey = entry.getKey();
                         DownStreamMsgContext downStreamMsgContext = entry.getValue();
                         if (!downStreamMsgContext.isExpire()) {
                             continue;
                         }
-                        cgw.getDownstreamMap().get(seq).ackMsg();
-                        cgw.getDownstreamMap().remove(seq);
-                        logger.warn("remove expire DownStreamMsgContext,group:{}, topic:{}, seq:{}", cgw.getGroupName(),
-                                downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), seq);
+                        downStreamMsgContext.ackMsg();
+                        tmp.getPusher().getUnAckMsg().remove(seqKey);
+                        logger.warn("remove expire downStreamMsgContext, session:{}, topic:{}, seq:{}", tmp,
+                                downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), seqKey);
                     }
                 }
             }
@@ -420,7 +398,6 @@ public class ClientSessionGroupMapping {
 
     public void init() throws Exception {
         initSessionCleaner();
-        initSessionAckContextCleaner();
         initDownStreamMsgContextCleaner();
         logger.info("ClientSessionGroupMapping inited......");
     }

@@ -26,11 +26,7 @@ import com.google.common.util.concurrent.RateLimiter;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.AdaptiveRecvByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
@@ -108,10 +104,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     private RateLimiter rateLimiter;
 
-    private EventMeshTcpMessageDispatcher eventMeshTcpMessageDispatcher = new EventMeshTcpMessageDispatcher(EventMeshTCPServer.this);
-    private EventMeshTcpExceptionHandler eventMeshTcpExceptionHandler = new EventMeshTcpExceptionHandler(EventMeshTCPServer.this);
-
-
     public EventMeshTCPServer(EventMeshServer eventMeshServer,
                               EventMeshTCPConfiguration eventMeshTCPConfiguration) {
         super();
@@ -147,8 +139,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                                     .addLast(workerGroup, new IdleStateHandler(eventMeshTCPConfiguration.eventMeshTcpIdleReadSeconds,
                                                     eventMeshTCPConfiguration.eventMeshTcpIdleWriteSeconds,
                                                     eventMeshTCPConfiguration.eventMeshTcpIdleAllSeconds),
-                                            eventMeshTcpMessageDispatcher,
-                                            eventMeshTcpExceptionHandler
+                                            new EventMeshTcpMessageDispatcher(EventMeshTCPServer.this),
+                                            new EventMeshTcpExceptionHandler(EventMeshTCPServer.this)
                                     );
                         }
                     });
