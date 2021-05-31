@@ -25,6 +25,7 @@ header:
   paths-ignore:
     - '.github/PULL_REQUEST_TEMPLATE'
     - '.gitmodules'
+    - '**/.gitkeep'
     - '**/.gitignore'
     - '**/*.md'
     - '**/*.json'
@@ -35,5 +36,6 @@ header:
     - '**/*.pem'
     - 'LICENSE'
     - 'NOTICE'
+    - 'DISCLAIMER-WIP'
 
   comment: on-failure
