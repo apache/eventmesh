@@ -41,25 +41,26 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
         }
 
         List<Session> filtered = new ArrayList<Session>();
-        List<Session> canDownSessions = new ArrayList<>();
+        List<Session> isolatedSessions = new ArrayList<>();
         for (Session session : groupConsumerSessions) {
             if (!session.isAvailable(topic)) {
                 continue;
             }
-            if (session.isDownStreamBusy()) {
-                canDownSessions.add(session);
+            if (session.isIsolated()) {
+                isolatedSessions.add(session);
+                logger.info("session is not available because session is isolated,isolateTime:{},client:{}",session.getIsolateTime(), session.getClient());
                 continue;
             }
             filtered.add(session);
         }
 
         if (CollectionUtils.isEmpty(filtered)) {
-            if (CollectionUtils.isEmpty(canDownSessions)) {
+            if (CollectionUtils.isEmpty(isolatedSessions)) {
                 logger.warn("all sessions can't downstream msg");
                 return null;
             } else {
-                logger.warn("all sessions are busy,group:{},topic:{}", group, topic);
-                filtered.addAll(canDownSessions);
+                logger.warn("all sessions are isolated,group:{},topic:{}", group, topic);
+                filtered.addAll(isolatedSessions);
             }
         }
 
