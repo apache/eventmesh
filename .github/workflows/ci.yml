@@ -66,3 +66,27 @@ jobs:
 
       - name: Upload coverage report to codecov.io
         run: bash <(curl -s https://codecov.io/bash) || echo 'Failed to upload coverage report!'
+
+  checkstyle:
+    name: Checkstyle
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Check code style
+        env:
+          WORKDIR: ./
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHECKSTYLE_CONFIG: checkStyle.xml
+          REVIEWDOG_VERSION: v0.10.2
+        run: |
+          wget -O - -q https://github.com/checkstyle/checkstyle/releases/download/checkstyle-8.22/checkstyle-8.22-all.jar > /opt/checkstyle.jar
+          wget -O - -q https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b /opt ${REVIEWDOG_VERSION}
+          java -jar /opt/checkstyle.jar "${WORKDIR}" -c "${CHECKSTYLE_CONFIG}"  -f xml \
+               | /opt/reviewdog -f=checkstyle \
+                    -reporter="${INPUT_REPORTER:-github-pr-check}" \
+                    -filter-mode="${INPUT_FILTER_MODE:-added}" \
+                    -fail-on-error="${INPUT_FAIL_ON_ERROR:-false}"
