@@ -1,5 +1,6 @@
-# Apache EventMesh (incubating)
+# Apache EventMesh (incubating) 
 [![Build Status](https://www.travis-ci.org/apache/incubator-eventmesh.svg?branch=develop)](https://www.travis-ci.org/github/apache/incubator-eventmesh.svg?branch=develop)
+[![CodeCov](https://codecov.io/gh/apache/incubator-eventmesh/branch/develop/graph/badge.svg)](https://codecov.io/gh/apache/incubator-eventmesh)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/context:java)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/alerts/)
 [![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/apache/incubator-eventmesh/releases)
@@ -7,6 +8,7 @@
 
 [点我查看中文版](README.zh-CN.md)
 
+![logo](docs/images/logo2.png)
 ## What is EventMesh?
 EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 

@@ -82,7 +82,7 @@ public class SubService implements InitializingBean {
         logger.info("start destory ....");
         try {
             liteConsumer.unsubscribe(topicList, url);
-        } catch (EventMeshException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         try {
