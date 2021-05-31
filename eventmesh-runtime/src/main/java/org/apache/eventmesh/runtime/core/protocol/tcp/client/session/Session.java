@@ -200,14 +200,6 @@ public class Session {
         pusher.push(downStreamMsgContext);
     }
 
-    public boolean isDownStreamBusy() {
-        return pusher.isBusy();
-    }
-
-    public boolean isCanDownStream() {
-        return pusher.isCanDownStream();
-    }
-
     public boolean isIsolated() {
         return System.currentTimeMillis() < isolateTime;
     }
@@ -233,17 +225,6 @@ public class Session {
         } catch (Exception e) {
             logger.error("exception while write2Client", e);
         }
-    }
-
-    /**
-     * ACK MSG
-     *
-     * @param seq
-     */
-    public void ackMsg(String seq) {
-        logger.info("ackMsg start,seq:{}", seq);
-        pusher.getPushContext().ackMsg(seq);
-        logger.info("ackMsg end,seq:{}", seq);
     }
 
     @Override
@@ -335,18 +316,22 @@ public class Session {
 
     public boolean isAvailable(String topic) {
         if (SessionState.CLOSED == sessionState) {
-            logger.warn("session is not available because session has been closed");
+            logger.warn("session is not available because session has been closed,topic:{},client:{}", topic, client);
             return false;
         }
 
         if (!sessionContext.subscribeTopics.containsKey(topic)) {
-            logger.warn("session is not available because session has not subscribe topic:{}", topic);
+            logger.warn("session is not available because session has not subscribe topic:{},client:{}", topic,client);
             return false;
         }
-        if (isIsolated()) {
-            logger.warn("session is not available because session is isolated,isolateTime:{}", isolateTime);
-            return false;
-        }
+
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int code = 37 + (client != null ? client.hashCode() : 0) + (context != null ? context.hashCode() : 0)
+                + (sessionState != null ? sessionState.hashCode() : 0);
+        return code;
     }
 }

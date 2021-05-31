@@ -26,11 +26,7 @@ import com.google.common.util.concurrent.RateLimiter;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.AdaptiveRecvByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
@@ -64,13 +60,49 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     private GlobalTrafficShapingHandler globalTrafficShapingHandler;
 
-    public static ScheduledExecutorService scheduler;
+    private ScheduledExecutorService scheduler;
 
-    public static ExecutorService taskHandleExecutorService;
+    private ExecutorService taskHandleExecutorService;
 
-    public ScheduledFuture<?> tcpRegisterTask;
+    public void setClientSessionGroupMapping(ClientSessionGroupMapping clientSessionGroupMapping) {
+        this.clientSessionGroupMapping = clientSessionGroupMapping;
+    }
 
-    public RateLimiter rateLimiter;
+    public ClientManageController getClientManageController() {
+        return clientManageController;
+    }
+
+    public void setClientManageController(ClientManageController clientManageController) {
+        this.clientManageController = clientManageController;
+    }
+
+    public ScheduledExecutorService getScheduler() {
+        return scheduler;
+    }
+
+    public void setScheduler(ScheduledExecutorService scheduler) {
+        this.scheduler = scheduler;
+    }
+
+    public ExecutorService getTaskHandleExecutorService() {
+        return taskHandleExecutorService;
+    }
+
+    public void setTaskHandleExecutorService(ExecutorService taskHandleExecutorService) {
+        this.taskHandleExecutorService = taskHandleExecutorService;
+    }
+
+    public RateLimiter getRateLimiter() {
+        return rateLimiter;
+    }
+
+    public void setRateLimiter(RateLimiter rateLimiter) {
+        this.rateLimiter = rateLimiter;
+    }
+
+    private ScheduledFuture<?> tcpRegisterTask;
+
+    private RateLimiter rateLimiter;
 
     public EventMeshTCPServer(EventMeshServer eventMeshServer,
                               EventMeshTCPConfiguration eventMeshTCPConfiguration) {

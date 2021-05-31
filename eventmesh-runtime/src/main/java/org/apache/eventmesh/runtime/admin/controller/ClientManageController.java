@@ -293,7 +293,7 @@ public class ClientManageController {
                     logger.info("rejectAllClient in admin====================");
                     if (!sessionMap.isEmpty()) {
                         for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
-                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(entry.getValue(), clientSessionGroupMapping);
+                            InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
                             if (addr != null) {
                                 successRemoteAddrs.add(addr);
                             }
@@ -356,7 +356,7 @@ public class ClientManageController {
                     if (!sessionMap.isEmpty()) {
                         for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                             if (entry.getKey().getHostString().equals(ip) && String.valueOf(entry.getKey().getPort()).equals(port)) {
-                                InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(entry.getValue(), clientSessionGroupMapping);
+                                InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
                                 if (addr != null) {
                                     successRemoteAddrs.add(addr);
                                 }
@@ -423,7 +423,7 @@ public class ClientManageController {
                     if (!sessionMap.isEmpty()) {
                         for (Session session : sessionMap.values()) {
                             if (session.getClient().getDcn().equals(dcn) && session.getClient().getSubsystem().equals(subSystem)) {
-                                InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(session, clientSessionGroupMapping);
+                                InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, session, clientSessionGroupMapping);
                                 if (addr != null) {
                                     successRemoteAddrs.add(addr);
                                 }
@@ -493,7 +493,7 @@ public class ClientManageController {
                         for (Session session : sessionMap.values()) {
                             if (session.getClient().getDcn().equals(dcn) && session.getClient().getSubsystem().equals(subSystem)) {
                                 redirectResult += "|";
-                                redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(destEventMeshIp, Integer.parseInt(destEventMeshPort),
+                                redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer, destEventMeshIp, Integer.parseInt(destEventMeshPort),
                                         session, clientSessionGroupMapping);
                             }
                         }
@@ -562,7 +562,7 @@ public class ClientManageController {
                         for (Session session : sessionMap.values()) {
                             if (session.getClient().getPath().contains(path)) {
                                 redirectResult += "|";
-                                redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(destEventMeshIp, Integer.parseInt(destEventMeshPort),
+                                redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer, destEventMeshIp, Integer.parseInt(destEventMeshPort),
                                         session, clientSessionGroupMapping);
                             }
                         }
@@ -633,7 +633,7 @@ public class ClientManageController {
                         for (Session session : sessionMap.values()) {
                             if (session.getClient().getHost().equals(ip) && String.valueOf(session.getClient().getPort()).equals(port)) {
                                 redirectResult += "|";
-                                redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(destEventMeshIp, Integer.parseInt(destEventMeshPort),
+                                redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer, destEventMeshIp, Integer.parseInt(destEventMeshPort),
                                         session, clientSessionGroupMapping);
                             }
                         }
@@ -673,7 +673,7 @@ public class ClientManageController {
         if (clients.isEmpty()) {
             return "no session had been closed";
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (InetSocketAddress addr : clients) {
             sb.append(addr).append("|");
         }

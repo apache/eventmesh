@@ -1,12 +1,18 @@
-[![Build Status](https://www.travis-ci.org/WeBankFinTech/DeFiBus.svg?branch=master)](https://www.travis-ci.org/WeBankFinTech/EventMesh)
-[![Coverage Status](https://coveralls.io/repos/github/WeBankFinTech/DeFiBus/badge.svg?branch=master)](https://coveralls.io/github/WeBankFinTech/EventMesh?branch=master)
-[![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/WeBankFinTech/EventMesh/releases)
+# Apache EventMesh (incubating) 
+[![Build Status](https://www.travis-ci.org/apache/incubator-eventmesh.svg?branch=develop)](https://www.travis-ci.org/github/apache/incubator-eventmesh.svg?branch=develop)
+[![CodeCov](https://codecov.io/gh/apache/incubator-eventmesh/branch/develop/graph/badge.svg)](https://codecov.io/gh/apache/incubator-eventmesh)
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/context:java)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/alerts/)
+[![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/apache/incubator-eventmesh/releases)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 [点我查看中文版](README.zh-CN.md)
 
+![logo](docs/images/logo2.png)
 ## What is EventMesh?
-EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
+EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
+
+![architecture1](docs/images/eventmesh-multi-runtime.png)
 
 **EventMesh Ecosystem:**
 
@@ -20,15 +26,6 @@ EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the 
 
 ![architecture2](docs/images/eventmesh-panels.png)
 
-The EventMesh allows events from one application to be dynamically routed to any other application.
-General functions of the eventmesh:
-
-* Event driven;
-* Event governance;
-* Dynamic routing;
-* Cloud native；
-* Flow control；
-* Load balance
 
 **Support connecting event store:**
 
@@ -37,12 +34,12 @@ General functions of the eventmesh:
 **Components:**
 
 * **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
-* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols, and will support gRPC in the future.
+* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols.
 * **eventmesh-connector-rocketmq** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from RocketMQ Event Store.
 
 **Protocol:**
 
-The protocol of eventmesh is easier and convenient, you can read more [here](docs/en/instructions/eventmesh-runtime-protocol.md)
+The protocol of eventmesh is easier and more convenient, you can read more [here](docs/en/instructions/eventmesh-runtime-protocol.md)
 
 ## RoadMap
 | version | feature |
@@ -66,7 +63,7 @@ The protocol of eventmesh is easier and convenient, you can read more [here](doc
 |         |Support MQTT protocol|
 
 ## Quick Start
-1. Build and deploy event-store(RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
+1. Build and deploy event-store(default RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
 2. Build and deploy eventmesh-runtime, see instruction ['eventmesh-runtime quickstart'](docs/en/instructions/eventmesh-runtime-quickstart.md).
 3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
 

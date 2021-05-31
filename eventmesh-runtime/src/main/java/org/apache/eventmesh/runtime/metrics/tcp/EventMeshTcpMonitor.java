@@ -80,7 +80,7 @@ public class EventMeshTcpMonitor {
     }
 
     public void start() throws Exception {
-        monitorTpsTask = eventMeshTCPServer.scheduler.scheduleAtFixedRate((new Runnable() {
+        monitorTpsTask = eventMeshTCPServer.getScheduler().scheduleAtFixedRate((new Runnable() {
             @Override
             public void run() {
                 int msgNum = client2eventMeshMsgNum.intValue();
@@ -107,15 +107,14 @@ public class EventMeshTcpMonitor {
                 Set<String> topicSet = new HashSet<>();
                 while (sessionIterator.hasNext()) {
                     Session session = sessionIterator.next();
-                    AtomicLong deliveredMsgsCount = session.getPusher().getPushContext().deliveredMsgsCount;
-                    AtomicLong deliveredFailCount = session.getPusher().getPushContext().deliverFailMsgsCount;
-                    AtomicLong ackedMsgsCount = session.getPusher().getPushContext().ackedMsgsCount;
-                    int unAckMsgsCount = session.getPusher().getPushContext().getTotalUnackMsgs();
+                    AtomicLong deliveredMsgsCount = session.getPusher().getDeliveredMsgsCount();
+                    AtomicLong deliveredFailCount = session.getPusher().getDeliverFailMsgsCount();
+                    int unAckMsgsCount = session.getPusher().getTotalUnackMsgs();
                     int sendTopics = session.getSessionContext().sendTopics.size();
                     int subscribeTopics = session.getSessionContext().subscribeTopics.size();
 
-                    tcpLogger.info("session|deliveredFailCount={}|deliveredMsgsCount={}|ackedMsgsCount={}|unAckMsgsCount={}|sendTopics={}|subscribeTopics={}|user={}",
-                            deliveredFailCount.longValue(), deliveredMsgsCount.longValue(), ackedMsgsCount.longValue(),
+                    tcpLogger.info("session|deliveredFailCount={}|deliveredMsgsCount={}|unAckMsgsCount={}|sendTopics={}|subscribeTopics={}|user={}",
+                            deliveredFailCount.longValue(), deliveredMsgsCount.longValue(),
                             unAckMsgsCount, sendTopics, subscribeTopics, session.getClient());
 
                     topicSet.addAll(session.getSessionContext().subscribeTopics.keySet());
@@ -132,7 +131,7 @@ public class EventMeshTcpMonitor {
             }
         }), delay, period, TimeUnit.MILLISECONDS);
 
-        monitorThreadPoolTask = eventMeshTCPServer.scheduler.scheduleAtFixedRate(new Runnable() {
+        monitorThreadPoolTask = eventMeshTCPServer.getScheduler().scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
 //                ThreadPoolHelper.printThreadPoolState();

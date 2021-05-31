@@ -7,19 +7,19 @@
 ```
 建议使用64位操作系统，建议使用Linux / Unix；
 64位JDK 1.8+;
-Gradle至少为5.6, 推荐 5.6.*
+Gradle至少为7.0, 推荐 7.0.*
 ```
 
 ### 1.2 下载源码
 
-[https://github.com/WeBankFinTech/EventMesh](https://github.com/WeBankFinTech/EventMesh)
+[https://github.com/apache/incubator-eventmesh](https://github.com/apache/incubator-eventmesh)
 您将获得**EventMesh-master.zip**
 
 ### 1.3 构建源码
 
 ```$ xslt
 unzip EventMesh-master.zip
-cd / *您的部署路径* /EventMesh-master/eventmesh-runtime
+cd / *您的部署路径* /EventMesh-master
 gradle clean dist tar -x test
 ```
 
@@ -68,11 +68,12 @@ sh start.sh
 **2.3.2 配置VM启动参数**
 
 ```java
--Dlog4j.configurationFile=..\eventmesh-runtime\conf\log4j2.xml
--Deventmesh.log.home=..\eventmesh-runtime\logs
--Deventmesh.home=..\eventmesh-runtime
--DconfPath=..\eventmesh-runtime\conf
+-Dlog4j.configurationFile=eventmesh-runtime/conf/log4j2.xml
+-Deventmesh.log.home=eventmesh-runtime/logs
+-Deventmesh.home=eventmesh-runtime
+-DconfPath=eventmesh-runtime/conf
 ```
+> 注：如果操作系统为Windows, 可能需要将文件分隔符换成\
 
 **2.3.3 配置build.gradle文件**
 
@@ -91,7 +92,7 @@ dependencies {
 **2.3.4 启动运行**
 
 ```
-运行com.webank.eventmesh.starter.StartUp的主要方法
+运行org.apache.eventmesh.starter.StartUp的主要方法
 ```
 
 ## 3 Docker 运行
@@ -134,8 +135,8 @@ vi eventMesh.properties
 vi rocketmq-client.properties
 ```
 
-这两个文件内容可以参考 [eventMesh.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/eventMesh.properties)
-和 [rocketmq-client.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/rocketmq-client.properties)
+这两个文件内容可以参考 [eventMesh.properties](https://github.com/apache/incubator-eventmesh/blob/develop/eventmesh-runtime/conf/eventMesh.properties)
+和 [rocketmq-client.properties](https://github.com/apache/incubator-eventmesh/blob/develop/eventmesh-runtime/conf/rocketmq-client.properties)
 
 ### 3.3 运行
 
@@ -190,8 +191,7 @@ docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs
 
 Windows
 
--
-Windows系统下运行示例可以参考[这里](https://github.com/WeBankFinTech/EventMesh/blob/develop/docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
+- Windows系统下运行示例可以参考[这里](https://github.com/apache/incubator-eventmesh/blob/develop/docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
 
 Linux
 

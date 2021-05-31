@@ -49,6 +49,8 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -59,13 +61,8 @@ public class LiteProducer extends AbstractLiteClient {
 
     public Logger logger = LoggerFactory.getLogger(LiteProducer.class);
 
-    private static CloseableHttpClient httpClient = HttpClients.createDefault();
-
     public LiteProducer(LiteClientConfig liteClientConfig) {
         super(liteClientConfig);
-        if (liteClientConfig.isUseTls()) {
-            setHttpClient();
-        }
     }
 
     private AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
@@ -90,7 +87,6 @@ public class LiteProducer extends AbstractLiteClient {
         }
         logger.info("LiteProducer shutting down");
         super.shutdown();
-        httpClient.close();
         started.compareAndSet(true, false);
         logger.info("LiteProducer shutdown");
     }
@@ -130,10 +126,9 @@ public class LiteProducer extends AbstractLiteClient {
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String res = "";
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()) {
             res = HttpUtil.post(httpClient, target, requestParam);
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
         }
 
         if (logger.isDebugEnabled()) {
@@ -151,13 +146,10 @@ public class LiteProducer extends AbstractLiteClient {
     }
 
     public String selectEventMesh() {
-        if (CollectionUtils.isEmpty(eventMeshServerList)) {
-            return null;
-        }
         if (liteClientConfig.isUseTls()) {
-            return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
+            return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerSelector.select();
         } else {
-            return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerList.get(RandomUtils.nextInt(0, eventMeshServerList.size()));
+            return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerSelector.select();
         }
     }
 
@@ -192,10 +184,9 @@ public class LiteProducer extends AbstractLiteClient {
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String res = "";
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()) {
             res = HttpUtil.post(httpClient, target, requestParam);
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
         }
 
         if (logger.isDebugEnabled()) {
@@ -247,32 +238,13 @@ public class LiteProducer extends AbstractLiteClient {
 
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()) {
             HttpUtil.post(httpClient, null, target, requestParam, new RRCallbackResponseHandlerAdapter(message, rrCallback, timeout));
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
         }
 
         if (logger.isDebugEnabled()) {
             logger.debug("publish sync message by async, target:{}, cost:{}, message:{}", target, System.currentTimeMillis() - startTime, message);
-        }
-    }
-
-    public static void setHttpClient() {
-        SSLContext sslContext = null;
-        try {
-            String protocol = System.getProperty("ssl.client.protocol", "TLSv1.1");
-            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
-            sslContext = SSLContext.getInstance(protocol);
-            sslContext.init(null, tm, new SecureRandom());
-            httpClient = HttpClients.custom().setSslcontext(sslContext)
-                    .setHostnameVerifier(SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER).build();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }
