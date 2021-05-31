@@ -145,16 +145,8 @@ public class EventMeshTcpRetryer {
 //                }
             } else {
                 downStreamMsgContext.session = rechoosen;
-
-                if (rechoosen.isCanDownStream()) {
-                    rechoosen.downstreamMsg(downStreamMsgContext);
-                    logger.info("retry downStream msg end,seq:{},retryTimes:{},bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
-                } else {
-                    logger.warn("session is busy,push retry again,seq:{}, session:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.session.getClient(), EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
-                    long delayTime = EventMeshUtil.isService(topic) ? 0 : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryDelayInMills;
-                    downStreamMsgContext.delay(delayTime);
-                    pushRetry(downStreamMsgContext);
-                }
+                rechoosen.downstreamMsg(downStreamMsgContext);
+                logger.info("retry downStream msg end,seq:{},retryTimes:{},bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
             }
         } catch (Exception e) {
             logger.error("retry-dispatcher error!", e);
