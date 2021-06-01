@@ -28,11 +28,6 @@
     <property name="eachLine" value="true"/>
   </module>
 
-  <module name="RegexpHeader">
-    <property name="headerFile" value="${checkstyle.header.file}"/>
-    <property name="multiLines" value="1, 2, 3, 18"/>
-  </module>
-
   <module name="RegexpSingleline">
     <property name="format" value="System\.out\.println"/>
     <property name="message" value="Prohibit invoking System.out.println in source code !"/>
@@ -96,7 +91,7 @@
       <property name="format" value="(^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$)"/>
     </module>
     <module name="PackageName">
-      <property name="format" value="^(org|test)\.apache\.skywalking(\.[a-zA-Z][a-zA-Z0-9]*)+$"/>
+      <property name="format" value="^(org)\.apache\.eventmesh(\.[a-zA-Z][a-zA-Z0-9]*)+$"/>
     </module>
     <module name="ParameterName"/>
     <module name="StaticVariableName">
@@ -118,16 +113,6 @@
       <property name="allowNoEmptyLineBetweenFields" value="true"/>
       <property name="allowMultipleEmptyLines" value="false"/>
       <property name="allowMultipleEmptyLinesInsideClassMembers" value="false"/>
-    </module>
-
-    <module name="ImportControl">
-      <property name="file" value="${import.control}"/>
-      <property name="path" value="apm-sniffer/(apm-sdk-plugin|bootstrap-plugins|optional-plugins)/.+/src/main/.+Instrumentation.java$"/>
-    </module>
-
-    <module name="ImportControl">
-      <property name="file" value="${import.control}"/>
-      <property name="path" value="apm-sniffer/apm-toolkit-activation/.+/src/main/.+Activation.java$"/>
     </module>
   </module>
 </module>
