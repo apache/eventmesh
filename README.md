@@ -47,7 +47,7 @@ The protocol of eventmesh is easier and more convenient, you can read more [here
 | v1.0.0  |Support java-sdk , tcp pub/sub, http pub|
 | v1.1.0  |Support RocketMQ as eventstore|
 | v1.1.1  |Support https|
-| v1.2.0  |Support OpenMessaging API，support Plug-in architecture, support http sub, support cloud native deploy|
+| v1.2.0  |Support EventMesh store layer pluggable by OpenMessaging Pub/Sub API, http sub, docker|
 | V1.3.0  |Support CloudEvents, Event Streaming|
 |         |Support Event function,triggers and bindings|
 |         |Support Event orchestration, Servelss workflow|
