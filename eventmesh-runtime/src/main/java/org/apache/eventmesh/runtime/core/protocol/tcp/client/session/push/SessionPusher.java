@@ -17,13 +17,9 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import io.openmessaging.api.Message;
-
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
@@ -36,45 +32,33 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 public class SessionPusher {
 
     private final Logger messageLogger = LoggerFactory.getLogger("message");
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private Integer unack;
+    private AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
-    private PushContext pushContext = new PushContext(this);
+    private AtomicLong deliverFailMsgsCount = new AtomicLong(0);
 
-    public PushContext getPushContext() {
-        return pushContext;
-    }
-
-    public boolean isBusy() {
-        return pushContext.getTotalUnackMsgs() >= Math.floor(3 * unack / 4);
-    }
-
-    public boolean isCanDownStream() {
-        return pushContext.getTotalUnackMsgs() < unack;
-    }
-
-    public void setPushContext(PushContext pushContext) {
-        this.pushContext = pushContext;
-    }
+    private ConcurrentHashMap<String /** seq */, DownStreamMsgContext> downStreamMap = new ConcurrentHashMap<String, DownStreamMsgContext>();
 
     private Session session;
 
     public SessionPusher(Session session) {
         this.session = session;
-        unack = (0 == session.getClient().getUnack()) ? session.getEventMeshTCPConfiguration().eventMeshTcpSessionDownstreamUnackSize : session.getClient().getUnack();
     }
 
     @Override
     public String toString() {
-        return "SessionPusher{unack=" + unack
-                + ",busy=" + isBusy()
-                + ",canDownStream=" + isCanDownStream()
-                + ",pushContext=" + pushContext + "}";
+        return "SessionPusher{" +
+                "deliveredMsgsCount=" + deliveredMsgsCount.longValue() +
+                ",deliverFailCount=" + deliverFailMsgsCount.longValue() +
+                ",unAckMsg=" + CollectionUtils.size(downStreamMap) + '}';
     }
 
     public void push(final DownStreamMsgContext downStreamMsgContext) {
@@ -103,15 +87,6 @@ public class SessionPusher {
             retMsg = e.toString();
         } finally {
             session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getEventMesh2clientMsgNum().incrementAndGet();
-            pushContext.deliveredMsgCount();
-
-            //avoid ack arrives to server prior to callback of the method writeAndFlush,may cause ack problem
-            List<Message> msgExts = new ArrayList<Message>();
-            msgExts.add(downStreamMsgContext.msgExt);
-            pushContext.unAckMsg(downStreamMsgContext.seq,
-                    msgExts,
-                    downStreamMsgContext.consumeConcurrentlyContext,
-                    downStreamMsgContext.consumer);
 
             session.getContext().writeAndFlush(pkg).addListener(
                     new ChannelFutureListener() {
@@ -119,10 +94,7 @@ public class SessionPusher {
                         public void operationComplete(ChannelFuture future) throws Exception {
                             if (!future.isSuccess()) {
                                 logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, msg:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, downStreamMsgContext.msgExt);
-                                pushContext.deliverFailMsgCount();
-
-                                //push msg failed, remove the msg from unackMap
-                                pushContext.getUnAckMsg().remove(downStreamMsgContext.seq);
+                                deliverFailMsgsCount.incrementAndGet();
 
                                 //how long to isolate client when push fail
                                 long isolateTime = System.currentTimeMillis() + session.getEventMeshTCPConfiguration().eventMeshTcpPushFailIsolateTimeInMills;
@@ -134,10 +106,9 @@ public class SessionPusher {
                                 downStreamMsgContext.delay(delayTime);
                                 session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {
-                                pushContext.deliveredMsgCount();
+                                deliveredMsgsCount.incrementAndGet();
                                 logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
-                                session.getClientGroupWrapper().get().getDownstreamMap().remove(downStreamMsgContext.seq);
                                 if (session.isIsolated()) {
                                     logger.info("cancel isolated,client:{}", session.getClient());
                                     session.setIsolateTime(System.currentTimeMillis());
@@ -147,5 +118,26 @@ public class SessionPusher {
                     }
             );
         }
+    }
+
+    public void unAckMsg(String seq, DownStreamMsgContext downStreamMsgContext) {
+        downStreamMap.put(seq, downStreamMsgContext);
+        logger.info("put msg in unAckMsg,seq:{},unAckMsgSize:{}", seq, getTotalUnackMsgs());
+    }
+
+    public int getTotalUnackMsgs() {
+        return downStreamMap.size();
+    }
+
+    public ConcurrentHashMap<String, DownStreamMsgContext> getUnAckMsg() {
+        return downStreamMap;
+    }
+
+    public AtomicLong getDeliveredMsgsCount() {
+        return deliveredMsgsCount;
+    }
+
+    public AtomicLong getDeliverFailMsgsCount() {
+        return deliverFailMsgsCount;
     }
 }

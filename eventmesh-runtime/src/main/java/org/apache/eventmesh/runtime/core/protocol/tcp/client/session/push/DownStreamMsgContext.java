@@ -85,10 +85,10 @@ public class DownStreamMsgContext implements Delayed {
             consumer.updateOffset(msgs, consumeConcurrentlyContext);
 //            ConsumeMessageService consumeMessageService = consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, consumeConcurrentlyContext);
-            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION),
+            logger.info("ackMsg seq:{}, topic:{}, bizSeq:{}", seq, msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION),
                     msgs.get(0).getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_KEYS));
         } else {
-            logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}", consumer == null, consumeConcurrentlyContext == null, msgExt == null);
+            logger.warn("ackMsg seq:{} failed,consumer is null:{}, context is null:{} , msgs is null:{}", seq, consumer == null, consumeConcurrentlyContext == null, msgExt == null);
         }
     }
 
@@ -100,7 +100,7 @@ public class DownStreamMsgContext implements Delayed {
     public String toString() {
         return "DownStreamMsgContext{" +
                 ",seq=" + seq +
-                ",client=" + session.getClient() +
+                ",client=" + (session == null ? null : session.getClient()) +
                 ",retryTimes=" + retryTimes +
                 ",consumer=" + consumer +
 //  todo              ",consumerGroup=" + consumer.getClass().getConsumerGroup() +
