@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,15 +17,25 @@
 # under the License.
 #
 
-# -Pdev=true : snapshot version
-# -Pjdk=1.8  : jdk version,default 1.8
-# dist       : resource collect
-# tar        : produce tar.gz
-# zip        : produce zip
-# jar        : produce jar
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: Apache Software Foundation
 
-# package tar.gz/zip
-gradle clean -Pdev=true -Pjdk=1.7 dist tar zip
+  paths-ignore:
+    - '.github/PULL_REQUEST_TEMPLATE'
+    - '.gitmodules'
+    - '**/.gitkeep'
+    - '**/.gitignore'
+    - '**/*.md'
+    - '**/*.json'
+    - '**/*.ftl'
+    - '**/*.iml'
+    - '**/*.ini'
+    - '**/*.crt'
+    - '**/*.pem'
+    - 'LICENSE'
+    - 'NOTICE'
+    - 'DISCLAIMER-WIP'
 
-# package jar
-gradle clean -Pdev=true -Pjdk=1.7 jar
+  comment: on-failure
