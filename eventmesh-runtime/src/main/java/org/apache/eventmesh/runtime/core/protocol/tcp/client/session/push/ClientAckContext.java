@@ -22,6 +22,7 @@ import java.util.List;
 import io.openmessaging.api.Message;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
@@ -53,7 +54,9 @@ public class ClientAckContext {
         this.msgs = msgs;
         this.consumer = consumer;
         this.createTime = System.currentTimeMillis();
-        this.expireTime = System.currentTimeMillis() + Long.parseLong(msgs.get(0).getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL));
+        String ttlStr = msgs.get(0).getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL);
+        long ttl = StringUtils.isNumeric(ttlStr)? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
+        this.expireTime = System.currentTimeMillis() + ttl;
     }
 
     public boolean isExpire() {
