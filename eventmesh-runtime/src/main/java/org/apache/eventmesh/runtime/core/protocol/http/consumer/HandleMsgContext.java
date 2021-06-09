@@ -23,10 +23,12 @@ import java.util.Map;
 
 import io.openmessaging.api.Message;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.slf4j.Logger;
@@ -79,7 +81,8 @@ public class HandleMsgContext {
         this.bizSeqNo = bizSeqNo;
         this.uniqueId = uniqueId;
         this.consumeTopicConfig = consumeTopicConfig;
-        this.ttl = Integer.parseInt(msg.getUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT));
+        String ttlStr = msg.getUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT);
+        this.ttl = StringUtils.isNumeric(ttlStr)? Integer.parseInt(ttlStr): EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
     }
 
     public void addProp(String key, String val) {
