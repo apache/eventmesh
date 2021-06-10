@@ -64,6 +64,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     private ExecutorService taskHandleExecutorService;
 
+    private ExecutorService broadcastMsgDownstreamExecutorService;
+
     public void setClientSessionGroupMapping(ClientSessionGroupMapping clientSessionGroupMapping) {
         this.clientSessionGroupMapping = clientSessionGroupMapping;
     }
@@ -86,6 +88,10 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     public ExecutorService getTaskHandleExecutorService() {
         return taskHandleExecutorService;
+    }
+
+    public ExecutorService getBroadcastMsgDownstreamExecutorService() {
+        return broadcastMsgDownstreamExecutorService;
     }
 
     public void setTaskHandleExecutorService(ExecutorService taskHandleExecutorService) {
@@ -240,7 +246,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         scheduler = ThreadPoolFactory.createScheduledExecutor(eventMeshTCPConfiguration.eventMeshTcpGlobalScheduler, new EventMeshThreadFactoryImpl("eventMesh-tcp-scheduler", true));
 
         taskHandleExecutorService = ThreadPoolFactory.createThreadPoolExecutor(eventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize, eventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize, new LinkedBlockingQueue<Runnable>(10000), new EventMeshThreadFactoryImpl("eventMesh-tcp-task-handle", true));
-        ;
+
+        broadcastMsgDownstreamExecutorService = ThreadPoolFactory.createThreadPoolExecutor(eventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize, eventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize, new LinkedBlockingQueue<Runnable>(10000), new EventMeshThreadFactoryImpl("eventMesh-tcp-msg-downstream", true));
     }
 
     private void shutdownThreadPool() {
