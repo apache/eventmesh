@@ -544,9 +544,16 @@ public class ClientGroupWrapper {
                         }
 
                         downStreamMsgContext.session = session;
-                        //msg put in eventmesh,waiting client ack
-                        session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
-                        session.downstreamMsg(downStreamMsgContext);
+
+                        //downstream broadcast msg asynchronously
+                        eventMeshTCPServer.getBroadcastMsgDownstreamExecutorService().submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                //msg put in eventmesh,waiting client ack
+                                session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
+                                session.downstreamMsg(downStreamMsgContext);
+                            }
+                        });
                     }
 
 //                    context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
