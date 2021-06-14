@@ -43,6 +43,4 @@ public interface MeshMQPushConsumer extends Consumer {
 
     @Override
     void unsubscribe(String topic);
-
-    AbstractContext getContext();
 }
