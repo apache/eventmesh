@@ -33,10 +33,11 @@ import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.tcp.*;
 
+import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
 
     private ReceiveMsgHook callback;
 
-    private List<String> topics = new ArrayList<String>();
+    private List<SubscriptionItem> subscriptionItems = new ArrayList<SubscriptionItem>();
 
     private ScheduledFuture<?> task;
 
@@ -70,9 +71,9 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
     public void reconnect() throws Exception {
         super.reconnect();
         hello();
-        if (!CollectionUtils.isEmpty(topics)) {
-            for (String topic : topics) {
-                Package request = MessageUtils.subscribe(topic);
+        if (!CollectionUtils.isEmpty(subscriptionItems)) {
+            for (SubscriptionItem item : subscriptionItems) {
+                Package request = MessageUtils.subscribe(item.getTopic(), item.getMode());
                 this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             }
         }
@@ -121,9 +122,9 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
     }
 
 
-    public void subscribe(String topic) throws Exception {
-        topics.add(topic);
-        Package request = MessageUtils.subscribe(topic);
+    public void subscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
+        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode));
+        Package request = MessageUtils.subscribe(topic, subscriptionMode);
         this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 

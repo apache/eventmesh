@@ -21,12 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.tcp.*;
+import org.apache.eventmesh.common.protocol.tcp.Package;
 
 public class MessageUtils {
     public static int seqLength = 10;
@@ -63,10 +62,10 @@ public class MessageUtils {
         return msg;
     }
 
-    public static Package subscribe(String topic) {
+    public static Package subscribe(String topic, SubscriptionMode subscriptionMode) {
         Package msg = new Package();
         msg.setHeader(new Header(Command.SUBSCRIBE_REQUEST, 0, null, generateRandomString(seqLength)));
-        msg.setBody(generateSubscription(topic));
+        msg.setBody(generateSubscription(topic, subscriptionMode));
         return msg;
     }
 
@@ -76,10 +75,10 @@ public class MessageUtils {
         return msg;
     }
 
-    public static Package unsubscribe(String topic) {
+    public static Package unsubscribe(String topic, SubscriptionMode subscriptionMode) {
         Package msg = new Package();
         msg.setHeader(new Header(Command.UNSUBSCRIBE_REQUEST, 0, null, generateRandomString(seqLength)));
-        msg.setBody(generateSubscription(topic));
+        msg.setBody(generateSubscription(topic, subscriptionMode));
         return msg;
     }
 
@@ -141,7 +140,6 @@ public class MessageUtils {
 
     public static UserAgent generatePubClient() {
         UserAgent user = new UserAgent();
-        user.setDcn("AC0");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
@@ -156,7 +154,6 @@ public class MessageUtils {
 
     public static UserAgent generateSubServer() {
         UserAgent user = new UserAgent();
-        user.setDcn("FT0");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
@@ -170,20 +167,20 @@ public class MessageUtils {
 
     public static Subscription generateSubscription() {
         Subscription subscription = new Subscription();
-        List<String> topicList = new ArrayList<>();
-        topicList.add("FT0-s-80000000-01-0");
-        topicList.add("FT0-s-80000000-02-0");
-        topicList.add("FT0-s-80000000-03-0");
-        topicList.add("FT0-s-80000000-04-0");
-        subscription.setTopicList(topicList);
+        List<SubscriptionItem> subscriptionItems = new ArrayList<>();
+        subscriptionItems.add(new SubscriptionItem("FT0-s-80000000-01-0", SubscriptionMode.CLUSTERING));
+        subscriptionItems.add(new SubscriptionItem("FT0-s-80000000-02-0", SubscriptionMode.CLUSTERING));
+        subscriptionItems.add(new SubscriptionItem("FT0-s-80000000-03-0", SubscriptionMode.CLUSTERING));
+        subscriptionItems.add(new SubscriptionItem("FT0-s-80000000-04-0", SubscriptionMode.CLUSTERING));
+        subscription.setTopicList(subscriptionItems);
         return subscription;
     }
 
-    public static Subscription generateSubscription(String topic) {
+    public static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode) {
         Subscription subscription = new Subscription();
-        List<String> topicList = new ArrayList<>();
-        topicList.add(topic);
-        subscription.setTopicList(topicList);
+        List<SubscriptionItem> subscriptionItems = new ArrayList<>();
+        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode));
+        subscription.setTopicList(subscriptionItems);
         return subscription;
     }
 

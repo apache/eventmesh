@@ -73,8 +73,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         SendMessageBatchV2ResponseHeader sendMessageBatchV2ResponseHeader =
                 SendMessageBatchV2ResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         if (StringUtils.isBlank(sendMessageBatchV2RequestHeader.getPid())
                 || !StringUtils.isNumeric(sendMessageBatchV2RequestHeader.getPid())
@@ -107,11 +106,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
             return;
         }
 
-        if (StringUtils.isBlank(sendMessageBatchV2RequestHeader.getDcn())) {
-            sendMessageBatchV2RequestHeader.setDcn("BATCH");
-        }
-        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageBatchV2RequestHeader.getSys(),
-                sendMessageBatchV2RequestHeader.getDcn());
+        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageBatchV2RequestHeader.getSys());
         EventMeshProducer batchEventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
         batchEventMeshProducer.getMqProducerWrapper().getMeshMQProducer().setExtFields();
 //        batchEventMeshProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendAsyncFailed(0);

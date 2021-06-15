@@ -58,7 +58,6 @@ public class AsyncPublishInstance {
             eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
                     .setEnv("env")
                     .setIdc("idc")
-                    .setDcn("dcn")
                     .setIp(IPUtil.getLocalAddress())
                     .setSys("1234")
                     .setPid(String.valueOf(ThreadUtil.getPID()));

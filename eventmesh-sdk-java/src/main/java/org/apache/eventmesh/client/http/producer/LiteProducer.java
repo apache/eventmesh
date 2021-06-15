@@ -106,9 +106,7 @@ public class LiteProducer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, liteClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, liteClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
                 .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
                 .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
@@ -164,9 +162,7 @@ public class LiteProducer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, liteClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, liteClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
                 .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
                 .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
@@ -219,9 +215,7 @@ public class LiteProducer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, liteClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, liteClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
                 .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
                 .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())

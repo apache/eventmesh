@@ -40,11 +40,7 @@ public class LiteClientConfig {
 
     private String env;
 
-    private String region;
-
     private String idc;
-
-    private String dcn;
 
     private String ip = "127.0.0.1";
 
@@ -103,30 +99,12 @@ public class LiteClientConfig {
         return this;
     }
 
-    public String getRegion() {
-        return region;
-    }
-
-    public LiteClientConfig setRegion(String region) {
-        this.region = region;
-        return this;
-    }
-
     public String getIdc() {
         return idc;
     }
 
     public LiteClientConfig setIdc(String idc) {
         this.idc = idc;
-        return this;
-    }
-
-    public String getDcn() {
-        return dcn;
-    }
-
-    public LiteClientConfig setDcn(String dcn) {
-        this.dcn = dcn;
         return this;
     }
 
@@ -193,9 +171,7 @@ public class LiteClientConfig {
                 .append("consumeThreadCore=").append(consumeThreadCore).append(",")
                 .append("consumeThreadMax=").append(consumeThreadMax).append(",")
                 .append("env=").append(env).append(",")
-                .append("region=").append(region).append(",")
                 .append("idc=").append(idc).append(",")
-                .append("dcn=").append(dcn).append(",")
                 .append("ip=").append(ip).append(",")
                 .append("pid=").append(pid).append(",")
                 .append("sys=").append(sys).append(",")

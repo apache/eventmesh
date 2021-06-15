@@ -21,6 +21,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +45,8 @@ public class CClientDemo {
         EventMeshClientImpl client = new EventMeshClientImpl("127.0.0.1", 10000);
         client.init();
         client.heartbeat();
-        client.justSubscribe(ASYNC_TOPIC);
-        client.justSubscribe(BROADCAST_TOPIC);
+        client.justSubscribe(ASYNC_TOPIC, SubscriptionMode.CLUSTERING);
+        client.justSubscribe(BROADCAST_TOPIC, SubscriptionMode.BROADCASTING);
         client.listen();
 //        for (int i = 0; i < 10000; i++) {
 //            Package rr = null;

@@ -85,7 +85,6 @@ public class EventMeshConstants {
 
     public static final String TAG = "TAG";
 
-    public static final String MANAGE_DCN = "dcn";
     public static final String MANAGE_SUBSYSTEM = "subSystem";
     public static final String MANAGE_IP = "ip";
     public static final String MANAGE_PORT = "port";

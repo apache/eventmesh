@@ -32,6 +32,7 @@ import io.openmessaging.api.SendResult;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
@@ -81,7 +82,6 @@ public class EventMeshConsumer {
         keyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
         keyValue.put("eventMeshIDC", eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
         keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
         persistentMqConsumer.init(keyValue);
 
@@ -91,7 +91,6 @@ public class EventMeshConsumer {
         broadcastKeyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
         broadcastKeyValue.put("eventMeshIDC", eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
         broadcastKeyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
         broadcastMqConsumer.init(broadcastKeyValue);
         inited4Persistent.compareAndSet(false, true);
@@ -100,16 +99,15 @@ public class EventMeshConsumer {
     }
 
     public synchronized void start() throws Exception {
-
         persistentMqConsumer.start();
         started4Persistent.compareAndSet(false, true);
         broadcastMqConsumer.start();
         started4Broadcast.compareAndSet(false, true);
     }
 
-    public void subscribe(String topic) throws Exception {
+    public void subscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
         AsyncMessageListener listener = null;
-        if (!EventMeshUtil.isBroadcast(topic)) {
+        if (!SubscriptionMode.BROADCASTING.equals(subscriptionMode)) {
             listener = new AsyncMessageListener() {
                 @Override
                 public void consume(Message message, AsyncConsumeContext context) {
@@ -138,7 +136,7 @@ public class EventMeshConsumer {
                         }
                     }
                     HandleMsgContext handleMsgContext = new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(), consumerGroupConf.getConsumerGroup(), EventMeshConsumer.this,
-                            topic, message, persistentMqConsumer.getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
+                            topic, message, SubscriptionMode.BROADCASTING, persistentMqConsumer.getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                     if (httpMessageHandler.handle(handleMsgContext)) {
 //                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
@@ -187,7 +185,7 @@ public class EventMeshConsumer {
                         }
                     }
                     HandleMsgContext handleMsgContext = new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(), consumerGroupConf.getConsumerGroup(), EventMeshConsumer.this,
-                            topic, message, broadcastMqConsumer.getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
+                            topic, message, SubscriptionMode.BROADCASTING, broadcastMqConsumer.getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                     if (httpMessageHandler.handle(handleMsgContext)) {
 //                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
@@ -209,8 +207,8 @@ public class EventMeshConsumer {
         }
     }
 
-    public void unsubscribe(String topic) throws Exception {
-        if (EventMeshUtil.isBroadcast(topic)) {
+    public void unsubscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
+        if (SubscriptionMode.BROADCASTING.equals(subscriptionMode)) {
             broadcastMqConsumer.unsubscribe(topic);
         } else {
             persistentMqConsumer.unsubscribe(topic);
@@ -233,8 +231,8 @@ public class EventMeshConsumer {
         started4Broadcast.compareAndSet(true, false);
     }
 
-    public void updateOffset(String topic, List<Message> msgs, AbstractContext context) {
-        if (EventMeshUtil.isBroadcast(topic)) {
+    public void updateOffset(String topic, SubscriptionMode subscriptionMode, List<Message> msgs, AbstractContext context) {
+        if (SubscriptionMode.BROADCASTING.equals(subscriptionMode)) {
             broadcastMqConsumer.updateOffset(msgs, context);
         } else {
             persistentMqConsumer.updateOffset(msgs, context);

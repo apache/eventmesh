@@ -27,10 +27,10 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.OPStatus;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
 
     private ReceiveMsgHook callback;
 
-    private List<String> topics = new ArrayList<String>();
+    private List<SubscriptionItem> subscriptionItems = new ArrayList<SubscriptionItem>();
 
     private ScheduledFuture<?> task;
 
@@ -72,9 +72,9 @@ public class SubClientImpl extends TCPClient implements SubClient {
     public void reconnect() throws Exception {
         super.reconnect();
         hello();
-        if (!CollectionUtils.isEmpty(topics)) {
-            for (String topic : topics) {
-                Package request = MessageUtils.subscribe(topic);
+        if (!CollectionUtils.isEmpty(subscriptionItems)) {
+            for (SubscriptionItem item : subscriptionItems) {
+                Package request = MessageUtils.subscribe(item.getTopic(), item.getMode());
                 this.dispatcher(request, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
             }
         }
@@ -117,14 +117,9 @@ public class SubClientImpl extends TCPClient implements SubClient {
         this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
-    public Package justSubscribe(String serviceId, String scenario, String dcn) throws Exception {
-        Package msg = MessageUtils.subscribe();
-        return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-    }
-
-    public Package justSubscribe(String topic) throws Exception {
-        topics.add(topic);
-        Package msg = MessageUtils.subscribe(topic);
+    public Package justSubscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
+        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode));
+        Package msg = MessageUtils.subscribe(topic, subscriptionMode);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
@@ -144,14 +139,9 @@ public class SubClientImpl extends TCPClient implements SubClient {
 //        this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
 //    }
 
-    public Package justUnsubscribe(String topic) throws Exception {
-        topics.remove(topic);
-        Package msg = MessageUtils.unsubscribe(topic);
-        return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-    }
-
-    public Package justUnsubscribe(String serviceId, String scenario, String dcn) throws Exception {
-        Package msg = MessageUtils.unsubscribe();
+    public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
+        subscriptionItems.remove(topic);
+        Package msg = MessageUtils.unsubscribe(topic, subscriptionMode);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 

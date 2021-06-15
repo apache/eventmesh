@@ -72,13 +72,11 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         UnSubscribeResponseHeader unSubscribeResponseHeader =
                 UnSubscribeResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
 
         //validate header
         if (StringUtils.isBlank(unSubscribeRequestHeader.getIdc())
-                || StringUtils.isBlank(unSubscribeRequestHeader.getDcn())
                 || StringUtils.isBlank(unSubscribeRequestHeader.getPid())
                 || !StringUtils.isNumeric(unSubscribeRequestHeader.getPid())
                 || StringUtils.isBlank(unSubscribeRequestHeader.getSys())) {
@@ -100,13 +98,11 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
             return;
         }
         String env = unSubscribeRequestHeader.getEnv();
-        String dcn = unSubscribeRequestHeader.getDcn();
         String idc = unSubscribeRequestHeader.getIdc();
         String sys = unSubscribeRequestHeader.getSys();
         String ip = unSubscribeRequestHeader.getIp();
         String pid = unSubscribeRequestHeader.getPid();
-        String consumerGroup = EventMeshUtil.buildClientGroup(unSubscribeRequestHeader.getSys(),
-                unSubscribeRequestHeader.getDcn());
+        String consumerGroup = EventMeshUtil.buildClientGroup(unSubscribeRequestHeader.getSys());
         String unSubscribeUrl = unSubscribeRequestBody.getUrl();
         List<String> unSubTopicList = unSubscribeRequestBody.getTopics();
 
@@ -166,6 +162,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                 ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
                                 latestTopicConf.setConsumerGroup(consumerGroup);
                                 latestTopicConf.setTopic(unSubTopic);
+                                latestTopicConf.setSubscriptionMode(map.get(topicKey).getSubscriptionMode());
                                 latestTopicConf.setUrls(clientUrls);
 
                                 latestTopicConf.setIdcUrls(idcUrls);
@@ -243,7 +240,6 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         for(String topic: topicList) {
             Client client = new Client();
             client.env = unSubscribeRequestHeader.getEnv();
-            client.dcn = unSubscribeRequestHeader.getDcn();
             client.idc = unSubscribeRequestHeader.getIdc();
             client.sys = unSubscribeRequestHeader.getSys();
             client.ip = unSubscribeRequestHeader.getIp();

@@ -24,16 +24,16 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -175,15 +175,14 @@ public class ClientSessionGroupMapping {
         }
     }
 
-    private ClientGroupWrapper constructClientGroupWrapper(String sysId, String dcn,
+    private ClientGroupWrapper constructClientGroupWrapper(String sysId,
                                                            EventMeshTCPServer eventMeshTCPServer,
                                                            DownstreamDispatchStrategy downstreamDispatchStrategy) {
-        return new ClientGroupWrapper(sysId, dcn
-                , eventMeshTCPServer, downstreamDispatchStrategy);
+        return new ClientGroupWrapper(sysId, eventMeshTCPServer, downstreamDispatchStrategy);
     }
 
     private void initClientGroupWrapper(UserAgent user, Session session) throws Exception {
-        final String clientGroup = EventMeshUtil.buildClientGroup(user.getSubsystem(), user.getDcn());
+        final String clientGroup = EventMeshUtil.buildClientGroup(user.getSubsystem());
         if (!lockMap.containsKey(clientGroup)) {
             Object obj = lockMap.putIfAbsent(clientGroup, new Object());
             if (obj == null) {
@@ -192,8 +191,7 @@ public class ClientSessionGroupMapping {
         }
         synchronized (lockMap.get(clientGroup)) {
             if (!clientGroupMap.containsKey(clientGroup)) {
-                ClientGroupWrapper cgw = constructClientGroupWrapper(user.getSubsystem(), user.getDcn()
-                        , eventMeshTCPServer, new FreePriorityDispatchStrategy());
+                ClientGroupWrapper cgw = constructClientGroupWrapper(user.getSubsystem(), eventMeshTCPServer, new FreePriorityDispatchStrategy());
                 clientGroupMap.put(clientGroup, cgw);
                 logger.info("create new ClientGroupWrapper,group:{}", clientGroup);
             }
@@ -239,7 +237,7 @@ public class ClientSessionGroupMapping {
     }
 
     private void startClientGroupConsumer(Session session) throws Exception {
-        final String clientGroup = EventMeshUtil.buildClientGroup(session.getClient().getSubsystem(), session.getClient().getDcn());
+        final String clientGroup = EventMeshUtil.buildClientGroup(session.getClient().getSubsystem());
         if (!lockMap.containsKey(clientGroup)) {
             lockMap.putIfAbsent(clientGroup, new Object());
         }
@@ -280,10 +278,10 @@ public class ClientSessionGroupMapping {
      * @param session
      */
     private void cleanSubscriptionInSession(Session session) throws Exception {
-        for (String topic : session.getSessionContext().subscribeTopics.values()) {
-            session.getClientGroupWrapper().get().removeSubscription(topic, session);
-            if (!session.getClientGroupWrapper().get().hasSubscription(topic)) {
-                session.getClientGroupWrapper().get().unsubscribe(topic);
+        for (SubscriptionItem item : session.getSessionContext().subscribeTopics.values()) {
+            session.getClientGroupWrapper().get().removeSubscription(item.getTopic(), session);
+            if (!session.getClientGroupWrapper().get().hasSubscription(item.getTopic())) {
+                session.getClientGroupWrapper().get().unsubscribe(item);
             }
         }
     }
@@ -298,7 +296,7 @@ public class ClientSessionGroupMapping {
         if (unAckMsg.size() > 0 && session.getClientGroupWrapper().get().getGroupConsumerSessions().size() > 0) {
             for (Map.Entry<String, DownStreamMsgContext> entry : unAckMsg.entrySet()) {
                 DownStreamMsgContext downStreamMsgContext = entry.getValue();
-                if (EventMeshUtil.isBroadcast(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))) {
+                if (SubscriptionMode.BROADCASTING.equals(downStreamMsgContext.subscriptionMode)) {
                     logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}", downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt), session.getClient());
                     continue;
                 }
@@ -425,40 +423,6 @@ public class ClientSessionGroupMapping {
 
     public ConcurrentHashMap<String, ClientGroupWrapper> getClientGroupMap() {
         return clientGroupMap;
-    }
-
-    public HashMap<String, AtomicInteger> statDCNSystemInfo() {
-        HashMap<String, AtomicInteger> result = new HashMap<String, AtomicInteger>();
-        if (!sessionTable.isEmpty()) {
-            for (Session session : sessionTable.values()) {
-                String key = session.getClient().getDcn() + "|" + session.getClient().getSubsystem();
-                if (!result.containsKey(key)) {
-                    result.put(key, new AtomicInteger(1));
-                } else {
-                    result.get(key).incrementAndGet();
-                }
-            }
-        }
-        return result;
-    }
-
-    public HashMap<String, AtomicInteger> statDCNSystemInfoByPurpose(String purpose) {
-        HashMap<String, AtomicInteger> result = new HashMap<String, AtomicInteger>();
-        if (!sessionTable.isEmpty()) {
-            for (Session session : sessionTable.values()) {
-                if (!StringUtils.equals(session.getClient().getPurpose(), purpose)) {
-                    continue;
-                }
-
-                String key = session.getClient().getDcn() + "|" + session.getClient().getSubsystem() + "|" + purpose;
-                if (!result.containsKey(key)) {
-                    result.put(key, new AtomicInteger(1));
-                } else {
-                    result.get(key).incrementAndGet();
-                }
-            }
-        }
-        return result;
     }
 
     public Map<String, Map<String, Integer>> prepareEventMeshClientDistributionData() {

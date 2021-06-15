@@ -64,7 +64,7 @@ public class ClientManageController {
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/clientManage/showClient", new ShowClientHandler());
-        server.createContext("/clientManage/showClientBySystemAndDcn", new ShowClientBySystemAndDcnHandler());
+        server.createContext("/clientManage/showClientBySystem", new ShowClientBySystemAndDcnHandler());
         server.createContext("/clientManage/rejectAllClient", new RejectAllClientHandler());
         server.createContext("/clientManage/rejectClientByIpPort", new RejectClientByIpPortHandler());
         server.createContext("/clientManage/rejectClientBySubSystem", new RejectClientBySubSystemHandler());
@@ -143,7 +143,21 @@ public class ClientManageController {
                 String newLine = System.getProperty("line.separator");
                 logger.info("showAllClient=================");
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-                Map<String, AtomicInteger> dcnSystemMap = clientSessionGroupMapping.statDCNSystemInfo();
+                ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+
+                
+                ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+                if (!sessionMap.isEmpty()) {
+                    for (Session session : sessionMap.values()) {
+                        if (session.getClient().getSubsystem().equals(subSystem)) {
+                            UserAgent userAgent = session.getClient();
+                            result += String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s", userAgent.getPid(), userAgent
+                                    .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getPurpose()) + newLine;
+                        }
+                    }
+                }
+
+
                 if (!dcnSystemMap.isEmpty()) {
                     List<Map.Entry<String, AtomicInteger>> list = new ArrayList<>();
                     ValueComparator vc = new ValueComparator();
@@ -181,11 +195,11 @@ public class ClientManageController {
     }
 
     /**
-     * print clientInfo by subsys and dcn
+     * print clientInfo by subsys
      *
      * @return
      */
-    class ShowClientBySystemAndDcnHandler implements HttpHandler {
+    class ShowClientBySystemHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             String result = "";
@@ -193,16 +207,15 @@ public class ClientManageController {
             try {
                 String queryString = httpExchange.getRequestURI().getQuery();
                 Map<String, String> queryStringInfo = formData2Dic(queryString);
-                String dcn = queryStringInfo.get(EventMeshConstants.MANAGE_DCN);
                 String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
                 String newLine = System.getProperty("line.separator");
-                logger.info("showClientBySubsysAndDcn,subsys:{},dcn:{}=================", subSystem, dcn);
+                logger.info("showClientBySubsysAndDcn,subsys:{}=================", subSystem);
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 if (!sessionMap.isEmpty()) {
                     for (Session session : sessionMap.values()) {
-                        if (session.getClient().getDcn().equals(dcn) && session.getClient().getSubsystem().equals(subSystem)) {
+                        if (session.getClient().getSubsystem().equals(subSystem)) {
                             UserAgent userAgent = session.getClient();
                             result += String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s", userAgent.getPid(), userAgent
                                     .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getPurpose()) + newLine;
@@ -405,24 +418,23 @@ public class ClientManageController {
             try {
                 String queryString = httpExchange.getRequestURI().getQuery();
                 Map<String, String> queryStringInfo = formData2Dic(queryString);
-                String dcn = queryStringInfo.get(EventMeshConstants.MANAGE_DCN);
                 String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
-                if (StringUtils.isBlank(dcn) || StringUtils.isBlank(subSystem)) {
+                if (StringUtils.isBlank(subSystem)) {
                     httpExchange.sendResponseHeaders(200, 0);
                     result = "params illegal!";
                     out.write(result.getBytes());
                     return;
                 }
 
-                logger.info("rejectClientBySubSystem in admin,subsys:{},dcn:{}====================", subSystem, dcn);
+                logger.info("rejectClientBySubSystem in admin,subsys:{}====================", subSystem);
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 final List<InetSocketAddress> successRemoteAddrs = new ArrayList<InetSocketAddress>();
                 try {
                     if (!sessionMap.isEmpty()) {
                         for (Session session : sessionMap.values()) {
-                            if (session.getClient().getDcn().equals(dcn) && session.getClient().getSubsystem().equals(subSystem)) {
+                            if (session.getClient().getSubsystem().equals(subSystem)) {
                                 InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, session, clientSessionGroupMapping);
                                 if (addr != null) {
                                     successRemoteAddrs.add(addr);
@@ -431,16 +443,15 @@ public class ClientManageController {
                         }
                     }
                 } catch (Exception e) {
-                    logger.error("clientManage|rejectClientBySubSystem|fail|dcn={}|subSystemId={},errMsg={}", dcn, subSystem, e);
-                    result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%d} , {dcn=%s " +
-                                    "port=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs), dcn,
-                            subSystem, e.getMessage());
+                    logger.error("clientManage|rejectClientBySubSystem|fail|subSystemId={},errMsg={}", subSystem, e);
+                    result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%d} , {" +
+                                    "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs), subSystem, e.getMessage());
                     httpExchange.sendResponseHeaders(200, 0);
                     out.write(result.getBytes());
                     return;
                 }
-                result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {dcn=%s " +
-                        "port=%s}", sessionMap.size(), printClients(successRemoteAddrs), dcn, subSystem);
+                result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {" +
+                        "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
             } catch (Exception e) {
@@ -471,12 +482,11 @@ public class ClientManageController {
             try {
                 String queryString = httpExchange.getRequestURI().getQuery();
                 Map<String, String> queryStringInfo = formData2Dic(queryString);
-                String dcn = queryStringInfo.get(EventMeshConstants.MANAGE_DCN);
                 String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
                 String destEventMeshIp = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_IP);
                 String destEventMeshPort = queryStringInfo.get(EventMeshConstants.MANAGE_DEST_PORT);
 
-                if (StringUtils.isBlank(dcn) || !StringUtils.isNumeric(subSystem)
+                if (!StringUtils.isNumeric(subSystem)
                         || StringUtils.isBlank(destEventMeshIp) || StringUtils.isBlank(destEventMeshPort)
                         || !StringUtils.isNumeric(destEventMeshPort)) {
                     httpExchange.sendResponseHeaders(200, 0);
@@ -484,14 +494,14 @@ public class ClientManageController {
                     out.write(result.getBytes());
                     return;
                 }
-                logger.info("redirectClientBySubSystem in admin,subsys:{},dcn:{},destIp:{},destPort:{}====================", subSystem, dcn, destEventMeshIp, destEventMeshPort);
+                logger.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================", subSystem, destEventMeshIp, destEventMeshPort);
                 ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
                 String redirectResult = "";
                 try {
                     if (!sessionMap.isEmpty()) {
                         for (Session session : sessionMap.values()) {
-                            if (session.getClient().getDcn().equals(dcn) && session.getClient().getSubsystem().equals(subSystem)) {
+                            if (session.getClient().getSubsystem().equals(subSystem)) {
                                 redirectResult += "|";
                                 redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer, destEventMeshIp, Integer.parseInt(destEventMeshPort),
                                         session, clientSessionGroupMapping);
@@ -499,19 +509,19 @@ public class ClientManageController {
                         }
                     }
                 } catch (Exception e) {
-                    logger.error("clientManage|redirectClientBySubSystem|fail|dcn={}|subSystem={}|destEventMeshIp" +
-                            "={}|destEventMeshPort={},errMsg={}", dcn, subSystem, destEventMeshIp, destEventMeshPort, e);
-                    result = String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {clientIp=%s clientPort=%s " +
+                    logger.error("clientManage|redirectClientBySubSystem|fail|subSystem={}|destEventMeshIp" +
+                            "={}|destEventMeshPort={},errMsg={}", subSystem, destEventMeshIp, destEventMeshPort, e);
+                    result = String.format("redirectClientBySubSystem fail! sessionMap size {%d}, {subSystem=%s " +
                                     "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
-                            sessionMap.size(), dcn, subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e
+                            sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e
                                     .getMessage());
                     httpExchange.sendResponseHeaders(200, 0);
                     out.write(result.getBytes());
                     return;
                 }
-                result = String.format("redirectClientBySubSystem success! sessionMap size {%d}, {dcn=%s subSystem=%s " +
+                result = String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s " +
                                 "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
-                        sessionMap.size(), dcn, subSystem, destEventMeshIp, destEventMeshPort, redirectResult);
+                        sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult);
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
             } catch (Exception e) {

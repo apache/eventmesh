@@ -79,11 +79,9 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         SendMessageResponseHeader sendMessageResponseHeader =
                 SendMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         if (StringUtils.isBlank(sendMessageRequestHeader.getIdc())
-                || StringUtils.isBlank(sendMessageRequestHeader.getDcn())
                 || StringUtils.isBlank(sendMessageRequestHeader.getPid())
                 || !StringUtils.isNumeric(sendMessageRequestHeader.getPid())
                 || StringUtils.isBlank(sendMessageRequestHeader.getSys())) {
@@ -106,8 +104,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageRequestHeader.getSys(),
-                sendMessageRequestHeader.getDcn());
+        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageRequestHeader.getSys());
         EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
         if (!eventMeshProducer.getStarted().get()) {
@@ -129,6 +126,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             omsMsg.setBody(sendMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
             // topic
             omsMsg.setTopic(sendMessageRequestBody.getTopic());
+            omsMsg.putSystemProperties(EventMeshConstants.IS_SYNC_MESSAGE, String.valueOf(true));
             omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION, sendMessageRequestBody.getTopic());
             if (!StringUtils.isBlank(sendMessageRequestBody.getTag())) {
                 omsMsg.putUserProperties("Tag", sendMessageRequestBody.getTag());

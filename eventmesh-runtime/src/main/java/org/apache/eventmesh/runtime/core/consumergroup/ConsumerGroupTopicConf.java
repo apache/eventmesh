@@ -25,6 +25,7 @@ import java.util.Set;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,11 @@ public class ConsumerGroupTopicConf {
     private String consumerGroup;
 
     private String topic;
+
+    /**
+     * @see org.apache.eventmesh.common.protocol.SubscriptionMode
+     */
+    private SubscriptionMode subscriptionMode;
 
     /**
      * PUSH URL
@@ -53,12 +59,13 @@ public class ConsumerGroupTopicConf {
         ConsumerGroupTopicConf that = (ConsumerGroupTopicConf) o;
         return consumerGroup.equals(that.consumerGroup) &&
                 Objects.equals(topic, that.topic) &&
+                Objects.equals(subscriptionMode, that.subscriptionMode) &&
                 Objects.equals(idcUrls, that.idcUrls);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(consumerGroup, topic, idcUrls);
+        return Objects.hash(consumerGroup, topic, subscriptionMode, idcUrls);
     }
 
     @Override
@@ -66,6 +73,7 @@ public class ConsumerGroupTopicConf {
         StringBuilder sb = new StringBuilder();
         sb.append("consumeTopicConfig={consumerGroup=").append(consumerGroup)
                 .append(",topic=").append(topic)
+                .append(",subscriptionMode=").append(subscriptionMode)
                 .append(",idcUrls=").append(idcUrls).append("}");
         return sb.toString();
     }
@@ -84,6 +92,14 @@ public class ConsumerGroupTopicConf {
 
     public void setTopic(String topic) {
         this.topic = topic;
+    }
+
+    public SubscriptionMode getSubscriptionMode() {
+        return subscriptionMode;
+    }
+
+    public void setSubscriptionMode(SubscriptionMode subscriptionMode) {
+        this.subscriptionMode = subscriptionMode;
     }
 
     public Map<String, List<String>> getIdcUrls() {

@@ -78,12 +78,10 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
         ReplyMessageResponseHeader replyMessageResponseHeader =
                 ReplyMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         //HEADER校验
         if (StringUtils.isBlank(replyMessageRequestHeader.getIdc())
-                || StringUtils.isBlank(replyMessageRequestHeader.getDcn())
                 || StringUtils.isBlank(replyMessageRequestHeader.getPid())
                 || !StringUtils.isNumeric(replyMessageRequestHeader.getPid())
                 || StringUtils.isBlank(replyMessageRequestHeader.getSys())) {
@@ -105,8 +103,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String producerGroup = EventMeshUtil.buildClientGroup(replyMessageRequestHeader.getSys(),
-                replyMessageRequestHeader.getDcn());
+        String producerGroup = EventMeshUtil.buildClientGroup(replyMessageRequestHeader.getSys());
         EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
         if (!eventMeshProducer.getStarted().get()) {
