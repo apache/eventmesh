@@ -64,7 +64,7 @@ public class ClientManageController {
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/clientManage/showClient", new ShowClientHandler());
-        server.createContext("/clientManage/showClientBySystem", new ShowClientBySystemAndDcnHandler());
+        server.createContext("/clientManage/showClientBySystem", new ShowClientBySystemHandler());
         server.createContext("/clientManage/rejectAllClient", new RejectAllClientHandler());
         server.createContext("/clientManage/rejectClientByIpPort", new RejectClientByIpPortHandler());
         server.createContext("/clientManage/rejectClientBySubSystem", new RejectClientBySubSystemHandler());
@@ -146,30 +146,30 @@ public class ClientManageController {
                 ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
 
                 
-                ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-                if (!sessionMap.isEmpty()) {
-                    for (Session session : sessionMap.values()) {
-                        if (session.getClient().getSubsystem().equals(subSystem)) {
-                            UserAgent userAgent = session.getClient();
-                            result += String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s", userAgent.getPid(), userAgent
-                                    .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getPurpose()) + newLine;
-                        }
-                    }
-                }
-
-
-                if (!dcnSystemMap.isEmpty()) {
-                    List<Map.Entry<String, AtomicInteger>> list = new ArrayList<>();
-                    ValueComparator vc = new ValueComparator();
-                    for (Map.Entry<String, AtomicInteger> entry : dcnSystemMap.entrySet()) {
-                        list.add(entry);
-                    }
-                    Collections.sort(list, vc);
-                    for (Map.Entry<String, AtomicInteger> entry : list) {
-                        result += String.format("System=%s | ClientNum=%d", entry.getKey(), entry.getValue().intValue()) +
-                                newLine;
-                    }
-                }
+//                ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+//                if (!sessionMap.isEmpty()) {
+//                    for (Session session : sessionMap.values()) {
+//                        if (session.getClient().getSubsystem().equals(subSystem)) {
+//                            UserAgent userAgent = session.getClient();
+//                            result += String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s", userAgent.getPid(), userAgent
+//                                    .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getPurpose()) + newLine;
+//                        }
+//                    }
+//                }
+//
+//
+//                if (!dcnSystemMap.isEmpty()) {
+//                    List<Map.Entry<String, AtomicInteger>> list = new ArrayList<>();
+//                    ValueComparator vc = new ValueComparator();
+//                    for (Map.Entry<String, AtomicInteger> entry : dcnSystemMap.entrySet()) {
+//                        list.add(entry);
+//                    }
+//                    Collections.sort(list, vc);
+//                    for (Map.Entry<String, AtomicInteger> entry : list) {
+//                        result += String.format("System=%s | ClientNum=%d", entry.getKey(), entry.getValue().intValue()) +
+//                                newLine;
+//                    }
+//                }
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
             } catch (Exception e) {
