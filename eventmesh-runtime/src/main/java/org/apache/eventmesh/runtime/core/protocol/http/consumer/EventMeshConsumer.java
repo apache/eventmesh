@@ -139,7 +139,7 @@ public class EventMeshConsumer {
                         }
                     }
                     HandleMsgContext handleMsgContext = new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(), consumerGroupConf.getConsumerGroup(), EventMeshConsumer.this,
-                            topic, message, SubscriptionMode.BROADCASTING, persistentMqConsumer.getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
+                            topic, message, SubscriptionMode.CLUSTERING, persistentMqConsumer.getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                     if (httpMessageHandler.handle(handleMsgContext)) {
 //                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
