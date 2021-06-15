@@ -226,6 +226,7 @@ public class HandleMsgContext {
         sb.append("handleMsgContext={")
                 .append("consumerGroup=").append(consumerGroup)
                 .append(",topic=").append(topic)
+                .append(",subscriptionMode=").append(subscriptionMode)
                 .append(",consumeTopicConfig=").append(consumeTopicConfig)
                 .append(",bizSeqNo=").append(bizSeqNo)
                 .append(",uniqueId=").append(uniqueId)
