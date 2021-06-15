@@ -25,7 +25,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 
 import org.apache.commons.collections4.MapUtils;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class SubscribeRequestBody extends Body {
@@ -34,17 +33,19 @@ public class SubscribeRequestBody extends Body {
 
     public static final String URL = "url";
 
-    private List<SubscriptionItem> topics;
+    private List<String> topics;
 
-    public List<SubscriptionItem> getTopics() {
+    private String url;
+
+    private String topic;
+
+    public List<String> getTopics() {
         return topics;
     }
 
-    public void setTopics(List<SubscriptionItem> topics) {
+    public void setTopics(List<String> topics) {
         this.topics = topics;
     }
-
-    private String url;
 
     public String getUrl() {
         return url;
@@ -57,7 +58,7 @@ public class SubscribeRequestBody extends Body {
     public static SubscribeRequestBody buildBody(Map<String, Object> bodyParam) {
         SubscribeRequestBody body = new SubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
-        body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPIC), SubscriptionItem.class));
+        body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPIC), String.class));
         return body;
     }
 

@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -52,8 +51,6 @@ public class DownStreamMsgContext implements Delayed {
 
     public int retryTimes;
 
-    public SubscriptionMode subscriptionMode;
-
     private long executeTime;
 
     public long lastPushTime;
@@ -64,7 +61,7 @@ public class DownStreamMsgContext implements Delayed {
 
     public boolean msgFromOtherEventMesh;
 
-    public DownStreamMsgContext(Message msgExt, Session session, MQConsumerWrapper consumer, AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh, SubscriptionMode subscriptionMode) {
+    public DownStreamMsgContext(Message msgExt, Session session, MQConsumerWrapper consumer, AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh) {
         this.seq = String.valueOf(ServerGlobal.getInstance().getMsgCounter().incrementAndGet());
         this.msgExt = msgExt;
         this.session = session;
@@ -74,7 +71,6 @@ public class DownStreamMsgContext implements Delayed {
         this.lastPushTime = System.currentTimeMillis();
         this.executeTime = System.currentTimeMillis();
         this.createTime = System.currentTimeMillis();
-        this.subscriptionMode = subscriptionMode;
         String ttlStr = msgExt.getUserProperties("TTL");
         long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
         this.expireTime = System.currentTimeMillis() + ttl;

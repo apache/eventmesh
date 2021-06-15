@@ -85,8 +85,6 @@ public class MessageTransferTask extends AbstractTask {
                 long sendTime = System.currentTimeMillis();
                 addTimestamp(eventMeshMessage, cmd, sendTime);
                 if (cmd.equals(Command.REQUEST_TO_SERVER)) {
-                    //Message Attach SYNC
-                    eventMeshMessage.getProperties().put(EventMeshConstants.IS_SYNC_MESSAGE, String.valueOf(true));
                     eventMeshMessage.getProperties().put(EventMeshConstants.PROPERTY_MESSAGE_REPLY_TO, session.getClientGroupWrapper()
                             .get().getMqProducerWrapper().getMeshMQProducer().buildMQClientId());
                 }

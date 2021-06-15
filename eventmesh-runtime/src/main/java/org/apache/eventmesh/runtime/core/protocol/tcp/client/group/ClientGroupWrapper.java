@@ -17,14 +17,31 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import com.alibaba.fastjson.JSON;
-import io.openmessaging.api.*;
+
+import io.openmessaging.api.Action;
+import io.openmessaging.api.AsyncConsumeContext;
+import io.openmessaging.api.AsyncMessageListener;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.OnExceptionContext;
+import io.openmessaging.api.SendCallback;
+import io.openmessaging.api.SendResult;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -40,12 +57,6 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.HttpTinyClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ClientGroupWrapper {
 
@@ -496,9 +507,9 @@ public class ClientGroupWrapper {
         logger.info("starting broadCastMsgConsumer success, group:{}", groupName);
     }
 
-    public void subscribe(SubscriptionItem subscriptionItem) throws Exception {
+    public void subscribe(String topic) throws Exception {
         AsyncMessageListener listener = null;
-        if (SubscriptionMode.BROADCASTING.equals(subscriptionItem.getMode())) {
+        if (EventMeshUtil.isBroadcast(topic)) {
             listener = new AsyncMessageListener() {
                 @Override
                 public void consume(Message message, AsyncConsumeContext context) {
@@ -519,7 +530,7 @@ public class ClientGroupWrapper {
                     Iterator<Session> sessionsItr = groupConsumerSessions.iterator();
 
                     DownStreamMsgContext downStreamMsgContext =
-                            new DownStreamMsgContext(message, null, broadCastMsgConsumer, broadCastMsgConsumer.getContext(), false, SubscriptionMode.BROADCASTING);
+                            new DownStreamMsgContext(message, null, broadCastMsgConsumer, broadCastMsgConsumer.getContext(), false);
 
                     while (sessionsItr.hasNext()) {
                         Session session = sessionsItr.next();
@@ -547,7 +558,7 @@ public class ClientGroupWrapper {
                     context.commit(Action.CommitMessage);
                 }
             };
-            broadCastMsgConsumer.subscribe(subscriptionItem.getTopic(), listener);
+            broadCastMsgConsumer.subscribe(topic, listener);
         } else {
             listener = new AsyncMessageListener() {
                 @Override
@@ -591,7 +602,7 @@ public class ClientGroupWrapper {
                     }
 
                     DownStreamMsgContext downStreamMsgContext =
-                            new DownStreamMsgContext(message, session, persistentMsgConsumer, persistentMsgConsumer.getContext(), false, SubscriptionMode.CLUSTERING);
+                            new DownStreamMsgContext(message, session, persistentMsgConsumer, persistentMsgConsumer.getContext(), false);
                     //msg put in eventmesh,waiting client ack
                     session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     session.downstreamMsg(downStreamMsgContext);
@@ -600,15 +611,15 @@ public class ClientGroupWrapper {
                     context.commit(Action.CommitMessage);
                 }
             };
-            persistentMsgConsumer.subscribe(subscriptionItem.getTopic(), listener);
+            persistentMsgConsumer.subscribe(topic, listener);
         }
     }
 
-    public void unsubscribe(SubscriptionItem subscriptionItem) throws Exception {
-        if (SubscriptionMode.BROADCASTING.equals(subscriptionItem.getMode())) {
-            broadCastMsgConsumer.unsubscribe(subscriptionItem.getTopic());
+    public void unsubscribe(String topic) throws Exception {
+        if (EventMeshUtil.isBroadcast(topic)) {
+            broadCastMsgConsumer.unsubscribe(topic);
         } else {
-            persistentMsgConsumer.unsubscribe(subscriptionItem.getTopic());
+            persistentMsgConsumer.unsubscribe(topic);
         }
     }
 

@@ -30,10 +30,9 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadUtil;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -278,10 +277,10 @@ public class ClientSessionGroupMapping {
      * @param session
      */
     private void cleanSubscriptionInSession(Session session) throws Exception {
-        for (SubscriptionItem item : session.getSessionContext().subscribeTopics.values()) {
-            session.getClientGroupWrapper().get().removeSubscription(item.getTopic(), session);
-            if (!session.getClientGroupWrapper().get().hasSubscription(item.getTopic())) {
-                session.getClientGroupWrapper().get().unsubscribe(item);
+        for (String topic : session.getSessionContext().subscribeTopics.values()) {
+            session.getClientGroupWrapper().get().removeSubscription(topic, session);
+            if (!session.getClientGroupWrapper().get().hasSubscription(topic)) {
+                session.getClientGroupWrapper().get().unsubscribe(topic);
             }
         }
     }
@@ -296,7 +295,7 @@ public class ClientSessionGroupMapping {
         if (unAckMsg.size() > 0 && session.getClientGroupWrapper().get().getGroupConsumerSessions().size() > 0) {
             for (Map.Entry<String, DownStreamMsgContext> entry : unAckMsg.entrySet()) {
                 DownStreamMsgContext downStreamMsgContext = entry.getValue();
-                if (SubscriptionMode.BROADCASTING.equals(downStreamMsgContext.subscriptionMode)) {
+                if (EventMeshUtil.isBroadcast(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION))) {
                     logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}", downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt), session.getClient());
                     continue;
                 }

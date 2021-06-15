@@ -26,7 +26,6 @@ import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
@@ -51,7 +50,7 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
             client.init();
             client.heartbeat();
 
-            client.subscribe("FT0-e-80030000-01-3", SubscriptionMode.BROADCASTING);
+            client.subscribe("FT0-e-80030000-01-3");
             client.registerSubBusiHandler(handler);
 
             client.listen();

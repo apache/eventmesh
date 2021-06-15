@@ -88,7 +88,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
         String requestCode = "";
 
-        if (Boolean.valueOf(handleMsgContext.getMsg().getSystemProperties(EventMeshConstants.IS_SYNC_MESSAGE))) {
+        if (EventMeshUtil.isService(handleMsgContext.getTopic())) {
             requestCode = String.valueOf(RequestCode.HTTP_PUSH_CLIENT_SYNC.getRequestCode());
         } else {
             requestCode = String.valueOf(RequestCode.HTTP_PUSH_CLIENT_ASYNC.getRequestCode());

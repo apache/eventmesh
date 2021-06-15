@@ -126,7 +126,6 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             omsMsg.setBody(sendMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
             // topic
             omsMsg.setTopic(sendMessageRequestBody.getTopic());
-            omsMsg.putSystemProperties(EventMeshConstants.IS_SYNC_MESSAGE, String.valueOf(true));
             omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION, sendMessageRequestBody.getTopic());
             if (!StringUtils.isBlank(sendMessageRequestBody.getTag())) {
                 omsMsg.putUserProperties("Tag", sendMessageRequestBody.getTag());

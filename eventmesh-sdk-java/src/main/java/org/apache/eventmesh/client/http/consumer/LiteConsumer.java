@@ -47,7 +47,6 @@ import org.apache.eventmesh.client.tcp.common.EventMeshThreadFactoryImpl;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientType;
@@ -70,7 +69,7 @@ public class LiteConsumer extends AbstractLiteClient {
 
     protected LiteClientConfig eventMeshClientConfig;
 
-    private List<SubscriptionItem> subscription = Lists.newArrayList();
+    private List<String> subscription = Lists.newArrayList();
 
     private LiteMessageListener messageListener;
 
@@ -119,7 +118,7 @@ public class LiteConsumer extends AbstractLiteClient {
         logger.info("LiteConsumer shutdown");
     }
 
-    public boolean subscribe(List<SubscriptionItem> topicList, String url) throws Exception {
+    public boolean subscribe(List<String> topicList, String url) throws Exception {
         subscription.addAll(topicList);
         if (!started.get()) {
             start();
@@ -149,7 +148,7 @@ public class LiteConsumer extends AbstractLiteClient {
 
     }
 
-    private RequestParam generateSubscribeRequestParam(List<SubscriptionItem> topicList, String url) {
+    private RequestParam generateSubscribeRequestParam(List<String> topicList, String url) {
 //        final LiteMessage liteMessage = new LiteMessage();
 //        liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
 //                .setContent("subscribe message")
@@ -171,11 +170,11 @@ public class LiteConsumer extends AbstractLiteClient {
         return requestParam;
     }
 
-    private RequestParam generateHeartBeatRequestParam(List<SubscriptionItem> topics, String url) {
+    private RequestParam generateHeartBeatRequestParam(List<String> topics, String url) {
         List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = new ArrayList<>();
-        for (SubscriptionItem item : topics) {
+        for (String topic : topics) {
             HeartbeatRequestBody.HeartbeatEntity heartbeatEntity = new HeartbeatRequestBody.HeartbeatEntity();
-            heartbeatEntity.topic = item.getTopic();
+            heartbeatEntity.topic = topic;
             heartbeatEntity.url = url;
             heartbeatEntities.add(heartbeatEntity);
         }
@@ -197,7 +196,7 @@ public class LiteConsumer extends AbstractLiteClient {
         return requestParam;
     }
 
-    public void heartBeat(List<SubscriptionItem> topicList, String url) throws Exception {
+    public void heartBeat(List<String> topicList, String url) throws Exception {
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -233,13 +232,7 @@ public class LiteConsumer extends AbstractLiteClient {
     }
 
     public boolean unsubscribe(List<String> topicList, String url) throws Exception {
-        Set<String> unSub = new HashSet<>(topicList);
-        for (SubscriptionItem item:subscription) {
-            if (unSub.contains(item.getTopic())) {
-                subscription.remove(item);
-            }
-        }
-
+        subscription.removeAll(topicList);
         RequestParam unSubscribeParam = generateUnSubscribeRequestParam(topicList, url);
 
         long startTime = System.currentTimeMillis();

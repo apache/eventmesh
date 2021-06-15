@@ -54,9 +54,9 @@ public class EventMeshHTTPServer extends AbrstractHTTPServer {
 
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
-    public final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping = new ConcurrentHashMap<>();
 
-    public final ConcurrentHashMap<String /**group@topic*/, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<String, List<Client>> localClientInfoMapping = new ConcurrentHashMap<>();
 
     public EventMeshHTTPServer(EventMeshServer eventMeshServer,
                                EventMeshHTTPConfiguration eventMeshHttpConfiguration) {

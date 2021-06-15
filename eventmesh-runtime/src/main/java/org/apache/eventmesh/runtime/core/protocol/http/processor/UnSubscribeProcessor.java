@@ -162,7 +162,6 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                 ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
                                 latestTopicConf.setConsumerGroup(consumerGroup);
                                 latestTopicConf.setTopic(unSubTopic);
-                                latestTopicConf.setSubscriptionMode(map.get(topicKey).getSubscriptionMode());
                                 latestTopicConf.setUrls(clientUrls);
 
                                 latestTopicConf.setIdcUrls(idcUrls);

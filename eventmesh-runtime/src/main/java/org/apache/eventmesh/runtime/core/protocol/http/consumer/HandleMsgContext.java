@@ -27,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
@@ -51,8 +50,6 @@ public class HandleMsgContext {
 
     private String topic;
 
-    private SubscriptionMode subscriptionMode;
-
     private Message msg;
 
     private int ttl;
@@ -70,7 +67,7 @@ public class HandleMsgContext {
     private Map<String, String> props;
 
     public HandleMsgContext(String msgRandomNo, String consumerGroup, EventMeshConsumer eventMeshConsumer,
-                            String topic, Message msg, SubscriptionMode subscriptionMode,
+                            String topic, Message msg,
                             AbstractContext context, ConsumerGroupConf consumerGroupConfig,
                             EventMeshHTTPServer eventMeshHTTPServer, String bizSeqNo, String uniqueId, ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
@@ -78,7 +75,6 @@ public class HandleMsgContext {
         this.eventMeshConsumer = eventMeshConsumer;
         this.topic = topic;
         this.msg = msg;
-        this.subscriptionMode = subscriptionMode;
         this.context = context;
         this.consumerGroupConfig = consumerGroupConfig;
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -156,14 +152,6 @@ public class HandleMsgContext {
         this.msg = msg;
     }
 
-    public SubscriptionMode getSubscriptionMode() {
-        return subscriptionMode;
-    }
-
-    public void setSubscriptionMode(SubscriptionMode subscriptionMode) {
-        this.subscriptionMode = subscriptionMode;
-    }
-
     public long getCreateTime() {
         return createTime;
     }
@@ -200,7 +188,7 @@ public class HandleMsgContext {
 //                        msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
 //                        msg.getQueueId(), msg.getQueueOffset());
             }
-            eventMeshConsumer.updateOffset(topic, subscriptionMode, Arrays.asList(msg), context);
+            eventMeshConsumer.updateOffset(topic, Arrays.asList(msg), context);
         }
     }
 

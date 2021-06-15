@@ -18,7 +18,6 @@
 package client.impl;
 
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 import client.EventMeshClient;
@@ -77,19 +76,26 @@ public class EventMeshClientImpl implements EventMeshClient {
         this.subClient.heartbeat();
     }
 
+    public Package justSubscribe(String serviceId, String scenario, String dcn) throws Exception {
+        return this.subClient.justSubscribe(serviceId, scenario, dcn);
+    }
 
     public Package listen() throws Exception {
         return this.subClient.listen();
     }
 
-    @Override
-    public Package justSubscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
-        return this.subClient.justSubscribe(topic, subscriptionMode);
+    public Package justUnsubscribe(String serviceId, String scenario, String dcn) throws Exception {
+        return this.subClient.justUnsubscribe(serviceId, scenario, dcn);
     }
 
     @Override
-    public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
-        return this.subClient.justUnsubscribe(topic, subscriptionMode);
+    public Package justSubscribe(String topic) throws Exception {
+        return this.subClient.justSubscribe(topic);
+    }
+
+    @Override
+    public Package justUnsubscribe(String topic) throws Exception {
+        return this.subClient.justUnsubscribe(topic);
     }
 
 

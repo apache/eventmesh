@@ -32,6 +32,7 @@ public class HeartbeatRequestBody extends Body {
     public static final String CLIENTTYPE = "clientType";
     public static final String HEARTBEATENTITIES = "heartbeatEntities";
 
+
     private String clientType;
 
     private List<HeartbeatEntity> heartbeatEntities;

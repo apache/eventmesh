@@ -22,11 +22,13 @@ import java.util.List;
 
 import io.netty.channel.ChannelHandlerContext;
 
-import org.apache.eventmesh.common.protocol.tcp.Subscription;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.tcp.*;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,14 +51,17 @@ public class SubscribeTask extends AbstractTask {
                 throw new Exception("subscriptionInfo is null");
             }
 
-            List<SubscriptionItem> subscriptionItems = new ArrayList<>();
+            List<String> topicList = new ArrayList<>();
             for (int i = 0; i < subscriptionInfo.getTopicList().size(); i++) {
-                SubscriptionItem item = subscriptionInfo.getTopicList().get(i);
-                subscriptionItems.add(item);
+                String topic = subscriptionInfo.getTopicList().get(i);
+                if (!EventMeshUtil.isValidRMBTopic(topic)) {
+                    throw new Exception("invalid topic!");
+                }
+                topicList.add(topic);
             }
             synchronized (session) {
-                session.subscribe(subscriptionItems);
-                messageLogger.info("SubscribeTask succeed|user={}|topics={}", session.getClient(), subscriptionItems);
+                session.subscribe(topicList);
+                messageLogger.info("SubscribeTask succeed|user={}|topics={}", session.getClient(), topicList);
             }
             msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader()
                     .getSeq()));

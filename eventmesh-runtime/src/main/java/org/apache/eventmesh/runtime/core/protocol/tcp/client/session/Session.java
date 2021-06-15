@@ -32,9 +32,10 @@ import io.openmessaging.api.SendCallback;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.tcp.*;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
@@ -161,27 +162,27 @@ public class Session {
         this.listenRequestSeq = listenRequestSeq;
     }
 
-    public void subscribe(List<SubscriptionItem> items) throws Exception {
-        for (SubscriptionItem item : items) {
-            sessionContext.subscribeTopics.putIfAbsent(item.getTopic(), item);
-            clientGroupWrapper.get().subscribe(item);
+    public void subscribe(List<String> topics) throws Exception {
+        for (String topic : topics) {
+            sessionContext.subscribeTopics.putIfAbsent(topic, topic);
+            clientGroupWrapper.get().subscribe(topic);
 
-            clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().getDefaultTopicRouteInfoFromNameServer(item.getTopic(),
+            clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().getDefaultTopicRouteInfoFromNameServer(topic,
                     EventMeshConstants.DEFAULT_TIME_OUT_MILLS);
 
-            clientGroupWrapper.get().addSubscription(item.getTopic(), this);
-            subscribeLogger.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
+            clientGroupWrapper.get().addSubscription(topic, this);
+            subscribeLogger.info("subscribe|succeed|topic={}|user={}", topic, client);
         }
     }
 
-    public void unsubscribe(List<SubscriptionItem> items) throws Exception {
-        for (SubscriptionItem item : items) {
-            sessionContext.subscribeTopics.remove(item.getTopic());
-            clientGroupWrapper.get().removeSubscription(item.getTopic(), this);
+    public void unsubscribe(List<String> topics) throws Exception {
+        for (String topic : topics) {
+            sessionContext.subscribeTopics.remove(topic);
+            clientGroupWrapper.get().removeSubscription(topic, this);
 
-            if (!clientGroupWrapper.get().hasSubscription(item.getTopic())) {
-                clientGroupWrapper.get().unsubscribe(item);
-                subscribeLogger.info("unSubscribe|succeed|topic={}|lastUser={}", item.getTopic(), client);
+            if (!clientGroupWrapper.get().hasSubscription(topic)) {
+                clientGroupWrapper.get().unsubscribe(topic);
+                subscribeLogger.info("unSubscribe|succeed|topic={}|lastUser={}", topic, client);
             }
         }
     }
