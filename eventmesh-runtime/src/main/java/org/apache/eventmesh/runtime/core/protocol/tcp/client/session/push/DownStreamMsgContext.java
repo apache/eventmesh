@@ -112,6 +112,7 @@ public class DownStreamMsgContext implements Delayed {
                 ",consumer=" + consumer +
 //  todo              ",consumerGroup=" + consumer.getClass().getConsumerGroup() +
                 ",topic=" + msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION) +
+                ",subscriptionMode=" + subscriptionMode +
                 ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) +
                 ",executeTime=" + DateFormatUtils.format(executeTime, EventMeshConstants.DATE_FORMAT) +
                 ",lastPushTime=" + DateFormatUtils.format(lastPushTime, EventMeshConstants.DATE_FORMAT) + '}';
