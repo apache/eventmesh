@@ -29,6 +29,8 @@ public class EventMeshConstants {
 
     public static final String BROADCAST_PREFIX = "broadcast-";
 
+    public static final String IS_SYNC_MESSAGE = "sync";
+
     public final static String CONSUMER_GROUP_NAME_PREFIX = "ConsumerGroup-";
 
     public final static String PRODUCER_GROUP_NAME_PREFIX = "ProducerGroup-";

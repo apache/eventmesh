@@ -26,6 +26,7 @@ import client.common.MessageUtils;
 import client.common.UserAgentUtils;
 import client.hook.ReceiveMsgHook;
 import client.impl.SubClientImpl;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 
 public class CCSubClient {
 
@@ -34,7 +35,7 @@ public class CCSubClient {
         subClient.init();
         subClient.heartbeat();
         subClient.listen();
-        subClient.justSubscribe("FT0-s-80000000-01-0");
+        subClient.justSubscribe("FT0-s-80000000-01-0", SubscriptionMode.CLUSTERING);
         subClient.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
