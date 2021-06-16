@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.openmessaging.api.Message;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
@@ -70,7 +71,9 @@ public class DownStreamMsgContext implements Delayed {
         this.lastPushTime = System.currentTimeMillis();
         this.executeTime = System.currentTimeMillis();
         this.createTime = System.currentTimeMillis();
-        this.expireTime = System.currentTimeMillis() + Long.parseLong(msgExt.getUserProperties("TTL"));
+        String ttlStr = msgExt.getUserProperties("TTL");
+        long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
+        this.expireTime = System.currentTimeMillis() + ttl;
         this.msgFromOtherEventMesh = msgFromOtherEventMesh;
     }
 

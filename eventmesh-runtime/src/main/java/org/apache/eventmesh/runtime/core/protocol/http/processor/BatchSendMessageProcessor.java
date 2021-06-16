@@ -188,7 +188,9 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        eventMeshHTTPServer.metrics.summaryMetrics.recordSendBatchMsg(Integer.parseInt(sendMessageBatchRequestBody.getSize()));
+        String sizeStr = sendMessageBatchRequestBody.getSize();
+        long delta = StringUtils.isNumeric(sizeStr)? Integer.parseInt(sizeStr) : 0;
+        eventMeshHTTPServer.metrics.summaryMetrics.recordSendBatchMsg(delta);
 
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerBatchMsgBatchEnabled) {
             for (List<Message> batchMsgs : topicBatchMessageMappings.values()) {
