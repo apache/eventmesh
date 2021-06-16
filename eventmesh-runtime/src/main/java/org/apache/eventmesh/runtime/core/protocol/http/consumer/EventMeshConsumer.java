@@ -31,6 +31,7 @@ import io.openmessaging.api.SendResult;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.api.MeshAsyncConsumeContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -138,7 +139,7 @@ public class EventMeshConsumer {
                         }
                     }
                     HandleMsgContext handleMsgContext = new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(), consumerGroupConf.getConsumerGroup(), EventMeshConsumer.this,
-                            topic, message, persistentMqConsumer.getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
+                            topic, message, ((MeshAsyncConsumeContext)context).getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                     if (httpMessageHandler.handle(handleMsgContext)) {
 //                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
@@ -187,7 +188,7 @@ public class EventMeshConsumer {
                         }
                     }
                     HandleMsgContext handleMsgContext = new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(), consumerGroupConf.getConsumerGroup(), EventMeshConsumer.this,
-                            topic, message, broadcastMqConsumer.getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
+                            topic, message, ((MeshAsyncConsumeContext)context).getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                     if (httpMessageHandler.handle(handleMsgContext)) {
 //                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
