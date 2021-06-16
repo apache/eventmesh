@@ -49,6 +49,7 @@ import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.client.UnSubscribeRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientType;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
@@ -166,6 +167,7 @@ public class LiteConsumer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
                 .addBody(SubscribeRequestBody.TOPIC, JSONObject.toJSONString(topicList))
+                .addBody(SubscribeRequestBody.CONSUMERGROUP, eventMeshClientConfig.getConsumerGroup())
                 .addBody(SubscribeRequestBody.URL, url);
         return requestParam;
     }
@@ -192,6 +194,7 @@ public class LiteConsumer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
                 .addBody(HeartbeatRequestBody.CLIENTTYPE, ClientType.SUB.name())
+                .addBody(HeartbeatRequestBody.CONSUMERGROUP, eventMeshClientConfig.getConsumerGroup())
                 .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JSON.toJSONString(heartbeatEntities));
         return requestParam;
     }
@@ -269,8 +272,9 @@ public class LiteConsumer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
-                .addBody(SubscribeRequestBody.TOPIC, JSONObject.toJSONString(topicList))
-                .addBody(SubscribeRequestBody.URL, url);
+                .addBody(UnSubscribeRequestBody.TOPIC, JSONObject.toJSONString(topicList))
+                .addBody(UnSubscribeRequestBody.CONSUMERGROUP, eventMeshClientConfig.getConsumerGroup())
+                .addBody(UnSubscribeRequestBody.URL, url);
         return requestParam;
     }
 

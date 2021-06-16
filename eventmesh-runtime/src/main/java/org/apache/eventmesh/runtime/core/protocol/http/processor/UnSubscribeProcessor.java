@@ -89,7 +89,8 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
 
         //validate body
         if (StringUtils.isBlank(unSubscribeRequestBody.getUrl())
-                || CollectionUtils.isEmpty(unSubscribeRequestBody.getTopics())) {
+                || CollectionUtils.isEmpty(unSubscribeRequestBody.getTopics())
+                || StringUtils.isBlank(unSubscribeRequestBody.getConsumerGroup())) {
 
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     unSubscribeResponseHeader,
@@ -102,7 +103,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
         String sys = unSubscribeRequestHeader.getSys();
         String ip = unSubscribeRequestHeader.getIp();
         String pid = unSubscribeRequestHeader.getPid();
-        String consumerGroup = EventMeshUtil.buildClientGroup(unSubscribeRequestHeader.getSys());
+        String consumerGroup = unSubscribeRequestBody.getConsumerGroup();
         String unSubscribeUrl = unSubscribeRequestBody.getUrl();
         List<String> unSubTopicList = unSubscribeRequestBody.getTopics();
 

@@ -92,6 +92,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         if (CollectionUtils.isEmpty(sendMessageBatchRequestBody.getContents())
                 || StringUtils.isBlank(sendMessageBatchRequestBody.getBatchId())
+                || StringUtils.isBlank(sendMessageBatchRequestBody.getProducerGroup())
                 || (Integer.valueOf(sendMessageBatchRequestBody.getSize()) != CollectionUtils.size(sendMessageBatchRequestBody.getContents()))) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchResponseHeader,
@@ -112,7 +113,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         }
 
 
-        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageBatchRequestHeader.getSys());
+        String producerGroup = sendMessageBatchRequestBody.getProducerGroup();
         EventMeshProducer batchEventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
         batchEventMeshProducer.getMqProducerWrapper().getMeshMQProducer().setExtFields();

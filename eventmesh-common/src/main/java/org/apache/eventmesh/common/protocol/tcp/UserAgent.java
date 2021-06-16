@@ -29,10 +29,28 @@ public class UserAgent {
     private String username;
     private String password;
     private String idc;
+    private String producerGroup;
+    private String consumerGroup;
     private String purpose;
     private int unack = 0;
 
     public UserAgent() {
+    }
+
+    public String getProducerGroup() {
+        return producerGroup;
+    }
+
+    public void setProducerGroup(String producerGroup) {
+        this.producerGroup = producerGroup;
+    }
+
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public void setConsumerGroup(String consumerGroup) {
+        this.consumerGroup = consumerGroup;
     }
 
     public String getEnv() {

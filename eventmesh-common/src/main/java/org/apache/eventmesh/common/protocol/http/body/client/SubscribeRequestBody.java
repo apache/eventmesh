@@ -33,11 +33,21 @@ public class SubscribeRequestBody extends Body {
 
     public static final String URL = "url";
 
+    public static final String CONSUMERGROUP = "consumerGroup";
+
     private List<String> topics;
 
     private String url;
 
-    private String topic;
+    private String consumerGroup;
+
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public void setConsumerGroup(String consumerGroup) {
+        this.consumerGroup = consumerGroup;
+    }
 
     public List<String> getTopics() {
         return topics;
@@ -59,6 +69,7 @@ public class SubscribeRequestBody extends Body {
         SubscribeRequestBody body = new SubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
         body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPIC), String.class));
+        body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         return body;
     }
 
@@ -67,13 +78,15 @@ public class SubscribeRequestBody extends Body {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(URL, url);
         map.put(TOPIC, JSON.toJSONString(topics));
+        map.put(CONSUMERGROUP, consumerGroup);
         return map;
     }
 
     @Override
     public String toString() {
         return "subscribeBody{" +
-                "url='" + url + '\'' +
+                "consumerGroup='" + consumerGroup + '\'' +
+                ", url='" + url + '\'' +
                 ", topics=" + topics +
                 '}';
     }

@@ -75,28 +75,8 @@ public class EventMeshUtil {
                 + "-" + ThreadUtil.getPID();
     }
 
-    public static String buildBroadcastClientConsumerGroup(String systemId) {
-        return EventMeshConstants.CONSUMER_GROUP_NAME_PREFIX + EventMeshConstants.BROADCAST_PREFIX + systemId;
-    }
-
-    public static String buildPersistentClientConsumerGroup(String systemId) {
-        return EventMeshConstants.CONSUMER_GROUP_NAME_PREFIX + systemId;
-    }
-
     public static String buildClientGroup(String systemId) {
         return systemId;
-    }
-
-    public static String buildClientProducerGroup(String systemId) {
-        return EventMeshConstants.PRODUCER_GROUP_NAME_PREFIX + systemId;
-    }
-
-    public static String buildCCAddr(String str) {
-        return str + "/namesrvAddr";
-    }
-
-    public static String buildCCAddr(String str, String idc) {
-        return str + "/namesrvAddr/" + idc;
     }
 
     public static boolean isValidRMBTopic(String topic) {

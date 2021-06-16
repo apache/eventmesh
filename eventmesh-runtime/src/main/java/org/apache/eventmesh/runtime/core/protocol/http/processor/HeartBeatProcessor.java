@@ -85,6 +85,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
         //validate body
         if (StringUtils.isBlank(heartbeatRequestBody.getClientType())
+                || StringUtils.isBlank(heartbeatRequestBody.getConsumerGroup())
                 || CollectionUtils.isEmpty(heartbeatRequestBody.getHeartbeatEntities())) {
 
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
@@ -99,7 +100,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         String sys = heartbeatRequestHeader.getSys();
         String ip = heartbeatRequestHeader.getIp();
         String pid = heartbeatRequestHeader.getPid();
-        String consumerGroup = EventMeshUtil.buildClientGroup(heartbeatRequestHeader.getSys());
+        String consumerGroup = heartbeatRequestBody.getConsumerGroup();
         List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = heartbeatRequestBody.getHeartbeatEntities();
         for (HeartbeatRequestBody.HeartbeatEntity heartbeatEntity : heartbeatEntities) {
             String topic = heartbeatEntity.topic;

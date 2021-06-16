@@ -70,6 +70,7 @@ public class SubService implements InitializingBean {
         }
         LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
         eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
+                .setConsumerGroup("EventMeshTest-consumerGroup")
                 .setEnv(env)
                 .setIdc(idc)
                 .setIp(IPUtil.getLocalAddress())

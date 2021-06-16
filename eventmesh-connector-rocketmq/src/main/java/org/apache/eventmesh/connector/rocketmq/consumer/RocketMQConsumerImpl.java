@@ -70,11 +70,11 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
         String instanceName = keyValue.getProperty("instanceName");
 
 
-        if (isBroadcast) {
-            consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + Constants.BROADCAST_PREFIX + consumerGroup;
-        } else {
-            consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup;
-        }
+//        if (isBroadcast) {
+//            consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + Constants.BROADCAST_PREFIX + consumerGroup;
+//        } else {
+//            consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup;
+//        }
 
         String omsNamesrv = clientConfiguration.namesrvAddr;
 //        KeyValue properties = OMS.newKeyValue().put(OMSBuiltinKeys.DRIVER_IMPL, DEFAULT_ACCESS_DRIVER);

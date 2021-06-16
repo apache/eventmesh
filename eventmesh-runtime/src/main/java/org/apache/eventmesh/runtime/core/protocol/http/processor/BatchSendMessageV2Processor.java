@@ -87,6 +87,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
         if (StringUtils.isBlank(sendMessageBatchV2RequestBody.getBizSeqNo())
                 || StringUtils.isBlank(sendMessageBatchV2RequestBody.getTopic())
+                || StringUtils.isBlank(sendMessageBatchV2RequestBody.getProducerGroup())
                 || StringUtils.isBlank(sendMessageBatchV2RequestBody.getMsg())) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchV2ResponseHeader,
@@ -106,7 +107,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
             return;
         }
 
-        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageBatchV2RequestHeader.getSys());
+        String producerGroup = sendMessageBatchV2RequestBody.getProducerGroup();
         EventMeshProducer batchEventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
         batchEventMeshProducer.getMqProducerWrapper().getMeshMQProducer().setExtFields();
 //        batchEventMeshProducer.getMqProducerWrapper().getDefaultMQProducer().setRetryTimesWhenSendAsyncFailed(0);

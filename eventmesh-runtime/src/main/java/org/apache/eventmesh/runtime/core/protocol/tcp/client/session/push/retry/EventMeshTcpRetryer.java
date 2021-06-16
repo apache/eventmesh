@@ -120,7 +120,7 @@ public class EventMeshTcpRetryer {
             String topic = downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
             if (!EventMeshUtil.isBroadcast(topic)) {
                 rechoosen = downStreamMsgContext.session.getClientGroupWrapper()
-                        .get().getDownstreamDispatchStrategy().select(downStreamMsgContext.session.getClientGroupWrapper().get().getGroupName()
+                        .get().getDownstreamDispatchStrategy().select(downStreamMsgContext.session.getClientGroupWrapper().get().getSysId()
                                 , topic
                                 , downStreamMsgContext.session.getClientGroupWrapper().get().getGroupConsumerSessions());
             } else {

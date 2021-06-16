@@ -40,6 +40,10 @@ public class LiteClientConfig {
 
     private String env;
 
+    private String consumerGroup = "DefaultConsumerGroup";
+
+    private String producerGroup = "DefaultProducerGroup";
+
     private String idc;
 
     private String ip = "127.0.0.1";
@@ -162,6 +166,24 @@ public class LiteClientConfig {
         return this;
     }
 
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public LiteClientConfig setConsumerGroup(String consumerGroup) {
+        this.consumerGroup = consumerGroup;
+        return this;
+    }
+
+    public String getProducerGroup() {
+        return producerGroup;
+    }
+
+    public LiteClientConfig setProducerGroup(String producerGroup) {
+        this.producerGroup = producerGroup;
+        return this;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -172,6 +194,8 @@ public class LiteClientConfig {
                 .append("consumeThreadMax=").append(consumeThreadMax).append(",")
                 .append("env=").append(env).append(",")
                 .append("idc=").append(idc).append(",")
+                .append("producerGroup=").append(producerGroup).append(",")
+                .append("consumerGroup=").append(consumerGroup).append(",")
                 .append("ip=").append(ip).append(",")
                 .append("pid=").append(pid).append(",")
                 .append("sys=").append(sys).append(",")

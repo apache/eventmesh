@@ -250,8 +250,7 @@ public class EventMeshConsumer {
     public void sendMessageBack(final Message msgBack, final String uniqueId, String bizSeqNo) throws Exception {
 
         EventMeshProducer sendMessageBack
-                = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(EventMeshConstants.PRODUCER_GROUP_NAME_PREFIX
-                + consumerGroupConf.getConsumerGroup());
+                = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(consumerGroupConf.getConsumerGroup());
 
         if (sendMessageBack == null) {
             logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);

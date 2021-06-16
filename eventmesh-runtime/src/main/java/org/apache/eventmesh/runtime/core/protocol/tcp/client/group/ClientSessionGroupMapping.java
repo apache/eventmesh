@@ -54,9 +54,9 @@ public class ClientSessionGroupMapping {
 
     private ConcurrentHashMap<InetSocketAddress, Session> sessionTable = new ConcurrentHashMap<>();
 
-    private ConcurrentHashMap<String /** groupName*/, ClientGroupWrapper> clientGroupMap = new ConcurrentHashMap<String, ClientGroupWrapper>();
+    private ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, ClientGroupWrapper> clientGroupMap = new ConcurrentHashMap<String, ClientGroupWrapper>();
 
-    private ConcurrentHashMap<String /** groupName*/, Object> lockMap = new ConcurrentHashMap<String, Object>();
+    private ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, Object> lockMap = new ConcurrentHashMap<String, Object>();
 
     private EventMeshTCPServer eventMeshTCPServer;
 
@@ -72,8 +72,8 @@ public class ClientSessionGroupMapping {
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
-    public ClientGroupWrapper getClientGroupWrapper(String groupName) {
-        return MapUtils.getObject(clientGroupMap, groupName, null);
+    public ClientGroupWrapper getClientGroupWrapper(String sysId) {
+        return MapUtils.getObject(clientGroupMap, sysId, null);
     }
 
     public Session getSession(ChannelHandlerContext ctx) {
@@ -174,28 +174,28 @@ public class ClientSessionGroupMapping {
         }
     }
 
-    private ClientGroupWrapper constructClientGroupWrapper(String sysId,
+    private ClientGroupWrapper constructClientGroupWrapper(String sysId, String producerGroup, String consumerGroup,
                                                            EventMeshTCPServer eventMeshTCPServer,
                                                            DownstreamDispatchStrategy downstreamDispatchStrategy) {
-        return new ClientGroupWrapper(sysId, eventMeshTCPServer, downstreamDispatchStrategy);
+        return new ClientGroupWrapper(sysId, producerGroup, consumerGroup, eventMeshTCPServer, downstreamDispatchStrategy);
     }
 
     private void initClientGroupWrapper(UserAgent user, Session session) throws Exception {
-        final String clientGroup = EventMeshUtil.buildClientGroup(user.getSubsystem());
-        if (!lockMap.containsKey(clientGroup)) {
-            Object obj = lockMap.putIfAbsent(clientGroup, new Object());
+        if (!lockMap.containsKey(user.getSubsystem())) {
+            Object obj = lockMap.putIfAbsent(user.getSubsystem(), new Object());
             if (obj == null) {
-                logger.info("add lock to map for group:{}", clientGroup);
+                logger.info("add lock to map for subsystem:{}", user.getSubsystem());
             }
         }
-        synchronized (lockMap.get(clientGroup)) {
-            if (!clientGroupMap.containsKey(clientGroup)) {
-                ClientGroupWrapper cgw = constructClientGroupWrapper(user.getSubsystem(), eventMeshTCPServer, new FreePriorityDispatchStrategy());
-                clientGroupMap.put(clientGroup, cgw);
-                logger.info("create new ClientGroupWrapper,group:{}", clientGroup);
+        synchronized (lockMap.get(user.getSubsystem())) {
+            if (!clientGroupMap.containsKey(user.getSubsystem())) {
+                ClientGroupWrapper cgw = constructClientGroupWrapper(user.getSubsystem(), user.getProducerGroup(),
+                        user.getConsumerGroup(), eventMeshTCPServer, new FreePriorityDispatchStrategy());
+                clientGroupMap.put(user.getSubsystem(), cgw);
+                logger.info("create new ClientGroupWrapper, subsystem:{}", user.getSubsystem());
             }
 
-            ClientGroupWrapper cgw = clientGroupMap.get(clientGroup);
+            ClientGroupWrapper cgw = clientGroupMap.get(user.getSubsystem());
 
             if (EventMeshConstants.PURPOSE_PUB.equals(user.getPurpose())) {
                 startClientGroupProducer(cgw, session);
@@ -236,11 +236,10 @@ public class ClientSessionGroupMapping {
     }
 
     private void startClientGroupConsumer(Session session) throws Exception {
-        final String clientGroup = EventMeshUtil.buildClientGroup(session.getClient().getSubsystem());
-        if (!lockMap.containsKey(clientGroup)) {
-            lockMap.putIfAbsent(clientGroup, new Object());
+        if (!lockMap.containsKey(session.getClient().getSubsystem())) {
+            lockMap.putIfAbsent(session.getClient().getSubsystem(), new Object());
         }
-        synchronized (lockMap.get(clientGroup)) {
+        synchronized (lockMap.get(session.getClient().getSubsystem())) {
             logger.info("readySession session[{}]", session);
             ClientGroupWrapper cgw = session.getClientGroupWrapper().get();
 
@@ -299,7 +298,7 @@ public class ClientSessionGroupMapping {
                     logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}", downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt), session.getClient());
                     continue;
                 }
-                Session reChooseSession = session.getClientGroupWrapper().get().getDownstreamDispatchStrategy().select(session.getClientGroupWrapper().get().getGroupName()
+                Session reChooseSession = session.getClientGroupWrapper().get().getDownstreamDispatchStrategy().select(session.getClientGroupWrapper().get().getConsumerGroup()
                         , downStreamMsgContext.msgExt.getTopic()
                         , session.getClientGroupWrapper().get().groupConsumerSessions);
                 if(reChooseSession != null){
@@ -324,9 +323,9 @@ public class ClientSessionGroupMapping {
                 && (session.getClientGroupWrapper().get().getGroupProducerSessions().size() == 0)) {
             shutdownClientGroupProducer(session);
 
-            clientGroupMap.remove(session.getClientGroupWrapper().get().getGroupName());
-            lockMap.remove(session.getClientGroupWrapper().get().getGroupName());
-            logger.info("remove clientGroupWrapper group[{}]", session.getClientGroupWrapper().get().getGroupName());
+            clientGroupMap.remove(session.getClientGroupWrapper().get().getSysId());
+            lockMap.remove(session.getClientGroupWrapper().get().getSysId());
+            logger.info("remove clientGroupWrapper subsystem[{}]", session.getClientGroupWrapper().get().getSysId());
         }
     }
 

@@ -95,6 +95,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
         //validate body
         if (StringUtils.isBlank(replyMessageRequestBody.getBizSeqNo())
                 || StringUtils.isBlank(replyMessageRequestBody.getUniqueId())
+                || StringUtils.isBlank(replyMessageRequestBody.getProducerGroup())
                 || StringUtils.isBlank(replyMessageRequestBody.getContent())) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     replyMessageResponseHeader,
@@ -103,7 +104,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String producerGroup = EventMeshUtil.buildClientGroup(replyMessageRequestHeader.getSys());
+        String producerGroup = replyMessageRequestBody.getProducerGroup();
         EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
         if (!eventMeshProducer.getStarted().get()) {

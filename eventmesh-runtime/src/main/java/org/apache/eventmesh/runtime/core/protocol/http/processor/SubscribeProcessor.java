@@ -88,7 +88,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
         //validate body
         if (StringUtils.isBlank(subscribeRequestBody.getUrl())
-                || CollectionUtils.isEmpty(subscribeRequestBody.getTopics())) {
+                || CollectionUtils.isEmpty(subscribeRequestBody.getTopics())
+                || StringUtils.isBlank(subscribeRequestBody.getConsumerGroup())) {
 
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     subscribeResponseHeader,
@@ -99,7 +100,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         List<String> subTopicList = subscribeRequestBody.getTopics();
 
         String url = subscribeRequestBody.getUrl();
-        String consumerGroup = EventMeshUtil.buildClientGroup(subscribeRequestHeader.getSys());
+        String consumerGroup = subscribeRequestBody.getConsumerGroup();
 
         synchronized (eventMeshHTTPServer.localClientInfoMapping) {
 

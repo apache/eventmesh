@@ -92,6 +92,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         //validate body
         if (StringUtils.isBlank(sendMessageRequestBody.getBizSeqNo())
                 || StringUtils.isBlank(sendMessageRequestBody.getUniqueId())
+                || StringUtils.isBlank(sendMessageRequestBody.getProducerGroup())
                 || StringUtils.isBlank(sendMessageRequestBody.getTopic())
                 || StringUtils.isBlank(sendMessageRequestBody.getContent())
                 || (StringUtils.isBlank(sendMessageRequestBody.getTtl()))) {
@@ -103,7 +104,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageRequestHeader.getSys());
+        String producerGroup = sendMessageRequestBody.getProducerGroup();
         EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
         if (!eventMeshProducer.getStarted().get()) {
