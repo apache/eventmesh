@@ -35,7 +35,8 @@ EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to d
 
 * **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
 * **eventmesh-sdk-java** : currently supports HTTP and TCP protocols.
-* **eventmesh-connector-rocketmq** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from RocketMQ Event Store.
+* **eventmesh-connector-api** : an api layer based on OpenMessaging api and SPI pluggin, which can be implemented by popular EventStores such as IMDG, Messaging Engine and OSS etc.
+* **eventmesh-connector-rocketmq** : an implementation of eventmesh-connector-api, pub event to or sub event from RocketMQ as EventStore.
 
 **Protocol:**
 
