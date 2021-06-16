@@ -99,12 +99,6 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     }
 
     @Override
-    public AbstractContext getContext() {
-        return pushConsumer.getContext();
-    }
-
-
-    @Override
     public boolean isStarted() {
         return pushConsumer.isStarted();
     }
