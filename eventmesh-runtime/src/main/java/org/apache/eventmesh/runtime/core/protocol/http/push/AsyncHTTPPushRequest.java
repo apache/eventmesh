@@ -35,6 +35,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
@@ -88,7 +89,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
         String requestCode = "";
 
-        if (Boolean.valueOf(handleMsgContext.getMsg().getSystemProperties(EventMeshConstants.IS_SYNC_MESSAGE))) {
+        if (SubcriptionType.SYNC.equals(handleMsgContext.getSubscriptionItem().getType())) {
             requestCode = String.valueOf(RequestCode.HTTP_PUSH_CLIENT_SYNC.getRequestCode());
         } else {
             requestCode = String.valueOf(RequestCode.HTTP_PUSH_CLIENT_ASYNC.getRequestCode());

@@ -21,6 +21,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -61,9 +62,9 @@ public class SessionPusher {
 
     public void push(final DownStreamMsgContext downStreamMsgContext) {
         Command cmd;
-        if (SubscriptionMode.BROADCASTING.equals(downStreamMsgContext.subscriptionMode)) {
+        if (SubscriptionMode.BROADCASTING.equals(downStreamMsgContext.subscriptionItem.getMode())) {
             cmd = Command.BROADCAST_MESSAGE_TO_CLIENT;
-        } else if (Boolean.valueOf(downStreamMsgContext.msgExt.getSystemProperties(EventMeshConstants.IS_SYNC_MESSAGE))) {
+        } else if (SubcriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())) {
             cmd = Command.REQUEST_TO_CLIENT;
         } else {
             cmd = Command.ASYNC_MESSAGE_TO_CLIENT;
@@ -100,7 +101,7 @@ public class SessionPusher {
                                 logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                                 //retry
-                                long delayTime = Boolean.valueOf(downStreamMsgContext.msgExt.getSystemProperties(EventMeshConstants.IS_SYNC_MESSAGE)) ? 0 : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryDelayInMills;
+                                long delayTime = SubcriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType()) ? 0 : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryDelayInMills;
                                 downStreamMsgContext.delay(delayTime);
                                 session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {

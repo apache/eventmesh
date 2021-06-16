@@ -23,9 +23,23 @@ public class SubscriptionItem {
 
     private SubscriptionMode mode;
 
-    public SubscriptionItem(String topic, SubscriptionMode mode) {
+    private SubcriptionType type;
+
+    public SubscriptionItem() {
+    }
+
+    public SubscriptionItem(String topic, SubscriptionMode mode, SubcriptionType type) {
         this.topic = topic;
         this.mode = mode;
+        this.type = type;
+    }
+
+    public SubcriptionType getType() {
+        return type;
+    }
+
+    public void setType(SubcriptionType type) {
+        this.type = type;
     }
 
     public String getTopic() {
@@ -49,6 +63,7 @@ public class SubscriptionItem {
         return "SubscriptionItem{" +
                 "topic=" + topic +
                 ", mode=" + mode +
+                ", type=" + type +
                 '}';
     }
 }

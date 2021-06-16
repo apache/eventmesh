@@ -24,6 +24,7 @@ import org.apache.eventmesh.client.tcp.SimpleSubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
@@ -96,8 +97,8 @@ public class DefaultEventMeshClient implements EventMeshClient {
     }
 
     @Override
-    public void subscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
-        this.subClient.subscribe(topic, subscriptionMode);
+    public void subscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception {
+        this.subClient.subscribe(topic, subscriptionMode, subcriptionType);
     }
 
     @Override

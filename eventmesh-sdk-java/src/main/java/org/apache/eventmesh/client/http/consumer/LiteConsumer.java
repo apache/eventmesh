@@ -17,10 +17,7 @@
 
 package org.apache.eventmesh.client.http.consumer;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +52,7 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
@@ -238,9 +236,11 @@ public class LiteConsumer extends AbstractLiteClient {
 
     public boolean unsubscribe(List<String> topicList, String url) throws Exception {
         Set<String> unSub = new HashSet<>(topicList);
-        for (SubscriptionItem item:subscription) {
+        Iterator<SubscriptionItem> itr = subscription.iterator();
+        while(itr.hasNext()) {
+            SubscriptionItem item = itr.next();
             if (unSub.contains(item.getTopic())) {
-                subscription.remove(item);
+                itr.remove();
             }
         }
 

@@ -27,6 +27,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.*;
@@ -74,7 +75,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
         hello();
         if (!CollectionUtils.isEmpty(subscriptionItems)) {
             for (SubscriptionItem item : subscriptionItems) {
-                Package request = MessageUtils.subscribe(item.getTopic(), item.getMode());
+                Package request = MessageUtils.subscribe(item.getTopic(), item.getMode(), item.getType());
                 this.dispatcher(request, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
             }
         }
@@ -117,9 +118,9 @@ public class SubClientImpl extends TCPClient implements SubClient {
         this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
-    public Package justSubscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
-        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode));
-        Package msg = MessageUtils.subscribe(topic, subscriptionMode);
+    public Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception {
+        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subcriptionType));
+        Package msg = MessageUtils.subscribe(topic, subscriptionMode, subcriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
@@ -139,9 +140,9 @@ public class SubClientImpl extends TCPClient implements SubClient {
 //        this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
 //    }
 
-    public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
+    public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception {
         subscriptionItems.remove(topic);
-        Package msg = MessageUtils.unsubscribe(topic, subscriptionMode);
+        Package msg = MessageUtils.unsubscribe(topic, subscriptionMode, subcriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 

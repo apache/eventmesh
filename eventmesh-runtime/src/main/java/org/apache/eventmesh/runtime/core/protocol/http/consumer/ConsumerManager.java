@@ -113,7 +113,7 @@ public class ConsumerManager {
                                                 ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
                                                 latestTopicConf.setConsumerGroup(consumerGroup);
                                                 latestTopicConf.setTopic(topic);
-                                                latestTopicConf.setSubscriptionMode(map.get(topicKey).getSubscriptionMode());
+                                                latestTopicConf.setSubscriptionItem(map.get(topicKey).getSubscriptionItem());
                                                 latestTopicConf.setUrls(clientUrls);
 
                                                 latestTopicConf.setIdcUrls(idcUrls);

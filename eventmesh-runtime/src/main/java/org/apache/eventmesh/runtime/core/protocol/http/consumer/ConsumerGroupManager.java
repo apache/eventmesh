@@ -55,7 +55,7 @@ public class ConsumerGroupManager {
 
     private synchronized void setupEventMeshConsumer(ConsumerGroupConf consumerGroupConfig) throws Exception {
         for (Map.Entry<String, ConsumerGroupTopicConf> conf : consumerGroupConfig.getConsumerGroupTopicConf().entrySet()) {
-            eventMeshConsumer.subscribe(conf.getKey(), conf.getValue().getSubscriptionMode());
+            eventMeshConsumer.subscribe(conf.getKey(), conf.getValue().getSubscriptionItem());
         }
     }
 

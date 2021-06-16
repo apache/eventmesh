@@ -19,6 +19,7 @@ package demo;
 
 import io.netty.channel.ChannelHandlerContext;
 
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
@@ -33,7 +34,7 @@ public class SyncSubClient {
         SubClientImpl client = new SubClientImpl("127.0.0.1", 10000, MessageUtils.generateSubServer());
         client.init();
         client.heartbeat();
-        client.justSubscribe(ClientConstants.SYNC_TOPIC, SubscriptionMode.CLUSTERING);
+        client.justSubscribe(ClientConstants.SYNC_TOPIC, SubscriptionMode.CLUSTERING, SubcriptionType.SYNC);
         client.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {

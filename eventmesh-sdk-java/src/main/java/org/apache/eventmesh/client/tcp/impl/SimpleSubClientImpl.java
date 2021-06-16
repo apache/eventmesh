@@ -33,6 +33,7 @@ import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.*;
@@ -73,7 +74,7 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
         hello();
         if (!CollectionUtils.isEmpty(subscriptionItems)) {
             for (SubscriptionItem item : subscriptionItems) {
-                Package request = MessageUtils.subscribe(item.getTopic(), item.getMode());
+                Package request = MessageUtils.subscribe(item.getTopic(), item.getMode(), item.getType());
                 this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             }
         }
@@ -122,9 +123,9 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
     }
 
 
-    public void subscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
-        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode));
-        Package request = MessageUtils.subscribe(topic, subscriptionMode);
+    public void subscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception {
+        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subcriptionType));
+        Package request = MessageUtils.subscribe(topic, subscriptionMode, subcriptionType);
         this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 
