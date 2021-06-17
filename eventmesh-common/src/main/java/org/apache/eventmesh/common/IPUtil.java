@@ -35,7 +35,7 @@ public class IPUtil {
     public static String getLocalAddress() {
         // if the progress works under docker environment
         // return the host ip about this docker located from environment value
-        String dockerHostIp = System.getenv("webank_docker_host_ip");
+        String dockerHostIp = System.getenv("docker_host_ip");
         if (dockerHostIp != null && !"".equals(dockerHostIp))
             return dockerHostIp;
 

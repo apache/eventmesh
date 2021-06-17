@@ -17,10 +17,12 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.consumer;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 
 public class ConsumerGroupManager {
 
@@ -52,8 +54,8 @@ public class ConsumerGroupManager {
     }
 
     private synchronized void setupEventMeshConsumer(ConsumerGroupConf consumerGroupConfig) throws Exception {
-        for (String topic : consumerGroupConfig.getConsumerGroupTopicConf().keySet()) {
-            eventMeshConsumer.subscribe(topic);
+        for (Map.Entry<String, ConsumerGroupTopicConf> conf : consumerGroupConfig.getConsumerGroupTopicConf().entrySet()) {
+            eventMeshConsumer.subscribe(conf.getKey(), conf.getValue().getSubscriptionItem());
         }
     }
 

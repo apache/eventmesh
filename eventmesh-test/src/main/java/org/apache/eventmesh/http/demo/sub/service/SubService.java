@@ -19,6 +19,7 @@
 
 package org.apache.eventmesh.http.demo.sub.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -29,6 +30,9 @@ import org.apache.eventmesh.client.http.consumer.LiteConsumer;
 import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.http.demo.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
@@ -48,7 +52,7 @@ public class SubService implements InitializingBean {
 
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
-    final List<String> topicList = Arrays.asList("FT0-e-80010001-01-1");
+    final List<SubscriptionItem> topicList = Arrays.asList(new SubscriptionItem("FT0-e-80010001-01-1", SubscriptionMode.CLUSTERING, SubcriptionType.ASYNC));
     final String localIp = IPUtil.getLocalAddress();
     final String localPort = properties.getProperty("server.port");
     final String eventMeshIp = properties.getProperty("eventmesh.ip");
@@ -100,7 +104,11 @@ public class SubService implements InitializingBean {
     public void cleanup() {
         logger.info("start destory ....");
         try {
-            liteConsumer.unsubscribe(topicList, url);
+            List<String> unSubList = new ArrayList<>();
+            for (SubscriptionItem item:topicList) {
+                unSubList.add(item.getTopic());
+            }
+            liteConsumer.unsubscribe(unSubList, url);
         } catch (Exception e) {
             e.printStackTrace();
         }
