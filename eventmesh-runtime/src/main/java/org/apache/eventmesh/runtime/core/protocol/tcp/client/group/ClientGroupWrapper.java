@@ -43,6 +43,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.MeshAsyncConsumeContext;
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -511,9 +513,9 @@ public class ClientGroupWrapper {
         logger.info("starting broadCastMsgConsumer success, group:{}", groupName);
     }
 
-    public void subscribe(String topic) throws Exception {
+    public void subscribe(SubscriptionItem subscriptionItem) throws Exception {
         AsyncMessageListener listener = null;
-        if (EventMeshUtil.isBroadcast(topic)) {
+        if (SubscriptionMode.BROADCASTING.equals(subscriptionItem.getMode())) {
             listener = new AsyncMessageListener() {
                 @Override
                 public void consume(Message message, AsyncConsumeContext context) {
@@ -534,7 +536,7 @@ public class ClientGroupWrapper {
                     Iterator<Session> sessionsItr = groupConsumerSessions.iterator();
 
                     DownStreamMsgContext downStreamMsgContext =
-                            new DownStreamMsgContext(message, null, broadCastMsgConsumer, ((MeshAsyncConsumeContext)context).getContext(), false);
+                            new DownStreamMsgContext(message, null, broadCastMsgConsumer, ((MeshAsyncConsumeContext)context).getContext(), false, subscriptionItem);
 
                     while (sessionsItr.hasNext()) {
                         Session session = sessionsItr.next();
@@ -562,7 +564,7 @@ public class ClientGroupWrapper {
                     context.commit(Action.CommitMessage);
                 }
             };
-            broadCastMsgConsumer.subscribe(topic, listener);
+            broadCastMsgConsumer.subscribe(subscriptionItem.getTopic(), listener);
         } else {
             listener = new AsyncMessageListener() {
                 @Override
@@ -606,7 +608,7 @@ public class ClientGroupWrapper {
                     }
 
                     DownStreamMsgContext downStreamMsgContext =
-                            new DownStreamMsgContext(message, session, persistentMsgConsumer, ((MeshAsyncConsumeContext)context).getContext(), false);
+                            new DownStreamMsgContext(message, session, persistentMsgConsumer, ((MeshAsyncConsumeContext)context).getContext(), false, subscriptionItem);
                     //msg put in eventmesh,waiting client ack
                     session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     session.downstreamMsg(downStreamMsgContext);
@@ -615,15 +617,15 @@ public class ClientGroupWrapper {
                     context.commit(Action.CommitMessage);
                 }
             };
-            persistentMsgConsumer.subscribe(topic, listener);
+            persistentMsgConsumer.subscribe(subscriptionItem.getTopic(), listener);
         }
     }
 
-    public void unsubscribe(String topic) throws Exception {
-        if (EventMeshUtil.isBroadcast(topic)) {
-            broadCastMsgConsumer.unsubscribe(topic);
+    public void unsubscribe(SubscriptionItem subscriptionItem) throws Exception {
+        if (SubscriptionMode.BROADCASTING.equals(subscriptionItem.getMode())) {
+            broadCastMsgConsumer.unsubscribe(subscriptionItem.getTopic());
         } else {
-            persistentMsgConsumer.unsubscribe(topic);
+            persistentMsgConsumer.unsubscribe(subscriptionItem.getTopic());
         }
     }
 
