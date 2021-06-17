@@ -31,7 +31,8 @@ import io.openmessaging.api.SendResult;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.api.MeshAsyncConsumeContext;
+import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -126,6 +127,7 @@ public class EventMeshConsumer {
                     }
 
                     ConsumerGroupTopicConf currentTopicConfig = MapUtils.getObject(consumerGroupConf.getConsumerGroupTopicConf(), topic, null);
+                    EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext)context;
 
                     if (currentTopicConfig == null) {
                         logger.error("no topicConfig found, consumerGroup:{} topic:{}", consumerGroupConf.getConsumerGroup(), topic);
@@ -133,18 +135,18 @@ public class EventMeshConsumer {
                             sendMessageBack(message, uniqueId, bizSeqNo);
 //                            context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
 //                            context.ack();
-                            context.commit(Action.CommitMessage);
+                            eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                             return;
                         } catch (Exception ex) {
                         }
                     }
                     HandleMsgContext handleMsgContext = new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(), consumerGroupConf.getConsumerGroup(), EventMeshConsumer.this,
-                            topic, message, ((MeshAsyncConsumeContext)context).getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
+                            topic, message, eventMeshAsyncConsumeContext.getAbstractContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                     if (httpMessageHandler.handle(handleMsgContext)) {
 //                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
 //                        context.ack();
-                        context.commit(Action.CommitMessage);
+                        eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
                     } else {
                         try {
                             sendMessageBack(message, uniqueId, bizSeqNo);
@@ -153,7 +155,7 @@ public class EventMeshConsumer {
                         }
 //                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
 //                        context.ack();
-                        context.commit(Action.CommitMessage);
+                        eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                     }
                 }
             };
@@ -175,6 +177,7 @@ public class EventMeshConsumer {
                     }
 
                     ConsumerGroupTopicConf currentTopicConfig = MapUtils.getObject(consumerGroupConf.getConsumerGroupTopicConf(), topic, null);
+                    EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext)context;
 
                     if (currentTopicConfig == null) {
                         logger.error("no topicConfig found, consumerGroup:{} topic:{}", consumerGroupConf.getConsumerGroup(), topic);
@@ -182,18 +185,18 @@ public class EventMeshConsumer {
                             sendMessageBack(message, uniqueId, bizSeqNo);
 //                            context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
 //                            context.ack();
-                            context.commit(Action.CommitMessage);
+                            eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                             return;
                         } catch (Exception ex) {
                         }
                     }
                     HandleMsgContext handleMsgContext = new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(), consumerGroupConf.getConsumerGroup(), EventMeshConsumer.this,
-                            topic, message, ((MeshAsyncConsumeContext)context).getContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
+                            topic, message, eventMeshAsyncConsumeContext.getAbstractContext(), consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                     if (httpMessageHandler.handle(handleMsgContext)) {
 //                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
 //                        context.ack();
-                        context.commit(Action.CommitMessage);
+                        eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
                     } else {
                         try {
                             sendMessageBack(message, uniqueId, bizSeqNo);
@@ -202,7 +205,7 @@ public class EventMeshConsumer {
                         }
 //                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
 //                        context.ack();
-                        context.commit(Action.CommitMessage);
+                        eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                     }
                 }
             };

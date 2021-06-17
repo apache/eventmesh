@@ -21,9 +21,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.openmessaging.api.Action;
-import io.openmessaging.api.AsyncConsumeContext;
 import io.openmessaging.api.AsyncGenericMessageListener;
 import io.openmessaging.api.AsyncMessageListener;
 import io.openmessaging.api.Consumer;
@@ -32,9 +29,8 @@ import io.openmessaging.api.Message;
 import io.openmessaging.api.MessageListener;
 import io.openmessaging.api.MessageSelector;
 import io.openmessaging.api.exception.OMSRuntimeException;
-
-import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.api.MeshAsyncConsumeContext;
+import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfig;
@@ -116,13 +112,25 @@ public class PushConsumerImpl implements Consumer {
 
                     final Properties contextProperties = new Properties();
                     contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
-                    MeshAsyncConsumeContext omsContext = new MeshAsyncConsumeContext() {
+                    EventMeshAsyncConsumeContext omsContext = new EventMeshAsyncConsumeContext() {
                         @Override
-                        public void commit(Action action) {
-                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                        public void commit(EventMeshAction action) {
+                            switch (action){
+                                case CommitMessage:
+                                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                                    break;
+                                case ReconsumeLater:
+                                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+                                    break;
+                                case ManualAck:
+                                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     };
-                    omsContext.setContext(context);
+                    omsContext.setAbstractContext(context);
                     listener.consume(omsMsg, omsContext);
 
                     return EventMeshConsumeConcurrentlyStatus.valueOf(contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
@@ -156,14 +164,25 @@ public class PushConsumerImpl implements Consumer {
 
                     contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
 
-                    MeshAsyncConsumeContext omsContext = new MeshAsyncConsumeContext() {
+                    EventMeshAsyncConsumeContext omsContext = new EventMeshAsyncConsumeContext() {
                         @Override
-                        public void commit(Action action) {
-                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                    EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                        public void commit(EventMeshAction action) {
+                            switch (action) {
+                                case CommitMessage:
+                                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                                    break;
+                                case ReconsumeLater:
+                                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+                                    break;
+                                case ManualAck:
+                                    contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     };
-                    omsContext.setContext(context);
+                    omsContext.setAbstractContext(context);
                     listener.consume(omsMsg, omsContext);
 
                     return EventMeshConsumeConcurrentlyStatus.valueOf(contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));

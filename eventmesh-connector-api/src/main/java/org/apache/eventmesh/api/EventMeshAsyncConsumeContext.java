@@ -14,19 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.eventmesh.api;
 
+import io.openmessaging.api.Action;
 import io.openmessaging.api.AsyncConsumeContext;
 
-public abstract class MeshAsyncConsumeContext extends AsyncConsumeContext {
-    private AbstractContext context;
+public abstract class EventMeshAsyncConsumeContext extends AsyncConsumeContext {
 
-    public AbstractContext getContext() {
-        return context;
+    private AbstractContext abstractContext;
+
+    public AbstractContext getAbstractContext() {
+        return abstractContext;
     }
 
-    public void setContext(AbstractContext context) {
-        this.context = context;
+    public void setAbstractContext(AbstractContext abstractContext) {
+        this.abstractContext = abstractContext;
+    }
+
+    public abstract void commit(EventMeshAction action);
+
+    @Override
+    public void commit(Action action) {
+        throw new UnsupportedOperationException("not support yet");
     }
 }

@@ -30,11 +30,6 @@ public interface MeshMQPushConsumer extends Consumer {
 
     void init(Properties keyValue) throws Exception;
 
-    @Override
-    void start();
-
-//    void updateOffset(List<MessageExt> msgs, ConsumeConcurrentlyContext context);
-
     void updateOffset(List<Message> msgs, AbstractContext context);
 
 //    void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently);
