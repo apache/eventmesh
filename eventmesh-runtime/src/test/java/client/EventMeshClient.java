@@ -17,9 +17,11 @@
 
 package client;
 
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
 import client.hook.ReceiveMsgHook;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 
 public interface EventMeshClient {
 
@@ -37,13 +39,9 @@ public interface EventMeshClient {
 
     Package listen() throws Exception;
 
-    Package justSubscribe(String serviceId, String scenario, String dcn) throws Exception;
+    Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
 
-    Package justUnsubscribe(String serviceId, String scenario, String dcn) throws Exception;
-
-    Package justSubscribe(String topic) throws Exception;
-
-    Package justUnsubscribe(String topic) throws Exception;
+    Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
 
     void registerPubBusiHandler(ReceiveMsgHook handler) throws Exception;
 
