@@ -16,12 +16,10 @@ import org.apache.eventmesh.connector.redis.handler.SubscribeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringJoiner;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RedisSubConsumerImpl implements MeshMQPushConsumer {
@@ -34,18 +32,11 @@ public class RedisSubConsumerImpl implements MeshMQPushConsumer {
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    private final List<String> topics = new CopyOnWriteArrayList<>();
-
-    private final Map<String, AsyncMessageListener> subscribeTable = new ConcurrentHashMap<>();
-
-    private Properties properties;
-
-    public RedisSubConsumerImpl(Properties properties) {
-        this.properties = properties;
-    }
+    private final List<String> topics = new ArrayList<>();
 
     @Override
     public void init(Properties keyValue) throws Exception {
+        // todo properties
         EventLoopGroup subscribeEventLoop = new NioEventLoopGroup(1, r -> {
             Thread thread = new Thread(r, "subscribe-thread");
             thread.setDaemon(true);
@@ -67,15 +58,18 @@ public class RedisSubConsumerImpl implements MeshMQPushConsumer {
             .option(ChannelOption.RCVBUF_ALLOCATOR,
                 new AdaptiveRecvByteBufAllocator(64, 1024, 65536));
 
-        SubscribeHandler subscribeHandler = new SubscribeHandler(bootstrap, subscribeTable);
+        SubscribeHandler subscribeHandler = new SubscribeHandler(this.bootstrap);
         ClientInitializer initializer = new ClientInitializer(subscribeHandler);
 
         bootstrap.handler(initializer);
+
+        //MessagingAccessPoint messagingAccessPoint = OMS.builder().build(properties);
+        //pushConsumer = (PushConsumerImpl) messagingAccessPoint.createConsumer(properties);
     }
 
     @Override
     public boolean isStarted() {
-        return started.get();
+        return this.started.get();
     }
 
     @Override
@@ -88,7 +82,7 @@ public class RedisSubConsumerImpl implements MeshMQPushConsumer {
      */
     @Override
     public void start() {
-        if (started.compareAndSet(false, true)) {
+        if (this.started.compareAndSet(false, true)) {
             try {
                 ChannelFuture channelFuture = bootstrap.connect("", 8080);
                 channelFuture.addListener(future -> {
@@ -106,7 +100,7 @@ public class RedisSubConsumerImpl implements MeshMQPushConsumer {
 
     @Override
     public void shutdown() {
-        if (started.compareAndSet(true, false)
+        if (this.started.compareAndSet(true, false)
             && channel != null) {
             try {
                 channel.close();
@@ -123,11 +117,6 @@ public class RedisSubConsumerImpl implements MeshMQPushConsumer {
 
     @Override
     public void subscribe(String topic, AsyncMessageListener listener) throws Exception {
-        if (topic.contains("*") || topic.contains("?") || topic.contains("[") || topic.contains("]")) {
-            LOGGER.warn("Invalid topic: [{}], not support patterns subscribe yet", topic);
-            return;
-        }
-
         StringJoiner joiner = new StringJoiner(" ");
         joiner.add(Command.SUBSCRIBE.getCmdName());
         joiner.add(topic);
@@ -138,7 +127,6 @@ public class RedisSubConsumerImpl implements MeshMQPushConsumer {
                 if (f.isSuccess()) {
                     LOGGER.info("Success subscribe topic: [{}]", topic);
                     topics.add(topic);
-                    subscribeTable.put(topic, listener);
                 } else {
                     LOGGER.warn("Fail subscribe topic: [{}], exception: [{}]", topic, f.cause().getMessage());
                 }
@@ -147,15 +135,6 @@ public class RedisSubConsumerImpl implements MeshMQPushConsumer {
 
     @Override
     public void unsubscribe(String topic) {
-        if (topic == null) {
-            LOGGER.warn("unsubscribe topic is null");
-            return;
-        }
-
-        if ("".equals(topic)) {
-            LOGGER.warn("unsubscribe all of topics");
-        }
-
         StringJoiner joiner = new StringJoiner(" ");
         joiner.add(Command.UNSUBSCRIBE.getCmdName());
         joiner.add(topic);
@@ -165,13 +144,7 @@ public class RedisSubConsumerImpl implements MeshMQPushConsumer {
             .addListener(f -> {
                 if (f.isSuccess()) {
                     LOGGER.info("Success unsubscribe topic: [{}]", topic);
-                    if ("".equals(topic)) {
-                        topics.clear();
-                        subscribeTable.clear();
-                    } else {
-                        topics.remove(topic);
-                        subscribeTable.remove(topic);
-                    }
+                    topics.remove(topic);
                 } else {
                     LOGGER.warn("Fail unsubscribe topic: [{}], exception: [{}]", topic, f.cause().getMessage());
                 }

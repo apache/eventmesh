@@ -4,24 +4,17 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.redis.ArrayRedisMessage;
-import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
-import io.netty.handler.codec.redis.IntegerRedisMessage;
-import io.netty.handler.codec.redis.RedisMessage;
+import io.netty.handler.codec.redis.*;
 import io.netty.util.ReferenceCountUtil;
-import io.openmessaging.api.Action;
-import io.openmessaging.api.AsyncMessageListener;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.exception.OMSRuntimeException;
-import org.apache.eventmesh.api.MeshAsyncConsumeContext;
+import io.netty.util.internal.ThreadLocalRandom;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 处理PUBLISH的返回和SUBSCRIBE接收到的消息
@@ -37,8 +30,6 @@ public class SubscribeHandler extends ChannelInboundHandlerAdapter {
 
     private final Bootstrap bootstrap;
 
-    private final Map<String, AsyncMessageListener> subscribeTable;
-
     static {
         byte[] subscribeBytes = "subscribe".getBytes();
         SUBSCRIBE_BYTEBUF = PooledByteBufAllocator.DEFAULT.buffer(subscribeBytes.length);
@@ -50,9 +41,8 @@ public class SubscribeHandler extends ChannelInboundHandlerAdapter {
     }
 
 
-    public SubscribeHandler(Bootstrap bootstrap, Map<String, AsyncMessageListener> subscribeTable) {
+    public SubscribeHandler(Bootstrap bootstrap) {
         this.bootstrap = bootstrap;
-        this.subscribeTable = subscribeTable;
     }
 
 
@@ -65,26 +55,14 @@ public class SubscribeHandler extends ChannelInboundHandlerAdapter {
             List<RedisMessage> children = ((ArrayRedisMessage) msg).children();
 
             ByteBuf header = ((FullBulkStringRedisMessage) children.get(0)).content();
-            String topic = new String(ByteBufUtil.getBytes(((FullBulkStringRedisMessage) children.get(1)).content()));
-
+            String chStr = new String(ByteBufUtil.getBytes(((FullBulkStringRedisMessage) children.get(1)).content()));
             if (MESSAGE_BYTEBUF.equals(header)) {
-                AsyncMessageListener listener = subscribeTable.get(topic);
-                if (listener == null) {
-                    throw new OMSRuntimeException(String.format("The topic/queue %s isn't attached to this consumer", topic));
-                }
-
-
-                byte[] message = ByteBufUtil.getBytes(((FullBulkStringRedisMessage) children.get(2)).content());
-                listener.consume(new Message(topic, null, null, message), new MeshAsyncConsumeContext() {
-                    @Override
-                    public void commit(Action action) {
-                        // nothing...
-                    }
-                });
+                String msgStr = new String(ByteBufUtil.getBytes(((FullBulkStringRedisMessage) children.get(2)).content()));
+                System.out.println(chStr + " : " + msgStr);
 
             } else if (SUBSCRIBE_BYTEBUF.equals(header)) {
                 long value = ((IntegerRedisMessage) children.get(2)).value();
-                LOGGER.debug("Receive subscribe reply: [{}]", value);
+                System.out.println(chStr + " : " + value);
             }
 
         } else {
