@@ -42,8 +42,8 @@ public class EventMeshTestUtils {
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
+        user.setConsumerGroup("EventmeshTest-ConsumerGroup");
         user.setProducerGroup("EventmeshTest-ProducerGroup");
-        user.setPurpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB);
         user.setPath("/data/app/umg_proxy");
         user.setPort(8362);
         user.setSubsystem("5023");
@@ -59,7 +59,7 @@ public class EventMeshTestUtils {
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
         user.setConsumerGroup("EventmeshTest-ConsumerGroup");
-        user.setPurpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB);
+        user.setProducerGroup("EventmeshTest-ProducerGroup");
         user.setPath("/data/app/umg_proxy");
         user.setPort(9362);
         user.setSubsystem("5017");

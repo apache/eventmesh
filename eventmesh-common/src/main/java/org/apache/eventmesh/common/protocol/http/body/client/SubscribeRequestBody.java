@@ -34,14 +34,12 @@ public class SubscribeRequestBody extends Body {
 
     public static final String URL = "url";
 
-    private List<SubscriptionItem> topics;
     public static final String CONSUMERGROUP = "consumerGroup";
 
-    private List<String> topics;
+    private List<SubscriptionItem> topics;
 
     private String url;
 
-    public List<SubscriptionItem> getTopics() {
     private String consumerGroup;
 
     public String getConsumerGroup() {
@@ -52,15 +50,13 @@ public class SubscribeRequestBody extends Body {
         this.consumerGroup = consumerGroup;
     }
 
-    public List<String> getTopics() {
+    public List<SubscriptionItem> getTopics() {
         return topics;
     }
 
     public void setTopics(List<SubscriptionItem> topics) {
         this.topics = topics;
     }
-
-    private String url;
 
     public String getUrl() {
         return url;
@@ -74,7 +70,6 @@ public class SubscribeRequestBody extends Body {
         SubscribeRequestBody body = new SubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
         body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPIC), SubscriptionItem.class));
-        body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPIC), String.class));
         body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         return body;
     }

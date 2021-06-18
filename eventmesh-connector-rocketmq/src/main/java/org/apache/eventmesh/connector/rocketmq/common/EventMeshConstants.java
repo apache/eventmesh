@@ -27,6 +27,8 @@ public class EventMeshConstants {
 
     public static final String PROTOCOL_TCP = "tcp";
 
+    public static final String BROADCAST_PREFIX = "broadcast-";
+
     public static final String DEFAULT_CHARSET = "UTF-8";
 
     public static final String EVENTMESH_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));

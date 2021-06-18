@@ -19,6 +19,8 @@ package org.apache.eventmesh.connector.rocketmq.common;
 
 public class Constants {
 
+    public static final String BROADCAST_PREFIX = "broadcast-";
+
     public static final String PROPERTY_MESSAGE_TIMEOUT = "TIMEOUT";
 
     public static final String PROPERTY_MESSAGE_KEYS = "KEYS";
