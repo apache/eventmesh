@@ -79,64 +79,6 @@ public class EventMeshUtil {
         return systemId;
     }
 
-    public static boolean isValidRMBTopic(String topic) {
-        if (StringUtils.isEmpty(topic) || !StringUtils.contains(topic, "-")) {
-            return false;
-        }
-
-        String[] args = StringUtils.split(topic, "-");
-        if (ArrayUtils.getLength(args) != 5) {
-            return false;
-        }
-
-        String s0e = args[1];
-        if (!StringUtils.equalsIgnoreCase("s", s0e) && !StringUtils.equalsIgnoreCase("e", s0e)) {
-            return false;
-        }
-
-        String service = args[2];
-        if (!StringUtils.isNumeric(service)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public static String getServiceIDStr(String topic) {
-        if (!isValidRMBTopic(topic)) {
-            return "";
-        }
-
-        String[] args = StringUtils.split(topic, "-");
-        return args[2];
-    }
-
-    public static String getPidStr(String topic) {
-        if (!isValidRMBTopic(topic)) {
-            return "";
-        }
-
-        String[] args = StringUtils.split(topic, "-");
-        return args[3];
-    }
-
-    public static boolean isService(String topic) {
-        String serviceStr = getServiceIDStr(topic);
-        if (StringUtils.isEmpty(serviceStr)) {
-            return false;
-        }
-        return "0".equals(StringUtils.substring(serviceStr, 3, 4));
-    }
-
-    public static boolean isBroadcast(String topic) {
-        String serviceStr = getServiceIDStr(topic);
-        if (StringUtils.isEmpty(serviceStr)) {
-            return false;
-        }
-        String[] args = StringUtils.split(topic, "-");
-        return "3".equals(StringUtils.substring(args[2], 3, 4)) || "4".equals(StringUtils.substring(args[2], 3, 4));
-    }
-
     /**
      * 自定义取堆栈
      *

@@ -15,30 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.tcp;
+package org.apache.eventmesh.common.protocol;
 
+public enum SubcriptionType {
+    /**
+     * SYNC
+     */
+    SYNC("SYNC"),
+    /**
+     * ASYNC
+     */
+    ASYNC("ASYNC");
 
-import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
-import org.apache.eventmesh.common.protocol.SubcriptionType;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+    private String type;
 
-public interface SimpleSubClient {
-    void init() throws Exception;
+    SubcriptionType(String type) {
+        this.type = type;
+    }
 
-    void close();
+    public String getType() {
+        return type;
+    }
 
-    void heartbeat() throws Exception;
-
-    void reconnect() throws Exception;
-
-    void subscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
-
-    void unsubscribe() throws Exception;
-
-    void listen() throws Exception;
-
-    void registerBusiHandler(ReceiveMsgHook handler) throws Exception;
-
-    UserAgent getUserAgent();
+    public void setType(String type) {
+        this.type = type;
+    }
 }

@@ -24,6 +24,7 @@ import java.util.Map;
 import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.commons.collections4.MapUtils;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
@@ -47,10 +48,10 @@ public class UnSubscribeTask extends AbstractTask {
         Package msg = new Package();
         try {
             synchronized (session) {
-                List<String> topics = new ArrayList<String>();
+                List<SubscriptionItem> topics = new ArrayList<SubscriptionItem>();
                 if (MapUtils.isNotEmpty(session.getSessionContext().subscribeTopics)) {
-                    for (String topic : session.getSessionContext().subscribeTopics.keySet()) {
-                        topics.add(topic);
+                    for (Map.Entry<String, SubscriptionItem> entry : session.getSessionContext().subscribeTopics.entrySet()) {
+                        topics.add(entry.getValue());
                     }
                     session.unsubscribe(topics);
                     messageLogger.info("UnSubscriberTask succeed|user={}|topics={}", session.getClient(), topics);

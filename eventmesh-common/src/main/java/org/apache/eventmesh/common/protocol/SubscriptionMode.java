@@ -15,30 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.tcp;
+package org.apache.eventmesh.common.protocol;
 
+public enum SubscriptionMode {
 
-import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
-import org.apache.eventmesh.common.protocol.SubcriptionType;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+    /**
+     * broadcast
+     */
+    BROADCASTING("BROADCASTING"),
+    /**
+     * clustering
+     */
+    CLUSTERING("CLUSTERING");
 
-public interface SimpleSubClient {
-    void init() throws Exception;
+    private String mode;
 
-    void close();
+    SubscriptionMode(String mode) {
+        this.mode = mode;
+    }
 
-    void heartbeat() throws Exception;
+    public String getMode() {
+        return mode;
+    }
 
-    void reconnect() throws Exception;
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
 
-    void subscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
-
-    void unsubscribe() throws Exception;
-
-    void listen() throws Exception;
-
-    void registerBusiHandler(ReceiveMsgHook handler) throws Exception;
-
-    UserAgent getUserAgent();
 }
