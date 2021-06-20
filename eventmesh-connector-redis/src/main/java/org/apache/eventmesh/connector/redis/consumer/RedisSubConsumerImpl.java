@@ -38,9 +38,14 @@ public class RedisSubConsumerImpl implements MeshMQPushConsumer {
 
     private final Map<String, AsyncMessageListener> subscribeTable = new ConcurrentHashMap<>();
 
+    private Properties properties;
+
+    public RedisSubConsumerImpl(Properties properties) {
+        this.properties = properties;
+    }
+
     @Override
     public void init(Properties keyValue) throws Exception {
-        // todo properties
         EventLoopGroup subscribeEventLoop = new NioEventLoopGroup(1, r -> {
             Thread thread = new Thread(r, "subscribe-thread");
             thread.setDaemon(true);
@@ -66,9 +71,6 @@ public class RedisSubConsumerImpl implements MeshMQPushConsumer {
         ClientInitializer initializer = new ClientInitializer(subscribeHandler);
 
         bootstrap.handler(initializer);
-
-        //MessagingAccessPoint messagingAccessPoint = OMS.builder().build(properties);
-        //pushConsumer = (PushConsumerImpl) messagingAccessPoint.createConsumer(properties);
     }
 
     @Override
