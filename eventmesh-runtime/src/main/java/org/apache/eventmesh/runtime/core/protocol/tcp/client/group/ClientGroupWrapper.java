@@ -30,7 +30,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.alibaba.fastjson.JSON;
 
-import io.openmessaging.api.Action;
 import io.openmessaging.api.AsyncConsumeContext;
 import io.openmessaging.api.AsyncMessageListener;
 import io.openmessaging.api.Message;
@@ -549,8 +548,7 @@ public class ClientGroupWrapper {
                     Iterator<Session> sessionsItr = groupConsumerSessions.iterator();
 
                     DownStreamMsgContext downStreamMsgContext =
-                            new DownStreamMsgContext(message, null, broadCastMsgConsumer, ((MeshAsyncConsumeContext)context).getContext(), false, subscriptionItem);
-                            new DownStreamMsgContext(message, null, broadCastMsgConsumer, eventMeshAsyncConsumeContext.getAbstractContext(), false);
+                            new DownStreamMsgContext(message, null, broadCastMsgConsumer, eventMeshAsyncConsumeContext.getAbstractContext(), false, subscriptionItem);
 
                     while (sessionsItr.hasNext()) {
                         Session session = sessionsItr.next();
@@ -589,7 +587,7 @@ public class ClientGroupWrapper {
                     message.getSystemProperties().put(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP, eventMeshTCPConfiguration.eventMeshServerIp);
 
                     EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext)context;
-                    Session session = downstreamDispatchStrategy.select(groupName, topic, groupConsumerSessions);
+                    Session session = downstreamDispatchStrategy.select(consumerGroup, topic, groupConsumerSessions);
                     String bizSeqNo = EventMeshUtil.getMessageBizSeq(message);
                     if (session == null) {
                         try {
@@ -623,8 +621,7 @@ public class ClientGroupWrapper {
                     }
 
                     DownStreamMsgContext downStreamMsgContext =
-                            new DownStreamMsgContext(message, session, persistentMsgConsumer, ((MeshAsyncConsumeContext)context).getContext(), false, subscriptionItem);
-                            new DownStreamMsgContext(message, session, persistentMsgConsumer, eventMeshAsyncConsumeContext.getAbstractContext(), false);
+                            new DownStreamMsgContext(message, session, persistentMsgConsumer, eventMeshAsyncConsumeContext.getAbstractContext(), false, subscriptionItem);
                     //msg put in eventmesh,waiting client ack
                     session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     session.downstreamMsg(downStreamMsgContext);

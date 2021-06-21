@@ -166,7 +166,7 @@ public class Session {
             sessionContext.subscribeTopics.putIfAbsent(item.getTopic(), item);
             clientGroupWrapper.get().subscribe(item);
 
-            clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().checkTopicExist(topic);
+            clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().checkTopicExist(item.getTopic());
 
             clientGroupWrapper.get().addSubscription(item.getTopic(), this);
             subscribeLogger.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
