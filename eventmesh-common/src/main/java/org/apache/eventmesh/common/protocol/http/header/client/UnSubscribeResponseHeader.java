@@ -33,11 +33,7 @@ public class UnSubscribeResponseHeader extends Header {
 
     private String eventMeshEnv;
 
-    private String eventMeshRegion;
-
     private String eventMeshIdc;
-
-    private String eventMeshDcn;
 
     public int getCode() {
         return code;
@@ -71,14 +67,6 @@ public class UnSubscribeResponseHeader extends Header {
         this.eventMeshEnv = eventMeshEnv;
     }
 
-    public String getEventMeshRegion() {
-        return eventMeshRegion;
-    }
-
-    public void setEventMeshRegion(String eventMeshRegion) {
-        this.eventMeshRegion = eventMeshRegion;
-    }
-
     public String getEventMeshIdc() {
         return eventMeshIdc;
     }
@@ -87,24 +75,13 @@ public class UnSubscribeResponseHeader extends Header {
         this.eventMeshIdc = eventMeshIdc;
     }
 
-    public String getEventMeshDcn() {
-        return eventMeshDcn;
-    }
-
-    public void setEventMeshDcn(String eventMeshDcn) {
-        this.eventMeshDcn = eventMeshDcn;
-    }
-
     public static UnSubscribeResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                        String eventMeshIp, String eventMeshEnv, String eventMeshRegion,
-                                                        String eventMeshDcn, String eventMeshIDC) {
+                                                        String eventMeshIp, String eventMeshEnv, String eventMeshIDC) {
         UnSubscribeResponseHeader unSubscribeResponseHeader = new UnSubscribeResponseHeader();
         unSubscribeResponseHeader.setCode(requestCode);
         unSubscribeResponseHeader.setEventMeshCluster(eventMeshCluster);
-        unSubscribeResponseHeader.setEventMeshDcn(eventMeshDcn);
         unSubscribeResponseHeader.setEventMeshIp(eventMeshIp);
         unSubscribeResponseHeader.setEventMeshEnv(eventMeshEnv);
-        unSubscribeResponseHeader.setEventMeshRegion(eventMeshRegion);
         unSubscribeResponseHeader.setEventMeshIdc(eventMeshIDC);
         return unSubscribeResponseHeader;
     }
@@ -115,9 +92,7 @@ public class UnSubscribeResponseHeader extends Header {
         sb.append("unSubscribeResponseHeader={")
                 .append("code=").append(code).append(",")
                 .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-                .append("eventMeshRegion=").append(eventMeshRegion).append(",")
                 .append("eventMeshIdc=").append(eventMeshIdc).append(",")
-                .append("eventMeshDcn=").append(eventMeshDcn).append(",")
                 .append("eventMeshCluster=").append(eventMeshCluster).append(",")
                 .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();
@@ -131,8 +106,6 @@ public class UnSubscribeResponseHeader extends Header {
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHREGION, eventMeshRegion);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHDCN, eventMeshDcn);
         return map;
     }
 }
