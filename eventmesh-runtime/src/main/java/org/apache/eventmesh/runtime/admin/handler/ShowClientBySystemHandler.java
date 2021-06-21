@@ -34,18 +34,18 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ShowClientBySystemAndDcnHandler implements HttpHandler {
+public class ShowClientBySystemHandler implements HttpHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(ShowClientBySystemAndDcnHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShowClientBySystemHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
-    public ShowClientBySystemAndDcnHandler(EventMeshTCPServer eventMeshTCPServer) {
+    public ShowClientBySystemHandler(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
     /**
-     * print clientInfo by subsys and dcn
+     * print clientInfo by subsys
      *
      * @param httpExchange
      * @throws IOException
@@ -57,16 +57,15 @@ public class ShowClientBySystemAndDcnHandler implements HttpHandler {
         try {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
-            String dcn = queryStringInfo.get(EventMeshConstants.MANAGE_DCN);
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
             String newLine = System.getProperty("line.separator");
-            logger.info("showClientBySubsysAndDcn,subsys:{},dcn:{}=================", subSystem, dcn);
+            logger.info("showClientBySubsys,subsys:{}=================", subSystem);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             if (!sessionMap.isEmpty()) {
                 for (Session session : sessionMap.values()) {
-                    if (session.getClient().getDcn().equals(dcn) && session.getClient().getSubsystem().equals(subSystem)) {
+                    if (session.getClient().getSubsystem().equals(subSystem)) {
                         UserAgent userAgent = session.getClient();
                         result += String.format("pid=%s | ip=%s | port=%s | path=%s | purpose=%s", userAgent.getPid(), userAgent
                                 .getHost(), userAgent.getPort(), userAgent.getPath(), userAgent.getPurpose()) + newLine;
@@ -76,7 +75,7 @@ public class ShowClientBySystemAndDcnHandler implements HttpHandler {
             httpExchange.sendResponseHeaders(200, 0);
             out.write(result.getBytes());
         } catch (Exception e) {
-            logger.error("ShowClientBySystemAndDcnHandler fail...", e);
+            logger.error("ShowClientBySystemAndHandler fail...", e);
         } finally {
             if (out != null) {
                 try {

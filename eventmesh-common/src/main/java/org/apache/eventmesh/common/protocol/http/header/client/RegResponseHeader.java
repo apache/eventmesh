@@ -38,14 +38,8 @@ public class RegResponseHeader extends Header {
     //处理该次Request请求的eventMesh所在的环境编号
     private String eventMeshEnv;
 
-    //处理该次Request请求的eventMesh所在区域
-    private String eventMeshRegion;
-
     //处理该次Request请求的eventMesh所在IDC
     private String eventMeshIdc;
-
-    //处理该次Request请求的eventMesh所在DCN
-    private String eventMeshDcn;
 
     public int getCode() {
         return code;
@@ -79,14 +73,6 @@ public class RegResponseHeader extends Header {
         this.eventMeshEnv = eventMeshEnv;
     }
 
-    public String getEventMeshRegion() {
-        return eventMeshRegion;
-    }
-
-    public void setEventMeshRegion(String eventMeshRegion) {
-        this.eventMeshRegion = eventMeshRegion;
-    }
-
     public String getEventMeshIdc() {
         return eventMeshIdc;
     }
@@ -95,24 +81,13 @@ public class RegResponseHeader extends Header {
         this.eventMeshIdc = eventMeshIdc;
     }
 
-    public String getEventMeshDcn() {
-        return eventMeshDcn;
-    }
-
-    public void setEventMeshDcn(String eventMeshDcn) {
-        this.eventMeshDcn = eventMeshDcn;
-    }
-
     public static RegResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                String eventMeshIp, String eventMeshEnv, String eventMeshRegion,
-                                                String eventMeshDcn, String eventMeshIDC) {
+                                                String eventMeshIp, String eventMeshEnv, String eventMeshIDC) {
         RegResponseHeader regResponseHeader = new RegResponseHeader();
         regResponseHeader.setCode(requestCode);
         regResponseHeader.setEventMeshCluster(eventMeshCluster);
-        regResponseHeader.setEventMeshDcn(eventMeshDcn);
         regResponseHeader.setEventMeshIp(eventMeshIp);
         regResponseHeader.setEventMeshEnv(eventMeshEnv);
-        regResponseHeader.setEventMeshRegion(eventMeshRegion);
         regResponseHeader.setEventMeshIdc(eventMeshIDC);
         return regResponseHeader;
     }
@@ -123,9 +98,7 @@ public class RegResponseHeader extends Header {
         sb.append("regResponseHeader={")
                 .append("code=").append(code).append(",")
                 .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-                .append("eventMeshRegion=").append(eventMeshRegion).append(",")
                 .append("eventMeshIdc=").append(eventMeshIdc).append(",")
-                .append("eventMeshDcn=").append(eventMeshDcn).append(",")
                 .append("eventMeshCluster=").append(eventMeshCluster).append(",")
                 .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();
@@ -138,9 +111,7 @@ public class RegResponseHeader extends Header {
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHREGION, eventMeshRegion);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHDCN, eventMeshDcn);
         return map;
     }
 

@@ -35,7 +35,7 @@ public class SendMessageRequestBody extends Body {
     public static final String TTL = "ttl";
     public static final String TAG = "tag";
     public static final String EXTFIELDS = "extFields";
-
+    public static final String PRODUCERGROUP = "producerGroup";
 
     private String topic;
 
@@ -50,6 +50,8 @@ public class SendMessageRequestBody extends Body {
     private String tag;
 
     private HashMap<String, String> extFields;
+
+    private String producerGroup;
 
     public String getTopic() {
         return topic;
@@ -107,6 +109,14 @@ public class SendMessageRequestBody extends Body {
         this.tag = tag;
     }
 
+    public String getProducerGroup() {
+        return producerGroup;
+    }
+
+    public void setProducerGroup(String producerGroup) {
+        this.producerGroup = producerGroup;
+    }
+
     @SuppressWarnings("unchecked")
     public static SendMessageRequestBody buildBody(Map<String, Object> bodyParam) {
         SendMessageRequestBody body = new SendMessageRequestBody();
@@ -120,6 +130,7 @@ public class SendMessageRequestBody extends Body {
         if (StringUtils.isNotBlank(extFields)) {
             body.setExtFields((HashMap<String, String>) JSONObject.parseObject(extFields, HashMap.class));
         }
+        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
         return body;
     }
 
@@ -133,6 +144,7 @@ public class SendMessageRequestBody extends Body {
         map.put(TAG, tag);
         map.put(CONTENT, content);
         map.put(EXTFIELDS, extFields);
+        map.put(PRODUCERGROUP, producerGroup);
         return map;
     }
 
@@ -146,6 +158,7 @@ public class SendMessageRequestBody extends Body {
                 .append("content=").append(content).append(",")
                 .append("ttl=").append(ttl).append(",")
                 .append("tag=").append(tag).append(",")
+                .append("producerGroup=").append(producerGroup).append(",")
                 .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }

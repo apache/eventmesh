@@ -21,10 +21,6 @@ public class Constants {
 
     public static final String DEFAULT_CHARSET = "UTF-8";
 
-    public static final String TARGET_EVENTMESH_REGION = "TARGET_EVENTMESH_REGION";
-
-    public static final String CONSTANTS_DEFAULT_REGION_KEY = "default";
-
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
     public static final String LANGUAGE_JAVA = "JAVA";
@@ -46,8 +42,6 @@ public class Constants {
     public static final String CONSTANTS_INSTANCE_DESC_ENV = "env";
 
     public static final String CONSTANTS_INSTANCE_DESC_IDC = "idc";
-
-    public static final String CONSTANTS_INSTANCE_DESC_DCN = "dcn";
 
     public static final String CONSTANTS_INSTANCE_DESC_SYSID = "sysId";
 

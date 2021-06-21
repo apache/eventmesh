@@ -68,13 +68,11 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         HeartbeatResponseHeader heartbeatResponseHeader =
                 HeartbeatResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
 
         //validate header
         if (StringUtils.isBlank(heartbeatRequestHeader.getIdc())
-                || StringUtils.isBlank(heartbeatRequestHeader.getDcn())
                 || StringUtils.isBlank(heartbeatRequestHeader.getPid())
                 || !StringUtils.isNumeric(heartbeatRequestHeader.getPid())
                 || StringUtils.isBlank(heartbeatRequestHeader.getSys())) {
@@ -87,6 +85,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
         //validate body
         if (StringUtils.isBlank(heartbeatRequestBody.getClientType())
+                || StringUtils.isBlank(heartbeatRequestBody.getConsumerGroup())
                 || CollectionUtils.isEmpty(heartbeatRequestBody.getHeartbeatEntities())) {
 
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
@@ -97,20 +96,17 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         }
         ConcurrentHashMap<String, List<Client>> tmp = new ConcurrentHashMap<>();
         String env = heartbeatRequestHeader.getEnv();
-        String dcn = heartbeatRequestHeader.getDcn();
         String idc = heartbeatRequestHeader.getIdc();
         String sys = heartbeatRequestHeader.getSys();
         String ip = heartbeatRequestHeader.getIp();
         String pid = heartbeatRequestHeader.getPid();
-        String consumerGroup = EventMeshUtil.buildClientGroup(heartbeatRequestHeader.getSys(),
-                heartbeatRequestHeader.getDcn());
+        String consumerGroup = heartbeatRequestBody.getConsumerGroup();
         List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = heartbeatRequestBody.getHeartbeatEntities();
         for (HeartbeatRequestBody.HeartbeatEntity heartbeatEntity : heartbeatEntities) {
             String topic = heartbeatEntity.topic;
             String url = heartbeatEntity.url;
             Client client = new Client();
             client.env = env;
-            client.dcn = dcn;
             client.idc = idc;
             client.sys = sys;
             client.ip = ip;

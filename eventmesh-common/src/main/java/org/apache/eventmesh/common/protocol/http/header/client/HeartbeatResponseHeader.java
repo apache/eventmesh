@@ -34,11 +34,7 @@ public class HeartbeatResponseHeader extends Header {
 
     private String eventMeshEnv;
 
-    private String eventMeshRegion;
-
     private String eventMeshIdc;
-
-    private String eventMeshDcn;
 
     public int getCode() {
         return code;
@@ -72,14 +68,6 @@ public class HeartbeatResponseHeader extends Header {
         this.eventMeshEnv = eventMeshEnv;
     }
 
-    public String getEventMeshRegion() {
-        return eventMeshRegion;
-    }
-
-    public void setEventMeshRegion(String eventMeshRegion) {
-        this.eventMeshRegion = eventMeshRegion;
-    }
-
     public String getEventMeshIdc() {
         return eventMeshIdc;
     }
@@ -88,24 +76,14 @@ public class HeartbeatResponseHeader extends Header {
         this.eventMeshIdc = eventMeshIdc;
     }
 
-    public String getEventMeshDcn() {
-        return eventMeshDcn;
-    }
-
-    public void setEventMeshDcn(String eventMeshDcn) {
-        this.eventMeshDcn = eventMeshDcn;
-    }
-
     public static HeartbeatResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                      String eventMeshIp, String eventMeshEnv, String eventMeshRegion,
-                                                      String eventMeshDcn, String eventMeshIDC) {
+                                                      String eventMeshIp, String eventMeshEnv,
+                                                      String eventMeshIDC) {
         HeartbeatResponseHeader heartbeatResponseHeader = new HeartbeatResponseHeader();
         heartbeatResponseHeader.setCode(requestCode);
         heartbeatResponseHeader.setEventMeshCluster(eventMeshCluster);
-        heartbeatResponseHeader.setEventMeshDcn(eventMeshDcn);
         heartbeatResponseHeader.setEventMeshIp(eventMeshIp);
         heartbeatResponseHeader.setEventMeshEnv(eventMeshEnv);
-        heartbeatResponseHeader.setEventMeshRegion(eventMeshRegion);
         heartbeatResponseHeader.setEventMeshIdc(eventMeshIDC);
         return heartbeatResponseHeader;
     }
@@ -116,9 +94,7 @@ public class HeartbeatResponseHeader extends Header {
         sb.append("heartbeatResponseHeader={")
                 .append("code=").append(code).append(",")
                 .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-                .append("eventMeshRegion=").append(eventMeshRegion).append(",")
                 .append("eventMeshIdc=").append(eventMeshIdc).append(",")
-                .append("eventMeshDcn=").append(eventMeshDcn).append(",")
                 .append("eventMeshCluster=").append(eventMeshCluster).append(",")
                 .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();
@@ -131,9 +107,7 @@ public class HeartbeatResponseHeader extends Header {
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHREGION, eventMeshRegion);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHDCN, eventMeshDcn);
         return map;
     }
 }
