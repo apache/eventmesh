@@ -36,7 +36,7 @@ public class CCSubClient {
         subClient.init();
         subClient.heartbeat();
         subClient.listen();
-        subClient.justSubscribe("FT0-s-80000000-01-0", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC);
+        subClient.justSubscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC);
         subClient.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
