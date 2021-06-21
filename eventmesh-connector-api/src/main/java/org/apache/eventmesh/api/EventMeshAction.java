@@ -14,19 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.eventmesh.api;
 
-import io.openmessaging.api.AsyncConsumeContext;
+public enum EventMeshAction {
+    CommitMessage,
 
-public abstract class MeshAsyncConsumeContext extends AsyncConsumeContext {
-    private AbstractContext context;
+    ReconsumeLater,
 
-    public AbstractContext getContext() {
-        return context;
-    }
-
-    public void setContext(AbstractContext context) {
-        this.context = context;
-    }
+    ManualAck
 }
