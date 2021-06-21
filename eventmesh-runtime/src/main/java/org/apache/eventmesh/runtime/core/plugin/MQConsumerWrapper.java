@@ -43,14 +43,6 @@ public class MQConsumerWrapper extends MQWrapper {
         meshMQPushConsumer.unsubscribe(topic);
     }
 
-//    public boolean isPause() {
-//        return meshMQPushConsumer.isPause();
-//    }
-//
-//    public void pause() {
-//        meshMQPushConsumer.pause();
-//    }
-
     public synchronized void init(Properties keyValue) throws Exception {
         meshMQPushConsumer = getMeshMQPushConsumer();
         if (meshMQPushConsumer == null) {
