@@ -45,7 +45,7 @@ public class ShowClientBySystemHandler implements HttpHandler {
     }
 
     /**
-     * print clientInfo by subsys and dcn
+     * print clientInfo by subsys
      *
      * @param httpExchange
      * @throws IOException
@@ -60,7 +60,7 @@ public class ShowClientBySystemHandler implements HttpHandler {
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
             String newLine = System.getProperty("line.separator");
-            logger.info("showClientBySubsysAndDcn,subsys:{}=================", subSystem);
+            logger.info("showClientBySubsys,subsys:{}=================", subSystem);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             if (!sessionMap.isEmpty()) {
@@ -75,7 +75,7 @@ public class ShowClientBySystemHandler implements HttpHandler {
             httpExchange.sendResponseHeaders(200, 0);
             out.write(result.getBytes());
         } catch (Exception e) {
-            logger.error("ShowClientBySystemAndDcnHandler fail...", e);
+            logger.error("ShowClientBySystemAndHandler fail...", e);
         } finally {
             if (out != null) {
                 try {

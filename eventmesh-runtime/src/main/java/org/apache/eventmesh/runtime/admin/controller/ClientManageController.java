@@ -49,7 +49,7 @@ public class ClientManageController {
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/clientManage/showClient", new ShowClientHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/showClientBySystemAndDcn", new ShowClientBySystemHandler(eventMeshTCPServer));
+        server.createContext("/clientManage/showClientBySystem", new ShowClientBySystemHandler(eventMeshTCPServer));
         server.createContext("/clientManage/rejectAllClient", new RejectAllClientHandler(eventMeshTCPServer));
         server.createContext("/clientManage/rejectClientByIpPort", new RejectClientByIpPortHandler(eventMeshTCPServer));
         server.createContext("/clientManage/rejectClientBySubSystem", new RejectClientBySubSystemHandler(eventMeshTCPServer));
