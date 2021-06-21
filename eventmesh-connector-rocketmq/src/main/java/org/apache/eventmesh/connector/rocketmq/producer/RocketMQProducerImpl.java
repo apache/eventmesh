@@ -87,7 +87,6 @@ public class RocketMQProducerImpl implements MeshMQProducer {
         producer.start();
     }
 
-
     @Override
     public synchronized void shutdown() {
         producer.shutdown();
@@ -115,25 +114,13 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public MeshMQProducer getMeshMQProducer() {
-        return this;
-    }
-
-    @Override
-    public String buildMQClientId() {
-        return producer.getRocketmqProducer().buildMQClientId();
+    public void checkTopicExist(String topic) throws Exception {
+        this.producer.getRocketmqProducer().getDefaultMQProducerImpl().getmQClientFactory().getMQClientAPIImpl().getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
     @Override
     public void setExtFields() {
         producer.setExtFields();
-    }
-
-    @Override
-    public void getDefaultTopicRouteInfoFromNameServer(String topic, long timeout) throws Exception {
-        producer.getRocketmqProducer().getDefaultMQProducerImpl()
-                .getmQClientFactory().getMQClientAPIImpl().getDefaultTopicRouteInfoFromNameServer(topic,
-                timeout);
     }
 
     @Override

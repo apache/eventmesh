@@ -14,28 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.api;
 
-package org.apache.eventmesh.api.consumer;
+import io.openmessaging.api.Action;
+import io.openmessaging.api.AsyncConsumeContext;
 
-import java.util.List;
-import java.util.Properties;
+public abstract class EventMeshAsyncConsumeContext extends AsyncConsumeContext {
 
-import io.openmessaging.api.AsyncMessageListener;
-import io.openmessaging.api.Consumer;
-import io.openmessaging.api.Message;
+    private AbstractContext abstractContext;
 
-import org.apache.eventmesh.api.AbstractContext;
+    public AbstractContext getAbstractContext() {
+        return abstractContext;
+    }
 
-public interface MeshMQPushConsumer extends Consumer {
+    public void setAbstractContext(AbstractContext abstractContext) {
+        this.abstractContext = abstractContext;
+    }
 
-    void init(Properties keyValue) throws Exception;
-
-    void updateOffset(List<Message> msgs, AbstractContext context);
-
-//    void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently);
-
-    void subscribe(String topic, final AsyncMessageListener listener) throws Exception;
+    public abstract void commit(EventMeshAction action);
 
     @Override
-    void unsubscribe(String topic);
+    public void commit(Action action) {
+        throw new UnsupportedOperationException("not support yet");
+    }
 }
