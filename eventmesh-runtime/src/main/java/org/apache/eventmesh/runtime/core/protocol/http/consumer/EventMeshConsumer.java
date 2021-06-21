@@ -84,7 +84,6 @@ public class EventMeshConsumer {
         keyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
         keyValue.put("eventMeshIDC", eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
         keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
         persistentMqConsumer.init(keyValue);
 
@@ -94,7 +93,6 @@ public class EventMeshConsumer {
         broadcastKeyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
         broadcastKeyValue.put("eventMeshIDC", eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
         broadcastKeyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
         broadcastMqConsumer.init(broadcastKeyValue);
         inited4Persistent.compareAndSet(false, true);
@@ -103,7 +101,6 @@ public class EventMeshConsumer {
     }
 
     public synchronized void start() throws Exception {
-
         persistentMqConsumer.start();
         started4Persistent.compareAndSet(false, true);
         broadcastMqConsumer.start();
@@ -255,8 +252,7 @@ public class EventMeshConsumer {
     public void sendMessageBack(final Message msgBack, final String uniqueId, String bizSeqNo) throws Exception {
 
         EventMeshProducer sendMessageBack
-                = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(EventMeshConstants.PRODUCER_GROUP_NAME_PREFIX
-                + consumerGroupConf.getConsumerGroup());
+                = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(consumerGroupConf.getConsumerGroup());
 
         if (sendMessageBack == null) {
             logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);

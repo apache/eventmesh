@@ -75,12 +75,10 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         SendMessageResponseHeader sendMessageResponseHeader =
                 SendMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         //validate header
         if (StringUtils.isBlank(sendMessageRequestHeader.getIdc())
-                || StringUtils.isBlank(sendMessageRequestHeader.getDcn())
                 || StringUtils.isBlank(sendMessageRequestHeader.getPid())
                 || !StringUtils.isNumeric(sendMessageRequestHeader.getPid())
                 || StringUtils.isBlank(sendMessageRequestHeader.getSys())) {
@@ -94,6 +92,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         //validate body
         if (StringUtils.isBlank(sendMessageRequestBody.getBizSeqNo())
                 || StringUtils.isBlank(sendMessageRequestBody.getUniqueId())
+                || StringUtils.isBlank(sendMessageRequestBody.getProducerGroup())
                 || StringUtils.isBlank(sendMessageRequestBody.getTopic())
                 || StringUtils.isBlank(sendMessageRequestBody.getContent())
                 || (StringUtils.isBlank(sendMessageRequestBody.getTtl()))) {
@@ -105,8 +104,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageRequestHeader.getSys(),
-                sendMessageRequestHeader.getDcn());
+        String producerGroup = sendMessageRequestBody.getProducerGroup();
         EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
         if (!eventMeshProducer.getStarted().get()) {

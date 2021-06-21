@@ -72,13 +72,11 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         SubscribeResponseHeader subscribeResponseHeader =
                 SubscribeResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
 
         //validate header
         if (StringUtils.isBlank(subscribeRequestHeader.getIdc())
-                || StringUtils.isBlank(subscribeRequestHeader.getDcn())
                 || StringUtils.isBlank(subscribeRequestHeader.getPid())
                 || !StringUtils.isNumeric(subscribeRequestHeader.getPid())
                 || StringUtils.isBlank(subscribeRequestHeader.getSys())) {
@@ -91,7 +89,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
         //validate body
         if (StringUtils.isBlank(subscribeRequestBody.getUrl())
-                || CollectionUtils.isEmpty(subscribeRequestBody.getTopics())) {
+                || CollectionUtils.isEmpty(subscribeRequestBody.getTopics())
+                || StringUtils.isBlank(subscribeRequestBody.getConsumerGroup())) {
 
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     subscribeResponseHeader,
@@ -102,8 +101,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         List<SubscriptionItem> subTopicList = subscribeRequestBody.getTopics();
 
         String url = subscribeRequestBody.getUrl();
-        String consumerGroup = EventMeshUtil.buildClientGroup(subscribeRequestHeader.getSys(),
-                subscribeRequestHeader.getDcn());
+        String consumerGroup = subscribeRequestBody.getConsumerGroup();
 
         synchronized (eventMeshHTTPServer.localClientInfoMapping) {
 
@@ -213,7 +211,6 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         for(SubscriptionItem item: subscriptionItems) {
             Client client = new Client();
             client.env = subscribeRequestHeader.getEnv();
-            client.dcn = subscribeRequestHeader.getDcn();
             client.idc = subscribeRequestHeader.getIdc();
             client.sys = subscribeRequestHeader.getSys();
             client.ip = subscribeRequestHeader.getIp();
