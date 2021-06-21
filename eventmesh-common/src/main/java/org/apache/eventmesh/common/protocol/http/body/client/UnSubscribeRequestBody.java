@@ -33,9 +33,13 @@ public class UnSubscribeRequestBody extends Body {
 
     public static final String URL = "url";
 
+    public static final String CONSUMERGROUP = "consumerGroup";
+
     private List<String> topics;
 
     private String url;
+
+    private String consumerGroup;
 
     public List<String> getTopics() {
         return topics;
@@ -53,10 +57,19 @@ public class UnSubscribeRequestBody extends Body {
         this.url = url;
     }
 
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public void setConsumerGroup(String consumerGroup) {
+        this.consumerGroup = consumerGroup;
+    }
+
     public static UnSubscribeRequestBody buildBody(Map<String, Object> bodyParam) {
         UnSubscribeRequestBody body = new UnSubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
         body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPIC), String.class));
+        body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         return body;
     }
 
@@ -65,13 +78,15 @@ public class UnSubscribeRequestBody extends Body {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(URL, url);
         map.put(TOPIC, JSON.toJSONString(topics));
+        map.put(CONSUMERGROUP, consumerGroup);
         return map;
     }
 
     @Override
     public String toString() {
         return "unSubscribeRequestBody{" +
-                "url='" + url + '\'' +
+                "consumerGroup='" + consumerGroup + '\'' +
+                ", url='" + url + '\'' +
                 ", topics=" + topics +
                 '}';
     }

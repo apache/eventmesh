@@ -56,9 +56,9 @@ public class AsyncPublishInstance {
 
             LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
             eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
+                    .setProducerGroup("EventMeshTest-producerGroup")
                     .setEnv("env")
                     .setIdc("idc")
-                    .setDcn("dcn")
                     .setIp(IPUtil.getLocalAddress())
                     .setSys("1234")
                     .setPid(String.valueOf(ThreadUtil.getPID()));

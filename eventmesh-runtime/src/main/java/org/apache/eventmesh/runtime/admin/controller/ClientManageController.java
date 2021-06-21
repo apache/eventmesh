@@ -28,7 +28,7 @@ import org.apache.eventmesh.runtime.admin.handler.RedirectClientBySubSystemHandl
 import org.apache.eventmesh.runtime.admin.handler.RejectAllClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.RejectClientByIpPortHandler;
 import org.apache.eventmesh.runtime.admin.handler.RejectClientBySubSystemHandler;
-import org.apache.eventmesh.runtime.admin.handler.ShowClientBySystemAndDcnHandler;
+import org.apache.eventmesh.runtime.admin.handler.ShowClientBySystemHandler;
 import org.apache.eventmesh.runtime.admin.handler.ShowClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.ShowListenClientByTopicHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -49,14 +49,13 @@ public class ClientManageController {
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/clientManage/showClient", new ShowClientHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/showClientBySystemAndDcn", new ShowClientBySystemAndDcnHandler(eventMeshTCPServer));
+        server.createContext("/clientManage/showClientBySystem", new ShowClientBySystemHandler(eventMeshTCPServer));
         server.createContext("/clientManage/rejectAllClient", new RejectAllClientHandler(eventMeshTCPServer));
         server.createContext("/clientManage/rejectClientByIpPort", new RejectClientByIpPortHandler(eventMeshTCPServer));
         server.createContext("/clientManage/rejectClientBySubSystem", new RejectClientBySubSystemHandler(eventMeshTCPServer));
         server.createContext("/clientManage/redirectClientBySubSystem", new RedirectClientBySubSystemHandler(eventMeshTCPServer));
         server.createContext("/clientManage/redirectClientByPath", new RedirectClientByPathHandler(eventMeshTCPServer));
         server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler(eventMeshTCPServer));
-//        server.createContext("/eventMesh/msg/push", new EventMeshMsgDownStreamHandler(eventMeshTCPServer));
         server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler(eventMeshTCPServer));
 
         server.start();

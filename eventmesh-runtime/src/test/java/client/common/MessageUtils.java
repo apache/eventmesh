@@ -141,7 +141,6 @@ public class MessageUtils {
 
     public static UserAgent generatePubClient() {
         UserAgent user = new UserAgent();
-        user.setDcn("AC0");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
@@ -156,7 +155,6 @@ public class MessageUtils {
 
     public static UserAgent generateSubServer() {
         UserAgent user = new UserAgent();
-        user.setDcn("FT0");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
