@@ -1,4 +1,4 @@
-# Apache EventMesh (Incubating)
+# Apache EventMesh (incubating)
 [![CI status](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml)
 [![CodeCov](https://codecov.io/gh/apache/incubator-eventmesh/branch/develop/graph/badge.svg)](https://codecov.io/gh/apache/incubator-eventmesh)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/context:java)
@@ -6,6 +6,7 @@
 [![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/apache/incubator-eventmesh/releases)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
+![logo](docs/images/logo2.png)
 ## 什么是Event Mesh？
 EventMesh是一个动态的云原生事件驱动架构基础设施，用于分离应用程序和后端中间件层，它支持广泛的用例，包括复杂的混合云、使用了不同技术栈的分布式架构。
 
@@ -30,7 +31,8 @@ EventMesh是一个动态的云原生事件驱动架构基础设施，用于分�
 
 * **eventmesh-runtime**：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
 * **eventmesh-sdk-java**：当前支持HTTP和TCP协议，未来会支持gRPC等
-* **eventmesh-connector-rocketmq** : 一种基于OpenMessagingConnector 接口的实现，该实现支持将RocketMQ作为事件存储，实现事件的发布与订阅
+* **eventmesh-connector-api**：一个基于OpenMessaging api和SPI插件机制的接口层，可以有很多不同的事件存储的实现，比如IMDG，Messaging Engine和OSS等
+* **eventmesh-connector-rocketmq** : 一种基于eventmesh-connector-api的实现，该实现支持将RocketMQ作为事件存储，实现事件的发布与订阅
 
 **通信协议：**
 
@@ -42,7 +44,7 @@ eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里]
 | v1.0.0  |Support java-sdk , tcp pub/sub, http pub|
 | v1.1.0  |Support RocketMQ as eventstore|
 | v1.1.1  |Support https|
-| v1.2.0  |Support OpenMessaging API，support Plug-in architecture, support http sub, support cloud native deploy|
+| v1.2.0  |Support EventMesh store layer pluggable by OpenMessaging Pub/Sub API, http sub, docker|
 | V1.3.0  |Support CloudEvents, Event Streaming|
 |         |Support Event function,triggers and bindings|
 |         |Support Event orchestration, Servelss workflow|

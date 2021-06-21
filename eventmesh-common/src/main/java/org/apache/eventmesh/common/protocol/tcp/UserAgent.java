@@ -21,7 +21,6 @@ public class UserAgent {
 
     private String env;
     private String subsystem;
-    private String dcn;
     private String path;
     private int pid;
     private String host;
@@ -30,10 +29,28 @@ public class UserAgent {
     private String username;
     private String password;
     private String idc;
+    private String producerGroup;
+    private String consumerGroup;
     private String purpose;
     private int unack = 0;
 
     public UserAgent() {
+    }
+
+    public String getProducerGroup() {
+        return producerGroup;
+    }
+
+    public void setProducerGroup(String producerGroup) {
+        this.producerGroup = producerGroup;
+    }
+
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public void setConsumerGroup(String consumerGroup) {
+        this.consumerGroup = consumerGroup;
     }
 
     public String getEnv() {
@@ -58,14 +75,6 @@ public class UserAgent {
 
     public void setSubsystem(String subsystem) {
         this.subsystem = subsystem;
-    }
-
-    public String getDcn() {
-        return dcn;
-    }
-
-    public void setDcn(String dcn) {
-        this.dcn = dcn;
     }
 
     public String getPath() {
@@ -145,7 +154,6 @@ public class UserAgent {
         return "UserAgent{" +
                 "env='" + env + '\'' +
                 "subsystem='" + subsystem + '\'' +
-                ", dcn='" + dcn + '\'' +
                 ", path='" + path + '\'' +
                 ", pid=" + pid +
                 ", host='" + host + '\'' +
@@ -168,7 +176,6 @@ public class UserAgent {
         if (port != userAgent.port) return false;
         if (unack != userAgent.unack) return false;
         if (subsystem != null ? !subsystem.equals(userAgent.subsystem) : userAgent.subsystem != null) return false;
-        if (dcn != null ? !dcn.equals(userAgent.dcn) : userAgent.dcn != null) return false;
         if (path != null ? !path.equals(userAgent.path) : userAgent.path != null) return false;
         if (host != null ? !host.equals(userAgent.host) : userAgent.host != null) return false;
         if (purpose != null ? !purpose.equals(userAgent.purpose) : userAgent.purpose != null) return false;
@@ -182,7 +189,6 @@ public class UserAgent {
     @Override
     public int hashCode() {
         int result = subsystem != null ? subsystem.hashCode() : 0;
-        result = 31 * result + (dcn != null ? dcn.hashCode() : 0);
         result = 31 * result + (path != null ? path.hashCode() : 0);
         result = 31 * result + pid;
         result = 31 * result + (host != null ? host.hashCode() : 0);
