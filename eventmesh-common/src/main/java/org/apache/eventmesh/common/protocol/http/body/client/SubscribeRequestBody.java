@@ -25,6 +25,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 
 import org.apache.commons.collections4.MapUtils;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class SubscribeRequestBody extends Body {
@@ -33,17 +34,27 @@ public class SubscribeRequestBody extends Body {
 
     public static final String URL = "url";
 
-    private List<String> topics;
+    public static final String CONSUMERGROUP = "consumerGroup";
+
+    private List<SubscriptionItem> topics;
 
     private String url;
 
-    private String topic;
+    private String consumerGroup;
 
-    public List<String> getTopics() {
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public void setConsumerGroup(String consumerGroup) {
+        this.consumerGroup = consumerGroup;
+    }
+
+    public List<SubscriptionItem> getTopics() {
         return topics;
     }
 
-    public void setTopics(List<String> topics) {
+    public void setTopics(List<SubscriptionItem> topics) {
         this.topics = topics;
     }
 
@@ -58,7 +69,8 @@ public class SubscribeRequestBody extends Body {
     public static SubscribeRequestBody buildBody(Map<String, Object> bodyParam) {
         SubscribeRequestBody body = new SubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
-        body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPIC), String.class));
+        body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPIC), SubscriptionItem.class));
+        body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         return body;
     }
 
@@ -67,13 +79,15 @@ public class SubscribeRequestBody extends Body {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(URL, url);
         map.put(TOPIC, JSON.toJSONString(topics));
+        map.put(CONSUMERGROUP, consumerGroup);
         return map;
     }
 
     @Override
     public String toString() {
         return "subscribeBody{" +
-                "url='" + url + '\'' +
+                "consumerGroup='" + consumerGroup + '\'' +
+                ", url='" + url + '\'' +
                 ", topics=" + topics +
                 '}';
     }

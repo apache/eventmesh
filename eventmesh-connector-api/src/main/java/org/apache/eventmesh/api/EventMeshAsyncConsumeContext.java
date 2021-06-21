@@ -14,31 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.api;
 
-package org.apache.eventmesh.client.tcp;
+import io.openmessaging.api.Action;
+import io.openmessaging.api.AsyncConsumeContext;
 
+public abstract class EventMeshAsyncConsumeContext extends AsyncConsumeContext {
 
-import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
-import org.apache.eventmesh.common.protocol.SubcriptionType;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+    private AbstractContext abstractContext;
 
-public interface SimpleSubClient {
-    void init() throws Exception;
+    public AbstractContext getAbstractContext() {
+        return abstractContext;
+    }
 
-    void close();
+    public void setAbstractContext(AbstractContext abstractContext) {
+        this.abstractContext = abstractContext;
+    }
 
-    void heartbeat() throws Exception;
+    public abstract void commit(EventMeshAction action);
 
-    void reconnect() throws Exception;
-
-    void subscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
-
-    void unsubscribe() throws Exception;
-
-    void listen() throws Exception;
-
-    void registerBusiHandler(ReceiveMsgHook handler) throws Exception;
-
-    UserAgent getUserAgent();
+    @Override
+    public void commit(Action action) {
+        throw new UnsupportedOperationException("not support yet");
+    }
 }

@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 public class SessionContext {
@@ -28,7 +29,7 @@ public class SessionContext {
 
     public ConcurrentHashMap<String, String> sendTopics = new ConcurrentHashMap<String, String>();
 
-    public ConcurrentHashMap<String, String> subscribeTopics = new ConcurrentHashMap<String, String>();
+    public ConcurrentHashMap<String, SubscriptionItem> subscribeTopics = new ConcurrentHashMap<String, SubscriptionItem>();
 
     public long createTime = System.currentTimeMillis();
 
@@ -38,7 +39,7 @@ public class SessionContext {
 
     @Override
     public String toString() {
-        return "SessionContext{subscribeTopics=" + subscribeTopics.keySet()
+        return "SessionContext{subscribeTopics=" + subscribeTopics
                 + ",sendTopics=" + sendTopics.keySet()
                 + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}";
     }

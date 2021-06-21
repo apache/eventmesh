@@ -78,8 +78,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         SendMessageBatchResponseHeader sendMessageBatchResponseHeader =
                 SendMessageBatchResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         if (StringUtils.isBlank(sendMessageBatchRequestHeader.getPid())
                 || !StringUtils.isNumeric(sendMessageBatchRequestHeader.getPid())
@@ -93,6 +92,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         if (CollectionUtils.isEmpty(sendMessageBatchRequestBody.getContents())
                 || StringUtils.isBlank(sendMessageBatchRequestBody.getBatchId())
+                || StringUtils.isBlank(sendMessageBatchRequestBody.getProducerGroup())
                 || (Integer.valueOf(sendMessageBatchRequestBody.getSize()) != CollectionUtils.size(sendMessageBatchRequestBody.getContents()))) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchResponseHeader,
@@ -112,11 +112,8 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        if (StringUtils.isBlank(sendMessageBatchRequestHeader.getDcn())) {
-            sendMessageBatchRequestHeader.setDcn("BATCH");
-        }
-        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageBatchRequestHeader.getSys(),
-                sendMessageBatchRequestHeader.getDcn());
+
+        String producerGroup = sendMessageBatchRequestBody.getProducerGroup();
         EventMeshProducer batchEventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
         batchEventMeshProducer.getMqProducerWrapper().getMeshMQProducer().setExtFields();
