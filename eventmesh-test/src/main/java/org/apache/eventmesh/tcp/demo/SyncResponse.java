@@ -16,6 +16,7 @@ public class SyncResponse implements ReceiveMsgHook {
 
     private static EventMeshClient client;
 
+
     public static SyncResponse handler = new SyncResponse();
 
     public static void main(String[] agrs)throws Exception{

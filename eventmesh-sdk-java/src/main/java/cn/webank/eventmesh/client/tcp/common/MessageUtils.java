@@ -105,7 +105,6 @@ public class MessageUtils {
 
     public static UserAgent generateSubClient(UserAgent agent) {
         UserAgent user = new UserAgent();
-        user.setDcn(agent.getDcn());
         user.setHost(agent.getHost());
         user.setPassword(agent.getPassword());
         user.setUsername(agent.getUsername());
@@ -122,7 +121,6 @@ public class MessageUtils {
 
     public static UserAgent generatePubClient(UserAgent agent) {
         UserAgent user = new UserAgent();
-        user.setDcn(agent.getDcn());
         user.setHost(agent.getHost());
         user.setPassword(agent.getPassword());
         user.setUsername(agent.getUsername());
