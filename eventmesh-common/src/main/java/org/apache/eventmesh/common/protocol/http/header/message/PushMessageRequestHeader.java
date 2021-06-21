@@ -44,11 +44,7 @@ public class PushMessageRequestHeader extends Header {
 
     private String eventMeshEnv;
 
-    private String eventMeshRegion;
-
     private String eventMeshIdc;
-
-    private String eventMeshDcn;
 
     public int getCode() {
         return code;
@@ -82,28 +78,12 @@ public class PushMessageRequestHeader extends Header {
         this.eventMeshEnv = eventMeshEnv;
     }
 
-    public String getEventMeshRegion() {
-        return eventMeshRegion;
-    }
-
-    public void setEventMeshRegion(String eventMeshRegion) {
-        this.eventMeshRegion = eventMeshRegion;
-    }
-
     public String getEventMeshIdc() {
         return eventMeshIdc;
     }
 
     public void setEventMeshIdc(String eventMeshIdc) {
         this.eventMeshIdc = eventMeshIdc;
-    }
-
-    public String getEventMeshDcn() {
-        return eventMeshDcn;
-    }
-
-    public void setEventMeshDcn(String eventMeshDcn) {
-        this.eventMeshDcn = eventMeshDcn;
     }
 
     public String getLanguage() {
@@ -129,9 +109,7 @@ public class PushMessageRequestHeader extends Header {
         pushMessageRequestHeader.setVersion(ProtocolVersion.get(MapUtils.getString(headerParam, ProtocolKey.VERSION)));
         pushMessageRequestHeader.setEventMeshCluster(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER));
         pushMessageRequestHeader.setEventMeshIp(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHIP));
-        pushMessageRequestHeader.setEventMeshDcn(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHDCN));
         pushMessageRequestHeader.setEventMeshEnv(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHENV));
-        pushMessageRequestHeader.setEventMeshRegion(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHREGION));
         pushMessageRequestHeader.setEventMeshIdc(MapUtils.getString(headerParam, ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC));
         return pushMessageRequestHeader;
     }
@@ -145,9 +123,7 @@ public class PushMessageRequestHeader extends Header {
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHREGION, eventMeshRegion);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHDCN, eventMeshDcn);
         return map;
     }
 
@@ -159,9 +135,7 @@ public class PushMessageRequestHeader extends Header {
                 .append("language=").append(language).append(",")
                 .append("version=").append(version.getVersion()).append(",")
                 .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-                .append("eventMeshRegion=").append(eventMeshRegion).append(",")
                 .append("eventMeshIdc=").append(eventMeshIdc).append(",")
-                .append("eventMeshDcn=").append(eventMeshDcn).append(",")
                 .append("eventMeshCluster=").append(eventMeshCluster).append(",")
                 .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();

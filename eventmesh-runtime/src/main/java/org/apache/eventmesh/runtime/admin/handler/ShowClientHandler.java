@@ -19,18 +19,18 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.net.InetSocketAddress;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -54,18 +54,26 @@ public class ShowClientHandler implements HttpHandler {
             String newLine = System.getProperty("line.separator");
             logger.info("showAllClient=================");
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            Map<String, AtomicInteger> dcnSystemMap = clientSessionGroupMapping.statDCNSystemInfo();
-            if (!dcnSystemMap.isEmpty()) {
-                List<Map.Entry<String, AtomicInteger>> list = new ArrayList<>();
-                for (Map.Entry<String, AtomicInteger> entry : dcnSystemMap.entrySet()) {
-                    list.add(entry);
+
+            HashMap<String, AtomicInteger> statMap = new HashMap<String, AtomicInteger>();
+
+            Map<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+            if (!sessionMap.isEmpty()) {
+                for (Session session : sessionMap.values()) {
+                    String key = session.getClient().getSubsystem();
+                    if (!statMap.containsKey(key)) {
+                        statMap.put(key, new AtomicInteger(1));
+                    } else {
+                        statMap.get(key).incrementAndGet();
+                    }
                 }
-                Collections.sort(list, Comparator.comparingInt(x -> x.getValue().intValue()));
-                for (Map.Entry<String, AtomicInteger> entry : list) {
+
+                for (Map.Entry<String, AtomicInteger> entry : statMap.entrySet()) {
                     result += String.format("System=%s | ClientNum=%d", entry.getKey(), entry.getValue().intValue()) +
                             newLine;
                 }
             }
+
             httpExchange.sendResponseHeaders(200, 0);
             out.write(result.getBytes());
         } catch (Exception e) {

@@ -26,7 +26,6 @@ public class UserAgentUtils {
     public static UserAgent createPubUserAgent() {
         UserAgent userAgent = new UserAgent();
         userAgent.setSubsystem("5023");
-        userAgent.setDcn("AC0");
         userAgent.setPid(32893);
         userAgent.setVersion("2.0.11");
         userAgent.setIdc("FT");
@@ -43,7 +42,6 @@ public class UserAgentUtils {
     public static UserAgent createUserAgent() {
         UserAgent userAgent = new UserAgent();
         userAgent.setSubsystem("5123");
-        userAgent.setDcn("WAC");
 //        userAgent.setPid(UtilAll.getPid());
 //        userAgent.setHost(RemotingUtil.getLocalAddress());
         userAgent.setVersion("2.0.8");
@@ -55,7 +53,6 @@ public class UserAgentUtils {
     public static UserAgent createSubUserAgent() {
         UserAgent userAgent = new UserAgent();
         userAgent.setSubsystem("5243");
-        userAgent.setDcn("WAC");
 //        userAgent.setPid(UtilAll.getPid());
 //        userAgent.setHost(RemotingUtil.getLocalAddress());
         userAgent.setPort(8888);

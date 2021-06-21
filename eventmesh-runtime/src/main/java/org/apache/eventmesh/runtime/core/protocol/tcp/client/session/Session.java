@@ -229,7 +229,7 @@ public class Session {
     @Override
     public String toString() {
         return "Session{" +
-                "group=" + clientGroupWrapper.get().getGroupName() +
+                "sysId=" + clientGroupWrapper.get().getSysId() +
                 ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress) +
                 ",client=" + client +
                 ",sessionState=" + sessionState +
