@@ -28,8 +28,6 @@ public class Client {
 
     public String env;
 
-    public String dcn;
-
     public String idc;
 
     public String consumerGroup;
@@ -64,7 +62,6 @@ public class Client {
             client.topic = StringUtils.trim(jsonObject.getString("topic"));
             client.url = StringUtils.trim(jsonObject.getString("url"));
             client.sys = StringUtils.trim(jsonObject.getString("sys"));
-            client.dcn = StringUtils.trim(jsonObject.getString("dcn"));
             client.idc = StringUtils.trim(jsonObject.getString("idc"));
             client.ip = StringUtils.trim(jsonObject.getString("ip"));
             client.pid = StringUtils.trim(jsonObject.getString("pid"));
@@ -79,7 +76,6 @@ public class Client {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("endPoint={env=").append(env)
-                .append(",dcn=").append(dcn)
                 .append(",idc=").append(idc)
                 .append(",consumerGroup=").append(consumerGroup)
                 .append(",topic=").append(topic)

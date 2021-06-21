@@ -28,6 +28,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -51,6 +53,8 @@ public class DownStreamMsgContext implements Delayed {
 
     public int retryTimes;
 
+    public SubscriptionItem subscriptionItem;
+
     private long executeTime;
 
     public long lastPushTime;
@@ -61,7 +65,7 @@ public class DownStreamMsgContext implements Delayed {
 
     public boolean msgFromOtherEventMesh;
 
-    public DownStreamMsgContext(Message msgExt, Session session, MQConsumerWrapper consumer, AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh) {
+    public DownStreamMsgContext(Message msgExt, Session session, MQConsumerWrapper consumer, AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh, SubscriptionItem subscriptionItem) {
         this.seq = String.valueOf(ServerGlobal.getInstance().getMsgCounter().incrementAndGet());
         this.msgExt = msgExt;
         this.session = session;
@@ -71,6 +75,7 @@ public class DownStreamMsgContext implements Delayed {
         this.lastPushTime = System.currentTimeMillis();
         this.executeTime = System.currentTimeMillis();
         this.createTime = System.currentTimeMillis();
+        this.subscriptionItem = subscriptionItem;
         String ttlStr = msgExt.getUserProperties("TTL");
         long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
         this.expireTime = System.currentTimeMillis() + ttl;
@@ -108,6 +113,7 @@ public class DownStreamMsgContext implements Delayed {
                 ",consumer=" + consumer +
 //  todo              ",consumerGroup=" + consumer.getClass().getConsumerGroup() +
                 ",topic=" + msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION) +
+                ",subscriptionItem=" + subscriptionItem +
                 ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) +
                 ",executeTime=" + DateFormatUtils.format(executeTime, EventMeshConstants.DATE_FORMAT) +
                 ",lastPushTime=" + DateFormatUtils.format(lastPushTime, EventMeshConstants.DATE_FORMAT) + '}';

@@ -60,117 +60,23 @@ public class EventMeshUtil {
         return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + String.valueOf(RandomStringUtils.randomNumeric(4));
     }
 
-    public static String buildMeshClientID(String clientGroup, String meshRegion, String meshCluster) {
+    public static String buildMeshClientID(String clientGroup, String meshCluster) {
         return StringUtils.trim(clientGroup)
-                + "-" + StringUtils.trim(meshRegion) + "(" + StringUtils.trim(meshCluster) + ")"
+                + "(" + StringUtils.trim(meshCluster) + ")"
                 + "-" + EventMeshVersion.getCurrentVersionDesc()
                 + "-" + ThreadUtil.getPID();
     }
 
-    public static String buildMeshTcpClientID(String clientSysId, String clientDcn, String purpose, String meshCluster) {
+    public static String buildMeshTcpClientID(String clientSysId, String purpose, String meshCluster) {
         return StringUtils.trim(clientSysId)
-                + "-" + StringUtils.trim(clientDcn)
                 + "-" + StringUtils.trim(purpose)
                 + "-" + StringUtils.trim(meshCluster)
                 + "-" + EventMeshVersion.getCurrentVersionDesc()
                 + "-" + ThreadUtil.getPID();
     }
 
-    public static String buildMeshTcpRRReplyerProducerGroup() {
-        return "EventMesh-Tcp-RRReplyer";
-    }
-
-    public static String buildMeshTcpRRReplyerClientID(String meshSysId, String meshRegion, String meshDcn, String meshCluster) {
-        return meshSysId
-                + "-" + StringUtils.trim(meshRegion)
-                + "-" + StringUtils.trim(meshDcn)
-                + "-" + StringUtils.trim(meshCluster)
-                + "-" + EventMeshVersion.getCurrentVersionDesc()
-                + "-" + ThreadUtil.getPID()
-                + "-RRReplyer";
-        //return EventMeshVersion.getCurrentVersionDesc() + "-" + ThreadUtil.getPID() +  "(" + meshConfiguration.meshCluster + ")";
-    }
-
-    public static String buildBroadcastClientConsumerGroup(String systemId, String dcn) {
-        return EventMeshConstants.CONSUMER_GROUP_NAME_PREFIX + EventMeshConstants.BROADCAST_PREFIX + systemId + "-" + dcn;
-    }
-
-    public static String buildPersistentClientConsumerGroup(String systemId, String dcn) {
-        return EventMeshConstants.CONSUMER_GROUP_NAME_PREFIX + systemId + "-" + dcn;
-    }
-
-    public static String buildClientGroup(String systemId, String dcn) {
-        return systemId + "-" + dcn;
-    }
-
-    public static String buildClientProducerGroup(String systemId, String dcn) {
-        return EventMeshConstants.PRODUCER_GROUP_NAME_PREFIX + systemId + "-" + dcn;
-    }
-
-    public static String buildCCAddr(String str) {
-        return str + "/namesrvAddr";
-    }
-
-    public static String buildCCAddr(String str, String idc) {
-        return str + "/namesrvAddr/" + idc;
-    }
-
-    public static boolean isValidRMBTopic(String topic) {
-        if (StringUtils.isEmpty(topic) || !StringUtils.contains(topic, "-")) {
-            return false;
-        }
-
-        String[] args = StringUtils.split(topic, "-");
-        if (ArrayUtils.getLength(args) != 5) {
-            return false;
-        }
-
-        String s0e = args[1];
-        if (!StringUtils.equalsIgnoreCase("s", s0e) && !StringUtils.equalsIgnoreCase("e", s0e)) {
-            return false;
-        }
-
-        String service = args[2];
-        if (!StringUtils.isNumeric(service)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public static String getServiceIDStr(String topic) {
-        if (!isValidRMBTopic(topic)) {
-            return "";
-        }
-
-        String[] args = StringUtils.split(topic, "-");
-        return args[2];
-    }
-
-    public static String getPidStr(String topic) {
-        if (!isValidRMBTopic(topic)) {
-            return "";
-        }
-
-        String[] args = StringUtils.split(topic, "-");
-        return args[3];
-    }
-
-    public static boolean isService(String topic) {
-        String serviceStr = getServiceIDStr(topic);
-        if (StringUtils.isEmpty(serviceStr)) {
-            return false;
-        }
-        return "0".equals(StringUtils.substring(serviceStr, 3, 4));
-    }
-
-    public static boolean isBroadcast(String topic) {
-        String serviceStr = getServiceIDStr(topic);
-        if (StringUtils.isEmpty(serviceStr)) {
-            return false;
-        }
-        String[] args = StringUtils.split(topic, "-");
-        return "3".equals(StringUtils.substring(args[2], 3, 4)) || "4".equals(StringUtils.substring(args[2], 3, 4));
+    public static String buildClientGroup(String systemId) {
+        return systemId;
     }
 
     /**
@@ -420,7 +326,7 @@ public class EventMeshUtil {
         }
         StringBuilder sb = new StringBuilder();
         sb.append(client.getSubsystem()).append("-")
-                .append(client.getDcn()).append("-")
+                .append("-")
                 .append(client.getPid()).append("-")
                 .append(client.getHost()).append(":").append(client.getPort());
         return sb.toString();

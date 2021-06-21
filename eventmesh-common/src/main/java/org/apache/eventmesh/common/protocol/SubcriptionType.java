@@ -15,7 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.consumergroup.event;
+package org.apache.eventmesh.common.protocol;
 
-public class ConsumerGroupInstanceChangeEvent {
+public enum SubcriptionType {
+    /**
+     * SYNC
+     */
+    SYNC("SYNC"),
+    /**
+     * ASYNC
+     */
+    ASYNC("ASYNC");
+
+    private String type;
+
+    SubcriptionType(String type) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 }

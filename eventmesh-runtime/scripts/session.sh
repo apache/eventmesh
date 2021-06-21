@@ -24,7 +24,6 @@ then
         TOPIC=$1
         curl -s "http://127.0.0.1:10106/clientManage/showListenClientByTopic?topic=${TOPIC}"
 else
-        CLIENT_DCN=$1
-        CLIENT_SYSTEM=$2
-        curl -s "http://127.0.0.1:10106/clientManage/showClientBySystemAndDcn?dcn=${CLIENT_DCN}&subSystem=${CLIENT_SYSTEM}"
+        CLIENT_SYSTEM=$1
+        curl -s "http://127.0.0.1:10106/clientManage/showClientBySystem?subSystem=${CLIENT_SYSTEM}"
 fi
