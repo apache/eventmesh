@@ -47,7 +47,7 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
             client.init();
             client.heartbeat();
 
-            client.subscribe("FT0-e-80030001-01-3", SubscriptionMode.BROADCASTING, SubcriptionType.ASYNC);
+            client.subscribe("TEST-TOPIC-TCP-BROADCAST", SubscriptionMode.BROADCASTING, SubcriptionType.ASYNC);
             client.registerSubBusiHandler(handler);
 
             client.listen();

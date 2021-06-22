@@ -169,10 +169,10 @@ public class MessageUtils {
     public static Subscription generateSubscription() {
         Subscription subscription = new Subscription();
         List<SubscriptionItem> subscriptionItems = new ArrayList<>();
-        subscriptionItems.add(new SubscriptionItem("FT0-s-80000000-01-0", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
-        subscriptionItems.add(new SubscriptionItem("FT0-s-80000000-02-0", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
-        subscriptionItems.add(new SubscriptionItem("FT0-s-80000000-03-0", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
-        subscriptionItems.add(new SubscriptionItem("FT0-s-80000000-04-0", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
+        subscriptionItems.add(new SubscriptionItem("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
+        subscriptionItems.add(new SubscriptionItem("TEST-TOPIC-TCP-SYNC2", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
+        subscriptionItems.add(new SubscriptionItem("TEST-TOPIC-TCP-SYNC3", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
+        subscriptionItems.add(new SubscriptionItem("TEST-TOPIC-TCP-SYNC4", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
         subscription.setTopicList(subscriptionItems);
         return subscription;
     }

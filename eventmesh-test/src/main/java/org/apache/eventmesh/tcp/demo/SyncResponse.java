@@ -46,7 +46,7 @@ public class SyncResponse implements ReceiveMsgHook {
             client.init();
             client.heartbeat();
 
-            client.subscribe("FT0-s-80000000-01-0", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC);
+            client.subscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC);
             //同步RR消息
             client.registerSubBusiHandler(handler);
 
