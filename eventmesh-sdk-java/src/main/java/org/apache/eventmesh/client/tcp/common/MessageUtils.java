@@ -109,6 +109,7 @@ public class MessageUtils {
         user.setVersion(agent.getVersion());
         user.setIdc(agent.getIdc());
         user.setConsumerGroup(agent.getConsumerGroup());
+        user.setProducerGroup(agent.getProducerGroup());
         user.setPurpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB);
         return user;
     }
