@@ -52,7 +52,7 @@ public class SubService implements InitializingBean {
 
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
-    final List<SubscriptionItem> topicList = Arrays.asList(new SubscriptionItem("FT0-e-80010001-01-1", SubscriptionMode.CLUSTERING, SubcriptionType.ASYNC));
+    final List<SubscriptionItem> topicList = Arrays.asList(new SubscriptionItem("TEST-TOPIC-HTTP-ASYNC", SubscriptionMode.CLUSTERING, SubcriptionType.ASYNC));
     final String localIp = IPUtil.getLocalAddress();
     final String localPort = properties.getProperty("server.port");
     final String eventMeshIp = properties.getProperty("eventmesh.ip");
