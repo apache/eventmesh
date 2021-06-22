@@ -31,9 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class CommonConfiguration {
     public String eventMeshEnv = "P";
-    public String eventMeshRegion = "";
     public String eventMeshIDC = "FT";
-    public String eventMeshDCN = "1C0";
     public String eventMeshCluster = "LS";
     public String eventMeshName = "";
     public String sysID = "5477";
@@ -68,10 +66,6 @@ public class CommonConfiguration {
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshEnvStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ENV));
             eventMeshEnv = StringUtils.deleteWhitespace(eventMeshEnvStr);
 
-            String eventMeshRegionStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_REGION);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegionStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_REGION));
-            eventMeshRegion = StringUtils.deleteWhitespace(eventMeshRegionStr);
-
             String sysIdStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
             Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SYSID));
             sysID = StringUtils.deleteWhitespace(sysIdStr);
@@ -88,10 +82,6 @@ public class CommonConfiguration {
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIDCStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
             eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIDCStr);
 
-            String eventMeshDCNStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_DCN);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshDCNStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_DCN));
-            eventMeshDCN = StringUtils.deleteWhitespace(eventMeshDCNStr);
-
             eventMeshServerIp = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
             if (StringUtils.isBlank(eventMeshServerIp)) {
                 eventMeshServerIp = getLocalAddr();
@@ -102,11 +92,7 @@ public class CommonConfiguration {
     static class ConfKeys {
         public static String KEYS_EVENTMESH_ENV = "eventMesh.server.env";
 
-        public static String KEYS_EVENTMESH_REGION = "eventMesh.server.region";
-
         public static String KEYS_EVENTMESH_IDC = "eventMesh.server.idc";
-
-        public static String KEYS_EVENTMESH_DCN = "eventMesh.server.dcn";
 
         public static String KEYS_EVENTMESH_SYSID = "eventMesh.sysid";
 

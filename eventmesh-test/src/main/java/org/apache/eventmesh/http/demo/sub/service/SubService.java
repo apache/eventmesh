@@ -52,7 +52,7 @@ public class SubService implements InitializingBean {
 
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
-    final List<SubscriptionItem> topicList = Arrays.asList(new SubscriptionItem("FT0-e-80010001-01-1", SubscriptionMode.CLUSTERING, SubcriptionType.ASYNC));
+    final List<SubscriptionItem> topicList = Arrays.asList(new SubscriptionItem("TEST-TOPIC-HTTP-ASYNC", SubscriptionMode.CLUSTERING, SubcriptionType.ASYNC));
     final String localIp = IPUtil.getLocalAddress();
     final String localPort = properties.getProperty("server.port");
     final String eventMeshIp = properties.getProperty("eventmesh.ip");
@@ -60,7 +60,6 @@ public class SubService implements InitializingBean {
     final String url = "http://" + localIp + ":" + localPort + "/sub/test";
     final String env = "P";
     final String idc = "FT";
-    final String dcn = "FT0";
     final String subsys = "1234";
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
@@ -75,9 +74,9 @@ public class SubService implements InitializingBean {
         }
         LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
         eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
+                .setConsumerGroup("EventMeshTest-consumerGroup")
                 .setEnv(env)
                 .setIdc(idc)
-                .setDcn(dcn)
                 .setIp(IPUtil.getLocalAddress())
                 .setSys(subsys)
                 .setPid(String.valueOf(ThreadUtil.getPID()));

@@ -14,20 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.api;
 
-package client.common;
+import io.openmessaging.api.Action;
+import io.openmessaging.api.AsyncConsumeContext;
 
+public abstract class EventMeshAsyncConsumeContext extends AsyncConsumeContext {
 
-public interface ClientConstants {
+    private AbstractContext abstractContext;
 
-    /**
-     * CLIENT HEART BEAT TIME
-     */
-    int HEARTBEAT = 1000 * 60;
+    public AbstractContext getAbstractContext() {
+        return abstractContext;
+    }
 
-    long DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
+    public void setAbstractContext(AbstractContext abstractContext) {
+        this.abstractContext = abstractContext;
+    }
 
-    String SYNC_TOPIC = "TEST-TOPIC-TCP-SYNC";
-    String ASYNC_TOPIC = "TEST-TOPIC-TCP-ASYNC";
-    String BROADCAST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
+    public abstract void commit(EventMeshAction action);
+
+    @Override
+    public void commit(Action action) {
+        throw new UnsupportedOperationException("not support yet");
+    }
 }

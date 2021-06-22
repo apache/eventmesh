@@ -166,8 +166,7 @@ public class Session {
             sessionContext.subscribeTopics.putIfAbsent(item.getTopic(), item);
             clientGroupWrapper.get().subscribe(item);
 
-            clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().getDefaultTopicRouteInfoFromNameServer(item.getTopic(),
-                    EventMeshConstants.DEFAULT_TIME_OUT_MILLS);
+            clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().checkTopicExist(item.getTopic());
 
             clientGroupWrapper.get().addSubscription(item.getTopic(), this);
             subscribeLogger.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
@@ -229,7 +228,7 @@ public class Session {
     @Override
     public String toString() {
         return "Session{" +
-                "group=" + clientGroupWrapper.get().getGroupName() +
+                "sysId=" + clientGroupWrapper.get().getSysId() +
                 ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress) +
                 ",client=" + client +
                 ",sessionState=" + sessionState +

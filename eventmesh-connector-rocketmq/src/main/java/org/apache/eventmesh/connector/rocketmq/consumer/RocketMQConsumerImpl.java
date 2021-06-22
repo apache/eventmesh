@@ -71,9 +71,7 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
 
 
         if (isBroadcast) {
-            consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + Constants.BROADCAST_PREFIX + consumerGroup;
-        } else {
-            consumerGroup = Constants.CONSUMER_GROUP_NAME_PREFIX + consumerGroup;
+            consumerGroup = Constants.BROADCAST_PREFIX + consumerGroup;
         }
 
         String omsNamesrv = clientConfiguration.namesrvAddr;

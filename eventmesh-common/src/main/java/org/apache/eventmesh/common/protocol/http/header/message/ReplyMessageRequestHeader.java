@@ -41,14 +41,8 @@ public class ReplyMessageRequestHeader extends Header {
     //请求方所在环境编号
     private String env;
 
-    //请求方所在区域编码
-    private String region;
-
     //请求方所在IDC
     private String idc;
-
-    //请求方所在DCN
-    private String dcn;
 
     //请求方的子系统
     private String sys;
@@ -113,28 +107,12 @@ public class ReplyMessageRequestHeader extends Header {
         this.env = env;
     }
 
-    public String getRegion() {
-        return region;
-    }
-
-    public void setRegion(String region) {
-        this.region = region;
-    }
-
     public String getIdc() {
         return idc;
     }
 
     public void setIdc(String idc) {
         this.idc = idc;
-    }
-
-    public String getDcn() {
-        return dcn;
-    }
-
-    public void setDcn(String dcn) {
-        this.dcn = dcn;
     }
 
     public String getSys() {
@@ -169,9 +147,7 @@ public class ReplyMessageRequestHeader extends Header {
                 ? Constants.LANGUAGE_JAVA : MapUtils.getString(headerParam, ProtocolKey.LANGUAGE);
         header.setLanguage(lan);
         header.setEnv(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.ENV));
-        header.setRegion(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.REGION));
         header.setIdc(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IDC));
-        header.setDcn(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.DCN));
         header.setSys(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.SYS));
         header.setPid(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.PID));
         header.setIp(MapUtils.getString(headerParam, ProtocolKey.ClientInstanceKey.IP));
@@ -187,9 +163,7 @@ public class ReplyMessageRequestHeader extends Header {
         map.put(ProtocolKey.LANGUAGE, language);
         map.put(ProtocolKey.VERSION, version);
         map.put(ProtocolKey.ClientInstanceKey.ENV, env);
-        map.put(ProtocolKey.ClientInstanceKey.REGION, region);
         map.put(ProtocolKey.ClientInstanceKey.IDC, idc);
-        map.put(ProtocolKey.ClientInstanceKey.DCN, dcn);
         map.put(ProtocolKey.ClientInstanceKey.SYS, sys);
         map.put(ProtocolKey.ClientInstanceKey.PID, pid);
         map.put(ProtocolKey.ClientInstanceKey.IP, ip);
@@ -206,9 +180,7 @@ public class ReplyMessageRequestHeader extends Header {
                 .append("language=").append(language).append(",")
                 .append("version=").append(version).append(",")
                 .append("env=").append(env).append(",")
-                .append("region=").append(region).append(",")
                 .append("idc=").append(idc).append(",")
-                .append("dcn=").append(dcn).append(",")
                 .append("sys=").append(sys).append(",")
                 .append("pid=").append(pid).append(",")
                 .append("ip=").append(ip).append(",")

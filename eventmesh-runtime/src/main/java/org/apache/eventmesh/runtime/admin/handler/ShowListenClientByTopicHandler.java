@@ -65,7 +65,7 @@ public class ShowListenClientByTopicHandler implements HttpHandler {
                 for (ClientGroupWrapper cgw : clientGroupMap.values()) {
                     Set<Session> listenSessionSet = cgw.getTopic2sessionInGroupMapping().get(topic);
                     if (listenSessionSet != null && listenSessionSet.size() > 0) {
-                        result += String.format("group:%s", cgw.getGroupName()) + newLine;
+                        result += String.format("group:%s", cgw.getConsumerGroup()) + newLine;
                         for (Session session : listenSessionSet) {
                             UserAgent userAgent = session.getClient();
                             result += String.format("pid=%s | ip=%s | port=%s | path=%s | version=%s", userAgent.getPid(), userAgent
