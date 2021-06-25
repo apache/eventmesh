@@ -36,6 +36,7 @@ public class EventMeshTestUtils {
 
     public static UserAgent generateClient1() {
         UserAgent user = new UserAgent();
+        user.setEnv("test");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
@@ -52,6 +53,7 @@ public class EventMeshTestUtils {
 
     public static UserAgent generateClient2() {
         UserAgent user = new UserAgent();
+        user.setEnv("test");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
