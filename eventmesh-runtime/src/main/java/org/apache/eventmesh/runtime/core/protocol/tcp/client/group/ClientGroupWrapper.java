@@ -369,7 +369,7 @@ public class ClientGroupWrapper {
         keyValue.put("isBroadcast", "false");
         keyValue.put("consumerGroup", consumerGroup);
         keyValue.put("eventMeshIDC", eventMeshTCPConfiguration.eventMeshIDC);
-        keyValue.put("instanceName", EventMeshUtil.buildMeshTcpClientID(sysId,"SUB", eventMeshTCPConfiguration.eventMeshCluster));
+        keyValue.put("instanceName", EventMeshUtil.buildMeshTcpClientID(sysId, "SUB", eventMeshTCPConfiguration.eventMeshCluster));
 
         persistentMsgConsumer.init(keyValue);
 //        persistentMsgConsumer.registerMessageListener(new EventMeshMessageListenerConcurrently() {
@@ -458,7 +458,7 @@ public class ClientGroupWrapper {
         keyValue.put("isBroadcast", "true");
         keyValue.put("consumerGroup", consumerGroup);
         keyValue.put("eventMeshIDC", eventMeshTCPConfiguration.eventMeshIDC);
-        keyValue.put("instanceName", EventMeshUtil.buildMeshTcpClientID(sysId,"SUB", eventMeshTCPConfiguration.eventMeshCluster));
+        keyValue.put("instanceName", EventMeshUtil.buildMeshTcpClientID(sysId, "SUB", eventMeshTCPConfiguration.eventMeshCluster));
         broadCastMsgConsumer.init(keyValue);
 //        broadCastMsgConsumer.registerMessageListener(new EventMeshMessageListenerConcurrently() {
 //            @Override
@@ -536,7 +536,7 @@ public class ClientGroupWrapper {
                     message.getSystemProperties().put(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                     message.getSystemProperties().put(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP, eventMeshTCPConfiguration.eventMeshServerIp);
 
-                    EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext)context;
+                    EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
                     if (CollectionUtils.isEmpty(groupConsumerSessions)) {
                         logger.warn("found no session to downstream broadcast msg");
 //                        context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
@@ -586,7 +586,7 @@ public class ClientGroupWrapper {
                     message.getSystemProperties().put(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                     message.getSystemProperties().put(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP, eventMeshTCPConfiguration.eventMeshServerIp);
 
-                    EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext)context;
+                    EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
                     Session session = downstreamDispatchStrategy.select(consumerGroup, topic, groupConsumerSessions);
                     String bizSeqNo = EventMeshUtil.getMessageBizSeq(message);
                     if (session == null) {
