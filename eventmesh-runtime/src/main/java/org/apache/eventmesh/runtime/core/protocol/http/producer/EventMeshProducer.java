@@ -81,8 +81,7 @@ public class EventMeshProducer {
 
         Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
-        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
-                eventMeshHttpConfiguration.eventMeshRegion, eventMeshHttpConfiguration.eventMeshCluster));
+        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(), eventMeshHttpConfiguration.eventMeshCluster));
 
         //TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.eventMeshIDC);

@@ -19,6 +19,8 @@ package org.apache.eventmesh.client.tcp;
 
 
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
+import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 public interface SimpleSubClient {
@@ -30,7 +32,7 @@ public interface SimpleSubClient {
 
     void reconnect() throws Exception;
 
-    void subscribe(String topic) throws Exception;
+    void subscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
 
     void unsubscribe() throws Exception;
 

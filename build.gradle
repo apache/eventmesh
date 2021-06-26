@@ -28,7 +28,6 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
-
     }
 
     dependencies {
@@ -41,7 +40,6 @@ allprojects {
     apply plugin: "eclipse"
     apply plugin: "idea"
     apply plugin: "project-reports"
-    apply plugin: "maven"
     apply plugin: "maven-publish"
     apply plugin: "com.github.spotbugs"
     apply plugin: "project-reports"
@@ -50,6 +48,7 @@ allprojects {
     apply plugin: "java-library"
     apply plugin: 'signing'
 
+//    print(project)
 //    if (project.findProperty("jdk") == "1.7") {
 //        sourceCompatibility = 1.7
 //        targetCompatibility = 1.7
@@ -59,11 +58,9 @@ allprojects {
 //        targetCompatibility = 1.8
 //        version = version + "-jdk8"
 //    }
-
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
     compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-
 
     clean.doFirst {
         delete 'build'
@@ -74,7 +71,6 @@ allprojects {
     if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot")))) {
         version = version + "-SNAPSHOT"
     }
-
 }
 
 task tar(type: Tar) {
@@ -96,7 +92,6 @@ task zip(type: Zip) {
         from 'dist'
     }
 }
-
 
 subprojects {
 
@@ -135,6 +130,13 @@ subprojects {
             "org.slf4j:slf4j-api:1.7.30"
     ]
 
+    List log4j2 = [
+            "org.apache.logging.log4j:log4j-api:2.13.3",
+            "org.apache.logging.log4j:log4j-core:2.13.3",
+            "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
+            "org.apache.logging.log4j:log4j-web:2.13.3",
+            "com.lmax:disruptor:3.4.2"
+    ]
 
     List common = [
             "commons-io:commons-io:2.4",
@@ -152,12 +154,11 @@ subprojects {
     ]
 
     dependencies {
-        implementation apache_commons, guava, log, fastjson, jackson, common, httpclient, netty
-        testImplementation apache_commons, guava, log, fastjson, jackson, common, junit, assertj, mock, httpclient, netty
+        implementation apache_commons, guava, log, log4j2, fastjson, jackson, common, httpclient, netty
+        testImplementation apache_commons, guava, log, log4j2, fastjson, jackson, common, junit, assertj, mock, httpclient, netty
         spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
         spotbugsPlugins 'com.mebigfatguy.fb-contrib:fb-contrib:7.4.7'
     }
-
 
     sourceSets {
         main {
@@ -176,17 +177,13 @@ subprojects {
 
     jacoco {
         toolVersion = "0.8.6"
-        reportsDir = file("$buildDir/reports/jacoco")
     }
 
     jacocoTestReport {
-//        sourceSets sourceSets.main
-//        executionData files("$buildDir/jacoco/jacocoTest.exec")
-
         reports {
-            xml.enabled false
+            xml.enabled true
             csv.enabled false
-            html.destination file("${buildDir}/reports/jacoco/html")
+            html.enabled false
         }
     }
 
@@ -204,7 +201,7 @@ subprojects {
 //            html.enabled true
 //        }
 //    }
-
+//
 //    sourceSets {
 //        main {
 //            java {
@@ -227,10 +224,7 @@ subprojects {
 //            }
 //
 //        }
-//
-//
 //    }
-
 
     spotbugs {
         //toolVersion = '4.2.3'
@@ -295,10 +289,10 @@ subprojects {
     jar {
         manifest {
             attributes("Specification-Version": project.version,
-                    "Specification-Vendor": "Apache",
+                    "Specification-Vendor": "WeBank, Inc.",
                     "Specification-Title": project.name,
                     "Implementation-Version": project.version,
-                    "Implementation-Vendor": "Apache",
+                    "Implementation-Vendor": "WeBank, Inc.",
                     "Implementation-Title": project.name,
                     "Build-Jdk": project.findProperty("jdk")
             )
@@ -325,7 +319,7 @@ subprojects {
             }
             copy {
                 into '../dist/lib'
-                from project.configurations.runtime
+                from project.configurations.runtimeClasspath
                 exclude '**/*.properties*'
                 exclude '**/*testng*.jar'
                 exclude '**/*powermock*.jar'
@@ -383,12 +377,6 @@ subprojects {
         }
     }
 
-    signing {
-        sign packageJavadoc, packageSources, jar
-    }
-
-
-
     repositories {
         maven { url "https://maven.aliyun.com/repository/public" }
         mavenCentral()
@@ -401,55 +389,61 @@ subprojects {
         resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
     }
 
-
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                beforeDeployment {
-                    MavenDeployment deployment -> signing.signPom(deployment)
-                }
-                // 指定上传的路径
-                def releaseRepo = 'https://repository.apache.org/content/repositories/releases/'
-                def snapshotsRepo = 'https://repository.apache.org/content/repositories/snapshots/'
-                repository(url: releaseRepo) {
-                    authentication(userName: apacheUserName, password: apachePassWord)
-                }
-
-                snapshotRepository(url: snapshotsRepo) {
-                    authentication(userName: apacheUserName, password: apachePassWord)
-                }
-
-
-                pom.project {
-                    name 'Apache EventMesh'
-                    packaging 'jar'
-                    // optionally artifactId can be defined here
-                    description 'Apache EventMesh'
-                    url 'https://github.com/apache/incubator-eventmesh'
-
-                    scm {
-                        connection 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-                        developerConnection 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-                        url 'https://github.com/apache/incubator-eventmesh'
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                artifact packageSources
+                artifact packageJavadoc
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
                     }
-
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
+                }
+                pom {
+                    name = 'EventMesh'
+                    description = 'Apache EventMesh'
+                    url = 'https://github.com/apache/incubator-eventmesh'
                     licenses {
                         license {
-                            name 'The Apache License, Version 2.0'
-                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                         }
                     }
-
                     developers {
                         developer {
-                            id 'Apache EventMesh(incubating)'
-                            name 'Apache EventMesh(incubating) of ASF'
-                            url 'https://eventmesh.apache.org/'
+                            id = 'Apache EventMesh(incubating)'
+                            name = 'Apache EventMesh(incubating) of ASF'
+                            url = 'https://eventmesh.apache.org/'
                         }
+                    }
+                    scm {
+                        connection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
+                        developerConnection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
+                        url = 'https://github.com/apache/incubator-eventmesh'
                     }
                 }
             }
         }
+        repositories {
+            maven {
+                def releasesRepoUrl = 'https://repository.apache.org/content/repositories/releases/'
+                def snapshotsRepoUrl = 'https://repository.apache.org/content/repositories/snapshots/'
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    username apacheUserName
+                    password apachePassWord
+                }
+
+            }
+        }
+    }
+
+    signing {
+        sign publishing.publications.mavenJava
     }
 
 }

@@ -17,61 +17,33 @@
 
 package org.apache.eventmesh.client.http;
 
-import java.util.Arrays;
-import java.util.List;
-
-import com.google.common.collect.Lists;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.common.EventMeshException;
+import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
+import org.apache.eventmesh.client.http.util.HttpLoadBalanceUtils;
+import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import java.security.SecureRandom;
 
 public abstract class AbstractLiteClient {
 
     public Logger logger = LoggerFactory.getLogger(AbstractLiteClient.class);
 
-    private static CloseableHttpClient wpcli = HttpClients.createDefault();
+    protected LiteClientConfig liteClientConfig;
 
-    public LiteClientConfig liteClientConfig;
-
-    public static final String REGEX_VALIDATE_FOR_RPOXY_DEFAULT;
-
-    static {
-        REGEX_VALIDATE_FOR_RPOXY_DEFAULT = "^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5};)*(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5})$";
-    }
-
-    public List<String> eventMeshServerList = Lists.newArrayList();
+    protected LoadBalanceSelector<String> eventMeshServerSelector;
 
     public AbstractLiteClient(LiteClientConfig liteClientConfig) {
         this.liteClientConfig = liteClientConfig;
     }
 
     public void start() throws Exception {
-        eventMeshServerList = process(liteClientConfig.getLiteEventMeshAddr());
-        if (eventMeshServerList == null || eventMeshServerList.size() < 1) {
-            throw new EventMeshException("liteEventMeshAddr param illegal,please check");
-        }
-    }
-
-    private List<String> process(String format) {
-        List<String> list = Lists.newArrayList();
-        if (StringUtils.isNotBlank(format) && format.matches(REGEX_VALIDATE_FOR_RPOXY_DEFAULT)) {
-
-            String[] serversArr = StringUtils.split(format, ";");
-            if (ArrayUtils.isNotEmpty(serversArr)) {
-                list.addAll(Arrays.asList(serversArr));
-            }
-
-            return list;
-        }
-
-        logger.error("servers is bad format, servers:{}", format);
-        return null;
+        eventMeshServerSelector = HttpLoadBalanceUtils.createEventMeshServerLoadBalanceSelector(liteClientConfig);
     }
 
     public LiteClientConfig getLiteClientConfig() {
@@ -80,5 +52,23 @@ public abstract class AbstractLiteClient {
 
     public void shutdown() throws Exception {
         logger.info("AbstractLiteClient shutdown");
+    }
+
+    public CloseableHttpClient setHttpClient() throws Exception {
+        if (!liteClientConfig.isUseTls()) {
+            return HttpClients.createDefault();
+        }
+        SSLContext sslContext = null;
+        try {
+            String protocol = System.getProperty("ssl.client.protocol", "TLSv1.2");
+            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
+            sslContext = SSLContext.getInstance(protocol);
+            sslContext.init(null, tm, new SecureRandom());
+            return HttpClients.custom().setSSLContext(sslContext)
+                    .setSSLHostnameVerifier(new DefaultHostnameVerifier()).build();
+        } catch (Exception e) {
+            logger.error("Error in creating HttpClient.", e);
+            throw e;
+        }
     }
 }

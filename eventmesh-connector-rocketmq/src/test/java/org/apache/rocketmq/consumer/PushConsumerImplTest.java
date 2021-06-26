@@ -32,6 +32,8 @@ import io.openmessaging.api.MessagingAccessPoint;
 import io.openmessaging.api.OMS;
 import io.openmessaging.api.OMSBuiltinKeys;
 
+import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
 import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
@@ -95,7 +97,7 @@ public class PushConsumerImplTest {
             public void consume(Message message, AsyncConsumeContext context) {
                 assertThat(message.getSystemProperties("MESSAGE_ID")).isEqualTo("NewMsgId");
                 assertThat(message.getBody()).isEqualTo(testBody);
-                context.commit(Action.CommitMessage);
+                ((EventMeshAsyncConsumeContext)context).commit(EventMeshAction.CommitMessage);
             }
         });
         ((MessageListenerConcurrently) rocketmqPushConsumer

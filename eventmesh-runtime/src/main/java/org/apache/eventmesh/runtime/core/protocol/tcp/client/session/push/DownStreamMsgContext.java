@@ -24,9 +24,12 @@ import java.util.concurrent.TimeUnit;
 
 import io.openmessaging.api.Message;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -50,6 +53,8 @@ public class DownStreamMsgContext implements Delayed {
 
     public int retryTimes;
 
+    public SubscriptionItem subscriptionItem;
+
     private long executeTime;
 
     public long lastPushTime;
@@ -60,7 +65,7 @@ public class DownStreamMsgContext implements Delayed {
 
     public boolean msgFromOtherEventMesh;
 
-    public DownStreamMsgContext(Message msgExt, Session session, MQConsumerWrapper consumer, AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh) {
+    public DownStreamMsgContext(Message msgExt, Session session, MQConsumerWrapper consumer, AbstractContext consumeConcurrentlyContext, boolean msgFromOtherEventMesh, SubscriptionItem subscriptionItem) {
         this.seq = String.valueOf(ServerGlobal.getInstance().getMsgCounter().incrementAndGet());
         this.msgExt = msgExt;
         this.session = session;
@@ -70,7 +75,10 @@ public class DownStreamMsgContext implements Delayed {
         this.lastPushTime = System.currentTimeMillis();
         this.executeTime = System.currentTimeMillis();
         this.createTime = System.currentTimeMillis();
-        this.expireTime = System.currentTimeMillis() + Long.parseLong(msgExt.getUserProperties("TTL"));
+        this.subscriptionItem = subscriptionItem;
+        String ttlStr = msgExt.getUserProperties("TTL");
+        long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
+        this.expireTime = System.currentTimeMillis() + ttl;
         this.msgFromOtherEventMesh = msgFromOtherEventMesh;
     }
 
@@ -85,10 +93,10 @@ public class DownStreamMsgContext implements Delayed {
             consumer.updateOffset(msgs, consumeConcurrentlyContext);
 //            ConsumeMessageService consumeMessageService = consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, consumeConcurrentlyContext);
-            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION),
+            logger.info("ackMsg seq:{}, topic:{}, bizSeq:{}", seq, msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION),
                     msgs.get(0).getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_KEYS));
         } else {
-            logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}", consumer == null, consumeConcurrentlyContext == null, msgExt == null);
+            logger.warn("ackMsg seq:{} failed,consumer is null:{}, context is null:{} , msgs is null:{}", seq, consumer == null, consumeConcurrentlyContext == null, msgExt == null);
         }
     }
 
@@ -100,11 +108,12 @@ public class DownStreamMsgContext implements Delayed {
     public String toString() {
         return "DownStreamMsgContext{" +
                 ",seq=" + seq +
-                ",client=" + session.getClient() +
+                ",client=" + (session == null ? null : session.getClient()) +
                 ",retryTimes=" + retryTimes +
                 ",consumer=" + consumer +
 //  todo              ",consumerGroup=" + consumer.getClass().getConsumerGroup() +
                 ",topic=" + msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION) +
+                ",subscriptionItem=" + subscriptionItem +
                 ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) +
                 ",executeTime=" + DateFormatUtils.format(executeTime, EventMeshConstants.DATE_FORMAT) +
                 ",lastPushTime=" + DateFormatUtils.format(lastPushTime, EventMeshConstants.DATE_FORMAT) + '}';

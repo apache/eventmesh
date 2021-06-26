@@ -15,7 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.consumergroup.event;
+package org.apache.eventmesh.common.loadbalance;
 
-public class ConsumerGroupInstanceChangeEvent {
+/**
+ * LoadBalance Interface
+ *
+ * <p> see {@link RandomLoadBalanceSelector}
+ * <p> see {@link WeightRoundRobinLoadBalanceSelector}
+ *
+ * @param <T> Target type
+ */
+public interface LoadBalanceSelector<T> {
+
+    /**
+     * Select one
+     *
+     * @return target
+     */
+    T select();
+
+    /**
+     * load balance type see {@link LoadBalanceType}
+     *
+     * @return load balance type of the selector
+     */
+    LoadBalanceType getType();
+
 }
