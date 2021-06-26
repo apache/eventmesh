@@ -101,5 +101,15 @@ public class HelloTask extends AbstractTask {
         if (!(StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
             throw new Exception("client purpose config is error");
         }
+
+        if (StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose())
+                && StringUtils.isBlank(user.getProducerGroup())) {
+            throw new Exception("client producerGroup cannot be null");
+        }
+
+        if (StringUtils.equals(EventMeshConstants.PURPOSE_SUB, user.getPurpose())
+                && StringUtils.isBlank(user.getConsumerGroup())) {
+            throw new Exception("client consumerGroup cannot be null");
+        }
     }
 }

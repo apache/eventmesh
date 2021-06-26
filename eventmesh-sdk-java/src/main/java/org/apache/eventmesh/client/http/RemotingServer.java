@@ -258,8 +258,7 @@ public class RemotingServer {
 
                 final LiteConsumeContext eventMeshConsumeContext = new LiteConsumeContext(pushMessageRequestHeader.getEventMeshIp(),
                         pushMessageRequestHeader.getEventMeshEnv(), pushMessageRequestHeader.getEventMeshIdc(),
-                        pushMessageRequestHeader.getEventMeshRegion(),
-                        pushMessageRequestHeader.getEventMeshCluster(), pushMessageRequestHeader.getEventMeshDcn());
+                        pushMessageRequestHeader.getEventMeshCluster());
 
                 final LiteMessage liteMessage = new LiteMessage(pushMessageRequestBody.getBizSeqNo(), pushMessageRequestBody.getUniqueId(),
                         topic, pushMessageRequestBody.getContent());

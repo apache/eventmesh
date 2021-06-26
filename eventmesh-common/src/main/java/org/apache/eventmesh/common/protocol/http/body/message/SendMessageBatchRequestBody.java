@@ -33,12 +33,15 @@ public class SendMessageBatchRequestBody extends Body {
     public static final String BATCHID = "batchId";
     public static final String CONTENTS = "contents";
     public static final String SIZE = "size";
+    public static final String PRODUCERGROUP = "producerGroup";
 
     private String batchId;
 
     private List<BatchMessageEntity> contents;
 
     private String size;
+
+    private String producerGroup;
 
     public SendMessageBatchRequestBody() {
     }
@@ -67,12 +70,21 @@ public class SendMessageBatchRequestBody extends Body {
         this.size = size;
     }
 
+    public String getProducerGroup() {
+        return producerGroup;
+    }
+
+    public void setProducerGroup(String producerGroup) {
+        this.producerGroup = producerGroup;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageBatchRequestBody={")
                 .append("batchId=").append(batchId).append(",")
                 .append("size=").append(size).append(",")
+                .append("producerGroup=").append(producerGroup).append(",")
                 .append("contents=").append(JSON.toJSONString(contents)).append("}");
         return sb.toString();
     }
@@ -111,6 +123,7 @@ public class SendMessageBatchRequestBody extends Body {
             body.setContents(JSONArray.parseArray(contents, BatchMessageEntity.class));
         }
         body.setSize(size);
+        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
         return body;
     }
 
@@ -120,6 +133,7 @@ public class SendMessageBatchRequestBody extends Body {
         map.put(BATCHID, batchId);
         map.put(SIZE, size);
         map.put(CONTENTS, contents);
+        map.put(PRODUCERGROUP, producerGroup);
         return map;
     }
 

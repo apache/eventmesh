@@ -54,7 +54,6 @@ public class EventMeshServer {
 
         String eventstore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
         logger.info("eventstore : {}", eventstore);
-//        logger.info("load custom {} class for eventMesh", ConsumeMessageConcurrentlyService.class.getCanonicalName());
 
         serviceState = ServiceState.INITED;
         logger.info("server state:{}", serviceState);

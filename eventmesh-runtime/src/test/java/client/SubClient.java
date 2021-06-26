@@ -17,7 +17,9 @@
 
 package client;
 
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 import client.hook.ReceiveMsgHook;
@@ -32,13 +34,9 @@ public interface SubClient {
 
     void reconnect() throws Exception;
 
-    Package justSubscribe(String serviceId, String scenario, String dcn) throws Exception;
+    Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
 
-    Package justSubscribe(String topic) throws Exception;
-
-    Package justUnsubscribe(String serviceId, String scenario, String dcn) throws Exception;
-
-    Package justUnsubscribe(String topic) throws Exception;
+    Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
 
     Package listen() throws Exception;
 

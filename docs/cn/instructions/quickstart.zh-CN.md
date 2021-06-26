@@ -10,15 +10,15 @@ Gradle至少为5.6, 推荐 5.6.*
 
 ### 部署eventmesh-store
 
-阅读更多[这里](eventmesh-store-quickstart.md)
+阅读更多[这里](eventmesh-store-quickstart.zh-CN.md)
 
 ### 部署eventmesh-runtime
 
-阅读更多[这里](eventmesh-runtime-quickstart.md)
+阅读更多[这里](eventmesh-runtime-quickstart.zh-CN.md)
 
 ### 运行eventmesh sdk演示
 
-阅读更多[这里](eventmesh-sdk-java-quickstart.md)
+阅读更多[这里](eventmesh-sdk-java-quickstart.zh-CN.md)
 
 ### 通信协议
 

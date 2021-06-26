@@ -30,7 +30,7 @@ EventMesh允许将来自一个应用程序的事件动态路由到任何其他�
 ## 开源地址
 
 * https://github.com/WeBankFinTech/DeFiBus
-* https://github.com/WeBankFinTech/EventMesh
+* https://github.com/apache/incubator-eventmesh
 * https://gitee.com/WeBank/DeFiBus
 * https://gitee.com/WeBank/EventMesh
 

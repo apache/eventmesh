@@ -17,9 +17,22 @@
 
 package org.apache.eventmesh.client.http.conf;
 
+import org.apache.eventmesh.common.loadbalance.LoadBalanceType;
+
 public class LiteClientConfig {
 
+    /**
+     * The event server address list
+     * <p>
+     * If it's a cluster, please use ; to split, and the address format is related to loadBalanceType.
+     * <p>
+     * E.g.
+     * <p>If you use Random strategy, the format like: 127.0.0.1:10105;127.0.0.2:10105
+     * <p>If you use weighted round robin strategy, the format like: 127.0.0.1:10105:1;127.0.0.2:10105:2
+     */
     private String liteEventMeshAddr = "127.0.0.1:10105";
+
+    private LoadBalanceType loadBalanceType = LoadBalanceType.RANDOM;
 
     private int consumeThreadCore = 2;
 
@@ -27,11 +40,11 @@ public class LiteClientConfig {
 
     private String env;
 
-    private String region;
+    private String consumerGroup = "DefaultConsumerGroup";
+
+    private String producerGroup = "DefaultProducerGroup";
 
     private String idc;
-
-    private String dcn;
 
     private String ip = "127.0.0.1";
 
@@ -45,12 +58,21 @@ public class LiteClientConfig {
 
     private boolean useTls = false;
 
-    public int getConsumeThreadMax() {
-        return consumeThreadMax;
+    public String getLiteEventMeshAddr() {
+        return liteEventMeshAddr;
     }
 
-    public LiteClientConfig setConsumeThreadMax(int consumeThreadMax) {
-        this.consumeThreadMax = consumeThreadMax;
+    public LiteClientConfig setLiteEventMeshAddr(String liteEventMeshAddr) {
+        this.liteEventMeshAddr = liteEventMeshAddr;
+        return this;
+    }
+
+    public LoadBalanceType getLoadBalanceType() {
+        return loadBalanceType;
+    }
+
+    public LiteClientConfig setLoadBalanceType(LoadBalanceType loadBalanceType) {
+        this.loadBalanceType = loadBalanceType;
         return this;
     }
 
@@ -63,6 +85,15 @@ public class LiteClientConfig {
         return this;
     }
 
+    public int getConsumeThreadMax() {
+        return consumeThreadMax;
+    }
+
+    public LiteClientConfig setConsumeThreadMax(int consumeThreadMax) {
+        this.consumeThreadMax = consumeThreadMax;
+        return this;
+    }
+
     public String getEnv() {
         return env;
     }
@@ -72,30 +103,12 @@ public class LiteClientConfig {
         return this;
     }
 
-    public String getRegion() {
-        return region;
-    }
-
-    public LiteClientConfig setRegion(String region) {
-        this.region = region;
-        return this;
-    }
-
     public String getIdc() {
         return idc;
     }
 
     public LiteClientConfig setIdc(String idc) {
         this.idc = idc;
-        return this;
-    }
-
-    public String getDcn() {
-        return dcn;
-    }
-
-    public LiteClientConfig setDcn(String dcn) {
-        this.dcn = dcn;
         return this;
     }
 
@@ -144,21 +157,31 @@ public class LiteClientConfig {
         return this;
     }
 
-    public String getLiteEventMeshAddr() {
-        return liteEventMeshAddr;
-    }
-
-    public LiteClientConfig setLiteEventMeshAddr(String liteEventMeshAddr) {
-        this.liteEventMeshAddr = liteEventMeshAddr;
-        return this;
-    }
-
     public boolean isUseTls() {
         return useTls;
     }
 
-    public void setUseTls(boolean useTls) {
+    public LiteClientConfig setUseTls(boolean useTls) {
         this.useTls = useTls;
+        return this;
+    }
+
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public LiteClientConfig setConsumerGroup(String consumerGroup) {
+        this.consumerGroup = consumerGroup;
+        return this;
+    }
+
+    public String getProducerGroup() {
+        return producerGroup;
+    }
+
+    public LiteClientConfig setProducerGroup(String producerGroup) {
+        this.producerGroup = producerGroup;
+        return this;
     }
 
     @Override
@@ -166,12 +189,13 @@ public class LiteClientConfig {
         StringBuilder sb = new StringBuilder();
         sb.append("liteClientConfig={")
                 .append("liteEventMeshAddr=").append(liteEventMeshAddr).append(",")
+                .append("loadBalanceType=").append(loadBalanceType).append(",")
                 .append("consumeThreadCore=").append(consumeThreadCore).append(",")
                 .append("consumeThreadMax=").append(consumeThreadMax).append(",")
                 .append("env=").append(env).append(",")
-                .append("region=").append(region).append(",")
                 .append("idc=").append(idc).append(",")
-                .append("dcn=").append(dcn).append(",")
+                .append("producerGroup=").append(producerGroup).append(",")
+                .append("consumerGroup=").append(consumerGroup).append(",")
                 .append("ip=").append(ip).append(",")
                 .append("pid=").append(pid).append(",")
                 .append("sys=").append(sys).append(",")
