@@ -35,6 +35,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
@@ -88,7 +89,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
         String requestCode = "";
 
-        if (EventMeshUtil.isService(handleMsgContext.getTopic())) {
+        if (SubcriptionType.SYNC.equals(handleMsgContext.getSubscriptionItem().getType())) {
             requestCode = String.valueOf(RequestCode.HTTP_PUSH_CLIENT_SYNC.getRequestCode());
         } else {
             requestCode = String.valueOf(RequestCode.HTTP_PUSH_CLIENT_ASYNC.getRequestCode());
@@ -99,9 +100,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         builder.addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshCluster);
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtil.getLocalAddress());
-        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHDCN, handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshDCN);
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshEnv);
-        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHREGION, handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshRegion);
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshIDC);
 
         handleMsgContext.getMsg().getUserProperties().put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));

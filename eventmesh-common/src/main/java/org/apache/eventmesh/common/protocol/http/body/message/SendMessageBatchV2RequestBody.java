@@ -30,6 +30,7 @@ public class SendMessageBatchV2RequestBody extends Body {
     public static final String MSG = "msg";
     public static final String TAG = "tag";
     public static final String TTL = "ttl";
+    public static final String PRODUCERGROUP = "producerGroup";
 
     private String bizSeqNo;
 
@@ -40,6 +41,8 @@ public class SendMessageBatchV2RequestBody extends Body {
     private String tag;
 
     private String ttl;
+
+    private String producerGroup;
 
     public String getBizSeqNo() {
         return bizSeqNo;
@@ -81,6 +84,14 @@ public class SendMessageBatchV2RequestBody extends Body {
         this.ttl = ttl;
     }
 
+    public String getProducerGroup() {
+        return producerGroup;
+    }
+
+    public void setProducerGroup(String producerGroup) {
+        this.producerGroup = producerGroup;
+    }
+
     public static SendMessageBatchV2RequestBody buildBody(final Map<String, Object> bodyParam) {
         String bizSeqno = MapUtils.getString(bodyParam,
                 BIZSEQNO);
@@ -98,6 +109,7 @@ public class SendMessageBatchV2RequestBody extends Body {
         body.setTag(tag);
         body.setTtl(ttl);
         body.setTopic(topic);
+        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
         return body;
     }
 
@@ -109,6 +121,7 @@ public class SendMessageBatchV2RequestBody extends Body {
         map.put(MSG, msg);
         map.put(TAG, tag);
         map.put(TTL, ttl);
+        map.put(PRODUCERGROUP, producerGroup);
         return map;
     }
 
@@ -120,6 +133,7 @@ public class SendMessageBatchV2RequestBody extends Body {
                 .append("topic=").append(topic).append(",")
                 .append("tag=").append(tag).append(",")
                 .append("ttl=").append(ttl).append(",")
+                .append("producerGroup=").append(producerGroup).append(",")
                 .append("msg=").append(msg).append("}");
         return sb.toString();
     }

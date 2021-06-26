@@ -39,10 +39,11 @@ public class EventMeshTestUtils {
 
     public static UserAgent generateClient1() {
         UserAgent user = new UserAgent();
-        user.setDcn("AC0");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
+        user.setConsumerGroup("EventmeshTest-ConsumerGroup");
+        user.setProducerGroup("EventmeshTest-ProducerGroup");
         user.setPath("/data/app/umg_proxy");
         user.setPort(8362);
         user.setSubsystem("5023");
@@ -54,10 +55,11 @@ public class EventMeshTestUtils {
 
     public static UserAgent generateClient2() {
         UserAgent user = new UserAgent();
-        user.setDcn("FT0");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
+        user.setConsumerGroup("EventmeshTest-ConsumerGroup");
+        user.setProducerGroup("EventmeshTest-ProducerGroup");
         user.setPath("/data/app/umg_proxy");
         user.setPort(9362);
         user.setSubsystem("5017");

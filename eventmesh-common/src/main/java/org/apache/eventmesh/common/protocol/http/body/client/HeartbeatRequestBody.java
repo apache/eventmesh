@@ -31,7 +31,9 @@ public class HeartbeatRequestBody extends Body {
 
     public static final String CLIENTTYPE = "clientType";
     public static final String HEARTBEATENTITIES = "heartbeatEntities";
+    public static final String CONSUMERGROUP = "consumerGroup";
 
+    private String consumerGroup;
 
     private String clientType;
 
@@ -53,9 +55,18 @@ public class HeartbeatRequestBody extends Body {
         this.heartbeatEntities = heartbeatEntities;
     }
 
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public void setConsumerGroup(String consumerGroup) {
+        this.consumerGroup = consumerGroup;
+    }
+
     public static HeartbeatRequestBody buildBody(Map<String, Object> bodyParam) {
         HeartbeatRequestBody body = new HeartbeatRequestBody();
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
+        body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         body.setHeartbeatEntities(JSONArray.parseArray(MapUtils.getString(bodyParam, HEARTBEATENTITIES), HeartbeatEntity.class));
         return body;
     }
@@ -64,6 +75,7 @@ public class HeartbeatRequestBody extends Body {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(CLIENTTYPE, clientType);
+        map.put(CONSUMERGROUP, consumerGroup);
         map.put(HEARTBEATENTITIES, JSON.toJSONString(heartbeatEntities));
         return map;
     }
@@ -90,6 +102,7 @@ public class HeartbeatRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("heartbeatRequestBody={")
+                .append("consumerGroup=").append(consumerGroup).append(",")
                 .append("clientType=").append(clientType).append("}");
         return sb.toString();
     }
