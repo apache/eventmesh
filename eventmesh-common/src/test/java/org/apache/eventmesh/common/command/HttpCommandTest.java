@@ -90,4 +90,10 @@ public class HttpCommandTest {
         DefaultFullHttpResponse response = command.httpResponse();
         Assert.assertEquals("keep-alive", response.headers().get(HttpHeaderNames.CONNECTION));
     }
+
+    @Test
+    public void testHttpResponseWithREQCmdType() throws Exception {
+        DefaultFullHttpResponse response = httpCommand.httpResponse();
+        Assert.assertNull(response);
+    }
 }
