@@ -1,12 +1,18 @@
-[![Build Status](https://www.travis-ci.org/WeBankFinTech/DeFiBus.svg?branch=master)](https://www.travis-ci.org/WeBankFinTech/EventMesh)
-[![Coverage Status](https://coveralls.io/repos/github/WeBankFinTech/DeFiBus/badge.svg?branch=master)](https://coveralls.io/github/WeBankFinTech/EventMesh?branch=master)
-[![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/WeBankFinTech/EventMesh/releases)
+# Apache EventMesh (incubating) 
+[![CI status](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml)
+[![CodeCov](https://codecov.io/gh/apache/incubator-eventmesh/branch/develop/graph/badge.svg)](https://codecov.io/gh/apache/incubator-eventmesh)
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/context:java)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/alerts/)
+[![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/apache/incubator-eventmesh/releases)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 [点我查看中文版](README.zh-CN.md)
 
+![logo](docs/images/logo2.png)
 ## What is EventMesh?
-EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
+EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
+
+![architecture1](docs/images/eventmesh-multi-runtime.png)
 
 **EventMesh Ecosystem:**
 
@@ -20,15 +26,6 @@ EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the 
 
 ![architecture2](docs/images/eventmesh-panels.png)
 
-The EventMesh allows events from one application to be dynamically routed to any other application.
-General functions of the eventmesh:
-
-* Event driven;
-* Event governance;
-* Dynamic routing;
-* Cloud native；
-* Flow control；
-* Load balance
 
 **Support connecting event store:**
 
@@ -37,12 +34,13 @@ General functions of the eventmesh:
 **Components:**
 
 * **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
-* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols, and will support gRPC in the future.
-* **eventmesh-connector-rocketmq** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from RocketMQ Event Store.
+* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols.
+* **eventmesh-connector-api** : an api layer based on OpenMessaging api and SPI pluggin, which can be implemented by popular EventStores such as IMDG, Messaging Engine and OSS etc.
+* **eventmesh-connector-rocketmq** : an implementation of eventmesh-connector-api, pub event to or sub event from RocketMQ as EventStore.
 
 **Protocol:**
 
-The protocol of eventmesh is easier and convenient, you can read more [here](docs/en/instructions/eventmesh-runtime-protocol.md)
+The protocol of eventmesh is easier and more convenient, you can read more [here](docs/en/instructions/eventmesh-runtime-protocol.md)
 
 ## RoadMap
 | version | feature |
@@ -50,34 +48,31 @@ The protocol of eventmesh is easier and convenient, you can read more [here](doc
 | v1.0.0  |Support java-sdk , tcp pub/sub, http pub|
 | v1.1.0  |Support RocketMQ as eventstore|
 | v1.1.1  |Support https|
-| v1.2.0  |Support OpenMessaging API，support Plug-in architecture, support http sub, support cloud native deploy|
-| V1.3.0 |Support CloudEvents protocol，support OpenMessaging Connector|
+| v1.2.0  |Support EventMesh store layer pluggable by OpenMessaging Pub/Sub API, http sub, docker|
+| V1.3.0  |Support CloudEvents, Event Streaming|
+|         |Support Event function,triggers and bindings|
+|         |Support Event orchestration, Servelss workflow|
 |         |Support Event transaction|
-|         |Support Event filter|
-|         |Support Promethus as metrics|
+|         |Support Event schema|
+|         |Support Event governance, dashboard|
+|         |Support Event security|
 |         |Support multi language SDK(c\go\python\wasm)|
-|         |Support Event orchestration|
-|         |Support Event governance|
+|         |Support Promethus as metrics|
 |         |Support Skywalking as tracing|
-|         |Support Spiffe as security|
-|         |Support Event replay|
-|         |Support openmessaging-storage-dledger as default event store|
-|         |Support Dashboard|
-| |Support schema registry|
-| |Support gRPC protocol|
-| |Support MQTT protocol|
-| |Support routing functions with triggers and bindings|
+|         |Support streaming event store|
+|         |Support gRPC protocol|
+|         |Support MQTT protocol|
 
 ## Quick Start
-1. Build and deploy event-store(RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
+1. Build and deploy event-store(default RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
 2. Build and deploy eventmesh-runtime, see instruction ['eventmesh-runtime quickstart'](docs/en/instructions/eventmesh-runtime-quickstart.md).
-3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md). 
+3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
 
 ## Contributing
 Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.
 
-You can start with the issues labeled with good first issue. 
-[GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
+You can start with the issues labeled with good first issue.
+[GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
 
 ## License
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation.
@@ -88,6 +83,7 @@ WeChat group：
 ![wechat_qr](docs/images/mesh-helper.png)
 
 Mailing Lists:
+
 | Name | Description |Subscribe	|Unsubscribe|Archive
 | ----    | ----    |----    | ----    | ----    |
 |Users	|User support and questions mailing list|	[Subscribe](mailto:users-subscribe@eventmesh.incubator.apache.org)	|[Unsubscribe](mailto:users-unsubscribe@eventmesh.incubator.apache.org)	|[Mail Archives](https://lists.apache.org/list.html?users@eventmesh.apache.org)|

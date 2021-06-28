@@ -17,11 +17,12 @@
 
 package demo;
 
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+
 import client.common.MessageUtils;
 import client.common.UserAgentUtils;
 import client.impl.PubClientImpl;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
-import com.webank.eventmesh.common.protocol.tcp.Package;
 
 public class SyncPubClient {
     public static void main(String[] args) throws Exception {
@@ -30,9 +31,9 @@ public class SyncPubClient {
         pubClient.heartbeat();
 
         for (int i = 0; i < 100; i++) {
-            Package rr = pubClient.rr(MessageUtils.rrMesssage("FT0-s-80000000-01-0", i), 3000);
-            if (rr.getBody() instanceof AccessMessage) {
-                String body = ((AccessMessage) rr.getBody()).getBody();
+            Package rr = pubClient.rr(MessageUtils.rrMesssage("TEST-TOPIC-TCP-SYNC", i), 3000);
+            if (rr.getBody() instanceof EventMeshMessage) {
+                String body = ((EventMeshMessage) rr.getBody()).getBody();
                 System.err.println("rrMessage: " + body + "             " + "rr-reply-------------------------------------------------" + rr.toString());
             }
         }

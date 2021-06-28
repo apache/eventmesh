@@ -1,18 +1,21 @@
 #!/bin/sh
-
-
-# Copyright (C) @2017 Webank Group Holding Limited
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-# in compliance with the License. You may obtain a copy of the License at
+# Licensed to Apache Software Foundation (ASF) under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Apache Software Foundation (ASF) licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software distributed under the License
-# is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-# or implied. See the License for the specific language governing permissions and limitations under
-# the License.
-#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 #===========================================================================================
 # Java Environment Setting
@@ -38,18 +41,18 @@ function is_java8 {
 
 function get_pid {
 	local ppid=""
-	if [ -f ${PROXY_HOME}/bin/pid_tcp_sub_broadcast.file ]; then
-		ppid=$(cat ${PROXY_HOME}/bin/pid_tcp_sub_broadcast.file)
+	if [ -f ${EVENTMESH_HOME}/bin/pid_tcp_sub_broadcast.file ]; then
+		ppid=$(cat ${EVENTMESH_HOME}/bin/pid_tcp_sub_broadcast.file)
 	else
 		if [[ $OS =~ Msys ]]; then
 			# 在Msys上存在可能无法kill识别出的进程的BUG
-			ppid=`jps -v | grep -i "com.webank.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
+			ppid=`jps -v | grep -i "org.apache.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
 		elif [[ $OS =~ Darwin ]]; then
 			# 已知问题：grep java 可能无法精确识别java进程
-			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "com.webank.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "org.apache.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
 			#在Linux服务器上要求尽可能精确识别进程
-			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $PROXY_HOME | grep -i "com.webank.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		fi
 	fi
 	echo "$ppid";
@@ -108,7 +111,7 @@ JAVA_OPT="${JAVA_OPT} -Dio.netty.leakDetectionLevel=advanced"
 JAVA_OPT="${JAVA_OPT} -Dio.netty.allocator.type=pooled"
 JAVA_OPT="${JAVA_OPT} -Djava.security.egd=file:/dev/./urandom"
 JAVA_OPT="${JAVA_OPT} -Dlog4j.configurationFile=${DEMO_HOME}/conf/log4j2.xml"
-#JAVA_OPT="${JAVA_OPT} -Dproxy.log.home=${DEMO_LOG_HOME}"
+#JAVA_OPT="${JAVA_OPT} -Deventmesh.log.home=${DEMO_LOG_HOME}"
 JAVA_OPT="${JAVA_OPT} -DconfPath=${DEMO_HOME}/conf"
 JAVA_OPT="${JAVA_OPT} -Dlog4j2.AsyncQueueFullPolicy=Discard"
 JAVA_OPT="${JAVA_OPT} -Drocketmq.client.logUseSlf4j=true"
@@ -124,7 +127,7 @@ make_logs_dir
 echo "using jdk[$JAVA]" >> ${DEMO_LOG_HOME}/demo_tcp_sub_broadcast.out
 
 
-DEMO_MAIN=com.webank.eventmesh.tcp.demo.AsyncSubscribeBroadcast
+DEMO_MAIN=org.apache.eventmesh.tcp.demo.AsyncSubscribeBroadcast
 if [ $DOCKER ]
 then
 	$JAVA $JAVA_OPT -classpath ${DEMO_HOME}/conf:${DEMO_HOME}/apps/*:${DEMO_HOME}/lib/* $DEMO_MAIN >> ${DEMO_LOG_HOME}/demo_tcp_sub_broadcast.out

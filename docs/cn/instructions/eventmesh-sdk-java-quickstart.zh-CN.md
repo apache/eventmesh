@@ -16,40 +16,39 @@ TCP 和 Http 示例都在**eventmesh-test**模块下
 
 <h4>异步消息</h4>
 
-- 创建主题FT0-e-80010000-01-1,可以通过rocketmq-console或者rocketmq tools 命令
+- 创建主题TEST-TOPIC-TCP-ASYNC,可以通过rocketmq-console或者rocketmq tools 命令
 
 - 启动消费者，订阅上一步骤已经创建的Topic
 
 ```
-运行com.webank.eventmesh.tcp.demo.AsyncSubscribe的主要方法
+运行org.apache.eventmesh.tcp.demo.AsyncSubscribe的主要方法
 ```
 
 - 启动发送端，发送消息
 
-
 ```
-运行com.webank.eventmesh.tcp.demo.AsyncPublish的主要方法
+运行org.apache.eventmesh.tcp.demo.AsyncPublish的主要方法
 ```
 
 <h4>广播消息</h4>
 
-- 创建主题FT0-e-80030000-01-3,可以通过rocketmq-console或者rocketmq tools 命令
+- 创建主题TEST-TOPIC-TCP-BROADCAST,可以通过rocketmq-console或者rocketmq tools 命令
 
 - 启动消费端，订阅上一步骤已经创建的Topic
 
 ```
-运行com.webank.eventmesh.tcp.demo.AsyncSubscribeBroadcast的主要方法
+运行org.apache.eventmesh.tcp.demo.AsyncSubscribeBroadcast的主要方法
 ```
 
 - 启动发送端，发送广播消息
 
 ```
-运行com.webank.eventmesh.tcp.demo.AsyncPublishBroadcast的主要方法
+运行org.apache.eventmesh.tcp.demo.AsyncPublishBroadcast的主要方法
 ```
 
 ### 2. HTTP演示
 
->对于http，eventmesh-sdk-java对对于异步事件实现了发送与订阅
+> 对于http，eventmesh-sdk-java对对于异步事件实现了发送与订阅
 >
 >在演示中，Java类`LiteMessage`的`content`字段表示一个特殊的协议，因此，如果您要使用eventmesh-sdk-java的http-client，则只需设计协议的内容并在同一时间提供消费者的应用程序。
 
@@ -57,18 +56,20 @@ TCP 和 Http 示例都在**eventmesh-test**模块下
 
 > 生产者将事件发送给下游即可，无需等待响应
 
+- 创建主题TEST-TOPIC-HTTP-ASYNC,可以通过rocketmq-console或者rocketmq tools 命令
+
 - 启动消费端，订阅Topic
 
   异步事件消费端为spring boot demo，运行demo即可启动服务并完成Topic订阅
 
 ```
-运行com.webank.eventmesh.http.demo.sub.SpringBootDemoApplication的主要方法
+运行org.apache.eventmesh.http.demo.sub.SpringBootDemoApplication的主要方法
 ```
 
 - 启动发送端，发送消息
 
 ```
-运行com.webank.eventmesh.http.demo.AsyncPublishInstance的主要方法
+运行org.apache.eventmesh.http.demo.AsyncPublishInstance的主要方法
 ```
 
 

@@ -7,7 +7,7 @@
 **Protocol Specification**
 
 ```
-Magic Code: 4 bit, defaultValue:WEMQ
+Magic Code: 9 bit, defaultValue:EventMesh
 
 Protocol Version: 4 bit, defaultValue:0000
 
@@ -19,8 +19,6 @@ Message Header: the specific header content of message
 
 Message Body: the specific body content of message 
 ```
-
-
 
 #### 2. Message Object in business logic layer
 
@@ -45,13 +43,11 @@ public class Header {
 }
 ```
 
-
-
 * Specificatiion
 
-Message Header(header): The field of Command in Header, used to distinguishing  different message types.
+Message Header(header): The field of Command in Header, used to distinguishing different message types.
 
-Message Body(body): The message body is defined as different objects according to the message type. 
+Message Body(body): The message body is defined as different objects according to the message type.
 
 | Command                                                   | type of Body     |
 | ------------------------------------------------------------ | ------------ |
@@ -60,8 +56,6 @@ Message Body(body): The message body is defined as different objects according t
 | SUBSCRIBE_REQUEST                                            | Subscription |
 | REQUEST_TO_SERVER, REQUEST_TO_CLIENT, RESPONSE_TO_SERVER, RESPONSE_TO_CLIENT, ASYNC_MESSAGE_TO_SERVER, ASYNC_MESSAGE_TO_CLIENT, BROADCAST_MESSAGE_TO_SERVER, BROADCAST_MESSAGE_TO_CLIENT, ASYNC_MESSAGE_TO_CLIENT_ACK, BROADCAST_MESSAGE_TO_CLIENT_ACK, RESPONSE_TO_CLIENT_ACK, REQUEST_TO_CLIENT_ACK | OpenMessage  |
 | REDIRECT_TO_CLIENT                                           | RedirectInfo |
-
- 
 
 #### 3. The Interactive Command between Client and Server(Eventmesh-Runtime)
 
@@ -117,8 +111,6 @@ public enum Command {
 }
 ```
 
-
-
 #### 4. Client initiates interaction
 
 | Scene          | Client Send | Server Reply    | Remark |
@@ -134,8 +126,6 @@ public enum Command {
 | Send broadcast msg   | BROADCAST_MESSAGE_TO_SERVER  | BROADCAST_MESSAGE_TO_SERVER_ACK |      |
 | Client start disconnect | CLIENT_GOODBYE_REQUEST       | CLIENT_GOODBYE_RESPONSE         |      |
 
-
-
 #### 5. Server initiates interaction
 
 | Scene              | Server Send | Client Reply      | Remark |
@@ -147,30 +137,25 @@ public enum Command {
 | Server start disconnect     | SERVER_GOODBYE_REQUEST       | --                              |      |
 | Server send redirect   | REDIRECT_TO_CLIENT           | --                              |      |
 
-
 #### 6. Message classification
 
 + Send sync msg
 
 ![rr-msg](../../images/protocol/eventmesh-rr-msg.png)
 
-
-
 + Send async msg
 
 ![async-msg](../../images/protocol/eventmesh-async-msg.png)
-
-
 
 + Send broadcast msg
 
 ![broadcast-msg](../../images/protocol/eventmesh-broadcast-msg.png)
 
-
-
 ## HTTP Protocol Document In Eventmesh-Runtime
 
-The class of `LiteMessage.java` is message definition in http protocal of EventMesh-Runtime.If you want to send msg by using http protocol,you can use client in eventmesh-sdk-java, and you just need care the specific protocol in the field of content.
+The class of `LiteMessage.java` is message definition in http protocal of EventMesh-Runtime.If you want to send msg by
+using http protocol,you can use client in eventmesh-sdk-java, and you just need care the specific protocol in the field
+of content.
 
 ```java
 public class LiteMessage {
@@ -189,16 +174,11 @@ public class LiteMessage {
 }
 ```
 
-
-
 #### 1. Message Send and Message Composition
-
 
 **Request Method**: POST
 
 **Message Composition**: RequestHeader + RequestBody
-
-
 
 + Heartbeat Msg
 
@@ -226,8 +206,6 @@ public class LiteMessage {
 | clientType        | Producer:clientType is ClientType.PUB,Consumer:clientType is ClientType.SUB                   |
 | heartbeatEntities | Heartbeat content,contains topic,url... |
 
-
-
 + Subscribe Msg
 
 **RequestHeader**
@@ -241,8 +219,6 @@ same with RequestHeader of heartbeat msg
 | topic | topic of client want to subscribe |
 | url   | url of client, server push msg to the url when receiving msg from other components   |
 
-
-
 + Unsubscribe Msg
 
 **RequestHeader**
@@ -252,8 +228,6 @@ same with RequestHeader of Heartbeat Msg
 **RequestBody**
 
 same with RequestBody of Subscribe Msg
-
-
 
 + Send async msg
 
@@ -271,18 +245,14 @@ same with RequestHeader of Heartbeat Msg
 | bizSeqNo | biz sequence number of msg    |
 | uniqueId | unique mark of msg  |
 
-
-
 #### 2. Client initiates interaction
 
 | Scene         | Client Send | Server Reply           | Remark |
 | ------------ | ---------------------------- | --------------------------------------- | ---- |
-| Heartbeat         | HEARTBEAT(203)               | SUCCESS(0)/PROXY_HEARTBEAT_ERROR(19)    |      |
-| Subscribe         | SUBSCRIBE(206)               | SUCCESS(0)/PROXY_SUBSCRIBE_ERROR(17)    |      |
-| Unsubscribe     | UNSUBSCRIBE(207)             | SUCCESS(0)/PROXY_UNSUBSCRIBE_ERROR(18)  |      |
-| Send async msg | MSG_SEND_ASYNC(104)          | SUCCESS(0)/PROXY_SEND_ASYNC_MSG_ERR(14) |      |
-
-
+| Heartbeat         | HEARTBEAT(203)               | SUCCESS(0)/EVENTMESH_HEARTBEAT_ERROR(19)    |      |
+| Subscribe         | SUBSCRIBE(206)               | SUCCESS(0)/EVENTMESH_SUBSCRIBE_ERROR(17)    |      |
+| Unsubscribe     | UNSUBSCRIBE(207)             | SUCCESS(0)/EVENTMESH_UNSUBSCRIBE_ERROR(18)  |      |
+| Send async msg | MSG_SEND_ASYNC(104)          | SUCCESS(0)/EVENTMESH_SEND_ASYNC_MSG_ERR(14) |      |
 
 #### 3. Server initiates interaction
 

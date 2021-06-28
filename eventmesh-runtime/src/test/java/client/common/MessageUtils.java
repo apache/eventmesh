@@ -17,16 +17,16 @@
 
 package client.common;
 
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
-import com.webank.eventmesh.common.protocol.tcp.Command;
-import com.webank.eventmesh.common.protocol.tcp.Header;
-import com.webank.eventmesh.common.protocol.tcp.Package;
-import com.webank.eventmesh.common.protocol.tcp.Subscription;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.tcp.Subscription;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.tcp.*;
+import org.apache.eventmesh.common.protocol.tcp.Package;
 
 public class MessageUtils {
     public static int seqLength = 10;
@@ -63,10 +63,10 @@ public class MessageUtils {
         return msg;
     }
 
-    public static Package subscribe(String topic) {
+    public static Package subscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) {
         Package msg = new Package();
         msg.setHeader(new Header(Command.SUBSCRIBE_REQUEST, 0, null, generateRandomString(seqLength)));
-        msg.setBody(generateSubscription(topic));
+        msg.setBody(generateSubscription(topic, subscriptionMode, subcriptionType));
         return msg;
     }
 
@@ -76,10 +76,10 @@ public class MessageUtils {
         return msg;
     }
 
-    public static Package unsubscribe(String topic) {
+    public static Package unsubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) {
         Package msg = new Package();
         msg.setHeader(new Header(Command.UNSUBSCRIBE_REQUEST, 0, null, generateRandomString(seqLength)));
-        msg.setBody(generateSubscription(topic));
+        msg.setBody(generateSubscription(topic, subscriptionMode, subcriptionType));
         return msg;
     }
 
@@ -141,7 +141,6 @@ public class MessageUtils {
 
     public static UserAgent generatePubClient() {
         UserAgent user = new UserAgent();
-        user.setDcn("AC0");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
@@ -156,7 +155,6 @@ public class MessageUtils {
 
     public static UserAgent generateSubServer() {
         UserAgent user = new UserAgent();
-        user.setDcn("FT0");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
@@ -170,25 +168,25 @@ public class MessageUtils {
 
     public static Subscription generateSubscription() {
         Subscription subscription = new Subscription();
-        List<String> topicList = new ArrayList<>();
-        topicList.add("FT0-s-80000000-01-0");
-        topicList.add("FT0-s-80000000-02-0");
-        topicList.add("FT0-s-80000000-03-0");
-        topicList.add("FT0-s-80000000-04-0");
-        subscription.setTopicList(topicList);
+        List<SubscriptionItem> subscriptionItems = new ArrayList<>();
+        subscriptionItems.add(new SubscriptionItem("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
+        subscriptionItems.add(new SubscriptionItem("TEST-TOPIC-TCP-SYNC2", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
+        subscriptionItems.add(new SubscriptionItem("TEST-TOPIC-TCP-SYNC3", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
+        subscriptionItems.add(new SubscriptionItem("TEST-TOPIC-TCP-SYNC4", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC));
+        subscription.setTopicList(subscriptionItems);
         return subscription;
     }
 
-    public static Subscription generateSubscription(String topic) {
+    public static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) {
         Subscription subscription = new Subscription();
-        List<String> topicList = new ArrayList<>();
-        topicList.add(topic);
-        subscription.setTopicList(topicList);
+        List<SubscriptionItem> subscriptionItems = new ArrayList<>();
+        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subcriptionType));
+        subscription.setTopicList(subscriptionItems);
         return subscription;
     }
 
-    public static AccessMessage generateRRMsg(String topic, int i) {
-        AccessMessage msg = new AccessMessage();
+    public static EventMeshMessage generateRRMsg(String topic, int i) {
+        EventMeshMessage msg = new EventMeshMessage();
         msg.setTopic(topic);
         msg.getProperties().put("msgType", "persistent");
         msg.getProperties().put("TTL", "300000");
@@ -197,8 +195,8 @@ public class MessageUtils {
         return msg;
     }
 
-    public static AccessMessage generateAsyncEventMsg(String topic, int i) {
-        AccessMessage msg = new AccessMessage();
+    public static EventMeshMessage generateAsyncEventMsg(String topic, int i) {
+        EventMeshMessage msg = new EventMeshMessage();
         msg.setTopic(topic);
         msg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         msg.getProperties().put("TTL", "30000");
@@ -207,8 +205,8 @@ public class MessageUtils {
         return msg;
     }
 
-    public static AccessMessage generateBroadcastMsg(String topic, int i) {
-        AccessMessage msg = new AccessMessage();
+    public static EventMeshMessage generateBroadcastMsg(String topic, int i) {
+        EventMeshMessage msg = new EventMeshMessage();
         msg.setTopic(topic);
         msg.getProperties().put("REPLY_TO", "");
         msg.getProperties().put("TTL", "30000");
