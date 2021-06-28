@@ -17,6 +17,8 @@
 
 import java.util.concurrent.TimeUnit
 
+//import com.github.spotbugs.snom.SpotBugsTask
+
 buildscript {
     repositories {
         maven {
@@ -26,20 +28,39 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
-
     }
 
     dependencies {
-        //classpath("net.sourceforge.pmd:pmd-java:5.4.1")
-        //classpath("com.puppycrawl.tools:checkstyle:6.16.1")
-        classpath("gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.0.7")
-        classpath('com.github.spotbugs:spotbugs:4.0.0')
+        classpath "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.1"
     }
 }
 
 allprojects {
     apply plugin: 'java'
+    apply plugin: "eclipse"
+    apply plugin: "idea"
+    apply plugin: "project-reports"
+    apply plugin: "maven-publish"
+    apply plugin: "com.github.spotbugs"
+    apply plugin: "project-reports"
+    apply plugin: "jacoco"
+    apply plugin: "pmd"
+    apply plugin: "java-library"
+    apply plugin: 'signing'
 
+//    print(project)
+//    if (project.findProperty("jdk") == "1.7") {
+//        sourceCompatibility = 1.7
+//        targetCompatibility = 1.7
+//        version = version + "-jdk7"
+//    } else {
+//        sourceCompatibility = 1.8
+//        targetCompatibility = 1.8
+//        version = version + "-jdk8"
+//    }
+    [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+
+    compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 
     clean.doFirst {
         delete 'build'
@@ -47,26 +68,26 @@ allprojects {
         delete 'out'
     }
 
-    if (project.findProperty("snapshot") instanceof String) {
-        if (project.property("snapshot").toBoolean())
-            version = version + "-SNAPSHOT"
+    if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot")))) {
+        version = version + "-SNAPSHOT"
     }
 }
 
 task tar(type: Tar) {
     extension = 'tar.gz'
     compression = Compression.GZIP
-    archiveName = project.name + '_' + project.version + '.' + extension
-    destinationDir = new File(projectDir, 'build')
+    archiveFileName = project.name + '_' + project.version + '.' + extension
+    destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
     }
 }
 
+
 task zip(type: Zip) {
     extension = 'zip'
-    archiveName = project.name + '.' + project.version + '.' + extension
-    destinationDir = new File(projectDir, 'build')
+    archiveFileName = project.name + '.' + project.version + '.' + extension
+    destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
     }
@@ -74,33 +95,95 @@ task zip(type: Zip) {
 
 subprojects {
 
+    List fastjson = [
+            "com.alibaba:fastjson:1.2.71"
+    ]
 
-    apply plugin: "maven"
-    apply plugin: "eclipse"
-    apply plugin: "idea"
-    apply plugin: "project-reports"
-    apply plugin: "jacoco"
-//    apply plugin: "checkstyle"
-    apply plugin: "pmd"
-    apply plugin: 'com.github.spotbugs'
+    List jackson = [
+            'com.fasterxml.jackson.core:jackson-databind:2.11.0',
+            'com.fasterxml.jackson.core:jackson-core:2.11.0',
+            'com.fasterxml.jackson.core:jackson-annotations:2.11.0'
+    ]
 
-    [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+    List apache_commons = [
+            "org.apache.commons:commons-lang3:3.6",
+            "org.apache.commons:commons-collections4:4.1"
+    ]
 
-    compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    List httpclient = [
+            "org.apache.httpcomponents:httpclient:4.5.2"
+    ]
+
+    List guava = [
+            "com.google.guava:guava:29.0-jre"
+    ]
+
+    List netty = [
+            "io.netty:netty-all:4.1.49.Final"
+    ]
+
+    List junit = [
+            "junit:junit:4.12"
+    ]
+
+    List log = [
+            "org.slf4j:slf4j-api:1.7.30"
+    ]
+
+    List log4j2 = [
+            "org.apache.logging.log4j:log4j-api:2.13.3",
+            "org.apache.logging.log4j:log4j-core:2.13.3",
+            "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
+            "org.apache.logging.log4j:log4j-web:2.13.3",
+            "com.lmax:disruptor:3.4.2"
+    ]
+
+    List common = [
+            "commons-io:commons-io:2.4",
+            "org.apache.commons:commons-text:1.9"
+    ]
+
+    List assertj = [
+            "org.assertj:assertj-core:2.6.0"
+    ]
+
+    List mock = [
+            "org.mockito:mockito-core:2.23.0",
+            "org.powermock:powermock-module-junit4:2.0.2",
+            "org.powermock:powermock-api-mockito2:2.0.2",
+    ]
+
+    dependencies {
+        implementation apache_commons, guava, log, log4j2, fastjson, jackson, common, httpclient, netty
+        testImplementation apache_commons, guava, log, log4j2, fastjson, jackson, common, junit, assertj, mock, httpclient, netty
+        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
+        spotbugsPlugins 'com.mebigfatguy.fb-contrib:fb-contrib:7.4.7'
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java']
+        }
+
+        test {
+            java.srcDirs = ['src/test/java']
+        }
+    }
+
+    clean.doFirst {
+        delete 'build'
+        delete 'dist'
+    }
 
     jacoco {
-        toolVersion = "0.8.5"
-        reportsDir = file("$buildDir/reports/jacoco")
+        toolVersion = "0.8.6"
     }
 
     jacocoTestReport {
-//        sourceSets sourceSets.main
-//        executionData files("$buildDir/jacoco/jacocoTest.exec")
-
         reports {
-            xml.enabled false
+            xml.enabled true
             csv.enabled false
-            html.destination file("${buildDir}/reports/jacoco")
+            html.enabled false
         }
     }
 
@@ -118,97 +201,89 @@ subprojects {
 //            html.enabled true
 //        }
 //    }
-
-    spotbugs {
-        toolVersion = '4.0.2'
-        ignoreFailures = true
-        effort = "default"
-        reportLevel = "default"
-        showProgress = true
-    }
-
-//    tasks.withType(com.github.spotbugs.SpotBugsTask) {
-//        sourceDirs = [sourceSets.main]
-//        reports {
-//            xml.enabled = false
-//            html.enabled = true
+//
+//    sourceSets {
+//        main {
+//            java {
+//                srcDir 'src/main/java'
+//            }
+//
+//            resources {
+//                srcDir 'src/main/resources'
+//            }
+//
+//        }
+//
+//        test {
+//            java {
+//                srcDir 'src/test/java'
+//            }
+//
+//            resources {
+//                srcDir 'src/test/resources'
+//            }
+//
 //        }
 //    }
+
+    spotbugs {
+        //toolVersion = '4.2.3'
+        ignoreFailures = true
+        showProgress = true
+        showStackTraces = true
+        //reportLevel = 'default'
+        effort = 'default'
+        //visitors = [ 'FindSqlInjection', 'SwitchFallthrough' ]
+        //omitVisitors = [ 'FindNonShortCircuit' ]
+        reportsDir = file("$buildDir/reports/spotbugs")
+        //includeFilter = file('spotbugs-include.xml')
+        //excludeFilter = file('spotbugs-exclude.xml')
+        //onlyAnalyze = ['org/apache/eventmesh/**']
+        projectName = rootProject.name
+        release = version
+        extraArgs = ['-nested:false']
+        //jvmArgs = [ '-Duser.language=zh' ]
+        maxHeapSize = '256m'
+
+    }
+
     spotbugsMain {
+
         reports {
             xml.enabled = false
-            html.enabled = true
+            html {
+                enabled = true
+                destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+                stylesheet = 'fancy-hist.xsl'
+            }
         }
     }
 
     spotbugsTest {
         reports {
             xml.enabled = false
-            html.enabled = true
+            html {
+                enabled = true
+                destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
+                stylesheet = 'fancy-hist.xsl'
+            }
         }
     }
 
-    tasks.withType(Pmd) {
-        reports {
-            xml.enabled = false
-            html.enabled = true
-        }
-    }
+//        tasks.withType(Pmd) {
+//            reports {
+//                xml.enabled = false
+//                html.enabled = true
+//            }
+//        }
 
 
     pmd {
         consoleOutput = true
         toolVersion = "6.23.0"
-        rulePriority = 5
+        rulesMinimumPriority = 5
         ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
         ignoreFailures = true
-    }
-
-
-
-    List junit = [
-            "junit:junit:4.12"
-    ]
-
-    List apache_commons = [
-            "org.apache.commons:commons-collections4:4.1",
-            "commons-beanutils:commons-beanutils:1.9.3",
-            "org.apache.commons:commons-lang3:3.6",
-            "commons-codec:commons-codec:1.10"
-
-    ]
-
-    List log = [
-            "org.slf4j:slf4j-api:1.7.30"
-    ]
-
-    List guava = [
-            "com.google.guava:guava:29.0-jre"
-    ]
-
-    List fastjson = [
-            "com.alibaba:fastjson:1.2.71"
-    ]
-
-    List common_io = [
-            "commons-io:commons-io:2.4"
-    ]
-
-    List assertj = [
-            "org.assertj:assertj-core:2.6.0"
-    ]
-
-    List mock = [
-//        "org.mockito:mockito-core:1.10.19",
-"org.mockito:mockito-core:2.23.0",
-"org.powermock:powermock-module-junit4:2.0.2",
-"org.powermock:powermock-api-mockito2:2.0.2",
-    ]
-
-    dependencies {
-        compile apache_commons, guava, log, fastjson, common_io
-        testCompile apache_commons, guava, log, fastjson, common_io, junit, assertj, mock
-        runtime apache_commons, guava, log, fastjson, common_io
     }
 
     jar {
@@ -244,7 +319,7 @@ subprojects {
             }
             copy {
                 into '../dist/lib'
-                from project.configurations.runtime
+                from project.configurations.runtimeClasspath
                 exclude '**/*.properties*'
                 exclude '**/*testng*.jar'
                 exclude '**/*powermock*.jar'
@@ -274,7 +349,7 @@ subprojects {
 
     javadoc {
         source = sourceSets.main.java
-        classpath = configurations.compile
+        //classpath = configurations.implementation
         destinationDir = reporting.file("javadoc")
     }
 
@@ -294,14 +369,81 @@ subprojects {
         archives packageSources
     }
 
+    if (!Boolean.valueOf(signEnabled)) {
+        tasks.whenTaskAdded {task ->
+            if(task.name.contains("sign")) {
+                task.enabled = false
+            }
+        }
+    }
+
     repositories {
         maven { url "https://maven.aliyun.com/repository/public" }
         mavenCentral()
+        mavenLocal()
     }
+
 
     configurations.all {
         resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
         resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                artifact packageSources
+                artifact packageJavadoc
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
+                    }
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
+                }
+                pom {
+                    name = 'EventMesh'
+                    description = 'Apache EventMesh'
+                    url = 'https://github.com/apache/incubator-eventmesh'
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'Apache EventMesh(incubating)'
+                            name = 'Apache EventMesh(incubating) of ASF'
+                            url = 'https://eventmesh.apache.org/'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
+                        developerConnection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
+                        url = 'https://github.com/apache/incubator-eventmesh'
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                def releasesRepoUrl = 'https://repository.apache.org/content/repositories/releases/'
+                def snapshotsRepoUrl = 'https://repository.apache.org/content/repositories/snapshots/'
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    username apacheUserName
+                    password apachePassWord
+                }
+
+            }
+        }
+    }
+
+    signing {
+        sign publishing.publications.mavenJava
     }
 
 }

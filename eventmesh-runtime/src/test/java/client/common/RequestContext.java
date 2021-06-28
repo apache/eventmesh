@@ -17,11 +17,11 @@
 
 package client.common;
 
-import com.webank.eventmesh.common.protocol.tcp.Package;
+import java.util.concurrent.CountDownLatch;
+
+import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.CountDownLatch;
 
 public class RequestContext {
 

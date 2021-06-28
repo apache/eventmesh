@@ -17,31 +17,32 @@
 
 package client.common;
 
-import com.webank.eventmesh.runtime.constants.ProxyConstants;
-import com.webank.eventmesh.common.protocol.tcp.AccessMessage;
-import com.webank.eventmesh.common.protocol.tcp.Command;
-import com.webank.eventmesh.common.protocol.tcp.Header;
-import com.webank.eventmesh.common.protocol.tcp.Package;
-import com.webank.eventmesh.common.protocol.tcp.RedirectInfo;
-import com.webank.eventmesh.common.protocol.tcp.Subscription;
-import com.webank.eventmesh.common.protocol.tcp.UserAgent;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
+
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
+import org.apache.eventmesh.common.protocol.tcp.Subscription;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.List;
 
 public class Codec {
 
     private final static Logger logger = LoggerFactory.getLogger(Codec.class);
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
-    private static Charset UTF8 = Charset.forName(ProxyConstants.DEFAULT_CHARSET);
-    private static final byte[] CONSTANT_MAGIC_FLAG = "WEMQ".getBytes(UTF8);
+    private static Charset UTF8 = Charset.forName(EventMeshConstants.DEFAULT_CHARSET);
+    private static final byte[] CONSTANT_MAGIC_FLAG = "EventMesh".getBytes(UTF8);
     private static final byte[] VERSION = "0000".getBytes(UTF8);
 
     public static class Encoder extends MessageToByteEncoder<Package> {
@@ -143,7 +144,7 @@ public class Codec {
                 Command.BROADCAST_MESSAGE_TO_SERVER || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT || cmd ==
                 Command.BROADCAST_MESSAGE_TO_CLIENT_ACK || cmd == Command.ASYNC_MESSAGE_TO_CLIENT_ACK || cmd == Command.REQUEST_TO_CLIENT_ACK
                 || cmd == Command.RESPONSE_TO_CLIENT_ACK) {
-            return ClientGlobal.jsonMapper.readValue(data, AccessMessage.class);
+            return ClientGlobal.jsonMapper.readValue(data, EventMeshMessage.class);
         } else if (cmd == (Command.REDIRECT_TO_CLIENT)) {
             return ClientGlobal.jsonMapper.readValue(data, RedirectInfo.class);
         } else {
