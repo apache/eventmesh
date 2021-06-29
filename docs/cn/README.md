@@ -1,41 +1,50 @@
-[![Build Status](https://www.travis-ci.org/WeBankFinTech/DeFiBus.svg?branch=master)](https://www.travis-ci.org/WeBankFinTech/EventMesh)
-[![Coverage Status](https://coveralls.io/repos/github/WeBankFinTech/DeFiBus/badge.svg?branch=master)](https://coveralls.io/github/WeBankFinTech/EventMesh?branch=master)
-[![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/WeBankFinTech/EventMesh/releases)
+# Apache EventMesh (Incubating)
+[![CI status](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml)
+[![CodeCov](https://codecov.io/gh/apache/incubator-eventmesh/branch/develop/graph/badge.svg)](https://codecov.io/gh/apache/incubator-eventmesh)
+[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/context:java)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/alerts/)
+[![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/apache/incubator-eventmesh/releases)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## 什么是Event Mesh？
-该图显示了Event Mesh相对于应用程序框架中其他类似技术(例如Service Mesh)的定位.
-![architecture1](/images/eventmesh-define.png)
 
-Event Mesh是一个动态的插件式云原生基础服务层，用于分离应用程序和中间件层。它提供了灵活，可靠和快速的事件分发，并且可以进行管理：
-![architecture1](/images/eventmesher.png)
+EventMesh是一个动态的云原生事件驱动架构基础设施，用于分离应用程序和后端中间件层，它支持广泛的用例，包括复杂的混合云、使用了不同技术栈的分布式架构。
 
-云原生Event Mesh：
-![architecture2](/images/bus.png)
+![architecture1](../images/eventmesh-define.png)
 
-Event Mesh允许将来自一个应用程序的事件动态路由到任何其他应用程序.
-Event Mesh的一般功能:
+**EventMesh架构：**
+
+![architecture1](../images/eventmesh-runtime.png)
+
+**EventMesh云原生结构：**
+
+![architecture2](../images/eventmesh-panels.png)
+
+Event Mesh允许将来自一个应用程序的事件动态路由到任何其他应用程序. Event Mesh的一般功能:
+
 * 事件驱动;
 * 事件治理;
 * 动态路由;
 * 云原生
 
 依赖部件：
-* DeFiBus：具有低延迟，高性能和可靠性，和灵活可伸缩性的分布式消息传递平台 [DeFiBus](https://github.com/WeBankFinTech/DeFiBus)
-* RocketMQ
+
+* [RocketMQ](https://github.com/apache/rocketmq)：RocketMQ是一个分布式消息流平台，具有低延迟、高性能和可靠性、万亿级容量和灵活的可伸缩性。
 
 关键部件：
-* eventmesh-emesher：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
+
+* eventmesh-runtime：一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务
 * eventmesh-sdk-java：当前支持HTTP和TCP协议，未来会支持gRPC等
-* eventmesh-registry：自动在连接到单独事件网格器的应用程序和服务之间路由事件, 管理emesher
 
 ## RoadMap
+
 | version | feature |
 | ----    | ----    |
-| v1.0.0  |Support DeFiBus as eventstore, support pub/sub, http api, java-sdk|
+| v1.0.0  |Support pub/sub, http api, java-sdk|
 | v1.1.0  |Support rocketmq as eventstore|
-| v1.2.0  |Support transaction event|
-| v1.3.0  |Support Plug-in architectur|
+| v1.2.0  |Support Plug-in architecture, support http sub|
+| V1.3.0 |Support CloudEvents protocol|
+|   |Support transaction event|
 |         |Support Event Sourcing|
 |         |Support Event orchestration|
 |         |Support Dashboard|
@@ -45,24 +54,27 @@ Event Mesh的一般功能:
 |         |Support Skywalking|
 |         |Support Spiffe|
 |         |Support gRPC|
-|         |Support c/go/python/nodejs SDK|
+|         |Support c/go/python/NodeJs/wasm SDK|
 
 ## 快速开始
-1. 构建并部署event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus))
-   请参见说明['event-store quickstart'](instructions/eventmesh-store-quickstart.md)
-2. 构建并部署eventmesh-emesher，请参见说明['eventmesh-emesher quickstart'](   instructions/eventmesh-emesher-quickstart.md)
-3. 运行eventmesh-sdk-java演示，请参见说明['eventmesh-sdk-java quickstart'](instructions/eventmesh-sdk-java-quickstart.md)
+
+1. 构建并部署event-store(RocketMQ), 请参见[说明](https://rocketmq.apache.org/docs/quick-start/)
+2. 构建并部署eventmesh-runtime，请参见说明['eventmesh-runtime quickstart'](instructions/eventmesh-runtime-quickstart.zh-CN.md)
+3. 运行eventmesh-sdk-java演示，请参见说明['eventmesh-sdk-java quickstart'](instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
 
 ## 贡献
-永远欢迎参与共建, 请参阅[贡献](CONTRIBUTING.md)了解详细指南
 
-您可以从问题开始. 
-[GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
+永远欢迎参与共建, 请参阅[贡献](../../CONTRIBUTING.zh-CN.md)了解详细指南
+
+您可以从问题开始.
+[GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
 
 ## License
+
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation
 
 ## 联系人
+
 微信群:
 
-![wechat_qr](/images/mesh-helper.png)
+![wechat_qr](../images/mesh-helper.png)

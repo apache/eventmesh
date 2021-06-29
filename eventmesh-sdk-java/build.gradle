@@ -15,84 +15,34 @@
  * limitations under the License.
  */
 
-apply plugin: 'java'
-apply plugin: "maven"
-apply plugin: "eclipse"
-apply plugin: "idea"
 
-if (project.findProperty("jdk") == "1.7") {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
-} else {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-    version = version + "-jdk8"
-}
+//plugins {
+//    id 'org.springframework.boot' version '2.1.6.RELEASE'
+//}
 
-if (project.findProperty("snapshot") instanceof String) {
-    if (project.property("snapshot").toBoolean()) version = version + "-SNAPSHOT"
-}
 
-repositories {
-    mavenLocal()
-    maven {
-        url "https://maven.aliyun.com/repository/public"
-    }
-    mavenCentral()
-}
+//ext['commons-pool2.version'] = '2.6.1'
 
-List log4j2 = [
-        "org.apache.logging.log4j:log4j-api:2.13.3",
-        "org.apache.logging.log4j:log4j-core:2.13.3",
-        "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
-        "org.apache.logging.log4j:log4j-web:2.13.3",
-        "com.lmax:disruptor:3.4.2"
-]
-
-List sl4j = [
-        "org.slf4j:slf4j-api:1.7.30"
-]
 
 dependencies {
-    compile log4j2, sl4j
-    testCompile log4j2, sl4j
-    compile project(":eventmesh-common")
-    testCompile project(":eventmesh-common")
+    //implementation log4j2, sl4j,httpclient,netty
+    // log4j2, sl4j,httpclient,netty
+    implementation project(":eventmesh-common")
+    testImplementation project(":eventmesh-common")
+
+//    //Spring依赖的第三方模块(2.1.6依赖的是3.8.1)
+//    compile("org.apache.commons:commons-lang3")
+//    //Spring依赖的第三方模块(2.1.6依赖的是2.6.2)指定依赖版本为2.6.1
+//    compile('org.apache.commons:commons-pool2')
+//    //未被依赖的库需要手动：我司开源的 轻代码开发框架核心包，文末源码链接
+//    compile('com.diboot:diboot-core:2.0.0')
+
+//    implementation('org.springframework.boot:spring-boot-starter-web') {
+//        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+//    }
+//
+//    implementation('org.springframework.boot:spring-boot-starter') {
+//        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+//    }
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-//            snapshotRepository(url: 'Your target repo address') {
-//                authentication(userName: 'Your user name', password: 'Your password')
-//            }
-//            repository(url: 'Your target repo address') {
-//                authentication(userName: 'Your user name', password: 'Your password')
-//            }
-        }
-    }
-}
-
-task zip(type: Zip, dependsOn: ['clean', 'jar']) {
-    extension = 'zip'
-    archiveName = project.name + '_' + version + '.' + extension
-    destinationDir = new File(projectDir, 'dist')
-
-    into("/") {
-        from project.jar.getArchivePath()
-    }
-}
-
-task tar(type: Tar, dependsOn: ['clean', 'jar']) {
-    extension = 'tar.gz'
-    compression = Compression.GZIP
-    archiveName = project.name + '_' + version + '.' + extension
-    destinationDir = new File(projectDir, 'dist')
-    into("/") {
-        from project.jar.getArchivePath()
-    }
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-}

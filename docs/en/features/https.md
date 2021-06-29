@@ -1,8 +1,8 @@
-1.config in eventmesh-emesher
+1.config in eventmesh-runtime
 
 ```
-proxy.properties(add config as follows)
-proxy.server.useTls.enabled=true   //default value is false
+eventMesh.properties(add config as follows)
+eventMesh.server.useTls.enabled=true   //default value is false
 
 
 config env varible
@@ -12,8 +12,8 @@ config env varible
 
 ```
 
+2.config in eventmesh-sdk-java
 
-2.config in eventmesh-sdk-java 
 ```
 // create producer
 LiteClientConfig liteClientConfig = new liteClientConfig();

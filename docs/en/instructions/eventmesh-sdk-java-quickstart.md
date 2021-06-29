@@ -1,119 +1,76 @@
 ## How to run eventmesh-sdk-java demo
 
-> Eventmesh-sdk-java , as the client, communicated with eventmesh-emesher, used to complete the sending and receiving of message.  
+> Eventmesh-sdk-java , as the client, communicated with eventmesh-runtime, used to complete the sending and receiving of message.
 >
-> Eventmesh-sdk-java supports sync msg, async msg and broadcast msg. Sync msg means the producer sends msg which need the consumer supplies the response msg, Async msg means the producer just sends msg and does not care reply msg.Broadcast msg means the producer send msg once and all the consumer subscribed the broadcast topic will receive the msg. 
+> Eventmesh-sdk-java supports async msg and broadcast msg. Async msg means the producer just sends msg and does not care reply msg.Broadcast msg means the producer send msg once and all the consumer subscribed the broadcast topic will receive the msg.
 >
-> Eventmesh-sdk-java supports  the protocol  of HTTP and TCP.  
+> Eventmesh-sdk-java supports  the protocol  of HTTP and TCP.
 
+TCP demos and Http demos are both under the **eventmesh-test** module.
 
-###  1. TCP DEMO
+**prerequisite**：after download the source code you should copy `/conf/application.properties` and `/conf/log4j2.xml` to
+the `resources` directory
 
-#### Sync msg 
+![image-test-structure](../../images/eventmesh-test-structure.png)
 
-- create topic
+### 1. TCP DEMO
 
-```
-sh runadmin.sh updateTopic  -c ${ClusterName} -t ${topic} -n ${namesrvAddr}
-```
+#### Async msg
 
+- create topic TEST-TOPIC-TCP-ASYNC on rocketmq-console
 
-
-* start consumer ,subscribe topic in previous step. 
-
-```
-Run the main method of SyncResponse
-```
-
-
-
-* start producer, send message
+- start consumer ,subscribe topic in previous step.
 
 ```
-Run the main method of SyncRequest
+Run the main method of org.apache.eventmesh.tcp.demo.AsyncSubscribe
 ```
 
-
-
-#### Async msg 
-
-- create topic
+- start producer, send message
 
 ```
-sh runadmin.sh updateTopic  -c ${ClusterName} -t ${topic} -n ${namesrvAddr}
+Run the main method of org.apache.eventmesh.tcp.demo.AsyncPublish
 ```
 
+#### Broadcast msg
 
+- create topic TEST-TOPIC-TCP-BROADCAST on rocketmq-console
 
-- start consumer ,subscribe topic in previous step. 
-
-```
-Run the main method of AsyncSubscribe
-```
-
-
-
-start producer, send  message
+- start consumer ,subscribe topic in previous step.
 
 ```
-Run the main method of AsyncPublish
+Run the main method of org.apache.eventmesh.tcp.demo.AsyncSubscribeBroadcast
 ```
-
-
-
-#### Broadcast msg 
-
-- create topic
-
-```
-sh runadmin.sh updateTopic  -c ${ClusterName} -t ${topic} -n ${namesrvAddr}
-```
-
-
-
-- start consumer ,subscribe topic in previous step. 
-
-```
-Run the main method of AsyncSubscribeBroadcast
-```
-
-
 
 * start producer, send broadcast message
 
 ```
-Run the main method of AsyncPublishBroadcast
+Run the main method of org.apache.eventmesh.tcp.demo.AsyncPublishBroadcast
 ```
 
 ### 2. HTTP DEMO
 
-> As to http, eventmesh-sdk-java just implements  the sending of msg. And it already  supports sync msg and async msg.
+> As to http, eventmesh-sdk-java implements  the pub and sub for async event .
 >
 > In the demo ,the field of `content` of the java class `LiteMessage` represents a special protocal, so if you want to use http-client of eventmesh-sdk-java, you just need to design the content of protocal and supply the consumer appliacation at the same time.
 
+#### Async event
 
+> producer send the event to consumer and don't need waiting response msg from consumer
 
-#### Sync msg
+- create topic TEST-TOPIC-HTTP-ASYNC on rocketmq-console
 
-> send msg ,producer need waiting until receive the response msg of consumer
+- start consumer, subscribe topic
 
-```
-Run the main method of SyncRequestInstance
-```
-
-
-
-> send msg,producer handles the reponse msg in callback
+  Async consumer demo is a spring boot application demo, you can easily run this demo to start service and subscribe the
+  topic.
 
 ```
-Run the main method of com.webank.eventmesh.client.http.demo.AsyncSyncRequestInstance
+Run the main method of org.apache.eventmesh.http.demo.sub.SpringBootDemoApplication
 ```
 
-
-
-#### Async msg
+- start producer, produce msg
 
 ```
-Run the main method of AsyncPublishInstance
+Run the main method of org.apache.eventmesh.http.demo.AsyncPublishInstance
 ```
 
