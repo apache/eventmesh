@@ -29,12 +29,12 @@ import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class ReplyMessageRequestBody extends Body {
 
-
     public static final String ORIGTOPIC = "origTopic";
     public static final String BIZSEQNO = "bizSeqNo";
     public static final String UNIQUEID = "uniqueId";
     public static final String CONTENT = "content";
     public static final String EXTFIELDS = "extFields";
+    public static final String PRODUCERGROUP = "producerGroup";
 
     private String bizSeqNo;
 
@@ -45,6 +45,8 @@ public class ReplyMessageRequestBody extends Body {
     private String origTopic;
 
     private HashMap<String, String> extFields;
+
+    private String producerGroup;
 
     public String getOrigTopic() {
         return origTopic;
@@ -86,6 +88,14 @@ public class ReplyMessageRequestBody extends Body {
         this.extFields = extFields;
     }
 
+    public String getProducerGroup() {
+        return producerGroup;
+    }
+
+    public void setProducerGroup(String producerGroup) {
+        this.producerGroup = producerGroup;
+    }
+
     @SuppressWarnings("unchecked")
     public static ReplyMessageRequestBody buildBody(Map<String, Object> bodyParam) {
         ReplyMessageRequestBody body = new ReplyMessageRequestBody();
@@ -97,6 +107,7 @@ public class ReplyMessageRequestBody extends Body {
         if (StringUtils.isNotBlank(extFields)) {
             body.setExtFields((HashMap<String, String>) JSONObject.parseObject(extFields, HashMap.class));
         }
+        body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
         return body;
     }
 
@@ -108,6 +119,7 @@ public class ReplyMessageRequestBody extends Body {
                 .append("uniqueId=").append(uniqueId).append(",")
                 .append("origTopic=").append(origTopic).append(",")
                 .append("content=").append(content).append(",")
+                .append("producerGroup=").append(producerGroup).append(",")
                 .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }
@@ -120,6 +132,7 @@ public class ReplyMessageRequestBody extends Body {
         map.put(UNIQUEID, uniqueId);
         map.put(CONTENT, content);
         map.put(EXTFIELDS, JSON.toJSONString(extFields));
+        map.put(PRODUCERGROUP, producerGroup);
         return map;
     }
 }

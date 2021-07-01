@@ -61,13 +61,8 @@ public class LiteProducer extends AbstractLiteClient {
 
     public Logger logger = LoggerFactory.getLogger(LiteProducer.class);
 
-    private static CloseableHttpClient httpClient = HttpClients.createDefault();
-
     public LiteProducer(LiteClientConfig liteClientConfig) {
         super(liteClientConfig);
-        if (liteClientConfig.isUseTls()) {
-            setHttpClient();
-        }
     }
 
     private AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
@@ -92,7 +87,6 @@ public class LiteProducer extends AbstractLiteClient {
         }
         logger.info("LiteProducer shutting down");
         super.shutdown();
-        httpClient.close();
         started.compareAndSet(true, false);
         logger.info("LiteProducer shutdown");
     }
@@ -112,9 +106,7 @@ public class LiteProducer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, liteClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, liteClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
                 .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
                 .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
@@ -123,6 +115,7 @@ public class LiteProducer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
+                .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
                 .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
                 .addBody(SendMessageRequestBody.CONTENT, message.getContent())
                 .addBody(SendMessageRequestBody.TTL, message.getPropKey(Constants.EVENTMESH_MESSAGE_CONST_TTL))
@@ -132,10 +125,9 @@ public class LiteProducer extends AbstractLiteClient {
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String res = "";
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()) {
             res = HttpUtil.post(httpClient, target, requestParam);
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
         }
 
         if (logger.isDebugEnabled()) {
@@ -171,9 +163,7 @@ public class LiteProducer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, liteClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, liteClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
                 .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
                 .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
@@ -182,6 +172,7 @@ public class LiteProducer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(timeout)
+                .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
                 .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
                 .addBody(SendMessageRequestBody.CONTENT, message.getContent())
                 .addBody(SendMessageRequestBody.TTL, String.valueOf(timeout))
@@ -191,10 +182,9 @@ public class LiteProducer extends AbstractLiteClient {
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String res = "";
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()) {
             res = HttpUtil.post(httpClient, target, requestParam);
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
         }
 
         if (logger.isDebugEnabled()) {
@@ -227,9 +217,7 @@ public class LiteProducer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, liteClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, liteClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
                 .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
                 .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
@@ -238,6 +226,7 @@ public class LiteProducer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(timeout)
+                .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
                 .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
                 .addBody(SendMessageRequestBody.CONTENT, message.getContent())
                 .addBody(SendMessageRequestBody.TTL, String.valueOf(timeout))
@@ -246,32 +235,13 @@ public class LiteProducer extends AbstractLiteClient {
 
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()) {
             HttpUtil.post(httpClient, null, target, requestParam, new RRCallbackResponseHandlerAdapter(message, rrCallback, timeout));
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
         }
 
         if (logger.isDebugEnabled()) {
             logger.debug("publish sync message by async, target:{}, cost:{}, message:{}", target, System.currentTimeMillis() - startTime, message);
-        }
-    }
-
-    public static void setHttpClient() {
-        SSLContext sslContext = null;
-        try {
-            String protocol = System.getProperty("ssl.client.protocol", "TLSv1.1");
-            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
-            sslContext = SSLContext.getInstance(protocol);
-            sslContext.init(null, tm, new SecureRandom());
-            httpClient = HttpClients.custom().setSSLContext(sslContext)
-                    .setSSLHostnameVerifier(new DefaultHostnameVerifier()).build();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

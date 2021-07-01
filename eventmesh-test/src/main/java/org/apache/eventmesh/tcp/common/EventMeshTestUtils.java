@@ -24,6 +24,7 @@ import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PR
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -35,10 +36,12 @@ public class EventMeshTestUtils {
 
     public static UserAgent generateClient1() {
         UserAgent user = new UserAgent();
-        user.setDcn("AC0");
+        user.setEnv("test");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
+        user.setProducerGroup("EventmeshTest-ProducerGroup");
+        user.setConsumerGroup("EventmeshTest-ConsumerGroup");
         user.setPath("/data/app/umg_proxy");
         user.setPort(8362);
         user.setSubsystem("5023");
@@ -50,10 +53,12 @@ public class EventMeshTestUtils {
 
     public static UserAgent generateClient2() {
         UserAgent user = new UserAgent();
-        user.setDcn("FT0");
+        user.setEnv("test");
         user.setHost("127.0.0.1");
         user.setPassword(generateRandomString(8));
         user.setUsername("PU4283");
+        user.setConsumerGroup("EventmeshTest-ConsumerGroup");
+        user.setProducerGroup("EventmeshTest-ProducerGroup");
         user.setPath("/data/app/umg_proxy");
         user.setPort(9362);
         user.setSubsystem("5017");

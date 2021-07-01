@@ -18,7 +18,10 @@
 package org.apache.eventmesh.client.http.consumer;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -45,13 +48,16 @@ import org.apache.eventmesh.client.tcp.common.EventMeshThreadFactoryImpl;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
+import org.apache.eventmesh.common.protocol.http.body.client.UnSubscribeRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientType;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
@@ -65,15 +71,13 @@ public class LiteConsumer extends AbstractLiteClient {
 
     private ThreadPoolExecutor consumeExecutor;
 
-    private static CloseableHttpClient httpClient = HttpClients.createDefault();
-
     protected LiteClientConfig eventMeshClientConfig;
 
-    private List<String> subscription = Lists.newArrayList();
+    private List<SubscriptionItem> subscription = Lists.newArrayList();
 
     private LiteMessageListener messageListener;
 
-    protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4, new EventMeshThreadFactoryImpl("TCPClientScheduler", true));
+    protected final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4, new EventMeshThreadFactoryImpl("TCPClientScheduler", true));
 
     public LiteConsumer(LiteClientConfig liteClientConfig) throws Exception {
         super(liteClientConfig);
@@ -110,12 +114,15 @@ public class LiteConsumer extends AbstractLiteClient {
     public void shutdown() throws Exception {
         logger.info("LiteConsumer shutting down");
         super.shutdown();
-        httpClient.close();
+        if (consumeExecutor != null) {
+            consumeExecutor.shutdown();
+        }
+        scheduler.shutdown();
         started.compareAndSet(true, false);
         logger.info("LiteConsumer shutdown");
     }
 
-    public boolean subscribe(List<String> topicList, String url) throws Exception {
+    public boolean subscribe(List<SubscriptionItem> topicList, String url) throws Exception {
         subscription.addAll(topicList);
         if (!started.get()) {
             start();
@@ -126,10 +133,9 @@ public class LiteConsumer extends AbstractLiteClient {
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String subRes = "";
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()){
             subRes = HttpUtil.post(httpClient, target, subscribeParam);
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
         }
 
         if (logger.isDebugEnabled()) {
@@ -146,7 +152,7 @@ public class LiteConsumer extends AbstractLiteClient {
 
     }
 
-    private RequestParam generateSubscribeRequestParam(List<String> topicList, String url) {
+    private RequestParam generateSubscribeRequestParam(List<SubscriptionItem> topicList, String url) {
 //        final LiteMessage liteMessage = new LiteMessage();
 //        liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
 //                .setContent("subscribe message")
@@ -154,9 +160,7 @@ public class LiteConsumer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.SUBSCRIBE.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, eventMeshClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, eventMeshClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshClientConfig.getIp())
                 .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshClientConfig.getPid())
                 .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshClientConfig.getSys())
@@ -166,15 +170,16 @@ public class LiteConsumer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
                 .addBody(SubscribeRequestBody.TOPIC, JSONObject.toJSONString(topicList))
+                .addBody(SubscribeRequestBody.CONSUMERGROUP, eventMeshClientConfig.getConsumerGroup())
                 .addBody(SubscribeRequestBody.URL, url);
         return requestParam;
     }
 
-    private RequestParam generateHeartBeatRequestParam(List<String> topics, String url) {
+    private RequestParam generateHeartBeatRequestParam(List<SubscriptionItem> topics, String url) {
         List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = new ArrayList<>();
-        for (String topic : topics) {
+        for (SubscriptionItem item : topics) {
             HeartbeatRequestBody.HeartbeatEntity heartbeatEntity = new HeartbeatRequestBody.HeartbeatEntity();
-            heartbeatEntity.topic = topic;
+            heartbeatEntity.topic = item.getTopic();
             heartbeatEntity.url = url;
             heartbeatEntities.add(heartbeatEntity);
         }
@@ -182,9 +187,7 @@ public class LiteConsumer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.HEARTBEAT.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, eventMeshClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, eventMeshClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshClientConfig.getIp())
                 .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshClientConfig.getPid())
                 .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshClientConfig.getSys())
@@ -194,11 +197,12 @@ public class LiteConsumer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
                 .addBody(HeartbeatRequestBody.CLIENTTYPE, ClientType.SUB.name())
+                .addBody(HeartbeatRequestBody.CONSUMERGROUP, eventMeshClientConfig.getConsumerGroup())
                 .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JSON.toJSONString(heartbeatEntities));
         return requestParam;
     }
 
-    public void heartBeat(List<String> topicList, String url) throws Exception {
+    public void heartBeat(List<SubscriptionItem> topicList, String url) throws Exception {
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -211,10 +215,9 @@ public class LiteConsumer extends AbstractLiteClient {
                     long startTime = System.currentTimeMillis();
                     String target = selectEventMesh();
                     String res = "";
-                    try {
+
+                    try (CloseableHttpClient httpClient = setHttpClient()) {
                         res = HttpUtil.post(httpClient, target, requestParam);
-                    } catch (Exception ex) {
-                        throw new EventMeshException(ex);
                     }
 
                     if (logger.isDebugEnabled()) {
@@ -234,17 +237,24 @@ public class LiteConsumer extends AbstractLiteClient {
         }, EventMeshCommon.HEATBEAT, EventMeshCommon.HEATBEAT, TimeUnit.MILLISECONDS);
     }
 
-    public boolean unsubscribe(List<String> topicList, String url) throws EventMeshException {
-        subscription.removeAll(topicList);
+    public boolean unsubscribe(List<String> topicList, String url) throws Exception {
+        Set<String> unSub = new HashSet<>(topicList);
+        Iterator<SubscriptionItem> itr = subscription.iterator();
+        while(itr.hasNext()) {
+            SubscriptionItem item = itr.next();
+            if (unSub.contains(item.getTopic())) {
+                itr.remove();
+            }
+        }
+
         RequestParam unSubscribeParam = generateUnSubscribeRequestParam(topicList, url);
 
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
         String unSubRes = "";
-        try {
+
+        try (CloseableHttpClient httpClient = setHttpClient()) {
             unSubRes = HttpUtil.post(httpClient, target, unSubscribeParam);
-        } catch (Exception ex) {
-            throw new EventMeshException(ex);
         }
 
         if (logger.isDebugEnabled()) {
@@ -264,9 +274,7 @@ public class LiteConsumer extends AbstractLiteClient {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.UNSUBSCRIBE.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.REGION, eventMeshClientConfig.getRegion())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.DCN, eventMeshClientConfig.getDcn())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshClientConfig.getIp())
                 .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshClientConfig.getPid())
                 .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshClientConfig.getSys())
@@ -275,8 +283,9 @@ public class LiteConsumer extends AbstractLiteClient {
                 .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
                 .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
-                .addBody(SubscribeRequestBody.TOPIC, JSONObject.toJSONString(topicList))
-                .addBody(SubscribeRequestBody.URL, url);
+                .addBody(UnSubscribeRequestBody.TOPIC, JSONObject.toJSONString(topicList))
+                .addBody(UnSubscribeRequestBody.CONSUMERGROUP, eventMeshClientConfig.getConsumerGroup())
+                .addBody(UnSubscribeRequestBody.URL, url);
         return requestParam;
     }
 

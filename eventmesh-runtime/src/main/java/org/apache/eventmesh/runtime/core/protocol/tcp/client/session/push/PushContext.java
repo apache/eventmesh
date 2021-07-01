@@ -17,17 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-
-import io.openmessaging.api.Message;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +33,9 @@ public class PushContext {
 
     public AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
-    public AtomicLong ackedMsgsCount = new AtomicLong(0);
-
     public AtomicLong deliverFailMsgsCount = new AtomicLong(0);
 
-    private ConcurrentHashMap<String /** seq */, ClientAckContext> unAckMsg = new ConcurrentHashMap<String, ClientAckContext>();
+    private ConcurrentHashMap<String /** seq */, DownStreamMsgContext> unAckMsg = new ConcurrentHashMap<String, DownStreamMsgContext>();
 
     private long createTime = System.currentTimeMillis();
 
@@ -59,9 +51,8 @@ public class PushContext {
         deliverFailMsgsCount.incrementAndGet();
     }
 
-    public void unAckMsg(String seq, List<Message> msg, AbstractContext context, MQConsumerWrapper consumer) {
-        ClientAckContext ackContext = new ClientAckContext(seq, context, msg, consumer);
-        unAckMsg.put(seq, ackContext);
+    public void unAckMsg(String seq, DownStreamMsgContext downStreamMsgContext) {
+        unAckMsg.put(seq, downStreamMsgContext);
         logger.info("put msg in unAckMsg,seq:{},unAckMsgSize:{}", seq, getTotalUnackMsgs());
     }
 
@@ -69,17 +60,8 @@ public class PushContext {
         return unAckMsg.size();
     }
 
-    public void ackMsg(String seq) {
-        if (unAckMsg.containsKey(seq)) {
-            unAckMsg.get(seq).ackMsg();
-            unAckMsg.remove(seq);
-            ackedMsgsCount.incrementAndGet();
-        } else {
-            logger.warn("ackMsg failed,the seq:{} is not in unAckMsg map", seq);
-        }
-    }
 
-    public ConcurrentHashMap<String, ClientAckContext> getUnAckMsg() {
+    public ConcurrentHashMap<String, DownStreamMsgContext> getUnAckMsg() {
         return unAckMsg;
     }
 
@@ -88,7 +70,6 @@ public class PushContext {
         return "PushContext{" +
                 "deliveredMsgsCount=" + deliveredMsgsCount.longValue() +
                 ",deliverFailCount=" + deliverFailMsgsCount.longValue() +
-                ",ackedMsgsCount=" + ackedMsgsCount.longValue() +
                 ",unAckMsg=" + CollectionUtils.size(unAckMsg) +
                 ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
     }

@@ -43,14 +43,6 @@ public class MQConsumerWrapper extends MQWrapper {
         meshMQPushConsumer.unsubscribe(topic);
     }
 
-//    public boolean isPause() {
-//        return meshMQPushConsumer.isPause();
-//    }
-//
-//    public void pause() {
-//        meshMQPushConsumer.pause();
-//    }
-
     public synchronized void init(Properties keyValue) throws Exception {
         meshMQPushConsumer = getMeshMQPushConsumer();
         if (meshMQPushConsumer == null) {
@@ -87,9 +79,5 @@ public class MQConsumerWrapper extends MQWrapper {
 
     public void updateOffset(List<Message> msgs, AbstractContext eventMeshConsumeConcurrentlyContext) {
         meshMQPushConsumer.updateOffset(msgs, eventMeshConsumeConcurrentlyContext);
-    }
-
-    public AbstractContext getContext() {
-        return meshMQPushConsumer.getContext();
     }
 }
