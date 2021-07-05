@@ -16,7 +16,7 @@ TCP 和 Http 示例都在**eventmesh-test**模块下
 
 <h4>异步消息</h4>
 
-- 创建主题FT0-e-80010000-01-1,可以通过rocketmq-console或者rocketmq tools 命令
+- 创建主题TEST-TOPIC-TCP-ASYNC,可以通过rocketmq-console或者rocketmq tools 命令
 
 - 启动消费者，订阅上一步骤已经创建的Topic
 
@@ -32,7 +32,7 @@ TCP 和 Http 示例都在**eventmesh-test**模块下
 
 <h4>广播消息</h4>
 
-- 创建主题FT0-e-80030000-01-3,可以通过rocketmq-console或者rocketmq tools 命令
+- 创建主题TEST-TOPIC-TCP-BROADCAST,可以通过rocketmq-console或者rocketmq tools 命令
 
 - 启动消费端，订阅上一步骤已经创建的Topic
 
@@ -56,7 +56,7 @@ TCP 和 Http 示例都在**eventmesh-test**模块下
 
 > 生产者将事件发送给下游即可，无需等待响应
 
-- 创建主题FT0-e-80010001-01-1,可以通过rocketmq-console或者rocketmq tools 命令
+- 创建主题TEST-TOPIC-HTTP-ASYNC,可以通过rocketmq-console或者rocketmq tools 命令
 
 - 启动消费端，订阅Topic
 

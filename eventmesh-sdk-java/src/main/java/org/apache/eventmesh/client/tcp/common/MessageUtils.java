@@ -99,6 +99,7 @@ public class MessageUtils {
 
     public static UserAgent generateSubClient(UserAgent agent) {
         UserAgent user = new UserAgent();
+        user.setEnv(agent.getEnv());
         user.setHost(agent.getHost());
         user.setPassword(agent.getPassword());
         user.setUsername(agent.getUsername());
@@ -108,13 +109,15 @@ public class MessageUtils {
         user.setPid(agent.getPid());
         user.setVersion(agent.getVersion());
         user.setIdc(agent.getIdc());
-
+        user.setConsumerGroup(agent.getConsumerGroup());
+        user.setProducerGroup(agent.getProducerGroup());
         user.setPurpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB);
         return user;
     }
 
     public static UserAgent generatePubClient(UserAgent agent) {
         UserAgent user = new UserAgent();
+        user.setEnv(agent.getEnv());
         user.setHost(agent.getHost());
         user.setPassword(agent.getPassword());
         user.setUsername(agent.getUsername());
@@ -124,7 +127,7 @@ public class MessageUtils {
         user.setPid(agent.getPid());
         user.setVersion(agent.getVersion());
         user.setIdc(agent.getIdc());
-
+        user.setProducerGroup(agent.getProducerGroup());
         user.setPurpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB);
         return user;
     }

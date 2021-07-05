@@ -27,7 +27,7 @@ public interface ClientConstants {
 
     long DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
 
-    String SYNC_TOPIC = "FT0-s-80000000-01-0";
-    String ASYNC_TOPIC = "FT0-e-80010000-01-1";
-    String BROADCAST_TOPIC = "FT0-e-80030000-01-3";
+    String SYNC_TOPIC = "TEST-TOPIC-TCP-SYNC";
+    String ASYNC_TOPIC = "TEST-TOPIC-TCP-ASYNC";
+    String BROADCAST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
 }
