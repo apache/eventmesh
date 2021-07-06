@@ -15,14 +15,23 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
+package org.apache.eventmesh.spi;
 
+import org.apache.commons.lang3.StringUtils;
+
+public enum EventMeshExtensionFactory {
+    ;
+
+    public static <T> T getExtension(Class<T> extensionType, String extensionName) {
+        if (extensionType == null) {
+            throw new ExtensionException("extensionType is null");
+        }
+        if (StringUtils.isEmpty(extensionName)) {
+            throw new ExtensionException("extensionName is null");
+        }
+        if (!extensionType.isInterface() || !extensionType.isAnnotationPresent(EventMeshSPI.class)) {
+            throw new ExtensionException(String.format("extensionType:%s is invalided", extensionType));
+        }
+        return EventMeshExtensionLoader.getExtension(extensionType, extensionName);
+    }
+}

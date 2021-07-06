@@ -14,15 +14,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-
