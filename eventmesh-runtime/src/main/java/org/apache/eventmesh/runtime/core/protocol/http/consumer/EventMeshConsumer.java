@@ -66,13 +66,15 @@ public class EventMeshConsumer {
 
     private ConsumerGroupConf consumerGroupConf;
 
-    private MQConsumerWrapper persistentMqConsumer = new MQConsumerWrapper();
+    private MQConsumerWrapper persistentMqConsumer;
 
-    private MQConsumerWrapper broadcastMqConsumer = new MQConsumerWrapper();
+    private MQConsumerWrapper broadcastMqConsumer;
 
     public EventMeshConsumer(EventMeshHTTPServer eventMeshHTTPServer, ConsumerGroupConf consumerGroupConf) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.consumerGroupConf = consumerGroupConf;
+        this.persistentMqConsumer = new MQConsumerWrapper(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshConnectorPluginType);
+        this.broadcastMqConsumer = new MQConsumerWrapper(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshConnectorPluginType);
     }
 
     private MessageHandler httpMessageHandler;
