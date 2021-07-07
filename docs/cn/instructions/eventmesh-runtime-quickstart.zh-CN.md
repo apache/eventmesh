@@ -44,7 +44,7 @@ sh start.sh
 
 ### 2.1 依赖
 
-同上述步骤 1.1
+同上述步骤 1.1，但是只能在JDK 1.8下构建
 
 ### 2.2 下载源码
 
@@ -65,17 +65,7 @@ sh start.sh
 
 > 注：插件模块遵循java spi机制，需要在对应模块中的/main/resources/META-INF/services 下配置相关接口与实现类的映射文件
 
-**2.3.2 配置VM启动参数**
-
-```java
--Dlog4j.configurationFile=eventmesh-runtime/conf/log4j2.xml
--Deventmesh.log.home=eventmesh-runtime/logs
--Deventmesh.home=eventmesh-runtime
--DconfPath=eventmesh-runtime/conf
-```
-> 注：如果操作系统为Windows, 可能需要将文件分隔符换成\
-
-**2.3.3 配置build.gradle文件**
+**2.3.2 配置build.gradle文件**
 
 通过修改dependencies，compile project 项来指定项目启动后加载的插件
 
@@ -88,6 +78,16 @@ dependencies {
     compile project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
 }
 ```
+
+**2.3.3 配置VM启动参数**
+
+```java
+-Dlog4j.configurationFile=eventmesh-runtime/conf/log4j2.xml
+-Deventmesh.log.home=eventmesh-runtime/logs
+-Deventmesh.home=eventmesh-runtime
+-DconfPath=eventmesh-runtime/conf
+```
+> 注：如果操作系统为Windows, 可能需要将文件分隔符换成\
 
 **2.3.4 启动运行**
 
