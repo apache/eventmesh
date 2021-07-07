@@ -48,7 +48,7 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public int eventMeshServerRetryThreadNum = 2;
 
-    public int eventMeshServerPullRegistryIntervel = 30000;
+    public int eventMeshServerPullRegistryInterval = 30000;
 
     public int eventMeshServerAsyncAccumulationThreshold = 1000;
 
@@ -62,7 +62,7 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public int eventMeshServerClientManageBlockQSize = 1000;
 
-    public int eventMeshServerBusyCheckIntervel = 1000;
+    public int eventMeshServerBusyCheckInterval = 1000;
 
     public boolean eventMeshServerConsumerEnabled = false;
 
@@ -126,9 +126,9 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
                 eventMeshServerClientManageThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerClientManageThreadNumStr));
             }
 
-            String eventMeshServerPullRegistryIntervelStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_PULL_REGISTRY_INTERVEL);
-            if (StringUtils.isNotEmpty(eventMeshServerPullRegistryIntervelStr) && StringUtils.isNumeric(eventMeshServerPullRegistryIntervelStr)) {
-                eventMeshServerPullRegistryIntervel = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerPullRegistryIntervelStr));
+            String eventMeshServerPullRegistryIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_PULL_REGISTRY_INTERVAL);
+            if (StringUtils.isNotEmpty(eventMeshServerPullRegistryIntervalStr) && StringUtils.isNumeric(eventMeshServerPullRegistryIntervalStr)) {
+                eventMeshServerPullRegistryInterval = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerPullRegistryIntervalStr));
             }
 
             String eventMeshServerAdminThreadNumStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ADMIN_THREAD_NUM);
@@ -161,9 +161,9 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
                 eventMeshServerClientManageBlockQSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerClientManageBlockQSizeStr));
             }
 
-            String eventMeshServerBusyCheckIntervelStr = configurationWraper.getProp(ConfKeys.KEY_EVENTMESH_BUSY_CHECK_INTERVEL);
-            if (StringUtils.isNotEmpty(eventMeshServerBusyCheckIntervelStr) && StringUtils.isNumeric(eventMeshServerBusyCheckIntervelStr)) {
-                eventMeshServerBusyCheckIntervel = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerBusyCheckIntervelStr));
+            String eventMeshServerBusyCheckIntervalStr = configurationWraper.getProp(ConfKeys.KEY_EVENTMESH_BUSY_CHECK_INTERVAL);
+            if (StringUtils.isNotEmpty(eventMeshServerBusyCheckIntervalStr) && StringUtils.isNumeric(eventMeshServerBusyCheckIntervalStr)) {
+                eventMeshServerBusyCheckInterval = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerBusyCheckIntervalStr));
             }
 
             String eventMeshServerConsumerEnabledStr = configurationWraper.getProp(ConfKeys.KEY_EVENTMESH_CONSUMER_ENABLED);
@@ -195,7 +195,7 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
         public static String KEYS_EVENTMESH_ASYNC_ACCUMULATION_THRESHOLD = "eventMesh.server.async.accumulation.threshold";
 
-        public static String KEY_EVENTMESH_BUSY_CHECK_INTERVEL = "eventMesh.server.busy.check.intervel";
+        public static String KEY_EVENTMESH_BUSY_CHECK_INTERVAL = "eventMesh.server.busy.check.interval";
 
         public static String KEYS_EVENTMESH_SENDMSG_THREAD_NUM = "eventMesh.server.sendmsg.threads.num";
 
@@ -211,7 +211,7 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
         public static String KEY_EVENTMESH_RETRY_THREAD_NUM = "eventMesh.server.retry.threads.num";
 
-        public static String KEYS_EVENTMESH_PULL_REGISTRY_INTERVEL = "eventMesh.server.pull.registry.intervel";
+        public static String KEYS_EVENTMESH_PULL_REGISTRY_INTERVAL = "eventMesh.server.pull.registry.interval";
 
         public static String KEY_EVENTMESH_RETRY_BLOCKQ_SIZE = "eventMesh.server.retry.blockQ.size";
 
