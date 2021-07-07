@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-connector-rocketmq'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
+package org.apache.eventmesh.spi;
 
+import org.junit.Test;
+
+public class EventMeshExtensionFactoryTest {
+
+    @Test
+    public void getExtension() {
+        TestExtension extensionA = EventMeshExtensionFactory.getExtension(TestExtension.class, "extensionA");
+        extensionA.hello();
+    }
+}
