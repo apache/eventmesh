@@ -65,21 +65,7 @@ sh start.sh
 
 > 注：插件模块遵循java spi机制，需要在对应模块中的/main/resources/META-INF/services 下配置相关接口与实现类的映射文件
 
-**2.3.2 配置build.gradle文件**
-
-通过修改dependencies，compile project 项来指定项目启动后加载的插件
-
-修改`eventmesh-starter`模块下面的`build.gradle`文件
-
-加载**RocketMQ**插件配置：
-
-```java
-dependencies {
-    compile project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
-}
-```
-
-**2.3.3 配置VM启动参数**
+**2.3.2 配置VM启动参数**
 
 ```java
 -Dlog4j.configurationFile=eventmesh-runtime/conf/log4j2.xml
@@ -89,7 +75,7 @@ dependencies {
 ```
 > 注：如果操作系统为Windows, 可能需要将文件分隔符换成\
 
-**2.3.4 启动运行**
+**2.3.3 启动运行**
 
 ```
 运行org.apache.eventmesh.starter.StartUp的主要方法

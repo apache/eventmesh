@@ -66,21 +66,7 @@ Same with 1.2
 > ps: The loading of connector plugin follows the Java SPI mechanism, it's necessary to configure the mapping file of
 related interface and implementation class under /main/resources/meta-inf/services in the corresponding module
 
-**2.3.2 Configure build.gradle file**
-
-Specify the connector that will be loaded after the project start with updating compile project item in dependencies
-
-update `build.gradle` file under the `eventmesh-starter` module
-
-load **rocketmq connector** configuration：
-
-```java
-dependencies {
-    compile project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
-}
-```
-
-**2.3.3 Configure VM Options**
+**2.3.2 Configure VM Options**
 
 ```java
 -Dlog4j.configurationFile=eventmesh-runtime/conf/log4j2.xml
@@ -90,7 +76,7 @@ dependencies {
 ```
 > ps: If you use Windows, you may need to replace the file separator to \
 
-**2.3.4 Run**
+**2.3.3 Run**
 
 running `org.apache.eventmesh.starter.StartUp` main method
 
