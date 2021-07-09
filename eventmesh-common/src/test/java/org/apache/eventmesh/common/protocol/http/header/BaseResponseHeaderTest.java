@@ -15,11 +15,20 @@
  * limitations under the License.
  */
 
-List open_message = [
-        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
-]
+package org.apache.eventmesh.common.protocol.http.header;
 
-dependencies {
-    implementation open_message,project(":eventmesh-common"), project(":eventmesh-spi")
-    testImplementation open_message,project(":eventmesh-common"), project(":eventmesh-spi")
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.junit.Assert;
+import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+
+public class BaseResponseHeaderTest {
+
+    @Test
+    public void testToMap() {
+        BaseResponseHeader header = BaseResponseHeader.buildHeader("200");
+        Assert.assertTrue(header.toMap().containsKey(ProtocolKey.REQUEST_CODE));
+        Assert.assertThat(header.toMap().get(ProtocolKey.REQUEST_CODE), is("200"));
+    }
 }

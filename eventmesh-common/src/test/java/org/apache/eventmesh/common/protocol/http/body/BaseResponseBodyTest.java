@@ -15,11 +15,25 @@
  * limitations under the License.
  */
 
-List open_message = [
-        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
-]
+package org.apache.eventmesh.common.protocol.http.body;
 
-dependencies {
-    implementation open_message,project(":eventmesh-common"), project(":eventmesh-spi")
-    testImplementation open_message,project(":eventmesh-common"), project(":eventmesh-spi")
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.junit.Assert;
+import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+
+public class BaseResponseBodyTest {
+
+    @Test
+    public void testToMap() {
+        BaseResponseBody body = new BaseResponseBody();
+        body.setRetCode(200);
+        body.setRetMsg("SUCCESS");
+        Assert.assertTrue(body.toMap().containsKey(ProtocolKey.RETCODE));
+        Assert.assertTrue(body.toMap().containsKey(ProtocolKey.RETMSG));
+        Assert.assertTrue(body.toMap().containsKey(ProtocolKey.RESTIME));
+        Assert.assertThat(body.toMap().get(ProtocolKey.RETCODE), is(200));
+        Assert.assertThat(body.toMap().get(ProtocolKey.RETMSG), is("SUCCESS"));
+    }
 }

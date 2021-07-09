@@ -15,11 +15,17 @@
  * limitations under the License.
  */
 
-List open_message = [
-        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
-]
+package org.apache.eventmesh.common.protocol.http.header.client;
 
-dependencies {
-    implementation open_message,project(":eventmesh-common"), project(":eventmesh-spi")
-    testImplementation open_message,project(":eventmesh-common"), project(":eventmesh-spi")
+import org.junit.Test;
+
+import java.util.HashMap;
+
+public class SubscribeRequestHeaderTest extends AbstractRequestHeaderTest {
+
+    @Test
+    public void testToMap() {
+        SubscribeRequestHeader header = SubscribeRequestHeader.buildHeader(new HashMap<>());
+        assertMapContent(header);
+    }
 }
