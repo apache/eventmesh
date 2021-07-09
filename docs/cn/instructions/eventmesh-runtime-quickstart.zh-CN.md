@@ -89,7 +89,21 @@ eventMesh.connector.plugin.type=rocketmq
 ```
 > 注：如果操作系统为Windows, 可能需要将文件分隔符换成\
 
-**2.3.4 启动运行**
+**2.3.4 配置build.gradle文件**
+
+通过修改dependencies，compile project 项来指定项目启动后加载的插件
+
+修改`eventmesh-starter`模块下面的`build.gradle`文件
+
+加载**RocketMQ**插件配置：
+
+```java
+dependencies {
+    compile project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
+}
+```
+
+**2.3.5 启动运行**
 
 ```
 运行org.apache.eventmesh.starter.StartUp的主要方法

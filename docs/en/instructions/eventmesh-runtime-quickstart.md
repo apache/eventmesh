@@ -69,7 +69,13 @@ related interface and implementation class under /main/resources/meta-inf/eventm
 
 **2.3.2 Configure plugin**
 
+```java
+-Dlog4j.configurationFile=eventmesh-runtime/conf/log4j2.xml
 -Deventmesh.log.home=eventmesh-runtime/logs
+-Deventmesh.home=eventmesh-runtime
+-DconfPath=eventmesh-runtime/conf
+```
+> ps: If you use Windows, you may need to replace the file separator to \
 
 Specify the connector plugin that will be loaded after the project start by declaring in `eventMesh.properties`
 

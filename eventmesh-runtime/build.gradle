@@ -17,10 +17,10 @@
 sourceCompatibility = 1.8
 
 List metrics = [
-        "io.dropwizard.metrics:metrics-core:4.1.0",
-        "io.dropwizard.metrics:metrics-healthchecks:4.1.0",
-        "io.dropwizard.metrics:metrics-annotation:4.1.0",
-        "io.dropwizard.metrics:metrics-json:4.1.0"
+    "io.dropwizard.metrics:metrics-core:4.1.0",
+    "io.dropwizard.metrics:metrics-healthchecks:4.1.0",
+    "io.dropwizard.metrics:metrics-annotation:4.1.0",
+    "io.dropwizard.metrics:metrics-json:4.1.0"
 ]
 
 

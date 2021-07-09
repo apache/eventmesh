@@ -20,6 +20,10 @@ package org.apache.eventmesh.runtime.core.plugin;
 import java.util.List;
 import java.util.Properties;
 
+import java.util.List;
+import java.util.Properties;
+import java.util.ServiceLoader;
+
 import io.openmessaging.api.AsyncMessageListener;
 import io.openmessaging.api.Message;
 
@@ -51,8 +55,22 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public synchronized void init(Properties keyValue) throws Exception {
+        meshMQPushConsumer = getMeshMQPushConsumer();
+        if (meshMQPushConsumer == null) {
+            logger.error("can't load the meshMQPushConsumer plugin, please check.");
+            throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
+        }
+
         meshMQPushConsumer.init(keyValue);
         inited.compareAndSet(false, true);
+    }
+
+    private MeshMQPushConsumer getMeshMQPushConsumer() {
+        ServiceLoader<MeshMQPushConsumer> meshMQPushConsumerServiceLoader = ServiceLoader.load(MeshMQPushConsumer.class);
+        if (meshMQPushConsumerServiceLoader.iterator().hasNext()) {
+            return meshMQPushConsumerServiceLoader.iterator().next();
+        }
+        return null;
     }
 
     public synchronized void start() throws Exception {

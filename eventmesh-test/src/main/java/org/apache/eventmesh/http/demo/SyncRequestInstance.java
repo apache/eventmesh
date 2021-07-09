@@ -34,15 +34,10 @@ public class SyncRequestInstance {
     public static void main(String[] args) throws Exception {
 
         LiteProducer liteProducer = null;
-        String eventMeshIPPort = "127.0.0.1:10105";
-        String topic = "EventMesh.SyncRequestInstance";
         try {
-            if (args.length > 0 && StringUtils.isNotBlank(args[0])) {
-                eventMeshIPPort = args[0];
-            }
-            if (args.length > 1 && StringUtils.isNotBlank(args[1])) {
-                topic = args[1];
-            }
+            String eventMeshIPPort = args[0];
+
+            final String topic = args[1];
 
             if (StringUtils.isBlank(eventMeshIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
