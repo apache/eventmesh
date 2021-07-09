@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.spi;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -26,6 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public enum EventMeshExtensionLoader {
     ;
+
+    private static final Logger logger = LoggerFactory.getLogger(EventMeshExtensionLoader.class);
 
     private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, Class<?>>> EXTENSION_CLASS_LOAD_CACHE = new ConcurrentHashMap<>(16);
 
@@ -54,7 +59,9 @@ public enum EventMeshExtensionLoader {
         }
         Class<?> aClass = extensionClassMap.get(extensionName);
         try {
-            EXTENSION_INSTANCE_CACHE.put(extensionName, aClass.newInstance());
+            Object extensionObj = aClass.newInstance();
+            logger.info("initialize extension instance success, extensionType: {}, extensionName: {}", extensionType, extensionName);
+            EXTENSION_INSTANCE_CACHE.put(extensionName, extensionObj);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new ExtensionException("Extension initialize error", e);
         }
@@ -87,6 +94,7 @@ public enum EventMeshExtensionLoader {
                 String extensionClassStr = (String) extensionClass;
                 try {
                     Class<?> targetClass = Class.forName(extensionClassStr);
+                    logger.info("load extension class success, extensionType: {}, extensionClass: {}", extensionType, targetClass);
                     if (!extensionType.isAssignableFrom(targetClass)) {
                         throw new ExtensionException(
                                 String.format("class: %s is not subClass of %s", targetClass, extensionType));

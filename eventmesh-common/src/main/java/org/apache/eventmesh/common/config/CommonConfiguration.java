@@ -17,17 +17,10 @@
 
 package org.apache.eventmesh.common.config;
 
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-
 import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.IPUtil;
 
 public class CommonConfiguration {
     public String eventMeshEnv = "P";
@@ -35,7 +28,7 @@ public class CommonConfiguration {
     public String eventMeshCluster = "LS";
     public String eventMeshName = "";
     public String sysID = "5477";
-
+    public String eventMeshConnectorPluginType = "rocketmq";
 
     public String namesrvAddr = "";
     public String clientUserName = "username";
@@ -84,8 +77,11 @@ public class CommonConfiguration {
 
             eventMeshServerIp = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
             if (StringUtils.isBlank(eventMeshServerIp)) {
-                eventMeshServerIp = getLocalAddr();
+                eventMeshServerIp = IPUtil.getLocalAddress();
             }
+
+            eventMeshConnectorPluginType = configurationWraper.getProp(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshConnectorPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE));
         }
     }
 
@@ -105,94 +101,7 @@ public class CommonConfiguration {
         public static String KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL = "eventMesh.server.registry.registerIntervalInMills";
 
         public static String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL = "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
-    }
 
-    public static String getLocalAddr() {
-        //priority of networkInterface when generating client ip
-        String priority = System.getProperty("networkInterface.priority", "bond1<eth1<eth0");
-        ArrayList<String> preferList = new ArrayList<String>();
-        for (String eth : priority.split("<")) {
-            preferList.add(eth);
-        }
-        NetworkInterface preferNetworkInterface = null;
-
-        try {
-            Enumeration<NetworkInterface> enumeration1 = NetworkInterface.getNetworkInterfaces();
-            while (enumeration1.hasMoreElements()) {
-                final NetworkInterface networkInterface = enumeration1.nextElement();
-                if (!preferList.contains(networkInterface.getName())) {
-                    continue;
-                } else if (preferNetworkInterface == null) {
-                    preferNetworkInterface = networkInterface;
-                }
-                //get the networkInterface that has higher priority
-                else if (preferList.indexOf(networkInterface.getName())
-                        > preferList.indexOf(preferNetworkInterface.getName())) {
-                    preferNetworkInterface = networkInterface;
-                }
-            }
-
-            // Traversal Network interface to get the first non-loopback and non-private address
-            ArrayList<String> ipv4Result = new ArrayList<String>();
-            ArrayList<String> ipv6Result = new ArrayList<String>();
-
-            if (preferNetworkInterface != null) {
-                final Enumeration<InetAddress> en = preferNetworkInterface.getInetAddresses();
-                getIpResult(ipv4Result, ipv6Result, en);
-            } else {
-                Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
-                while (enumeration.hasMoreElements()) {
-                    final NetworkInterface networkInterface = enumeration.nextElement();
-                    final Enumeration<InetAddress> en = networkInterface.getInetAddresses();
-                    getIpResult(ipv4Result, ipv6Result, en);
-                }
-            }
-
-            // prefer ipv4
-            if (!ipv4Result.isEmpty()) {
-                for (String ip : ipv4Result) {
-                    if (ip.startsWith("127.0") || ip.startsWith("192.168")) {
-                        continue;
-                    }
-
-                    return ip;
-                }
-
-                return ipv4Result.get(ipv4Result.size() - 1);
-            } else if (!ipv6Result.isEmpty()) {
-                return ipv6Result.get(0);
-            }
-            //If failed to find,fall back to localhost
-            final InetAddress localHost = InetAddress.getLocalHost();
-            return normalizeHostAddress(localHost);
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public static String normalizeHostAddress(final InetAddress localHost) {
-        if (localHost instanceof Inet6Address) {
-            return "[" + localHost.getHostAddress() + "]";
-        } else {
-            return localHost.getHostAddress();
-        }
-    }
-
-    private static void getIpResult(ArrayList<String> ipv4Result, ArrayList<String> ipv6Result,
-                                    Enumeration<InetAddress> en) {
-        while (en.hasMoreElements()) {
-            final InetAddress address = en.nextElement();
-            if (!address.isLoopbackAddress()) {
-                if (address instanceof Inet6Address) {
-                    ipv6Result.add(normalizeHostAddress(address));
-                } else {
-                    ipv4Result.add(normalizeHostAddress(address));
-                }
-            }
-        }
+        public static String KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE = "eventMesh.connector.plugin.type";
     }
 }
