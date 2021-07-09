@@ -20,6 +20,6 @@ List open_message = [
 ]
 
 dependencies {
-    implementation open_message,project(":eventmesh-common")
-    testImplementation open_message,project(":eventmesh-common")
+    implementation open_message,project(":eventmesh-common"), project(":eventmesh-spi")
+    testImplementation open_message,project(":eventmesh-common"), project(":eventmesh-spi")
 }

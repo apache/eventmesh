@@ -62,8 +62,9 @@ sh start.sh
 - eventmesh-runtime : eventmesh运行时模块
 - eventmesh-sdk-java : eventmesh java客户端sdk
 - eventmesh-starter : eventmesh本地启动运行项目入口
+- eventmesh-spi : eventmesh SPI加载模块
 
-> 注：插件模块遵循java spi机制，需要在对应模块中的/main/resources/META-INF/services 下配置相关接口与实现类的映射文件
+> 注：插件模块遵循eventmesh定义的spi机制，需要在对应模块中的/main/resources/META-INF/eventmesh 下配置相关接口与实现类的映射文件
 
 **2.3.2 配置VM启动参数**
 
@@ -75,18 +76,17 @@ sh start.sh
 ```
 > 注：如果操作系统为Windows, 可能需要将文件分隔符换成\
 
-**2.3.3 配置build.gradle文件**
+**2.3.3 配置插件**
 
-通过修改dependencies，compile project 项来指定项目启动后加载的插件
+在`eventMesh.properties`配置文件通过声明式的方式来指定项目启动后需要加载的插件
 
-修改`eventmesh-starter`模块下面的`build.gradle`文件
+修改`confPath`目录下面的`eventMesh.properties`文件
 
-加载**RocketMQ**插件配置：
+加载**RocketMQ Connector**插件配置：
 
 ```java
-dependencies {
-    compile project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
-}
+#connector plugin 
+eventMesh.connector.plugin.type=rocketmq
 ```
 
 **2.3.4 启动运行**
