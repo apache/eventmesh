@@ -67,8 +67,6 @@ public abstract class TcpClient implements Closeable {
 
     protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4, new EventMeshThreadFactoryImpl("TCPClientScheduler", true));
 
-    private ScheduledFuture<?> task;
-
     public TcpClient(String host, int port) {
         this.host = host;
         this.port = port;

@@ -16,11 +16,6 @@
  */
 
 package org.apache.eventmesh.http.demo;
-<<<<<<< HEAD:eventmesh-test/src/main/java/org/apache/eventmesh/http/demo/SyncRequestInstance.java
-package org.apache.eventmesh.http.demo;
-=======
-package org.apache.eventmesh.client.http.demo;
->>>>>>> 1.3.0:eventmesh-sdk-java/src/test/java/org/apache/eventmesh/client/http/demo/SyncRequestInstance.java
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
