@@ -16,6 +16,11 @@
  */
 
 package org.apache.eventmesh.http.demo;
+<<<<<<< HEAD:eventmesh-test/src/main/java/org/apache/eventmesh/http/demo/SyncRequestInstance.java
+package org.apache.eventmesh.http.demo;
+=======
+package org.apache.eventmesh.client.http.demo;
+>>>>>>> 1.3.0:eventmesh-sdk-java/src/test/java/org/apache/eventmesh/client/http/demo/SyncRequestInstance.java
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,10 +39,15 @@ public class SyncRequestInstance {
     public static void main(String[] args) throws Exception {
 
         LiteProducer liteProducer = null;
+        String eventMeshIPPort = "127.0.0.1:10105";
+        String topic = "EventMesh.SyncRequestInstance";
         try {
-            String eventMeshIPPort = args[0];
-
-            final String topic = args[1];
+            if (args.length > 0 && StringUtils.isNotBlank(args[0])) {
+                eventMeshIPPort = args[0];
+            }
+            if (args.length > 1 && StringUtils.isNotBlank(args[1])) {
+                topic = args[1];
+            }
 
             if (StringUtils.isBlank(eventMeshIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105

@@ -35,6 +35,14 @@ public class MQConsumerWrapper extends MQWrapper {
 
     protected MeshMQPushConsumer meshMQPushConsumer;
 
+    public MQConsumerWrapper(String connectorPluginType) {
+        this.meshMQPushConsumer = PluginFactory.getMeshMQPushConsumer(connectorPluginType);
+        if (meshMQPushConsumer == null) {
+            logger.error("can't load the meshMQPushConsumer plugin, please check.");
+            throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
+        }
+    }
+
     public void subscribe(String topic, AsyncMessageListener listener) throws Exception {
         meshMQPushConsumer.subscribe(topic, listener);
     }
