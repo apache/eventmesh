@@ -52,14 +52,8 @@ public class MQProducerWrapper extends MQWrapper {
             logger.error("can't load the meshMQProducer plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
         }
-    }
 
-    public synchronized void init(Properties keyValue) throws Exception {
-        if (inited.get()) {
-            return;
-        }
         meshMQProducer.init(keyValue);
-
         inited.compareAndSet(false, true);
     }
 
