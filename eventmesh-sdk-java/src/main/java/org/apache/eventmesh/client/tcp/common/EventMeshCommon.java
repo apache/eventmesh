@@ -31,7 +31,7 @@ public class EventMeshCommon {
     /**
      * CLIENT端心跳间隔时间
      */
-    public static int HEATBEAT = 30 * 1000;
+    public static int HEARTBEAT = 30 * 1000;
 
     /**
      * RR 废弃清理的时间间隔
