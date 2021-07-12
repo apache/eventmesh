@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 
 public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private UserAgent userAgent;
 
@@ -101,10 +101,10 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
                     }
                     Package msg = MessageUtils.heartBeat();
                     SimpleSubClientImpl.this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                } catch (Exception e) {
+                } catch (Exception ignore) {
                 }
             }
-        }, EventMeshCommon.HEATBEAT, EventMeshCommon.HEATBEAT, TimeUnit.MILLISECONDS);
+        }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
 
     private void goodbye() throws Exception {
@@ -172,10 +172,8 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
             if (context != null) {
                 contexts.remove(context.getKey());
                 context.finish(msg);
-                return;
             } else {
                 logger.error("msg ignored,context not found.|{}|{}", cmd, msg);
-                return;
             }
         }
     }

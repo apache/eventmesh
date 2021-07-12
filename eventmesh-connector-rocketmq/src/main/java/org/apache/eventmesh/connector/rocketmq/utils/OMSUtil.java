@@ -221,6 +221,9 @@ public class OMSUtil {
 
     /**
      * Convert a RocketMQ SEND_OK SendResult instance to a OMS SendResult.
+     *
+     * @param rmqResult RocketMQ result
+     * @return send result
      */
     public static SendResult sendResultConvert(org.apache.rocketmq.client.producer.SendResult rmqResult) {
         SendResult sendResult = new SendResult();
@@ -241,6 +244,9 @@ public class OMSUtil {
 
     /**
      * Returns an iterator that cycles indefinitely over the elements of {@code Iterable}.
+     *
+     * @param <T> Target type
+     * @return Iterator
      */
     public static <T> Iterator<T> cycle(final Iterable<T> iterable) {
         return new Iterator<T>() {
