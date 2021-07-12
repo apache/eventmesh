@@ -14,27 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-sourceCompatibility = 1.8
-
-List metrics = [
-        "io.dropwizard.metrics:metrics-core:4.1.0",
-        "io.dropwizard.metrics:metrics-healthchecks:4.1.0",
-        "io.dropwizard.metrics:metrics-annotation:4.1.0",
-        "io.dropwizard.metrics:metrics-json:4.1.0"
-]
-
-
 
 List open_message = [
         "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 ]
 
-List h2_database = [
-        "com.h2database:h2:1.3.148",
-        "org.apache.commons:commons-dbcp2:2.8.0"
-]
-
 dependencies {
-    implementation  metrics, open_message,h2_database,project(":eventmesh-connector-api"),project(":eventmesh-common"),project(":eventmesh-store-api"),project(":eventmesh-store-h2")
-    testImplementation metrics,open_message,h2_database,project(":eventmesh-common"),project(":eventmesh-connector-api"),project(":eventmesh-store-api"),project(":eventmesh-store-h2")
+    implementation open_message,project(":eventmesh-common")
+    testImplementation open_message,project(":eventmesh-common")
 }

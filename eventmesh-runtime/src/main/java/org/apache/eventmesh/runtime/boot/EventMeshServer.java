@@ -21,6 +21,7 @@ import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.store.h2.schema.H2SchemaAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,8 @@ public class EventMeshServer {
     public EventMeshHTTPServer eventMeshHTTPServer;
 
     private EventMeshTCPServer eventMeshTCPServer;
+    
+    private H2SchemaAdapter h2SchemaAdapter;
 
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
@@ -51,7 +54,9 @@ public class EventMeshServer {
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.init();
         }
-
+        
+        h2SchemaAdapter = new H2SchemaAdapter();
+        h2SchemaAdapter.init();
         String eventstore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
         logger.info("eventstore : {}", eventstore);
 
@@ -64,6 +69,9 @@ public class EventMeshServer {
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.start();
         }
+        if (h2SchemaAdapter.isAdapterEnabled()) {
+        	h2SchemaAdapter.start();            
+        }
         serviceState = ServiceState.RUNNING;
         logger.info("server state:{}", serviceState);
     }
@@ -74,6 +82,9 @@ public class EventMeshServer {
         eventMeshHTTPServer.shutdown();
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.shutdown();
+        }
+        if (h2SchemaAdapter.isAdapterEnabled()) {
+        	h2SchemaAdapter.shutdown();
         }
         serviceState = ServiceState.STOPED;
         logger.info("server state:{}", serviceState);

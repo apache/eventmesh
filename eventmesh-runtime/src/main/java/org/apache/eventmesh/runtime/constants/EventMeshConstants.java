@@ -112,5 +112,7 @@ public class EventMeshConstants {
     public static final String LEAVE_TIME = "LEAVE_TIME";            //leaveBrokerTime
     public static final String ARRIVE_TIME = "ARRIVE_TIME";
     public static final String STORE_TIME = "STORE_TIME";
-
+    
+    public static final String MANAGE_SCHEMA_SUBJECT = "subject";
+    
 }
