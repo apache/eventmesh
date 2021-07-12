@@ -27,10 +27,10 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
 public class SendMessageBatchV2ResponseBody extends Body {
 
-    //react code
+    //return code
     private Integer retCode;
 
-    //react code
+    //response message
     private String retMsg;
 
     //response time

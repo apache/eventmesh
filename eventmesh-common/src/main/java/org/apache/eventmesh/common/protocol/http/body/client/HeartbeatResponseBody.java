@@ -27,7 +27,7 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
 public class HeartbeatResponseBody extends Body {
 
-    //react code
+    //return code
     private Integer retCode;
 
     //response message
