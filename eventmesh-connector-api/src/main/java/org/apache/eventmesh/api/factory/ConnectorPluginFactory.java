@@ -17,18 +17,33 @@
  * under the License.
  */
 
-package org.apache.eventmesh.runtime.core.plugin;
+package org.apache.eventmesh.api.factory;
 
 import org.apache.eventmesh.api.consumer.MeshMQPushConsumer;
 import org.apache.eventmesh.api.producer.MeshMQProducer;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
-public class PluginFactory {
+/**
+ * The factory to get connector {@link MeshMQProducer} and {@link MeshMQPushConsumer}
+ */
+public class ConnectorPluginFactory {
 
+    /**
+     * Get MeshMQProducer instance by plugin name
+     *
+     * @param connectorPluginName plugin name
+     * @return MeshMQProducer instance
+     */
     public static MeshMQProducer getMeshMQProducer(String connectorPluginName) {
         return EventMeshExtensionFactory.getExtension(MeshMQProducer.class, connectorPluginName);
     }
 
+    /**
+     * Get MeshMQPushConsumer instance by plugin name
+     *
+     * @param connectorPluginName plugin name
+     * @return MeshMQPushConsumer instance
+     */
     public static MeshMQPushConsumer getMeshMQPushConsumer(String connectorPluginName) {
         return EventMeshExtensionFactory.getExtension(MeshMQPushConsumer.class, connectorPluginName);
     }

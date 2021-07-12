@@ -23,7 +23,6 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Properties;
 
-import io.openmessaging.api.Action;
 import io.openmessaging.api.AsyncConsumeContext;
 import io.openmessaging.api.AsyncMessageListener;
 import io.openmessaging.api.Consumer;

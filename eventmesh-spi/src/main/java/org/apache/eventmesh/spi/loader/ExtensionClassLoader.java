@@ -15,15 +15,25 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-connector-api'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
+package org.apache.eventmesh.spi.loader;
 
+import java.util.Map;
+
+/**
+ * Load extension class
+ * <ul>
+ *     <li>{@link MetaInfExtensionClassLoader}</li>
+ *     <li>{@link JarExtensionClassLoader}</li>
+ * </ul>
+ */
+public interface ExtensionClassLoader {
+
+    /**
+     * load
+     *
+     * @param extensionType extension type class
+     * @param <T>           extension type
+     * @return extension instance name to extension instance class
+     */
+    <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType);
+}

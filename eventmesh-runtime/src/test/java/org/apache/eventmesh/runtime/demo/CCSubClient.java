@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.demo;
+package demo;
 
 import io.netty.channel.ChannelHandlerContext;
 
