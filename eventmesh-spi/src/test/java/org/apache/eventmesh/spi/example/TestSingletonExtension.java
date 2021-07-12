@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.spi.example;
 
-@EventMeshSPI
-public interface TestExtension {
+import org.apache.eventmesh.spi.EventMeshSPI;
+
+@EventMeshSPI(isSingleton = true)
+public interface TestSingletonExtension {
 
     void hello();
 }
