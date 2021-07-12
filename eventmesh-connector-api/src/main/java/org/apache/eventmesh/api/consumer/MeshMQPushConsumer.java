@@ -25,7 +25,9 @@ import io.openmessaging.api.Consumer;
 import io.openmessaging.api.Message;
 
 import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
+@EventMeshSPI
 public interface MeshMQPushConsumer extends Consumer {
 
     void init(Properties keyValue) throws Exception;

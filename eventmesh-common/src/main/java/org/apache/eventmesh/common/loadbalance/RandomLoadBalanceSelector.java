@@ -28,7 +28,7 @@ import java.util.List;
  * This selector use random strategy.
  * Each selection will randomly give one from the given list
  *
- * @param <T>
+ * @param <T> Target type
  */
 public class RandomLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
 

@@ -37,7 +37,7 @@ public class ThreadUtil {
     /**
      * get current process id only once.
      *
-     * @return
+     * @return process id
      */
     public static long getPID() {
         if (currentPID >= 0) {
