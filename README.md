@@ -48,20 +48,25 @@ The protocol of eventmesh is easier and more convenient, you can read more [here
 | v1.0.0  |Support java-sdk , tcp pub/sub, http pub|
 | v1.1.0  |Support RocketMQ as eventstore|
 | v1.1.1  |Support https|
-| v1.2.0  |Support EventMesh store layer pluggable by OpenMessaging Pub/Sub API, http sub, docker|
-| V1.3.0  |Support CloudEvents, Event Streaming|
-|         |Support Event function,triggers and bindings|
-|         |Support Event orchestration, Servelss workflow|
-|         |Support Event transaction|
-|         |Support Event schema|
-|         |Support Event governance, dashboard|
-|         |Support Event security|
-|         |Support multi language SDK(c\go\python\wasm)|
-|         |Support Promethus as metrics|
-|         |Support Skywalking as tracing|
-|         |Support streaming event store|
-|         |Support gRPC protocol|
-|         |Support MQTT protocol|
+| v1.2.0  |Support pluggable event store by OpenMessaging Pub/Sub API, http sub, docker|
+| V1.3.0  |Support CloudEvents, event streaming|
+|   WIP   |Support more pluggable event storage (Kafka, Pulsar, Redis, etc...)|
+|   WIP   |Support Event schema|
+|   WIP   |Support Event governance|
+|   WIP   |Support Event function,triggers and bindings|
+|   WIP   |Support Event orchestration, Servelss workflow|
+|   WIP   |Support in-memory event store|
+|   WIP   |Support Event transaction|
+|   WIP   |Support Event security|
+|   WIP   |Support multi language SDK(c\go\python\wasm)|
+|   WIP   |Support metrics exporter|
+|   WIP   |Support tracing exporter|
+|   WIP   |Support at-least-once/at-most-once delivery guarantees|
+|   WIP   |Support cold event storage (S3, Minio, SQL, key/value, etc...)|
+|   WIP   |Support gRPC protocol|
+|   WIP   |Support MQTT protocol|
+|   WIP   |Support reactive fisrt|
+
 
 ## Quick Start
 1. Build and deploy event-store(default RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).

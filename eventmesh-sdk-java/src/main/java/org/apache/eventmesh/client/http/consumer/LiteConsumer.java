@@ -96,7 +96,7 @@ public class LiteConsumer extends AbstractLiteClient {
 //        this.remotingServer = new RemotingServer(this.consumeExecutor);
     }
 
-    private AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
+    private final AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
 
     @Override
     public void start() throws Exception {
@@ -226,15 +226,14 @@ public class LiteConsumer extends AbstractLiteClient {
 
                     EventMeshRetObj ret = JSON.parseObject(res, EventMeshRetObj.class);
 
-                    if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
-                    } else {
+                    if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
                         throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
                     }
                 } catch (Exception e) {
                     logger.error("send heartBeat error", e);
                 }
             }
-        }, EventMeshCommon.HEATBEAT, EventMeshCommon.HEATBEAT, TimeUnit.MILLISECONDS);
+        }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
 
     public boolean unsubscribe(List<String> topicList, String url) throws Exception {
