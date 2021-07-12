@@ -44,7 +44,7 @@ If you see "EventMeshTCPServer[port=10000] started....", you setup runtime succe
 
 ### 2.1 dependencies
 
-Same with 1.1
+Same with 1.1, but it can be only compiled in JDK 1.8
 
 ### 2.2 download sources
 
@@ -62,11 +62,27 @@ Same with 1.2
 - eventmesh-runtime : eventmesh runtime module
 - eventmesh-sdk-java : eventmesh java client sdk
 - eventmesh-starter : eventmesh project local start entry
+- eventmesh-spi : eventmesh SPI load module
 
-> ps: The loading of connector plugin follows the Java SPI mechanism, it's necessary to configure the mapping file of
-related interface and implementation class under /main/resources/meta-inf/services in the corresponding module
+> ps: The loading of connector plugin follows the eventmesh SPI mechanism, it's necessary to configure the mapping file of
+related interface and implementation class under /main/resources/meta-inf/eventmesh in the corresponding module
 
-**2.3.2 Configure VM Options**
+**2.3.2 Configure plugin**
+
+-Deventmesh.log.home=eventmesh-runtime/logs
+
+Specify the connector plugin that will be loaded after the project start by declaring in `eventMesh.properties`
+
+Modify the `eventMesh.properties` file in the `confPath` directory
+
+load **rocketmq connector** configuration：
+
+```java
+#connector plugin
+eventMesh.connector.plugin.type=rocketmq
+```
+
+**2.3.3 Configure VM Options**
 
 ```java
 -Dlog4j.configurationFile=eventmesh-runtime/conf/log4j2.xml
@@ -75,20 +91,6 @@ related interface and implementation class under /main/resources/meta-inf/servic
 -DconfPath=eventmesh-runtime/conf
 ```
 > ps: If you use Windows, you may need to replace the file separator to \
-
-**2.3.3 Configure build.gradle file**
-
-Specify the connector that will be loaded after the project start with updating compile project item in dependencies
-
-update `build.gradle` file under the `eventmesh-starter` module
-
-load **rocketmq connector** configuration：
-
-```java
-dependencies {
-    compile project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
-}
-```
 
 **2.3.4 Run**
 
