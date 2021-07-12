@@ -50,6 +50,7 @@ import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
+import org.apache.eventmesh.runtime.core.plugin.PluginFactory;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.DownstreamDispatchStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
@@ -96,13 +97,15 @@ public class ClientGroupWrapper {
 
     public AtomicBoolean inited4Broadcast = new AtomicBoolean(Boolean.FALSE);
 
-    private MQConsumerWrapper persistentMsgConsumer = new MQConsumerWrapper();
+    private MQConsumerWrapper persistentMsgConsumer;
 
-    private MQConsumerWrapper broadCastMsgConsumer = new MQConsumerWrapper();
+    private MQConsumerWrapper broadCastMsgConsumer;
 
     private ConcurrentHashMap<String, Set<Session>> topic2sessionInGroupMapping = new ConcurrentHashMap<String, Set<Session>>();
 
     public AtomicBoolean producerStarted = new AtomicBoolean(Boolean.FALSE);
+
+    private MQProducerWrapper mqProducerWrapper;
 
     public ClientGroupWrapper(String sysId, String producerGroup, String consumerGroup,
                               EventMeshTCPServer eventMeshTCPServer,
@@ -115,6 +118,9 @@ public class ClientGroupWrapper {
         this.eventMeshTcpRetryer = eventMeshTCPServer.getEventMeshTcpRetryer();
         this.eventMeshTcpMonitor = eventMeshTCPServer.getEventMeshTcpMonitor();
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
+        this.persistentMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
+        this.broadCastMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
+        this.mqProducerWrapper = new MQProducerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
     }
 
     public ConcurrentHashMap<String, Set<Session>> getTopic2sessionInGroupMapping() {
@@ -162,8 +168,6 @@ public class ClientGroupWrapper {
         });
         return true;
     }
-
-    private MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
 
     public MQProducerWrapper getMqProducerWrapper() {
         return mqProducerWrapper;

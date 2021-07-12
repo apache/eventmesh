@@ -27,7 +27,7 @@ import java.util.List;
  * This selector use the weighted round robin strategy to select from list.
  * If the weight is greater, the probability of being selected is larger.
  *
- * @param <T>
+ * @param <T> Target type
  */
 public class WeightRoundRobinLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
 
