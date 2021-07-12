@@ -69,7 +69,7 @@ public class EventMeshProducer {
         return true;
     }
 
-    protected MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
+    protected MQProducerWrapper mqProducerWrapper;
 
     public MQProducerWrapper getMqProducerWrapper() {
         return mqProducerWrapper;
@@ -85,7 +85,7 @@ public class EventMeshProducer {
 
         //TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.eventMeshIDC);
-
+        mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
         mqProducerWrapper.init(keyValue);
         inited.compareAndSet(false, true);
         logger.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());
