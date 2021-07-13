@@ -17,5 +17,14 @@
 
 rootProject.name = 'EventMesh'
 String jdkVersion = "${jdk}"
-include 'eventmesh-runtime','eventmesh-connector-rocketmq','eventmesh-sdk-java','eventmesh-common','eventmesh-connector-api','eventmesh-store-api','eventmesh-store-h2','eventmesh-starter','eventmesh-test'
+include 'eventmesh-runtime'
+include 'eventmesh-connector-rocketmq'
+include 'eventmesh-sdk-java'
+include 'eventmesh-common'
+include 'eventmesh-connector-api'
+include 'eventmesh-starter'
+include 'eventmesh-test'
+include 'eventmesh-spi'
+include 'eventmesh-store-api'
+include 'eventmesh-store-h2'
 

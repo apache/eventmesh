@@ -35,6 +35,6 @@ List h2_database = [
 ]
 
 dependencies {
-    implementation  metrics, open_message,h2_database,project(":eventmesh-connector-api"),project(":eventmesh-common"),project(":eventmesh-store-api"),project(":eventmesh-store-h2")
-    testImplementation metrics,open_message,h2_database,project(":eventmesh-common"),project(":eventmesh-connector-api"),project(":eventmesh-store-api"),project(":eventmesh-store-h2")
+    implementation  metrics, open_message,h2_database,project(":eventmesh-connector-api"),project(":eventmesh-common"),project(":eventmesh-spi"),project(":eventmesh-store-api"),project(":eventmesh-store-h2")
+    testImplementation metrics,open_message,h2_database,project(":eventmesh-common"),project(":eventmesh-connector-api"),project(":eventmesh-spi"),project(":eventmesh-store-api"),project(":eventmesh-store-h2")
 }
