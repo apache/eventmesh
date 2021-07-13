@@ -9,7 +9,8 @@ public class Schema {
 	  private String schemaType;
 	  private String schemaDefinition;
 	  private String validator;
-	  private int version;	   
+	  private int version;	  
+	  private String subjectName;
 	  	  
 	  public Schema(String id,
 			  		String name,
@@ -18,14 +19,16 @@ public class Schema {
 	                String schemaType,	                
 	                String schemaDefinition,
 	                String validator,	                
-	                int version) {
+	                int version,
+	                String subjectName) {
 		this.name = name;
 		this.comment = comment;
 		this.serialization = serialization;
 		this.schemaType = schemaType;
 		this.schemaDefinition = schemaDefinition;
 		this.validator = validator;
-		this.version = version;	    
+		this.version = version;	 
+		this.subjectName = subjectName;
 	  }	  	  	  
 	  
 	  public String getId() {
@@ -92,6 +95,14 @@ public class Schema {
 	    this.version = version;
 	  }	  	  	  
 	  
+	  public String getSubjectName() {
+		return subjectName;
+	  }
+		  
+	  public void setSubjectName(String subjectName) {
+		this.subjectName = subjectName;
+	  }
+		  
 	  @Override
 	  public String toString() {
 	    StringBuilder sb = new StringBuilder();	    	    

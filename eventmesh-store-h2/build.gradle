@@ -26,40 +26,12 @@ configurations {
     implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
 }
 
-List rocketmq = [
-        "org.apache.rocketmq:rocketmq-client:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-broker:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-common:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-store:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-namesrv:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-tools:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-remoting:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-logging:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-test:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-filter:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-acl:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
-
-]
-
-List metrics = [
-        "io.dropwizard.metrics:metrics-core:4.1.0",
-        "io.dropwizard.metrics:metrics-healthchecks:4.1.0",
-        "io.dropwizard.metrics:metrics-annotation:4.1.0",
-        "io.dropwizard.metrics:metrics-json:4.1.0"
-]
-
-List open_message = [
-        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
-]
-
 List h2_database = [
         "com.h2database:h2:1.3.148",
         "org.apache.commons:commons-dbcp2:2.8.0"
 ]
 
 dependencies {	
-    implementation rocketmq, metrics,open_message,h2_database,project(":eventmesh-store-api"),project(":eventmesh-common")
-    testImplementation rocketmq, metrics,open_message,h2_database,project(":eventmesh-store-api"),project(":eventmesh-common")
+    implementation h2_database,project(":eventmesh-store-api")
+    testImplementation project(":eventmesh-store-api")
 }

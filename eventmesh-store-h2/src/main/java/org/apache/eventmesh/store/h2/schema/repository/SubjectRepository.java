@@ -122,10 +122,7 @@ public class SubjectRepository {
             row = stmt.executeUpdate();
             if (row == 0) {
             	return null;
-            }
-            
-            List<String> subjects = getAllSubjects();
-            logger.info("All subjects !!!!!!!!!!" + subjects);   
+            }                        
             
             //If no error from insert, return subject object.
             Subject subject = new Subject(subjectCreateRequest.getSubject(),

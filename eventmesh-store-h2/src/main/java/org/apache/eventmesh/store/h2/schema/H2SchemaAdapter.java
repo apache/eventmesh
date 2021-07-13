@@ -1,12 +1,5 @@
 package org.apache.eventmesh.store.h2.schema;
 
-import java.io.File;
-import java.sql.SQLException;
-
-import javax.xml.stream.events.StartDocument;
-
-import org.apache.eventmesh.common.config.ConfigurationWraper;
-import org.apache.eventmesh.store.api.openschema.request.SubjectCreateRequest;
 import org.apache.eventmesh.store.h2.schema.configuration.DBConfiguration;
 import org.apache.eventmesh.store.h2.schema.configuration.H2AdapterConfiguration;
 import org.apache.eventmesh.store.h2.schema.repository.SchemaRepository;
@@ -49,13 +42,6 @@ public class H2SchemaAdapter {
         dataSource = DBDataSource.createDataSource(dbConfig);
         subjectRepository = SubjectRepository.createInstance(dataSource);
         subjectRepository.createSubjectTable();
-        /*SubjectCreateRequest subjectCreateRequest = new SubjectCreateRequest("tenant", "namespace", "subject", "app", "description", "status", "compatibility", "coordinate");
-        try {
-			subjectRepository.insertSubject(subjectCreateRequest);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
         schemaRepository = SchemaRepository.createInstance(dataSource);
         schemaRepository.createSchemaTable();
         logger.info("H2 Adapter is started.");

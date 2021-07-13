@@ -24,6 +24,11 @@ public enum ServiceError {
     /**
      * 
      */
+    ERR_SUBJECT_INVALID("404", 404, "40401 - schema version does not exist in this subject"),
+    
+    /**
+     * 
+     */
     ERR_SCHEMA_FORMAT_INVALID("422", 422, "40401 - schema format is invalid"),
     
     /**

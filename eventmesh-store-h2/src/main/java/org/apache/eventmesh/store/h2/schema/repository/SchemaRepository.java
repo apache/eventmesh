@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.eventmesh.store.api.openschema.request.SchemaCreateRequest;
 import org.apache.eventmesh.store.h2.schema.domain.Schema;
 import org.apache.eventmesh.store.h2.schema.util.DBDataSource;
 import org.slf4j.Logger;
@@ -32,73 +33,197 @@ public class SchemaRepository {
         this.dataSource = dataSource;        
     }
     
-    public void insertWithPreparedStatement() throws SQLException {
-        Connection connection = dataSource.getConnection();
-        PreparedStatement createPreparedStatement = null;
-        PreparedStatement insertPreparedStatement = null;
-        PreparedStatement selectPreparedStatement = null;
+    public Schema getSchemaBySubjectAndVersion(String subject, int version) throws SQLException {        
+        String sql = "SELECT id, name, comment, serialization, schemaType, schemaDefinition, validator, version" +
+                " FROM schema_registry WHERE subject_name = ? and version = ?";
 
-        String CreateQuery = "CREATE TABLE PERSON(id int primary key, name varchar(255))";
-        String InsertQuery = "INSERT INTO PERSON" + "(id, name) values" + "(?,?)";
-        String SelectQuery = "select * from PERSON";
-
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
         try {
-            connection.setAutoCommit(false);
-
-            createPreparedStatement = connection.prepareStatement(CreateQuery);
-            createPreparedStatement.executeUpdate();
-            createPreparedStatement.close();
-
-            insertPreparedStatement = connection.prepareStatement(InsertQuery);
-            insertPreparedStatement.setInt(1, 1);
-            insertPreparedStatement.setString(2, "Jose");
-            insertPreparedStatement.executeUpdate();
-            insertPreparedStatement.close();
-
-            selectPreparedStatement = connection.prepareStatement(SelectQuery);
-            ResultSet rs = selectPreparedStatement.executeQuery();
-            System.out.println("H2 In-Memory Database inserted through PreparedStatement");
+            connection = dataSource.getConnection();
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, subject);
+            stmt.setInt(2, version);
+            rs = stmt.executeQuery();
+            Schema schema = null;
             while (rs.next()) {
-                System.out.println("Id " + rs.getInt("id") + " Name " + rs.getString("name"));
+                schema = new Schema(rs.getString("id"),
+                        rs.getString("name"),
+                        rs.getString("comment"),                        
+                        rs.getString("serialization"),
+                        rs.getString("schemaType"),
+                		rs.getString("schemaDefinition"),
+						rs.getString("validator"),
+						rs.getInt("version"),
+						"");
             }
-            selectPreparedStatement.close();
-
-            connection.commit();
-        } catch (SQLException e) {
-            System.out.println("Exception Message " + e.getLocalizedMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
+            return schema;
         } finally {
-            connection.close();
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
         }
     }
+    
+    public List<Integer> getAllVersionsBySubject(String subject) throws SQLException {        
+        String sql = "SELECT version" +
+                " FROM schema_registry WHERE subject_name = ?";
 
-    public void insertWithStatement() throws SQLException {
-    	Connection connection = dataSource.getConnection();
-        Statement stmt = null;
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
         try {
-            connection.setAutoCommit(false);
-            stmt = connection.createStatement();
-            stmt.execute("CREATE TABLE PERSON(id int primary key, name varchar(255))");
-            stmt.execute("INSERT INTO PERSON(id, name) VALUES(1, 'Anju')");
-            stmt.execute("INSERT INTO PERSON(id, name) VALUES(2, 'Sonia')");
-            stmt.execute("INSERT INTO PERSON(id, name) VALUES(3, 'Asha')");
-
-            ResultSet rs = stmt.executeQuery("select * from PERSON");
-            System.out.println("H2 In-Memory Database inserted through Statement");
+            connection = dataSource.getConnection();
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, subject);            
+            rs = stmt.executeQuery();
+            List<Integer> allVersions = new ArrayList<>();
             while (rs.next()) {
-                System.out.println("Id " + rs.getInt("id") + " Name " + rs.getString("name"));
+            	allVersions.add(rs.getInt("version"));
             }
-
-            stmt.execute("DROP TABLE PERSON");
-            stmt.close();
-            connection.commit();
-        } catch (SQLException e) {
-            System.out.println("Exception Message " + e.getLocalizedMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
+            return allVersions;
         } finally {
-            connection.close();
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+    
+    public Schema getSchemaById(String id) throws SQLException {        
+        String sql = "SELECT id, name, comment, serialization, schemaType, schemaDefinition, validator, version," +
+                " FROM schema_registry WHERE id = ?";
+
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            connection = dataSource.getConnection();
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, id);
+            rs = stmt.executeQuery();
+            Schema schema = null;
+            while (rs.next()) {
+                schema = new Schema(rs.getString("id"),
+                        rs.getString("name"),
+                        rs.getString("comment"),                        
+                        rs.getString("serialization"),
+                        rs.getString("schemaType"),
+                		rs.getString("schemaDefinition"),
+						rs.getString("validator"),
+						rs.getInt("version"),
+						"");
+            }
+            return schema;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+    
+    public String insertSchema(SchemaCreateRequest schemaCreateRequest, String subject) throws SQLException {
+    	String sql = "INSERT INTO schema_registry" + 
+   			 "(id, name, comment, serialization, schemaType, schemaDefinition, validator, version, subject_name) values" +
+   			 "(?,?,?,?,?,?,?,?,?)";                
+
+	   Connection connection = null;
+	   PreparedStatement stmt = null;
+	   int row = 0;
+	   try {
+	       connection = dataSource.getConnection();
+	       stmt = connection.prepareStatement(sql);
+	       stmt.setString(1, schemaCreateRequest.getId());
+	       stmt.setString(2, schemaCreateRequest.getName());
+	       stmt.setString(3, schemaCreateRequest.getComment());
+	       stmt.setString(4, schemaCreateRequest.getSerialization());
+	       stmt.setString(5, schemaCreateRequest.getSchemaType());
+	       stmt.setString(6, schemaCreateRequest.getSchemaDefinition());
+	       stmt.setString(7, schemaCreateRequest.getValidator());
+	       stmt.setString(8, schemaCreateRequest.getVersion());
+	       stmt.setString(9, subject);
+	       row = stmt.executeUpdate();
+	       if (row == 0) {
+	       	   return null;
+	       }                        
+	       
+	       //If no error from insert, return subject object.
+	       //Schema schema = new Schema(schemaCreateRequest.getId());
+	      
+	       return schemaCreateRequest.getId();
+	   } finally {
+	       if (stmt != null) {
+	           stmt.close();
+	       }
+	       if (connection != null) {
+	           connection.close();
+	       }
+	   }
+
+    }
+    
+    public int deleteAllSchemaVersionsBySubject(String subject) throws SQLException {        
+        String sql = "DELETE" +
+                " FROM schema_registry WHERE subject_name = ?";
+
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        int row = 0;
+        try {
+            connection = dataSource.getConnection();
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, subject);            
+            row = stmt.executeUpdate();
+            return row;
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+    
+    public int deleteSchemaBySubjectAndVersion(String subject, int version) throws SQLException {        
+        String sql = "DELETE" +
+        		" FROM schema_registry WHERE subject_name = ? and version = ?";
+
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        int row = 0;
+        try {
+            connection = dataSource.getConnection();
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, subject);
+            stmt.setInt(2, version);      
+            row = stmt.executeUpdate();
+            return row;
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
         }
     }
     

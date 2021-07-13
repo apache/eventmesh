@@ -15,11 +15,8 @@
  * limitations under the License.
  */
 
-List open_message = [
-        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
-]
 
 dependencies {
-    implementation open_message,project(":eventmesh-common")
-    testImplementation open_message,project(":eventmesh-common")
+    implementation project(":eventmesh-common")
+    testImplementation project(":eventmesh-common")
 }

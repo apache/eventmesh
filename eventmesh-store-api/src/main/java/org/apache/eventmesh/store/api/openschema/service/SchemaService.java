@@ -28,13 +28,14 @@ public interface SchemaService {
 
     List<String> fetchAllSubjects() throws ServiceException;
     
-    List<Integer> fetchAllVersions() throws ServiceException;
+    List<Integer> fetchAllVersions(String subject) throws ServiceException;
     
     List<Integer> deleteSubject(String subject) throws ServiceException;
     
-    List<Integer> deleteSchemaBySubjectAndVersion(String subject, String version) throws ServiceException;
+    Integer deleteSchemaBySubjectAndVersion(String subject, String version) throws ServiceException;
     
-    CompatibilityCheckResponse checkCompatibilityBySubjectAndVersion(String subject, String version) throws ServiceException;
+   /* CompatibilityCheckResponse checkCompatibilityBySubjectAndVersion(String subject, String version) throws ServiceException;
     
     CompatibilityResponse updateCompatibilityBySubject(String subject, ConfigUpdateRequest configUpdateRequest) throws ServiceException;
+    */
 }
