@@ -49,15 +49,15 @@ allprojects {
     apply plugin: 'signing'
 
 //    print(project)
-    if (project.findProperty("jdk") == "1.7") {
-        sourceCompatibility = 1.7
-        targetCompatibility = 1.7
-        version = version + "-jdk7"
-    } else {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-        version = version + "-jdk8"
-    }
+//    if (project.findProperty("jdk") == "1.7") {
+//        sourceCompatibility = 1.7
+//        targetCompatibility = 1.7
+//        version = version + "-jdk7"
+//    } else {
+//        sourceCompatibility = 1.8
+//        targetCompatibility = 1.8
+//        version = version + "-jdk8"
+//    }
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
     compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
