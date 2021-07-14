@@ -20,7 +20,6 @@ package org.apache.eventmesh.common.protocol.http.common;
 public enum ClientRetCode {
 
     /**
-     * 这个RETRY的意思是 客户端发现投递的消息它没有监听时, 告诉EventMesh 发往下一个, 重试几次以实现灰度 , 预留
      * The "RETRY" means:when the client finds the delivered message and it does not listen, tell EventMesh to send next,try again several times to achieve grayscale, reserve
      */
 
