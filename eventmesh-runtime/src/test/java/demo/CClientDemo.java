@@ -19,8 +19,10 @@ package demo;
 
 import io.netty.channel.ChannelHandlerContext;
 
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,23 +37,23 @@ public class CClientDemo {
 
     public static Logger logger = LoggerFactory.getLogger(CClientDemo.class);
 
-    private static final String SYNC_TOPIC = "FT0-s-80000000-01-0";
-    private static final String ASYNC_TOPIC = "FT0-e-80010000-01-1";
-    private static final String BROADCAST_TOPIC = "FT0-e-80030000-01-3";
+    private static final String SYNC_TOPIC = "TEST-TOPIC-TCP-SYNC";
+    private static final String ASYNC_TOPIC = "TEST-TOPIC-TCP-ASYNC";
+    private static final String BROADCAST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
 
 
     public static void main(String[] args) throws Exception {
         EventMeshClientImpl client = new EventMeshClientImpl("127.0.0.1", 10000);
         client.init();
         client.heartbeat();
-        client.justSubscribe(ASYNC_TOPIC);
-        client.justSubscribe(BROADCAST_TOPIC);
+        client.justSubscribe(ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubcriptionType.ASYNC);
+        client.justSubscribe(BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubcriptionType.ASYNC);
         client.listen();
 //        for (int i = 0; i < 10000; i++) {
 //            Package rr = null;
 //            AccessMessage rrMessage = null;
 //            try {
-//                rr = client.rr(MessageUtils.rrMesssage("FT0-s-80000000-01-0"), 3000);
+//                rr = client.rr(MessageUtils.rrMesssage("TEST-TOPIC-TCP-SYNC"), 3000);
 //                Thread.sleep(100);
 //                //rrMessage = (AccessMessage) rr.getBody();
 //                System.err.println(         "rr-reply-------------------------------------------------" + rr.toString());
@@ -70,7 +72,7 @@ public class CClientDemo {
         for (int i = 0; i < 10000; i++) {
 //            ThreadUtil.randomSleep(0,200);
             //广播消息
-            client.broadcast(MessageUtils.broadcastMessage("FT0-e-80030000-01-3", i), 5000);
+            client.broadcast(MessageUtils.broadcastMessage("TEST-TOPIC-TCP-BROADCAST", i), 5000);
             //异步消息
             client.publish(MessageUtils.asyncMessage(ASYNC_TOPIC, i), 5000);
         }

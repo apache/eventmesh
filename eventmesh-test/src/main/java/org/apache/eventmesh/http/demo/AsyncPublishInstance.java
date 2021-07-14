@@ -48,7 +48,7 @@ public class AsyncPublishInstance {
 //            String eventMeshIPPort = args[0];
             String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
 //            final String topic = args[1];
-            final String topic = "FT0-e-80010001-01-1";
+            final String topic = "TEST-TOPIC-HTTP-ASYNC";
             if (StringUtils.isBlank(eventMeshIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
                 eventMeshIPPort = "127.0.0.1:10105";
@@ -56,9 +56,9 @@ public class AsyncPublishInstance {
 
             LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
             eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
+                    .setProducerGroup("EventMeshTest-producerGroup")
                     .setEnv("env")
                     .setIdc("idc")
-                    .setDcn("dcn")
                     .setIp(IPUtil.getLocalAddress())
                     .setSys("1234")
                     .setPid(String.valueOf(ThreadUtil.getPID()));

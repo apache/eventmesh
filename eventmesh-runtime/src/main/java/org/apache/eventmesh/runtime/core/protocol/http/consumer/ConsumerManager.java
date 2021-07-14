@@ -113,6 +113,7 @@ public class ConsumerManager {
                                                 ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
                                                 latestTopicConf.setConsumerGroup(consumerGroup);
                                                 latestTopicConf.setTopic(topic);
+                                                latestTopicConf.setSubscriptionItem(map.get(topicKey).getSubscriptionItem());
                                                 latestTopicConf.setUrls(clientUrls);
 
                                                 latestTopicConf.setIdcUrls(idcUrls);
@@ -237,10 +238,14 @@ public class ConsumerManager {
      * @param consumerGroup
      */
     public synchronized void delConsumer(String consumerGroup) throws Exception {
+        logger.info("start delConsumer with consumerGroup {}", consumerGroup);
         if(consumerTable.containsKey(consumerGroup)) {
             ConsumerGroupManager cgm = consumerTable.remove(consumerGroup);
+            logger.info("start unsubscribe topic with consumer group manager {}", JSONObject.toJSONString(cgm));
+            cgm.unsubscribe(consumerGroup);
             cgm.shutdown();
         }
+        logger.info("end delConsumer with consumerGroup {}", consumerGroup);
     }
 
     @Subscribe

@@ -28,6 +28,8 @@ import io.openmessaging.api.Message;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -74,7 +76,7 @@ public class EventMeshTcpRetryer {
             return;
         }
 
-        int maxRetryTimes = EventMeshUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 1 : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryTimes;
+        int maxRetryTimes = SubcriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType()) ? 1 : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryTimes;
         if (downStreamMsgContext.retryTimes >= maxRetryTimes) {
             logger.warn("pushRetry fail,retry over maxRetryTimes:{}, retryTimes:{}, seq:{}, bizSeq:{}", maxRetryTimes, downStreamMsgContext.retryTimes,
                     downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
@@ -118,15 +120,14 @@ public class EventMeshTcpRetryer {
 
             Session rechoosen = null;
             String topic = downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
-            if (!EventMeshUtil.isBroadcast(topic)) {
+            if (!SubscriptionMode.BROADCASTING.equals(downStreamMsgContext.subscriptionItem.getMode())) {
                 rechoosen = downStreamMsgContext.session.getClientGroupWrapper()
-                        .get().getDownstreamDispatchStrategy().select(downStreamMsgContext.session.getClientGroupWrapper().get().getGroupName()
+                        .get().getDownstreamDispatchStrategy().select(downStreamMsgContext.session.getClientGroupWrapper().get().getSysId()
                                 , topic
                                 , downStreamMsgContext.session.getClientGroupWrapper().get().getGroupConsumerSessions());
             } else {
                 rechoosen = downStreamMsgContext.session;
             }
-
 
             if (rechoosen == null) {
                 logger.warn("retry, found no session to downstream msg,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
@@ -155,9 +156,11 @@ public class EventMeshTcpRetryer {
 
     private boolean isRetryMsgTimeout(DownStreamMsgContext downStreamMsgContext) {
         boolean flag = false;
-        long ttl = Long.parseLong(downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL));
-        //TODO 关注是否能取到
-        long storeTimestamp = Long.parseLong(downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.STORE_TIME));
+        String ttlStr = downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL);
+        long ttl = StringUtils.isNumeric(ttlStr)? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;;
+
+        String storeTimeStr = downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.STORE_TIME);
+        long storeTimestamp = StringUtils.isNumeric(storeTimeStr)? Long.parseLong(storeTimeStr) : 0;
         String leaveTimeStr = downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.LEAVE_TIME);
         long brokerCost = StringUtils.isNumeric(leaveTimeStr) ? Long.parseLong(leaveTimeStr) - storeTimestamp : 0;
 

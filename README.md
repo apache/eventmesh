@@ -1,5 +1,5 @@
 # Apache EventMesh (incubating) 
-[![Build Status](https://www.travis-ci.org/apache/incubator-eventmesh.svg?branch=develop)](https://www.travis-ci.org/github/apache/incubator-eventmesh.svg?branch=develop)
+[![CI status](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml)
 [![CodeCov](https://codecov.io/gh/apache/incubator-eventmesh/branch/develop/graph/badge.svg)](https://codecov.io/gh/apache/incubator-eventmesh)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/context:java)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/alerts/)
@@ -35,7 +35,8 @@ EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to d
 
 * **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
 * **eventmesh-sdk-java** : currently supports HTTP and TCP protocols.
-* **eventmesh-connector-rocketmq** : an implementation based on OpenMessaging Connector Interface, pub event to or sub event from RocketMQ Event Store.
+* **eventmesh-connector-api** : an api layer based on OpenMessaging api and SPI pluggin, which can be implemented by popular EventStores such as IMDG, Messaging Engine and OSS etc.
+* **eventmesh-connector-rocketmq** : an implementation of eventmesh-connector-api, pub event to or sub event from RocketMQ as EventStore.
 
 **Protocol:**
 
@@ -47,20 +48,25 @@ The protocol of eventmesh is easier and more convenient, you can read more [here
 | v1.0.0  |Support java-sdk , tcp pub/sub, http pub|
 | v1.1.0  |Support RocketMQ as eventstore|
 | v1.1.1  |Support https|
-| v1.2.0  |Support OpenMessaging API，support Plug-in architecture, support http sub, support cloud native deploy|
-| V1.3.0  |Support CloudEvents, Event Streaming|
-|         |Support Event function,triggers and bindings|
-|         |Support Event orchestration, Servelss workflow|
-|         |Support Event transaction|
-|         |Support Event schema|
-|         |Support Event governance, dashboard|
-|         |Support Event security|
-|         |Support multi language SDK(c\go\python\wasm)|
-|         |Support Promethus as metrics|
-|         |Support Skywalking as tracing|
-|         |Support streaming event store|
-|         |Support gRPC protocol|
-|         |Support MQTT protocol|
+| v1.2.0  |Support pluggable event store by OpenMessaging Pub/Sub API, http sub, docker|
+| V1.3.0  |Support CloudEvents, event streaming|
+|   WIP   |Support more pluggable event storage (Kafka, Pulsar, Redis, etc...)|
+|   WIP   |Support Event schema|
+|   WIP   |Support Event governance|
+|   WIP   |Support Event function,triggers and bindings|
+|   WIP   |Support Event orchestration, Servelss workflow|
+|   WIP   |Support in-memory event store|
+|   WIP   |Support Event transaction|
+|   WIP   |Support Event security|
+|   WIP   |Support multi language SDK(c\go\python\wasm)|
+|   WIP   |Support metrics exporter|
+|   WIP   |Support tracing exporter|
+|   WIP   |Support at-least-once/at-most-once delivery guarantees|
+|   WIP   |Support cold event storage (S3, Minio, SQL, key/value, etc...)|
+|   WIP   |Support gRPC protocol|
+|   WIP   |Support MQTT protocol|
+|   WIP   |Support reactive fisrt|
+
 
 ## Quick Start
 1. Build and deploy event-store(default RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).

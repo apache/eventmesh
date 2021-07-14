@@ -29,9 +29,6 @@ public interface MeshMQProducer extends Producer {
 
     void init(Properties properties) throws Exception;
 
-    @Override
-    void start();
-
     void send(Message message, SendCallback sendCallback) throws Exception;
 
     void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout) throws Exception;
@@ -40,12 +37,8 @@ public interface MeshMQProducer extends Producer {
 
     boolean reply(final Message message, final SendCallback sendCallback) throws Exception;
 
-    MeshMQProducer getMeshMQProducer();
-
-    String buildMQClientId();
+    void checkTopicExist(String topic) throws Exception;
 
     void setExtFields();
-
-    void getDefaultTopicRouteInfoFromNameServer(String topic, long timeout) throws Exception;
 
 }
