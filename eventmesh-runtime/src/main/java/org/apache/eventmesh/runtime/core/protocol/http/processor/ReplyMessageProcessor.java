@@ -80,7 +80,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
-        //HEADER校验
+        //validate HEADER
         if (StringUtils.isBlank(replyMessageRequestHeader.getIdc())
                 || StringUtils.isBlank(replyMessageRequestHeader.getPid())
                 || !StringUtils.isNumeric(replyMessageRequestHeader.getPid())

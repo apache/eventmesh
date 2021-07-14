@@ -111,7 +111,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
     }
 
     /**
-     * 发送RR消息
+     * send RR message
      */
     @Override
     public Package rr(Package msg, long timeout) throws Exception {
@@ -120,7 +120,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
     }
 
     /**
-     * 在原本的IO基础上增加测试用例的断言
+     * Add test case assertions on the basis of the original IO
      */
     public Package dispatcher(Package request, long timeout) throws Exception {
         Assert.assertNotNull(request);
@@ -157,7 +157,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
     }
 
     /**
-     * 发送事件消息, 有返回值是ACCESS 给了ACK
+     * Send an event message, the return value is ACCESS and ACK is given
      */
     public Package publish(Package msg, long timeout) throws Exception {
         publogger.info("PubClientImpl|{}|publish|send|command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
@@ -165,7 +165,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
     }
 
     /**
-     * 发送广播消息
+     * send broadcast message
      */
     public Package broadcast(Package msg, long timeout) throws Exception {
         publogger.info("PubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
@@ -187,7 +187,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                 callback.handle(msg, ctx);
             }
             /**
-             * RR发送接受回包, 并Ack
+             * RR send and accept the return packet ,and Ack
              */
             if (cmd == Command.RESPONSE_TO_CLIENT) {
                 Package responseToClientAck = MessageUtils.responseToClientAck(msg);

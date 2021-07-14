@@ -31,7 +31,7 @@ import client.hook.ReceiveMsgHook;
 import client.impl.EventMeshClientImpl;
 
 /**
- * SIMPLE客户端使用样例
+ * simple client usage example
  */
 public class CClientDemo {
 
@@ -71,9 +71,9 @@ public class CClientDemo {
         });
         for (int i = 0; i < 10000; i++) {
 //            ThreadUtil.randomSleep(0,200);
-            //广播消息
+            //broadcast message
             client.broadcast(MessageUtils.broadcastMessage("TEST-TOPIC-TCP-BROADCAST", i), 5000);
-            //异步消息
+            //asynchronous message
             client.publish(MessageUtils.asyncMessage(ASYNC_TOPIC, i), 5000);
         }
 //
