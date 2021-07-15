@@ -37,7 +37,7 @@ import org.apache.eventmesh.api.consumer.MeshMQPushConsumer;
 import org.apache.eventmesh.connector.rocketmq.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
-import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWraper;
+import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWrapper;
 import org.apache.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
 import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
@@ -59,11 +59,11 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
 
     @Override
     public synchronized void init(Properties keyValue) throws Exception {
-        ConfigurationWraper configurationWraper =
-                new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
+        ConfigurationWrapper configurationWrapper =
+                new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME
                         + File.separator
                         + EventMeshConstants.EVENTMESH_CONF_FILE, false);
-        final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWraper);
+        final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWrapper);
         clientConfiguration.init();
         boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast"));
         String consumerGroup = keyValue.getProperty("consumerGroup");
