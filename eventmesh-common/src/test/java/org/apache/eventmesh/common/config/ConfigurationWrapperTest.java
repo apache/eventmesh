@@ -21,14 +21,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ConfigurationWraperTest {
+public class ConfigurationWrapperTest {
 
-    private ConfigurationWraper wraper;
+    private ConfigurationWrapper wraper;
 
     @Before
     public void before() {
-        String file = ConfigurationWraperTest.class.getResource("/configuration.properties").getFile();
-        wraper = new ConfigurationWraper(file, false);
+        String file = ConfigurationWrapperTest.class.getResource("/configuration.properties").getFile();
+        wraper = new ConfigurationWrapper(file, false);
     }
 
     @Test
