@@ -27,8 +27,8 @@ public class CommonConfigurationTest {
 
     @Before
     public void before() {
-        String file = ConfigurationWraperTest.class.getResource("/configuration.properties").getFile();
-        ConfigurationWraper wraper = new ConfigurationWraper(file, false);
+        String file = ConfigurationWrapperTest.class.getResource("/configuration.properties").getFile();
+        ConfigurationWrapper wraper = new ConfigurationWrapper(file, false);
         configuration = new CommonConfiguration(wraper);
     }
 
