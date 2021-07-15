@@ -169,7 +169,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         registerHTTPRequestProcessor();
 
-        logger.info("--------------------------EventMeshHTTPServer initialized");
+        logger.info("--------------------------EventMeshHTTPServer inited");
     }
 
     @Override
