@@ -25,14 +25,14 @@ import org.junit.Test;
 public class EventMeshExtensionFactoryTest {
 
     @Test
-    public void getSingletonExtensionTest() {
+    public void testGetSingletonExtension() {
         TestSingletonExtension extensionA = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
         TestSingletonExtension extensionB = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
         Assert.assertSame(extensionA, extensionB);
     }
 
     @Test
-    public void getPrototypeExtensionTest() {
+    public void testGetPrototypeExtension() {
         TestPrototypeExtension prototypeExtensionA = EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, "prototypeExtension");
         TestPrototypeExtension prototypeExtensionB = EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, "prototypeExtension");
         Assert.assertNotSame(prototypeExtensionA, prototypeExtensionB);
