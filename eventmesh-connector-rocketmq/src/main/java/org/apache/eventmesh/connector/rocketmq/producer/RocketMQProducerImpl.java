@@ -33,7 +33,7 @@ import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.producer.MeshMQProducer;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
-import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWraper;
+import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWrapper;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.remoting.exception.RemotingException;
@@ -50,11 +50,11 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
     @Override
     public synchronized void init(Properties keyValue) {
-        ConfigurationWraper configurationWraper =
-                new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
+        ConfigurationWrapper configurationWrapper =
+                new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME
                         + File.separator
                         + EventMeshConstants.EVENTMESH_CONF_FILE, false);
-        final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWraper);
+        final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWrapper);
         clientConfiguration.init();
         String producerGroup = keyValue.getProperty("producerGroup");
 
