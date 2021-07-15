@@ -80,18 +80,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Download checkstyle exectable
+        run: wget -O - -q https://github.com/checkstyle/checkstyle/releases/download/checkstyle-8.44/checkstyle-8.44-all.jar > ./checkstyle.jar
+
+      - name: Download reviewdog exectable
+        run: wget -O - -q https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b . v0.12.0
+
       - name: Check code style
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REVIEWDOG_VERSION: v0.12.0
-          WORKDIR: ./
-          CHECKSTYLE_CONFIG: style/checkStyle.xml
-          CHECKDIR: eventmesh-*
         run: |
-          wget -O - -q https://github.com/checkstyle/checkstyle/releases/download/checkstyle-8.44/checkstyle-8.44-all.jar > /opt/checkstyle.jar
-          wget -O - -q https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b /opt ${REVIEWDOG_VERSION}
-          java -jar /opt/checkstyle.jar "${WORKDIR}" -c "${CHECKSTYLE_CONFIG}" -f xml "${CHECKDIR}" \
-               | /opt/reviewdog -f=checkstyle -name="Checkstyle Report" -reporter=github-check
+          java -jar ./checkstyle.jar -c ./style/checkStyle.xml -f xml ./eventmesh-* \
+               | ./reviewdog -f=checkstyle -name="Checkstyle Report" -reporter=github-pr-check -fail-on-error=false
 
   license-check:
     name: License Check
