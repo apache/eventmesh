@@ -40,7 +40,7 @@ public class ConfigurationWrapper {
 
     private boolean reload = true;
 
-    private ScheduledExecutorService configLoader = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-configloader-");
+    private ScheduledExecutorService configLoader = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-configLoader-");
 
     public ConfigurationWrapper(String file, boolean reload) {
         this.file = file;
