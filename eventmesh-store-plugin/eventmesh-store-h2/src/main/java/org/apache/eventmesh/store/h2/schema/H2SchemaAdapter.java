@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.store.h2.schema;
 
+import org.apache.eventmesh.store.api.openschema.SchemaAdapter;
 import org.apache.eventmesh.store.h2.schema.configuration.DBConfiguration;
 import org.apache.eventmesh.store.h2.schema.configuration.H2AdapterConfiguration;
 import org.apache.eventmesh.store.h2.schema.repository.SchemaRepository;
@@ -26,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class H2SchemaAdapter {
+public class H2SchemaAdapter implements SchemaAdapter {
 	
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
     private DBDataSource dataSource;

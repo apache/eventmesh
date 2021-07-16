@@ -309,6 +309,7 @@ subprojects {
             new File(projectDir, '../dist/apps').mkdirs()
             new File(projectDir, '../dist/conf').mkdirs()
             new File(projectDir, '../dist/lib').mkdirs()
+            new File(projectDir, '../dist/plugin/store').mkdirs()
         }
 
         doLast {
@@ -318,7 +319,7 @@ subprojects {
                 exclude 'eventmesh-common*.jar'
                 exclude 'eventmesh-connector-api*.jar'
                 exclude 'eventmesh-store-api*.jar'
-                exclude 'eventmesh-store-h2*.jar'
+                exclude 'eventmesh-store-plugin*.jar'
                 exclude 'eventmesh-starter*.jar'
                 exclude 'eventmesh-test*.jar'
                 exclude 'eventmesh-sdk*.jar'
@@ -336,9 +337,15 @@ subprojects {
                 exclude '**/spring-boot-devtools*.jar'
                 exclude '**/mumble-sdk-test*.jar'
                 exclude '*connector-rocketmq*.jar'
+                exclude '*store-h2*.jar'
                 exclude 'eventmesh-runtime*.jar'
 //                exclude '*log4j*.jar'
                 exclude 'commons-collections-3.2.2.jar'
+            }
+            
+            copy {
+                into '../dist/plugin/store'
+                from '../eventmesh-store-plugin/dist/apps'
             }
 
             copy {

@@ -19,9 +19,10 @@ package org.apache.eventmesh.runtime.admin.handler;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.ServiceLoader;
 
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.plugin.PluginFactory;
 import org.apache.eventmesh.runtime.util.NetUtils;
 import org.apache.eventmesh.store.api.openschema.common.ServiceException;
 import org.apache.eventmesh.store.api.openschema.response.SubjectResponse;
@@ -43,6 +44,12 @@ public class ReadSubjectByNameHandler implements HttpHandler {
 	
 	private static ObjectMapper jsonMapper;
 	
+	private final EventMeshTCPServer eventMeshTCPServer;
+
+    public ReadSubjectByNameHandler(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
+    }
+		
 	static {
         jsonMapper = new ObjectMapper();        
         jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -60,7 +67,11 @@ public class ReadSubjectByNameHandler implements HttpHandler {
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String subject = queryStringInfo.get(EventMeshConstants.MANAGE_SCHEMA_SUBJECT);
         	
-            SchemaService schemaService = getSchemaService();
+            SchemaService schemaService = PluginFactory.getSchemaService(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshStorePluginSchemaService);
+            if (schemaService == null) {
+                logger.error("can't load the schemaService plugin, please check.");
+                throw new RuntimeException("doesn't load the schemaService plugin, please check.");
+            }
             SubjectResponse subjectResponse = schemaService.fetchSubjectByName(subject);
             if (subjectResponse != null) {
             	logger.info("createTopic subject: {}", subject);                      
@@ -93,14 +104,6 @@ public class ReadSubjectByNameHandler implements HttpHandler {
                 }
             }
         }
-    }
-    
-    private SchemaService getSchemaService() {
-        ServiceLoader<SchemaService> schemaServiceLoader = ServiceLoader.load(SchemaService.class);
-        if (schemaServiceLoader.iterator().hasNext()) {
-        	return schemaServiceLoader.iterator().next();
-        }
-        return null;
     }
     
 }

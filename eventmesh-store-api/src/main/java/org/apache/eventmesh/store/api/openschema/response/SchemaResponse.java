@@ -1,11 +1,3 @@
-package org.apache.eventmesh.store.api.openschema.response;
-
-import org.apache.eventmesh.store.api.openschema.request.BaseRequest;
-import org.apache.eventmesh.store.api.openschema.response.BaseResponse;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,6 +14,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.apache.eventmesh.store.api.openschema.response;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 
 public class SchemaResponse extends BaseResponse{
 		  

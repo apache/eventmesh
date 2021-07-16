@@ -14,22 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-sourceCompatibility = 1.8
 
-List metrics = [
-        "io.dropwizard.metrics:metrics-core:4.1.0",
-        "io.dropwizard.metrics:metrics-healthchecks:4.1.0",
-        "io.dropwizard.metrics:metrics-annotation:4.1.0",
-        "io.dropwizard.metrics:metrics-json:4.1.0"
-]
+package org.apache.eventmesh.store.api.openschema;
 
+import org.apache.eventmesh.spi.EventMeshSPI;
 
+@EventMeshSPI
+public interface SchemaAdapter {
+	public void init();     
 
-List open_message = [
-        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
-]
+    public void start();
 
-dependencies {
-    implementation  metrics, open_message,project(":eventmesh-connector-api"),project(":eventmesh-common"),project(":eventmesh-spi"),project(":eventmesh-store-api"),project(":eventmesh-store-plugin:eventmesh-store-h2")
-    testImplementation metrics,open_message,project(":eventmesh-common"),project(":eventmesh-connector-api"),project(":eventmesh-spi"),project(":eventmesh-store-api"),project(":eventmesh-store-plugin:eventmesh-store-h2")
+    public void shutdown() throws Exception;
+    
+    public boolean isAdapterEnabled();
 }
+
+

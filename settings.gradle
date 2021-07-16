@@ -26,5 +26,5 @@ include 'eventmesh-starter'
 include 'eventmesh-test'
 include 'eventmesh-spi'
 include 'eventmesh-store-api'
-include 'eventmesh-store-h2'
-
+include 'eventmesh-store-plugin'
+include 'eventmesh-store-plugin:eventmesh-store-h2'

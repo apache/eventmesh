@@ -19,6 +19,7 @@ package org.apache.eventmesh.store.api.openschema.service;
 
 import java.util.List;
 
+import org.apache.eventmesh.spi.EventMeshSPI;
 import org.apache.eventmesh.store.api.openschema.common.ServiceException;
 import org.apache.eventmesh.store.api.openschema.request.SchemaCreateRequest;
 import org.apache.eventmesh.store.api.openschema.request.SubjectCreateRequest;
@@ -26,6 +27,7 @@ import org.apache.eventmesh.store.api.openschema.response.SchemaResponse;
 import org.apache.eventmesh.store.api.openschema.response.SubjectResponse;
 import org.apache.eventmesh.store.api.openschema.response.SubjectVersionResponse;
 
+@EventMeshSPI
 public interface SchemaService {
 
     SubjectResponse createSubject(SubjectCreateRequest subjectCreateRequest) throws ServiceException;

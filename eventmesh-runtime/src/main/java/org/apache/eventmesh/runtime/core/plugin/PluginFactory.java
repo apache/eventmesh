@@ -22,6 +22,8 @@ package org.apache.eventmesh.runtime.core.plugin;
 import org.apache.eventmesh.api.consumer.MeshMQPushConsumer;
 import org.apache.eventmesh.api.producer.MeshMQProducer;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+import org.apache.eventmesh.store.api.openschema.SchemaAdapter;
+import org.apache.eventmesh.store.api.openschema.service.SchemaService;
 
 public class PluginFactory {
 
@@ -32,8 +34,17 @@ public class PluginFactory {
     public static MeshMQPushConsumer getMeshMQPushConsumer(String connectorPluginName) {
         return EventMeshExtensionFactory.getExtension(MeshMQPushConsumer.class, connectorPluginName);
     }
+    
+    public static SchemaAdapter getSchemaAdapter(String connectorPluginName) {
+        return EventMeshExtensionFactory.getExtension(SchemaAdapter.class, connectorPluginName);
+    }
+    
+    public static SchemaService getSchemaService(String connectorPluginName) {
+        return EventMeshExtensionFactory.getExtension(SchemaService.class, connectorPluginName);
+    }
 
     private static <T> T getPlugin(Class<T> pluginType, String pluginName) {
         return EventMeshExtensionFactory.getExtension(pluginType, pluginName);
     }
+    
 }

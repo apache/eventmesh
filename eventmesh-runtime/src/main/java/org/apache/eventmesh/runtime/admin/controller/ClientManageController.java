@@ -45,7 +45,7 @@ public class ClientManageController {
     private EventMeshTCPServer eventMeshTCPServer;
 
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer) {
-        this.eventMeshTCPServer = eventMeshTCPServer;
+        this.eventMeshTCPServer = eventMeshTCPServer;        
     }
 
     public void start() throws IOException {
@@ -61,9 +61,9 @@ public class ClientManageController {
         server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler(eventMeshTCPServer));
         server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler(eventMeshTCPServer));
         
-        server.createContext("/schemaregistry/createSubject", new CreateSubjectHandler());
-        server.createContext("/schemaregistry/readSubjectByName", new ReadSubjectByNameHandler());
-        server.createContext("/schemaregistry/showAllSubjectNames", new ShowAllSubjectNamesHandler());
+        server.createContext("/schemaRegistry/createSubject", new CreateSubjectHandler(eventMeshTCPServer));
+        server.createContext("/schemaRegistry/readSubjectByName", new ReadSubjectByNameHandler(eventMeshTCPServer));
+        server.createContext("/schemaRegistry/showAllSubjectNames", new ShowAllSubjectNamesHandler(eventMeshTCPServer));
 
         server.start();
         logger.info("ClientManageController start success, port:{}", port);

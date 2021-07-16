@@ -19,8 +19,9 @@ package org.apache.eventmesh.runtime.admin.handler;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.ServiceLoader;
 
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.core.plugin.PluginFactory;
 import org.apache.eventmesh.store.api.openschema.common.ServiceException;
 import org.apache.eventmesh.store.api.openschema.service.SchemaService;
 import org.slf4j.Logger;
@@ -39,6 +40,12 @@ public class ShowAllSubjectNamesHandler implements HttpHandler {
 	private Logger logger = LoggerFactory.getLogger(ShowAllSubjectNamesHandler.class);
 	
 	private static ObjectMapper jsonMapper;
+	
+	private final EventMeshTCPServer eventMeshTCPServer;
+
+    public ShowAllSubjectNamesHandler(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
+    }
 	
 	static {
         jsonMapper = new ObjectMapper();        
@@ -62,7 +69,11 @@ public class ShowAllSubjectNamesHandler implements HttpHandler {
                 return;
             }*/
         	
-            SchemaService schemaService = getSchemaService();
+        	SchemaService schemaService = PluginFactory.getSchemaService(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshStorePluginSchemaService);
+            if (schemaService == null) {
+                logger.error("can't load the schemaService plugin, please check.");
+                throw new RuntimeException("doesn't load the schemaService plugin, please check.");
+            }
             List<String> allSubjects = schemaService.fetchAllSubjects();
             if (allSubjects != null) {
                 logger.info("fetch all subjects: {}", allSubjects);                      
@@ -95,14 +106,6 @@ public class ShowAllSubjectNamesHandler implements HttpHandler {
                 }
             }
         }
-    }
-    
-    private SchemaService getSchemaService() {
-        ServiceLoader<SchemaService> schemaServiceLoader = ServiceLoader.load(SchemaService.class);
-        if (schemaServiceLoader.iterator().hasNext()) {
-        	return schemaServiceLoader.iterator().next();
-        }
-        return null;
     }
     
 }
