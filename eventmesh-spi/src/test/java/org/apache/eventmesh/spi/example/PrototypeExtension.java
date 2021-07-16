@@ -18,6 +18,7 @@
 package org.apache.eventmesh.spi.example;
 
 public class PrototypeExtension implements TestPrototypeExtension {
+
     @Override
     public void hello() {
         System.out.println("I am PrototypeExtension");
