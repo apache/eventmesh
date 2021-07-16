@@ -19,33 +19,33 @@ package org.apache.eventmesh.common.protocol.http.common;
 
 public enum RequestCode {
 
-    MSG_BATCH_SEND(102, "批量发送"),
+    MSG_BATCH_SEND(102, "SEND BATCH MSG"),
 
-    MSG_BATCH_SEND_V2(107, "批量发送V2"),
+    MSG_BATCH_SEND_V2(107, "SEND BATCH MSG V2"),
 
-    MSG_SEND_SYNC(101, "单条发送同步消息"),
+    MSG_SEND_SYNC(101, "SEND SINGLE MSG SYNC"),
 
-    MSG_SEND_ASYNC(104, "单条发送异步消息"),
+    MSG_SEND_ASYNC(104, "SEND SINGLE MSG ASYNC"),
 
     HTTP_PUSH_CLIENT_ASYNC(105, "PUSH CLIENT BY HTTP POST"),
 
     HTTP_PUSH_CLIENT_SYNC(106, "PUSH CLIENT BY HTTP POST"),
 
-    REGISTER(201, "注册"),
+    REGISTER(201, "REGISTER"),
 
-    UNREGISTER(202, "去注册"),
+    UNREGISTER(202, "UNREGISTER"),
 
-    HEARTBEAT(203, "心跳, 发送方与消费方分别心跳, 类型区分"),
+    HEARTBEAT(203, "HEARTBEAT"),
 
-    SUBSCRIBE(206, "订阅"),
+    SUBSCRIBE(206, "SUBSCRIBE"),
 
-    UNSUBSCRIBE(207, "去订阅"),
+    UNSUBSCRIBE(207, "UNSUBSCRIBE"),
 
-    REPLY_MESSAGE(301, "发送返回消息"),
+    REPLY_MESSAGE(301, "REPLY MESSAGE"),
 
-    ADMIN_METRICS(603, "管理接口, METRICS信息"),
+    ADMIN_METRICS(603, "ADMIN METRICS"),
 
-    ADMIN_SHUTDOWN(601, "管理接口, SHUTDOWN");
+    ADMIN_SHUTDOWN(601, "ADMIN SHUTDOWN");
 
     private Integer requestCode;
 
