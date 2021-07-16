@@ -47,10 +47,10 @@ public class HttpCommand {
 
     public Body body;
 
-    //Command 请求时间
+    //Command request time
     public long reqTime;
 
-    //Command 回复时间
+    //Command response time
     public long resTime;
 
     public CmdType cmdType = CmdType.REQ;
