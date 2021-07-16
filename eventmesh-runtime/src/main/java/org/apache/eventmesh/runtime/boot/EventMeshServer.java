@@ -55,19 +55,19 @@ public class EventMeshServer {
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.init();
         }
-                
+
+        String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
+        logger.info("eventStore : {}", eventStore);
+
+        serviceState = ServiceState.INITED;
+        logger.info("server state:{}", serviceState);
+
         this.schemaAdapter = PluginFactory.getSchemaAdapter(eventMeshHttpConfiguration.eventMeshStorePluginSchemaAdapter);
         if (schemaAdapter == null) {
             logger.error("can't load the schemaAdapter plugin, please check.");
             throw new RuntimeException("doesn't load the schemaAdapter plugin, please check.");
         }        
         schemaAdapter.init();
-        
-        String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
-        logger.info("eventStore : {}", eventStore);
-
-        serviceState = ServiceState.INITED;
-        logger.info("server state:{}", serviceState);
     }
 
     public void start() throws Exception {
