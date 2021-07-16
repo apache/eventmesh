@@ -44,12 +44,18 @@ public enum EventMeshExtensionLoader {
             loadExtensionClass(extensionType);
         }
         if (!hasInitializeExtension(extensionName)) {
-            initializeExtension(extensionType, extensionName);
+            T instance = initializeExtension(extensionType, extensionName);
+            EventMeshSPI spiAnnotation = extensionType.getAnnotation(EventMeshSPI.class);
+            if (!spiAnnotation.isSingleton()) {
+                return instance;
+            }
+            EXTENSION_INSTANCE_CACHE.put(extensionName, instance);
         }
         return (T) EXTENSION_INSTANCE_CACHE.get(extensionName);
     }
 
-    private static <T> void initializeExtension(Class<T> extensionType, String extensionName) {
+    @SuppressWarnings("unchecked")
+    private static <T> T initializeExtension(Class<T> extensionType, String extensionName) {
         ConcurrentHashMap<String, Class<?>> extensionClassMap = EXTENSION_CLASS_LOAD_CACHE.get(extensionType);
         if (extensionClassMap == null) {
             throw new ExtensionException(String.format("Extension type:%s has not been loaded", extensionType));
@@ -61,7 +67,7 @@ public enum EventMeshExtensionLoader {
         try {
             Object extensionObj = aClass.newInstance();
             logger.info("initialize extension instance success, extensionType: {}, extensionName: {}", extensionType, extensionName);
-            EXTENSION_INSTANCE_CACHE.put(extensionName, extensionObj);
+            return (T) extensionObj;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new ExtensionException("Extension initialize error", e);
         }
