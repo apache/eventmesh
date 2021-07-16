@@ -15,26 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.spi.example;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class SingletonExtension implements TestSingletonExtension {
 
-/**
- * Just as a marker for SPI
- */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface EventMeshSPI {
-
-    /**
-     * If true, the spi instance is singleton
-     */
-    boolean isSingleton() default false;
-
+    @Override
+    public void hello() {
+        System.out.println("I am SingletonExtension");
+    }
 }
-
