@@ -67,7 +67,7 @@ public abstract class AbstractRemotingServer {
         return ioGroup;
     }
 
-    private EventLoopGroup initWokerGroup(String threadPrefix) {
+    private EventLoopGroup initWorkerGroup(String threadPrefix) {
         workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new ThreadFactory() {
             AtomicInteger count = new AtomicInteger(0);
 
@@ -83,7 +83,7 @@ public abstract class AbstractRemotingServer {
     public void init(String threadPrefix) throws Exception {
         initBossGroup(threadPrefix);
         initIOGroup(threadPrefix);
-        initWokerGroup(threadPrefix);
+        initWorkerGroup(threadPrefix);
     }
 
     public void shutdown() throws Exception {
