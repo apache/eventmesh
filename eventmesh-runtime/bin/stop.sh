@@ -30,13 +30,13 @@ function get_pid {
 		ppid=$(cat ${EVENTMESH_HOME}/bin/pid.file)
 	else
 		if [[ $OS =~ Msys ]]; then
-			# 在Msys上存在可能无法kill识别出的进程的BUG
+			# There is a Bug on Msys that may not be able to kill the identified process
 			ppid=`jps -v | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
 		elif [[ $OS =~ Darwin ]]; then
-			# 已知问题：grep java 可能无法精确识别java进程
+			# Known problem: grep Java may not be able to accurately identify Java processes
 			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
-			#在Linux服务器上要求尽可能精确识别进程
+			# It is required to identify the process as accurately as possible on Linux
 			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		fi
 	fi

@@ -24,7 +24,7 @@ public class ProtocolKey {
     public static final String VERSION = "Version";
 
     public static class ClientInstanceKey {
-        ////////////////////////////////////协议层请求方描述///////////
+        ////////////////////////////////////Protocol layer requester description///////////
         public static final String ENV = "Env";
         public static final String IDC = "Idc";
         public static final String SYS = "Sys";
@@ -36,7 +36,7 @@ public class ProtocolKey {
 
 
     public static class EventMeshInstanceKey {
-        ///////////////////////////////////////////////协议层EventMesh描述
+        ///////////////////////////////////////////////Protocol layer EventMesh description
         public static final String EVENTMESHCLUSTER = "EventMeshCluster";
         public static final String EVENTMESHIP = "EventMeshIp";
         public static final String EVENTMESHENV = "EventMeshEnv";
@@ -44,7 +44,7 @@ public class ProtocolKey {
     }
 
 
-    //CLIENT <-> EventMesh 的 返回
+    //return of CLIENT <-> EventMesh
     public static final String RETCODE = "retCode";
     public static final String RETMSG = "retMsg";
     public static final String RESTIME = "resTime";
