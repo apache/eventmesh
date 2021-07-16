@@ -24,24 +24,27 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DBDataSource {
+	
+	private static DBDataSource instance = null;
+		
     private static BasicDataSource ds = null;
 
-    private DBDataSource() {
-
+    private DBDataSource(DBConfiguration dbConfig) {
+    	ds = new BasicDataSource();
+        ds.setDriverClassName("org.h2.Driver");
+        ds.setUrl(dbConfig.getUrl());
+        ds.setUsername(dbConfig.getUserName());
+        ds.setPassword(dbConfig.getPassword());
+        ds.setMaxIdle(dbConfig.getMaxIdleConnections());
+        ds.setMinIdle(dbConfig.getMinIdleConnections());
+        ds.setMaxOpenPreparedStatements(dbConfig.getMaxOpenPreparedStatements());
     }
 
     public static synchronized DBDataSource createDataSource(DBConfiguration dbConfig) {
-        if (ds == null) { 
-            ds = new BasicDataSource();
-            ds.setDriverClassName("org.h2.Driver");
-            ds.setUrl(dbConfig.getUrl());
-            ds.setUsername(dbConfig.getUserName());
-            ds.setPassword(dbConfig.getPassword());
-            ds.setMaxIdle(dbConfig.getMaxIdleConnections());
-            ds.setMinIdle(dbConfig.getMinIdleConnections());
-            ds.setMaxOpenPreparedStatements(dbConfig.getMaxOpenPreparedStatements());
+        if (instance == null) { 
+        	instance = new DBDataSource(dbConfig);            
         }
-        return new DBDataSource();
+        return instance;
     }
 
     public Connection getConnection() throws SQLException {
