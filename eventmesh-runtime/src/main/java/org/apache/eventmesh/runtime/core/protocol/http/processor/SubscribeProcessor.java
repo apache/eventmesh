@@ -126,7 +126,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 }
                 ConsumerGroupConf consumerGroupConf = eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
                 if (consumerGroupConf == null) {
-                    // 新订阅
+                    // new subscription
                     consumerGroupConf = new ConsumerGroupConf(consumerGroup);
                     ConsumerGroupTopicConf consumeTopicConfig = new ConsumerGroupTopicConf();
                     consumeTopicConfig.setConsumerGroup(consumerGroup);
@@ -140,7 +140,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     map.put(subTopic.getTopic(), consumeTopicConfig);
                     consumerGroupConf.setConsumerGroupTopicConf(map);
                 } else {
-                    // 已有订阅
+                    // already subscribed
                     Map<String, ConsumerGroupTopicConf> map = consumerGroupConf.getConsumerGroupTopicConf();
                     for (String key : map.keySet()) {
                         if (StringUtils.equals(subTopic.getTopic(), key)) {
@@ -163,7 +163,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
 
             long startTime = System.currentTimeMillis();
             try {
-                // 订阅关系变化通知
+                // subscription relationship change notification
                 eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup, eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup),
                         eventMeshHTTPServer.localConsumerGroupMapping);
 

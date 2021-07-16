@@ -27,13 +27,13 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
 public class ReplyMessageResponseBody extends Body {
 
-    //响应码
+    //return code
     private Integer retCode;
 
-    //响应信息
+    //response message
     private String retMsg;
 
-    //回复时间
+    //response time
     private long resTime = System.currentTimeMillis();
 
     public Integer getRetCode() {

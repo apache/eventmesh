@@ -19,70 +19,70 @@ package org.apache.eventmesh.common.protocol.tcp;
 
 public enum Command {
 
-    //心跳
-    HEARTBEAT_REQUEST(0),                              //client发给server的心跳包
-    HEARTBEAT_RESPONSE(1),                             //server回复client的心跳包
+    //heartbeat
+    HEARTBEAT_REQUEST(0),                              //client send heartbeat packet to server
+    HEARTBEAT_RESPONSE(1),                             //server response heartbeat packet of client
 
-    //握手
-    HELLO_REQUEST(2),                                  //client发给server的握手请求
-    HELLO_RESPONSE(3),                                 //server回复client的握手请求
+    //handshake
+    HELLO_REQUEST(2),                                  //client send handshake request to server
+    HELLO_RESPONSE(3),                                 //server response handshake request of client
 
-    //断连
-    CLIENT_GOODBYE_REQUEST(4),                         //client主动断连时通知server
-    CLIENT_GOODBYE_RESPONSE(5),                        //server回复client的主动断连通知
-    SERVER_GOODBYE_REQUEST(6),                         //server主动断连时通知client
-    SERVER_GOODBYE_RESPONSE(7),                        //client回复server的主动断连通知
+    //disconnection
+    CLIENT_GOODBYE_REQUEST(4),                         //Notify server when client actively disconnects
+    CLIENT_GOODBYE_RESPONSE(5),                        //Server replies to client's active disconnection notification
+    SERVER_GOODBYE_REQUEST(6),                         //Notify client when server actively disconnects
+    SERVER_GOODBYE_RESPONSE(7),                        //Client replies to server's active disconnection notification
 
-    //订阅管理
-    SUBSCRIBE_REQUEST(8),                              //client发给server的订阅请求
-    SUBSCRIBE_RESPONSE(9),                             //server回复client的订阅请求
-    UNSUBSCRIBE_REQUEST(10),                           //client发给server的取消订阅请求
-    UNSUBSCRIBE_RESPONSE(11),                          //server回复client的取消订阅请求
+    //subscription management
+    SUBSCRIBE_REQUEST(8),                              //Subscription request sent by client to server
+    SUBSCRIBE_RESPONSE(9),                             //Server replies to client's subscription request
+    UNSUBSCRIBE_REQUEST(10),                           //Unsubscribe request from client to server
+    UNSUBSCRIBE_RESPONSE(11),                          //Server replies to client's unsubscribe request
 
-    //监听
-    LISTEN_REQUEST(12),                                //client发给server的启动topic监听的请求
-    LISTEN_RESPONSE(13),                               //server回复client的监听请求
+    //monitor
+    LISTEN_REQUEST(12),                                //Request from client to server to start topic listening
+    LISTEN_RESPONSE(13),                               //The server replies to the client's listening request
 
     //RR
-    REQUEST_TO_SERVER(14),                             //client将RR请求发送给server
-    REQUEST_TO_CLIENT(15),                             //server将RR请求推送给client
-    REQUEST_TO_CLIENT_ACK(16),                         //client收到RR请求后ACK给server
-    RESPONSE_TO_SERVER(17),                            //client将RR回包发送给server
-    RESPONSE_TO_CLIENT(18),                            //server将RR回包推送给client
-    RESPONSE_TO_CLIENT_ACK(19),                        //client收到回包后ACK给server
+    REQUEST_TO_SERVER(14),                             //The client sends the RR request to the server
+    REQUEST_TO_CLIENT(15),                             //The server pushes the RR request to the client
+    REQUEST_TO_CLIENT_ACK(16),                         //After receiving RR request, the client sends ACK to the server
+    RESPONSE_TO_SERVER(17),                            //The client sends the RR packet back to the server
+    RESPONSE_TO_CLIENT(18),                            //The server pushes the RR packet back to the client
+    RESPONSE_TO_CLIENT_ACK(19),                        //After receiving the return packet, the client sends ACK to the server
 
-    //异步事件
-    ASYNC_MESSAGE_TO_SERVER(20),                       //client将异步事件发送给server
-    ASYNC_MESSAGE_TO_SERVER_ACK(21),                   //server收到异步事件后ACK给client
-    ASYNC_MESSAGE_TO_CLIENT(22),                       //server将异步事件推送给client
-    ASYNC_MESSAGE_TO_CLIENT_ACK(23),                   //client收到异步事件后ACK给server
+    //Asynchronous events
+    ASYNC_MESSAGE_TO_SERVER(20),                       //The client sends asynchronous events to the server
+    ASYNC_MESSAGE_TO_SERVER_ACK(21),                   //After receiving the asynchronous event, the server sends ack to the client
+    ASYNC_MESSAGE_TO_CLIENT(22),                       //The server pushes asynchronous events to the client
+    ASYNC_MESSAGE_TO_CLIENT_ACK(23),                   //After the client receives the asynchronous event, the ACK is sent to the server
 
-    //广播
-    BROADCAST_MESSAGE_TO_SERVER(24),                   //client将广播消息发送给server
-    BROADCAST_MESSAGE_TO_SERVER_ACK(25),               //server收到广播消息后ACK给client
-    BROADCAST_MESSAGE_TO_CLIENT(26),                   //server将广播消息推送给client
-    BROADCAST_MESSAGE_TO_CLIENT_ACK(27),               //client收到广播消息后ACK给server
+    //radio broadcast
+    BROADCAST_MESSAGE_TO_SERVER(24),                   //The client sends the broadcast message to the server
+    BROADCAST_MESSAGE_TO_SERVER_ACK(25),               //After receiving the broadcast message, the server sends ACK to the client
+    BROADCAST_MESSAGE_TO_CLIENT(26),                   //The server pushes the broadcast message to the client
+    BROADCAST_MESSAGE_TO_CLIENT_ACK(27),               //After the client receives the broadcast message, the ACK is sent to the server
 
-    //日志上报
-    SYS_LOG_TO_LOGSERVER(28),                          //业务日志上报
+    //Log reporting
+    SYS_LOG_TO_LOGSERVER(28),                          //Business log reporting
 
-    //RMB跟踪日志上报
-    TRACE_LOG_TO_LOGSERVER(29),                        //RMB跟踪日志上报
+    //RMB tracking log reporting
+    TRACE_LOG_TO_LOGSERVER(29),                        //RMB tracking log reporting
 
-    //重定向指令
-    REDIRECT_TO_CLIENT(30),                            //server将重定向指令推动给client
+    //Redirecting instruction
+    REDIRECT_TO_CLIENT(30),                            //The server pushes the redirection instruction to the client
 
-    //服务注册
-    REGISTER_REQUEST(31),                              //client发送注册请求给server
-    REGISTER_RESPONSE(32),                             //server将注册结果给client
+    //service register
+    REGISTER_REQUEST(31),                              //Client sends registration request to server
+    REGISTER_RESPONSE(32),                             //The server sends the registration result to the client
 
-    //服务去注册
-    UNREGISTER_REQUEST(33),                              //client发送去注册请求给server
-    UNREGISTER_RESPONSE(34),                             //server将去注册结果给client
+    //service unregister
+    UNREGISTER_REQUEST(33),                              //The client sends a de registration request to the server
+    UNREGISTER_RESPONSE(34),                             //The server will register the result to the client
 
-    //client询问EventMesh推荐连哪个EventMesh
-    RECOMMEND_REQUEST(35),                              //client发送推荐请求给server
-    RECOMMEND_RESPONSE(36);                             //server将推荐结果给client
+    //The client asks which EventMesh to recommend
+    RECOMMEND_REQUEST(35),                              //Client sends recommendation request to server
+    RECOMMEND_RESPONSE(36);                             //The server will recommend the results to the client
 
     private final byte value;
 
