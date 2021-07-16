@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.spi.example;
 
-public class ExtensionA implements TestExtension {
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-    @Override
-    public void hello() {
-        System.out.println("I am ExtensionA");
-    }
+@EventMeshSPI(isSingleton = false)
+public interface TestPrototypeExtension {
+
+    void hello();
 }

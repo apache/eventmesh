@@ -17,13 +17,24 @@
 
 package org.apache.eventmesh.spi;
 
+import org.apache.eventmesh.spi.example.TestPrototypeExtension;
+import org.apache.eventmesh.spi.example.TestSingletonExtension;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class EventMeshExtensionFactoryTest {
 
     @Test
-    public void getExtension() {
-        TestExtension extensionA = EventMeshExtensionFactory.getExtension(TestExtension.class, "extensionA");
-        extensionA.hello();
+    public void testGetSingletonExtension() {
+        TestSingletonExtension extensionA = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
+        TestSingletonExtension extensionB = EventMeshExtensionFactory.getExtension(TestSingletonExtension.class, "singletonExtension");
+        Assert.assertSame(extensionA, extensionB);
+    }
+
+    @Test
+    public void testGetPrototypeExtension() {
+        TestPrototypeExtension prototypeExtensionA = EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, "prototypeExtension");
+        TestPrototypeExtension prototypeExtensionB = EventMeshExtensionFactory.getExtension(TestPrototypeExtension.class, "prototypeExtension");
+        Assert.assertNotSame(prototypeExtensionA, prototypeExtensionB);
     }
 }
