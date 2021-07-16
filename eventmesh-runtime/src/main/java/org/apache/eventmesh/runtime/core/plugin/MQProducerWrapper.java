@@ -34,6 +34,14 @@ public class MQProducerWrapper extends MQWrapper {
 
     protected MeshMQProducer meshMQProducer;
 
+    public MQProducerWrapper(String connectorPluginType) {
+        this.meshMQProducer = PluginFactory.getMeshMQProducer(connectorPluginType);
+        if (meshMQProducer == null) {
+            logger.error("can't load the meshMQProducer plugin, please check.");
+            throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
+        }
+    }
+
     public synchronized void init(Properties keyValue) throws Exception {
         if (inited.get()) {
             return;
@@ -44,8 +52,8 @@ public class MQProducerWrapper extends MQWrapper {
             logger.error("can't load the meshMQProducer plugin, please check.");
             throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
         }
-        meshMQProducer.init(keyValue);
 
+        meshMQProducer.init(keyValue);
         inited.compareAndSet(false, true);
     }
 
@@ -110,7 +118,7 @@ public class MQProducerWrapper extends MQWrapper {
 //    public static void main(String[] args) throws Exception {
 //
 //        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
-//        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
+//        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME
 //                + File.separator
 //                + EventMeshConstants.EVENTMESH_CONF_FILE, false));
 //        commonConfiguration.init();

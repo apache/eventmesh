@@ -31,6 +31,6 @@ List open_message = [
 
 
 dependencies {
-    implementation  metrics, open_message,project(":eventmesh-connector-api"),project(":eventmesh-common")
-    testImplementation metrics,open_message,project(":eventmesh-common"),project(":eventmesh-connector-api")
+    implementation  metrics, open_message,project(":eventmesh-connector-api"),project(":eventmesh-common"),project(":eventmesh-spi")
+    testImplementation metrics,open_message,project(":eventmesh-common"),project(":eventmesh-connector-api"),project(":eventmesh-spi")
 }
