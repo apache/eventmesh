@@ -40,7 +40,7 @@ public class CCSubClient {
         subClient.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                System.err.println("收到消息: -----------------------------------------" + msg.toString());
+                System.err.println("Received message: -----------------------------------------" + msg.toString());
                 if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
                     Package rrResponse = MessageUtils.rrResponse(msg);
                     ctx.writeAndFlush(rrResponse);
