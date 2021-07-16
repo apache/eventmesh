@@ -24,7 +24,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 public interface DownstreamDispatchStrategy {
     /**
-     * 选择一个SESSION
+     * select a SESSION
      *
      * @param group
      * @param consumeSessions

@@ -141,7 +141,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     Map<String, List<String>> idcUrls = new HashMap<>();
                     Set<String> clientUrls = new HashSet<>();
                     for (Client client : groupTopicClients) {
-                        // 去除订阅的url
+                        // remove subscribed url
                         if (!StringUtils.equals(unSubscribeUrl, client.url)) {
                             clientUrls.add(client.url);
                             if (idcUrls.containsKey(client.idc)) {
@@ -158,7 +158,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                         ConsumerGroupConf consumerGroupConf = eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
                         Map<String, ConsumerGroupTopicConf> map = consumerGroupConf.getConsumerGroupTopicConf();
                         for (String topicKey : map.keySet()) {
-                            // 仅修改去订阅的topic
+                            // only modify the topic to subscribe
                             if (StringUtils.equals(unSubTopic, topicKey)) {
                                 ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
                                 latestTopicConf.setConsumerGroup(consumerGroup);
@@ -209,9 +209,9 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                     responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                             EventMeshRetCode.SUCCESS.getRetCode(), EventMeshRetCode.SUCCESS.getErrMsg());
                     asyncContext.onComplete(responseEventMeshCommand, handler);
-                    // 清理ClientInfo
+                    // clean ClientInfo
                     eventMeshHTTPServer.localClientInfoMapping.keySet().removeIf(s -> StringUtils.contains(s, consumerGroup));
-                    // 清理ConsumerGroupInfo
+                    // clean ConsumerGroupInfo
                     eventMeshHTTPServer.localConsumerGroupMapping.keySet().removeIf(s -> StringUtils.equals(consumerGroup, s));
                 } catch (Exception e) {
                     HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
