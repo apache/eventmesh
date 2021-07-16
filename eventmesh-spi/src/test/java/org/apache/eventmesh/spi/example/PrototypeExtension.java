@@ -17,10 +17,15 @@
 
 package org.apache.eventmesh.spi.example;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class PrototypeExtension implements TestPrototypeExtension {
+
+    private static final Logger logger = LoggerFactory.getLogger(PrototypeExtension.class);
 
     @Override
     public void hello() {
-        System.out.println("I am PrototypeExtension");
+        logger.info("I am PrototypeExtension");
     }
 }
