@@ -224,7 +224,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 System.err.println("server goodby request: ---------------------------" + msg.toString());
                 close();
             } else {
-                //控制指令集
+                //control instruction set
                 RequestContext context = contexts.get(RequestContext._key(msg));
                 if (context != null) {
                     contexts.remove(context.getKey());
