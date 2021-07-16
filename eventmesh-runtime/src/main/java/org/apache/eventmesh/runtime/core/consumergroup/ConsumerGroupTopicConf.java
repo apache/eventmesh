@@ -45,7 +45,7 @@ public class ConsumerGroupTopicConf {
     /**
      * PUSH URL
      */
-    private Map<String /** IDC*/, List<String> /** IDC内URL列表*/> idcUrls = Maps.newConcurrentMap();
+    private Map<String /** IDC */, List<String> /** URL list in IDC */> idcUrls = Maps.newConcurrentMap();
 
     /**
      * ALL IDC URLs
