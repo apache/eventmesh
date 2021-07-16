@@ -15,21 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.demo;
+package org.apache.eventmesh.runtime.client.common;
 
-import org.apache.eventmesh.runtime.client.common.ClientConstants;
-import org.apache.eventmesh.runtime.client.common.MessageUtils;
-import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
-import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
 
-public class CCPubClient {
+public interface ClientConstants {
 
-    public static void main(String[] args) throws Exception {
-        PubClientImpl pubClient = new PubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
-        pubClient.init();
-        pubClient.heartbeat();
+    /**
+     * CLIENT HEART BEAT TIME
+     */
+    int HEARTBEAT = 1000 * 60;
 
-        pubClient.broadcast(MessageUtils.rrMesssage(ClientConstants.ASYNC_TOPIC, 0), 5000);
+    long DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
 
-    }
+    String SYNC_TOPIC = "TEST-TOPIC-TCP-SYNC";
+    String ASYNC_TOPIC = "TEST-TOPIC-TCP-ASYNC";
+    String BROADCAST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
 }

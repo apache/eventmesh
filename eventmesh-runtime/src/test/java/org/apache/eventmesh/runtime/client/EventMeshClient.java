@@ -15,23 +15,15 @@
  * limitations under the License.
  */
 
-package client;
+package org.apache.eventmesh.runtime.client;
 
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
-import client.hook.ReceiveMsgHook;
+import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 
-
-public interface PubClient {
-
-    void init() throws Exception;
-
-    void close();
-
-    void heartbeat() throws Exception;
-
-    void reconnect() throws Exception;
+public interface EventMeshClient {
 
     Package rr(Package msg, long timeout) throws Exception;
 
@@ -39,14 +31,21 @@ public interface PubClient {
 
     Package broadcast(Package msg, long timeout) throws Exception;
 
-    void registerBusiHandler(ReceiveMsgHook handler) throws Exception;
+    void init() throws Exception;
 
-    UserAgent getUserAgent();
+    void close();
 
-    Package dispatcher(Package request, long timeout) throws Exception;
+    void heartbeat() throws Exception;
+
+    Package listen() throws Exception;
+
+    Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
+
+    Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
+
+    void registerPubBusiHandler(ReceiveMsgHook handler) throws Exception;
+
+    void registerSubBusiHandler(ReceiveMsgHook handler) throws Exception;
 
     void goodbye() throws Exception;
-
-    Package askRecommend() throws Exception;
-
 }

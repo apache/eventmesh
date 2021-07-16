@@ -26,9 +26,9 @@ import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import client.common.MessageUtils;
-import client.hook.ReceiveMsgHook;
-import client.impl.EventMeshClientImpl;
+import org.apache.eventmesh.runtime.client.common.MessageUtils;
+import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
+import org.apache.eventmesh.runtime.client.impl.EventMeshClientImpl;
 
 /**
  * simple client usage example
