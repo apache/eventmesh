@@ -38,7 +38,7 @@ public class Utils {
     private final static Logger messageLogger = LoggerFactory.getLogger("message");
 
     /**
-     * 用于向客户端发送消息
+     * used to send messages to the client
      *
      * @param pkg
      * @param startTime
@@ -75,7 +75,7 @@ public class Utils {
     }
 
     /**
-     * 打印发送失败的消息流水
+     * print the message flow of failed sending
      *
      * @param future
      * @param pkg
@@ -97,7 +97,7 @@ public class Utils {
     }
 
     /**
-     * 打印发送发成的消息流水
+     * print the message flow of successful sending
      *
      * @param pkg
      * @param user
@@ -147,7 +147,7 @@ public class Utils {
 //    }
 
     /**
-     * 打印mq消息的一部分内容
+     * print part of the mq message
      *
      * @param eventMeshMessage
      * @return
@@ -166,7 +166,7 @@ public class Utils {
     }
 
     /**
-     * 打印mq消息的一部分内容
+     * print part of the mq message
      *
      * @param message
      * @return
@@ -180,7 +180,7 @@ public class Utils {
 //    }
 
     /**
-     * 根据topic获取serviceId
+     * get serviceId according to topic
      */
     public static String getServiceId(String topic) {
         String[] topicStrArr = topic.split("-");

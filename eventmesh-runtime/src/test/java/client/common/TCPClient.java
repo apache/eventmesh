@@ -49,8 +49,8 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * 一个Client连一个ACCESS
- * 提供最基础的连接, send能力, 不能提供断线重连能力， 该业务是具备请求依赖的，如果提供了断线重连能力，会引起业务上的无感知，即不会走业务上的重连逻辑
+ * one Client connects one ACCESS
+ * Provides the most basic connection, send capability, and cannot provide disconnected reconnection capability, The service is request-dependent. If the disconnection and reconnection capability is provided, it will cause business insensitivity, that is, it will not follow the business reconnection logic.
  */
 public abstract class TCPClient implements Closeable {
 
