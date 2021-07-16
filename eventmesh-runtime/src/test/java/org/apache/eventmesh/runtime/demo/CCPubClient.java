@@ -15,34 +15,21 @@
  * limitations under the License.
  */
 
-package demo;
-
-import io.netty.channel.ChannelHandlerContext;
-
-import org.apache.eventmesh.common.ThreadUtil;
-import org.apache.eventmesh.common.protocol.tcp.Package;
+package org.apache.eventmesh.runtime.demo;
 
 import client.common.ClientConstants;
 import client.common.MessageUtils;
 import client.common.UserAgentUtils;
-import client.hook.ReceiveMsgHook;
 import client.impl.PubClientImpl;
 
-public class AsyncPubClient {
+public class CCPubClient {
+
     public static void main(String[] args) throws Exception {
         PubClientImpl pubClient = new PubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
         pubClient.init();
         pubClient.heartbeat();
-        pubClient.registerBusiHandler(new ReceiveMsgHook() {
-            @Override
-            public void handle(Package msg, ChannelHandlerContext ctx) {
-                System.err.println("receive msg-----------------------------" + msg.toString());
-            }
-        });
 
-        for (int i = 0; i < 1; i++) {
-            ThreadUtil.randomSleep(0, 500);
-            pubClient.broadcast(MessageUtils.asyncMessage(ClientConstants.ASYNC_TOPIC, i), 5000);
-        }
+        pubClient.broadcast(MessageUtils.rrMesssage(ClientConstants.ASYNC_TOPIC, 0), 5000);
+
     }
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package demo;
+package org.apache.eventmesh.runtime.demo;
 
 import org.apache.eventmesh.common.ThreadUtil;
 

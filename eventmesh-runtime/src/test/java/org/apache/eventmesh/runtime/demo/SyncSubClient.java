@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-package demo;
+package org.apache.eventmesh.runtime.demo;
 
 import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
 import client.common.ClientConstants;
@@ -30,20 +29,17 @@ import client.hook.ReceiveMsgHook;
 import client.impl.SubClientImpl;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 
-public class BroadCastSubClient {
+public class SyncSubClient {
     public static void main(String[] args) throws Exception {
         SubClientImpl client = new SubClientImpl("127.0.0.1", 10000, MessageUtils.generateSubServer());
         client.init();
         client.heartbeat();
-        client.justSubscribe(ClientConstants.BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubcriptionType.ASYNC);
+        client.justSubscribe(ClientConstants.SYNC_TOPIC, SubscriptionMode.CLUSTERING, SubcriptionType.SYNC);
         client.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getHeader().getCommand() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-                    if (msg.getBody() instanceof EventMeshMessage) {
-                        String body = ((EventMeshMessage) msg.getBody()).getBody();
-                        System.err.println("receive message -------------------------------" + body);
-                    }
+                if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
+                    System.err.println("receive message -------------------------------" + msg.toString());
                 }
             }
         });
