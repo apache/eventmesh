@@ -52,8 +52,8 @@ public class EventMeshServer {
             eventMeshTCPServer.init();
         }
 
-        String eventstore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
-        logger.info("eventstore : {}", eventstore);
+        String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
+        logger.info("eventStore : {}", eventStore);
 
         serviceState = ServiceState.INITED;
         logger.info("server state:{}", serviceState);

@@ -15,15 +15,11 @@
  * limitations under the License.
  */
 
-package client.hook;
+package org.apache.eventmesh.spi.example;
 
-import io.netty.channel.ChannelHandlerContext;
-
-import org.apache.eventmesh.common.protocol.tcp.Package;
-
-/**
- * Business callback hook, which is a callback for all types of messages
- */
-public interface ReceiveMsgHook {
-    void handle(Package msg, ChannelHandlerContext ctx);
+public class PrototypeExtension implements TestPrototypeExtension {
+    @Override
+    public void hello() {
+        System.out.println("I am PrototypeExtension");
+    }
 }

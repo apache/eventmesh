@@ -15,15 +15,24 @@
  * limitations under the License.
  */
 
-package client.hook;
+package org.apache.eventmesh.common;
 
-import io.netty.channel.ChannelHandlerContext;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
-import org.apache.eventmesh.common.protocol.tcp.Package;
+public class IPUtilTest {
 
-/**
- * Business callback hook, which is a callback for all types of messages
- */
-public interface ReceiveMsgHook {
-    void handle(Package msg, ChannelHandlerContext ctx);
+    @Test
+    public void testDockerIP() {
+        EnvironmentVariables environmentVariables = new EnvironmentVariables();
+        environmentVariables.set("docker_host_ip", "dockHostIP");
+        Assert.assertEquals("dockHostIP", IPUtil.getLocalAddress());
+    }
+
+    @Test
+    public void testLocalhostIP() {
+        Assert.assertNotNull(IPUtil.getLocalAddress());
+    }
+
 }

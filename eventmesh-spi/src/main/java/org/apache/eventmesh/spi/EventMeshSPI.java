@@ -31,5 +31,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 public @interface EventMeshSPI {
 
+    /**
+     * If true, the spi instance is singleton
+     */
+    boolean isSingleton() default false;
+
 }
 

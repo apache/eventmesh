@@ -15,15 +15,29 @@
  * limitations under the License.
  */
 
-package client.hook;
+package org.apache.eventmesh.common.protocol.tcp.codec;
 
-import io.netty.channel.ChannelHandlerContext;
-
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.junit.Assert;
+import org.junit.Test;
 
-/**
- * Business callback hook, which is a callback for all types of messages
- */
-public interface ReceiveMsgHook {
-    void handle(Package msg, ChannelHandlerContext ctx);
+import java.util.ArrayList;
+
+public class CodecTest {
+
+    @Test
+    public void testCodec() throws Exception {
+        Package testP = new Package();
+        Codec.Encoder ce = new Codec.Encoder();
+        ByteBuf buf = PooledByteBufAllocator.DEFAULT.buffer();
+        ce.encode(null, testP, buf);
+        Codec.Decoder cd = new Codec.Decoder();
+        ArrayList<Object> result = new ArrayList<>();
+        cd.decode(null, buf, result);
+        Assert.assertNotNull(result.get(0));
+        Assert.assertEquals(result.get(0).toString(), testP.toString());
+    }
+
 }
