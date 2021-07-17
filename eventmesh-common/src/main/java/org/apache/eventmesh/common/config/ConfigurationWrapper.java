@@ -30,7 +30,7 @@ import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConfigurationWraper {
+public class ConfigurationWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -40,9 +40,9 @@ public class ConfigurationWraper {
 
     private boolean reload = true;
 
-    private ScheduledExecutorService configLoader = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-configloader-");
+    private ScheduledExecutorService configLoader = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-configLoader-");
 
-    public ConfigurationWraper(String file, boolean reload) {
+    public ConfigurationWrapper(String file, boolean reload) {
         this.file = file;
         this.reload = reload;
         init();

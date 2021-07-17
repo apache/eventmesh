@@ -15,26 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.common;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
-/**
- * Just as a marker for SPI
- */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface EventMeshSPI {
+public class IPUtilTest {
 
-    /**
-     * If true, the spi instance is singleton
-     */
-    boolean isSingleton() default false;
+    @Test
+    public void testDockerIP() {
+        EnvironmentVariables environmentVariables = new EnvironmentVariables();
+        environmentVariables.set("docker_host_ip", "dockHostIP");
+        Assert.assertEquals("dockHostIP", IPUtil.getLocalAddress());
+    }
+
+    @Test
+    public void testLocalhostIP() {
+        Assert.assertNotNull(IPUtil.getLocalAddress());
+    }
 
 }
-

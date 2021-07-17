@@ -27,7 +27,7 @@ import io.openmessaging.api.Message;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
-@EventMeshSPI
+@EventMeshSPI(isSingleton = false)
 public interface MeshMQPushConsumer extends Consumer {
 
     void init(Properties keyValue) throws Exception;

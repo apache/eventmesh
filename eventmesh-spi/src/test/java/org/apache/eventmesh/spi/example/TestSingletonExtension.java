@@ -15,25 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.spi.example;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-public class ConfigurationWraperTest {
+@EventMeshSPI(isSingleton = true)
+public interface TestSingletonExtension {
 
-    private ConfigurationWraper wraper;
-
-    @Before
-    public void before() {
-        String file = ConfigurationWraperTest.class.getResource("/configuration.properties").getFile();
-        wraper = new ConfigurationWraper(file, false);
-    }
-
-    @Test
-    public void testGetProp() {
-        Assert.assertEquals("value1", wraper.getProp("eventMesh.server.env"));
-        Assert.assertEquals("value2", wraper.getProp("eventMesh.server.idc"));
-    }
+    void hello();
 }

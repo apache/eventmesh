@@ -15,26 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.common.config;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-/**
- * Just as a marker for SPI
- */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface EventMeshSPI {
+public class ConfigurationWrapperTest {
 
-    /**
-     * If true, the spi instance is singleton
-     */
-    boolean isSingleton() default false;
+    private ConfigurationWrapper wraper;
 
+    @Before
+    public void before() {
+        String file = ConfigurationWrapperTest.class.getResource("/configuration.properties").getFile();
+        wraper = new ConfigurationWrapper(file, false);
+    }
+
+    @Test
+    public void testGetProp() {
+        Assert.assertEquals("value1", wraper.getProp("eventMesh.server.env"));
+        Assert.assertEquals("value2", wraper.getProp("eventMesh.server.idc"));
+    }
 }
-

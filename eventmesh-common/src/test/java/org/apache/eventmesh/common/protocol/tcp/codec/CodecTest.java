@@ -15,10 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.common.protocol.tcp.codec;
 
-@EventMeshSPI
-public interface TestExtension {
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.junit.Assert;
+import org.junit.Test;
 
-    void hello();
+import java.util.ArrayList;
+
+public class CodecTest {
+
+    @Test
+    public void testCodec() throws Exception {
+        Package testP = new Package();
+        Codec.Encoder ce = new Codec.Encoder();
+        ByteBuf buf = PooledByteBufAllocator.DEFAULT.buffer();
+        ce.encode(null, testP, buf);
+        Codec.Decoder cd = new Codec.Decoder();
+        ArrayList<Object> result = new ArrayList<>();
+        cd.decode(null, buf, result);
+        Assert.assertNotNull(result.get(0));
+        Assert.assertEquals(result.get(0).toString(), testP.toString());
+    }
+
 }

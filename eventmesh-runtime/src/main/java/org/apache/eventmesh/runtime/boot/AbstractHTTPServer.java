@@ -82,7 +82,7 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
+public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     public Logger httpServerLogger = LoggerFactory.getLogger(this.getClass());
 
@@ -106,7 +106,7 @@ public abstract class AbrstractHTTPServer extends AbstractRemotingServer {
     protected HashMap<Integer/* request code */, Pair<HttpRequestProcessor, ThreadPoolExecutor>> processorTable =
             new HashMap<Integer, Pair<HttpRequestProcessor, ThreadPoolExecutor>>(64);
 
-    public AbrstractHTTPServer(int port, boolean useTLS) {
+    public AbstractHTTPServer(int port, boolean useTLS) {
         this.port = port;
         this.useTLS = useTLS;
     }
