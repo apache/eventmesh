@@ -202,7 +202,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
                     return;
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                System.err.println("server goodby request: ---------------------------" + msg.toString());
+                publogger.error("server goodby request: ---------------------------" + msg.toString());
                 close();
             } else {
                 RequestContext context = contexts.get(RequestContext._key(msg));

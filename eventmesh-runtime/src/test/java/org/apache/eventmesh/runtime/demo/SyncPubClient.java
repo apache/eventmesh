@@ -23,8 +23,13 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SyncPubClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(SyncPubClient.class);
+
     public static void main(String[] args) throws Exception {
         PubClientImpl pubClient = new PubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
         pubClient.init();
@@ -34,7 +39,7 @@ public class SyncPubClient {
             Package rr = pubClient.rr(MessageUtils.rrMesssage("TEST-TOPIC-TCP-SYNC", i), 3000);
             if (rr.getBody() instanceof EventMeshMessage) {
                 String body = ((EventMeshMessage) rr.getBody()).getBody();
-                System.err.println("rrMessage: " + body + "             " + "rr-reply-------------------------------------------------" + rr.toString());
+                logger.error("rrMessage: " + body + "             " + "rr-reply-------------------------------------------------" + rr.toString());
             }
         }
     }

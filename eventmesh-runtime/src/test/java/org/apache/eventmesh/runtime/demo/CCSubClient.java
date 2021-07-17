@@ -28,8 +28,12 @@ import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CCSubClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(CCSubClient.class);
 
     public static void main(String[] args) throws Exception {
         SubClientImpl subClient = new SubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
@@ -40,7 +44,7 @@ public class CCSubClient {
         subClient.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                System.err.println("Received message: -----------------------------------------" + msg.toString());
+                logger.error("Received message: -----------------------------------------" + msg.toString());
                 if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
                     Package rrResponse = MessageUtils.rrResponse(msg);
                     ctx.writeAndFlush(rrResponse);

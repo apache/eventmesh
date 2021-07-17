@@ -28,8 +28,13 @@ import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SyncSubClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(SyncSubClient.class);
+
     public static void main(String[] args) throws Exception {
         SubClientImpl client = new SubClientImpl("127.0.0.1", 10000, MessageUtils.generateSubServer());
         client.init();
@@ -39,7 +44,7 @@ public class SyncSubClient {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
                 if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
-                    System.err.println("receive message -------------------------------" + msg.toString());
+                    logger.error("receive message -------------------------------" + msg.toString());
                 }
             }
         });

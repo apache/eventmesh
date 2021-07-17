@@ -27,8 +27,13 @@ import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AsyncPubClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(AsyncPubClient.class);
+
     public static void main(String[] args) throws Exception {
         PubClientImpl pubClient = new PubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
         pubClient.init();
@@ -36,7 +41,7 @@ public class AsyncPubClient {
         pubClient.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-                System.err.println("receive msg-----------------------------" + msg.toString());
+                logger.error("receive msg-----------------------------" + msg.toString());
             }
         });
 

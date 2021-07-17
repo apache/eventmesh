@@ -41,7 +41,6 @@ public class CClientDemo {
     private static final String ASYNC_TOPIC = "TEST-TOPIC-TCP-ASYNC";
     private static final String BROADCAST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
 
-
     public static void main(String[] args) throws Exception {
         EventMeshClientImpl client = new EventMeshClientImpl("127.0.0.1", 10000);
         client.init();
@@ -56,7 +55,7 @@ public class CClientDemo {
 //                rr = client.rr(MessageUtils.rrMesssage("TEST-TOPIC-TCP-SYNC"), 3000);
 //                Thread.sleep(100);
 //                //rrMessage = (AccessMessage) rr.getBody();
-//                System.err.println(         "rr-reply-------------------------------------------------" + rr.toString());
+//                logger.error(         "rr-reply-------------------------------------------------" + rr.toString());
 //            } catch (Exception e) {
 //                e.printStackTrace();
 //            }
@@ -65,7 +64,7 @@ public class CClientDemo {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
                 if (msg.getHeader().getCommand() == Command.ASYNC_MESSAGE_TO_CLIENT || msg.getHeader().getCommand() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-                    System.err.println("receive message-------------------------------------" + msg.toString());
+                    logger.error("receive message-------------------------------------" + msg.toString());
                 }
             }
         });
