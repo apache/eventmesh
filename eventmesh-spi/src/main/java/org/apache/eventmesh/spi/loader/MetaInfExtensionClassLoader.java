@@ -31,7 +31,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Load extension from META-INF/eventmesh
+ * Load extension from classpath
  */
 public class MetaInfExtensionClassLoader implements ExtensionClassLoader {
 
