@@ -21,7 +21,8 @@
 # Java Environment Setting
 #===========================================================================================
 set -e
-#服务器配置可能不一致,增加这些配置避免乱码问题
+# The configuration of different servers may be inconsistent,
+# adding these configurations can avoid the problem of garbled characters
 export LANG=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
@@ -45,13 +46,13 @@ function get_pid {
 		ppid=$(cat ${DEMO_HOME}/bin/pid_http_pub.file)
 	else
 		if [[ $OS =~ Msys ]]; then
-			# 在Msys上存在可能无法kill识别出的进程的BUG
+			# There is a bug on Msys that may not be able to kill the recognized process
 			ppid=`jps -v | grep -i "org.apache.eventmesh.http.demo.AsyncPublishInstance" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
 		elif [[ $OS =~ Darwin ]]; then
-			# 已知问题：grep java 可能无法精确识别java进程
+			# Known issue: grep "java" may not be able to accurately identify the java process
 			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "org.apache.eventmesh.http.demo.AsyncPublishInstance" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
-			#在Linux服务器上要求尽可能精确识别进程
+			# It is required to identify the process as accurately as possible on the Linux server
 			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.http.demo.AsyncPublishInstance" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		fi
 	fi

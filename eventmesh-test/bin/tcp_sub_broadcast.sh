@@ -49,7 +49,7 @@ function get_pid {
 			# There is a bug on Msys that may not be able to kill the recognized process
 			ppid=`jps -v | grep -i "org.apache.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
 		elif [[ $OS =~ Darwin ]]; then
-			# Known issues: grep "java" may not be able to accurately identify the java process
+			# Known issue: grep "java" may not be able to accurately identify the java process
 			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "org.apache.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
 			# It is required to identify the process as accurately as possible on the Linux server
