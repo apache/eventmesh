@@ -40,8 +40,7 @@ highly scalable event-driven microservices connected with shared messaging syste
 and easily integrate various systems consuming or producing data.
 
 ## Architecture
-![Alt text](images/eventmesh-runtime.png?raw=true)
-![eventmesh-cloudstream-arch](images/eventmesh-cloudstream-arch.png?raw=true)
+![eventmesh-cloudstream-arch](../../images/eventmesh-cloudstream-arch.png?raw=true)
 
 ## Design
 
