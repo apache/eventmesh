@@ -26,7 +26,7 @@ Streaming of event is continuous flow of events in order to maintain order betwe
 | Requirement ID | Requirement Description | Comments |
 | -------------- | ----------------------- | -------- |
 | F-1            | EventMesh users should be able to achieve Event Streaming functionality in EventMesh | Functionality |
-| F-2            | EventMesh users can apply dynamic user specific routing, filter, transformation logics etc | Functionality |
+| F-2            | EventMesh users can apply dynamic user specific logics for routing, filter, transformation etc | Functionality |
 
 ## Design Details
 
