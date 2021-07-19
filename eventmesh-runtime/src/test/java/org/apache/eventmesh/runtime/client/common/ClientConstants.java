@@ -15,17 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi.example;
+package org.apache.eventmesh.runtime.client.common;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class PrototypeExtension implements TestPrototypeExtension {
+public interface ClientConstants {
 
-    private static final Logger logger = LoggerFactory.getLogger(PrototypeExtension.class);
+    /**
+     * CLIENT HEART BEAT TIME
+     */
+    int HEARTBEAT = 1000 * 60;
 
-    @Override
-    public void hello() {
-        logger.info("I am PrototypeExtension");
-    }
+    long DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
+
+    String SYNC_TOPIC = "TEST-TOPIC-TCP-SYNC";
+    String ASYNC_TOPIC = "TEST-TOPIC-TCP-ASYNC";
+    String BROADCAST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
 }

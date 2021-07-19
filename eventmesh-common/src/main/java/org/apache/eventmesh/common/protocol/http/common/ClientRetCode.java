@@ -20,13 +20,14 @@ package org.apache.eventmesh.common.protocol.http.common;
 public enum ClientRetCode {
 
     /**
-     * The "RETRY" means:when the client finds the delivered message and it does not listen, tell EventMesh to send next,try again several times to achieve grayscale, reserve
+     * The "RETRY" means:when the client finds the delivered message and it does not listen, tell EventMesh to send
+     * next, try again several times to achieve grayscale, reserve
      */
 
-    OK(1, "ok, SDK返回"),
-    RETRY(2, "retry, SDK返回, 这种情况需要尝试至多 max(default, config)"),
-    FAIL(3, "fail, SDK返回"),
-    NOLISTEN(5, "没有监听, SDK返回, 可用于灰度发布实现, 这种情况需要尝试完所有的url");
+    OK(1, "OK. SDK returns."),
+    RETRY(2, "RETRY. SDK returns. Retry at most max(default, config) times."),
+    FAIL(3, "FAIL. SDK returns."),
+    NOLISTEN(5, "NOLISTEN. SDK returns. It can be used for grayscale publishing. Need to try all URLs in this case.");
 
     ClientRetCode(Integer retCode, String errMsg) {
         this.retCode = retCode;
