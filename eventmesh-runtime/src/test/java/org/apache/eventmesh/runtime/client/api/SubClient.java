@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-package client;
+package org.apache.eventmesh.runtime.client.api;
 
+import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
-import client.hook.ReceiveMsgHook;
+import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 
 
-public interface PubClient {
-
+public interface SubClient {
     void init() throws Exception;
 
     void close();
@@ -33,20 +34,16 @@ public interface PubClient {
 
     void reconnect() throws Exception;
 
-    Package rr(Package msg, long timeout) throws Exception;
+    Package justSubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
 
-    Package publish(Package msg, long timeout) throws Exception;
+    Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception;
 
-    Package broadcast(Package msg, long timeout) throws Exception;
+    Package listen() throws Exception;
 
     void registerBusiHandler(ReceiveMsgHook handler) throws Exception;
 
     UserAgent getUserAgent();
 
-    Package dispatcher(Package request, long timeout) throws Exception;
-
-    void goodbye() throws Exception;
-
-    Package askRecommend() throws Exception;
+    Package goodbye() throws Exception;
 
 }
