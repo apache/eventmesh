@@ -27,7 +27,7 @@ public class DBDataSource {
 	
 	private static DBDataSource instance = null;
 		
-    private static BasicDataSource ds = null;
+	private BasicDataSource ds = null;
 
     private DBDataSource(DBConfiguration dbConfig) {
     	ds = new BasicDataSource();
@@ -59,4 +59,13 @@ public class DBDataSource {
             ds.close();
         }
     }
+    
+    public BasicDataSource getBasicDataSource() {
+		return this.ds;
+	}
+
+	public void setBasicDataSource(BasicDataSource dataSource) {
+		this.ds = dataSource;
+	}
+       
 }
