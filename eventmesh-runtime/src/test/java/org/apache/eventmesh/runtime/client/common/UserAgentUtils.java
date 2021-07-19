@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package client.common;
+package org.apache.eventmesh.runtime.client.common;
 
 import java.util.concurrent.ThreadLocalRandom;
 

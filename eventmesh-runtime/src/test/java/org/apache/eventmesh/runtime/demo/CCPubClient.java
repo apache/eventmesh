@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package demo;
+package org.apache.eventmesh.runtime.demo;
 
-import client.common.ClientConstants;
-import client.common.MessageUtils;
-import client.common.UserAgentUtils;
-import client.impl.PubClientImpl;
+import org.apache.eventmesh.runtime.client.common.ClientConstants;
+import org.apache.eventmesh.runtime.client.common.MessageUtils;
+import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
+import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
 
 public class CCPubClient {
 

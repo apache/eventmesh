@@ -36,7 +36,6 @@ public class SyncResponse implements ReceiveMsgHook {
 
     private static EventMeshClient client;
 
-
     public static SyncResponse handler = new SyncResponse();
 
     public static void main(String[] agrs) throws Exception {
@@ -47,15 +46,15 @@ public class SyncResponse implements ReceiveMsgHook {
             client.heartbeat();
 
             client.subscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC);
-            //同步RR消息
+            // Synchronize RR messages
             client.registerSubBusiHandler(handler);
 
             client.listen();
 
             //client.unsubscribe();
 
-            //退出,销毁资源
-//            client.close();
+            // release resource and close client
+            // client.close();
         } catch (Exception e) {
             logger.warn("SyncResponse failed", e);
         }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package demo;
+package org.apache.eventmesh.runtime.demo;
 
 import io.netty.channel.ChannelHandlerContext;
 
@@ -24,13 +24,18 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
-import client.common.ClientConstants;
-import client.common.MessageUtils;
-import client.hook.ReceiveMsgHook;
-import client.impl.SubClientImpl;
+import org.apache.eventmesh.runtime.client.common.ClientConstants;
+import org.apache.eventmesh.runtime.client.common.MessageUtils;
+import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
+import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BroadCastSubClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(BroadCastSubClient.class);
+
     public static void main(String[] args) throws Exception {
         SubClientImpl client = new SubClientImpl("127.0.0.1", 10000, MessageUtils.generateSubServer());
         client.init();
@@ -42,7 +47,7 @@ public class BroadCastSubClient {
                 if (msg.getHeader().getCommand() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
                     if (msg.getBody() instanceof EventMeshMessage) {
                         String body = ((EventMeshMessage) msg.getBody()).getBody();
-                        System.err.println("receive message -------------------------------" + body);
+                        logger.error("receive message -------------------------------" + body);
                     }
                 }
             }
