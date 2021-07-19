@@ -30,7 +30,7 @@ public class LiteConsumeContext {
 
     private String eventMeshCluster;
 
-    //本地RETRY次数
+    // Local RETRY times
     private int retryTimes = 0;
 
     private long createTime = System.currentTimeMillis();

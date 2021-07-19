@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package client;
+package org.apache.eventmesh.runtime.client.api;
 
 import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
-import client.hook.ReceiveMsgHook;
+import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 
 public interface EventMeshClient {
