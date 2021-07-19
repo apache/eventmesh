@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package client.impl;
+package org.apache.eventmesh.runtime.client.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,20 +32,21 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.runtime.demo.SyncPubClient;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import client.SubClient;
-import client.common.ClientConstants;
-import client.common.MessageUtils;
-import client.common.RequestContext;
-import client.common.TCPClient;
-import client.hook.ReceiveMsgHook;
+import org.apache.eventmesh.runtime.client.api.SubClient;
+import org.apache.eventmesh.runtime.client.common.ClientConstants;
+import org.apache.eventmesh.runtime.client.common.MessageUtils;
+import org.apache.eventmesh.runtime.client.common.RequestContext;
+import org.apache.eventmesh.runtime.client.common.TCPClient;
+import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 
 public class SubClientImpl extends TCPClient implements SubClient {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(SubClientImpl.class);
 
     private UserAgent userAgent;
 
@@ -140,7 +141,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
 //        this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
 //    }
 
-    public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception {
+    public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
+        SubcriptionType subcriptionType) throws Exception {
         subscriptionItems.remove(topic);
         Package msg = MessageUtils.unsubscribe(topic, subscriptionMode, subcriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -221,7 +223,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     logger.info("send broadcast request to client ack failed");
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                System.err.println("server goodby request: ---------------------------" + msg.toString());
+                logger.error("server goodby request: ---------------------------" + msg.toString());
                 close();
             } else {
                 //control instruction set
@@ -229,10 +231,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 if (context != null) {
                     contexts.remove(context.getKey());
                     context.finish(msg);
-                    return;
                 } else {
                     logger.error("msg ignored,context not found.|{}|{}", cmd, msg);
-                    return;
                 }
             }
         }

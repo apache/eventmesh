@@ -191,12 +191,12 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerBatchMsgBatchEnabled) {
             for (List<Message> batchMsgs : topicBatchMessageMappings.values()) {
-                // TODO:api中的实现，考虑是否放到插件中
+                // TODO: Implementation in API. Consider whether to put it in the plug-in.
                 Message omsMsg = new Message();
 //                try {
 //                    msgBatch = msgBatch.generateFromList(batchMsgs);
 //                    for (Message message : msgBatch.getMessages()) {
-//                        // TODO：未针对不同producer检测消息最大长度
+//                        // TODO: Detect the maximum length of messages for different producers.
 //                        Validators.checkMessage(message, batchEventMeshProducer.getMqProducerWrapper().getDefaultMQProducer());
 //                        MessageClientIDSetter.setUniqID(message);
 //                    }

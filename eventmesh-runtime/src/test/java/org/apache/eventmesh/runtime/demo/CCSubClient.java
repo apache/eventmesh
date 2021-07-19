@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package demo;
+package org.apache.eventmesh.runtime.demo;
 
 import io.netty.channel.ChannelHandlerContext;
 
@@ -23,23 +23,31 @@ import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
-import client.common.ClientConstants;
-import client.common.MessageUtils;
-import client.hook.ReceiveMsgHook;
-import client.impl.SubClientImpl;
+import org.apache.eventmesh.runtime.client.common.MessageUtils;
+import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
+import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
+import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class SyncSubClient {
+public class CCSubClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(CCSubClient.class);
+
     public static void main(String[] args) throws Exception {
-        SubClientImpl client = new SubClientImpl("127.0.0.1", 10000, MessageUtils.generateSubServer());
-        client.init();
-        client.heartbeat();
-        client.justSubscribe(ClientConstants.SYNC_TOPIC, SubscriptionMode.CLUSTERING, SubcriptionType.SYNC);
-        client.registerBusiHandler(new ReceiveMsgHook() {
+        SubClientImpl subClient = new SubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
+        subClient.init();
+        subClient.heartbeat();
+        subClient.listen();
+        subClient.justSubscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC);
+        subClient.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
+                logger.error("Received message: -----------------------------------------" + msg.toString());
                 if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
-                    System.err.println("receive message -------------------------------" + msg.toString());
+                    Package rrResponse = MessageUtils.rrResponse(msg);
+                    ctx.writeAndFlush(rrResponse);
                 }
             }
         });

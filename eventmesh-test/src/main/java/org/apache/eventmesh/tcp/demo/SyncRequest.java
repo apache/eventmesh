@@ -46,8 +46,8 @@ public class SyncRequest {
             Package response = client.rr(rrMsg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             logger.info("receive rr reply==================={}", response);
 
-            //退出,销毁资源
-//            client.close();
+            // release resource and close client
+            // client.close();
         } catch (Exception e) {
             logger.warn("SyncRequest failed", e);
         }

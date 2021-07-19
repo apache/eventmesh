@@ -15,15 +15,38 @@
  * limitations under the License.
  */
 
-package client.hook;
-
-import io.netty.channel.ChannelHandlerContext;
+package org.apache.eventmesh.runtime.client.api;
 
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
-/**
- * Business callback hook, which is a callback for all types of messages
- */
-public interface ReceiveMsgHook {
-    void handle(Package msg, ChannelHandlerContext ctx);
+import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
+
+
+public interface PubClient {
+
+    void init() throws Exception;
+
+    void close();
+
+    void heartbeat() throws Exception;
+
+    void reconnect() throws Exception;
+
+    Package rr(Package msg, long timeout) throws Exception;
+
+    Package publish(Package msg, long timeout) throws Exception;
+
+    Package broadcast(Package msg, long timeout) throws Exception;
+
+    void registerBusiHandler(ReceiveMsgHook handler) throws Exception;
+
+    UserAgent getUserAgent();
+
+    Package dispatcher(Package request, long timeout) throws Exception;
+
+    void goodbye() throws Exception;
+
+    Package askRecommend() throws Exception;
+
 }
