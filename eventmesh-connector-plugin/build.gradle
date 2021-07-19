@@ -26,6 +26,7 @@ task copyConnectorPlugin(dependsOn: ['jar']) {
             from project.jar.getArchivePath()
             exclude {
                 "eventmesh-connector-plugin-${version}.jar"
+                "eventmesh-connector-api-${version}.jar"
             }
         }
         copy {
