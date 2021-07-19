@@ -107,7 +107,7 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     }
 
     /**
-     * 发送RR消息
+     * Send RR message
      *
      * @param msg
      * @param timeout
@@ -120,7 +120,7 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     }
 
     /**
-     * 异步RR
+     * Asynchronous RR
      *
      * @param msg
      * @param callback
@@ -135,7 +135,7 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     }
 
     /**
-     * 发送事件消息, 只所以有返回值是EventMesh 给了ACK
+     * Publish message
      *
      * @param msg
      * @throws Exception
@@ -146,7 +146,7 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     }
 
     /**
-     * 发送广播消息
+     * Send broadcast message
      *
      * @param msg
      * @param timeout

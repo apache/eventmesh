@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package client.common;
+package org.apache.eventmesh.runtime.client.common;
 
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;

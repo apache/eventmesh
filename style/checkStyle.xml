@@ -22,8 +22,8 @@
   "http://checkstyle.org/dtds/configuration_1_3.dtd">
 <module name="Checker">
   <module name="RegexpSingleline">
-    <property name="format" value="System\.out\.println"/>
-    <property name="message" value="Prohibit invoking System.out.println in source code !"/>
+    <property name="format" value="System\..+\.println"/>
+    <property name="message" value="Prohibit invoking System.*.println in source code !"/>
   </module>
 
   <module name="RegexpSingleline">
