@@ -1,4 +1,4 @@
-# EventMesh Cloud Stream (Camel+Spring Cloud Stream)
+# EventMesh Stream (Camel+Spring Cloud Stream)
 
 ## Introduction
 
@@ -30,7 +30,7 @@ Streaming of event is continuous flow of events in order to maintain order betwe
 
 ## Design Details
 
-We are introduce EventMesh Cloud Stream component allow us to use programming model and binder abstractions
+We are introduce EventMesh Stream component allow us to use programming model and binder abstractions
 from Spring Cloud Stream natively within Apache Camel.
 
 [Spring-Cloud-Stream](https://spring.io/projects/spring-cloud-stream) Spring Cloud Stream is a framework for building 
@@ -40,7 +40,7 @@ highly scalable event-driven microservices connected with shared messaging syste
 and easily integrate various systems consuming or producing data.
 
 ## Architecture
-![eventmesh-cloudstream-arch](../../images/eventmesh-cloudstream-arch.png?raw=true)
+![eventmesh-stream-arch](../../images/eventmesh-stream-arch.png?raw=true)
 
 ## Design
 
