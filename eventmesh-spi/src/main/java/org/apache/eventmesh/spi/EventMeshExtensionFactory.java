@@ -18,11 +18,42 @@
 package org.apache.eventmesh.spi;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.spi.loader.ExtensionClassLoader;
+import org.apache.eventmesh.spi.loader.JarExtensionClassLoader;
+import org.apache.eventmesh.spi.loader.MetaInfExtensionClassLoader;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * The extension fetching factory, all extension plugins should be fetched by this factory.
+ * And all the extension plugins defined in eventmesh should have {@link EventMeshSPI} annotation.
+ */
 public enum EventMeshExtensionFactory {
     ;
 
+    private static final Logger logger = LoggerFactory.getLogger(EventMeshExtensionFactory.class);
+
+    private static final List<ExtensionClassLoader> extensionClassLoaders = new ArrayList<>();
+
+    static {
+        extensionClassLoaders.add(new MetaInfExtensionClassLoader());
+        extensionClassLoaders.add(new JarExtensionClassLoader());
+    }
+
+    private static final ConcurrentHashMap<String, Object> EXTENSION_INSTANCE_CACHE =
+            new ConcurrentHashMap<>(16);
+
+    /**
+     * @param extensionType extension plugin class type
+     * @param extensionName extension instance name
+     * @param <T>           the type of the plugin
+     * @return plugin instance
+     */
     public static <T> T getExtension(Class<T> extensionType, String extensionName) {
         if (extensionType == null) {
             throw new ExtensionException("extensionType is null");
@@ -33,6 +64,56 @@ public enum EventMeshExtensionFactory {
         if (!extensionType.isInterface() || !extensionType.isAnnotationPresent(EventMeshSPI.class)) {
             throw new ExtensionException(String.format("extensionType:%s is invalided", extensionType));
         }
-        return EventMeshExtensionLoader.getExtension(extensionType, extensionName);
+        EventMeshSPI eventMeshSPIAnnotation = extensionType.getAnnotation(EventMeshSPI.class);
+        if (eventMeshSPIAnnotation.isSingleton()) {
+            return getSingletonExtension(extensionType, extensionName);
+        }
+        return getPrototypeExtension(extensionType, extensionName);
     }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getSingletonExtension(Class<T> extensionType, String extensionName) {
+        return (T) EXTENSION_INSTANCE_CACHE.computeIfAbsent(extensionName, name -> {
+            Class<T> extensionInstanceClass = getExtensionClass(extensionType, extensionName);
+            try {
+                if (extensionInstanceClass == null) {
+                    return null;
+                }
+                T extensionInstance = extensionInstanceClass.newInstance();
+                logger.info("initialize extension instance success, extensionType: {}, extensionName: {}",
+                        extensionType, extensionName);
+                return extensionInstance;
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new ExtensionException("Extension initialize error", e);
+            }
+        });
+    }
+
+    private static <T> T getPrototypeExtension(Class<T> extensionType, String extensionName) {
+        Class<T> extensionInstanceClass = getExtensionClass(extensionType, extensionName);
+        try {
+            if (extensionInstanceClass == null) {
+                return null;
+            }
+            T extensionInstance = extensionInstanceClass.newInstance();
+            logger.info("initialize extension instance success, extensionType: {}, extensionName: {}",
+                    extensionType, extensionName);
+            return extensionInstance;
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new ExtensionException("Extension initialize error", e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> Class<T> getExtensionClass(Class<T> extensionType, String extensionName) {
+        for (ExtensionClassLoader extensionClassLoader : extensionClassLoaders) {
+            Map<String, Class<?>> extensionClassMap = extensionClassLoader.loadExtensionClass(extensionType);
+            Class<?> instanceClass = extensionClassMap.get(extensionName);
+            if (instanceClass != null) {
+                return (Class<T>) instanceClass;
+            }
+        }
+        return null;
+    }
+
 }
