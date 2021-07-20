@@ -188,45 +188,6 @@ subprojects {
         }
     }
 
-//    checkstyle {
-//        toolVersion = "8.32"
-//        ignoreFailures = true
-//        sourceSets = [sourceSets.main]
-//        configFile = '../style/codeStyle.xml' as File
-//        showViolations true
-//    }
-//
-//    tasks.withType(Checkstyle) {
-//        reports {
-//            xml.enabled false
-//            html.enabled true
-//        }
-//    }
-//
-//    sourceSets {
-//        main {
-//            java {
-//                srcDir 'src/main/java'
-//            }
-//
-//            resources {
-//                srcDir 'src/main/resources'
-//            }
-//
-//        }
-//
-//        test {
-//            java {
-//                srcDir 'src/test/java'
-//            }
-//
-//            resources {
-//                srcDir 'src/test/resources'
-//            }
-//
-//        }
-//    }
-
     spotbugs {
         //toolVersion = '4.2.3'
         ignoreFailures = true
@@ -271,14 +232,6 @@ subprojects {
         }
     }
 
-//        tasks.withType(Pmd) {
-//            reports {
-//                xml.enabled = false
-//                html.enabled = true
-//            }
-//        }
-
-
     pmd {
         consoleOutput = true
         toolVersion = "6.23.0"
@@ -314,6 +267,7 @@ subprojects {
                 from project.jar.getArchivePath()
                 exclude 'eventmesh-common*.jar'
                 exclude 'eventmesh-connector-api*.jar'
+                exclude 'eventmesh-connector-plugin*.jar'
                 exclude 'eventmesh-starter*.jar'
                 exclude 'eventmesh-test*.jar'
                 exclude 'eventmesh-sdk*.jar'
