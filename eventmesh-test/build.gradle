@@ -25,8 +25,12 @@ List spring_framework = [
 dependencies {
 //    compile log4j2, sl4j
 //    testCompile log4j2, sl4j
-    implementation project(":eventmesh-sdk-java"), project(":eventmesh-connector-api"), project(":eventmesh-common"), spring_framework
-    testImplementation project(":eventmesh-sdk-java"), project(":eventmesh-connector-api"), project(":eventmesh-common"), spring_framework
+    implementation project(":eventmesh-sdk-java")
+    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    implementation spring_framework
+    testImplementation project(":eventmesh-sdk-java")
+    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    testImplementation spring_framework
 }
 
 configurations.all {

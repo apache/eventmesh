@@ -14,23 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-sourceCompatibility = 1.8
 
-List metrics = [
-        "io.dropwizard.metrics:metrics-core:4.1.0",
-        "io.dropwizard.metrics:metrics-healthchecks:4.1.0",
-        "io.dropwizard.metrics:metrics-annotation:4.1.0",
-        "io.dropwizard.metrics:metrics-json:4.1.0"
-]
+package org.apache.eventmesh.spi.loader;
 
+import java.util.Map;
 
+/**
+ * Load extension class
+ * <ul>
+ *     <li>{@link MetaInfExtensionClassLoader}</li>
+ *     <li>{@link JarExtensionClassLoader}</li>
+ * </ul>
+ */
+public interface ExtensionClassLoader {
 
-List open_message = [
-        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
-]
-
-
-dependencies {
-    implementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    /**
+     * load
+     *
+     * @param extensionType extension type class
+     * @param <T>           extension type
+     * @return extension instance name to extension instance class
+     */
+    <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType);
 }
