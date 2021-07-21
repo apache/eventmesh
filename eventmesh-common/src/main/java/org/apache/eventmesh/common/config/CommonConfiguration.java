@@ -85,10 +85,10 @@ public class CommonConfiguration {
             eventMeshConnectorPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshConnectorPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE));
             
-            eventMeshStorePluginSchemaAdapter = configurationWraper.getProp(ConfKeys.KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_ADAPTER);
+            eventMeshStorePluginSchemaAdapter = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_ADAPTER);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshStorePluginSchemaAdapter), String.format("%s error", ConfKeys.KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_ADAPTER));
             
-            eventMeshStorePluginSchemaService = configurationWraper.getProp(ConfKeys.KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_SERVICE);
+            eventMeshStorePluginSchemaService = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_SERVICE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshStorePluginSchemaService), String.format("%s error", ConfKeys.KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_SERVICE));
         }
     }
