@@ -14,3 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+task copyStorePlugin(dependsOn: ['jar']) {
+    doFirst {
+        new File(projectDir, '../eventmesh-store-plugin/dist/apps').mkdir()
+        new File(projectDir, '../dist/plugin/store').mkdirs()
+    }
+    doLast {
+        copy {
+            into('../eventmesh-store-plugin/dist/apps/')
+            from project.jar.getArchivePath()
+            exclude {
+                "eventmesh-store-plugin-${version}.jar"
+                "eventmesh-store-api-${version}.jar"
+            }
+        }
+        copy {
+            into '../dist/plugin/store'
+            from "../eventmesh-store-plugin/dist/apps/eventmesh-store-h2-${version}.jar"
+        }
+    }
+}

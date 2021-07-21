@@ -32,6 +32,6 @@ List h2_database = [
 ]
 
 dependencies {	
-    implementation h2_database,project(":eventmesh-store-api")
-    testImplementation project(":eventmesh-store-api")
+    implementation h2_database,project(":eventmesh-store-plugin::eventmesh-store-api")
+    testImplementation project(":eventmesh-store-plugin::eventmesh-store-api")
 }

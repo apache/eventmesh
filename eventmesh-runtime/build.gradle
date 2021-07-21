@@ -28,6 +28,6 @@ List open_message = [
 ]
 
 dependencies {
-    implementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api"),project(":eventmesh-store-api"),project(":eventmesh-store-plugin:eventmesh-store-h2")
-    testImplementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api"),project(":eventmesh-store-api"),project(":eventmesh-store-plugin:eventmesh-store-h2")
+    implementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api"),project(":eventmesh-store-plugin:eventmesh-store-api"),project(":eventmesh-store-plugin:eventmesh-store-h2")
+    testImplementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api"),project(":eventmesh-store-plugin:eventmesh-store-api"),project(":eventmesh-store-plugin:eventmesh-store-h2")
 }
