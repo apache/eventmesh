@@ -21,6 +21,8 @@ import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.connector.kafka.common.Constants;
 import org.apache.eventmesh.connector.kafka.config.ConfigurationWrapper;
 import org.apache.eventmesh.connector.kafka.producer.KafkaMQProducerImplExample;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
@@ -28,6 +30,8 @@ import java.util.Properties;
 public class KafkaMQConsumerImplExample {
 
     private static KafkaMQConsumerImpl kafkaMQConsumer;
+
+    private static final Logger logger = LoggerFactory.getLogger(KafkaMQConsumerImplExample.class);
 
     static {
         kafkaMQConsumer = new KafkaMQConsumerImpl(new Properties());
@@ -40,7 +44,7 @@ public class KafkaMQConsumerImplExample {
 
     public static void main(String[] args) {
         kafkaMQConsumer.subscribe("eventmesh-test-topic",
-                (message, context) -> System.out.println(new String(message.getBody(), StandardCharsets.UTF_8)));
+                (message, context) -> logger.info(new String(message.getBody(), StandardCharsets.UTF_8)));
         kafkaMQConsumer.start();
     }
 }

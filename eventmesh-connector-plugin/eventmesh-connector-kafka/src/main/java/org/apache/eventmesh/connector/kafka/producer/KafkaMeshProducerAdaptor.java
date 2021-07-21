@@ -38,9 +38,9 @@ import java.util.concurrent.ExecutorService;
 /**
  * The adaptor to adapt Kafka producer to OMS producer.
  */
-public class OMSProducerAdaptor implements MeshMQProducer {
+public class KafkaMeshProducerAdaptor implements MeshMQProducer {
 
-    private final Logger logger = LoggerFactory.getLogger(OMSProducerAdaptor.class);
+    private final Logger logger = LoggerFactory.getLogger(KafkaMeshProducerAdaptor.class);
 
     private KafkaMQProducerImpl kafkaMQProducer;
 

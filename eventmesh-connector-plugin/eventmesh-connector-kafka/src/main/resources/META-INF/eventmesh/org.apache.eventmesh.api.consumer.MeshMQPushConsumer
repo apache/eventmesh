@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-kafka=org.apache.eventmesh.connector.kafka.consumer.OMSConsumerAdaptor
+kafka=org.apache.eventmesh.connector.kafka.consumer.KafkaMeshConsumerAdaptor

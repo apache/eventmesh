@@ -22,11 +22,11 @@ import org.junit.Test;
 
 public class OMSProducerAdaptorTest {
 
-    private OMSProducerAdaptor omsProducerAdaptor;
+    private KafkaMeshProducerAdaptor kafkaMeshProducerAdaptor;
 
     @Before
     public void before() {
-        omsProducerAdaptor = new OMSProducerAdaptor();
+        kafkaMeshProducerAdaptor = new KafkaMeshProducerAdaptor();
     }
 
     @Test

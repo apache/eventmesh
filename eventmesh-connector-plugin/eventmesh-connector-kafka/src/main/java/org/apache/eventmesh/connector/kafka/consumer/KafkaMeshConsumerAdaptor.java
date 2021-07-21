@@ -41,9 +41,9 @@ import java.util.UUID;
 /**
  * The adaptor to adapt Kafka consumer to OMS producer.
  */
-public class OMSConsumerAdaptor implements MeshMQPushConsumer {
+public class KafkaMeshConsumerAdaptor implements MeshMQPushConsumer {
 
-    private final Logger logger = LoggerFactory.getLogger(OMSConsumerAdaptor.class);
+    private final Logger logger = LoggerFactory.getLogger(KafkaMeshConsumerAdaptor.class);
 
     private KafkaMQConsumerImpl kafkaConsumer;
 
