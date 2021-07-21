@@ -271,12 +271,12 @@ subprojects {
                 from project.jar.getArchivePath()
                 exclude 'eventmesh-common*.jar'
                 exclude 'eventmesh-connector-api*.jar'
-				exclude 'eventmesh-connector-plugin*.jar'
-                exclude 'eventmesh-store-api*.jar'
-                exclude 'eventmesh-store-plugin*.jar'
+				exclude 'eventmesh-connector-plugin*.jar'                
                 exclude 'eventmesh-starter*.jar'
                 exclude 'eventmesh-test*.jar'
-                exclude 'eventmesh-sdk*.jar'
+				exclude 'eventmesh-sdk*.jar'
+				exclude 'eventmesh-store-api*.jar'
+				exclude 'eventmesh-store-plugin*.jar'
             }
             copy {
                 into '../dist/lib'
