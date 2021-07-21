@@ -17,34 +17,24 @@
  * under the License.
  */
 
-package org.apache.eventmesh.runtime.core.plugin;
+package org.apache.eventmesh.store.api.factory;
 
-import org.apache.eventmesh.api.consumer.MeshMQPushConsumer;
-import org.apache.eventmesh.api.producer.MeshMQProducer;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 import org.apache.eventmesh.store.api.openschema.SchemaAdapter;
 import org.apache.eventmesh.store.api.openschema.service.SchemaService;
 
-public class PluginFactory {
-
-    public static MeshMQProducer getMeshMQProducer(String connectorPluginName) {
-        return EventMeshExtensionFactory.getExtension(MeshMQProducer.class, connectorPluginName);
-    }
-
-    public static MeshMQPushConsumer getMeshMQPushConsumer(String connectorPluginName) {
-        return EventMeshExtensionFactory.getExtension(MeshMQPushConsumer.class, connectorPluginName);
-    }
-    
-    public static SchemaAdapter getSchemaAdapter(String connectorPluginName) {
+public class StorePluginFactory {
+	
+	public static SchemaAdapter getSchemaAdapter(String connectorPluginName) {
         return EventMeshExtensionFactory.getExtension(SchemaAdapter.class, connectorPluginName);
     }
     
     public static SchemaService getSchemaService(String connectorPluginName) {
         return EventMeshExtensionFactory.getExtension(SchemaService.class, connectorPluginName);
     }
-
-    private static <T> T getPlugin(Class<T> pluginType, String pluginName) {
+    
+	private static <T> T getPlugin(Class<T> pluginType, String pluginName) {
         return EventMeshExtensionFactory.getExtension(pluginType, pluginName);
     }
-    
+	
 }

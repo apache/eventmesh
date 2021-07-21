@@ -21,9 +21,9 @@ import java.io.OutputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.core.plugin.PluginFactory;
 import org.apache.eventmesh.runtime.util.JsonUtils;
 import org.apache.eventmesh.runtime.util.NetUtils;
+import org.apache.eventmesh.store.api.factory.StorePluginFactory;
 import org.apache.eventmesh.store.api.openschema.common.ServiceException;
 import org.apache.eventmesh.store.api.openschema.request.SubjectCreateRequest;
 import org.apache.eventmesh.store.api.openschema.response.SubjectResponse;
@@ -59,7 +59,7 @@ public class CreateSubjectHandler implements HttpHandler {
                 out.write(result.getBytes());
                 return;
             }
-            SchemaService schemaService = PluginFactory.getSchemaService(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshStorePluginSchemaService);
+            SchemaService schemaService = StorePluginFactory.getSchemaService(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshStorePluginSchemaService);
             if (schemaService == null) {
                 logger.error("can't load the schemaService plugin, please check.");
                 throw new RuntimeException("doesn't load the schemaService plugin, please check.");

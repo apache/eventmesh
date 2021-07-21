@@ -22,8 +22,8 @@ import java.util.Map;
 
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.plugin.PluginFactory;
 import org.apache.eventmesh.runtime.util.NetUtils;
+import org.apache.eventmesh.store.api.factory.StorePluginFactory;
 import org.apache.eventmesh.store.api.openschema.common.ServiceException;
 import org.apache.eventmesh.store.api.openschema.response.SubjectResponse;
 import org.apache.eventmesh.store.api.openschema.service.SchemaService;
@@ -67,7 +67,7 @@ public class ReadSubjectByNameHandler implements HttpHandler {
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String subject = queryStringInfo.get(EventMeshConstants.MANAGE_SCHEMA_SUBJECT);
         	
-            SchemaService schemaService = PluginFactory.getSchemaService(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshStorePluginSchemaService);
+            SchemaService schemaService = StorePluginFactory.getSchemaService(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshStorePluginSchemaService);
             if (schemaService == null) {
                 logger.error("can't load the schemaService plugin, please check.");
                 throw new RuntimeException("doesn't load the schemaService plugin, please check.");

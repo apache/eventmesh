@@ -21,7 +21,7 @@ import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.plugin.PluginFactory;
+import org.apache.eventmesh.store.api.factory.StorePluginFactory;
 import org.apache.eventmesh.store.api.openschema.SchemaAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +62,7 @@ public class EventMeshServer {
         serviceState = ServiceState.INITED;
         logger.info("server state:{}", serviceState);
 
-        this.schemaAdapter = PluginFactory.getSchemaAdapter(eventMeshHttpConfiguration.eventMeshStorePluginSchemaAdapter);
+        this.schemaAdapter = StorePluginFactory.getSchemaAdapter(eventMeshHttpConfiguration.eventMeshStorePluginSchemaAdapter);
         if (schemaAdapter == null) {
             logger.error("can't load the schemaAdapter plugin, please check.");
             throw new RuntimeException("doesn't load the schemaAdapter plugin, please check.");
