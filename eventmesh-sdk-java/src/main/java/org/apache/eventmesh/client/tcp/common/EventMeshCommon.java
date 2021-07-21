@@ -18,98 +18,100 @@
 package org.apache.eventmesh.client.tcp.common;
 
 public class EventMeshCommon {
+
     /**
-     * 打印线程池状态的间隔时间
+     * Interval for printing thread pool status
      */
     public static int PRINTTHREADPOOLSTATE_INTEVAL = 1;
 
     /**
-     * 数据上报给logServer间隔时间
+     * Interval between data reporting to logServer
      */
     public static int LOGSERVER_INTEVAL = 1 * 60 * 1000;
 
     /**
-     * CLIENT端心跳间隔时间
+     * CLIENT heartbeat interval
      */
     public static int HEARTBEAT = 30 * 1000;
 
     /**
-     * RR 废弃清理的时间间隔
+     * Obsolete RR cleanup interval
      */
     public static int REQUEST_CONTEXT_CLEAN_EXPIRE = 60 * 1000;
 
     /**
-     * METRICS 废弃清理的时间间隔
+     * Obsolete METRICS cleanup interval
      */
     public static int METRICS_CLEAN_EXPIRE = 2 * 1000;
 
     /**
-     * SESSION 废弃清理的时间间隔
+     * Obsolete SESSION cleanup interval
      */
     public static int SESSION_CLEAN_EXPIRE = 5 * 1000;
 
     /**
-     * EventMesh校验用户名
+     * Username used for EventMesh verification
      */
     public static String EventMesh_USER = "EventMesh";
 
     /**
-     * EventMesh校验用户密码
+     * Password used for EventMesh verification
      */
     public static String EventMesh_PASS = "EventMesh@123";
 
     /**
-     * 服务器共有的超时时间
+     * Timeout time shared by the server
      */
     public static int DEFAULT_TIME_OUT_MILLS = 20 * 1000;
 
     /**
-     * PUB用途的USERAGENT
+     * USERAGENT for PUB
      */
     public static String USER_AGENT_PURPOSE_PUB = "pub";
 
     /**
-     * SUB用途的USERAGENT
+     * USERAGENT for SUB
      */
     public static String USER_AGENT_PURPOSE_SUB = "sub";
 
     /**
-     * 集群消费者消费组前缀
+     * Consumer group prefix of clustering consumers
      */
     public static String PREFIX_CONSUMER_GROUP_CLUSTERING = "clustering";
 
     /**
-     * 广播消费者消费组前缀
+     * Consumer group prefix of broadcasting consumers
      */
     public static String PREFIX_CONSUMER_GROUP_BROADCASTING = "broadcast";
 
     /**
-     * RR 的请求消息存储的集群具体IP地址和端口
+     * The specific IP address and port of the cluster where the RR messages are stored
      */
     public static String KEY_RR_REQ_STROE_ADDRESS = "rr_req_store_addr";
 
     /**
-     * RR请求消息存储在WEMQ上的MSGID
+     * MSGID of RR requests stored on WEMQ
      */
     public static String KEY_RR_REQ_WEMQ_MSG_ID = "rr_req_wemq_msg_id";
 
     /**
-     * 如果多个TOPIC都是旁路消息，下发给C时 都按这个 TOPIC 给，C匹配到这个 bq-bypass 则认为是旁路，则按旁路解析
+     * If messages in multiple TOPICs are bypass messages, they will all be sent to C according to this TOPIC. If C
+     * matches this bq-bypass, it will be considered as bypass, and it will be parsed by bypass.
      */
     public static String KEY_BYPASS_MSG_ORIGINAL_TOPIC = "original_topic";
 
     /**
-     * Client端查询服务器的server级别的统计数据的标识KEY
+     * Identification KEY: Client side queries server-level statistics of the server
      */
     public static String KEY_QUERY_SERVER_STATISTICS = "server-statistic";
 
     /**
-     * Client端查询服务器的session级别的统计数据的标识KEY
+     * Identification KEY: Client side queries session-level statistics of the server
      */
     public static String KEY_QUERY_SESSION_STATISTICS = "session-statistic";
 
     /**
-     * SESSION 统计TPS 前缀区分
+     * Used to count SESSION TPS. Use prefixes to distinguish TPS of different types of messages.
      */
     public static String PREFIX_SESSION_TPS_STAT_RRSEND = "rr_send_tps_";
 
@@ -118,5 +120,4 @@ public class EventMeshCommon {
     public static String PREFIX_SESSION_TPS_STAT_EVENTSEND = "event_send_tps_";
 
     public static String PREFIX_SESSION_TPS_STAT_EVENTREV = "event_rev_tps_";
-
 }

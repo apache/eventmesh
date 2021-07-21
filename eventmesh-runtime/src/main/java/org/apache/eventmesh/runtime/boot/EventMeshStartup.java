@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import java.io.File;
 
-import org.apache.eventmesh.common.config.ConfigurationWraper;
+import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -32,13 +32,13 @@ public class EventMeshStartup {
 
     public static void main(String[] args) throws Exception {
         try {
-            ConfigurationWraper configurationWraper =
-                    new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
+            ConfigurationWrapper configurationWrapper =
+                    new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME
                             + File.separator
                             + EventMeshConstants.EVENTMESH_CONF_FILE, false);
-            EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(configurationWraper);
+            EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(configurationWrapper);
             eventMeshHttpConfiguration.init();
-            EventMeshTCPConfiguration eventMeshTCPConfiguration = new EventMeshTCPConfiguration(configurationWraper);
+            EventMeshTCPConfiguration eventMeshTCPConfiguration = new EventMeshTCPConfiguration(configurationWrapper);
             eventMeshTCPConfiguration.init();
             EventMeshServer server = new EventMeshServer(eventMeshHttpConfiguration, eventMeshTCPConfiguration);
             server.init();

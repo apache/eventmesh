@@ -37,7 +37,6 @@ public class AsyncPublish {
 
     public static AsyncPublish handler = new AsyncPublish();
 
-
     public static void main(String[] agrs) throws Exception {
         Properties properties = Utils.readPropertiesFile("application.properties");
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
@@ -57,8 +56,8 @@ public class AsyncPublish {
             }
 
             Thread.sleep(2000);
-            //退出,销毁资源
-//            client.close();
+            // release resource and close client
+            // client.close();
         } catch (Exception e) {
             logger.warn("AsyncPublish failed", e);
         }

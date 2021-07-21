@@ -50,8 +50,8 @@ public class AsyncPublishBroadcast {
             client.broadcast(broadcastMsg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
             Thread.sleep(2000);
-            //退出,销毁资源
-//            client.close();
+            // release resource and close client
+            // client.close();
         } catch (Exception e) {
             logger.warn("AsyncPublishBroadcast failed", e);
         }

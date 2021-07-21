@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  ~
+  -->
+
+<!DOCTYPE module PUBLIC
+  "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+  "http://checkstyle.org/dtds/configuration_1_3.dtd">
+<module name="Checker">
+
+  <module name="SuppressionFilter">
+    <property name="file" value="./style/checkStyle-suppressions.xml"/>
+    <property name="optional" value="false"/>
+  </module>
+
+  <module name="RegexpSingleline">
+    <property name="format" value="System\..+\.println"/>
+    <property name="message" value="Prohibit invoking System.*.println in source code !"/>
+  </module>
+
+  <module name="RegexpSingleline">
+    <property name="format" value="^\s*\*\s*@author"/>
+    <property name="minimum" value="0"/>
+    <property name="maximum" value="0"/>
+    <property name="message" value="ASF project doesn't allow @author copyright."/>
+  </module>
+
+  <module name="RegexpSingleline">
+    <property name="format"
+              value=".*[\u3400-\u4DB5\u4E00-\u9FA5\u9FA6-\u9FBB\uF900-\uFA2D\uFA30-\uFA6A\uFA70-\uFAD9\uFF00-\uFFEF\u2E80-\u2EFF\u3000-\u303F\u31C0-\u31EF]+.*"/>
+    <property name="message" value="Chinese characters are not allowed!"/>
+  </module>
+
+  <module name="TreeWalker">
+    <module name="PackageName">
+      <property name="format" value="^(org)\.apache(\.[a-zA-Z][a-zA-Z0-9]*)+$"/>
+    </module>
+  </module>
+
+  <module name="BeforeExecutionExclusionFileFilter">
+    <property name="fileNamePattern" value="./eventmesh-runtime/conf/sChat2.jks$"/>
+  </module>
+
+</module>
