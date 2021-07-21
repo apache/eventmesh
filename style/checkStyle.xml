@@ -51,8 +51,4 @@
     </module>
   </module>
 
-  <module name="BeforeExecutionExclusionFileFilter">
-    <property name="fileNamePattern" value="./eventmesh-runtime/conf/sChat2.jks$"/>
-  </module>
-
 </module>
