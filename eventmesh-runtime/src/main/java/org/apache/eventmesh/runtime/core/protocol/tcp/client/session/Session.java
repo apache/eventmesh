@@ -295,7 +295,7 @@ public class Session {
                     Package msg = new Package();
                     msg.setHeader(header);
 
-                    //TODO startTime 修改了
+                    // TODO: if startTime is modified
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, context, this);
                     listenRspSend = true;
                 }
@@ -326,10 +326,10 @@ public class Session {
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int code = 37 + (client != null ? client.hashCode() : 0) + (context != null ? context.hashCode() : 0)
-                + (sessionState != null ? sessionState.hashCode() : 0);
-        return code;
-    }
+//    @Override
+//    public int hashCode() {
+//        int code = 37 + (client != null ? client.hashCode() : 0) + (context != null ? context.hashCode() : 0)
+//                + (sessionState != null ? sessionState.hashCode() : 0);
+//        return code;
+//    }
 }

@@ -29,13 +29,13 @@ import org.apache.eventmesh.common.protocol.http.header.Header;
 
 public class PushMessageRequestHeader extends Header {
 
-    //请求码
+    //request code
     private int code;
 
-    //请求方语言描述
+    //requester language description
     private String language;
 
-    //请求方采用的协议版本, 默认1.0
+    //protocol version adopted by requester, default:1.0
     private ProtocolVersion version;
 
     private String eventMeshCluster;

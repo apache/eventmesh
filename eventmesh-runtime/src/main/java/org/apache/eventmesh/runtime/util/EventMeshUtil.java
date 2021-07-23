@@ -80,7 +80,7 @@ public class EventMeshUtil {
     }
 
     /**
-     * 自定义取堆栈
+     * custom fetch stack
      *
      * @param e
      * @return
@@ -119,7 +119,7 @@ public class EventMeshUtil {
 
 
     /**
-     * 打印mq消息的一部分内容
+     * print part of the mq message
      *
      * @param eventMeshMessage
      * @return

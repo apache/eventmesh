@@ -26,7 +26,7 @@
 # jar        : produce jar
 
 # package tar.gz/zip
-gradle clean -Pdev=true -Pjdk=1.7 dist tar zip
+gradle clean -Pdev=true -Pjdk=1.8 dist tar zip
 
 # package jar
-gradle clean -Pdev=true -Pjdk=1.7 jar
+gradle clean -Pdev=true -Pjdk=1.8 jar

@@ -26,19 +26,19 @@ import org.apache.eventmesh.common.protocol.http.header.Header;
 
 public class SendMessageResponseHeader extends Header {
 
-    //响应码, 与对应Request的code一致
+    //response code, as same as the request code
     private int code;
 
-    //处理该次Request请求的eventMesh的集群名
+    //The cluster name of the EventMesh that processes the request
     private String eventMeshCluster;
 
-    //处理该次Request请求的eventMesh的IP
+    //IP of the EventMesh that processes the request
     private String eventMeshIp;
 
-    //处理该次Request请求的eventMesh所在的环境编号
+    //Environment number of the EventMesh that processes the request
     private String eventMeshEnv;
 
-    //处理该次Request请求的eventMesh所在IDC
+    //IDC of the EventMesh that processes the request
     private String eventMeshIdc;
 
     public int getCode() {

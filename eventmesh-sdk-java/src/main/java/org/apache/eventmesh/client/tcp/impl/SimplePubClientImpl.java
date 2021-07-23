@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 
 public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private UserAgent userAgent;
 
@@ -90,10 +90,10 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
                     }
                     Package msg = MessageUtils.heartBeat();
                     io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                } catch (Exception e) {
+                } catch (Exception ignore) {
                 }
             }
-        }, EventMeshCommon.HEATBEAT, EventMeshCommon.HEATBEAT, TimeUnit.MILLISECONDS);
+        }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
 
     private void goodbye() throws Exception {
@@ -107,7 +107,7 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     }
 
     /**
-     * 发送RR消息
+     * Send RR message
      *
      * @param msg
      * @param timeout
@@ -120,7 +120,7 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     }
 
     /**
-     * 异步RR
+     * Asynchronous RR
      *
      * @param msg
      * @param callback
@@ -135,7 +135,7 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     }
 
     /**
-     * 发送事件消息, 只所以有返回值是EventMesh 给了ACK
+     * Publish message
      *
      * @param msg
      * @throws Exception
@@ -146,7 +146,7 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     }
 
     /**
-     * 发送广播消息
+     * Send broadcast message
      *
      * @param msg
      * @param timeout
@@ -176,16 +176,13 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
                 Package pkg = MessageUtils.responseToClientAck(msg);
                 send(pkg);
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-
+                //TODO
             }
 
             RequestContext context = contexts.get(RequestContext._key(msg));
             if (context != null) {
                 contexts.remove(context.getKey());
                 context.finish(msg);
-                return;
-            } else {
-                return;
             }
         }
     }

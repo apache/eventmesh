@@ -60,11 +60,11 @@ public class HttpRetryer {
                 60000,
                 TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize),
                 new ThreadFactory() {
-                    private AtomicInteger ai = new AtomicInteger();
+                    private AtomicInteger count = new AtomicInteger();
 
                     @Override
                     public Thread newThread(Runnable r) {
-                        Thread thread = new Thread(r, "http-retry-" + ai.incrementAndGet());
+                        Thread thread = new Thread(r, "http-retry-" + count.incrementAndGet());
                         thread.setPriority(Thread.NORM_PRIORITY);
                         thread.setDaemon(true);
                         return thread;

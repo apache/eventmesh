@@ -132,16 +132,16 @@ public class EventMeshTcpRetryer {
             if (rechoosen == null) {
                 logger.warn("retry, found no session to downstream msg,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
-//                //需要手动ack掉没有下发成功的消息
+//                //Need to manually ack the message that did not send a successful message
 //                eventMeshAckMsg(downStreamMsgContext);
 
-//                //重试找不到下发session不再回发broker或者重试其它eventMesh
+//                //Retry cannot find the delivered session, no longer post back to the broker or retry other event Mesh
 //                String bizSeqNo = finalDownStreamMsgContext.msgExt.getKeys();
 //                String uniqueId = MapUtils.getString(finalDownStreamMsgContext.msgExt.getProperties(), WeMQConstant.RMB_UNIQ_ID, "");
 //                if(EventMeshTCPServer.getAccessConfiguration().eventMeshTcpSendBackEnabled){
 //                    sendMsgBackToBroker(finalDownStreamMsgContext.msgExt, bizSeqNo, uniqueId);
 //                }else{
-//                    //TODO 将消息推给其它eventMesh，待定
+//                    // TODO: Push the message to other EventMesh instances. To be determined.
 //                    sendMsgToOtherEventMesh(finalDownStreamMsgContext.msgExt, bizSeqNo, uniqueId);
 //                }
             } else {

@@ -21,7 +21,7 @@ import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.common.config.ConfigurationWraper;
+import org.apache.eventmesh.common.config.ConfigurationWrapper;
 
 public class EventMeshTCPConfiguration extends CommonConfiguration {
     public int eventMeshTcpServerPort = 10000;
@@ -74,76 +74,76 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
     private TrafficShapingConfig gtc = new TrafficShapingConfig(0, 10_000, 1_000, 2000);
     private TrafficShapingConfig ctc = new TrafficShapingConfig(0, 2_000, 1_000, 10_000);
 
-    public EventMeshTCPConfiguration(ConfigurationWraper configurationWraper) {
-        super(configurationWraper);
+    public EventMeshTCPConfiguration(ConfigurationWrapper configurationWrapper) {
+        super(configurationWrapper);
     }
 
     @Override
     public void init() {
         super.init();
-        String eventMeshTcpServerPortStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_PORT);
+        String eventMeshTcpServerPortStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_PORT);
         Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTcpServerPortStr) && StringUtils.isNumeric(eventMeshTcpServerPortStr),
                 String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_TCP_PORT));
         eventMeshTcpServerPort = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpServerPortStr));
 
-        String eventMeshTcpIdleReadSecondsStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_READER_IDLE_SECONDS);
+        String eventMeshTcpIdleReadSecondsStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_READER_IDLE_SECONDS);
         Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTcpIdleReadSecondsStr) && StringUtils.isNumeric(eventMeshTcpIdleReadSecondsStr),
                 String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_READER_IDLE_SECONDS));
         eventMeshTcpIdleReadSeconds = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpIdleReadSecondsStr));
 
-        String eventMeshTcpIdleWriteSecondsStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_WRITER_IDLE_SECONDS);
+        String eventMeshTcpIdleWriteSecondsStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_WRITER_IDLE_SECONDS);
         Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTcpIdleWriteSecondsStr) && StringUtils.isNumeric(eventMeshTcpIdleWriteSecondsStr),
                 String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_WRITER_IDLE_SECONDS));
         eventMeshTcpIdleWriteSeconds = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpIdleWriteSecondsStr));
 
-        String eventMeshTcpIdleAllSecondsStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_ALL_IDLE_SECONDS);
+        String eventMeshTcpIdleAllSecondsStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_ALL_IDLE_SECONDS);
         Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTcpIdleAllSecondsStr) && StringUtils.isNumeric(eventMeshTcpIdleAllSecondsStr),
                 String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_ALL_IDLE_SECONDS));
         eventMeshTcpIdleAllSeconds = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpIdleAllSecondsStr));
 
-        String eventMeshTcpMsgReqnumPerSecondStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECONDS);
+        String eventMeshTcpMsgReqnumPerSecondStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECONDS);
         Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTcpMsgReqnumPerSecondStr) && StringUtils.isNumeric(eventMeshTcpMsgReqnumPerSecondStr),
                 String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECONDS));
         eventMeshTcpMsgReqnumPerSecond = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpMsgReqnumPerSecondStr));
 
-        String eventMeshTcpClientMaxNumStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLIENT_MAX_NUM);
+        String eventMeshTcpClientMaxNumStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLIENT_MAX_NUM);
         Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTcpClientMaxNumStr) && StringUtils.isNumeric(eventMeshTcpClientMaxNumStr),
                 String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_CLIENT_MAX_NUM));
         eventMeshTcpClientMaxNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpClientMaxNumStr));
 
-        String eventMeshTcpServerEnabledStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_TCP_SERVER_ENABLED);
+        String eventMeshTcpServerEnabledStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TCP_SERVER_ENABLED);
         if (StringUtils.isNotEmpty(eventMeshTcpServerEnabledStr)) {
             eventMeshTcpServerEnabled = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshTcpServerEnabledStr));
         }
 
-        String eventMeshTcpGlobalSchedulerStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_GLOBAL_SCHEDULER);
+        String eventMeshTcpGlobalSchedulerStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_GLOBAL_SCHEDULER);
         if (StringUtils.isNotEmpty(eventMeshTcpGlobalSchedulerStr)) {
             Preconditions.checkState(StringUtils.isNumeric(eventMeshTcpGlobalSchedulerStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_GLOBAL_SCHEDULER));
             eventMeshTcpGlobalScheduler = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpGlobalSchedulerStr));
         }
 
-        String eventMeshTcpTaskHandleExecutorPoolSizeStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_TASK_HANDLE_POOL_SIZE);
+        String eventMeshTcpTaskHandleExecutorPoolSizeStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_TASK_HANDLE_POOL_SIZE);
         if (StringUtils.isNotEmpty(eventMeshTcpTaskHandleExecutorPoolSizeStr)) {
             Preconditions.checkState(StringUtils.isNumeric(eventMeshTcpTaskHandleExecutorPoolSizeStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_TCP_TASK_HANDLE_POOL_SIZE));
             eventMeshTcpTaskHandleExecutorPoolSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpTaskHandleExecutorPoolSizeStr));
         }
 
-        String eventMeshTcpMsgDownStreamExecutorPoolSizeStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_MSG_DOWNSTREAM_POOL_SIZE);
+        String eventMeshTcpMsgDownStreamExecutorPoolSizeStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_MSG_DOWNSTREAM_POOL_SIZE);
         if(StringUtils.isNotEmpty(eventMeshTcpMsgDownStreamExecutorPoolSizeStr)){
             Preconditions.checkState(StringUtils.isNumeric(eventMeshTcpMsgDownStreamExecutorPoolSizeStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_TCP_MSG_DOWNSTREAM_POOL_SIZE));
             eventMeshTcpMsgDownStreamExecutorPoolSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpMsgDownStreamExecutorPoolSizeStr));
         }
 
-        String eventMeshTcpSessionExpiredInMillsStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_SESSION_EXPIRED_TIME);
+        String eventMeshTcpSessionExpiredInMillsStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_SESSION_EXPIRED_TIME);
         if (StringUtils.isNotEmpty(eventMeshTcpSessionExpiredInMillsStr)) {
             Preconditions.checkState(StringUtils.isNumeric(eventMeshTcpSessionExpiredInMillsStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_SESSION_EXPIRED_TIME));
             eventMeshTcpSessionExpiredInMills = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpSessionExpiredInMillsStr));
         }
 
-        String eventMeshTcpSessionUpstreamBufferSizeStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_SESSION_UPSTREAM_BUFFER_SIZE);
+        String eventMeshTcpSessionUpstreamBufferSizeStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_SESSION_UPSTREAM_BUFFER_SIZE);
         if (StringUtils.isNotEmpty(eventMeshTcpSessionUpstreamBufferSizeStr)) {
             Preconditions.checkState(StringUtils.isNumeric(eventMeshTcpSessionUpstreamBufferSizeStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_SESSION_UPSTREAM_BUFFER_SIZE));
@@ -151,44 +151,44 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
         }
 
         //========================================eventMesh retry config=============================================//
-        String eventMeshTcpMsgRetryTimesStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_TIMES);
+        String eventMeshTcpMsgRetryTimesStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_TIMES);
         if (StringUtils.isNotEmpty(eventMeshTcpMsgRetryTimesStr)) {
             Preconditions.checkState(StringUtils.isNumeric(eventMeshTcpMsgRetryTimesStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_TIMES));
             eventMeshTcpMsgRetryTimes = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpMsgRetryTimesStr));
         }
 
-        String eventMeshTcpMsgRetryDelayInMillsStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_DELAY);
+        String eventMeshTcpMsgRetryDelayInMillsStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_DELAY);
         if (StringUtils.isNotEmpty(eventMeshTcpMsgRetryDelayInMillsStr)) {
             Preconditions.checkState(StringUtils.isNumeric(eventMeshTcpMsgRetryDelayInMillsStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_DELAY));
             eventMeshTcpMsgRetryDelayInMills = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpMsgRetryDelayInMillsStr));
         }
 
-        String eventMeshTcpMsgRetryQueueSizeStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_QUEUE_SIZE);
+        String eventMeshTcpMsgRetryQueueSizeStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_QUEUE_SIZE);
         if (StringUtils.isNotEmpty(eventMeshTcpMsgRetryQueueSizeStr)) {
             Preconditions.checkState(StringUtils.isNumeric(eventMeshTcpMsgRetryQueueSizeStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_QUEUE_SIZE));
             eventMeshTcpMsgRetryQueueSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpMsgRetryQueueSizeStr));
         }
 
-        String eventMeshTcpRebalanceIntervalStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_REBALANCE_INTERVAL);
+        String eventMeshTcpRebalanceIntervalStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_REBALANCE_INTERVAL);
         if (StringUtils.isNotEmpty(eventMeshTcpRebalanceIntervalStr)) {
             Preconditions.checkState(StringUtils.isNumeric(eventMeshTcpRebalanceIntervalStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_TCP_REBALANCE_INTERVAL));
             eventMeshTcpRebalanceIntervalInMills = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpRebalanceIntervalStr));
         }
 
-        String eventMeshServerAdminPortStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_ADMIN_HTTP_PORT);
+        String eventMeshServerAdminPortStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_ADMIN_HTTP_PORT);
         if (StringUtils.isNotEmpty(eventMeshServerAdminPortStr)) {
             Preconditions.checkState(StringUtils.isNumeric(eventMeshServerAdminPortStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_ADMIN_HTTP_PORT));
             eventMeshServerAdminPort = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerAdminPortStr));
         }
 
-        String eventMeshTcpSendBackEnabledStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_TCP_SEND_BACK_ENABLED);
+        String eventMeshTcpSendBackEnabledStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TCP_SEND_BACK_ENABLED);
         if (StringUtils.isNotEmpty(eventMeshTcpSendBackEnabledStr)) {
             eventMeshTcpSendBackEnabled = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshTcpSendBackEnabledStr));
         }
 
-        String eventMeshTcpPushFailIsolateTimeInMillsStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME);
+        String eventMeshTcpPushFailIsolateTimeInMillsStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME);
         if (StringUtils.isNotEmpty(eventMeshTcpPushFailIsolateTimeInMillsStr)) {
             Preconditions.checkState(StringUtils.isNumeric(eventMeshTcpPushFailIsolateTimeInMillsStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME));
             eventMeshTcpPushFailIsolateTimeInMills = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTcpPushFailIsolateTimeInMillsStr));
