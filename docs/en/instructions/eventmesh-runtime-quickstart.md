@@ -20,7 +20,7 @@ You will get **EventMesh-master.zip**
 ```$xslt
 unzip EventMesh-master.zip
 cd /*YOUR DEPLOY PATH*/EventMesh-master
-gradle clean dist tar -x test
+gradle clean dist copyConnectorPlugin tar -x test
 ```
 
 You will get **EventMesh_1.2.0.tar.gz** in directory /* YOUR DEPLOY PATH */EventMesh-master/build
@@ -58,14 +58,22 @@ Same with 1.2
 
 - eventmesh-common : eventmesh common classes and method module
 - eventmesh-connector-api : eventmesh connector api definition module
-- eventmesh-connector-rocketmq : eventmesh rocketmq connector module
+- eventmesh-connector-plugin : eventmesh connector plugin instance module
 - eventmesh-runtime : eventmesh runtime module
 - eventmesh-sdk-java : eventmesh java client sdk
 - eventmesh-starter : eventmesh project local start entry
 - eventmesh-spi : eventmesh SPI load module
 
-> ps: The loading of connector plugin follows the eventmesh SPI mechanism, it's necessary to configure the mapping file of
-related interface and implementation class under /main/resources/meta-inf/eventmesh in the corresponding module
+> ps: The plugin module follows the eventmesh SPI specification, custom SPI interface need to be identified with the @EventMeshSPI annotation.
+> The plugin instance needs to be configured in corresponding module under /main/resources/meta-inf/eventmesh with the mapping file of
+> related interface and implementation class. The content of the file is a mapping of plugin instance name to plugin instance, you can find more
+> detail in eventmesh-connector-rocketmq module
+
+The plugin can be loaded from classpath and plugin directory. In local develop, you can declare the used plugins in build.gradle of eventmesh-starter module,
+or execute copyConnectorPlugin task of gradle to copy the plugin instance jar to dist/plugin directory. By default, eventmesh will load the plugins in project's
+dist/plugin, this can be changed by add -DeventMeshPluginDir=your_plugin_directory.
+The plugin instance need to be used at runtime can be configured in eventmesh.properties.
+
 
 **2.3.2 Configure plugin**
 

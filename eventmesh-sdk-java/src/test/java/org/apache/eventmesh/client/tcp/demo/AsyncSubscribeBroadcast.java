@@ -54,8 +54,8 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
 
             //client.unsubscribe();
 
-            //退出,销毁资源
-//            client.close();
+            // release resource and close client
+            // client.close();
         } catch (Exception e) {
             logger.warn("AsyncSubscribeBroadcast failed", e);
         }
