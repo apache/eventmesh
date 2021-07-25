@@ -26,8 +26,8 @@ import io.openmessaging.api.order.OrderConsumer;
 import io.openmessaging.api.order.OrderProducer;
 import io.openmessaging.api.transaction.LocalTransactionChecker;
 import io.openmessaging.api.transaction.TransactionProducer;
-import org.apache.eventmesh.connector.redis.consumer.RedisSubConsumerImpl;
-import org.apache.eventmesh.connector.redis.producer.RedisPubProducerImpl;
+import org.apache.eventmesh.connector.redis.consumer.SubscribeConsumerImpl;
+import org.apache.eventmesh.connector.redis.producer.PublishProducerImpl;
 
 import java.util.Properties;
 
@@ -51,7 +51,7 @@ public class MessagingAccessPointImpl implements MessagingAccessPoint {
 
     @Override
     public Producer createProducer(Properties properties) {
-        return new RedisPubProducerImpl(properties);
+        return new PublishProducerImpl(properties);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class MessagingAccessPointImpl implements MessagingAccessPoint {
 
     @Override
     public Consumer createConsumer(Properties properties) {
-        return new RedisSubConsumerImpl(properties);
+        return new SubscribeConsumerImpl(properties);
     }
 
     @Override

@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.eventmesh.connector.redis.producer;
 
 import io.netty.bootstrap.Bootstrap;
@@ -14,30 +31,32 @@ import io.openmessaging.api.exception.OMSRuntimeException;
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.producer.MeshMQProducer;
 import org.apache.eventmesh.connector.redis.common.Command;
+import org.apache.eventmesh.connector.redis.common.IpAndPort;
 import org.apache.eventmesh.connector.redis.handler.ClientInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class RedisPubProducerImpl implements MeshMQProducer {
+public class PublishProducerImpl implements Producer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RedisPubProducerImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PublishProducerImpl.class);
 
-    private Bootstrap bootstrap;
+    private final Bootstrap bootstrap;
 
     private Channel channel;
 
+    private final IpAndPort ipAndPort;
+
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    private Properties properties;
+    private final Properties properties;
 
-    private static ByteBuf PUBLISH_CMD_BYTE;
+    private static final ByteBuf PUBLISH_CMD_BYTE;
 
-    private static ByteBuf SPACE_BYTE;
+    private static final ByteBuf SPACE_BYTE;
 
     static {
         PUBLISH_CMD_BYTE = PooledByteBufAllocator.DEFAULT.buffer(Command.PUBLISH.getBytes().length);
@@ -46,12 +65,14 @@ public class RedisPubProducerImpl implements MeshMQProducer {
         SPACE_BYTE.writeBytes(" ".getBytes());
     }
 
-    public RedisPubProducerImpl(Properties properties) {
+    public PublishProducerImpl(Properties properties) {
         this.properties = properties;
-    }
+        this.ipAndPort = IpAndPort.from(properties.getProperty("ipAndPort"));
+        if (this.ipAndPort == null) {
+            throw new OMSRuntimeException(-1,
+                String.format("The redis address %s is invalid", properties.getProperty("ipAndPort")));
+        }
 
-    @Override
-    public void init(Properties properties) throws Exception {
         EventLoopGroup subscribeEventLoop = new NioEventLoopGroup(1, r -> {
             Thread thread = new Thread(r, "publish-thread");
             thread.setDaemon(true);
@@ -74,9 +95,9 @@ public class RedisPubProducerImpl implements MeshMQProducer {
                 new AdaptiveRecvByteBufAllocator(64, 1024, 65536));
 
         ClientInitializer initializer = new ClientInitializer();
-
         bootstrap.handler(initializer);
     }
+
 
     @Override
     public boolean isStarted() {
@@ -92,12 +113,12 @@ public class RedisPubProducerImpl implements MeshMQProducer {
     public void start() {
         if (started.compareAndSet(false, true)) {
             try {
-                ChannelFuture channelFuture = bootstrap.connect("", 8080);
+                ChannelFuture channelFuture = bootstrap.connect(ipAndPort.getIp(), ipAndPort.getPort());
                 channelFuture.addListener(future -> {
                     if (future.isSuccess()) {
                         this.channel = channelFuture.channel();
                     } else {
-                        LOGGER.warn("Subscribe client can't connect to [{}]", "xxxxxxxxx");
+                        LOGGER.warn("Subscribe client can't connect to [{}]", ipAndPort);
                     }
                 });
             } catch (Exception e) {
@@ -119,57 +140,21 @@ public class RedisPubProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public void send(Message message, SendCallback sendCallback) throws Exception {
-        sendAsync(message, sendCallback);
-    }
-
-    @Override
-    public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout) throws Exception {
-        throw new UnsupportedOperationException("not support request-reply mode when eventstore=redis");
-    }
-
-    @Override
-    public Message request(Message message, long timeout) throws Exception {
-        throw new UnsupportedOperationException("not support request-reply mode when eventstore=redis");
-    }
-
-    @Override
-    public boolean reply(Message message, SendCallback sendCallback) throws Exception {
-        throw new UnsupportedOperationException("not support request-reply mode when eventstore=redis");
-    }
-
-    @Override
-    public MeshMQProducer getMeshMQProducer() {
-        return this;
-    }
-
-    @Override
-    public String buildMQClientId() {
-        return null;
-    }
-
-    @Override
-    public void setExtFields() {
-
-    }
-
-    @Override
-    public void getDefaultTopicRouteInfoFromNameServer(String topic, long timeout) throws Exception {
-
-    }
-
-    @Override
     public SendResult send(Message message) {
-        /*if (channel == null || !channel.isActive()) {
-            LOGGER.warn("Can't publish msg: [{}] to node: [{}], because channel unavailable", message, node);
-        }*/
-
-        channel.writeAndFlush(convert(message)).syncUninterruptibly();
-
-        // todo
         SendResult sendResult = new SendResult();
         sendResult.setMessageId(message.getMsgID());
         sendResult.setTopic(message.getTopic());
+
+        if (channel == null || !channel.isActive()) {
+            LOGGER.warn("Can't publish msg: [{}] to node: [{}], because channel unavailable", message, ipAndPort);
+            return sendResult;
+        }
+
+        try {
+            channel.writeAndFlush(convert(message)).sync();
+        } catch (InterruptedException e) {
+            throw new OMSRuntimeException("send message had been interrupted");
+        }
 
         return sendResult;
     }
@@ -200,6 +185,10 @@ public class RedisPubProducerImpl implements MeshMQProducer {
 
     @Override
     public void setCallbackExecutor(ExecutorService callbackExecutor) {
+
+    }
+
+    public void setExtFields() {
 
     }
 

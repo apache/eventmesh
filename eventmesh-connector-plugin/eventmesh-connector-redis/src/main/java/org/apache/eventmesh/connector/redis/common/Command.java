@@ -15,15 +15,29 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-connector-plugin:eventmesh-connector-redis'
+package org.apache.eventmesh.connector.redis.common;
 
+import java.nio.charset.StandardCharsets;
+
+public enum Command {
+
+    // Pub/Sub
+    PSUBSCRIBE, PUBLISH, PUNSUBSCRIBE, SUBSCRIBE, UNSUBSCRIBE, PUBSUB,
+
+    // Stream
+    XACK, XADD, XAUTOCLAIM, XCLAIM, XDEL, XGROUP, XINFO, XLEN, XPENDING, XRANGE, XREVRANGE, XREAD, XREADGROUP, XTRIM;
+
+    public final byte[] bytes;
+
+    Command() {
+        bytes = name().getBytes(StandardCharsets.US_ASCII);
+    }
+
+    public byte[] getBytes() {
+        return bytes;
+    }
+
+    public String getCmdName() {
+        return this.name();
+    }
+}

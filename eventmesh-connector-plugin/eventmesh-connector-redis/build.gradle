@@ -29,6 +29,6 @@ List netty = [
 ]
 
 dependencies {
-    implementation netty,open_message,project(":eventmesh-connector-api"),project(":eventmesh-common")
-    testImplementation netty,open_message,project(":eventmesh-connector-api"),project(":eventmesh-common")
+    implementation netty, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    testImplementation netty, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
 }
