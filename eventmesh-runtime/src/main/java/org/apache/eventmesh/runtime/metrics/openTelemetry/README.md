@@ -29,9 +29,9 @@ search the key word:
 
 *max_HTTP_TPS*
 
-*max_HTTPCost*
+*eventmesh_http_request_elapsed_max*
 
-*avg_HTTPCost*
+*eventmesh_http_request_elapsed_avg*
 
 ## special explanation
 Prometheus runs on port 9090,Open telemetry exports data to port 19090,Prometheus will collect data from port 19090

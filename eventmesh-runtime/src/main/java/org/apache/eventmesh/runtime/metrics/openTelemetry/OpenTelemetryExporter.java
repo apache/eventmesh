@@ -44,7 +44,7 @@ public class OpenTelemetryExporter {
     public void start(){
         //maxHTTPTPS
         meter
-                .doubleValueObserverBuilder("max.HTTP.TPS")
+                .doubleValueObserverBuilder("eventmesh.http.request.tps.elapsed.max")
                 .setDescription("max TPS of HTTP")
                 .setUnit("HTTP")
                 .setUpdater(result -> result.observe(summaryMetrics.maxHTTPTPS(),Labels.empty()))
@@ -52,7 +52,7 @@ public class OpenTelemetryExporter {
 
         //maxHTTPCost
         meter
-                .longValueObserverBuilder("max.HTTPCost")
+                .longValueObserverBuilder("eventmesh.http.request.elapsed.max")
                 .setDescription("max cost of HTTP")
                 .setUnit("HTTP")
                 .setUpdater(result -> result.observe(summaryMetrics.maxHTTPCost(), Labels.empty()))
@@ -60,7 +60,7 @@ public class OpenTelemetryExporter {
 
         //avgHTTPCost
         meter
-                .doubleValueObserverBuilder("avg.HTTPCost")
+                .doubleValueObserverBuilder("eventmesh.http.request.elapsed.avg")
                 .setDescription("avg cost of HTTP")
                 .setUnit("HTTP")
                 .setUpdater(result -> result.observe(summaryMetrics.avgHTTPCost(), Labels.empty()))
