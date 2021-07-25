@@ -125,7 +125,7 @@ public class SessionSender {
             @Override
             public void onSuccess(Message msg) {
                 String seq = header.getSeq();
-                //TODO 此处如何赋值
+                // TODO: How to assign values here
 //                if (msg instanceof MessageExt) {
 //                    msg.putUserProperty(EventMeshConstants.BORN_TIMESTAMP, String.valueOf(((MessageExt) msg)
 //                            .getBornTimestamp()));

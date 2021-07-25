@@ -157,7 +157,7 @@ public class SummaryMetrics {
 
     private AtomicLong sendBatchMsgFailNumSum = new AtomicLong(0);
 
-    //累计值
+    // This is a cumulative value
     private AtomicLong sendBatchMsgDiscardNumSum = new AtomicLong(0);
 
     public void recordSendBatchMsgDiscard(long delta) {
