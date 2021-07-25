@@ -43,7 +43,7 @@ public class OpenTelemetryExporterConfiguration {
         PrometheusCollector.builder().setMetricProducer(meterProvider).buildAndRegister();
 
         try {
-            server = new HTTPServer(prometheusPort,true);//使用守护线程启动一个 HTTP 服务器，为默认的 Prometheus 注册表提供服务。
+            server = new HTTPServer(prometheusPort,true);//Use the daemon thread to start an HTTP server to serve the default Prometheus registry.
         } catch (IOException e) {
             e.printStackTrace();
         }
