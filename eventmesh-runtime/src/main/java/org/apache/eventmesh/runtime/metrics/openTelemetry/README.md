@@ -27,7 +27,7 @@ http://localhost:9090/graph?g0.expr=max_HTTPCost&g0.tab=1&g0.stacked=0&g0.show_e
 
 search the key word:
 
-*max_HTTP_TPS*
+*eventmesh_http_request_tps_elapsed_max*
 
 *eventmesh_http_request_elapsed_max*
 
