@@ -20,7 +20,7 @@ Gradle至少为7.0, 推荐 7.0.*
 ```$ xslt
 unzip EventMesh-master.zip
 cd / *您的部署路径* /EventMesh-master
-gradle clean dist tar -x test
+gradle clean dist copyConnectorPlugin tar -x test
 ```
 
 您将在目录/ *您的部署路径* /EventMesh-master/eventmesh-runtime/dist中获得**eventmesh-runtime_1.0.0.tar.gz**
@@ -57,14 +57,20 @@ sh start.sh
 ![project-structure](../../images/project-structure.png)
 
 - eventmesh-common : eventmesh公共类与方法模块
-- eventmesh-connector-api : eventmesh插件接口定义模块
-- eventmesh-connector-rocketmq : eventmesh rocketmq插件模块
+- eventmesh-connector-api : eventmesh connector插件接口定义模块
+- eventmesh-connector-plugin : eventmesh connector插件模块
 - eventmesh-runtime : eventmesh运行时模块
 - eventmesh-sdk-java : eventmesh java客户端sdk
 - eventmesh-starter : eventmesh本地启动运行项目入口
 - eventmesh-spi : eventmesh SPI加载模块
 
-> 注：插件模块遵循eventmesh定义的spi机制，需要在对应模块中的/main/resources/META-INF/eventmesh 下配置相关接口与实现类的映射文件
+> 注：插件模块遵循eventmesh定义的SPI规范, 自定义的SPI接口需要使用注解@EventMeshSPI标识.
+> 插件实例需要在对应模块中的/main/resources/META-INF/eventmesh 下配置相关接口与实现类的映射文件,文件名为SPI接口全类名. 
+> 文件内容为插件实例名到插件实例的映射, 具体可以参考eventmesh-connector-rocketmq插件模块
+
+插件可以从classpath和插件目录下面加载. 在本地开发阶段可以将使用的插件在eventmesh-starter模块build.gradle中进行声明,或者执行gradle的copyConnectorPlugin任务
+将插件拷贝至dist/plugin目录下, eventmesh默认会加载项目下dist/plugin目录下的插件, 加载目录可以通过-DeventMeshPluginDir=your_plugin_directory来改变插件目录.
+运行时需要使用的插件实例可以在eventmesh.properties中进行配置
 
 **2.3.2 配置插件**
 

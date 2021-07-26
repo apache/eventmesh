@@ -141,7 +141,7 @@ public class EventMeshTcpRetryer {
 //                if(EventMeshTCPServer.getAccessConfiguration().eventMeshTcpSendBackEnabled){
 //                    sendMsgBackToBroker(finalDownStreamMsgContext.msgExt, bizSeqNo, uniqueId);
 //                }else{
-//                    //TODO 将消息推给其它eventMesh，待定
+//                    // TODO: Push the message to other EventMesh instances. To be determined.
 //                    sendMsgToOtherEventMesh(finalDownStreamMsgContext.msgExt, bizSeqNo, uniqueId);
 //                }
             } else {
