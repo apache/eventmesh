@@ -28,15 +28,15 @@
             <AppenderRef ref="console"/>
         </AsyncRoot>
 
-        <AsyncLogger name="client.common" level="debug" additivity="false" includeLocation="true">
+        <AsyncLogger name="org.apache.eventmesh.runtime.client.common" level="debug" additivity="false" includeLocation="true">
             <AppenderRef ref="console"/>
         </AsyncLogger>
 
-        <AsyncLogger name="client.hook" level="debug" additivity="false" includeLocation="true">
+        <AsyncLogger name="org.apache.eventmesh.runtime.client.hook" level="debug" additivity="false" includeLocation="true">
             <AppenderRef ref="console"/>
         </AsyncLogger>
 
-        <AsyncLogger name="client.impl" level="debug" additivity="false" includeLocation="true">
+        <AsyncLogger name="org.apache.eventmesh.runtime.client.impl" level="debug" additivity="false" includeLocation="true">
             <AppenderRef ref="console"/>
         </AsyncLogger>
 

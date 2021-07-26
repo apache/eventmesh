@@ -15,34 +15,7 @@
  * limitations under the License.
  */
 
-
-//plugins {
-//    id 'org.springframework.boot' version '2.1.6.RELEASE'
-//}
-
-
-//ext['commons-pool2.version'] = '2.6.1'
-
-
 dependencies {
-    //implementation log4j2, sl4j,httpclient,netty
-    // log4j2, sl4j,httpclient,netty
     implementation project(":eventmesh-common")
     testImplementation project(":eventmesh-common")
-
-//    //Spring依赖的第三方模块(2.1.6依赖的是3.8.1)
-//    compile("org.apache.commons:commons-lang3")
-//    //Spring依赖的第三方模块(2.1.6依赖的是2.6.2)指定依赖版本为2.6.1
-//    compile('org.apache.commons:commons-pool2')
-//    //未被依赖的库需要手动：我司开源的 轻代码开发框架核心包，文末源码链接
-//    compile('com.diboot:diboot-core:2.0.0')
-
-//    implementation('org.springframework.boot:spring-boot-starter-web') {
-//        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-//    }
-//
-//    implementation('org.springframework.boot:spring-boot-starter') {
-//        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-//    }
 }
-
