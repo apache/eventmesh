@@ -45,7 +45,8 @@ and easily integrate various systems consuming or producing data.
 ## Design
 
 ### EventMesh-Stream Component:
-```- Event
+```   	
+	- Event
 	- Event Channel
 	- Event EndPoint
 	- Event Pipes & Filters
@@ -75,26 +76,25 @@ Component interface is the primary entry point, you can use Component object as 
 ![eventmesh-stream-component-interface](../../images/features/eventmesh-stream-component-interface.png?raw=true)
 #### EndPoint
 EndPoint which is act as factories for creating Consumer, Producer and Event objects.
-	-createConsumer() — Creates a consumer endpoint, which
+	-createConsumer() â€” Creates a consumer endpoint, which
 represents the source endpoint at the beginning of a route.
-	-createProducer() — Creates a producer endpoint, which represents the target endpoint at the
+	-createProducer() â€” Creates a producer endpoint, which represents the target endpoint at the
 end of a route.
 
 ![eventmesh-stream-component-routes](../../images/features/eventmesh-stream-component-routes.png?raw=true)
 #### Producer
 User can create following types of producer
-	> Synchronous Producer
-		-Processing thread blocks until the producer has finished the event processing.
+> Synchronous Producer-Processing thread blocks until the producer has finished the event processing.
 		
 ![eventmesh-stream-sync-producer](../../images/features/eventmesh-stream-sync-producer.png?raw=true)
 
-```In future Producer Types:
+```
+In future Producer Types:
 	- Asynchronous Producer - Producer process the event in a sub-thread.
 ```
-####Consumer
+#### Consumer
 User can create following types of consumer  
-	> Event-driven consumer
-		-the processing of an incoming request is initiated when message binder call a method in consumer.
+> Event-driven consumer-the processing of an incoming request is initiated when message binder call a method in consumer.
 		
 ![eventmesh-stream-event_driven-consumer](../../images/features/eventmesh-stream-event_driven-consumer.png?raw=true)
 
