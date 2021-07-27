@@ -215,7 +215,7 @@ public class LiteProducer extends AbstractLiteClient {
         Preconditions.checkState(ObjectUtils.allNotNull(rrCallback),
                 "rrCallback invalid");
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
+        requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()))
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
                 .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())

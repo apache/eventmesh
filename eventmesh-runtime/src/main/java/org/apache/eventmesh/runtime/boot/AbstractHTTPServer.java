@@ -66,7 +66,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.command.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.body.BodyTransformer;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
@@ -276,7 +276,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
                 try {
                     requestCommand.setHeader(Header.buildHeader(requestCode, parseHTTPHeader(httpRequest)));
-                    requestCommand.setBody(Body.buildBody(requestCode, bodyMap));
+                    requestCommand.setBody(BodyTransformer.transformParamToBody(requestCode, bodyMap));
                 } catch (Exception e) {
                     responseCommand = requestCommand.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_RUNTIME_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_RUNTIME_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 3));
                     sendResponse(ctx, responseCommand.httpResponse());

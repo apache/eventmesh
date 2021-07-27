@@ -65,6 +65,7 @@ import org.apache.eventmesh.common.LiteMessage;
 import org.apache.eventmesh.common.ThreadUtil;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.body.BodyTransformer;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
@@ -237,7 +238,7 @@ public class RemotingServer {
                 }
 
                 requestCommand.setHeader(Header.buildHeader(requestCode, parseHTTPHeader(httpRequest)));
-                requestCommand.setBody(Body.buildBody(requestCode, bodyMap));
+                requestCommand.setBody(BodyTransformer.transformParamToBody(requestCode, bodyMap));
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("{}", requestCommand);
