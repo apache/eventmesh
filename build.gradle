@@ -17,8 +17,6 @@
 
 import java.util.concurrent.TimeUnit
 
-//import com.github.spotbugs.snom.SpotBugsTask
-
 buildscript {
     repositories {
         maven {
@@ -32,6 +30,26 @@ buildscript {
 
     dependencies {
         classpath "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.1"
+        classpath 'com.github.jk1:gradle-license-report:1.17'
+    }
+}
+
+task tar(type: Tar) {
+    extension = 'tar.gz'
+    compression = Compression.GZIP
+    archiveFileName = project.name + '_' + project.version + '.' + extension
+    destinationDirectory = new File(projectDir, 'build')
+    into('/') {
+        from 'dist'
+    }
+}
+
+task zip(type: Zip) {
+    extension = 'zip'
+    archiveFileName = project.name + '.' + project.version + '.' + extension
+    destinationDirectory = new File(projectDir, 'build')
+    into('/') {
+        from 'dist'
     }
 }
 
@@ -47,17 +65,8 @@ allprojects {
     apply plugin: "pmd"
     apply plugin: "java-library"
     apply plugin: 'signing'
+    apply plugin: 'com.github.jk1.dependency-license-report'
 
-//    print(project)
-//    if (project.findProperty("jdk") == "1.7") {
-//        sourceCompatibility = 1.7
-//        targetCompatibility = 1.7
-//        version = version + "-jdk7"
-//    } else {
-//        sourceCompatibility = 1.8
-//        targetCompatibility = 1.8
-//        version = version + "-jdk8"
-//    }
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
     compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
@@ -71,25 +80,21 @@ allprojects {
     if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot")))) {
         version = version + "-SNAPSHOT"
     }
-}
 
-task tar(type: Tar) {
-    extension = 'tar.gz'
-    compression = Compression.GZIP
-    archiveFileName = project.name + '_' + project.version + '.' + extension
-    destinationDirectory = new File(projectDir, 'build')
-    into('/') {
-        from 'dist'
+    licenseReport {
+        allowedLicensesFile = new File("build/license/allowed-licenses.json")
     }
-}
 
+    checkLicense.doFirst {
+        new File("build/license").mkdirs()
+        new File("build/license/allowed-licenses.json").createNewFile()
 
-task zip(type: Zip) {
-    extension = 'zip'
-    archiveFileName = project.name + '.' + project.version + '.' + extension
-    destinationDirectory = new File(projectDir, 'build')
-    into('/') {
-        from 'dist'
+        def writer = new File("build/license/allowed-licenses.json").newPrintWriter()
+        new File("tool/license/allowed-licenses.txt").filterLine {
+            String line -> line.trim().length() != 0 && !line.startsWith("#")
+        }.writeTo(writer)
+        writer.flush()
+        writer.close()
     }
 }
 
@@ -123,7 +128,8 @@ subprojects {
     ]
 
     List junit = [
-            "junit:junit:4.12"
+            "junit:junit:4.12",
+            "com.github.stefanbirkner:system-rules:1.16.1"
     ]
 
     List log = [
@@ -187,62 +193,15 @@ subprojects {
         }
     }
 
-//    checkstyle {
-//        toolVersion = "8.32"
-//        ignoreFailures = true
-//        sourceSets = [sourceSets.main]
-//        configFile = '../style/codeStyle.xml' as File
-//        showViolations true
-//    }
-//
-//    tasks.withType(Checkstyle) {
-//        reports {
-//            xml.enabled false
-//            html.enabled true
-//        }
-//    }
-//
-//    sourceSets {
-//        main {
-//            java {
-//                srcDir 'src/main/java'
-//            }
-//
-//            resources {
-//                srcDir 'src/main/resources'
-//            }
-//
-//        }
-//
-//        test {
-//            java {
-//                srcDir 'src/test/java'
-//            }
-//
-//            resources {
-//                srcDir 'src/test/resources'
-//            }
-//
-//        }
-//    }
-
     spotbugs {
-        //toolVersion = '4.2.3'
         ignoreFailures = true
         showProgress = true
         showStackTraces = true
-        //reportLevel = 'default'
         effort = 'default'
-        //visitors = [ 'FindSqlInjection', 'SwitchFallthrough' ]
-        //omitVisitors = [ 'FindNonShortCircuit' ]
         reportsDir = file("$buildDir/reports/spotbugs")
-        //includeFilter = file('spotbugs-include.xml')
-        //excludeFilter = file('spotbugs-exclude.xml')
-        //onlyAnalyze = ['org/apache/eventmesh/**']
         projectName = rootProject.name
         release = version
         extraArgs = ['-nested:false']
-        //jvmArgs = [ '-Duser.language=zh' ]
         maxHeapSize = '256m'
 
     }
@@ -269,14 +228,6 @@ subprojects {
             }
         }
     }
-
-//        tasks.withType(Pmd) {
-//            reports {
-//                xml.enabled = false
-//                html.enabled = true
-//            }
-//        }
-
 
     pmd {
         consoleOutput = true
@@ -313,6 +264,7 @@ subprojects {
                 from project.jar.getArchivePath()
                 exclude 'eventmesh-common*.jar'
                 exclude 'eventmesh-connector-api*.jar'
+                exclude 'eventmesh-connector-plugin*.jar'
                 exclude 'eventmesh-starter*.jar'
                 exclude 'eventmesh-test*.jar'
                 exclude 'eventmesh-sdk*.jar'
@@ -331,7 +283,6 @@ subprojects {
                 exclude '**/mumble-sdk-test*.jar'
                 exclude '*connector-rocketmq*.jar'
                 exclude 'eventmesh-runtime*.jar'
-//                exclude '*log4j*.jar'
                 exclude 'commons-collections-3.2.2.jar'
             }
 
@@ -349,7 +300,6 @@ subprojects {
 
     javadoc {
         source = sourceSets.main.java
-        //classpath = configurations.implementation
         destinationDir = reporting.file("javadoc")
     }
 
@@ -370,8 +320,8 @@ subprojects {
     }
 
     if (!Boolean.valueOf(signEnabled)) {
-        tasks.whenTaskAdded {task ->
-            if(task.name.contains("sign")) {
+        tasks.whenTaskAdded { task ->
+            if (task.name.contains("sign")) {
                 task.enabled = false
             }
         }
@@ -382,7 +332,6 @@ subprojects {
         mavenCentral()
         mavenLocal()
     }
-
 
     configurations.all {
         resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
@@ -447,4 +396,3 @@ subprojects {
     }
 
 }
-

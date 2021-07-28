@@ -50,8 +50,8 @@ public class AsyncPublish {
             }
 
             Thread.sleep(2000);
-            //退出,销毁资源
-//            client.close();
+            // release resource and close client
+            // client.close();
         } catch (Exception e) {
             logger.warn("AsyncPublish failed", e);
         }

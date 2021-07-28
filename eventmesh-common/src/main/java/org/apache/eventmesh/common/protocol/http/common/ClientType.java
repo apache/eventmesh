@@ -19,9 +19,9 @@ package org.apache.eventmesh.common.protocol.http.common;
 
 public enum ClientType {
 
-    PUB(1, "发送客户端"),
+    PUB(1, "Client for publishing"),
 
-    SUB(2, "监听客户端");
+    SUB(2, "Client for subscribing");
 
     private Integer type;
 

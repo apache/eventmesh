@@ -19,13 +19,13 @@ package org.apache.eventmesh.runtime.core.plugin;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.ServiceLoader;
 
 import io.openmessaging.api.AsyncMessageListener;
 import io.openmessaging.api.Message;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.consumer.MeshMQPushConsumer;
+import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +34,14 @@ public class MQConsumerWrapper extends MQWrapper {
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected MeshMQPushConsumer meshMQPushConsumer;
+
+    public MQConsumerWrapper(String connectorPluginType) {
+        this.meshMQPushConsumer = ConnectorPluginFactory.getMeshMQPushConsumer(connectorPluginType);
+        if (meshMQPushConsumer == null) {
+            logger.error("can't load the meshMQPushConsumer plugin, please check.");
+            throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
+        }
+    }
 
     public void subscribe(String topic, AsyncMessageListener listener) throws Exception {
         meshMQPushConsumer.subscribe(topic, listener);
@@ -44,22 +52,9 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public synchronized void init(Properties keyValue) throws Exception {
-        meshMQPushConsumer = getMeshMQPushConsumer();
-        if (meshMQPushConsumer == null) {
-            logger.error("can't load the meshMQPushConsumer plugin, please check.");
-            throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
-        }
 
         meshMQPushConsumer.init(keyValue);
         inited.compareAndSet(false, true);
-    }
-
-    private MeshMQPushConsumer getMeshMQPushConsumer() {
-        ServiceLoader<MeshMQPushConsumer> meshMQPushConsumerServiceLoader = ServiceLoader.load(MeshMQPushConsumer.class);
-        if (meshMQPushConsumerServiceLoader.iterator().hasNext()) {
-            return meshMQPushConsumerServiceLoader.iterator().next();
-        }
-        return null;
     }
 
     public synchronized void start() throws Exception {
