@@ -56,6 +56,17 @@
 - 优雅: 新功能，类或组件应经过精心设计
 - 可测试性: 重要代码应经过良好测试（较高的单元测试覆盖率）
 
+### License审查
+
+Eventmesh遵循[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) 政策。 
+所有的源代码文件应该在文件头部添加Apache License header，Eventmesh会使用[apache/skywalking-eyes](https://github.com/apache/skywalking-eyes)
+对源代码文件头进行校验。Eventmesh使用[Gradle-License-Report](https://github.com/jk1/Gradle-License-Report)插件
+检查第三方依赖，当你需要添加三方依赖时，你需要将新添加的依赖注册在tool/license/allowed-licenses.txt中，你可以通过执行`./gradle clean checkLicense`命令可以判断当前是否有license尚未添加，
+同时新添加的三方库需要满足[Apache对于第三方的政策](https://apache.org/legal/resolved.html)。
+非常建议在需要添加三方依赖之前与Eventmesh社区进行沟通。
+
 ## 社区
 
 ### 联系我们
+
+邮件：dev@eventmesh.apache.org
