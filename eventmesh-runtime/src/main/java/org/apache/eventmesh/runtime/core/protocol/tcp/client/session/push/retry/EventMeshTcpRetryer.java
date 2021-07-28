@@ -79,8 +79,8 @@ public class EventMeshTcpRetryer {
                 ? eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgSyncRetryTimes
                 : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgAsyncRetryTimes;
         if (downStreamMsgContext.retryTimes >= maxRetryTimes) {
-            logger.warn("pushRetry fail,retry over maxRetryTimes:{}, pushType: {}, retryTimes:{}, seq:{}, bizSeq:{}", downStreamMsgContext.subscriptionItem.getType(),
-                    maxRetryTimes, downStreamMsgContext.retryTimes, downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+            logger.warn("pushRetry fail,retry over maxRetryTimes:{}, pushType: {}, retryTimes:{}, seq:{}, bizSeq:{}", maxRetryTimes, downStreamMsgContext.subscriptionItem.getType(),
+                    downStreamMsgContext.retryTimes, downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
             return;
         }
 
