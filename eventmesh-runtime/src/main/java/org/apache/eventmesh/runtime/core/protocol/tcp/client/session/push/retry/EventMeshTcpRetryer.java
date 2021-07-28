@@ -146,6 +146,7 @@ public class EventMeshTcpRetryer {
 //                }
             } else {
                 downStreamMsgContext.session = rechoosen;
+                rechoosen.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                 rechoosen.downstreamMsg(downStreamMsgContext);
                 logger.info("retry downStream msg end,seq:{},retryTimes:{},bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
             }
