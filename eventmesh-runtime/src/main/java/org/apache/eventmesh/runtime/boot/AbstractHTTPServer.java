@@ -154,9 +154,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         super.start();
         Runnable r = () -> {
             ServerBootstrap b = new ServerBootstrap();
+            SSLContext sslContext = useTLS ? SSLContextFactory.getSslContext() : null;
             b.group(this.bossGroup, this.workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new HttpsServerInitializer(SSLContextFactory.getSslContext())).childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
+                    .childHandler(new HttpsServerInitializer(sslContext))
+                    .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE);
             try {
                 httpServerLogger.info("HTTPServer[port={}] started......", this.port);
                 ChannelFuture future = b.bind(this.port).sync();
