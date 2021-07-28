@@ -305,6 +305,7 @@ public class ClientSessionGroupMapping {
                         , session.getClientGroupWrapper().get().groupConsumerSessions);
                 if(reChooseSession != null){
                     downStreamMsgContext.session = reChooseSession;
+                    reChooseSession.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     reChooseSession.downstreamMsg(downStreamMsgContext);
                     logger.info("rePush msg form unAckMsgs,seq:{},rePushClient:{}", entry.getKey(), downStreamMsgContext.session.getClient());
                 }else{
