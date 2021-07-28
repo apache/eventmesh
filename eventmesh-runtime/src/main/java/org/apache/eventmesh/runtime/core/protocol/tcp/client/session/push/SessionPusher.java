@@ -101,12 +101,15 @@ public class SessionPusher {
                                 logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                                 //retry
-                                long delayTime = SubcriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType()) ? 0 : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryDelayInMills;
+                                long delayTime = SubcriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
+                                        ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
+                                        : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
                                 downStreamMsgContext.delay(delayTime);
                                 session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {
                                 deliveredMsgsCount.incrementAndGet();
-                                logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+                                logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
+                                        downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
                                 if (session.isIsolated()) {
                                     logger.info("cancel isolated,client:{}", session.getClient());
