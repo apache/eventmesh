@@ -23,15 +23,12 @@ import org.junit.Test;
 public class ThreadUtilTest {
 
     @Test
-    public void testRandomSleep() {
+    public void testRandomSleep() throws InterruptedException {
         TestThread testThread = new TestThread();
         testThread.start();
-        try {
-            Thread.sleep(100L);
-            Assert.assertTrue(testThread.getSleepTime() >= 1);
-            Assert.assertTrue(testThread.getSleepTime() <= 50);
-        } catch (InterruptedException ignore) {
-        }
+        testThread.join();
+        Assert.assertTrue(testThread.getSleepTime() > 0);
+        Assert.assertTrue(testThread.getSleepTime() <= 60);
     }
 
     @Test
