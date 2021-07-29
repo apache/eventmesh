@@ -15,11 +15,18 @@
  * limitations under the License.
  */
 
-List open_message = [
-        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
-]
-
 dependencies {
-    api open_message, project(":eventmesh-common"), project(":eventmesh-spi")
-    testImplementation open_message,project(":eventmesh-common"), project(":eventmesh-spi")
+    api project(":eventmesh-spi")
+    api 'io.openmessaging:openmessaging-api'
+    api 'io.dropwizard.metrics:metrics-core'
+    api "io.dropwizard.metrics:metrics-healthchecks"
+    api "io.dropwizard.metrics:metrics-annotation"
+    api "io.dropwizard.metrics:metrics-json"
+
+    testImplementation project(":eventmesh-spi")
+    testImplementation 'io.openmessaging:openmessaging-api'
+    testImplementation 'io.dropwizard.metrics:metrics-core'
+    testImplementation "io.dropwizard.metrics:metrics-healthchecks"
+    testImplementation "io.dropwizard.metrics:metrics-annotation"
+    testImplementation "io.dropwizard.metrics:metrics-json"
 }
