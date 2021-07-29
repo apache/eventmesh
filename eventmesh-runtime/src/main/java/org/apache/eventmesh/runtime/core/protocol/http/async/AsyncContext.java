@@ -20,7 +20,6 @@ package org.apache.eventmesh.runtime.core.protocol.http.async;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.base.Preconditions;
 
@@ -30,7 +29,7 @@ public class AsyncContext<T> {
 
     private T response;
 
-    private AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
+    private volatile boolean complete = Boolean.FALSE;
 
     private ThreadPoolExecutor asyncContextExecutor;
 
@@ -44,21 +43,19 @@ public class AsyncContext<T> {
     public void onComplete(final T response) {
         Preconditions.checkState(Objects.nonNull(response), "response cant be null");
         this.response = response;
-        this.complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
+        this.complete = Boolean.TRUE;
     }
 
     public void onComplete(final T response, CompleteHandler<T> handler) {
         Preconditions.checkState(Objects.nonNull(response), "response cant be null");
         Preconditions.checkState(Objects.nonNull(handler), "handler cant be null");
         this.response = response;
-        CompletableFuture.runAsync(() -> {
-            handler.onResponse(response);
-        }, asyncContextExecutor);
-        this.complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
+        CompletableFuture.runAsync(() -> handler.onResponse(response), asyncContextExecutor);
+        this.complete = Boolean.TRUE;
     }
 
     public boolean isComplete() {
-        return complete.get();
+        return complete;
     }
 
     public T getRequest() {
