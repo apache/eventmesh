@@ -15,15 +15,20 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-connector-plugin:eventmesh-connector-redis'
+configurations {
+    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
+}
 
+
+List open_message = [
+        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
+]
+
+List netty = [
+        "io.netty:netty-all:4.1.63.Final"
+]
+
+dependencies {
+    implementation netty, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    testImplementation netty, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
+}
