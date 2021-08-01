@@ -64,13 +64,13 @@ public class KafkaMeshConsumerAdaptor implements MeshMQPushConsumer {
                 Constants.EVENTMESH_CONF_HOME + File.separator + Constants.KAFKA_CONF_FILE,
                 false
         );
-        Properties properties = new Properties();
-        properties.put(OMSBuiltinKeys.DRIVER_IMPL, "org.apache.eventmesh.connector.kafka.MessagingAccessPointImpl");
-        properties.put("CONSUMER_ID", keyValue.getProperty("consumerGroup"));
-        properties.put("instanceName", keyValue.getProperty("instanceName"));
+        Properties consumerProperties = new Properties();
+        consumerProperties.put(OMSBuiltinKeys.DRIVER_IMPL, "org.apache.eventmesh.connector.kafka.MessagingAccessPointImpl");
+        consumerProperties.put("CONSUMER_ID", keyValue.getProperty("consumerGroup"));
+        consumerProperties.put("instanceName", keyValue.getProperty("instanceName"));
 
-        MessagingAccessPoint messagingAccessPoint = OMS.builder().build(keyValue);
-        kafkaConsumer = (KafkaMQConsumerImpl) messagingAccessPoint.createConsumer(properties);
+        MessagingAccessPoint messagingAccessPoint = OMS.builder().build(consumerProperties);
+        kafkaConsumer = (KafkaMQConsumerImpl) messagingAccessPoint.createConsumer(consumerProperties);
 
         KafkaConsumerConfig kafkaConsumerConfig = new KafkaConsumerConfig(configurationWrapper);
         boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast"));

@@ -61,13 +61,13 @@ public class KafkaMeshProducerAdaptor implements MeshMQProducer {
                 false
         );
 
-        Properties ProducerProperties = new Properties();
-        ProducerProperties.put(OMSBuiltinKeys.DRIVER_IMPL, "org.apache.eventmesh.connector.kafka.MessagingAccessPointImpl");
-        ProducerProperties.put("RMQ_PRODUCER_GROUP", properties.getProperty("producerGroup"));
-        ProducerProperties.put("PRODUCER_ID", properties.getProperty("producerGroup"));
+        Properties producerProperties = new Properties();
+        producerProperties.put(OMSBuiltinKeys.DRIVER_IMPL, "org.apache.eventmesh.connector.kafka.MessagingAccessPointImpl");
+        producerProperties.put("RMQ_PRODUCER_GROUP", properties.getProperty("producerGroup"));
+        producerProperties.put("PRODUCER_ID", properties.getProperty("producerGroup"));
 
-        MessagingAccessPoint messagingAccessPoint = OMS.builder().build(ProducerProperties);
-        kafkaMQProducer = (KafkaMQProducerImpl) messagingAccessPoint.createProducer(ProducerProperties);
+        MessagingAccessPoint messagingAccessPoint = OMS.builder().build(producerProperties);
+        kafkaMQProducer = (KafkaMQProducerImpl) messagingAccessPoint.createProducer(producerProperties);
 
         kafkaMQProducer.init(new KafkaProducerConfig(configurationWrapper));
     }

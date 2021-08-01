@@ -22,7 +22,6 @@ import io.openmessaging.api.Message;
 import io.openmessaging.api.OnExceptionContext;
 import io.openmessaging.api.SendCallback;
 import io.openmessaging.api.SendResult;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
@@ -63,25 +62,24 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
 
+        Integer requestCode = Integer.valueOf(asyncContext.getRequest().getRequestCode());
+        String localAddress = IPUtil.getLocalAddress();
         HttpCommand responseEventMeshCommand;
 
-        cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+        cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(requestCode),
                 EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
+                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
 
         SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
         SendMessageRequestBody sendMessageRequestBody = (SendMessageRequestBody) asyncContext.getRequest().getBody();
 
         SendMessageResponseHeader sendMessageResponseHeader =
-                SendMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
-                        IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
+                SendMessageResponseHeader.buildHeader(requestCode, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
+                        localAddress, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         //validate header
-        if (StringUtils.isBlank(sendMessageRequestHeader.getIdc())
-                || StringUtils.isBlank(sendMessageRequestHeader.getPid())
-                || !StringUtils.isNumeric(sendMessageRequestHeader.getPid())
-                || StringUtils.isBlank(sendMessageRequestHeader.getSys())) {
+        if (!isValidatedHeader(sendMessageRequestHeader)) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
@@ -90,12 +88,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         }
 
         //validate body
-        if (StringUtils.isBlank(sendMessageRequestBody.getBizSeqNo())
-                || StringUtils.isBlank(sendMessageRequestBody.getUniqueId())
-                || StringUtils.isBlank(sendMessageRequestBody.getProducerGroup())
-                || StringUtils.isBlank(sendMessageRequestBody.getTopic())
-                || StringUtils.isBlank(sendMessageRequestBody.getContent())
-                || (StringUtils.isBlank(sendMessageRequestBody.getTtl()))) {
+        if (!isValidatedBody(sendMessageRequestBody)) {
             //sync message TTL can't be empty
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
@@ -116,7 +109,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         }
 
         String ttl = String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS);
-        if (StringUtils.isNotBlank(sendMessageRequestBody.getTtl()) && StringUtils.isNumeric(sendMessageRequestBody.getTtl())) {
+        if (StringUtils.isNumeric(sendMessageRequestBody.getTtl())) {
             ttl = sendMessageRequestBody.getTtl();
         }
 
@@ -239,6 +232,21 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
     @Override
     public boolean rejectRequest() {
         return false;
+    }
+
+    public boolean isValidatedHeader(SendMessageRequestHeader sendMessageRequestHeader) {
+        return StringUtils.isNotBlank(sendMessageRequestHeader.getIdc())
+                && StringUtils.isNumeric(sendMessageRequestHeader.getPid())
+                && StringUtils.isNotBlank(sendMessageRequestHeader.getSys());
+    }
+
+    public boolean isValidatedBody(SendMessageRequestBody sendMessageRequestBody) {
+        return StringUtils.isNotBlank(sendMessageRequestBody.getBizSeqNo())
+                && StringUtils.isNotBlank(sendMessageRequestBody.getUniqueId())
+                && StringUtils.isNotBlank(sendMessageRequestBody.getProducerGroup())
+                && StringUtils.isNotBlank(sendMessageRequestBody.getTopic())
+                && StringUtils.isNotBlank(sendMessageRequestBody.getContent())
+                && (StringUtils.isNotBlank(sendMessageRequestBody.getTtl()));
     }
 
 }

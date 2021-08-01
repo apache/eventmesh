@@ -18,5 +18,4 @@
 dependencies {
     implementation project(":eventmesh-runtime")
     testImplementation project(":eventmesh-runtime")
-    //testImplementation group: 'junit', name: 'junit', version: '4.12'
 }

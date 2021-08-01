@@ -19,15 +19,9 @@
 
 package org.apache.eventmesh.http.demo.sub.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.consumer.LiteConsumer;
-import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.ThreadUtil;
 import org.apache.eventmesh.common.protocol.SubcriptionType;
@@ -39,7 +33,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
+
 import javax.annotation.PreDestroy;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 
 @Component
 public class SubService implements InitializingBean {
@@ -54,9 +54,9 @@ public class SubService implements InitializingBean {
 
     final List<SubscriptionItem> topicList = Arrays.asList(new SubscriptionItem("TEST-TOPIC-HTTP-ASYNC", SubscriptionMode.CLUSTERING, SubcriptionType.ASYNC));
     final String localIp = IPUtil.getLocalAddress();
-    final String localPort = properties.getProperty("server.port");
-    final String eventMeshIp = properties.getProperty("eventmesh.ip");
-    final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
+    final String localPort = properties == null ? "8088" : properties.getProperty("server.port");
+    final String eventMeshIp = properties == null ? "127.0.0.1" : properties.getProperty("eventmesh.ip");
+    final String eventMeshHttpPort = properties == null ? "10105" : properties.getProperty("eventmesh.http.port");
     final String url = "http://" + localIp + ":" + localPort + "/sub/test";
     final String env = "P";
     final String idc = "FT";

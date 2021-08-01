@@ -504,6 +504,26 @@
             "moduleLicense": "Apache License, Version 2.0",
             "moduleVersion": "1.23",
             "moduleName": "org.yaml:snakeyaml"
+        },
+        {
+            "moduleLicense": "BSD 2-Clause License",
+            "moduleVersion": "1.4.9-1",
+            "moduleName": "com.github.luben:zstd-jni"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.8.0",
+            "moduleName": "org.apache.kafka:kafka-clients"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.7.1",
+            "moduleName": "org.lz4:lz4-java"
+        },
+        {
+            "moduleLicense": "Apache-2.0",
+            "moduleVersion": "1.1.8.1",
+            "moduleName": "org.xerial.snappy:snappy-java"
         }
   ]
 }

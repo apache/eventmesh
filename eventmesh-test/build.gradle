@@ -19,8 +19,6 @@
 //version '1.2.0-SNAPSHOT'
 
 dependencies {
-//    compile log4j2, sl4j
-//    testCompile log4j2, sl4j
     implementation project(":eventmesh-sdk-java")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation 'org.springframework.boot:spring-boot-starter-web'

@@ -18,13 +18,11 @@
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import com.alibaba.fastjson.JSON;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.openmessaging.api.Message;
 import io.openmessaging.api.OnExceptionContext;
 import io.openmessaging.api.SendCallback;
 import io.openmessaging.api.SendResult;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.common.Constants;
@@ -67,24 +65,23 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
     @Override
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
 
-        HttpCommand responseEventMeshCommand;
+        Integer requestCode = Integer.valueOf(asyncContext.getRequest().getRequestCode());
+        String localAddress = IPUtil.getLocalAddress();
 
-        cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+        cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(requestCode),
                 EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
+                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), localAddress);
 
         SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
         SendMessageRequestBody sendMessageRequestBody = (SendMessageRequestBody) asyncContext.getRequest().getBody();
 
         SendMessageResponseHeader sendMessageResponseHeader =
-                SendMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
-                        IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
+                SendMessageResponseHeader.buildHeader(requestCode, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
+                        localAddress, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
-        if (StringUtils.isBlank(sendMessageRequestHeader.getIdc())
-                || StringUtils.isBlank(sendMessageRequestHeader.getPid())
-                || !StringUtils.isNumeric(sendMessageRequestHeader.getPid())
-                || StringUtils.isBlank(sendMessageRequestHeader.getSys())) {
+        HttpCommand responseEventMeshCommand;
+        if (checkRequestHeader(sendMessageRequestHeader)) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
@@ -92,12 +89,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        if (StringUtils.isBlank(sendMessageRequestBody.getBizSeqNo())
-                || StringUtils.isBlank(sendMessageRequestBody.getUniqueId())
-                || StringUtils.isBlank(sendMessageRequestBody.getProducerGroup())
-                || StringUtils.isBlank(sendMessageRequestBody.getTopic())
-                || StringUtils.isBlank(sendMessageRequestBody.getContent())
-                || (StringUtils.isBlank(sendMessageRequestBody.getTtl()))) {
+        if (checkRequestBody(sendMessageRequestBody)) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
@@ -296,4 +288,21 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
     public boolean rejectRequest() {
         return false;
     }
+
+    private boolean checkRequestHeader(SendMessageRequestHeader sendMessageRequestHeader) {
+        return StringUtils.isNotBlank(sendMessageRequestHeader.getIdc())
+                && StringUtils.isNumeric(sendMessageRequestHeader.getPid())
+                && StringUtils.isNotBlank(sendMessageRequestHeader.getSys());
+    }
+
+    private boolean checkRequestBody(SendMessageRequestBody sendMessageRequestBody) {
+        return StringUtils.isNotBlank(sendMessageRequestBody.getBizSeqNo())
+                && StringUtils.isNotBlank(sendMessageRequestBody.getUniqueId())
+                && StringUtils.isNotBlank(sendMessageRequestBody.getProducerGroup())
+                && StringUtils.isNotBlank(sendMessageRequestBody.getTopic())
+                && StringUtils.isNotBlank(sendMessageRequestBody.getContent())
+                && StringUtils.isNotBlank(sendMessageRequestBody.getTtl());
+    }
+
+
 }

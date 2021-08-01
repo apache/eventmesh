@@ -44,7 +44,6 @@ public class MessagingAccessPointImpl implements MessagingAccessPoint {
         this.attributesProperties = attributesProperties;
     }
 
-
     @Override
     public String version() {
         return OMS.specVersion;

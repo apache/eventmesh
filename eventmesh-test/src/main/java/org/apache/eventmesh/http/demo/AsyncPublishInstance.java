@@ -17,10 +17,7 @@
 
 package org.apache.eventmesh.http.demo;
 
-import java.util.Properties;
-
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.producer.LiteProducer;
 import org.apache.eventmesh.common.Constants;
@@ -31,6 +28,8 @@ import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Properties;
+
 public class AsyncPublishInstance {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncPublishInstance.class);
@@ -40,19 +39,17 @@ public class AsyncPublishInstance {
 
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile("application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
+        String eventMeshIp = "127.0.0.1";
+        String eventMeshHttpPort = "10105";
+        if (properties != null) {
+            eventMeshIp = properties.getProperty("eventmesh.ip", "127.0.0.1");
+            eventMeshHttpPort = properties.getProperty("eventmesh.http.port", "10105");
+        }
 
         LiteProducer liteProducer = null;
         try {
-//            String eventMeshIPPort = args[0];
             String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
-//            final String topic = args[1];
             final String topic = "TEST-TOPIC-HTTP-ASYNC";
-            if (StringUtils.isBlank(eventMeshIPPort)) {
-                // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-                eventMeshIPPort = "127.0.0.1:10105";
-            }
 
             LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
             eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
