@@ -75,7 +75,7 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
 
             dispatch(ctx, pkg, startTime, cmd);
         } catch (Exception e) {
-            logger.error("exception occurred while pkg|cmd={}|pkg={}|errMsg={}", cmd, pkg, e);
+            logger.error("exception occurred while pkg|cmd={}|pkg={}", cmd, pkg, e);
             writeToClient(cmd, pkg, ctx, e);
         }
     }
