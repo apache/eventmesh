@@ -32,7 +32,7 @@ public class OpenTelemetryExporterConfiguration {
 
     private EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
 
-    int prometheusPort = eventMeshHTTPConfiguration.eventMeshPrometheusPort;//the endpoint to export metrics
+    int prometheusPort;//the endpoint to export metrics
 
     /**
      * Initializes the Meter SDK and configures the prometheus collector with all default settings.
@@ -42,6 +42,7 @@ public class OpenTelemetryExporterConfiguration {
      */
     public MeterProvider initializeOpenTelemetry(EventMeshHTTPConfiguration eventMeshHTTPConfiguration) {
         this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;
+        prometheusPort = eventMeshHTTPConfiguration.eventMeshPrometheusPort;
         SdkMeterProvider meterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
 
         PrometheusCollector.builder().setMetricProducer(meterProvider).buildAndRegister();

@@ -234,7 +234,7 @@ public class OpenTelemetryExporter {
 
         //maxClientLatency
         meter
-                .doubleValueObserverBuilder("eventmesh.http.push,latency.elapsed.max")
+                .doubleValueObserverBuilder("eventmesh.http.push.latency.elapsed.max")
                 .setDescription("max of http push latency")
                 .setUnit("HTTP")
                 .setUpdater(result -> result.observe(summaryMetrics.maxHTTPPushLatency(), Labels.empty()))
@@ -242,7 +242,7 @@ public class OpenTelemetryExporter {
 
         //avgClientLatency
         meter
-                .doubleValueObserverBuilder("eventmesh.http.push,latency.elapsed.avg")
+                .doubleValueObserverBuilder("eventmesh.http.push.latency.elapsed.avg")
                 .setDescription("avg of http push latency")
                 .setUnit("HTTP")
                 .setUpdater(result -> result.observe(summaryMetrics.avgHTTPPushLatency(), Labels.empty()))
