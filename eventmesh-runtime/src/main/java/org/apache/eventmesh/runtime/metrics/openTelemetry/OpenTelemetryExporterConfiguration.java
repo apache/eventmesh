@@ -21,15 +21,18 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.prometheus.client.exporter.HTTPServer;
+import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 
 import java.io.IOException;
 
 //ues openTelemetry to export metrics data
 public class OpenTelemetryExporterConfiguration {
 
-    private  HTTPServer server;//Prometheus server
+    private HTTPServer server;//Prometheus server
 
-    int prometheusPort = 19090;//the endpoint to export metrics
+    private EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
+
+    int prometheusPort = eventMeshHTTPConfiguration.eventMeshPrometheusPort;//the endpoint to export metrics
 
     /**
      * Initializes the Meter SDK and configures the prometheus collector with all default settings.
@@ -37,7 +40,8 @@ public class OpenTelemetryExporterConfiguration {
      *
      * @return A MeterProvider for use in instrumentation.
      */
-    public MeterProvider initializeOpenTelemetry() {
+    public MeterProvider initializeOpenTelemetry(EventMeshHTTPConfiguration eventMeshHTTPConfiguration) {
+        this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;
         SdkMeterProvider meterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
 
         PrometheusCollector.builder().setMetricProducer(meterProvider).buildAndRegister();

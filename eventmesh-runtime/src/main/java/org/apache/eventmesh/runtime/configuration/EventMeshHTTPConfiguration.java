@@ -68,6 +68,8 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public boolean eventMeshServerUseTls = false;
 
+    public int eventMeshPrometheusPort = 19090;
+
     public EventMeshHTTPConfiguration(ConfigurationWrapper configurationWrapper) {
         super(configurationWrapper);
     }
@@ -180,6 +182,11 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
             if (StringUtils.isNotEmpty(eventMeshServerUseTlsStr)) {
                 eventMeshServerUseTls = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerUseTlsStr));
             }
+
+            String eventMeshPrometheusPortStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT);
+            if (StringUtils.isNotEmpty(eventMeshPrometheusPortStr)) {
+                eventMeshPrometheusPort = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshPrometheusPortStr));
+            }
         }
     }
 
@@ -226,5 +233,7 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
         public static String KEY_EVENTMESH_CONSUMER_ENABLED = "eventMesh.server.consumer.enabled";
 
         public static String KEY_EVENTMESH_HTTPS_ENABLED = "eventMesh.server.useTls.enabled";
+
+        public static String KEY_EVENTMESH_METRICS_PROMETHEUS_PORT = "eventMesh.metrics.prometheus.port";
     }
 }
