@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
@@ -68,16 +69,16 @@ public class EventMeshTcpRetryer {
     }
 
     public void pushRetry(DownStreamMsgContext downStreamMsgContext) {
-        if (retrys.size() >= eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryQueueSize) {
+        if (retrys.size() >= EventMeshTCPConfiguration.eventMeshTcpMsgRetryQueueSize) {
             logger.error("pushRetry fail,retrys is too much,allow max retryQueueSize:{}, retryTimes:{}, seq:{}, bizSeq:{}",
-                    eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryQueueSize, downStreamMsgContext.retryTimes,
+                    EventMeshTCPConfiguration.eventMeshTcpMsgRetryQueueSize, downStreamMsgContext.retryTimes,
                     downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
             return;
         }
 
         int maxRetryTimes = SubcriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
-                ? eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgSyncRetryTimes
-                : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgAsyncRetryTimes;
+                ? EventMeshTCPConfiguration.eventMeshTcpMsgSyncRetryTimes
+                : EventMeshTCPConfiguration.eventMeshTcpMsgAsyncRetryTimes;
         if (downStreamMsgContext.retryTimes >= maxRetryTimes) {
             logger.warn("pushRetry fail,retry over maxRetryTimes:{}, pushType: {}, retryTimes:{}, seq:{}, bizSeq:{}", maxRetryTimes, downStreamMsgContext.subscriptionItem.getType(),
                     downStreamMsgContext.retryTimes, downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));

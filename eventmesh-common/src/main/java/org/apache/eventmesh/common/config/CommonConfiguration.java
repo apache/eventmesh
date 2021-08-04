@@ -17,86 +17,58 @@
 
 package org.apache.eventmesh.common.config;
 
-import com.google.common.base.Preconditions;
-
-import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshRuntimeException;
 import org.apache.eventmesh.common.IPUtil;
 
-public class CommonConfiguration {
-    public String eventMeshEnv = "P";
-    public String eventMeshIDC = "FT";
-    public String eventMeshCluster = "LS";
-    public String eventMeshName = "";
-    public String sysID = "5477";
-    public String eventMeshConnectorPluginType = "rocketmq";
-    public String eventMeshSecurityPluginType = "security";
-    public int eventMeshPrometheusPort = 19090;
-    public String eventMeshRegistryPluginType = "namesrv";
+import java.io.File;
+import java.io.IOException;
 
-    public String namesrvAddr = "";
-    public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
-    public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
-    public String eventMeshServerIp = null;
-    public boolean eventMeshServerSecurityEnable = false;
-    public boolean eventMeshServerRegistryEnable = false;
-    protected ConfigurationWrapper configurationWrapper;
+public enum CommonConfiguration {
+    ;
+    private static YamlConfigurationReader yamlConfigurationReader;
 
-    public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
-        this.configurationWrapper = configurationWrapper;
+    public static String eventMeshEnv      = "P";
+    public static String eventMeshIDC      = "FT";
+    public static String eventMeshCluster  = "LS";
+    public static String eventMeshName     = "";
+    public static String sysID             = "5477";
+    public static String eventMeshServerIp = IPUtil.getLocalAddress();
+
+    public static String eventMeshConnectorPluginType = "rocketmq";
+
+    public static boolean eventMeshServerSecurityEnable = false;
+    public static String  eventMeshSecurityPluginType   = "security";
+
+    public static int eventMeshPrometheusPort = 19090;
+
+    public static boolean eventMeshServerRegistryEnable = false;
+    public static String  eventMeshRegistryPluginType   = "namesrv";
+
+    static {
+        String confPath = System.getProperty("confPath", System.getenv("confPath"));
+        String yamlConfigFilePath = confPath + File.separator + Constants.EVENTMESH_COMMON_PROPERTY;
+        try {
+            yamlConfigurationReader = new YamlConfigurationReader(yamlConfigFilePath);
+        } catch (IOException e) {
+            throw new EventMeshRuntimeException(String.format("config file: %s is not exist", yamlConfigFilePath), e);
+        }
+        refreshConfig();
     }
 
-    public void init() {
-
-        if (configurationWrapper != null) {
-            String eventMeshEnvStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ENV);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshEnvStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ENV));
-            eventMeshEnv = StringUtils.deleteWhitespace(eventMeshEnvStr);
-
-            String sysIdStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
-            Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SYSID));
-            sysID = StringUtils.deleteWhitespace(sysIdStr);
-
-            String eventMeshClusterStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshClusterStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER));
-            eventMeshCluster = StringUtils.deleteWhitespace(eventMeshClusterStr);
-
-            String eventMeshNameStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshNameStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_NAME));
-            eventMeshName = StringUtils.deleteWhitespace(eventMeshNameStr);
-
-            String eventMeshIDCStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIDCStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
-            eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIDCStr);
-
-            String eventMeshPrometheusPortStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT);
-            if (StringUtils.isNotEmpty(eventMeshPrometheusPortStr)) {
-                eventMeshPrometheusPort = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshPrometheusPortStr));
-            }
-
-            eventMeshServerIp = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
-            if (StringUtils.isBlank(eventMeshServerIp)) {
-                eventMeshServerIp = IPUtil.getLocalAddress();
-            }
-
-            eventMeshConnectorPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshConnectorPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE));
-
-            String eventMeshServerAclEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED);
-            if (StringUtils.isNotBlank(eventMeshServerAclEnableStr)) {
-                eventMeshServerSecurityEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
-            }
-
-            eventMeshSecurityPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshSecurityPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE));
-
-            String eventMeshServerRegistryEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED);
-            if (StringUtils.isNotBlank(eventMeshServerRegistryEnableStr)) {
-                eventMeshServerRegistryEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
-            }
-
-            eventMeshRegistryPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegistryPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE));
-        }
+    private static void refreshConfig() {
+        eventMeshEnv = yamlConfigurationReader.getString(ConfKeys.KEYS_EVENTMESH_ENV, eventMeshEnv);
+        eventMeshIDC = yamlConfigurationReader.getString(ConfKeys.KEYS_EVENTMESH_IDC, eventMeshIDC);
+        eventMeshCluster = yamlConfigurationReader.getString(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER, eventMeshCluster);
+        eventMeshName = yamlConfigurationReader.getString(ConfKeys.KEYS_EVENTMESH_SERVER_NAME, eventMeshName);
+        sysID = yamlConfigurationReader.getString(ConfKeys.KEYS_EVENTMESH_SYSID, sysID);
+        eventMeshConnectorPluginType = yamlConfigurationReader.getString(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE, eventMeshConnectorPluginType);
+        eventMeshServerIp = yamlConfigurationReader.getString(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP, eventMeshServerIp);
+        eventMeshServerSecurityEnable = yamlConfigurationReader.getBool(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED, eventMeshServerSecurityEnable);
+        eventMeshSecurityPluginType = yamlConfigurationReader.getString(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE, eventMeshSecurityPluginType);
+        eventMeshPrometheusPort = yamlConfigurationReader.getInt(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT, eventMeshPrometheusPort);
+        eventMeshRegistryPluginType = yamlConfigurationReader.getString(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE, eventMeshRegistryPluginType);
+        eventMeshServerRegistryEnable = yamlConfigurationReader.getBool(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED, eventMeshServerRegistryEnable);
     }
 
     static class ConfKeys {
@@ -111,10 +83,6 @@ public class CommonConfiguration {
         public static String KEYS_EVENTMESH_SERVER_NAME = "eventMesh.server.name";
 
         public static String KEYS_EVENTMESH_SERVER_HOST_IP = "eventMesh.server.hostIp";
-
-        public static String KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL = "eventMesh.server.registry.registerIntervalInMills";
-
-        public static String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL = "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
 
         public static String KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE = "eventMesh.connector.plugin.type";
 

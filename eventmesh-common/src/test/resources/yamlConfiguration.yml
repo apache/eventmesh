@@ -15,12 +15,20 @@
 # limitations under the License.
 #
 
-eventMesh.server.env=value1
-eventMesh.server.idc=value2
-eventMesh.sysid=3
-eventMesh.server.cluster=value4
-eventMesh.server.name=value5
-eventMesh.server.hostIp=value6
-eventMesh.connector.plugin.type=rocketmq
-eventMesh.security.plugin.type=acl
-eventMesh.registry.plugin.type=namesrv
+eventMesh:
+  server:
+    env: env
+    idc: idc
+    cluster: cluster
+    name: name
+    hostIp:
+      - 127.0.0.1
+      - 127.0.0.2
+  sysid: 3
+  sysidStr: "3"
+  connector:
+    plugin:
+      type: rocketmq
+  security:
+    plugin:
+      type: security

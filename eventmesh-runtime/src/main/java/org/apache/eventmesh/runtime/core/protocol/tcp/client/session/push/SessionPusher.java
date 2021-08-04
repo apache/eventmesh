@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -96,14 +97,14 @@ public class SessionPusher {
                                 deliverFailMsgsCount.incrementAndGet();
 
                                 //how long to isolate client when push fail
-                                long isolateTime = System.currentTimeMillis() + session.getEventMeshTCPConfiguration().eventMeshTcpPushFailIsolateTimeInMills;
+                                long isolateTime = System.currentTimeMillis() + EventMeshTCPConfiguration.eventMeshTcpPushFailIsolateTimeInMills;
                                 session.setIsolateTime(isolateTime);
                                 logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                                 //retry
                                 long delayTime = SubcriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
-                                        ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
-                                        : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
+                                        ? EventMeshTCPConfiguration.eventMeshTcpMsgRetrySyncDelayInMills
+                                        : EventMeshTCPConfiguration.eventMeshTcpMsgRetryAsyncDelayInMills;
                                 downStreamMsgContext.delay(delayTime);
                                 session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {

@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -48,8 +49,6 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
 
     public volatile int startIdx;
 
-    public EventMeshHTTPConfiguration eventMeshHttpConfiguration;
-
     public HttpRetryer retryer;
 
     public int ttl;
@@ -65,7 +64,6 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
         this.handleMsgContext = handleMsgContext;
         this.urls = handleMsgContext.getConsumeTopicConfig().getIdcUrls();
         this.totalUrls = Lists.newArrayList(handleMsgContext.getConsumeTopicConfig().getUrls());
-        this.eventMeshHttpConfiguration = handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration();
         this.retryer = handleMsgContext.getEventMeshHTTPServer().getHttpRetryer();
         this.ttl = handleMsgContext.getTtl();
         this.startIdx = RandomUtils.nextInt(0, totalUrls.size());
@@ -85,8 +83,7 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     }
 
     public String getUrl() {
-        List<String> localIDCUrl = MapUtils.getObject(urls,
-                eventMeshHttpConfiguration.eventMeshIDC, null);
+        List<String> localIDCUrl = MapUtils.getObject(urls, CommonConfiguration.eventMeshIDC, null);
         if (CollectionUtils.isNotEmpty(localIDCUrl)) {
             return localIDCUrl.get((startIdx + retryTimes) % localIDCUrl.size());
         }

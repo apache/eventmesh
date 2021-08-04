@@ -564,6 +564,11 @@
             "moduleLicense": "The Apache Software License, Version 2.0",
             "moduleVersion": "0.8.1",
             "moduleName": "io.prometheus:simpleclient_httpserver"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "1.29",
+            "moduleName": "org.yaml:snakeyaml"
         }
   ]
 }

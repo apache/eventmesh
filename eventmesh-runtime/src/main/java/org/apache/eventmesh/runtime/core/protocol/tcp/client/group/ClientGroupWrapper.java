@@ -43,6 +43,7 @@ import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -71,8 +72,6 @@ public class ClientGroupWrapper {
 
     //can be sysid + ext(eg dcn)
     private String sysId;
-
-    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
 
     private EventMeshTCPServer eventMeshTCPServer;
 
@@ -113,13 +112,12 @@ public class ClientGroupWrapper {
         this.producerGroup = producerGroup;
         this.consumerGroup = consumerGroup;
         this.eventMeshTCPServer = eventMeshTCPServer;
-        this.eventMeshTCPConfiguration = eventMeshTCPServer.getEventMeshTCPConfiguration();
         this.eventMeshTcpRetryer = eventMeshTCPServer.getEventMeshTcpRetryer();
         this.eventMeshTcpMonitor = eventMeshTCPServer.getEventMeshTcpMonitor();
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
-        this.persistentMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
-        this.broadCastMsgConsumer = new MQConsumerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
-        this.mqProducerWrapper = new MQProducerWrapper(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
+        this.persistentMsgConsumer = new MQConsumerWrapper(CommonConfiguration.eventMeshConnectorPluginType);
+        this.broadCastMsgConsumer = new MQConsumerWrapper(CommonConfiguration.eventMeshConnectorPluginType);
+        this.mqProducerWrapper = new MQProducerWrapper(CommonConfiguration.eventMeshConnectorPluginType);
     }
 
     public ConcurrentHashMap<String, Set<Session>> getTopic2sessionInGroupMapping() {
@@ -238,10 +236,10 @@ public class ClientGroupWrapper {
         Properties keyValue = new Properties();
 //        KeyValue keyValue = OMS.newKeyValue();
         keyValue.put("producerGroup", producerGroup);
-        keyValue.put("instanceName", EventMeshUtil.buildMeshTcpClientID(sysId, "PUB", eventMeshTCPConfiguration.eventMeshCluster));
+        keyValue.put("instanceName", EventMeshUtil.buildMeshTcpClientID(sysId, "PUB", CommonConfiguration.eventMeshCluster));
 
         //TODO for defibus
-        keyValue.put("eventMeshIDC", eventMeshTCPConfiguration.eventMeshIDC);
+        keyValue.put("eventMeshIDC", CommonConfiguration.eventMeshIDC);
 
         mqProducerWrapper.init(keyValue);
         mqProducerWrapper.start();
@@ -371,8 +369,8 @@ public class ClientGroupWrapper {
         Properties keyValue = new Properties();
         keyValue.put("isBroadcast", "false");
         keyValue.put("consumerGroup", consumerGroup);
-        keyValue.put("eventMeshIDC", eventMeshTCPConfiguration.eventMeshIDC);
-        keyValue.put("instanceName", EventMeshUtil.buildMeshTcpClientID(sysId, "SUB", eventMeshTCPConfiguration.eventMeshCluster));
+        keyValue.put("eventMeshIDC", CommonConfiguration.eventMeshIDC);
+        keyValue.put("instanceName", EventMeshUtil.buildMeshTcpClientID(sysId, "SUB", CommonConfiguration.eventMeshCluster));
 
         persistentMsgConsumer.init(keyValue);
 //        persistentMsgConsumer.registerMessageListener(new EventMeshMessageListenerConcurrently() {
@@ -460,8 +458,8 @@ public class ClientGroupWrapper {
         Properties keyValue = new Properties();
         keyValue.put("isBroadcast", "true");
         keyValue.put("consumerGroup", consumerGroup);
-        keyValue.put("eventMeshIDC", eventMeshTCPConfiguration.eventMeshIDC);
-        keyValue.put("instanceName", EventMeshUtil.buildMeshTcpClientID(sysId, "SUB", eventMeshTCPConfiguration.eventMeshCluster));
+        keyValue.put("eventMeshIDC", CommonConfiguration.eventMeshIDC);
+        keyValue.put("instanceName", EventMeshUtil.buildMeshTcpClientID(sysId, "SUB", CommonConfiguration.eventMeshCluster));
         broadCastMsgConsumer.init(keyValue);
 //        broadCastMsgConsumer.registerMessageListener(new EventMeshMessageListenerConcurrently() {
 //            @Override
@@ -537,7 +535,7 @@ public class ClientGroupWrapper {
                     eventMeshTcpMonitor.getMq2EventMeshMsgNum().incrementAndGet();
                     String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
                     message.getSystemProperties().put(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                    message.getSystemProperties().put(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP, eventMeshTCPConfiguration.eventMeshServerIp);
+                    message.getSystemProperties().put(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP, CommonConfiguration.eventMeshServerIp);
 
                     EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
                     if (CollectionUtils.isEmpty(groupConsumerSessions)) {
@@ -587,7 +585,7 @@ public class ClientGroupWrapper {
                     eventMeshTcpMonitor.getMq2EventMeshMsgNum().incrementAndGet();
                     String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
                     message.getSystemProperties().put(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                    message.getSystemProperties().put(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP, eventMeshTCPConfiguration.eventMeshServerIp);
+                    message.getSystemProperties().put(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP, CommonConfiguration.eventMeshServerIp);
 
                     EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
                     Session session = downstreamDispatchStrategy.select(consumerGroup, topic, groupConsumerSessions);
@@ -605,12 +603,12 @@ public class ClientGroupWrapper {
 
                             logger.error("found no session to downstream msg,groupName:{}, topic:{}, bizSeqNo:{}, sendBackTimes:{}, sendBackFromEventMeshIp:{}", consumerGroup, topic, bizSeqNo, sendBackTimes, sendBackFromEventMeshIp);
 
-                            if (sendBackTimes >= eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSendBackMaxTimes) {
-                                logger.error("sendBack to broker over max times:{}, groupName:{}, topic:{}, bizSeqNo:{}", eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSendBackMaxTimes, consumerGroup, topic, bizSeqNo);
+                            if (sendBackTimes >= EventMeshTCPConfiguration.eventMeshTcpSendBackMaxTimes) {
+                                logger.error("sendBack to broker over max times:{}, groupName:{}, topic:{}, bizSeqNo:{}", EventMeshTCPConfiguration.eventMeshTcpSendBackMaxTimes, consumerGroup, topic, bizSeqNo);
                             } else {
                                 sendBackTimes++;
                                 message.getSystemProperties().put(EventMeshConstants.EVENTMESH_SEND_BACK_TIMES, sendBackTimes.toString());
-                                message.getSystemProperties().put(EventMeshConstants.EVENTMESH_SEND_BACK_IP, eventMeshTCPConfiguration.eventMeshServerIp);
+                                message.getSystemProperties().put(EventMeshConstants.EVENTMESH_SEND_BACK_IP, CommonConfiguration.eventMeshServerIp);
                                 sendMsgBackToBroker(message, bizSeqNo);
                             }
                         } catch (Exception e) {
@@ -672,14 +670,6 @@ public class ClientGroupWrapper {
 
     public Set<Session> getGroupProducerSessions() {
         return groupProducerSessions;
-    }
-
-    public EventMeshTCPConfiguration getEventMeshTCPConfiguration() {
-        return eventMeshTCPConfiguration;
-    }
-
-    public void setEventMeshTCPConfiguration(EventMeshTCPConfiguration eventMeshTCPConfiguration) {
-        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
     }
 
     public EventMeshTcpRetryer getEventMeshTcpRetryer() {

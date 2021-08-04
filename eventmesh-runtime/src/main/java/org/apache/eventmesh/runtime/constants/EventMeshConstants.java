@@ -33,8 +33,6 @@ public class EventMeshConstants {
 
     public static final String EVENTMESH_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
-    public static final String EVENTMESH_CONF_FILE = "eventmesh.properties";
-
     public static final String REQ_C2EVENTMESH_TIMESTAMP = "req_c2eventMesh_timestamp";
     public static final String REQ_EVENTMESH2MQ_TIMESTAMP = "req_eventMesh2mq_timestamp";
     public static final String REQ_MQ2EVENTMESH_TIMESTAMP = "req_mq2eventMesh_timestamp";

@@ -24,6 +24,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import org.apache.eventmesh.runtime.admin.handler.*;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,7 @@ public class ClientManageController {
     }
 
     public void start() throws IOException {
-        int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
+        int port = EventMeshTCPConfiguration.eventMeshServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/clientManage/showClient", new ShowClientHandler(eventMeshTCPServer));
         server.createContext("/clientManage/showClientBySystem", new ShowClientBySystemHandler(eventMeshTCPServer));

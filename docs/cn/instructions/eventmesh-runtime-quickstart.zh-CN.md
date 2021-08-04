@@ -33,7 +33,7 @@ gradle clean dist copyConnectorPlugin tar -x test
 upload eventmesh-runtime_1.0.0.tar.gz
 tar -zxvf eventmesh-runtime_1.0.0.tar.gz
 cd bin
-配置 eventMesh.properties
+配置 eventMesh.yml
 cd ../bin
 sh start.sh
 ```
@@ -70,22 +70,25 @@ sh start.sh
 
 插件可以从classpath和插件目录下面加载. 在本地开发阶段可以将使用的插件在eventmesh-starter模块build.gradle中进行声明,或者执行gradle的copyConnectorPlugin任务
 将插件拷贝至dist/plugin目录下, eventmesh默认会加载项目下dist/plugin目录下的插件, 加载目录可以通过-DeventMeshPluginDir=your_plugin_directory来改变插件目录.
-运行时需要使用的插件实例可以在eventmesh.properties中进行配置.如果需要使用rocketmq插件实行快速启动，需要在eventmesh-starter模块build.gradle中进行如下声明
+运行时需要使用的插件实例可以在eventmesh.yml中进行配置.如果需要使用rocketmq插件实行快速启动，需要在eventmesh-starter模块build.gradle中进行如下声明
 ```
    implementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
 ```
 
 **2.3.2 配置插件**
 
-在`eventMesh.properties`配置文件通过声明式的方式来指定项目启动后需要加载的插件
+在`eventMesh.yml`配置文件通过声明式的方式来指定项目启动后需要加载的插件
 
-修改`confPath`目录下面的`eventMesh.properties`文件
+修改`confPath`目录下面的`eventMesh.yml`文件
 
 加载**RocketMQ Connector**插件配置：
 
-```java
+```yml
 #connector plugin 
-eventMesh.connector.plugin.type=rocketmq
+eventMesh:
+  connector:
+    plugin:
+      type: rocketmq
 ```
 
 **2.3.3 配置VM启动参数**
@@ -114,13 +117,13 @@ eventMesh.connector.plugin.type=rocketmq
 
 ### 3.2 配置
 
-> **预先准备** : 你可能需要从github上下载源代码，并参考这两个文件(eventMesh.properties 和 rocketmq-client.properties)的内容来做下面的操作
+> **预先准备** : 你可能需要从github上下载源代码，并参考这两个文件(eventMesh.yml 和 rocketmq-client.properties)的内容来做下面的操作
 
 **3.2.1 需要配置的文件**
 
 在运行容器之前，你需要配置如下文件：
 
-**eventMesh.properties**
+**eventMesh.yml**
 
 | 配置项                 | 默认值 | 备注                    |
 | ---------------------- | ------ | ----------------------- |
@@ -133,18 +136,18 @@ eventMesh.connector.plugin.type=rocketmq
 | --------------------------------- | ----------------------------- | --------------------- |
 | eventMesh.server.rocketmq.namesrvAddr | 127.0.0.1:9876;127.0.0.1:9876 | RocketMQ namesrv 地址 |
 
-拉取了EventMesh镜像到你的宿主机后，你可以执行下面的命令来完成**eventMesh.properties**和**rocketmq-client.properties** 文件的配置
+拉取了EventMesh镜像到你的宿主机后，你可以执行下面的命令来完成**eventMesh.yml**和**rocketmq-client.properties** 文件的配置
 
 **3.2.2 创建文件**
 
 ```shell
 mkdir -p /data/eventmesh/rocketmq/conf
 cd /data/eventmesh/rocketmq/conf
-vi eventMesh.properties
+vi eventMesh.yml
 vi rocketmq-client.properties
 ```
 
-这两个文件内容可以参考 [eventMesh.properties](https://github.com/apache/incubator-eventmesh/blob/develop/eventmesh-runtime/conf/eventMesh.properties)
+这两个文件内容可以参考 [eventMesh.yml](https://github.com/apache/incubator-eventmesh/blob/develop/eventmesh-runtime/conf/eventMesh.yml)
 和 [rocketmq-client.properties](https://github.com/apache/incubator-eventmesh/blob/develop/eventmesh-runtime/conf/rocketmq-client.properties)
 
 ### 3.3 运行
@@ -154,7 +157,7 @@ vi rocketmq-client.properties
 执行下面的命令来运行容器
 
 ```shell
-docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.2.0
+docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eventmesh.yml:/data/app/eventmesh/conf/eventmesh.yml -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.2.0
 ```
 
 > -p : 将容器内端口与宿主机端口绑定，容器的端口应与配置文件中的端口一致

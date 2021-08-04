@@ -24,7 +24,7 @@ import io.openmessaging.api.Message;
 import io.openmessaging.api.SendCallback;
 
 import org.apache.eventmesh.api.RRCallback;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -49,8 +49,6 @@ public class EventMeshProducer {
 
     protected ProducerGroupConf producerGroupConfig;
 
-    protected EventMeshHTTPConfiguration eventMeshHttpConfiguration;
-
     public void send(SendMessageContext sendMsgContext, SendCallback sendCallback) throws Exception {
         mqProducerWrapper.send(sendMsgContext.getMsg(), sendCallback);
     }
@@ -71,17 +69,16 @@ public class EventMeshProducer {
         return mqProducerWrapper;
     }
 
-    public synchronized void init(EventMeshHTTPConfiguration eventMeshHttpConfiguration, ProducerGroupConf producerGroupConfig) throws Exception {
+    public synchronized void init(ProducerGroupConf producerGroupConfig) throws Exception {
         this.producerGroupConfig = producerGroupConfig;
-        this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
 
         Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
-        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(), eventMeshHttpConfiguration.eventMeshCluster));
+        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(), CommonConfiguration.eventMeshCluster));
 
         //TODO for defibus
-        keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.eventMeshIDC);
-        mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
+        keyValue.put("eventMeshIDC", CommonConfiguration.eventMeshIDC);
+        mqProducerWrapper = new MQProducerWrapper(CommonConfiguration.eventMeshConnectorPluginType);
         mqProducerWrapper.init(keyValue);
         inited.compareAndSet(false, true);
         logger.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());
