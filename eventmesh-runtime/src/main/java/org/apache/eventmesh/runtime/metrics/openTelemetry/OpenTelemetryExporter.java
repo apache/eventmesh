@@ -21,6 +21,7 @@ import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.common.Labels;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.metrics.http.SummaryMetrics;
 
 public class OpenTelemetryExporter {
@@ -28,10 +29,13 @@ public class OpenTelemetryExporter {
 
     private SummaryMetrics summaryMetrics;
 
+    private HTTPMetricsServer httpMetricsServer;
+
     private Meter meter;
 
-    public OpenTelemetryExporter(SummaryMetrics summaryMetrics, EventMeshHTTPConfiguration eventMeshHTTPConfiguration) {
-        this.summaryMetrics = summaryMetrics;
+    public OpenTelemetryExporter(HTTPMetricsServer httpMetricsServer, EventMeshHTTPConfiguration eventMeshHTTPConfiguration) {
+        this.httpMetricsServer = httpMetricsServer;
+        summaryMetrics = httpMetricsServer.summaryMetrics;
 
         // it is important to initialize the OpenTelemetry SDK as early as possible in your process.
         MeterProvider meterProvider = configuration.initializeOpenTelemetry(eventMeshHTTPConfiguration);
@@ -249,16 +253,36 @@ public class OpenTelemetryExporter {
                 .build();
 
         //batchMsgQ
-
+        meter
+                .longValueObserverBuilder("eventmesh.batch.message.queue.elapsed.size")
+                .setDescription("size of batch message queue")
+                .setUnit("HTTP")
+                .setUpdater(result -> result.observe(httpMetricsServer.getBatchMsgQ(), Labels.empty()))
+                .build();
 
         //sendMsgQ
-
+        meter
+                .longValueObserverBuilder("eventmesh.send.message.queue.elapsed.size")
+                .setDescription("size of send message queue")
+                .setUnit("HTTP")
+                .setUpdater(result -> result.observe(httpMetricsServer.getSendMsgQ(), Labels.empty()))
+                .build();
 
         //pushMsgQ
-
+        meter
+                .longValueObserverBuilder("eventmesh.push.message.queue.elapsed.size")
+                .setDescription("size of push message queue")
+                .setUnit("HTTP")
+                .setUpdater(result -> result.observe(httpMetricsServer.getPushMsgQ(), Labels.empty()))
+                .build();
 
         //httpRetryQ
-
+        meter
+                .longValueObserverBuilder("eventmesh.http.retry.queue.elapsed.size")
+                .setDescription("size of http retry queue")
+                .setUnit("HTTP")
+                .setUpdater(result -> result.observe(httpMetricsServer.getHttpRetryQ(), Labels.empty()))
+                .build();
 
         //batchAvgSend2MQCost
         meter

@@ -60,7 +60,7 @@ public class HTTPMetricsServer {
         groupMetrics = new GroupMetrics(this.eventMeshHTTPServer, this.metricRegistry);
         healthMetrics = new HealthMetrics(this.eventMeshHTTPServer, this.metricRegistry);
 
-        openTelemetryExporter = new OpenTelemetryExporter(summaryMetrics,this.eventMeshHTTPServer.getEventMeshHttpConfiguration());
+        openTelemetryExporter = new OpenTelemetryExporter(this,this.eventMeshHTTPServer.getEventMeshHttpConfiguration());
 
         logger.info("HTTPMetricsServer inited......");
     }
@@ -170,6 +170,21 @@ public class HTTPMetricsServer {
         summaryMetrics.send2MQStatInfoClear();
     }
 
+    public int getBatchMsgQ(){
+        return eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size();
+    }
+
+    public int getSendMsgQ(){
+        return eventMeshHTTPServer.getSendMsgExecutor().getQueue().size();
+    }
+
+    public int getPushMsgQ(){
+        return eventMeshHTTPServer.getPushMsgExecutor().getQueue().size();
+    }
+
+    public int getHttpRetryQ(){
+        return eventMeshHTTPServer.getHttpRetryer().size();
+    }
 
     public HealthMetrics getHealthMetrics() {
         return healthMetrics;
