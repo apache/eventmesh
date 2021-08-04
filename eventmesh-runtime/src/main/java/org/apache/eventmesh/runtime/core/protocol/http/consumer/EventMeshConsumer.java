@@ -33,6 +33,7 @@ import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
@@ -73,8 +74,8 @@ public class EventMeshConsumer {
     public EventMeshConsumer(EventMeshHTTPServer eventMeshHTTPServer, ConsumerGroupConf consumerGroupConf) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.consumerGroupConf = consumerGroupConf;
-        this.persistentMqConsumer = new MQConsumerWrapper(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshConnectorPluginType);
-        this.broadcastMqConsumer = new MQConsumerWrapper(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshConnectorPluginType);
+        this.persistentMqConsumer = new MQConsumerWrapper(CommonConfiguration.eventMeshConnectorPluginType);
+        this.broadcastMqConsumer = new MQConsumerWrapper(CommonConfiguration.eventMeshConnectorPluginType);
     }
 
     private MessageHandler httpMessageHandler;
@@ -84,18 +85,16 @@ public class EventMeshConsumer {
         Properties keyValue = new Properties();
         keyValue.put("isBroadcast", "false");
         keyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
-        keyValue.put("eventMeshIDC", eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
-        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
+        keyValue.put("eventMeshIDC", CommonConfiguration.eventMeshIDC);
+        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(), CommonConfiguration.eventMeshCluster));
         persistentMqConsumer.init(keyValue);
 
         //
         Properties broadcastKeyValue = new Properties();
         broadcastKeyValue.put("isBroadcast", "true");
         broadcastKeyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
-        broadcastKeyValue.put("eventMeshIDC", eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
-        broadcastKeyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
+        broadcastKeyValue.put("eventMeshIDC", CommonConfiguration.eventMeshIDC);
+        broadcastKeyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(), CommonConfiguration.eventMeshCluster));
         broadcastMqConsumer.init(broadcastKeyValue);
         inited4Persistent.compareAndSet(false, true);
         inited4Broadcast.compareAndSet(false, true);

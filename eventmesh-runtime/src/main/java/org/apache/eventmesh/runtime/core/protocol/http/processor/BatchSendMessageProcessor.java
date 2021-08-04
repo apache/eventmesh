@@ -34,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchResponseBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
@@ -43,6 +44,7 @@ import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatch
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchResponseHeader;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
@@ -79,9 +81,9 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         SendMessageBatchRequestBody sendMessageBatchRequestBody = (SendMessageBatchRequestBody) asyncContext.getRequest().getBody();
 
         SendMessageBatchResponseHeader sendMessageBatchResponseHeader =
-                SendMessageBatchResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
-                        IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                SendMessageBatchResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), CommonConfiguration.eventMeshCluster,
+                        IPUtil.getLocalAddress(), CommonConfiguration.eventMeshEnv,
+                        CommonConfiguration.eventMeshIDC);
 
         if (StringUtils.isBlank(sendMessageBatchRequestHeader.getPid())
                 || !StringUtils.isNumeric(sendMessageBatchRequestHeader.getPid())
@@ -104,7 +106,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerBatchMsgNumLimiter
+        if (!EventMeshHTTPConfiguration.eventMeshServerBatchMsgNumLimiter
                 .tryAcquire(Integer.valueOf(sendMessageBatchRequestBody.getSize()), EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchResponseHeader,
@@ -214,7 +216,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         long delta = StringUtils.isNumeric(sizeStr)? Integer.parseInt(sizeStr) : 0;
         eventMeshHTTPServer.metrics.summaryMetrics.recordSendBatchMsg(delta);
 
-        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerBatchMsgBatchEnabled) {
+        if (EventMeshHTTPConfiguration.eventMeshServerBatchMsgBatchEnabled) {
             for (List<Message> batchMsgs : topicBatchMessageMappings.values()) {
                 // TODO: Implementation in API. Consider whether to put it in the plug-in.
                 Message omsMsg = new Message();

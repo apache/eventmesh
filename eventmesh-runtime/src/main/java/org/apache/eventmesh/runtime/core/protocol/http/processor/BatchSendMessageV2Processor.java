@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchV2ResponseBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
@@ -38,6 +39,7 @@ import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatch
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2ResponseHeader;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
@@ -75,9 +77,9 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         SendMessageBatchV2RequestBody sendMessageBatchV2RequestBody = (SendMessageBatchV2RequestBody) asyncContext.getRequest().getBody();
 
         SendMessageBatchV2ResponseHeader sendMessageBatchV2ResponseHeader =
-                SendMessageBatchV2ResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
-                        IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                SendMessageBatchV2ResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), CommonConfiguration.eventMeshCluster,
+                        IPUtil.getLocalAddress(), CommonConfiguration.eventMeshEnv,
+                        CommonConfiguration.eventMeshIDC);
 
         if (StringUtils.isBlank(sendMessageBatchV2RequestHeader.getPid())
                 || !StringUtils.isNumeric(sendMessageBatchV2RequestHeader.getPid())
@@ -101,7 +103,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         }
 
         //do acl check
-        if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+        if(CommonConfiguration.eventMeshServerSecurityEnable) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = sendMessageBatchV2RequestHeader.getUsername();
             String pass = sendMessageBatchV2RequestHeader.getPasswd();
@@ -122,7 +124,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
             }
         }
 
-        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerBatchMsgNumLimiter
+        if (!EventMeshHTTPConfiguration.eventMeshServerBatchMsgNumLimiter
                 .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageBatchV2ResponseHeader,

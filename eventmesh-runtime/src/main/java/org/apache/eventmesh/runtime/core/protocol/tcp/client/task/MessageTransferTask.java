@@ -29,6 +29,7 @@ import io.openmessaging.api.SendCallback;
 import io.openmessaging.api.SendResult;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -116,11 +117,11 @@ public class MessageTransferTask extends AbstractTask {
         if (cmd.equals(RESPONSE_TO_SERVER)) {
             eventMeshMessage.getProperties().put(EventMeshConstants.RSP_C2EVENTMESH_TIMESTAMP, String.valueOf(startTime));
             eventMeshMessage.getProperties().put(EventMeshConstants.RSP_EVENTMESH2MQ_TIMESTAMP, String.valueOf(sendTime));
-            eventMeshMessage.getProperties().put(EventMeshConstants.RSP_SEND_EVENTMESH_IP, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp);
+            eventMeshMessage.getProperties().put(EventMeshConstants.RSP_SEND_EVENTMESH_IP, CommonConfiguration.eventMeshServerIp);
         } else {
             eventMeshMessage.getProperties().put(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(startTime));
             eventMeshMessage.getProperties().put(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(sendTime));
-            eventMeshMessage.getProperties().put(EventMeshConstants.REQ_SEND_EVENTMESH_IP, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp);
+            eventMeshMessage.getProperties().put(EventMeshConstants.REQ_SEND_EVENTMESH_IP, CommonConfiguration.eventMeshServerIp);
         }
     }
 

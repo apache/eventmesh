@@ -56,8 +56,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     private EventMeshServer eventMeshServer;
 
-    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
-
     private GlobalTrafficShapingHandler globalTrafficShapingHandler;
 
     private ScheduledExecutorService scheduler;
@@ -110,11 +108,9 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     private RateLimiter rateLimiter;
 
-    public EventMeshTCPServer(EventMeshServer eventMeshServer,
-                              EventMeshTCPConfiguration eventMeshTCPConfiguration) {
+    public EventMeshTCPServer(EventMeshServer eventMeshServer) {
         super();
         this.eventMeshServer = eventMeshServer;
-        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
     }
 
     private void startServer() throws Exception {
@@ -142,16 +138,16 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                                     .addLast("global-traffic-shaping", globalTrafficShapingHandler)
                                     .addLast("channel-traffic-shaping", newCTSHandler())
                                     .addLast(new EventMeshTcpConnectionHandler(EventMeshTCPServer.this))
-                                    .addLast(workerGroup, new IdleStateHandler(eventMeshTCPConfiguration.eventMeshTcpIdleReadSeconds,
-                                                    eventMeshTCPConfiguration.eventMeshTcpIdleWriteSeconds,
-                                                    eventMeshTCPConfiguration.eventMeshTcpIdleAllSeconds),
+                                    .addLast(workerGroup, new IdleStateHandler(EventMeshTCPConfiguration.eventMeshTcpIdleReadSeconds,
+                                                    EventMeshTCPConfiguration.eventMeshTcpIdleWriteSeconds,
+                                                    EventMeshTCPConfiguration.eventMeshTcpIdleAllSeconds),
                                             new EventMeshTcpMessageDispatcher(EventMeshTCPServer.this),
                                             new EventMeshTcpExceptionHandler(EventMeshTCPServer.this)
                                     );
                         }
                     });
             try {
-                int port = eventMeshTCPConfiguration.eventMeshTcpServerPort;
+                int port = EventMeshTCPConfiguration.eventMeshTcpServerPort;
                 ChannelFuture f = bootstrap.bind(port).sync();
                 logger.info("EventMeshTCPServer[port={}] started.....", port);
                 f.channel().closeFuture().sync();
@@ -174,7 +170,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         logger.info("==================EventMeshTCPServer Initialing==================");
         initThreadPool();
 
-        rateLimiter = RateLimiter.create(eventMeshTCPConfiguration.eventMeshTcpMsgReqnumPerSecond);
+        rateLimiter = RateLimiter.create(EventMeshTCPConfiguration.eventMeshTcpMsgReqnumPerSecond);
 
         globalTrafficShapingHandler = newGTSHandler();
 
@@ -243,11 +239,16 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     private void initThreadPool() throws Exception {
         super.init("eventMesh-tcp");
 
-        scheduler = ThreadPoolFactory.createScheduledExecutor(eventMeshTCPConfiguration.eventMeshTcpGlobalScheduler, new EventMeshThreadFactoryImpl("eventMesh-tcp-scheduler", true));
+        scheduler = ThreadPoolFactory.createScheduledExecutor(EventMeshTCPConfiguration.eventMeshTcpGlobalScheduler,
+                new EventMeshThreadFactoryImpl("eventMesh-tcp-scheduler", true));
 
-        taskHandleExecutorService = ThreadPoolFactory.createThreadPoolExecutor(eventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize, eventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize, new LinkedBlockingQueue<Runnable>(10000), new EventMeshThreadFactoryImpl("eventMesh-tcp-task-handle", true));
+        taskHandleExecutorService = ThreadPoolFactory.createThreadPoolExecutor(EventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize,
+                EventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize, new LinkedBlockingQueue<>(10000),
+                new EventMeshThreadFactoryImpl("eventMesh-tcp-task-handle", true));
 
-        broadcastMsgDownstreamExecutorService = ThreadPoolFactory.createThreadPoolExecutor(eventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize, eventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize, new LinkedBlockingQueue<Runnable>(10000), new EventMeshThreadFactoryImpl("eventMesh-tcp-msg-downstream", true));
+        broadcastMsgDownstreamExecutorService = ThreadPoolFactory.createThreadPoolExecutor(EventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize,
+                EventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize, new LinkedBlockingQueue<>(10000),
+                new EventMeshThreadFactoryImpl("eventMesh-tcp-msg-downstream", true));
     }
 
     private void shutdownThreadPool() {
@@ -256,7 +257,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     }
 
     private GlobalTrafficShapingHandler newGTSHandler() {
-        GlobalTrafficShapingHandler handler = new GlobalTrafficShapingHandler(scheduler, 0, eventMeshTCPConfiguration.getGtc().getReadLimit()) {
+        GlobalTrafficShapingHandler handler = new GlobalTrafficShapingHandler(scheduler, 0, EventMeshTCPConfiguration.gtc.getReadLimit()) {
             @Override
             protected long calculateSize(Object msg) {
                 return 1;
@@ -267,7 +268,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     }
 
     private ChannelTrafficShapingHandler newCTSHandler() {
-        ChannelTrafficShapingHandler handler = new ChannelTrafficShapingHandler(0, eventMeshTCPConfiguration.getCtc().getReadLimit()) {
+        ChannelTrafficShapingHandler handler = new ChannelTrafficShapingHandler(0, EventMeshTCPConfiguration.ctc.getReadLimit()) {
             @Override
             protected long calculateSize(Object msg) {
                 return 1;
@@ -293,7 +294,4 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         return eventMeshServer;
     }
 
-    public EventMeshTCPConfiguration getEventMeshTCPConfiguration() {
-        return eventMeshTCPConfiguration;
-    }
 }

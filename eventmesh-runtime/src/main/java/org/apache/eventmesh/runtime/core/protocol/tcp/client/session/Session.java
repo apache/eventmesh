@@ -63,8 +63,6 @@ public class Session {
 
     private WeakReference<ClientGroupWrapper> clientGroupWrapper;
 
-    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
-
     private SessionPusher pusher;
 
     private SessionSender sender;
@@ -268,21 +266,12 @@ public class Session {
         this.clientGroupWrapper = clientGroupWrapper;
     }
 
-    public Session(UserAgent client, ChannelHandlerContext context, EventMeshTCPConfiguration eventMeshTCPConfiguration) {
+    public Session(UserAgent client, ChannelHandlerContext context) {
         this.client = client;
         this.context = context;
-        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.remoteAddress = (InetSocketAddress) context.channel().remoteAddress();
         this.sender = new SessionSender(this);
         this.pusher = new SessionPusher(this);
-    }
-
-    public EventMeshTCPConfiguration getEventMeshTCPConfiguration() {
-        return eventMeshTCPConfiguration;
-    }
-
-    public void setEventMeshTCPConfiguration(EventMeshTCPConfiguration eventMeshTCPConfiguration) {
-        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
     }
 
     public void trySendListenResponse(Header header, long startTime, long taskExecuteTime) {

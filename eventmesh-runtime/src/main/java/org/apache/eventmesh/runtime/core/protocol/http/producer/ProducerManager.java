@@ -70,7 +70,7 @@ public class ProducerManager {
             return producerTable.get(producerGroupConfig.getGroupName());
         }
         EventMeshProducer eventMeshProducer = new EventMeshProducer();
-        eventMeshProducer.init(eventMeshHTTPServer.getEventMeshHttpConfiguration(), producerGroupConfig);
+        eventMeshProducer.init(producerGroupConfig);
         producerTable.put(producerGroupConfig.getGroupName(), eventMeshProducer);
         return eventMeshProducer;
     }

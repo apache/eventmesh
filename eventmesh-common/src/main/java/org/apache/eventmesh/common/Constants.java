@@ -75,4 +75,6 @@ public class Constants {
 
     public static final String PROPERTY_MESSAGE_STORE_TIMESTAMP = "STORE_TIMESTAMP";
 
+    public static final String EVENTMESH_COMMON_PROPERTY = "eventmesh.yml";
+
 }

@@ -37,6 +37,7 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch.DownstreamDispatchStrategy;
@@ -94,7 +95,7 @@ public class ClientSessionGroupMapping {
         Session session = null;
         if (!sessionTable.containsKey(addr)) {
             logger.info("createSession client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
-            session = new Session(user, ctx, eventMeshTCPServer.getEventMeshTCPConfiguration());
+            session = new Session(user, ctx);
             initClientGroupWrapper(user, session);
             sessionTable.put(addr, session);
             sessionLogger.info("session|open|succeed|user={}", user);
@@ -356,7 +357,7 @@ public class ClientSessionGroupMapping {
                 Iterator<Session> sessionIterator = sessionTable.values().iterator();
                 while (sessionIterator.hasNext()) {
                     Session tmp = sessionIterator.next();
-                    if (System.currentTimeMillis() - tmp.getLastHeartbeatTime() > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills) {
+                    if (System.currentTimeMillis() - tmp.getLastHeartbeatTime() > EventMeshTCPConfiguration.eventMeshTcpSessionExpiredInMills) {
                         try {
                             logger.warn("clean expired session,client:{}", tmp.getClient());
                             closeSession(tmp.getContext());
@@ -366,7 +367,7 @@ public class ClientSessionGroupMapping {
                     }
                 }
             }
-        }, 1000, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills, TimeUnit.MILLISECONDS);
+        }, 1000, EventMeshTCPConfiguration.eventMeshTcpSessionExpiredInMills, TimeUnit.MILLISECONDS);
     }
 
     private void initDownStreamMsgContextCleaner() {

@@ -28,10 +28,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -70,7 +72,7 @@ public class SessionSender {
 
     public SessionSender(Session session) {
         this.session = session;
-        this.upstreamBuff = new Semaphore(session.getEventMeshTCPConfiguration().eventMeshTcpSessionUpstreamBufferSize);
+        this.upstreamBuff = new Semaphore(EventMeshTCPConfiguration.eventMeshTcpSessionUpstreamBufferSize);
     }
 
     public EventMeshTcpSendResult send(Header header, Message msg, SendCallback sendCallback, long startTime, long taskExecuteTime) {
@@ -134,7 +136,7 @@ public class SessionSender {
 //                }
 
                 msg.getSystemProperties().put(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-                msg.getSystemProperties().put(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP, session.getEventMeshTCPConfiguration().eventMeshServerIp);
+                msg.getSystemProperties().put(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP, CommonConfiguration.eventMeshServerIp);
                 session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getMq2EventMeshMsgNum().incrementAndGet();
 
                 Command cmd;

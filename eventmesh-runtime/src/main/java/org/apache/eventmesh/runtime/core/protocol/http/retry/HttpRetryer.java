@@ -24,7 +24,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +49,7 @@ public class HttpRetryer {
     private Thread dispatcher;
 
     public void pushRetry(DelayRetryable delayRetryable) {
-        if (failed.size() >= eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize) {
+        if (failed.size() >= EventMeshHTTPConfiguration.eventMeshServerRetryBlockQSize) {
             retryLogger.error("[RETRY-QUEUE] is full!");
             return;
         }
@@ -55,10 +57,10 @@ public class HttpRetryer {
     }
 
     public void init() {
-        pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
+        pool = new ThreadPoolExecutor(EventMeshHTTPConfiguration.eventMeshServerRetryThreadNum,
+                EventMeshHTTPConfiguration.eventMeshServerRetryThreadNum,
                 60000,
-                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize),
+                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(EventMeshHTTPConfiguration.eventMeshServerRetryBlockQSize),
                 new ThreadFactory() {
                     private AtomicInteger count = new AtomicInteger();
 

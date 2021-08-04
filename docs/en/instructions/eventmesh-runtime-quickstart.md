@@ -33,7 +33,7 @@ You will get **EventMesh_1.2.0.tar.gz** in directory /* YOUR DEPLOY PATH */Event
 upload Eventmesh_1.2.0.tar.gz
 tar -zxvf Eventmesh_1.2.0.tar.gz
 cd conf
-config your eventMesh.properties
+config your eventMesh.yml
 cd ../bin
 sh start.sh
 ```
@@ -72,16 +72,16 @@ Same with 1.2
 The plugin can be loaded from classpath and plugin directory. In local develop, you can declare the used plugins in build.gradle of eventmesh-starter module,
 or execute copyConnectorPlugin task of gradle to copy the plugin instance jar to dist/plugin directory. By default, eventmesh will load the plugins in project's
 dist/plugin, this can be changed by add -DeventMeshPluginDir=your_plugin_directory.
-The plugin instance need to be used at runtime can be configured in eventmesh.properties.
+The plugin instance need to be used at runtime can be configured in eventmesh.yml.
 
 
 **2.3.2 Configure plugin**
 
 -Deventmesh.log.home=eventmesh-runtime/logs
 
-Specify the connector plugin that will be loaded after the project start by declaring in `eventMesh.properties`
+Specify the connector plugin that will be loaded after the project start by declaring in `eventMesh.yml`
 
-Modify the `eventMesh.properties` file in the `confPath` directory
+Modify the `eventMesh.yml` file in the `confPath` directory
 
 load **rocketmq connector** configuration：
 
@@ -114,13 +114,13 @@ execute `docker pull eventmesh/eventmesh-rocketmq:v1.2.0` , you will get EventMe
 
 ### 3.2 Config
 
-> **prerequisite** : may be you need download the source code from git first and use the contents of these files(eventMesh.properties and rocketmq-client.properties) as a reference for the following actions.
+> **prerequisite** : may be you need download the source code from git first and use the contents of these files(eventMesh.yml and rocketmq-client.properties) as a reference for the following actions.
 
 **3.2.1 Files to configure**
 
 Before run the container you should configure some files.
 
-**eventMesh.properties**
+**eventmesh.yml**
 
 | Configuration Key      | Default Value | Remarks                    |
 | ---------------------- | ------------- | -------------------------- |
@@ -133,7 +133,7 @@ Before run the container you should configure some files.
 | --------------------------------- | ----------------------------- | -------------------------------- |
 | eventMesh.server.rocketmq.namesrvAddr | 127.0.0.1:9876;127.0.0.1:9876 | RocketMQ namesrv default address |
 
-After pull the EventMesh image to your host machine, you can execute command below to configure **eventMesh.properties**
+After pull the EventMesh image to your host machine, you can execute command below to configure **eventmesh.yml**
 and **rocketmq-client.properties**
 
 **3.2.2 Create Files**
@@ -141,12 +141,12 @@ and **rocketmq-client.properties**
 ```shell
 mkdir -p /data/eventmesh/rocketmq/conf
 cd /data/eventmesh/rocketmq/conf
-vi eventMesh.properties
+vi eventmesh.yml
 vi rocketmq-client.properties
 ```
 
 The contents of these files can reference
-from [eventMesh.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/eventMesh.properties)
+from [eventmesh.yml](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/eventmesh.yml)
 and [rocketmq-client.properties](https://github.com/WeBankFinTech/EventMesh/blob/develop/eventmesh-runtime/conf/rocketmq-client.properties)
 
 ### 3.3 Run
@@ -156,7 +156,7 @@ and [rocketmq-client.properties](https://github.com/WeBankFinTech/EventMesh/blob
 execute command below to run container
 
 ```
-docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.2.0
+docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eventmesh.yml:/data/app/eventmesh/conf/eventmesh.yml -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.2.0
 ```
 
 > -p : binding the container port with host machine port
