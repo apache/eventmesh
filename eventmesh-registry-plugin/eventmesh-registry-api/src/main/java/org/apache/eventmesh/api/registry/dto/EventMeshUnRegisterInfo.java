@@ -14,16 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.api.registry.dto;
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-registry-plugin:eventmesh-registry-api'
+public class EventMeshUnRegisterInfo {
+    private String eventMeshClusterName;
+    private String eventMeshName;
 
+    public String getEventMeshClusterName() {
+        return eventMeshClusterName;
+    }
+
+    public void setEventMeshClusterName(String eventMeshClusterName) {
+        this.eventMeshClusterName = eventMeshClusterName;
+    }
+
+    public String getEventMeshName() {
+        return eventMeshName;
+    }
+
+    public void setEventMeshName(String eventMeshName) {
+        this.eventMeshName = eventMeshName;
+    }
+}
