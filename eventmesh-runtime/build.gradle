@@ -17,10 +17,10 @@
 
 dependencies {
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    implementation project(":eventmesh-acl-plugin:eventmesh-acl-api")
-    implementation project(":eventmesh-acl-plugin:eventmesh-acl-impl")
+    implementation project(":eventmesh-security-plugin:eventmesh-security-api")
+    implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
 
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation project(":eventmesh-acl-plugin:eventmesh-acl-api")
-    testImplementation project(":eventmesh-acl-plugin:eventmesh-acl-impl")
+    testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
+    testImplementation project(":eventmesh-security-plugin:eventmesh-security-acl")
 }

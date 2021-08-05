@@ -16,7 +16,7 @@
  */
 
 dependencies {
-    api project(":eventmesh-acl-plugin:eventmesh-acl-api")
+    api project(":eventmesh-security-plugin:eventmesh-security-api")
 
-    testImplementation project(":eventmesh-acl-plugin:eventmesh-acl-api")
+    testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
 }

@@ -17,21 +17,21 @@
 
 task copyAclPlugin(dependsOn: ['jar']) {
     doFirst {
-        new File(projectDir, '../eventmesh-acl-plugin/dist/apps').mkdir()
-        new File(projectDir, '../dist/plugin/acl').mkdirs()
+        new File(projectDir, '../eventmesh-security-plugin/dist/apps').mkdir()
+        new File(projectDir, '../dist/plugin/security').mkdirs()
     }
     doLast {
         copy {
-            into('../eventmesh-acl-plugin/dist/apps/')
+            into('../eventmesh-security-plugin/dist/apps/')
             from project.jar.getArchivePath()
             exclude {
-                "eventmesh-acl-plugin-${version}.jar"
-                "eventmesh-acl-api-${version}.jar"
+                "eventmesh-security-plugin-${version}.jar"
+                "eventmesh-security-api-${version}.jar"
             }
         }
         copy {
-            into '../dist/plugin/acl'
-            from "../eventmesh-acl-plugin/dist/apps/eventmesh-acl-impl-${version}.jar"
+            into '../dist/plugin/security'
+            from "../eventmesh-security-plugin/dist/apps/eventmesh-security-acl-${version}.jar"
         }
     }
 }

@@ -25,6 +25,6 @@ include 'eventmesh-test'
 include 'eventmesh-spi'
 include 'eventmesh-connector-plugin:eventmesh-connector-api'
 include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-acl-plugin:eventmesh-acl-api'
-include 'eventmesh-acl-plugin:eventmesh-acl-impl'
+include 'eventmesh-security-plugin:eventmesh-security-api'
+include 'eventmesh-security-plugin:eventmesh-security-acl'
 
