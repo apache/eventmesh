@@ -80,7 +80,7 @@ public class ConfigurationWrapper {
         if (StringUtils.isEmpty(configValue)) {
             return defaultValue;
         }
-        Preconditions.checkState(StringUtils.isNumeric(configKey), String.format("%s error", configKey));
+        Preconditions.checkState(StringUtils.isNumeric(configValue), String.format("key:%s, value:%s error", configKey, configValue));
         return Integer.parseInt(configValue);
     }
 

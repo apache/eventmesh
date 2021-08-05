@@ -68,7 +68,7 @@ All code should be well reviewed by one or more committers. Some principles:
 Eventmesh follows [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) policy. All source files should 
 have the Apache License header added to the file header. Eventmesh uses the [apache/skywalking-eyes](https://github.com/apache/skywalking-eyes) to check 
 the source file header. And Eventmesh uses [Gradle-License-Report](https://github.com/jk1/Gradle-License-Report) plugin to check for third-part dependencies. 
-When you need to add a three-part dependency, you need to register the newly added dependency in tool/license/allowed-licenses.txt, you can execute `./gradle clean checkLicense` to judge 
+When you need to add a three-part dependency, you need to register the newly added dependency in tool/license/allowed-licenses.txt, you can execute `./gradlew clean checkLicense` to judge 
 whether there exist dependencies isn't added, and the newly added three-part libraries need to meet [ASF 3RD PARTY LICENSE POLICY](https://apache.org/legal/resolved.html). 
 It is highly recommended communicating with Eventmesh community before you need to add a three-part library.
 
