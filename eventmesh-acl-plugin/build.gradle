@@ -15,10 +15,23 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    implementation project(":eventmesh-acl-plugin:eventmesh-acl-api")
-
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation project(":eventmesh-acl-plugin:eventmesh-acl-api")
+task copyAclPlugin(dependsOn: ['jar']) {
+    doFirst {
+        new File(projectDir, '../eventmesh-acl-plugin/dist/apps').mkdir()
+        new File(projectDir, '../dist/plugin/acl').mkdirs()
+    }
+    doLast {
+        copy {
+            into('../eventmesh-acl-plugin/dist/apps/')
+            from project.jar.getArchivePath()
+            exclude {
+                "eventmesh-acl-plugin-${version}.jar"
+                "eventmesh-acl-api-${version}.jar"
+            }
+        }
+        copy {
+            into '../dist/plugin/acl'
+            from "../eventmesh-acl-plugin/dist/apps/eventmesh-acl-impl-${version}.jar"
+        }
+    }
 }

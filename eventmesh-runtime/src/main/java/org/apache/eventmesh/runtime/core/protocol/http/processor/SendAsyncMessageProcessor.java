@@ -34,6 +34,7 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
@@ -53,6 +54,8 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
     public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+
+    public Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -102,6 +105,28 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
             asyncContext.onComplete(responseEventMeshCommand);
             return;
+        }
+
+        //do acl check
+        if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerAclEnable) {
+            String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+            String user = sendMessageRequestHeader.getUsername();
+            String pass = sendMessageRequestHeader.getPasswd();
+            String subsystem = sendMessageRequestHeader.getSys();
+            int requestCode = Integer.valueOf(sendMessageRequestHeader.getCode());
+            String topic = sendMessageRequestBody.getTopic();
+            try {
+                Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
+            }catch (Exception e){
+                //String errorMsg = String.format("CLIENT HAS NO PERMISSION,send failed, topic:%s, subsys:%s, realIp:%s", topic, subsys, realIp);
+
+                responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                        sendMessageResponseHeader,
+                        SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(), e.getMessage()));
+                asyncContext.onComplete(responseEventMeshCommand);
+                aclLogger.warn("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);
+                return;
+            }
         }
 
         String producerGroup = sendMessageRequestBody.getProducerGroup();

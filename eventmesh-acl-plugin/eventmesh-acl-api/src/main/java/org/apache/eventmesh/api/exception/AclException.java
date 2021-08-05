@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.api.exception;
 
-dependencies {
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    implementation project(":eventmesh-acl-plugin:eventmesh-acl-api")
+public class AclException extends RuntimeException {
 
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation project(":eventmesh-acl-plugin:eventmesh-acl-api")
+    public AclException(String message) {
+        super(message);
+    }
+
+    public AclException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

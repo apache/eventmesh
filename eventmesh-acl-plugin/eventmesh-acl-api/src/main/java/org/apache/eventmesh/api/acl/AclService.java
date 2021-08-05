@@ -14,11 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.api.acl;
 
-dependencies {
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    implementation project(":eventmesh-acl-plugin:eventmesh-acl-api")
+import org.apache.eventmesh.api.exception.AclException;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation project(":eventmesh-acl-plugin:eventmesh-acl-api")
+import java.util.Properties;
+
+@EventMeshSPI(isSingleton = true)
+public interface AclService {
+    void init() throws AclException;
+
+    void start() throws AclException;
+
+    void shutdown() throws AclException;
+
+    void doAclCheckInConnect(Properties aclProperties) throws AclException;
+
+    void doAclCheckInHeartbeat(Properties aclProperties) throws AclException;
+
+    void doAclCheckInSend(Properties aclProperties) throws AclException;
+
+    void doAclCheckInReceive(Properties aclProperties) throws AclException;
+
 }

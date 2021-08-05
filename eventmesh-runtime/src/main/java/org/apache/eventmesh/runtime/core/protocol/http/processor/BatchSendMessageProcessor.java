@@ -36,10 +36,12 @@ import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchResponseBody;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchResponseHeader;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
@@ -54,6 +56,8 @@ import org.slf4j.LoggerFactory;
 public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
     public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+
+    public Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -128,12 +132,34 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         long batchStartTime = System.currentTimeMillis();
 
+        String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+        String user = sendMessageBatchRequestHeader.getUsername();
+        String pass = sendMessageBatchRequestHeader.getPasswd();
+        String subsystem = sendMessageBatchRequestHeader.getSys();
+        int requestCode = Integer.valueOf(sendMessageBatchRequestHeader.getCode());
+
         List<Message> msgList = new ArrayList<>();
         Map<String, List<Message>> topicBatchMessageMappings = new ConcurrentHashMap<String, List<Message>>();
         for (SendMessageBatchRequestBody.BatchMessageEntity msg : sendMessageBatchRequestBody.getContents()) {
             if (StringUtils.isBlank(msg.topic)
                     || StringUtils.isBlank(msg.msg)) {
                 continue;
+            }
+
+            //do acl check
+            if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerAclEnable) {
+                try {
+                    Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, msg.topic, requestCode);
+                }catch (Exception e){
+                    //String errorMsg = String.format("CLIENT HAS NO PERMISSION,send failed, topic:%s, subsys:%s, realIp:%s", topic, subsys, realIp);
+
+                    responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                            sendMessageBatchResponseHeader,
+                            SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(), e.getMessage()));
+                    asyncContext.onComplete(responseEventMeshCommand);
+                    aclLogger.warn("CLIENT HAS NO PERMISSION,BatchSendMessageProcessor send failed", e);
+                    return;
+                }
             }
 
             if (StringUtils.isBlank(msg.ttl) || !StringUtils.isNumeric(msg.ttl)) {

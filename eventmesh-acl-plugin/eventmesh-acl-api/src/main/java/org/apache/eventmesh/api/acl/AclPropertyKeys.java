@@ -15,10 +15,13 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    implementation project(":eventmesh-acl-plugin:eventmesh-acl-api")
+package org.apache.eventmesh.api.acl;
 
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation project(":eventmesh-acl-plugin:eventmesh-acl-api")
+public class AclPropertyKeys {
+    public static final String CLIENT_IP = "clientIp";
+    public static final String USER = "user";
+    public static final String PASSWORD = "pwd";
+    public static final String SUBSYSTEM = "subsystem";
+    public static final String TOPIC = "topic";
+    public static final String REQUEST_CODE = "requestCode";
 }
