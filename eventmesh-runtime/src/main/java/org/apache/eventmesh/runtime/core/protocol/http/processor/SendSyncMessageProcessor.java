@@ -109,7 +109,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         }
 
         //do acl check
-        if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerAclEnable) {
+        if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = sendMessageRequestHeader.getUsername();
             String pass = sendMessageRequestHeader.getPasswd();

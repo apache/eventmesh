@@ -48,7 +48,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,7 +146,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             }
 
             //do acl check
-            if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerAclEnable) {
+            if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
                 try {
                     Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, msg.topic, requestCode);
                 }catch (Exception e){

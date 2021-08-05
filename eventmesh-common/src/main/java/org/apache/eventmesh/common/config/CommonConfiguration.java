@@ -29,13 +29,13 @@ public class CommonConfiguration {
     public String eventMeshName = "";
     public String sysID = "5477";
     public String eventMeshConnectorPluginType = "rocketmq";
-    public String eventMeshAclPluginType = "acl";
+    public String eventMeshSecurityPluginType = "security";
 
     public String namesrvAddr = "";
     public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
     public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
     public String eventMeshServerIp = null;
-    public boolean eventMeshServerAclEnable = false;
+    public boolean eventMeshServerSecurityEnable = false;
     protected ConfigurationWrapper configurationWrapper;
 
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
@@ -73,13 +73,13 @@ public class CommonConfiguration {
             eventMeshConnectorPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshConnectorPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE));
 
-            String eventMeshServerAclEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ACL_ENABLED);
+            String eventMeshServerAclEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED);
             if (StringUtils.isNotBlank(eventMeshServerAclEnableStr)) {
-                eventMeshServerAclEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
+                eventMeshServerSecurityEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
             }
 
-            eventMeshAclPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_ACL_PLUGIN_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshAclPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_ACL_PLUGIN_TYPE));
+            eventMeshSecurityPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshSecurityPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE));
         }
     }
 
@@ -102,8 +102,8 @@ public class CommonConfiguration {
 
         public static String KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE = "eventMesh.connector.plugin.type";
 
-        public static String KEYS_EVENTMESH_ACL_ENABLED = "eventMesh.server.acl.enabled";
+        public static String KEYS_EVENTMESH_SECURITY_ENABLED = "eventMesh.server.security.enabled";
 
-        public static String KEYS_ENENTMESH_ACL_PLUGIN_TYPE = "eventMesh.acl.plugin.type";
+        public static String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
     }
 }

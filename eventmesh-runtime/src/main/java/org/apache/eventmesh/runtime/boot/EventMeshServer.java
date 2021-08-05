@@ -49,8 +49,8 @@ public class EventMeshServer {
     }
 
     public void init() throws Exception {
-        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerAclEnable){
-            acl.init(eventMeshHttpConfiguration.eventMeshAclPluginType);
+        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
+            acl.init(eventMeshHttpConfiguration.eventMeshSecurityPluginType);
         }
 
         eventMeshHTTPServer = new EventMeshHTTPServer(this, eventMeshHttpConfiguration);
@@ -68,7 +68,7 @@ public class EventMeshServer {
     }
 
     public void start() throws Exception {
-        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerAclEnable){
+        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
             acl.start();
         }
 
@@ -88,7 +88,7 @@ public class EventMeshServer {
             eventMeshTCPServer.shutdown();
         }
 
-        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerAclEnable){
+        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
             acl.shutdown();
         }
         serviceState = ServiceState.STOPED;

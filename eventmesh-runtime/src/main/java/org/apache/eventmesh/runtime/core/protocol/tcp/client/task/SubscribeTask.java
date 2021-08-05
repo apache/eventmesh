@@ -56,7 +56,7 @@ public class SubscribeTask extends AbstractTask {
                 SubscriptionItem item = subscriptionInfo.getTopicList().get(i);
 
                 //do acl check for receive msg
-                if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAclEnable){
+                if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable){
                     String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                     Acl.doAclCheckInTcpReceive(remoteAddr, session.getClient(), item.getTopic(), Command.SUBSCRIBE_REQUEST.value());
                 }

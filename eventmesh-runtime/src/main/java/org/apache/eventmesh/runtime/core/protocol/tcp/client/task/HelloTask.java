@@ -55,7 +55,7 @@ public class HelloTask extends AbstractTask {
         UserAgent user = (UserAgent) pkg.getBody();
         try {
             //do acl check in connect
-            if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAclEnable){
+            if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable){
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                 Acl.doAclCheckInTcpConnect(remoteAddr, user, HELLO_REQUEST.value());
             }

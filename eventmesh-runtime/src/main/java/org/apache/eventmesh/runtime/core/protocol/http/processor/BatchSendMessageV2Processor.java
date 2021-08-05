@@ -101,7 +101,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         }
 
         //do acl check
-        if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerAclEnable) {
+        if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = sendMessageBatchV2RequestHeader.getUsername();
             String pass = sendMessageBatchV2RequestHeader.getPasswd();

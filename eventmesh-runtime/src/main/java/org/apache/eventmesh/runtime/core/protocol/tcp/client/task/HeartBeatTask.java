@@ -42,7 +42,7 @@ public class HeartBeatTask extends AbstractTask {
         Package res = new Package();
         try {
             //do acl check in heartbeat
-            if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAclEnable){
+            if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable){
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                 Acl.doAclCheckInTcpHeartbeat(remoteAddr, session.getClient(), HEARTBEAT_REQUEST.value());
             }
