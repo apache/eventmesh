@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.codahale.metrics.MetricRegistry;
 
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.apache.eventmesh.runtime.metrics.openTelemetry.OpenTelemetryExporter;
+import org.apache.eventmesh.runtime.metrics.openTelemetry.OpenTelemetryHTTPMetricsExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class HTTPMetricsServer {
 
     public GroupMetrics groupMetrics;
 
-    public OpenTelemetryExporter openTelemetryExporter;
+    public OpenTelemetryHTTPMetricsExporter openTelemetryHTTPMetricsExporter;
 
     private Logger httpLogger = LoggerFactory.getLogger("httpMonitor");
 
@@ -60,13 +60,13 @@ public class HTTPMetricsServer {
         groupMetrics = new GroupMetrics(this.eventMeshHTTPServer, this.metricRegistry);
         healthMetrics = new HealthMetrics(this.eventMeshHTTPServer, this.metricRegistry);
 
-        openTelemetryExporter = new OpenTelemetryExporter(this,this.eventMeshHTTPServer.getEventMeshHttpConfiguration());
+        openTelemetryHTTPMetricsExporter = new OpenTelemetryHTTPMetricsExporter(this,this.eventMeshHTTPServer.getEventMeshHttpConfiguration());
 
         logger.info("HTTPMetricsServer inited......");
     }
 
     public void start() throws Exception {
-        openTelemetryExporter.start();
+        openTelemetryHTTPMetricsExporter.start();
         metricsSchedule.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
@@ -97,7 +97,7 @@ public class HTTPMetricsServer {
 
     public void shutdown() throws Exception {
         metricsSchedule.shutdown();
-        openTelemetryExporter.shutdown();
+        openTelemetryHTTPMetricsExporter.shutdown();
         logger.info("HTTPMetricsServer shutdown......");
     }
 

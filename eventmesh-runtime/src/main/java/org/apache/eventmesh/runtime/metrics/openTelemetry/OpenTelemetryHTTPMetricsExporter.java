@@ -24,23 +24,23 @@ import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.metrics.http.SummaryMetrics;
 
-public class OpenTelemetryExporter {
+public class OpenTelemetryHTTPMetricsExporter {
     OpenTelemetryExporterConfiguration configuration = new OpenTelemetryExporterConfiguration();
+
+    private Meter meter;
 
     private SummaryMetrics summaryMetrics;
 
     private HTTPMetricsServer httpMetricsServer;
 
-    private Meter meter;
-
-    public OpenTelemetryExporter(HTTPMetricsServer httpMetricsServer, EventMeshHTTPConfiguration eventMeshHTTPConfiguration) {
+    public OpenTelemetryHTTPMetricsExporter(HTTPMetricsServer httpMetricsServer, EventMeshHTTPConfiguration eventMeshHTTPConfiguration) {
         this.httpMetricsServer = httpMetricsServer;
         summaryMetrics = httpMetricsServer.summaryMetrics;
 
         // it is important to initialize the OpenTelemetry SDK as early as possible in your process.
         MeterProvider meterProvider = configuration.initializeOpenTelemetry(eventMeshHTTPConfiguration);
 
-        meter = meterProvider.get("OpenTelemetryExporter", "0.13.1");
+        meter = meterProvider.get("OpenTelemetryHTTPExporter", "0.13.1");
     }
 
     public void start(){

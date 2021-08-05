@@ -21,6 +21,7 @@ import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.prometheus.client.exporter.HTTPServer;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 
 import java.io.IOException;
@@ -30,29 +31,30 @@ public class OpenTelemetryExporterConfiguration {
 
     private HTTPServer server;//Prometheus server
 
-    private EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
-
     int prometheusPort;//the endpoint to export metrics
 
+    static MeterProvider meterProvider;
     /**
      * Initializes the Meter SDK and configures the prometheus collector with all default settings.
      *
-     *
      * @return A MeterProvider for use in instrumentation.
      */
-    public MeterProvider initializeOpenTelemetry(EventMeshHTTPConfiguration eventMeshHTTPConfiguration) {
-        this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;
-        prometheusPort = eventMeshHTTPConfiguration.eventMeshPrometheusPort;
-        SdkMeterProvider meterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
+    public MeterProvider initializeOpenTelemetry(CommonConfiguration configuration) {
+        prometheusPort = configuration.eventMeshPrometheusPort;
+        SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
 
-        PrometheusCollector.builder().setMetricProducer(meterProvider).buildAndRegister();
-
+        PrometheusCollector.builder().setMetricProducer(sdkMeterProvider).buildAndRegister();
+        this.meterProvider = sdkMeterProvider;
         try {
             server = new HTTPServer(prometheusPort,true);//Use the daemon thread to start an HTTP server to serve the default Prometheus registry.
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        return meterProvider;
+    }
+
+    public static MeterProvider getMeterProvider(){//for tcp to get the initialized  =meterProvider
         return meterProvider;
     }
 
