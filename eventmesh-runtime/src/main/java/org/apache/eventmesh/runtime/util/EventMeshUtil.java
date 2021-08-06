@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -40,7 +41,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import io.openmessaging.api.Message;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
@@ -55,6 +55,8 @@ import org.slf4j.LoggerFactory;
 public class EventMeshUtil {
 
     public static Logger logger = LoggerFactory.getLogger(EventMeshUtil.class);
+
+    private final static Logger tcpLogger = LoggerFactory.getLogger("tcpMonitor");
 
     public static String buildPushMsgSeqNo() {
         return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + String.valueOf(RandomStringUtils.randomNumeric(4));
@@ -330,5 +332,12 @@ public class EventMeshUtil {
                 .append(client.getPid()).append("-")
                 .append(client.getHost()).append(":").append(client.getPort());
         return sb.toString();
+    }
+
+    public static void printState(ThreadPoolExecutor scheduledExecutorService) {
+        tcpLogger.info("{} [{} {} {} {}]", ((EventMeshThreadFactoryImpl) scheduledExecutorService.getThreadFactory())
+                .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
+                .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
+                .getCompletedTaskCount());
     }
 }

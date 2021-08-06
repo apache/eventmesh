@@ -14,14 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance;
 
-dependencies {
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-namesrv")
-
-
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-namesrv")
+public interface EventMeshRebalanceStrategy {
+    void doRebalance() throws Exception;
 }

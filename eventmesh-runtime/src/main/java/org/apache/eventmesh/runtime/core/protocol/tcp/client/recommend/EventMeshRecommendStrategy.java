@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend;
 
-dependencies {
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-namesrv")
+import java.util.List;
+import java.util.Map;
 
+public interface EventMeshRecommendStrategy {
+    String calculateRecommendEventMesh(String group, String purpose) throws Exception;
 
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-namesrv")
+    List<String> calculateRedirectRecommendEventMesh(Map<String, String> eventMeshMap, Map<String, Integer> clientDistributeMap, String group, int recommendNum) throws Exception;
 }

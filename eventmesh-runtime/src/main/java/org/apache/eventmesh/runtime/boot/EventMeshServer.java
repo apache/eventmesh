@@ -21,6 +21,7 @@ import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.registry.Registry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,18 +37,25 @@ public class EventMeshServer {
 
     private EventMeshTCPConfiguration eventMeshTCPConfiguration;
 
+    private Registry registry;
+
     private ServiceState serviceState;
 
     public EventMeshServer(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
                            EventMeshTCPConfiguration eventMeshTCPConfiguration) {
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
+        this.registry = new Registry();
     }
 
     public void init() throws Exception {
+        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+            registry.init(eventMeshTCPConfiguration.eventMeshRegistryPluginType);
+        }
+
         eventMeshHTTPServer = new EventMeshHTTPServer(this, eventMeshHttpConfiguration);
         eventMeshHTTPServer.init();
-        eventMeshTCPServer = new EventMeshTCPServer(this, eventMeshTCPConfiguration);
+        eventMeshTCPServer = new EventMeshTCPServer(this, eventMeshTCPConfiguration, registry);
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.init();
         }
@@ -60,6 +68,10 @@ public class EventMeshServer {
     }
 
     public void start() throws Exception {
+        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+            registry.start();
+        }
+
         eventMeshHTTPServer.start();
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.start();
@@ -74,6 +86,9 @@ public class EventMeshServer {
         eventMeshHTTPServer.shutdown();
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.shutdown();
+            if(eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+                registry.shutdown();
+            }
         }
         serviceState = ServiceState.STOPED;
         logger.info("server state:{}", serviceState);

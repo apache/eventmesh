@@ -135,6 +135,7 @@ public class EventMeshTcpMonitor {
             @Override
             public void run() {
 //                ThreadPoolHelper.printThreadPoolState();
+                eventMeshTCPServer.getEventMeshRebalanceService().printRebalanceThreadPoolState();
                 eventMeshTCPServer.getEventMeshTcpRetryer().printRetryThreadPoolState();
 
                 //monitor retry queue size
