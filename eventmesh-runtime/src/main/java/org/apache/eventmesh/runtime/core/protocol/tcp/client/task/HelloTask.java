@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
+import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_REQUEST;
 import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_RESPONSE;
 
 import io.netty.channel.ChannelFuture;
@@ -28,10 +29,12 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +54,12 @@ public class HelloTask extends AbstractTask {
         Session session = null;
         UserAgent user = (UserAgent) pkg.getBody();
         try {
+            //do acl check in connect
+            if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable){
+                String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+                Acl.doAclCheckInTcpConnect(remoteAddr, user, HELLO_REQUEST.value());
+            }
+
             if (eventMeshTCPServer.getEventMeshServer().getServiceState() != ServiceState.RUNNING) {
                 logger.error("server state is not running:{}", eventMeshTCPServer.getEventMeshServer().getServiceState());
                 throw new Exception("server state is not running, maybe deploying...");
