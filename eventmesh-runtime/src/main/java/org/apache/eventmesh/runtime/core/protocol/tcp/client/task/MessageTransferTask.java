@@ -71,7 +71,7 @@ public class MessageTransferTask extends AbstractTask {
             }
 
             //do acl check in sending msg
-            if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable){
+            if(CommonConfiguration.eventMeshServerSecurityEnable){
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                 Acl.doAclCheckInTcpSend(remoteAddr, session.getClient(), eventMeshMessage.getTopic(), cmd.value());
             }
