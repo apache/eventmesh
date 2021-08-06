@@ -61,7 +61,7 @@ eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里]
 |   WIP   |Support cold event storage (S3, Minio, SQL, key/value, etc...)|
 |   WIP   |Support gRPC protocol|
 |   WIP   |Support MQTT protocol|
-|   WIP   |Support reactive fisrt|
+|   WIP   |Support AsyncAPI|
 
 ## 快速开始
 1. 构建并部署event-store(RocketMQ), 请参见[说明](https://rocketmq.apache.org/docs/quick-start/)
@@ -73,6 +73,14 @@ eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里]
 
 您可以从问题开始.
 [GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
+
+## Landscape
+<p align="center">
+<br/><br/>
+<img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>&nbsp;&nbsp;<img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
+<br/><br/>
+EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apache-license-2-0">CNCF CLOUD NATIVE Landscape.</a>
+</p>
 
 ## License
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation

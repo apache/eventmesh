@@ -15,18 +15,13 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-security-plugin:eventmesh-security-api'
-include 'eventmesh-security-plugin:eventmesh-security-acl'
-include 'eventmesh-registry-plugin:eventmesh-registry-api'
-include 'eventmesh-registry-plugin:eventmesh-registry-namesrv'
+package org.apache.eventmesh.api.acl;
 
+public class AclPropertyKeys {
+    public static final String CLIENT_IP = "clientIp";
+    public static final String USER = "user";
+    public static final String PASSWORD = "pwd";
+    public static final String SUBSYSTEM = "subsystem";
+    public static final String TOPIC = "topic";
+    public static final String REQUEST_CODE = "requestCode";
+}

@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
@@ -37,6 +38,8 @@ public class EventMeshServer {
 
     private EventMeshTCPConfiguration eventMeshTCPConfiguration;
 
+    private Acl acl;
+
     private Registry registry;
 
     private ServiceState serviceState;
@@ -45,10 +48,15 @@ public class EventMeshServer {
                            EventMeshTCPConfiguration eventMeshTCPConfiguration) {
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
+        this.acl = new Acl();
         this.registry = new Registry();
     }
 
     public void init() throws Exception {
+        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
+            acl.init(eventMeshHttpConfiguration.eventMeshSecurityPluginType);
+        }
+
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             registry.init(eventMeshTCPConfiguration.eventMeshRegistryPluginType);
         }
@@ -68,6 +76,10 @@ public class EventMeshServer {
     }
 
     public void start() throws Exception {
+        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
+            acl.start();
+        }
+
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             registry.start();
         }
@@ -89,6 +101,10 @@ public class EventMeshServer {
             if(eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
                 registry.shutdown();
             }
+        }
+
+        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
+            acl.shutdown();
         }
         serviceState = ServiceState.STOPED;
         logger.info("server state:{}", serviceState);

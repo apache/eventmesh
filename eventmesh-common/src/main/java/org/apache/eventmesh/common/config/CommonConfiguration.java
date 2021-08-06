@@ -29,24 +29,14 @@ public class CommonConfiguration {
     public String eventMeshName = "";
     public String sysID = "5477";
     public String eventMeshConnectorPluginType = "rocketmq";
+    public String eventMeshSecurityPluginType = "security";
     public String eventMeshRegistryPluginType = "namesrv";
 
     public String namesrvAddr = "";
-    public String clientUserName = "username";
-    public String clientPass = "user@123";
-    public Integer consumeThreadMin = 2;
-    public Integer consumeThreadMax = 2;
-    public Integer consumeQueueSize = 10000;
-    public Integer pullBatchSize = 32;
-    public Integer ackWindow = 1000;
-    public Integer pubWindow = 100;
-    public long consumeTimeout = 0L;
-    public Integer pollNameServerInteval = 10 * 1000;
-    public Integer heartbeatBrokerInterval = 30 * 1000;
-    public Integer rebalanceInterval = 20 * 1000;
     public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
     public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
     public String eventMeshServerIp = null;
+    public boolean eventMeshServerSecurityEnable = false;
     public boolean eventMeshServerRegistryEnable = false;
     protected ConfigurationWrapper configurationWrapper;
 
@@ -85,6 +75,14 @@ public class CommonConfiguration {
             eventMeshConnectorPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshConnectorPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE));
 
+            String eventMeshServerAclEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED);
+            if (StringUtils.isNotBlank(eventMeshServerAclEnableStr)) {
+                eventMeshServerSecurityEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
+            }
+
+            eventMeshSecurityPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshSecurityPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE));
+
             String eventMeshServerRegistryEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED);
             if (StringUtils.isNotBlank(eventMeshServerRegistryEnableStr)) {
                 eventMeshServerRegistryEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
@@ -113,6 +111,10 @@ public class CommonConfiguration {
         public static String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL = "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
 
         public static String KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE = "eventMesh.connector.plugin.type";
+
+        public static String KEYS_EVENTMESH_SECURITY_ENABLED = "eventMesh.server.security.enabled";
+
+        public static String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
 
         public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.server.registry.enabled";
 

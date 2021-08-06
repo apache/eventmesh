@@ -14,19 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.api.acl;
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-security-plugin:eventmesh-security-api'
-include 'eventmesh-security-plugin:eventmesh-security-acl'
-include 'eventmesh-registry-plugin:eventmesh-registry-api'
-include 'eventmesh-registry-plugin:eventmesh-registry-namesrv'
+import org.apache.eventmesh.api.exception.AclException;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
+import java.util.Properties;
+
+@EventMeshSPI(isSingleton = true)
+public interface AclService {
+    void init() throws AclException;
+
+    void start() throws AclException;
+
+    void shutdown() throws AclException;
+
+    void doAclCheckInConnect(Properties aclProperties) throws AclException;
+
+    void doAclCheckInHeartbeat(Properties aclProperties) throws AclException;
+
+    void doAclCheckInSend(Properties aclProperties) throws AclException;
+
+    void doAclCheckInReceive(Properties aclProperties) throws AclException;
+
+}
