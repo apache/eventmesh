@@ -31,7 +31,7 @@ task copyRegistryPlugin(dependsOn: ['jar']) {
         }
         copy {
             into '../dist/plugin/registry'
-            from "../eventmesh-registry-plugin/dist/apps/eventmesh-registry-impl-${version}.jar"
+            from "../eventmesh-registry-plugin/dist/apps/eventmesh-registry-namesrv-${version}.jar"
         }
     }
 }
