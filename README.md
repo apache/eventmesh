@@ -50,7 +50,7 @@ The protocol of eventmesh is easier and more convenient, you can read more [here
 | v1.1.1  |Support https|
 | v1.2.0  |Support pluggable event store by OpenMessaging Pub/Sub API, http sub, docker|
 | V1.3.0  |Support CloudEvents, event streaming|
-|   WIP   |Support more pluggable event storage (Kafka, Pulsar, Redis, etc...)|
+|   WIP   |Support more pluggable event storage (Kafka, Pulsar, Redis, RabbitMQ, etc...)|
 |   WIP   |Support Event schema|
 |   WIP   |Support Event governance|
 |   WIP   |Support Event function,triggers and bindings|
@@ -65,7 +65,7 @@ The protocol of eventmesh is easier and more convenient, you can read more [here
 |   WIP   |Support cold event storage (S3, Minio, SQL, key/value, etc...)|
 |   WIP   |Support gRPC protocol|
 |   WIP   |Support MQTT protocol|
-|   WIP   |Support reactive fisrt|
+|   WIP   |Support AsyncAPI|
 
 
 ## Quick Start
