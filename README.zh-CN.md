@@ -61,7 +61,7 @@ eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里]
 |   WIP   |Support cold event storage (S3, Minio, SQL, key/value, etc...)|
 |   WIP   |Support gRPC protocol|
 |   WIP   |Support MQTT protocol|
-|   WIP   |Support reactive fisrt|
+|   WIP   |Support AsyncAPI|
 
 ## 快速开始
 1. 构建并部署event-store(RocketMQ), 请参见[说明](https://rocketmq.apache.org/docs/quick-start/)
