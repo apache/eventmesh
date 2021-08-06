@@ -22,6 +22,7 @@ import java.util.List;
 
 import io.netty.channel.ChannelHandlerContext;
 
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.tcp.*;
@@ -56,7 +57,7 @@ public class SubscribeTask extends AbstractTask {
                 SubscriptionItem item = subscriptionInfo.getTopicList().get(i);
 
                 //do acl check for receive msg
-                if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable){
+                if(CommonConfiguration.eventMeshServerSecurityEnable){
                     String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                     Acl.doAclCheckInTcpReceive(remoteAddr, session.getClient(), item.getTopic(), Command.SUBSCRIBE_REQUEST.value());
                 }

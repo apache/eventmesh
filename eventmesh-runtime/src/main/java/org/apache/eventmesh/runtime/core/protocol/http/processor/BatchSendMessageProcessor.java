@@ -148,7 +148,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             }
 
             //do acl check
-            if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+            if(CommonConfiguration.eventMeshServerSecurityEnable) {
                 try {
                     Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, msg.topic, requestCode);
                 }catch (Exception e){

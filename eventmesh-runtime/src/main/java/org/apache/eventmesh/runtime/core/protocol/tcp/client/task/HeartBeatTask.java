@@ -22,6 +22,7 @@ import static org.apache.eventmesh.common.protocol.tcp.Command.HEARTBEAT_RESPONS
 
 import io.netty.channel.ChannelHandlerContext;
 
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -42,7 +43,7 @@ public class HeartBeatTask extends AbstractTask {
         Package res = new Package();
         try {
             //do acl check in heartbeat
-            if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable){
+            if(CommonConfiguration.eventMeshServerSecurityEnable){
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                 Acl.doAclCheckInTcpHeartbeat(remoteAddr, session.getClient(), HEARTBEAT_REQUEST.value());
             }
