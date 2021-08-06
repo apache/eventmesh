@@ -33,10 +33,12 @@ import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeResponseBody;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.client.SubscribeRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.SubscribeResponseHeader;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
@@ -53,6 +55,8 @@ import org.slf4j.LoggerFactory;
 public class SubscribeProcessor implements HttpRequestProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
+
+    public Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -99,6 +103,29 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             return;
         }
         List<SubscriptionItem> subTopicList = subscribeRequestBody.getTopics();
+
+        //do acl check
+        if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+            String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+            String user = subscribeRequestHeader.getUsername();
+            String pass = subscribeRequestHeader.getPasswd();
+            String subsystem = subscribeRequestHeader.getSys();
+            int requestCode = Integer.valueOf(subscribeRequestHeader.getCode());
+            for(SubscriptionItem item : subTopicList) {
+                try {
+                    Acl.doAclCheckInHttpReceive(remoteAddr, user, pass, subsystem, item.getTopic(), requestCode);
+                } catch (Exception e) {
+                    //String errorMsg = String.format("CLIENT HAS NO PERMISSION,send failed, topic:%s, subsys:%s, realIp:%s", topic, subsys, realIp);
+
+                    responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                            subscribeResponseHeader,
+                            SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(), e.getMessage()));
+                    asyncContext.onComplete(responseEventMeshCommand);
+                    aclLogger.warn("CLIENT HAS NO PERMISSION,SubscribeProcessor subscribe failed", e);
+                    return;
+                }
+            }
+        }
 
         String url = subscribeRequestBody.getUrl();
         String consumerGroup = subscribeRequestBody.getConsumerGroup();
