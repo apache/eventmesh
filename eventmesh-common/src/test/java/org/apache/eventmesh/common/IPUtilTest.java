@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.common;
 
+import org.apache.eventmesh.common.utils.IPUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;

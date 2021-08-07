@@ -77,4 +77,6 @@ public class Constants {
 
     public static final String EVENTMESH_COMMON_PROPERTY = "eventmesh.yml";
 
+    public static final String EVENTMESH_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
+
 }

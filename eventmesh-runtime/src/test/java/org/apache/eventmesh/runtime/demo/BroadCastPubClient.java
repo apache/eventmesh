@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.demo;
 
-import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.utils.ThreadUtil;
 
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;

@@ -20,6 +20,7 @@ package org.apache.eventmesh.common.config;
 import org.apache.eventmesh.common.EventMeshRuntimeException;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
@@ -124,6 +125,10 @@ public class YamlConfigurationReader {
     }
 
     private void loadAllConfig(String yamlFilePath) throws IOException {
+        File file = new File(yamlFilePath);
+        if (!file.exists()) {
+            return;
+        }
         try (FileReader fileReader = new FileReader(yamlFilePath)) {
             Yaml yaml = new Yaml();
             configProperties = yaml.load(fileReader);

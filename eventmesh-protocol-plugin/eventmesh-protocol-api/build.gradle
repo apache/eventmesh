@@ -1,0 +1,5 @@
+dependencies {
+    api project(":eventmesh-connector-plugin:eventmesh-connector-api")
+
+    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+}

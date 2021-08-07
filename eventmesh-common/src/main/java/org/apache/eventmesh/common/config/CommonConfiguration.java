@@ -19,7 +19,7 @@ package org.apache.eventmesh.common.config;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshRuntimeException;
-import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.utils.IPUtil;
 
 import java.io.File;
 import java.io.IOException;

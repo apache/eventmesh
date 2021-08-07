@@ -1,0 +1,9 @@
+dependencies {
+    api project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+    api project(":eventmesh-security-plugin:eventmesh-security-api")
+    api project(":eventmesh-security-plugin:eventmesh-security-acl")
+
+    testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+    api project(":eventmesh-security-plugin:eventmesh-security-api")
+    api project(":eventmesh-security-plugin:eventmesh-security-acl")
+}

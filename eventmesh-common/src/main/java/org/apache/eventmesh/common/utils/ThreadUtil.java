@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common;
+package org.apache.eventmesh.common.utils;
 
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ThreadUtil {
 
@@ -52,5 +54,18 @@ public class ThreadUtil {
             }
         }
         return 0;
+    }
+
+    public static ThreadFactory createThreadFactory(boolean isDaemon, String threadPrefix) {
+        return new ThreadFactory() {
+            private AtomicInteger threadNum = new AtomicInteger(0);
+
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r, threadPrefix + threadNum.incrementAndGet());
+                thread.setDaemon(isDaemon);
+                return thread;
+            }
+        };
     }
 }

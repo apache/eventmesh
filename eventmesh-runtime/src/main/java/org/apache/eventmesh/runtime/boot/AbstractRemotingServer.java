@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
-import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.utils.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

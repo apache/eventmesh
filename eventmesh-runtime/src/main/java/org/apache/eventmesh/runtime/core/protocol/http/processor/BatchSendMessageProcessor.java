@@ -32,7 +32,7 @@ import io.openmessaging.api.SendResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.utils.IPUtil;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody;

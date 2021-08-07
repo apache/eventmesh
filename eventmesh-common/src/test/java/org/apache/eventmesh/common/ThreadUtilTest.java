@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.common;
 
+import org.apache.eventmesh.common.utils.ThreadUtil;
 import org.junit.Assert;
 import org.junit.Test;
 

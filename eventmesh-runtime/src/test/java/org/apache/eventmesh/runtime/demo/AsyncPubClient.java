@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.demo;
 
 import io.netty.channel.ChannelHandlerContext;
 
-import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.utils.ThreadUtil;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
