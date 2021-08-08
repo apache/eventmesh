@@ -39,11 +39,13 @@ public class OpenTelemetryHTTPMetricsExporter {
 
         // it is important to initialize the OpenTelemetry SDK as early as possible in your process.
         MeterProvider meterProvider = configuration.initializeOpenTelemetry(eventMeshHTTPConfiguration);
-
         meter = meterProvider.get("OpenTelemetryHTTPExporter", "0.13.1");
     }
 
     public void start(){
+        if (meter==null){
+            return;
+        }
         //maxHTTPTPS
         meter
                 .doubleValueObserverBuilder("eventmesh.http.request.tps.elapsed.max")

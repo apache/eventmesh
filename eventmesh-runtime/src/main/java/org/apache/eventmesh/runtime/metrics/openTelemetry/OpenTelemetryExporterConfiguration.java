@@ -29,9 +29,9 @@ import java.io.IOException;
 //ues openTelemetry to export metrics data
 public class OpenTelemetryExporterConfiguration {
 
-    private HTTPServer server;//Prometheus server
+    private static HTTPServer server;//Prometheus server
 
-    int prometheusPort;//the endpoint to export metrics
+    static int prometheusPort;//the endpoint to export metrics
 
     static MeterProvider meterProvider;
     /**
@@ -40,9 +40,12 @@ public class OpenTelemetryExporterConfiguration {
      * @return A MeterProvider for use in instrumentation.
      */
     public MeterProvider initializeOpenTelemetry(CommonConfiguration configuration) {
+        if (server!=null){//the sever already start
+            return meterProvider;
+        }
+
         prometheusPort = configuration.eventMeshPrometheusPort;
         SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
-
         PrometheusCollector.builder().setMetricProducer(sdkMeterProvider).buildAndRegister();
         this.meterProvider = sdkMeterProvider;
         try {
@@ -50,15 +53,16 @@ public class OpenTelemetryExporterConfiguration {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return meterProvider;
     }
 
-    public static MeterProvider getMeterProvider(){//for tcp to get the initialized  =meterProvider
+    public static MeterProvider getMeterProvider(){//for tcp or http to get the initialized meterProvider
         return meterProvider;
     }
 
     public void shutdownPrometheusEndpoint() {
+        if (server==null)
+            return;
         server.stop();
     }
 }

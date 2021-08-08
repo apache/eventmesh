@@ -83,7 +83,7 @@ public class EventMeshTcpMonitor {
         this.eventMesh2mqMsgNum = new AtomicInteger(0);
         this.mq2eventMeshMsgNum = new AtomicInteger(0);
         this.eventMesh2clientMsgNum = new AtomicInteger(0);
-        this.metricsExporter = new OpenTelemetryTCPMetricsExporter(this);
+        this.metricsExporter = new OpenTelemetryTCPMetricsExporter(this,eventMeshTCPServer.getEventMeshTCPConfiguration());
         logger.info("EventMeshTcpMonitor inited......");
     }
 
@@ -157,6 +157,7 @@ public class EventMeshTcpMonitor {
     public void shutdown() throws Exception {
         monitorTpsTask.cancel(true);
         monitorThreadPoolTask.cancel(true);
+        metricsExporter.shutdown();
         logger.info("EventMeshTcpMonitor shutdown......");
     }
 

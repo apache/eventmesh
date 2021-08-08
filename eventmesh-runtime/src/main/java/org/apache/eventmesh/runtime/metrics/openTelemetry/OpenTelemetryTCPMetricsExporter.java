@@ -32,14 +32,12 @@ public class OpenTelemetryTCPMetricsExporter {
 
     private EventMeshTcpMonitor eventMeshTcpMonitor;
 
-    public OpenTelemetryTCPMetricsExporter(EventMeshTcpMonitor eventMeshTcpMonitor){
+    public OpenTelemetryTCPMetricsExporter(EventMeshTcpMonitor eventMeshTcpMonitor , EventMeshTCPConfiguration eventMeshTCPConfiguration){
         this.eventMeshTcpMonitor = eventMeshTcpMonitor;
 
         // it is important to initialize the OpenTelemetry SDK as early as possible in your process.
-        MeterProvider meterProvider = OpenTelemetryExporterConfiguration.getMeterProvider();
-        if (meterProvider != null){
-            meter = meterProvider.get("OpenTelemetryTCPExporter", "0.13.1");
-        }
+        MeterProvider meterProvider = configuration.initializeOpenTelemetry(eventMeshTCPConfiguration);
+        meter = meterProvider.get("OpenTelemetryTCPExporter", "0.13.1");
     }
 
     public void start(){
@@ -109,5 +107,8 @@ public class OpenTelemetryTCPMetricsExporter {
                 .setUnit("TCP")
                 .setUpdater(result -> result.observe(eventMeshTcpMonitor.getSubTopicNum(), Labels.empty()))
                 .build();
+    }
+    public void shutdown(){
+        configuration.shutdownPrometheusEndpoint();
     }
 }
