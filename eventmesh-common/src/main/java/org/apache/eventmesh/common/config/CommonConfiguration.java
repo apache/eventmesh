@@ -29,7 +29,7 @@ public class CommonConfiguration {
     public String eventMeshName = "";
     public String sysID = "5477";
     public String eventMeshConnectorPluginType = "rocketmq";
-    public String eventMeshSecurityPluginType = "security";
+    public String eventMeshSecurityPluginType = "acl";
     public String eventMeshRegistryPluginType = "namesrv";
 
     public String namesrvAddr = "";
