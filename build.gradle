@@ -106,10 +106,12 @@ subprojects {
     sourceSets {
         main {
             java.srcDirs = ['src/main/java']
+            resources.srcDirs = ['src/main/resources']
         }
 
         test {
             java.srcDirs = ['src/test/java']
+            resources.srcDirs = ['src/test/resources']
         }
     }
 
@@ -262,6 +264,12 @@ subprojects {
             copy {
                 into '../dist/conf'
                 from '../eventmesh-runtime/conf'
+            }
+
+            copy {
+                into "${rootDir.path}/dist/conf"
+                from sourceSets.main.resources.srcDirs
+                exclude 'META-INF'
             }
         }
     }

@@ -51,12 +51,10 @@ public enum CommonConfiguration {
     public static int eventMeshPrometheusPort = 19090;
 
     static {
-        String confPath = System.getProperty("confPath", System.getenv("confPath"));
-        String yamlConfigFilePath = confPath + File.separator + Constants.EVENTMESH_COMMON_PROPERTY;
         try {
-            yamlConfigurationReader = new YamlConfigurationReader(yamlConfigFilePath);
+            yamlConfigurationReader = new YamlConfigurationReader(Constants.EVENTMESH_COMMON_PROPERTY);
         } catch (IOException e) {
-            throw new EventMeshRuntimeException(String.format("config file: %s is not exist", yamlConfigFilePath), e);
+            throw new EventMeshRuntimeException(String.format("config file: %s is not exist", Constants.EVENTMESH_COMMON_PROPERTY), e);
         }
         refreshConfig();
     }

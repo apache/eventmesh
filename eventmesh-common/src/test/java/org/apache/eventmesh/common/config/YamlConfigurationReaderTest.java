@@ -22,7 +22,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 
 public class YamlConfigurationReaderTest {
@@ -31,8 +30,7 @@ public class YamlConfigurationReaderTest {
 
     @Before
     public void prepare() throws IOException {
-        URL resource = YamlConfigurationReaderTest.class.getClassLoader().getResource("yamlConfiguration.yml");
-        yamlConfigurationReader = new YamlConfigurationReader(resource.getPath());
+        yamlConfigurationReader = new YamlConfigurationReader("yamlConfiguration.yml");
     }
 
     @Test

@@ -17,13 +17,10 @@
 
 package org.apache.eventmesh.protocol.tcp.config;
 
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshRuntimeException;
 import org.apache.eventmesh.common.config.YamlConfigurationReader;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 public enum EventMeshTCPConfiguration {
     ;
@@ -89,12 +86,10 @@ public enum EventMeshTCPConfiguration {
     public static TrafficShapingConfig ctc = new TrafficShapingConfig(0, 2_000, 1_000, 10_000);
 
     static {
-        String confPath = System.getProperty("confPath", System.getenv("confPath"));
-        String yamlConfigFilePath = confPath + File.separator + TcpProtocolConstants.TCP_CONFIGURATION_FILE;
         try {
-            yamlConfigurationReader = new YamlConfigurationReader(yamlConfigFilePath);
+            yamlConfigurationReader = new YamlConfigurationReader(TcpProtocolConstants.TCP_CONFIGURATION_FILE);
         } catch (IOException e) {
-            throw new EventMeshRuntimeException(String.format("config file: %s is not exist", yamlConfigFilePath), e);
+            throw new EventMeshRuntimeException(String.format("config file: %s is not exist", TcpProtocolConstants.TCP_CONFIGURATION_FILE), e);
         }
         refreshConfig();
     }

@@ -90,7 +90,7 @@ public abstract class AbstractEventMeshProtocolHTTPServer implements EventMeshPr
 
     protected HttpRetryer httpRetryer;
 
-    private final HttpChannelHandler httpChannelHandler;
+    private HttpChannelHandler httpChannelHandler;
 
     private HTTPMetricsServer metrics;
 
@@ -107,7 +107,6 @@ public abstract class AbstractEventMeshProtocolHTTPServer implements EventMeshPr
     public AbstractEventMeshProtocolHTTPServer(int port, boolean useTLS) {
         this.port = port;
         this.useTLS = useTLS;
-        this.httpChannelHandler = new HttpChannelHandler(started, metrics);
     }
 
     @Override
@@ -115,6 +114,7 @@ public abstract class AbstractEventMeshProtocolHTTPServer implements EventMeshPr
         try {
             metrics = new HTTPMetricsServer((EventMeshProtocolHTTPServer) this);
             metrics.init();
+            this.httpChannelHandler = new HttpChannelHandler(started, metrics);
 
             httpRetryer = new HttpRetryer();
             httpRetryer.init();

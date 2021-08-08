@@ -29,9 +29,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
-import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
-import org.apache.eventmesh.common.utils.ThreadUtil;
 import org.apache.eventmesh.protocol.api.exception.EventMeshProtocolException;
 import org.apache.eventmesh.protocol.api.model.ServiceState;
 import org.apache.eventmesh.protocol.tcp.admin.controller.ClientManageController;
@@ -56,8 +54,6 @@ public class EventMeshProtocolTCPServer extends AbstractEventMeshProtocolTCPServ
     private ClientManageController clientManageController;
 
     private GlobalTrafficShapingHandler globalTrafficShapingHandler;
-
-    private ScheduledFuture<?> tcpRegisterTask;
 
     private RateLimiter rateLimiter;
 

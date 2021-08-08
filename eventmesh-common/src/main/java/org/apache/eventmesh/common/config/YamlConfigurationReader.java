@@ -25,6 +25,8 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -128,18 +130,37 @@ public class YamlConfigurationReader {
         return config.get(subKeys[subKeys.length - 1]);
     }
 
-    private void loadAllConfig(String yamlFilePath) throws IOException {
-        File file = new File(yamlFilePath);
-        if (!file.exists()) {
-            logger.warn("yaml file: {} is not exist", yamlFilePath);
-            return;
+    private void loadAllConfig(String yamlFile) throws IOException {
+        configProperties = loadConfigFromConf(yamlFile);
+        if (configProperties == null) {
+            configProperties = loadConfigFromClassPath(yamlFile);
         }
-        try (FileReader fileReader = new FileReader(yamlFilePath)) {
+        if (configProperties == null) {
+            throw new EventMeshRuntimeException(String.format("Yaml config file: %s is empty", yamlFile));
+        }
+    }
+
+    private Map<String, Object> loadConfigFromClassPath(String yamlFile) throws IOException {
+        URL resource = Thread.currentThread().getContextClassLoader().getResource(yamlFile);
+        if (resource == null) {
+            return null;
+        }
+        try (InputStreamReader inputStreamReader = new InputStreamReader(resource.openStream())) {
             Yaml yaml = new Yaml();
-            configProperties = yaml.load(fileReader);
-            if (configProperties == null) {
-                throw new EventMeshRuntimeException(String.format("Yaml config file: %s is empty", yamlFilePath));
-            }
+            return yaml.load(inputStreamReader);
+        }
+    }
+
+    private Map<String, Object> loadConfigFromConf(String fileName) throws IOException {
+        String confPath = System.getProperty("confPath", System.getenv("confPath"));
+        String yamlConfigFilePath = confPath + File.separator + fileName;
+        File file = new File(yamlConfigFilePath);
+        if (!file.exists()) {
+            return null;
+        }
+        try (FileReader fileReader = new FileReader(yamlConfigFilePath)) {
+            Yaml yaml = new Yaml();
+            return yaml.load(fileReader);
         }
     }
 

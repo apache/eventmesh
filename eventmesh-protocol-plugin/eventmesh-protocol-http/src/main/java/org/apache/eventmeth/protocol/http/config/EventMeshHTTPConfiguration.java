@@ -18,11 +18,9 @@
 package org.apache.eventmeth.protocol.http.config;
 
 import com.google.common.util.concurrent.RateLimiter;
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshRuntimeException;
 import org.apache.eventmesh.common.config.YamlConfigurationReader;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
@@ -74,9 +72,7 @@ public class EventMeshHTTPConfiguration {
 
     static {
         try {
-            String confPath = System.getProperty("confPath", System.getenv("confPath"));
-            String yamlConfigFilePath = confPath + File.separator + HttpProtocolConstants.HTTP_CONFIGURATION_FILE;
-            yamlConfigurationReader = new YamlConfigurationReader(yamlConfigFilePath);
+            yamlConfigurationReader = new YamlConfigurationReader(HttpProtocolConstants.HTTP_CONFIGURATION_FILE);
         } catch (IOException e) {
             throw new EventMeshRuntimeException(String.format("config file: %s is not exist", HttpProtocolConstants.HTTP_CONFIGURATION_FILE), e);
         }
