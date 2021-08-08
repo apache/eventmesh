@@ -172,7 +172,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             }
         }
 
-        //找出proxy中实例最少的proxy返回
+        //select the eventmesh with least instances
         List<Map.Entry<String, Integer>> list = new ArrayList<>();
         ValueComparator vc = new ValueComparator();
         for (Map.Entry<String, Integer> entry : clientDistributionMap.entrySet()) {

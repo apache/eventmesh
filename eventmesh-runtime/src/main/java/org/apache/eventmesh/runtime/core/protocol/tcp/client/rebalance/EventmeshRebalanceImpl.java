@@ -110,7 +110,6 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         int avgNum = sum / clientDistributionMap.size();
         int judge = avgNum >= 2 ? avgNum/2 : 1;
 
-        // 排序后，只有当前proxy上该组实例数比proxy上最少实例数 大于judge时，才需要进行负载均衡
         if(currentNum - avgNum > judge) {
             Set<Session> sessionSet = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().get(group).getGroupConsumerSessions();
             List<Session> sessionList = new ArrayList<>(sessionSet);
