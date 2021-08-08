@@ -17,7 +17,6 @@
 
 package org.apache.eventmeth.protocol.http.consumer;
 
-import io.openmessaging.api.AsyncConsumeContext;
 import io.openmessaging.api.AsyncMessageListener;
 import io.openmessaging.api.Message;
 import io.openmessaging.api.OnExceptionContext;

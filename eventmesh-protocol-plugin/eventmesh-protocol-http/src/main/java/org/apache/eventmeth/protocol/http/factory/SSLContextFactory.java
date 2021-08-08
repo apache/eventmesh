@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.eventmeth.protocol.http.factory;
 
 import org.apache.commons.lang3.StringUtils;

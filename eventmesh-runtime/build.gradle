@@ -16,23 +16,18 @@
  */
 
 dependencies {
-    api 'io.opentelemetry:opentelemetry-api'
-    api 'io.opentelemetry:opentelemetry-sdk'
-    api 'io.opentelemetry:opentelemetry-sdk-metrics'
-    api 'io.opentelemetry:opentelemetry-exporter-prometheus'
-    api 'io.prometheus:simpleclient'
-    api 'io.prometheus:simpleclient_httpserver'
-
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-http")
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-rocketmq-namesrv")
-
 
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-acl")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-http")
     testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-rocketmq-namesrv")
 }

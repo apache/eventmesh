@@ -18,6 +18,8 @@
 package org.apache.eventmesh.common.config;
 
 import org.apache.eventmesh.common.EventMeshRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -28,6 +30,8 @@ import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public class YamlConfigurationReader {
+
+    private Logger logger = LoggerFactory.getLogger(YamlConfigurationReader.class);
 
     private Map<String, Object> configProperties;
 
@@ -127,6 +131,7 @@ public class YamlConfigurationReader {
     private void loadAllConfig(String yamlFilePath) throws IOException {
         File file = new File(yamlFilePath);
         if (!file.exists()) {
+            logger.warn("yaml file: {} is not exist", yamlFilePath);
             return;
         }
         try (FileReader fileReader = new FileReader(yamlFilePath)) {

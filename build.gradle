@@ -187,12 +187,41 @@ subprojects {
         }
     }
 
+    var connectorPlugin = ["eventmesh-connector-rocketmq"]
+    var securityPlugin = ["eventmesh-security-acl"]
+    var protocolPlugin = ["eventmesh-protocol-http", "eventmesh-protocol-tcp"]
+
     task dist(dependsOn: ['jar']) {
         doFirst {
             new File(projectDir, '../dist/bin').mkdirs()
             new File(projectDir, '../dist/apps').mkdirs()
             new File(projectDir, '../dist/conf').mkdirs()
             new File(projectDir, '../dist/lib').mkdirs()
+            new File(projectDir, '../dist/plugin/connector').mkdirs()
+            new File(projectDir, '../dist/plugin/security').mkdirs()
+            new File(projectDir, '../dist/plugin/protocol').mkdirs()
+        }
+
+        if (connectorPlugin.contains(project.name)) {
+            println "install connector plugin" + project.name
+            copy {
+                into '../../dist/plugin/connector'
+                from project.jar.getArchivePath()
+            }
+        }
+        if (securityPlugin.contains(project.name)) {
+            println "install security plugin" + project.name
+            copy {
+                into '../../dist/plugin/security'
+                from project.jar.getArchivePath()
+            }
+        }
+        if (protocolPlugin.contains(project.name)) {
+            println "install protocol plugin" + project.name
+            copy {
+                into '../../dist/plugin/protocol'
+                from project.jar.getArchivePath()
+            }
         }
 
         doLast {
@@ -200,8 +229,10 @@ subprojects {
                 into('../dist/apps/')
                 from project.jar.getArchivePath()
                 exclude 'eventmesh-common*.jar'
-                exclude 'eventmesh-connector-api*.jar'
+                exclude 'eventmesh-spi*.jar'
                 exclude 'eventmesh-connector-plugin*.jar'
+                exclude 'eventmesh-protocol-plugin*.jar'
+                exclude 'eventmesh-security-plugin*.jar'
                 exclude 'eventmesh-starter*.jar'
                 exclude 'eventmesh-test*.jar'
                 exclude 'eventmesh-sdk*.jar'

@@ -24,46 +24,15 @@ eventMesh:
     name: "EVENTMESH-runtime"
     security:
       enable: false
-    http:
-      port: 10105
-    tcp:
-      enabled: true
-      port: 10000
-      readerIdleSeconds: 120
-      writerIdleSeconds: 120
-      allIdleSeconds: 120
-      clientMaxNum: 10000
-      pushFailIsolateTimeInMills: 30000 # client isolation time if the message send failure
-      RebalanceIntervalInMills: 30000
-      msgReqnumPerSecond: 15000 # flow control, include the global level and session level
-      taskHandleExecutorPoolSize: 8
-    session:
-      expiredInMills: 60000 # session expire time about client
-      upstreamBufferSize: 20
-    global:
-      scheduler: 5
-    retry:
-      async:
-        pushRetryTimes: 3
-        pushRetryDelayInMills: 500
-      sync:
-        pushRetryTimes: 3
-        pushRetryDelayInMills: 500
-      pushRetryQueueSize: 10000
-    admin:
-      http:
-        port: 10106
-    registry:
-      registerIntervalInMills: 10000
-      fetchRegistryAddrIntervalInMills: 20000
-    defibus:
-      client:
-        comsumeTimeoutInMin: 5 #auto-ack
   connector:
     plugin:
       type: rocketmq #connector plugin
   security:
     plugin:
       type: security
+  protocolServer:
+    plugin:
+      type:
+        - "http"
 
 

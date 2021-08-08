@@ -18,23 +18,24 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.protocol.api.EventMeshProtocolPluginFactory;
+import org.apache.eventmesh.protocol.api.EventMeshProtocolServer;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class EventMeshServer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public EventMeshHTTPServer eventMeshHTTPServer;
-
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final List<EventMeshProtocolServer> eventMeshProtocolServers;
 
     private ServiceState serviceState;
 
-    private Acl acl;
+    private final Acl acl;
 
     private Registry registry;
 
@@ -42,6 +43,9 @@ public class EventMeshServer {
 
     public EventMeshServer() {
         this.acl = new Acl();
+        this.eventMeshProtocolServers = EventMeshProtocolPluginFactory.getEventMeshProtocolServers(
+                CommonConfiguration.eventMeshProtocolServerPluginTypes);
+
         this.registry = new Registry();
         this.connectorResource = new ConnectorResource();
     }
@@ -50,21 +54,14 @@ public class EventMeshServer {
         if (CommonConfiguration.eventMeshServerSecurityEnable) {
             acl.init(CommonConfiguration.eventMeshSecurityPluginType);
         }
-
-        eventMeshHTTPServer = new EventMeshHTTPServer(this);
-        eventMeshHTTPServer.init();
-        connectorResource.init(CommonConfiguration.eventMeshConnectorPluginType);
-        if (EventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
-            eventMeshTCPServer = new EventMeshTCPServer(this);
-            eventMeshTCPServer.init();
+        for (EventMeshProtocolServer eventMeshProtocolServer : eventMeshProtocolServers) {
+            eventMeshProtocolServer.init();
         }
+        connectorResource.init(CommonConfiguration.eventMeshConnectorPluginType);
 
         if (CommonConfiguration.eventMeshServerRegistryEnable) {
             registry.init(CommonConfiguration.eventMeshRegistryPluginType);
         }
-
-        String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
-        logger.info("eventStore : {}", eventStore);
 
         serviceState = ServiceState.INITED;
         logger.info("server state:{}", serviceState);
@@ -78,9 +75,8 @@ public class EventMeshServer {
             registry.start();
         }
 
-        eventMeshHTTPServer.start();
-        if (EventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
-            eventMeshTCPServer.start();
+        for (EventMeshProtocolServer eventMeshProtocolServer : eventMeshProtocolServers) {
+            eventMeshProtocolServer.start();
         }
         serviceState = ServiceState.RUNNING;
         logger.info("server state:{}", serviceState);
@@ -89,9 +85,8 @@ public class EventMeshServer {
     public void shutdown() throws Exception {
         serviceState = ServiceState.STOPING;
         logger.info("server state:{}", serviceState);
-        eventMeshHTTPServer.shutdown();
-        if (EventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
-            eventMeshTCPServer.shutdown();
+        for (EventMeshProtocolServer eventMeshProtocolServer : eventMeshProtocolServers) {
+            eventMeshProtocolServer.shutdown();
         }
 
         if (CommonConfiguration.eventMeshServerRegistryEnable) {
@@ -106,12 +101,8 @@ public class EventMeshServer {
         logger.info("server state:{}", serviceState);
     }
 
-    public EventMeshHTTPServer getEventMeshHTTPServer() {
-        return eventMeshHTTPServer;
-    }
-
-    public EventMeshTCPServer getEventMeshTCPServer() {
-        return eventMeshTCPServer;
+    public List<EventMeshProtocolServer> getEventMeshProtocolServers() {
+        return eventMeshProtocolServers;
     }
 
     public ServiceState getServiceState() {

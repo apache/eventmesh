@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.config.YamlConfigurationReader;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 public class EventMeshHTTPConfiguration {
 
@@ -72,12 +73,12 @@ public class EventMeshHTTPConfiguration {
     public static boolean eventMeshServerUseTls = false;
 
     static {
-        String confPath = System.getProperty("confPath", System.getenv("confPath"));
-        String yamlConfigFilePath = confPath + File.separator + Constants.EVENTMESH_COMMON_PROPERTY;
         try {
+            String confPath = System.getProperty("confPath", System.getenv("confPath"));
+            String yamlConfigFilePath = confPath + File.separator + HttpProtocolConstants.HTTP_CONFIGURATION_FILE;
             yamlConfigurationReader = new YamlConfigurationReader(yamlConfigFilePath);
         } catch (IOException e) {
-            throw new EventMeshRuntimeException(String.format("config file: %s is not exist", yamlConfigFilePath), e);
+            throw new EventMeshRuntimeException(String.format("config file: %s is not exist", HttpProtocolConstants.HTTP_CONFIGURATION_FILE), e);
         }
         refreshConfig();
     }
