@@ -29,6 +29,7 @@ public class CommonConfiguration {
     public String eventMeshName = "";
     public String sysID = "5477";
     public String eventMeshConnectorPluginType = "rocketmq";
+    public int eventMeshPrometheusPort = 19090;
 
     public String namesrvAddr = "";
     public String clientUserName = "username";
@@ -75,6 +76,11 @@ public class CommonConfiguration {
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIDCStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
             eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIDCStr);
 
+            String eventMeshPrometheusPortStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT);
+            if (StringUtils.isNotEmpty(eventMeshPrometheusPortStr)) {
+                eventMeshPrometheusPort = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshPrometheusPortStr));
+            }
+
             eventMeshServerIp = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
             if (StringUtils.isBlank(eventMeshServerIp)) {
                 eventMeshServerIp = IPUtil.getLocalAddress();
@@ -103,5 +109,7 @@ public class CommonConfiguration {
         public static String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL = "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
 
         public static String KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE = "eventMesh.connector.plugin.type";
+
+        public static String KEY_EVENTMESH_METRICS_PROMETHEUS_PORT = "eventMesh.metrics.prometheus.port";
     }
 }
