@@ -34,6 +34,7 @@ import io.openmessaging.api.OMSBuiltinKeys;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.consumer.MeshMQPushConsumer;
+import org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl;
 import org.apache.eventmesh.connector.rocketmq.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
@@ -87,7 +88,7 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
         } else {
             properties.put("MESSAGE_MODEL", MessageModel.CLUSTERING.name());
         }
-        MessagingAccessPoint messagingAccessPoint = OMS.builder().build(properties);
+        MessagingAccessPoint messagingAccessPoint = new MessagingAccessPointImpl(properties);
         pushConsumer = (PushConsumerImpl) messagingAccessPoint.createConsumer(properties);
     }
 

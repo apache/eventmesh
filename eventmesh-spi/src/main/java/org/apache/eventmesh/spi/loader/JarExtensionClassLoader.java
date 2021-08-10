@@ -65,7 +65,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
         }
 
         String extensionFileName = EVENTMESH_EXTENSION_META_DIR + extensionType.getName();
-        URLClassLoader urlClassLoader = URLClassLoader.newInstance(pluginJarPaths.toArray(new URL[0]));
+        URLClassLoader urlClassLoader = URLClassLoader.newInstance(pluginJarPaths.toArray(new URL[0]), Thread.currentThread().getContextClassLoader());
         try {
             Enumeration<URL> extensionUrls = urlClassLoader.getResources(extensionFileName);
             if (extensionUrls != null) {

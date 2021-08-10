@@ -52,7 +52,7 @@ public class MessagingAccessPointImpl implements MessagingAccessPoint {
 
     @Override
     public Producer createProducer(Properties properties) {
-        return new ProducerImpl(this.accessPointProperties);
+        return new ProducerImpl(accessPointProperties);
     }
 
     @Override

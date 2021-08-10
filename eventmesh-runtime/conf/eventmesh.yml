@@ -26,13 +26,14 @@ eventMesh:
       enable: false
   connector:
     plugin:
-      type: rocketmq #connector plugin
+      type: "rocketmq" #connector plugin
   security:
     plugin:
-      type: security
+      type: "security"
   protocolServer:
     plugin:
       type:
         - "http"
+        - "tcp"
 
 

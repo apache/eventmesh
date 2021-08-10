@@ -17,12 +17,7 @@
 
 package org.apache.eventmesh.client.http.producer;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 
 
 import com.alibaba.fastjson.JSON;
@@ -30,16 +25,13 @@ import com.google.common.base.Preconditions;
 
 import io.netty.handler.codec.http.HttpMethod;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.AbstractLiteClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.http.HttpUtil;
 import org.apache.eventmesh.client.http.http.RequestParam;
-import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.LiteMessage;
@@ -49,11 +41,7 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

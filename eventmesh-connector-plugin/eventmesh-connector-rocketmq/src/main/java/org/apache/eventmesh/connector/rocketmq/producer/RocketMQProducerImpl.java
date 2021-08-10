@@ -31,6 +31,7 @@ import io.openmessaging.api.SendResult;
 
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.producer.MeshMQProducer;
+import org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWrapper;
@@ -69,7 +70,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
         properties.put("OPERATION_TIMEOUT", 3000);
         properties.put("PRODUCER_ID", producerGroup);
 
-        MessagingAccessPoint messagingAccessPoint = OMS.builder().build(properties);
+        MessagingAccessPoint messagingAccessPoint = new MessagingAccessPointImpl(properties);
         producer = (ProducerImpl) messagingAccessPoint.createProducer(properties);
 
     }

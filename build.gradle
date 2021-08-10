@@ -199,34 +199,85 @@ subprojects {
             new File(projectDir, '../dist/apps').mkdirs()
             new File(projectDir, '../dist/conf').mkdirs()
             new File(projectDir, '../dist/lib').mkdirs()
-            new File(projectDir, '../dist/plugin/connector').mkdirs()
-            new File(projectDir, '../dist/plugin/security').mkdirs()
-            new File(projectDir, '../dist/plugin/protocol').mkdirs()
         }
 
-        if (connectorPlugin.contains(project.name)) {
-            println "install connector plugin" + project.name
-            copy {
-                into '../../dist/plugin/connector'
-                from project.jar.getArchivePath()
-            }
-        }
-        if (securityPlugin.contains(project.name)) {
-            println "install security plugin" + project.name
-            copy {
-                into '../../dist/plugin/security'
-                from project.jar.getArchivePath()
-            }
-        }
-        if (protocolPlugin.contains(project.name)) {
-            println "install protocol plugin" + project.name
-            copy {
-                into '../../dist/plugin/protocol'
-                from project.jar.getArchivePath()
-            }
-        }
 
         doLast {
+            if (connectorPlugin.contains(project.name)) {
+                println "install connector plugin" + project.name
+                new File("${rootDir}/dist/plugin/connector/${project.name}").mkdirs()
+                copy {
+                    into "${rootDir}/dist/plugin/connector/${project.name}"
+                    from project.jar.getArchivePath()
+                }
+                copy {
+                    into "${rootDir}/dist/plugin/connector/${project.name}"
+                    from project.configurations.runtimeClasspath
+                    exclude '**/*.properties*'
+                    exclude '**/*.yml*'
+                    exclude '**/*testng*.jar'
+                    exclude '**/*powermock*.jar'
+                    exclude '**/*mockito*.jar'
+                    exclude '**/*junit*.jar'
+                    exclude '**/*jacoco*.jar'
+                    exclude '**/*log4j2.xml*'
+                    exclude '**/spring-boot-devtools*.jar'
+                    exclude '**/mumble-sdk-test*.jar'
+                    exclude '*connector-rocketmq*.jar'
+                    exclude 'eventmesh-runtime*.jar'
+                    exclude 'commons-collections-3.2.2.jar'
+                }
+            }
+            if (securityPlugin.contains(project.name)) {
+                println "install security plugin" + project.name
+                new File("${rootDir}/dist/plugin/secutiry/${project.name}").mkdirs()
+                copy {
+                    into "${rootDir}/dist/plugin/secutiry/${project.name}"
+                    from project.jar.getArchivePath()
+                }
+                copy {
+                    into "${rootDir}/dist/plugin/secutiry/${project.name}"
+                    from project.configurations.runtimeClasspath
+                    exclude '**/*.properties*'
+                    exclude '**/*.yml*'
+                    exclude '**/*testng*.jar'
+                    exclude '**/*powermock*.jar'
+                    exclude '**/*mockito*.jar'
+                    exclude '**/*junit*.jar'
+                    exclude '**/*jacoco*.jar'
+                    exclude '**/*log4j2.xml*'
+                    exclude '**/spring-boot-devtools*.jar'
+                    exclude '**/mumble-sdk-test*.jar'
+                    exclude '*connector-rocketmq*.jar'
+                    exclude 'eventmesh-runtime*.jar'
+                    exclude 'commons-collections-3.2.2.jar'
+                }
+            }
+            if (protocolPlugin.contains(project.name)) {
+                println "install protocol plugin" + project.name
+                new File("${rootDir}/dist/plugin/protocol/${project.name}").mkdirs()
+                copy {
+                    into "${rootDir}/dist/plugin/protocol/${project.name}"
+                    from project.jar.getArchivePath()
+                }
+                copy {
+                    into "${rootDir}/dist/plugin/protocol/${project.name}"
+                    from project.configurations.runtimeClasspath
+                    exclude '**/*.properties*'
+                    exclude '**/*.yml*'
+                    exclude '**/*testng*.jar'
+                    exclude '**/*powermock*.jar'
+                    exclude '**/*mockito*.jar'
+                    exclude '**/*junit*.jar'
+                    exclude '**/*jacoco*.jar'
+                    exclude '**/*log4j2.xml*'
+                    exclude '**/spring-boot-devtools*.jar'
+                    exclude '**/mumble-sdk-test*.jar'
+                    exclude '*connector-rocketmq*.jar'
+                    exclude 'eventmesh-runtime*.jar'
+                    exclude 'commons-collections-3.2.2.jar'
+                }
+            }
             copy {
                 into('../dist/apps/')
                 from project.jar.getArchivePath()

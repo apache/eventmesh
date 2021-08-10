@@ -39,14 +39,14 @@ public class AsyncPublishInstance {
     public static int messageSize = 5;
 
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile("application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
+//        Properties properties = Utils.readPropertiesFile("application.properties");
+//        final String eventMeshIp = properties.getProperty("eventmesh.ip");
+//        final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
 
         LiteProducer liteProducer = null;
         try {
 //            String eventMeshIPPort = args[0];
-            String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
+            String eventMeshIPPort = "";
 //            final String topic = args[1];
             final String topic = "TEST-TOPIC-HTTP-ASYNC";
             if (StringUtils.isBlank(eventMeshIPPort)) {
