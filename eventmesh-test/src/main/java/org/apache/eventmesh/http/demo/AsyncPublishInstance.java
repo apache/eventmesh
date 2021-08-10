@@ -23,9 +23,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.producer.LiteProducer;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.LiteMessage;
 import org.apache.eventmesh.common.RandomStringUtil;
 import org.apache.eventmesh.common.utils.IPUtil;
-import org.apache.eventmesh.common.LiteMessage;
 import org.apache.eventmesh.common.utils.ThreadUtil;
 import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
@@ -39,14 +39,14 @@ public class AsyncPublishInstance {
     public static int messageSize = 5;
 
     public static void main(String[] args) throws Exception {
-//        Properties properties = Utils.readPropertiesFile("application.properties");
-//        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-//        final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
+        Properties properties = Utils.readPropertiesFile("application.properties");
+        final String eventMeshIp = properties.getProperty("eventmesh.ip");
+        final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
 
         LiteProducer liteProducer = null;
         try {
 //            String eventMeshIPPort = args[0];
-            String eventMeshIPPort = "";
+            String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
 //            final String topic = args[1];
             final String topic = "TEST-TOPIC-HTTP-ASYNC";
             if (StringUtils.isBlank(eventMeshIPPort)) {

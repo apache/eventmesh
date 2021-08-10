@@ -65,13 +65,14 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
         }
 
         String extensionFileName = EVENTMESH_EXTENSION_META_DIR + extensionType.getName();
-        URLClassLoader urlClassLoader = URLClassLoader.newInstance(pluginJarPaths.toArray(new URL[0]), Thread.currentThread().getContextClassLoader());
+        EventMeshUrlClassLoader eventMeshUrlClassLoader = EventMeshUrlClassLoader.getInstance();
+        eventMeshUrlClassLoader.addUrl(pluginJarPaths);
         try {
-            Enumeration<URL> extensionUrls = urlClassLoader.getResources(extensionFileName);
+            Enumeration<URL> extensionUrls = eventMeshUrlClassLoader.getResources(extensionFileName);
             if (extensionUrls != null) {
                 while (extensionUrls.hasMoreElements()) {
                     URL url = extensionUrls.nextElement();
-                    extensionMap.putAll(loadResources(urlClassLoader, url, extensionType));
+                    extensionMap.putAll(loadResources(eventMeshUrlClassLoader, url, extensionType));
                 }
             }
         } catch (IOException e) {
@@ -103,7 +104,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
         return pluginUrls;
     }
 
-    private static <T> Map<String, Class<?>> loadResources(URLClassLoader urlClassLoader, URL url, Class<T> extensionType) throws IOException {
+    private static <T> Map<String, Class<?>> loadResources(EventMeshUrlClassLoader eventMeshUrlClassLoader, URL url, Class<T> extensionType) throws IOException {
         Map<String, Class<?>> extensionMap = new HashMap<>();
         try (InputStream inputStream = url.openStream()) {
             Properties properties = new Properties();
@@ -112,7 +113,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
                 String extensionNameStr = (String) extensionName;
                 String extensionClassStr = (String) extensionClass;
                 try {
-                    Class<?> targetClass = urlClassLoader.loadClass(extensionClassStr);
+                    Class<?> targetClass = eventMeshUrlClassLoader.loadClass(extensionClassStr);
                     logger.info("load extension class success, extensionType: {}, extensionClass: {}",
                             extensionType, targetClass);
                     if (!extensionType.isAssignableFrom(targetClass)) {
