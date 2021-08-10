@@ -26,7 +26,9 @@ import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +54,13 @@ public class SubscribeTask extends AbstractTask {
             List<SubscriptionItem> subscriptionItems = new ArrayList<>();
             for (int i = 0; i < subscriptionInfo.getTopicList().size(); i++) {
                 SubscriptionItem item = subscriptionInfo.getTopicList().get(i);
+
+                //do acl check for receive msg
+                if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable){
+                    String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+                    Acl.doAclCheckInTcpReceive(remoteAddr, session.getClient(), item.getTopic(), Command.SUBSCRIBE_REQUEST.value());
+                }
+
                 subscriptionItems.add(item);
             }
             synchronized (session) {
