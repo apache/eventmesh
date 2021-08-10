@@ -40,7 +40,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import io.openmessaging.api.Message;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
