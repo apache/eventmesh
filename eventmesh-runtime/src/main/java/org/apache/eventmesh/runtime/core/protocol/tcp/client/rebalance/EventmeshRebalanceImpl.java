@@ -60,6 +60,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
 
         for(String group : groupSet){
             doRebalanceByGroup(cluster, group, EventMeshConstants.PURPOSE_SUB, localEventMeshMap);
+            doRebalanceByGroup(cluster, group, EventMeshConstants.PURPOSE_PUB, localEventMeshMap);
         }
         logger.info("doRebalance end===========startTime:{}, cost:{}", startTime, System.currentTimeMillis() - startTime);
     }
@@ -106,12 +107,24 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         for(Integer item : clientDistributionMap.values()){
             sum += item.intValue();
         }
-        int currentNum = clientDistributionMap.get(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshName);
+        int currentNum = 0;
+        if(clientDistributionMap.get(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshName) != null){
+            currentNum = clientDistributionMap.get(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshName);
+        }
         int avgNum = sum / clientDistributionMap.size();
         int judge = avgNum >= 2 ? avgNum/2 : 1;
 
         if(currentNum - avgNum > judge) {
-            Set<Session> sessionSet = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().get(group).getGroupConsumerSessions();
+            Set<Session> sessionSet = null;
+            if(EventMeshConstants.PURPOSE_PUB.equals(purpose)){
+                sessionSet = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().get(group).getGroupProducerSessions();
+            }else if(EventMeshConstants.PURPOSE_SUB.equals(purpose)){
+                sessionSet = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().get(group).getGroupConsumerSessions();
+            }else{
+                logger.warn("doRebalance failed,purpose is not support,purpose:{}", purpose);
+                return;
+            }
+
             List<Session> sessionList = new ArrayList<>(sessionSet);
             Collections.shuffle(new ArrayList<>(sessionList));
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
@@ -120,15 +133,20 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
                 logger.warn("doRebalance failed,recommendProxyNum is not consistent,recommendResult:{},judge:{}", eventMeshRecommendResult, judge);
                 return;
             }
-            logger.info("doRebalance redirect start---------------------group:{},judge:{}", group, judge);
+            logger.info("doRebalance redirect start---------------------group:{},purpose:{},judge:{}", group, purpose, judge);
             for(int i= 0; i<judge; i++){
                 //String redirectSessionAddr = ProxyTcp2Client.redirectClientForRebalance(sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
                 String newProxyIp = eventMeshRecommendResult.get(i).split(":")[0];
                 String newProxyPort = eventMeshRecommendResult.get(i).split(":")[1];
                 String redirectSessionAddr = EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,newProxyIp,Integer.valueOf(newProxyPort),sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
                 logger.info("doRebalance,redirect sessionAddr:{}", redirectSessionAddr);
+                try {
+                    Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().sleepIntervalInRebalanceRedirectMills);
+                } catch (InterruptedException e) {
+                    logger.warn("Thread.sleep occur InterruptedException", e);
+                }
             }
-            logger.info("doRebalance redirect end---------------------group:{}", group);
+            logger.info("doRebalance redirect end---------------------group:{}, purpose:{}", group, purpose);
         }else{
             logger.info("rebalance condition not satisfy,group:{},sum:{},currentNum:{},avgNum:{},judge:{}", group, sum, currentNum, avgNum, judge);
         }
@@ -141,7 +159,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             eventMeshClientDistributionDataMap = eventMeshTCPServer.getRegistry().findEventMeshClientDistributionData(cluster, group, purpose);
 
             if(eventMeshClientDistributionDataMap == null || eventMeshClientDistributionDataMap.size() == 0){
-                logger.warn("doRebalance failed,found no distribute data in regitry, cluster:{}, group:{}", cluster, group);
+                logger.warn("doRebalance failed,found no distribute data in regitry, cluster:{}, group:{}, purpose:{}", cluster, group, purpose);
                 return null;
             }
 
@@ -155,14 +173,14 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             }
 
             if(0 == localEventMeshDistributeData.size()){
-                logger.warn("doRebalance failed,found no distribute data of localIDC in regitry,cluster:{},group:{},localIDC:{}", cluster, group,localIdc);
+                logger.warn("doRebalance failed,found no distribute data of localIDC in regitry,cluster:{},group:{}, purpose:{},localIDC:{}", cluster, group, purpose, localIdc);
                 return null;
             }
 
-            logger.info("before revert clientDistributionMap:{}, group:{}", localEventMeshDistributeData, group);
+            logger.info("before revert clientDistributionMap:{}, group:{}, purpose:{}", localEventMeshDistributeData, group, purpose);
             for(String eventMeshName : localEventMeshDistributeData.keySet()){
                 if(!eventMeshMap.keySet().contains(eventMeshName)){
-                    logger.warn("doRebalance failed,exist eventMesh not register but exist in distributionMap,cluster:{},grpup:{},eventMeshName:{}", cluster, group, eventMeshName);
+                    logger.warn("doRebalance failed,exist eventMesh not register but exist in distributionMap,cluster:{},grpup:{},purpose:{},eventMeshName:{}", cluster, group, purpose, eventMeshName);
                     return null;
                 }
             }
@@ -171,9 +189,9 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
                     localEventMeshDistributeData.put(eventMesh, 0);
                 }
             }
-            logger.info("after revert clientDistributionMap:{}, group:{}", localEventMeshDistributeData, group);
+            logger.info("after revert clientDistributionMap:{}, group:{}, purpose:{}", localEventMeshDistributeData, group, purpose);
         }catch (Exception e){
-            logger.warn("doRebalance failed,cluster:{},group:{},findProxyClientDistributionData failed, errMsg:{}", cluster, group, e);
+            logger.warn("doRebalance failed,cluster:{},group:{},purpose:{},findProxyClientDistributionData failed, errMsg:{}", cluster, group, purpose, e);
             return null;
         }
 

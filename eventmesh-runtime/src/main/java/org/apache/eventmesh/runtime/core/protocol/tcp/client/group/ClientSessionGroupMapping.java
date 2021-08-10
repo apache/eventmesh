@@ -407,6 +407,35 @@ public class ClientSessionGroupMapping {
 
     public void shutdown() throws Exception {
         logger.info("begin to close sessions gracefully");
+        for(ClientGroupWrapper clientGroupWrapper : clientGroupMap.values()){
+            for(Session subSession : clientGroupWrapper.getGroupConsumerSessions()){
+                try {
+                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, subSession, this);
+                } catch (Exception e) {
+                    logger.error("say goodbye to subSession error! {}", subSession, e);
+                }
+            }
+
+            for(Session pubSession : clientGroupWrapper.getGroupProducerSessions()){
+                try {
+                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, pubSession, this);
+                } catch (Exception e) {
+                    logger.error("say goodbye to pubSession error! {}", pubSession, e);
+                }
+            }
+            try {
+                Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().gracefulShutdownSleepIntervalInMills);
+            } catch (InterruptedException e) {
+                logger.warn("Thread.sleep occur InterruptedException", e);
+            }
+        }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            logger.warn("Thread.sleep occur InterruptedException", e);
+        }
+
         sessionTable.values().parallelStream().forEach(itr -> {
             try {
                 EventMeshTcp2Client.serverGoodby2Client(this.eventMeshTCPServer,itr, this);
