@@ -36,7 +36,6 @@ List open_message = [
         "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 ]
 
-
 dependencies {
     implementation metrics, open_telemetry, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
     testImplementation metrics, open_telemetry,open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
