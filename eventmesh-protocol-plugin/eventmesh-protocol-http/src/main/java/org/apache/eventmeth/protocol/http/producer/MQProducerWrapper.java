@@ -41,7 +41,7 @@ public class MQProducerWrapper {
     public MQProducerWrapper(String connectorPluginType) {
         this.meshMQProducer = ConnectorPluginFactory.getMeshMQProducer(connectorPluginType);
         if (meshMQProducer == null) {
-            logger.error("can't load the meshMQProducer plugin, please check.");
+            logger.error("can't load the meshMQProducer plugin: {}, please check.", connectorPluginType);
             throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
         }
     }

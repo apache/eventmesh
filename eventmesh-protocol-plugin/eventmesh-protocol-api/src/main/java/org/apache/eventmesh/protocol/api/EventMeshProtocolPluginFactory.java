@@ -35,6 +35,10 @@ public enum EventMeshProtocolPluginFactory {
     }
 
     public static EventMeshProtocolServer getEventMeshProtocolServer(String protocolPluginName) {
-        return EventMeshExtensionFactory.getExtension(EventMeshProtocolServer.class, protocolPluginName);
+        EventMeshProtocolServer eventMeshProtocolServer = EventMeshExtensionFactory.getExtension(EventMeshProtocolServer.class, protocolPluginName);
+        if (eventMeshProtocolServer == null) {
+            throw new EventMeshProtocolException(String.format("cannot find the protocol plugin: %s", protocolPluginName));
+        }
+        return eventMeshProtocolServer;
     }
 }

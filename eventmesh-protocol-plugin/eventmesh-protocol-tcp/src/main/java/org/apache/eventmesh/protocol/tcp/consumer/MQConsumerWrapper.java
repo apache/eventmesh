@@ -42,7 +42,7 @@ public class MQConsumerWrapper {
     public MQConsumerWrapper(String connectorPluginType) {
         this.meshMQPushConsumer = ConnectorPluginFactory.getMeshMQPushConsumer(connectorPluginType);
         if (meshMQPushConsumer == null) {
-            logger.error("can't load the meshMQPushConsumer plugin, please check.");
+            logger.error("can't load the meshMQPushConsumer plugin: {}, please check.", connectorPluginType);
             throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
         }
     }
