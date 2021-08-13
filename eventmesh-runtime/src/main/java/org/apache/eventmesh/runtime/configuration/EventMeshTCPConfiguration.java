@@ -72,6 +72,10 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
 
     public int eventMeshTcpPushFailIsolateTimeInMills = 30 * 1000;
 
+    public int gracefulShutdownSleepIntervalInMills = 1000;
+
+    public int sleepIntervalInRebalanceRedirectMills = 200;
+
     private TrafficShapingConfig gtc = new TrafficShapingConfig(0, 10_000, 1_000, 2000);
     private TrafficShapingConfig ctc = new TrafficShapingConfig(0, 2_000, 1_000, 10_000);
 
@@ -122,6 +126,11 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
         eventMeshTcpSendBackEnabled = configurationWrapper.getBoolProp(ConfKeys.KEYS_EVENTMESH_TCP_SEND_BACK_ENABLED, eventMeshTcpSendBackEnabled);
 
         eventMeshTcpPushFailIsolateTimeInMills = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME, eventMeshTcpPushFailIsolateTimeInMills);
+
+        gracefulShutdownSleepIntervalInMills = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_GRACEFUL_SHUTDOWN_SLEEP_TIME, gracefulShutdownSleepIntervalInMills);
+
+        sleepIntervalInRebalanceRedirectMills = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_REBALANCE_REDIRECT_SLEEP_TIME, sleepIntervalInRebalanceRedirectMills);
+
     }
 
     public TrafficShapingConfig getGtc() {
@@ -156,7 +165,8 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
         public static String KEYS_EVENTMESH_TCP_SERVER_ENABLED = "eventMesh.server.tcp.enabled";
         public static String KEYS_EVENTMESH_TCP_SEND_BACK_ENABLED = "eventMesh.server.tcp.sendBack.enabled";
         public static String KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME = "eventMesh.server.tcp.pushFailIsolateTimeInMills";
-        public static String KEYS_EVENTMESH_TCP_DOWNSTREAM_MAP_SIZE = "eventMesh.server.tcp.downstreamMapSize";
+        public static String KEYS_EVENTMESH_SERVER_GRACEFUL_SHUTDOWN_SLEEP_TIME = "eventMesh.server.gracefulShutdown.sleepIntervalInMills";
+        public static String KEYS_EVENTMESH_SERVER_REBALANCE_REDIRECT_SLEEP_TIME = "eventMesh.server.rebalanceRedirect.sleepIntervalInM";
     }
 
     public static class TrafficShapingConfig {

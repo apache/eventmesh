@@ -31,12 +31,14 @@ public class CommonConfiguration {
     public String eventMeshConnectorPluginType = "rocketmq";
     public String eventMeshSecurityPluginType = "security";
     public int eventMeshPrometheusPort = 19090;
+    public String eventMeshRegistryPluginType = "namesrv";
 
     public String namesrvAddr = "";
     public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
     public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
     public String eventMeshServerIp = null;
     public boolean eventMeshServerSecurityEnable = false;
+    public boolean eventMeshServerRegistryEnable = false;
     protected ConfigurationWrapper configurationWrapper;
 
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
@@ -86,6 +88,14 @@ public class CommonConfiguration {
 
             eventMeshSecurityPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshSecurityPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE));
+
+            String eventMeshServerRegistryEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED);
+            if (StringUtils.isNotBlank(eventMeshServerRegistryEnableStr)) {
+                eventMeshServerRegistryEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
+            }
+
+            eventMeshRegistryPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegistryPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE));
         }
     }
 
@@ -113,5 +123,9 @@ public class CommonConfiguration {
         public static String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
 
         public static String KEY_EVENTMESH_METRICS_PROMETHEUS_PORT = "eventMesh.metrics.prometheus.port";
+
+        public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.server.registry.enabled";
+
+        public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
     }
 }
