@@ -29,7 +29,8 @@ public class CommonConfiguration {
     public String eventMeshName = "";
     public String sysID = "5477";
     public String eventMeshConnectorPluginType = "rocketmq";
-    public String eventMeshSecurityPluginType = "acl";
+    public String eventMeshSecurityPluginType = "security";
+    public int eventMeshPrometheusPort = 19090;
     public String eventMeshRegistryPluginType = "namesrv";
 
     public String namesrvAddr = "";
@@ -66,6 +67,11 @@ public class CommonConfiguration {
             String eventMeshIDCStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIDCStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
             eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIDCStr);
+
+            String eventMeshPrometheusPortStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT);
+            if (StringUtils.isNotEmpty(eventMeshPrometheusPortStr)) {
+                eventMeshPrometheusPort = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshPrometheusPortStr));
+            }
 
             eventMeshServerIp = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
             if (StringUtils.isBlank(eventMeshServerIp)) {
@@ -115,6 +121,8 @@ public class CommonConfiguration {
         public static String KEYS_EVENTMESH_SECURITY_ENABLED = "eventMesh.server.security.enabled";
 
         public static String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
+
+        public static String KEY_EVENTMESH_METRICS_PROMETHEUS_PORT = "eventMesh.metrics.prometheus.port";
 
         public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.server.registry.enabled";
 

@@ -21,6 +21,7 @@ import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.slf4j.Logger;
@@ -42,6 +43,8 @@ public class EventMeshServer {
 
     private Registry registry;
 
+    private ConnectorResource connectorResource;
+
     private ServiceState serviceState;
 
     public EventMeshServer(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
@@ -50,6 +53,7 @@ public class EventMeshServer {
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.acl = new Acl();
         this.registry = new Registry();
+        this.connectorResource = new ConnectorResource();
     }
 
     public void init() throws Exception {
@@ -60,6 +64,8 @@ public class EventMeshServer {
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             registry.init(eventMeshTCPConfiguration.eventMeshRegistryPluginType);
         }
+
+        connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
 
         eventMeshHTTPServer = new EventMeshHTTPServer(this, eventMeshHttpConfiguration);
         eventMeshHTTPServer.init();
@@ -102,6 +108,8 @@ public class EventMeshServer {
                 registry.shutdown();
             }
         }
+
+        connectorResource.release();
 
         if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
             acl.shutdown();
