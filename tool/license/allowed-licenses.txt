@@ -504,6 +504,66 @@
             "moduleLicense": "Apache License, Version 2.0",
             "moduleVersion": "1.23",
             "moduleName": "org.yaml:snakeyaml"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0",
+            "moduleName": "io.opentelemetry:opentelemetry-api"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0-alpha",
+            "moduleName": "io.opentelemetry:opentelemetry-api-metrics"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0",
+            "moduleName": "io.opentelemetry:opentelemetry-context"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0-alpha",
+            "moduleName": "io.opentelemetry:opentelemetry-exporter-prometheus"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0",
+            "moduleName": "io.opentelemetry:opentelemetry-sdk"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0",
+            "moduleName": "io.opentelemetry:opentelemetry-sdk-common"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0-alpha",
+            "moduleName": "io.opentelemetry:opentelemetry-sdk-metrics"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0",
+            "moduleName": "io.opentelemetry:opentelemetry-sdk-trace"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0-alpha",
+            "moduleName": "io.opentelemetry:opentelemetry-semconv"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "0.8.1",
+            "moduleName": "io.prometheus:simpleclient"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "0.8.1",
+            "moduleName": "io.prometheus:simpleclient_common"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "0.8.1",
+            "moduleName": "io.prometheus:simpleclient_httpserver"
         }
   ]
 }
