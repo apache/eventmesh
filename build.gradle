@@ -364,6 +364,13 @@ subprojects {
             dependency "io.dropwizard.metrics:metrics-annotation:4.1.0"
             dependency "io.dropwizard.metrics:metrics-json:4.1.0"
 
+            dependency 'io.opentelemetry:opentelemetry-api:1.3.0'
+            dependency 'io.opentelemetry:opentelemetry-sdk:1.3.0'
+            dependency 'io.opentelemetry:opentelemetry-sdk-metrics:1.3.0-alpha'
+            dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.3.0-alpha'
+            dependency 'io.prometheus:simpleclient:0.8.1'
+            dependency 'io.prometheus:simpleclient_httpserver:0.8.1'
+
             dependency "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 
             dependency "com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0"

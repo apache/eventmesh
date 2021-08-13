@@ -16,6 +16,13 @@
  */
 
 dependencies {
+    api 'io.opentelemetry:opentelemetry-api'
+    api 'io.opentelemetry:opentelemetry-sdk'
+    api 'io.opentelemetry:opentelemetry-sdk-metrics'
+    api 'io.opentelemetry:opentelemetry-exporter-prometheus'
+    api 'io.prometheus:simpleclient'
+    api 'io.prometheus:simpleclient_httpserver'
+
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
