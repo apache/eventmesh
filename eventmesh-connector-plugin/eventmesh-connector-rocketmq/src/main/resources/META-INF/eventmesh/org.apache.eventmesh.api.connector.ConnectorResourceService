@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-security=org.apache.eventmesh.acl.impl.AclServiceImpl
+rocketmq=org.apache.eventmesh.connector.rocketmq.connector.ConnectorResourceServiceRocketmqImpl
