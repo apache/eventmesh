@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-dependencies {
-    api 'io.opentelemetry:opentelemetry-api'
-    api 'io.opentelemetry:opentelemetry-sdk'
-    api 'io.opentelemetry:opentelemetry-sdk-metrics'
-    api 'io.opentelemetry:opentelemetry-exporter-prometheus'
-    api 'io.prometheus:simpleclient'
-    api 'io.prometheus:simpleclient_httpserver'
+package org.apache.eventmesh.runtime.util;
 
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    implementation project(":eventmesh-security-plugin:eventmesh-security-api")
-    implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
+import org.junit.Assert;
+import org.junit.Test;
 
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
-    testImplementation project(":eventmesh-security-plugin:eventmesh-security-acl")
+import java.util.regex.Pattern;
+
+public class EventMeshUtilTest {
+
+    @Test
+    public void testBuildPushMsgSeqNo() {
+        String seq = EventMeshUtil.buildPushMsgSeqNo();
+        Assert.assertTrue(Pattern.compile("\\d{17}").matcher(seq).matches());
+        Assert.assertEquals(17, seq.length());
+    }
 }
