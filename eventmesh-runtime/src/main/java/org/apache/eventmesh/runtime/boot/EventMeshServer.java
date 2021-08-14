@@ -22,6 +22,7 @@ import org.apache.eventmesh.protocol.api.EventMeshProtocolPluginFactory;
 import org.apache.eventmesh.protocol.api.EventMeshProtocolServer;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
+import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,45 +36,27 @@ public class EventMeshServer {
 
     private ServiceState serviceState;
 
-    private final Acl acl;
-
-    private Registry registry;
-
     private ConnectorResource connectorResource;
 
     public EventMeshServer() {
-        this.acl = new Acl();
         this.eventMeshProtocolServers = EventMeshProtocolPluginFactory.getEventMeshProtocolServers(
                 CommonConfiguration.eventMeshProtocolServerPluginTypes);
 
-        this.registry = new Registry();
         this.connectorResource = new ConnectorResource();
     }
 
     public void init() throws Exception {
-        if (CommonConfiguration.eventMeshServerSecurityEnable) {
-            acl.init(CommonConfiguration.eventMeshSecurityPluginType);
-        }
         for (EventMeshProtocolServer eventMeshProtocolServer : eventMeshProtocolServers) {
             eventMeshProtocolServer.init();
         }
         connectorResource.init(CommonConfiguration.eventMeshConnectorPluginType);
 
-        if (CommonConfiguration.eventMeshServerRegistryEnable) {
-            registry.init(CommonConfiguration.eventMeshRegistryPluginType);
-        }
 
         serviceState = ServiceState.INITED;
         logger.info("server state:{}", serviceState);
     }
 
     public void start() throws Exception {
-        if (CommonConfiguration.eventMeshServerSecurityEnable) {
-            acl.start();
-        }
-        if (CommonConfiguration.eventMeshServerRegistryEnable) {
-            registry.start();
-        }
 
         for (EventMeshProtocolServer eventMeshProtocolServer : eventMeshProtocolServers) {
             eventMeshProtocolServer.start();
@@ -89,14 +72,8 @@ public class EventMeshServer {
             eventMeshProtocolServer.shutdown();
         }
 
-        if (CommonConfiguration.eventMeshServerRegistryEnable) {
-            registry.shutdown();
-        }
         connectorResource.release();
 
-        if (CommonConfiguration.eventMeshServerSecurityEnable) {
-            acl.shutdown();
-        }
         serviceState = ServiceState.STOPED;
         logger.info("server state:{}", serviceState);
     }

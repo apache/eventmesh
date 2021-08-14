@@ -15,28 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.handler;
+package org.apache.eventmesh.protocol.tcp.admin.handler;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendStrategy;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.util.NetUtils;
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.protocol.tcp.EventMeshProtocolTCPServer;
+import org.apache.eventmesh.protocol.tcp.config.TcpProtocolConstants;
+import org.apache.eventmesh.protocol.tcp.rebalance.recommend.EventMeshRecommendImpl;
+import org.apache.eventmesh.protocol.tcp.rebalance.recommend.EventMeshRecommendStrategy;
+import org.apache.eventmesh.protocol.tcp.utils.NetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * query recommend eventmesh
@@ -45,9 +40,9 @@ public class QueryRecommendEventMeshHandler implements HttpHandler {
 
     private Logger logger = LoggerFactory.getLogger(QueryRecommendEventMeshHandler.class);
 
-    private final EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshProtocolTCPServer eventMeshTCPServer;
 
-    public QueryRecommendEventMeshHandler(EventMeshTCPServer eventMeshTCPServer) {
+    public QueryRecommendEventMeshHandler(EventMeshProtocolTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
@@ -56,13 +51,13 @@ public class QueryRecommendEventMeshHandler implements HttpHandler {
         String result = "";
         OutputStream out = httpExchange.getResponseBody();
         try{
-            if(!eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerRegistryEnable) {
+            if(!CommonConfiguration.eventMeshServerRegistryEnable) {
                 throw new Exception("registry enable config is false, not support");
             }
             String queryString =  httpExchange.getRequestURI().getQuery();
             Map<String,String> queryStringInfo = NetUtils.formData2Dic(queryString);
-            String group = queryStringInfo.get(EventMeshConstants.MANAGE_GROUP);
-            String purpose = queryStringInfo.get(EventMeshConstants.MANAGE_PURPOSE);
+            String group = queryStringInfo.get(TcpProtocolConstants.MANAGE_GROUP);
+            String purpose = queryStringInfo.get(TcpProtocolConstants.MANAGE_PURPOSE);
             if (StringUtils.isBlank(group) || StringUtils.isBlank(purpose)) {
                 httpExchange.sendResponseHeaders(200, 0);
                 result = "params illegal!";

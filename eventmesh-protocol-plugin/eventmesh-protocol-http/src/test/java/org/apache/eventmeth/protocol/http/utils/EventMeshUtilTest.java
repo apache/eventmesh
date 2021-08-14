@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.patch;
+package org.apache.eventmeth.protocol.http.utils;
 
-public enum EventMeshConsumeConcurrentlyStatus {
-    /**
-     * Success consumption
-     */
-    CONSUME_SUCCESS,
-    /**
-     * Failure consumption,later try to consume
-     */
-    RECONSUME_LATER,
-    /**
-     * Success consumption but ack later manually
-     */
-    CONSUME_FINISH;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.regex.Pattern;
+
+public class EventMeshUtilTest {
+
+    @Test
+    public void testBuildPushMsgSeqNo() {
+        String seq = EventMeshUtils.buildPushMsgSeqNo();
+        Assert.assertTrue(Pattern.compile("\\d{17}").matcher(seq).matches());
+        Assert.assertEquals(17, seq.length());
+    }
 }

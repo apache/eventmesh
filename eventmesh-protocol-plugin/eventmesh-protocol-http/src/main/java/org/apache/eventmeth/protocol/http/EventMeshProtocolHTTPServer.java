@@ -20,8 +20,10 @@
 package org.apache.eventmeth.protocol.http;
 
 import com.google.common.eventbus.EventBus;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.protocol.api.exception.EventMeshProtocolException;
 import org.apache.eventmesh.protocol.api.model.ServiceState;
+import org.apache.eventmeth.protocol.http.acl.Acl;
 import org.apache.eventmeth.protocol.http.config.EventMeshHTTPConfiguration;
 import org.apache.eventmeth.protocol.http.consumer.ConsumerGroupConf;
 import org.apache.eventmeth.protocol.http.consumer.ConsumerManager;
@@ -46,6 +48,8 @@ public class EventMeshProtocolHTTPServer extends AbstractEventMeshProtocolHTTPSe
 
     private ProducerManager producerManager;
 
+    private Acl acl;
+
     public EventMeshProtocolHTTPServer() {
         super(EventMeshHTTPConfiguration.httpServerPort, EventMeshHTTPConfiguration.eventMeshServerUseTls);
     }
@@ -54,6 +58,11 @@ public class EventMeshProtocolHTTPServer extends AbstractEventMeshProtocolHTTPSe
         logger.info("==================EventMeshHTTPServer Initialing==================");
         super.init();
         try {
+            if (CommonConfiguration.eventMeshServerSecurityEnable) {
+                acl = new Acl();
+                acl.init(CommonConfiguration.eventMeshSecurityPluginType);
+            }
+
             consumerManager = new ConsumerManager(this);
             consumerManager.init();
 
@@ -71,6 +80,9 @@ public class EventMeshProtocolHTTPServer extends AbstractEventMeshProtocolHTTPSe
     public void start() throws EventMeshProtocolException {
         super.start();
         try {
+            if (CommonConfiguration.eventMeshServerSecurityEnable) {
+                acl.start();
+            }
             consumerManager.start();
             producerManager.start();
             logger.info("--------------------------EventMeshHTTPServer started");
@@ -83,6 +95,9 @@ public class EventMeshProtocolHTTPServer extends AbstractEventMeshProtocolHTTPSe
     public void shutdown() throws EventMeshProtocolException {
         super.shutdown();
         try {
+            if (CommonConfiguration.eventMeshServerSecurityEnable) {
+                acl.shutdown();
+            }
             producerManager.shutdown();
 
             consumerManager.shutdown();

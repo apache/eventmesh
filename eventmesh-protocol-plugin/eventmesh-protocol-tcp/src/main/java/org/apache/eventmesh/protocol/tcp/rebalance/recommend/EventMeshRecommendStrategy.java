@@ -14,20 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.protocol.tcp.rebalance.recommend;
 
-package org.apache.eventmesh.runtime.util;
+import java.util.List;
+import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+public interface EventMeshRecommendStrategy {
+    String calculateRecommendEventMesh(String group, String purpose) throws Exception;
 
-import java.util.regex.Pattern;
-
-public class EventMeshUtilTest {
-
-    @Test
-    public void testBuildPushMsgSeqNo() {
-        String seq = EventMeshUtil.buildPushMsgSeqNo();
-        Assert.assertTrue(Pattern.compile("\\d{17}").matcher(seq).matches());
-        Assert.assertEquals(17, seq.length());
-    }
+    List<String> calculateRedirectRecommendEventMesh(Map<String, String> eventMeshMap, Map<String, Integer> clientDistributeMap, String group, int recommendNum) throws Exception;
 }

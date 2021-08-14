@@ -15,62 +15,67 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.metrics.opentelemetry;
+package org.apache.eventmesh.protocol.tcp.metrics;
 
-import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.api.metrics.MeterProvider;
 import io.opentelemetry.api.metrics.common.Labels;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcpConnectionHandler;
-import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
+import org.apache.eventmesh.protocol.api.common.OpenTelemetryExporterConfiguration;
+import org.apache.eventmesh.protocol.tcp.handler.EventMeshTcpConnectionHandler;
 
 public class OpenTelemetryTCPMetricsExporter {
+    private Meter meter;
 
-    private final EventMeshTcpMonitor eventMeshTcpMonitor;
+    private EventMeshTcpMonitor eventMeshTcpMonitor;
 
-    public OpenTelemetryTCPMetricsExporter(EventMeshTcpMonitor eventMeshTcpMonitor , EventMeshTCPConfiguration eventMeshTCPConfiguration){
-        OpenTelemetryPrometheusExporter.initialize(eventMeshTCPConfiguration);
+    public OpenTelemetryTCPMetricsExporter(EventMeshTcpMonitor eventMeshTcpMonitor){
         this.eventMeshTcpMonitor = eventMeshTcpMonitor;
+
+        // it is important to initialize the OpenTelemetry SDK as early as possible in your process.
+        MeterProvider meterProvider = OpenTelemetryExporterConfiguration.INSTANCE.initializeOpenTelemetry();
+        meter = meterProvider.get("OpenTelemetryTCPExporter", "0.13.1");
     }
 
     public void start(){
-        Meter meter = GlobalMeterProvider.getMeter("apache-eventmesh");
+        if (meter==null){
+            return;
+        }
         //retryQueueSize
         meter
                 .doubleValueObserverBuilder("eventmesh.tcp.retry.queue.size")
-                .setDescription("get size of retry queue.")
+                .setDescription("get size of retry queue")
                 .setUnit("TCP")
                 .setUpdater(result -> result.observe(eventMeshTcpMonitor.getEventMeshTCPServer().getEventMeshTcpRetryer().getRetrySize(), Labels.empty()))
                 .build();
 
         //client2eventMeshTPS
         meter
-                .doubleValueObserverBuilder("eventmesh.tcp.server.tps")
-                .setDescription("get tps of client to eventMesh.")
+                .doubleValueObserverBuilder("eventmesh.tcp.client2.tps")
+                .setDescription("get tps of client to eventMesh")
                 .setUnit("TCP")
                 .setUpdater(result -> result.observe(eventMeshTcpMonitor.getClient2eventMeshTPS(), Labels.empty()))
                 .build();
 
         //eventMesh2mqTPS
         meter
-                .doubleValueObserverBuilder("eventmesh.tcp.mq.provider.tps")
-                .setDescription("get tps of eventMesh to mq.")
+                .doubleValueObserverBuilder("eventmesh.tcp.2mq.tps")
+                .setDescription("get tps of eventMesh to mq")
                 .setUnit("TCP")
                 .setUpdater(result -> result.observe(eventMeshTcpMonitor.getEventMesh2mqTPS(), Labels.empty()))
                 .build();
 
         //mq2eventMeshTPS
         meter
-                .doubleValueObserverBuilder("eventmesh.tcp.mq.consumer.tps")
-                .setDescription("get tps of mq to eventMesh.")
+                .doubleValueObserverBuilder("eventmesh.tcp.mq2.tps")
+                .setDescription("get tps of mq to eventMesh")
                 .setUnit("TCP")
                 .setUpdater(result -> result.observe(eventMeshTcpMonitor.getMq2eventMeshTPS(), Labels.empty()))
                 .build();
 
         //eventMesh2clientTPS
         meter
-                .doubleValueObserverBuilder("eventmesh.tcp.client.tps")
-                .setDescription("get tps of eventMesh to client.")
+                .doubleValueObserverBuilder("eventmesh.tcp.2client.tps")
+                .setDescription("get tps of eventMesh to client")
                 .setUnit("TCP")
                 .setUpdater(result -> result.observe(eventMeshTcpMonitor.getEventMesh2clientTPS(), Labels.empty()))
                 .build();
@@ -78,15 +83,15 @@ public class OpenTelemetryTCPMetricsExporter {
         //allTPS
         meter
                 .doubleValueObserverBuilder("eventmesh.tcp.all.tps")
-                .setDescription("get all TPS.")
+                .setDescription("get all TPS")
                 .setUnit("TCP")
                 .setUpdater(result -> result.observe(eventMeshTcpMonitor.getAllTPS(), Labels.empty()))
                 .build();
 
         //EventMeshTcpConnectionHandler.connections
         meter
-                .doubleValueObserverBuilder("eventmesh.tcp.connection.num")
-                .setDescription("EventMeshTcpConnectionHandler.connections.")
+                .doubleValueObserverBuilder("eventmesh.tcp.connection.handler.connections")
+                .setDescription("EventMeshTcpConnectionHandler.connections")
                 .setUnit("TCP")
                 .setUpdater(result -> result.observe(EventMeshTcpConnectionHandler.connections.doubleValue(), Labels.empty()))
                 .build();
@@ -94,13 +99,12 @@ public class OpenTelemetryTCPMetricsExporter {
         //subTopicNum
         meter
                 .doubleValueObserverBuilder("eventmesh.tcp.sub.topic.num")
-                .setDescription("get sub topic num.")
+                .setDescription("get sub topic num")
                 .setUnit("TCP")
                 .setUpdater(result -> result.observe(eventMeshTcpMonitor.getSubTopicNum(), Labels.empty()))
                 .build();
     }
-
     public void shutdown(){
-        OpenTelemetryPrometheusExporter.shutdown();
+        OpenTelemetryExporterConfiguration.INSTANCE.shutdownPrometheusEndpoint();
     }
 }

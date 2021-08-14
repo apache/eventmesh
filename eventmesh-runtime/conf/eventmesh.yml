@@ -24,16 +24,24 @@ eventMesh:
     name: "EVENTMESH-runtime"
     security:
       enable: false
+    registry:
+      enabled: false
   connector:
     plugin:
-      type: "rocketmq" #connector plugin
+      type: "rocketmq"
   security:
     plugin:
       type: "security"
+  registry:
+    plugin:
+      type: "namesrv"
   protocolServer:
     plugin:
       type:
         - "http"
         - "tcp"
+  metrics:
+    prometheus:
+      port: 19090
 
 

@@ -42,6 +42,8 @@ public class HTTPMetricsServer {
 
     public GroupMetrics groupMetrics;
 
+    public OpenTelemetryHTTPMetricsExporter openTelemetryHTTPMetricsExporter;
+
     private Logger httpLogger = LoggerFactory.getLogger("httpMonitor");
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -55,6 +57,7 @@ public class HTTPMetricsServer {
         topicMetrics = new TopicMetrics(this.eventMeshHTTPServer, this.metricRegistry);
         groupMetrics = new GroupMetrics(this.eventMeshHTTPServer, this.metricRegistry);
         healthMetrics = new HealthMetrics(this.eventMeshHTTPServer, this.metricRegistry);
+        openTelemetryHTTPMetricsExporter = new OpenTelemetryHTTPMetricsExporter(this);
         logger.info("HTTPMetricsServer inited......");
     }
 
@@ -89,6 +92,7 @@ public class HTTPMetricsServer {
 
     public void shutdown() throws Exception {
         metricsSchedule.shutdown();
+        openTelemetryHTTPMetricsExporter.shutdown();
         logger.info("HTTPMetricsServer shutdown......");
     }
 
@@ -161,6 +165,21 @@ public class HTTPMetricsServer {
         summaryMetrics.send2MQStatInfoClear();
     }
 
+    public int getBatchMsgQ(){
+        return eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size();
+    }
+
+    public int getSendMsgQ(){
+        return eventMeshHTTPServer.getSendMsgExecutor().getQueue().size();
+    }
+
+    public int getPushMsgQ(){
+        return eventMeshHTTPServer.getPushMsgExecutor().getQueue().size();
+    }
+
+    public int getHttpRetryQ(){
+        return eventMeshHTTPServer.getHttpRetryer().size();
+    }
 
     public HealthMetrics getHealthMetrics() {
         return healthMetrics;

@@ -32,6 +32,7 @@ import org.apache.eventmesh.protocol.tcp.task.HelloTask;
 import org.apache.eventmesh.protocol.tcp.task.ListenTask;
 import org.apache.eventmesh.protocol.tcp.task.MessageAckTask;
 import org.apache.eventmesh.protocol.tcp.task.MessageTransferTask;
+import org.apache.eventmesh.protocol.tcp.task.RecommendTask;
 import org.apache.eventmesh.protocol.tcp.task.SubscribeTask;
 import org.apache.eventmesh.protocol.tcp.task.UnSubscribeTask;
 import org.apache.eventmesh.protocol.tcp.utils.EventMeshUtil;

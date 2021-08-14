@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class EventMeshUtil {
 
@@ -293,7 +294,7 @@ public class EventMeshUtil {
     }
 
     public static void printState(ThreadPoolExecutor scheduledExecutorService) {
-        tcpLogger.info("{} [{} {} {} {}]", ((EventMeshThreadFactoryImpl) scheduledExecutorService.getThreadFactory())
+        tcpLogger.info("{} [{} {} {} {}]", ((ThreadUtil.EventMeshThreadFactoryImpl) scheduledExecutorService.getThreadFactory())
                 .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
                 .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
                 .getCompletedTaskCount());

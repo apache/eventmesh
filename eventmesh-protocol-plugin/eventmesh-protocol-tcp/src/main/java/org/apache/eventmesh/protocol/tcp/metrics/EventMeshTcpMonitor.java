@@ -75,7 +75,7 @@ public class EventMeshTcpMonitor {
         this.eventMesh2mqMsgNum = new AtomicInteger(0);
         this.mq2eventMeshMsgNum = new AtomicInteger(0);
         this.eventMesh2clientMsgNum = new AtomicInteger(0);
-        this.metricsExporter = new OpenTelemetryTCPMetricsExporter(this,eventMeshTCPServer.getEventMeshTCPConfiguration());
+        this.metricsExporter = new OpenTelemetryTCPMetricsExporter(this);
         logger.info("EventMeshTcpMonitor inited......");
     }
 
@@ -192,5 +192,9 @@ public class EventMeshTcpMonitor {
 
     public int getSubTopicNum() {
         return subTopicNum;
+    }
+
+    public EventMeshProtocolTCPServer getEventMeshTCPServer() {
+        return eventMeshTCPServer;
     }
 }

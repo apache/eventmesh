@@ -21,6 +21,9 @@ package org.apache.eventmesh.protocol.tcp.config;
 
 public enum TcpProtocolConstants {
     ;
+
+    public static final String IP_PORT_SEPARATOR = ":";
+
     public static final String PROTOCOL_TCP = "tcp";
 
     public static final String TCP_CONFIGURATION_FILE = "eventmesh-protocol-tcp.yml";
@@ -77,4 +80,7 @@ public enum TcpProtocolConstants {
     public static final String LEAVE_TIME = "LEAVE_TIME";            //leaveBrokerTime
     public static final String ARRIVE_TIME = "ARRIVE_TIME";
     public static final String STORE_TIME = "STORE_TIME";
+
+    public static final String MANAGE_GROUP = "group";
+    public static final String MANAGE_PURPOSE = "purpose";
 }

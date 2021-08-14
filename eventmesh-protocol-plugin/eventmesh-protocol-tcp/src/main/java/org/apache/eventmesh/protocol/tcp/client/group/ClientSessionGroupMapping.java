@@ -22,6 +22,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
@@ -423,7 +424,7 @@ public class ClientSessionGroupMapping {
                 }
             }
             try {
-                Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().gracefulShutdownSleepIntervalInMills);
+                Thread.sleep(EventMeshTCPConfiguration.gracefulShutdownSleepIntervalInMills);
             } catch (InterruptedException e) {
                 logger.warn("Thread.sleep occur InterruptedException", e);
             }
@@ -477,8 +478,8 @@ public class ClientSessionGroupMapping {
             result = new HashMap<>();
             for(Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()){
                 Map<String, Integer> map = new HashMap();
-                map.put(EventMeshConstants.PURPOSE_SUB,entry.getValue().getGroupConsumerSessions().size());
-                map.put(EventMeshConstants.PURPOSE_PUB,entry.getValue().getGroupProducerSessions().size());
+                map.put(TcpProtocolConstants.PURPOSE_SUB,entry.getValue().getGroupConsumerSessions().size());
+                map.put(TcpProtocolConstants.PURPOSE_PUB,entry.getValue().getGroupProducerSessions().size());
                 result.put(entry.getKey(), map);
             }
         }

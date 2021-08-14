@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.eventmesh.runtime.registry;
+package org.apache.eventmesh.protocol.tcp.registry;
 
 import org.apache.eventmesh.api.registry.RegistryService;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Registry {
-    private static final Logger logger = LoggerFactory.getLogger(Registry.class);
-    private static RegistryService registryService;
+    private static final Logger          logger = LoggerFactory.getLogger(Registry.class);
+    private static       RegistryService registryService;
 
     public void init(String registryPluginType) throws Exception {
         registryService = EventMeshExtensionFactory.getExtension(RegistryService.class, registryPluginType);
@@ -40,27 +40,27 @@ public class Registry {
         registryService.init();
     }
 
-    public void start() throws Exception{
+    public void start() throws Exception {
         registryService.start();
     }
 
-    public void shutdown() throws Exception{
+    public void shutdown() throws Exception {
         registryService.shutdown();
     }
 
-    public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws Exception{
+    public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws Exception {
         return registryService.findEventMeshInfoByCluster(clusterName);
     }
 
-    public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose) throws Exception{
+    public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose) throws Exception {
         return registryService.findEventMeshClientDistributionData(clusterName, group, purpose);
     }
 
-    public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws Exception{
+    public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws Exception {
         return registryService.register(eventMeshRegisterInfo);
     }
 
-    public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws Exception{
+    public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws Exception {
         return registryService.unRegister(eventMeshUnRegisterInfo);
     }
 }

@@ -22,9 +22,7 @@ import org.apache.eventmesh.common.EventMeshRuntimeException;
 import org.apache.eventmesh.common.utils.IPUtil;
 import org.assertj.core.util.Lists;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 
 public enum CommonConfiguration {
@@ -47,6 +45,8 @@ public enum CommonConfiguration {
 
     public static boolean eventMeshServerRegistryEnable = false;
     public static String  eventMeshRegistryPluginType   = "namesrv";
+
+    public static Integer eventMeshRegisterIntervalInMills = 10 * 1000;
 
     public static int eventMeshPrometheusPort = 19090;
 
@@ -73,6 +73,7 @@ public enum CommonConfiguration {
         eventMeshPrometheusPort = yamlConfigurationReader.getInt(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT, eventMeshPrometheusPort);
         eventMeshRegistryPluginType = yamlConfigurationReader.getString(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE, eventMeshRegistryPluginType);
         eventMeshServerRegistryEnable = yamlConfigurationReader.getBool(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED, eventMeshServerRegistryEnable);
+        eventMeshRegisterIntervalInMills = yamlConfigurationReader.getInt(ConfKeys.KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL, eventMeshRegisterIntervalInMills);
     }
 
     static class ConfKeys {
@@ -101,5 +102,7 @@ public enum CommonConfiguration {
         public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.server.registry.enabled";
 
         public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
+
+        public static String KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL = "eventMesh.server.registry.registerIntervalInMills";
     }
 }

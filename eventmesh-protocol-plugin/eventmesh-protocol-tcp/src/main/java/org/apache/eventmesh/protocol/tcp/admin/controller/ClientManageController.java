@@ -19,6 +19,7 @@ package org.apache.eventmesh.protocol.tcp.admin.controller;
 
 import com.sun.net.httpserver.HttpServer;
 import org.apache.eventmesh.protocol.tcp.EventMeshProtocolTCPServer;
+import org.apache.eventmesh.protocol.tcp.admin.handler.QueryRecommendEventMeshHandler;
 import org.apache.eventmesh.protocol.tcp.admin.handler.RedirectClientByIpPortHandler;
 import org.apache.eventmesh.protocol.tcp.admin.handler.RedirectClientByPathHandler;
 import org.apache.eventmesh.protocol.tcp.admin.handler.RedirectClientBySubSystemHandler;

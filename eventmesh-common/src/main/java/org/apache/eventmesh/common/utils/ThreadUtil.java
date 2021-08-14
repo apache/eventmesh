@@ -20,6 +20,7 @@ package org.apache.eventmesh.common.utils;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ThreadUtil {
 
@@ -67,5 +68,33 @@ public class ThreadUtil {
                 return thread;
             }
         };
+    }
+
+    public static class EventMeshThreadFactoryImpl implements ThreadFactory {
+        private final AtomicLong threadIndex = new AtomicLong(0);
+        private final     String     threadNamePrefix;
+        private Boolean isDaemonSpecified = null;
+
+        public EventMeshThreadFactoryImpl(final String threadNamePrefix) {
+            this.threadNamePrefix = threadNamePrefix;
+        }
+
+        public EventMeshThreadFactoryImpl(final String threadNamePrefix, final boolean isDaemonSpecified) {
+            this.threadNamePrefix = threadNamePrefix;
+            this.isDaemonSpecified = isDaemonSpecified;
+        }
+
+        public String getThreadNamePrefix() {
+            return threadNamePrefix;
+        }
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r, threadNamePrefix + '-' + this.threadIndex.incrementAndGet());
+            if (isDaemonSpecified != null) {
+                t.setDaemon(isDaemonSpecified);
+            }
+            return t;
+        }
     }
 }
