@@ -64,11 +64,7 @@ Key components:
 
 ## Quick Start
 
-1. Build and deploy event-store(RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
-2. Build and deploy eventmesh-runtime, see
-   instruction ['eventmesh-runtime quickstart'](en/instructions/eventmesh-runtime-quickstart.md).
-3. Run eventmesh-sdk-java demo, see
-   instruction ['eventmesh-sdk-java quickstart'](en/instructions/eventmesh-sdk-java-quickstart.md).
+Instruction: [quickstart](en/instructions/quickstart-en.md)
 
 ## Contributing
 
@@ -86,5 +82,4 @@ You can start with the issues labeled with good first issue.
 WeChat group：
 
 ![wechat_qr](images/mesh-helper.png)
-
 

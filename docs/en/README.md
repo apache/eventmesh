@@ -66,12 +66,7 @@ Key components:
 
 ## Quick Start
 
-1. Build and deploy event-store([DeFiBus](https://github.com/WeBankFinTech/DeFiBus)), see
-   instruction ['event-store quickstart'](instructions/eventmesh-store-quickstart.md).
-2. Build and deploy eventmesh-runtime, see
-   instruction ['eventmesh-runtime quickstart'](instructions/eventmesh-runtime-quickstart.md).
-3. Run eventmesh-sdk-java demo, see
-   instruction ['eventmesh-sdk-java quickstart'](instructions/eventmesh-sdk-java-quickstart.md).
+Instruction :[quickstart](instructions/quickstart-en.md)
 
 ## Contributing
 
@@ -89,5 +84,4 @@ You can start with the issues labeled with good first issue.
 WeChat group：
 
 ![wechat_qr](../images/mesh-helper.png)
-
 
