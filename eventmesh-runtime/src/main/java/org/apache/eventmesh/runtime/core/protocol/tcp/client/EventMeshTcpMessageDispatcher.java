@@ -24,14 +24,7 @@ import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.GoodbyeTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.HeartBeatTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.HelloTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.ListenTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.MessageAckTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.MessageTransferTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.SubscribeTask;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.UnSubscribeTask;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.*;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +48,12 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
         try {
             Runnable task;
             cmd = pkg.getHeader().getCommand();
+            if (cmd.equals(Command.RECOMMEND_REQUEST)) {
+                messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
+                task = new RecommendTask(pkg, ctx, startTime, eventMeshTCPServer);
+                eventMeshTCPServer.getTaskHandleExecutorService().submit(task);
+                return;
+            }
             if (cmd.equals(Command.HELLO_REQUEST)) {
                 messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                 task = new HelloTask(pkg, ctx, startTime, eventMeshTCPServer);
