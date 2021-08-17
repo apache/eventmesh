@@ -2,9 +2,8 @@
 
 ## 1、Project orientation
 
-- Eventmesh is a dynamic cloud native event driven infrastructure. It is used to separate the application and back-end middleware layer and it is a cloud native infrastructure as an intermediate layer between the business layer and the infrastructure layer. It can realize automatic capacity expansion and centralized event processing. It can also realize distributed systems under different cloud primitives and event storage of messages, In the future, more features will be supported, such as cloud service features, data real-time computing, etc.
+- Eventmesh is an event driven basic service. As a dynamic plug-in cloud native basic service layer, eventmesh separates the application layer from the middleware layer, and provides flexible, reliable and fast event distribution capabilities. At the same time, it can manage events and serve as the connection layer of application processes, Provide a complete set of application interprocess communication modes required by enterprises to achieve their digital transformation goals.
 
-- Eventmesh system supports multi language access and multi protocol access. Because in the actual business, the boundary between different businesses is high, but the system can break through the barriers between businesses and broaden the business scenario.
 
 ## 2、Build and deploy event store (rocketmq)
 
@@ -22,8 +21,6 @@ It is assumed that the following environment has been built
 ```
 64 bit operating system, Linux/Unix/Max is recommended  (Windows userssee the guide below);
 64 bit JDK 1.8 +;
-Maven 3.2.x；
-Git；
 4G+ empty disks are provided to the server；
 ```
 
@@ -34,8 +31,13 @@ Click [here](https://www.apache.org/dyn/closer.cgi?path=rocketmq/4.9.0/rocketmq 
 #### Build source code
 
 > If you download the binary version of the source code, you can directly omit the step of building the source code.
->
-> Here we introduce two methods to build binaries using command line and idea locally.
+
+If you want to do this, you need to rely on：
+
+```
+Maven 3.2.x；
+Git；
+```
 
 Execute the following command to unzip the 4.9.0 source code version package and build the binaries.
 
@@ -154,7 +156,7 @@ start mqbroker.cmd -n 127.0.0.1:9876 autoCreateTopicEnable=true
 
 ![](../../images/quickstart/mqbrocker-successful.jpg)
 
-至此rocketmq安装完毕。
+At this point, the rocketmq installation is complete.
 
 #### Send and receive messages
 
@@ -226,9 +228,9 @@ ROCKETMQ_HOME=D:\rocketmq
 >  abortFile=Your store directory/abort
 >  ```
 
-![](../../images/quickstart/rocketmq-namesrv-ev.jpg)
+![](../../images/quickstart/rocketmq-namesrv-ev.png)
 
-![](../../images/quickstart/rocketmq-broker-ev.png)
+![](../../images/quickstart/rocketmq-broker-ev.jpg)
 
 
 
@@ -313,18 +315,17 @@ From [hear](https://github.com/apache/incubator-eventmesh ) to download the sour
 
   - eventmesh-common : eventmesh generic class and method module;
   - eventmesh-connector-api : eventmesh connector API definition module;
-  - eventmesh-connector-rocketMQ: an implementation based on eventmesh-connector-api, which supports rocketmq as event storage to publish and subscribe events;
   - eventmesh-runtime : eventmesh runtime module;
   - eventmesh-sdk-java : eventmesh java client sdk;
   - eventmesh-spi : eventmesh SPI loading module;
   - eventmesh-starter : eventmesh project local startup portal;
   - eventmesh-connector-plugin : eventmesh connector plug-in instance module;
-
   
 
-  ![](../../images//quickstart/structure.jpg)
-
   
+![](../../images//quickstart/structure.jpg)
+  
+
 
 > ps: the plug-in module follows the SPI specification defined by eventmesh, and the customized SPI interface needs to be identified with the annotation @ eventmeshspi. The plug-in instance needs to configure the mapping file between the relevant interface and the implementation class under `/main/resources/META-INF/eventmesh ` in the corresponding module. The file name is the full class name of the SPI interface. The file content is the mapping from the plug-in instance name to the plug-in instance, For details, please refer to the `eventmesh-connector-rocketmq`plug-in module.
 
@@ -406,7 +407,7 @@ Click on the code page to download the compressed package directly or through cl
 
 Enter the`rocketmq-externals\rocketmq-console\src\main\resources`folder and open`application.properties` for configuration.
 
-![](../../images/quickstart/rocketMQ-console.jpg)
+![](../../images/quickstart/rocketMQ-console.png)
 
 #### 4.1.3 Compile and start
 

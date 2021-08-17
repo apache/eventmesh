@@ -5,8 +5,7 @@
 ```
 建议使用64位操作系统，建议使用Linux / Unix；
 64位JDK 1.8+;
-Gradle至少为5.6, 推荐 5.6.*
-idea，推荐使用2021版本
+Gradle至少为7.0+, 
 ```
 
 ### 部署eventmesh-store

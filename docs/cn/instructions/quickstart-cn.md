@@ -2,17 +2,16 @@
 
 ## 一、项目定位
 
-- EventMesh是一个动态的云原生事件驱动架构基础设施，它用于分离应用程序和后端中间件层，在业务层和基础结构层之间作为一个中间层的云原生的基础设施，它可以实现自动扩容以及对事件集中处理，还可以实现不同云原生下分布式的系统以及对消息的事件存储，后续还会支持更多的特性，比如云服务特性、数据实时计算等。
-- EventMesh系统支持多语言接入和多协议接入。因为在实际业务中，不同业务之间边界性高，但是本系统可以打通业务之间壁垒，拓宽业务场景。
+- EventMesh是以事件驱动为核心的基础服务，EventMesh作为动态的插件式云原生基础服务层，将应用程序和中间件层分离，并提供了灵活，可靠和快速的事件分发能力，同时可以对事件进行管理，可以作为应用进程的连接层，提供企业实现其数字化转型目标所需的全套应用进程间通信模式。
 
-## 二、构建并部署event-store(RocketMQ)
+## 构建并部署event-store(RocketMQ)
 
 关于RocketMQ更多的细节：
 
 - 英文：https://github.com/apache/rocketmq/tree/master/docs/en
 - 中文：https://github.com/apache/rocketmq/tree/master/docs/cn
 
-### 2.1安装
+### 安装
 
 #### 依赖
 
@@ -21,8 +20,6 @@
 ```
 64位操作系统，推荐使用Linux/Unix/Max;(Windows用户参阅下面指南)；
 64位JDK 1.8+；
-Maven 3.2.x；
-Git；
 4g+ 空磁盘提供给服务器使用
 ```
 
@@ -33,10 +30,15 @@ Git；
 #### 构建源码
 
 > 如果您下载的是二进制版本的源代码，可以直接省略构建源代码这一步骤。
->
-> 在这里介绍用命令行构建二进制文件和使用idea在本地上构建二进制文件两种方法。
 
-- 执行以下命令解压4.9.0源代码版本压缩包并构建二进制文件
+构建源码时，除了依赖以上环境，还依赖：
+
+```
+Maven 3.2.x；
+Git；
+```
+
+执行以下命令解压4.9.0源代码版本压缩包并构建二进制文件
 
 ```
   > unzip rocketmq-all-4.9.0-source-release.zip
@@ -45,7 +47,7 @@ Git；
   > cd distribution/target/rocketmq-4.9.0/rocketmq-4.9.0
 ```
 
-### 2.2Linux
+### Linux
 
 #### 启动namesrv
 
@@ -102,7 +104,7 @@ The mqnamesrv(36664) is running...
 Send shutdown request to mqnamesrv(36664) OK
 ```
 
-### 2.3Windows
+### Windows
 
 > 该指南用于Windows10，请确保您安装了powershell
 >
@@ -177,7 +179,7 @@ start tools.cmd  org.apache.rocketmq.example.quickstart.Consumer
 
 通常，您只需关闭这些 powershell 窗口即可。
 
-### 2.4idea
+### idea
 
 > 首先您需要把maven的配置成为本地的maven；
 >
@@ -227,9 +229,9 @@ ROCKETMQ_HOME=D:\rocketmq
 >  abortFile=你的store目录/abort
 >  ```
 
-![](../../images/quickstart/rocketmq-namesrv-ev.jpg)
+![](../../images/quickstart/rocketmq-namesrv-ev.png)
 
-![](../../images/quickstart/rocketmq-broker-ev.png)
+![](../../images/quickstart/rocketmq-broker-ev.jpg)
 
 
 
@@ -255,7 +257,7 @@ The broker[broker-a, 192.168.72.1:10911] boot success. serializeType=JSON and na
 
 结束运行方法即可。
 
-### 2.5问题解决
+### 问题解决
 
 1. **启动消息队列RocketMQ版的客户端时提示`UnknownHostException`异常信息。可以参照官方解决方案：[点击这里](https://help.aliyun.com/knowledge_detail/29638.html)**
 
@@ -291,7 +293,9 @@ JAVA_OPT="${JAVA_OPT} -server -Xms1g -Xmx1g -Xmn1g -XX:MetaspaceSize=128m -XX:Ma
 
    打开`runbroker.cmd`然后将`%CLASSPATH%`加上英文双引号，保存并且重新执行start语句
 
-![](../../images/quickstart/classpath.jpg)
+![](E:/typoraWorkspace/%E5%BC%80%E6%BA%90/github/incubator-eventmesh/docs/cn/instructions/quickstart-cn.assets/classpath.jpg)
+
+
 
 ## 三、构建并部署eventmesh-runtime
 
@@ -316,7 +320,6 @@ idea 2020+，比如2021版本的idea
 
   - eventmesh-common : eventmesh 通用类和方法模块
   - eventmesh-connector-api : eventmesh 连接器 api 定义模块
-  - eventmesh-connector-rocketMQ: 一种基于eventmesh-connector-api的实现，该实现支持将RocketMQ作为事件存储，实现事件的发布与订阅
   - eventmesh-runtime : eventmesh 运行时模块
   - eventmesh-sdk-java : eventmesh java客户端sdk
   - eventmesh-spi : eventmesh SPI 加载模块
@@ -372,7 +375,7 @@ eventMesh.connector.plugin.type=rocketmq
 **启动运行**
 
 ```
-运行eventmesh-starter/src/main/java/StartUp的主要方法
+运行eventmesh-starter/src/main/java/StartUp的main方法
 ```
 
 运行成功后，我们看到日志文件这边会有提示说tcp和http的服务启动成功，而且会显示对应的端口号。启动成功后面是对应的检查文件。这个对应的端口在test模块下对应的配置文件中是可以找到的。
@@ -407,7 +410,7 @@ TCP 和 Http 示例都在**eventmesh-test**模块下
 
 进入‘`rocketmq-externals\rocketmq-console\src\main\resources`’文件夹，打开‘`application.properties`’进行配置。
 
-![](../../images/quickstart\rocketMQ-console.jpg)
+![](../../images/quickstart\rocketMQ-console.png)
 
 #### 4.1.3编译启动
 
