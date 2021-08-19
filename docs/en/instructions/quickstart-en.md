@@ -2,7 +2,7 @@
 
 ## 1、Project orientation
 
-- Eventmesh is an event driven basic service. As a dynamic plug-in cloud native basic service layer, eventmesh separates the application layer from the middleware layer, and provides flexible, reliable and fast event distribution capabilities. At the same time, it can manage events and serve as the connection layer of application processes, Provide a complete set of application interprocess communication modes required by enterprises to achieve their digital transformation goals.
+- Eventmesh is an event driven basic service. As a dynamic plug-in cloud native basic service layer, Eventmesh separates the application layer from the middleware layer, and provides flexible, reliable and fast event distribution capabilities. At the same time, it can manage events and serve as the connection layer of application processes, Provide a complete set of application interprocess communication modes required by enterprises to achieve their digital transformation goals.
 
 
 ## 2、Build and deploy event store (rocketmq)
@@ -60,7 +60,7 @@ Open the terminal in the bin directory and execute the following command to star
 
 Show that the following representatives are successful:
 
-![](../../images/quickstart/Linux-mqnamesrv.jpg)
+![](../../images/quickstart/Linux-mqnamesrv.png)
 
 #### Start broker
 
@@ -72,7 +72,7 @@ Open the terminal in the bin directory and execute the following command to star
 
 Show that the following representatives are successful:
 
-![](../../images/quickstart/Linux-mqbroker.jpg)
+![](../../images/quickstart/Linux-mqbroker.png)
 
 So far, rocketmq has been installed.
 
@@ -142,7 +142,7 @@ After setting the correct environment variables, open a new PowerShell window, e
 start mqnamesrv.cmd
 ```
 
-![](../../images/quickstart/mqnamesrv-successful.jpg)
+![](../../images/quickstart/mqnamesrv-successful.png)
 
 
 
@@ -154,7 +154,7 @@ start mqnamesrv.cmd
 start mqbroker.cmd -n 127.0.0.1:9876 autoCreateTopicEnable=true
 ```
 
-![](../../images/quickstart/mqbrocker-successful.jpg)
+![](../../images/quickstart/mqbrocker-successful.png)
 
 At this point, the rocketmq installation is complete.
 
@@ -191,7 +191,7 @@ Typically, you just need to close these PowerShell windows.
 
 
 
-![](../../images/quickstart/rocketmq-startup.jpg)
+![](../../images/quickstart/rocketmq-startup.png)
 
 #### Configure environment variables
 
@@ -230,7 +230,7 @@ ROCKETMQ_HOME=D:\rocketmq
 
 ![](../../images/quickstart/rocketmq-namesrv-ev.png)
 
-![](../../images/quickstart/rocketmq-broker-ev.jpg)
+![](../../images/quickstart/rocketmq-broker-ev.png)
 
 
 
@@ -258,7 +258,7 @@ Just end the operation method.
 
 ### 2.5 Problem solving
 
-1. **When starting the client of message queue rocketmq, you will be prompted with "unknownhostexception" exception information. You can refer to the official solution: [click here]( https://help.aliyun.com/knowledge_ detail/29638.html).**
+1. **When starting the client of message queue rocketmq, you will be prompted with "unknownhostexception" exception information. You can refer to the  solution: [click here]( https://help.aliyun.com/knowledge_ detail/29638.html).**
 2. **Linux cannot initialize due to insufficient memory. You can modify the JVM configuration as follows **:
 
 ```
@@ -290,7 +290,7 @@ Close the terminal and re execute the Linux Installation command.
 3. **If the prompt box prompts an error when starting the Broker: the main class XXXX cannot be found or loaded, the solution is as follows:**
 Open`runbroker.cmd`, then put `%CLASSPATH%`in English double quotation marks, save and re execute the start statement.
 
-![](../../images//quickstart/classpath.jpg)
+![](../../images//quickstart/classpath.png)
 
 ## 3、Build and deploy eventmesh runtime
 
@@ -322,9 +322,9 @@ From [hear](https://github.com/apache/incubator-eventmesh ) to download the sour
   - eventmesh-connector-plugin : eventmesh connector plug-in instance module;
   
 
-  
-![](../../images//quickstart/structure.jpg)
-  
+
+![](../../images//quickstart/structure.png)
+
 
 
 > ps: the plug-in module follows the SPI specification defined by eventmesh, and the customized SPI interface needs to be identified with the annotation @ eventmeshspi. The plug-in instance needs to configure the mapping file between the relevant interface and the implementation class under `/main/resources/META-INF/eventmesh ` in the corresponding module. The file name is the full class name of the SPI interface. The file content is the mapping from the plug-in instance name to the plug-in instance, For details, please refer to the `eventmesh-connector-rocketmq`plug-in module.
@@ -365,7 +365,7 @@ eventMesh.connector.plugin.type=rocketmq
 
 > ps: If you use Windows, you may need to replace the file separator to \
 
-![](../../images/quickstart/vm.jpg)
+![](../../images/quickstart/vm.png)
 
 
 
@@ -377,7 +377,7 @@ run eventmesh-starter/src/main/java/StartUp
 
 After running successfully, we will see a prompt in the log file saying that the TCP and HTTP services are started successfully, and the corresponding port number will be displayed. Successful startup is followed by the corresponding inspection file. The corresponding port can be found in the corresponding configuration file under the test module.
 
-![](../../images/quickstart/startup-tcp.jpg)
+![](../../images/quickstart/startup-tcp.png)
 
 ## 4、Run eventmesh-sdk-java
 
@@ -440,11 +440,11 @@ Run the main method of org.apache.eventmesh.tcp.demo.AsyncSubscribe
 
 Open the code to see the listening topic. The following is the processing mechanism for the occurrence after receiving the message.
 
-![](../../images/quickstart/tcp-asnysubscribe.jpg)
+![](../../images/quickstart/tcp-asnysubscribe.png)
 
 After successful startup, observe the log file. It mainly uses command words to interact with eventmesh. Each method to be executed will have a corresponding command.
 
-![](../../images/quickstart/tcp-command.jpg)
+![](../../images/quickstart/tcp-command.png)
 
 - start producer, send message
 

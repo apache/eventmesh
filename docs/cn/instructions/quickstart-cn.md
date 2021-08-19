@@ -1,6 +1,6 @@
 # 快速启动
 
-## 一、项目定位
+## 项目定位
 
 - EventMesh是以事件驱动为核心的基础服务，EventMesh作为动态的插件式云原生基础服务层，将应用程序和中间件层分离，并提供了灵活，可靠和快速的事件分发能力，同时可以对事件进行管理，可以作为应用进程的连接层，提供企业实现其数字化转型目标所需的全套应用进程间通信模式。
 
@@ -59,7 +59,7 @@ Git；
 
 显示以下代表是成功的：
 
-![](../../images/quickstart/Linux-mqnamesrv.jpg)
+![](../../images/quickstart/Linux-mqnamesrv.png)
 
 #### 启动broker
 
@@ -71,7 +71,7 @@ Git；
 
 显示以下说明成功：
 
-![](../../images/quickstart/Linux-mqbroker.jpg)
+![](../../images/quickstart/Linux-mqbroker.png)
 
 至此RocketMQ安装完毕。
 
@@ -141,7 +141,7 @@ $Env:ROCKETMQ_HOME="D:\rocketmq"
 start mqnamesrv.cmd
 ```
 
-![](../../images/quickstart/mqnamesrv-successful.jpg)
+![](../../images/quickstart/mqnamesrv-successful.png)
 
 
 
@@ -153,7 +153,7 @@ start mqnamesrv.cmd
 start mqbroker.cmd -n 127.0.0.1:9876 autoCreateTopicEnable=true
 ```
 
-![](../../images/quickstart/mqbrocker-successful.jpg)
+![](../../images/quickstart/mqbrocker-successful.png)
 
 至此rocketmq安装完毕。
 
@@ -192,7 +192,7 @@ D:\apache-maven-3.2.5-bin\apache-maven-3.2.5
 D:\apache-maven-3.2.5-bin\apache-maven-3.2.5\conf\settings.xml
 ```
 
-![](../../images/quickstart/rocketmq-startup.jpg)
+![](../../images/quickstart/rocketmq-startup.png)
 
 #### 配置环境变量
 
@@ -231,7 +231,7 @@ ROCKETMQ_HOME=D:\rocketmq
 
 ![](../../images/quickstart/rocketmq-namesrv-ev.png)
 
-![](../../images/quickstart/rocketmq-broker-ev.jpg)
+![](../../images/quickstart/rocketmq-broker-ev.png)
 
 
 
@@ -259,7 +259,7 @@ The broker[broker-a, 192.168.72.1:10911] boot success. serializeType=JSON and na
 
 ### 问题解决
 
-1. **启动消息队列RocketMQ版的客户端时提示`UnknownHostException`异常信息。可以参照官方解决方案：[点击这里](https://help.aliyun.com/knowledge_detail/29638.html)**
+1. **启动消息队列RocketMQ版的客户端时提示`UnknownHostException`异常信息。可以参照解决方案：[点击这里](https://help.aliyun.com/knowledge_detail/29638.html)**
 
 2. **Linux出现内存不足，无法初始化，可以修改JVM配置，具体如下**：
 
@@ -293,7 +293,7 @@ JAVA_OPT="${JAVA_OPT} -server -Xms1g -Xmx1g -Xmn1g -XX:MetaspaceSize=128m -XX:Ma
 
    打开`runbroker.cmd`然后将`%CLASSPATH%`加上英文双引号，保存并且重新执行start语句
 
-![](E:/typoraWorkspace/%E5%BC%80%E6%BA%90/github/incubator-eventmesh/docs/cn/instructions/quickstart-cn.assets/classpath.jpg)
+![](../../images/quickstart/classpath.png)
 
 
 
@@ -328,7 +328,7 @@ idea 2020+，比如2021版本的idea
   
   
   
-  ![](../../images/quickstart/structure.jpg)
+  ![](../../images/quickstart/structure.png)
   
   
 
@@ -368,7 +368,7 @@ eventMesh.connector.plugin.type=rocketmq
 
 > 注：如果操作系统为Windows, 可能需要将文件分隔符换成\
 
-![](../../images/quickstart/vm.jpg)
+![](../../images/quickstart/vm.png)
 
 
 
@@ -380,7 +380,7 @@ eventMesh.connector.plugin.type=rocketmq
 
 运行成功后，我们看到日志文件这边会有提示说tcp和http的服务启动成功，而且会显示对应的端口号。启动成功后面是对应的检查文件。这个对应的端口在test模块下对应的配置文件中是可以找到的。
 
-![](../../images/quickstart/startup-tcp.jpg)
+![](../../images/quickstart/startup-tcp.png)
 
 ## 四、运行eventmesh-sdk-java演示
 
@@ -442,11 +442,11 @@ BUILD SUCCESS……
 
 打开看到代码，上面显示的是监听的topic，下面是接受消息之后对出现的处理机制
 
-![](../../images/quickstart/tcp-asnysubscribe.jpg)
+![](../../images/quickstart/tcp-asnysubscribe.png)
 
 启动成功之后，观察日志文件，它主要是使用命令字和eventmesh进行交互
 
-![](../../images/quickstart/tcp-command.jpg)
+![](../../images/quickstart/tcp-command.png)
 
 - 启动发送端，发送消息
 
