@@ -10,7 +10,7 @@
 
 A Schema stands for the description of serialization instances(string/stream/file/...) and has two properties. First, it is also in the format of serialization type. Second, it defines what requirements such serialized instances should satisfy. 
 
-Besides describing a serialization instance, a Schema may also be used for validating whether an instance is legitimate. The reason is that it defines the ```type```(and other properties) of a JSON instance and inside keys. Taking JSON Schema for example, it could not only be referred when dealing with a JSON string, but also be used for  validating whether a string satisfies properties defined in the schema[[1]](#References).
+Besides describing a serialization instance, a Schema may also be used for validating whether an instance is legitimate. The reason is that it defines the ```type```(and other properties) of a serialized instance and inside keys. Taking JSON Schema for example, it could not only be referred when describing a JSON string, but also be used for validating whether a string satisfies properties defined in the schema[[1]](#References).
 
 Commonly, there are JSON Schema, Protobuf Schema, and Avro Schema, representing description of JSON instances, Protobuf instances, and Avro instances respectively.
 
@@ -31,7 +31,7 @@ Confluentinc[[4]](#References) | In both validation and (de-)serialization proce
 
 ## An Overview of OpenSchema
 
-OpenSchema[[5]](#References) proposes a specification for data schema when exchanging the message and event in more and more modern cloud-native applcations. It designs a RESTful interface for storing and retrieving such as Avro, JSON Schema, and Protobuf3 schemas from three aspects.
+OpenSchema[[5]](#References) proposes a specification for data schema when exchanging the message and event in more and more modern cloud-native applications. It designs a RESTful interface for storing and retrieving such as Avro, JSON Schema, and Protobuf3 schemas from three aspects(subject/schema/compatibility).
 
 
 ## Requirements(Goals)
