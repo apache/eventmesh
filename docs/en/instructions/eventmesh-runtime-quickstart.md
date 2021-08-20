@@ -73,6 +73,10 @@ The plugin can be loaded from classpath and plugin directory. In local develop, 
 or execute copyConnectorPlugin task of gradle to copy the plugin instance jar to dist/plugin directory. By default, eventmesh will load the plugins in project's
 dist/plugin, this can be changed by add -DeventMeshPluginDir=your_plugin_directory.
 The plugin instance need to be used at runtime can be configured in eventmesh.properties.
+If you need to use rokectmq plugin to start eventmesh-runtime, you need to declare the dependcy in build.gradle of eventmesh-starter module.
+```
+   implementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
+```
 
 
 **2.3.2 Configure plugin**
