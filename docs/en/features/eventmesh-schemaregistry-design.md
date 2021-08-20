@@ -12,8 +12,7 @@ A Schema stands for the description of serialization instances(string/stream/fil
 
 Besides describing a serialization instance, a Schema may also be used for validating whether an instance is legitimate. The reason is that it defines the ```type```(and other properties) of a serialized instance and inside keys. Taking JSON Schema for example, it could not only be referred when describing a JSON string, but also be used for validating whether a string satisfies properties defined in the schema[[1]](#References).
 
-Commonly, there are JSON Schema, Protobuf Schema, and Avro Schema, representing description of JSON instances, Protobuf instances, and Avro instances respectively.
-
+Commonly, there are JSON Schema, Protobuf Schema, and Avro Schema.
 
 ### Schema Registry
 
@@ -38,34 +37,41 @@ OpenSchema[[5]](#References) proposes a specification for data schema when excha
 
 | Requirement ID | Requirement Description                                      | Comments      |
 | :------------- | ------------------------------------------------------------ | ------------- |
-| F-1            | A message from producer could be understood(known serialization type) by consumer without a contract between each other. | Functionality |
-| F-2            | The message content from producer could be validated whether serialized correctly according to consumer's schema. | Functionality |
+| F-1            | In transmission, no message needs to contain schema information which bring efficiency. | Functionality |
+| F-2            | The message content from producer could be validated whether serialized correctly according to schema. | Functionality |
 
 
 ## Design Details
 
 ### Architecture
 
-![OpenSchema](https://user-images.githubusercontent.com/28994988/129255292-e61acc87-5250-4be5-ac9c-a099f6ef157c.png)
+![OpenSchema](../../images/features/eventmesh-schemaregistry-arch.png?raw=true)
 
-### LifeCycle of Schema
+### Process of Transferring Messages under Schema Registry
 
-The highlevel lifecycle of schema in messages undergoes 9 steps as follows:
-- step1: Producer registers a schema to OpenSchema Registry through OpenSchema service plugin.
-- step2: Producer receives schema id from OpenSchema Registry.
-- step3: Producer patch the schema id in front of messages and send them to EventMesh.
-- step4: In a load-balanced way, EventMesh validate whether the format of messages is correct. Here, the load-balanced way means that the EventMesh, which is the entry port of messages, validates messages one skiping one and the rest messages are validated in the EventMesh which is the outer port.
-- step5: EventMesh patch a status(true/false) for validation in front of schema id and router it to the EventMesh where the outer port exists.
-- step6: EventMesh validates those non-validated messages.
-- step7: EventMesh unpatch validation status and send [schema id + message] to the consumer.
-- step8: Consumer unpatch the schema id and retreive the schema from OpenSchema Registry.
-- step9: Consumer de-serialize messages according to schema.
+![Process](../../images/features/eventmesh-schemaregistry-process.jpg)
+
+The highlevel process of messages transmission undergoes 10 steps as follows:
+- step1: Consumer subscribes "TOPIC" messages from EventMesh.
+- step2: Producer registers a schema to EventMesh.
+- step3: EventMesh registers a schema to Schema Registry.
+- step4: Schema Registry returns the id of newly created schema; EventMesh caches such id and schema.
+- step5: EventMesh returns the id of schema to Producer.
+- step6: Producer patches the id in front of messages and send messages to EventMesh.
+- step7: EventMesh validates the messages in the entry port and send it to EventStore; EventMesh retrieves messages from EventStore.
+- step8: EventMesh unpatches the id and send it to Schema Registry(if such <id, schema> does not exists in local cache).
+- step9: Schema Registry returns schema and EventMesh caches it.
+- step10: EventMesh patches schema in front of messages and push it to consumer.
 
 
 ## References
 [1] [schema validator (github.com)](https://github.com/search?q=schema+validator)
+
 [2] [EMQ : Schema Registry](https://www.jianshu.com/p/33e0655c642b)
+
 [3] [Pulsar : Schema Registry](https://mp.weixin.qq.com/s/PaB66-Si00cX80py5ig5Mw)
+
 [4] [confluentinc/schema-registry](https://github.com/confluentinc/schema-registry)
+
 [5] [openmessaging/openschema](https://github.com/openmessaging/openschema)
  
