@@ -24,6 +24,7 @@ dependencies {
     api 'io.prometheus:simpleclient_httpserver'
 
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
@@ -31,6 +32,7 @@ dependencies {
 
 
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
