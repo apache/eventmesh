@@ -37,11 +37,11 @@ public class MessageQueue {
 
     private int count;
 
-    private ReentrantLock lock;
+    private final ReentrantLock lock;
 
-    private Condition notEmpty;
+    private final Condition notEmpty;
 
-    private Condition notFull;
+    private final Condition notFull;
 
 
     public MessageQueue() {
