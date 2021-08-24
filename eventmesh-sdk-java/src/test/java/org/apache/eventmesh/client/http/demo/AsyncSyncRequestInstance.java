@@ -18,8 +18,8 @@
 package org.apache.eventmesh.client.http.demo;
 
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.RandomStringGenerator;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.producer.LiteProducer;
 import org.apache.eventmesh.client.http.producer.RRCallback;
@@ -32,6 +32,9 @@ import org.slf4j.LoggerFactory;
 public class AsyncSyncRequestInstance {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncSyncRequestInstance.class);
+
+    private final static RandomStringGenerator randomGenerator = new RandomStringGenerator.Builder()
+            .withinRange('0', '9').build();
 
     public static void main(String[] args) throws Exception {
 
@@ -59,10 +62,10 @@ public class AsyncSyncRequestInstance {
 
             final long startTime = System.currentTimeMillis();
             final LiteMessage liteMessage = new LiteMessage();
-            liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
+            liteMessage.setBizSeqNo(randomGenerator.generate(30))
                     .setContent("testAsyncMessage")
                     .setTopic(topic)
-                    .setUniqueId(RandomStringUtils.randomNumeric(30));
+                    .setUniqueId(randomGenerator.generate(30));
 
             liteProducer.request(liteMessage, new RRCallback() {
                 @Override

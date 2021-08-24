@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.client.http.demo;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.RandomStringGenerator;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.producer.LiteProducer;
 import org.apache.eventmesh.common.Constants;
@@ -31,6 +31,9 @@ import org.slf4j.LoggerFactory;
 public class AsyncPublishInstance {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncPublishInstance.class);
+
+    private final static RandomStringGenerator randomGenerator = new RandomStringGenerator.Builder()
+            .withinRange('0', '9').build();
 
     public static void main(String[] args) throws Exception {
 
@@ -58,11 +61,11 @@ public class AsyncPublishInstance {
             liteProducer.start();
             for (int i = 0; i < 1; i++) {
                 LiteMessage liteMessage = new LiteMessage();
-                liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
+                liteMessage.setBizSeqNo(randomGenerator.generate(30))
 //                    .setContent("contentStr with special protocal")
                         .setContent("testPublishMessage")
                         .setTopic(topic)
-                        .setUniqueId(RandomStringUtils.randomNumeric(30))
+                        .setUniqueId(randomGenerator.generate(30))
                         .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
 
                 boolean flag = liteProducer.publish(liteMessage);
