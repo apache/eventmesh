@@ -32,7 +32,7 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcpConnectionHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.metrics.MonitorMetricConstants;
-import org.apache.eventmesh.runtime.metrics.openTelemetry.OpenTelemetryTCPMetricsExporter;
+import org.apache.eventmesh.runtime.metrics.opentelemetry.OpenTelemetryTCPMetricsExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

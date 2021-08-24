@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.codahale.metrics.MetricRegistry;
 
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.apache.eventmesh.runtime.metrics.openTelemetry.OpenTelemetryHTTPMetricsExporter;
+import org.apache.eventmesh.runtime.metrics.opentelemetry.OpenTelemetryHTTPMetricsExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
