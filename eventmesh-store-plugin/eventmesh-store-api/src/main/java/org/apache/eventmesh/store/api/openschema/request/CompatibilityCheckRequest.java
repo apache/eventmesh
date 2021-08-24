@@ -15,15 +15,26 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-store-plugin:eventmesh-store-api'
-include 'eventmesh-store-plugin:eventmesh-store-h2'
+package org.apache.eventmesh.store.api.openschema.request;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class CompatibilityCheckRequest {
+	
+	private String schema;
+	
+	@JsonProperty("schema")
+	public String getSchema() {
+	  return this.schema;
+	}
+
+	@JsonProperty("schema")
+	public void setSchema(String schema) {
+	  this.schema = schema;
+	}
+	
+}

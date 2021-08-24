@@ -23,14 +23,11 @@ List metrics = [
         "io.dropwizard.metrics:metrics-json:4.1.0"
 ]
 
-
-
 List open_message = [
         "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 ]
 
-
 dependencies {
-    implementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    implementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api"),project(":eventmesh-store-plugin:eventmesh-store-api"),project(":eventmesh-store-plugin:eventmesh-store-h2")
+    testImplementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api"),project(":eventmesh-store-plugin:eventmesh-store-api"),project(":eventmesh-store-plugin:eventmesh-store-h2")
 }

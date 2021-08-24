@@ -28,7 +28,9 @@ public class CommonConfiguration {
     public String eventMeshCluster = "LS";
     public String eventMeshName = "";
     public String sysID = "5477";
-    public String eventMeshConnectorPluginType = "rocketmq";
+    public String eventMeshConnectorPluginType = "rocketmq";    
+    public String eventMeshStorePluginSchemaAdapter = "schemaAdapter";
+    public String eventMeshStorePluginSchemaService = "schemaService";
 
     public String namesrvAddr = "";
     public String clientUserName = "username";
@@ -82,6 +84,12 @@ public class CommonConfiguration {
 
             eventMeshConnectorPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshConnectorPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE));
+            
+            eventMeshStorePluginSchemaAdapter = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_ADAPTER);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshStorePluginSchemaAdapter), String.format("%s error", ConfKeys.KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_ADAPTER));
+            
+            eventMeshStorePluginSchemaService = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_SERVICE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshStorePluginSchemaService), String.format("%s error", ConfKeys.KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_SERVICE));
         }
     }
 
@@ -103,5 +111,9 @@ public class CommonConfiguration {
         public static String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL = "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
 
         public static String KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE = "eventMesh.connector.plugin.type";
+        
+        public static String KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_ADAPTER = "eventMesh.store.plugin.schema.adapter";
+        
+        public static String KEYS_ENENTMESH_STORE_PLUGIN_SCHEMA_SERVICE = "eventMesh.store.plugin.schema.service";
     }
 }

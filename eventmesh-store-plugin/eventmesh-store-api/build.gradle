@@ -15,15 +15,7 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-store-plugin:eventmesh-store-api'
-include 'eventmesh-store-plugin:eventmesh-store-h2'
+dependencies {
+    implementation project(":eventmesh-common"), project(":eventmesh-spi")
+    testImplementation project(":eventmesh-common"), project(":eventmesh-spi")
+}

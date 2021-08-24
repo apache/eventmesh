@@ -15,15 +15,22 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-store-plugin:eventmesh-store-api'
-include 'eventmesh-store-plugin:eventmesh-store-h2'
+package org.apache.eventmesh.store.api.openschema.request;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class BaseRequest {
+	
+	private String id;
+	
+	@JsonProperty("id")
+	public String getId() {
+	  return this.id;
+	}
+
+	@JsonProperty("id")
+	public void setId(String id) {
+	  this.id = id;
+	}
+	  
+}

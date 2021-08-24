@@ -15,15 +15,23 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-store-plugin:eventmesh-store-api'
-include 'eventmesh-store-plugin:eventmesh-store-h2'
+//apply plugin: 'java'
+////apply plugin: "maven"
+//apply plugin: "eclipse"
+//apply plugin: "idea"
+//
+//sourceCompatibility = 1.8
+
+configurations {
+    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
+}
+
+List h2_database = [
+        "com.h2database:h2:1.3.148",
+        "org.apache.commons:commons-dbcp2:2.8.0"
+]
+
+dependencies {	
+    implementation h2_database,project(":eventmesh-store-plugin::eventmesh-store-api")
+    testImplementation project(":eventmesh-store-plugin::eventmesh-store-api")
+}

@@ -15,15 +15,23 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-store-plugin:eventmesh-store-api'
-include 'eventmesh-store-plugin:eventmesh-store-h2'
+task copyStorePlugin(dependsOn: ['jar']) {
+    doFirst {
+        new File(projectDir, '../eventmesh-store-plugin/dist/apps').mkdir()
+        new File(projectDir, '../dist/plugin/store').mkdirs()
+    }
+    doLast {
+        copy {
+            into('../eventmesh-store-plugin/dist/apps/')
+            from project.jar.getArchivePath()
+            exclude {
+                "eventmesh-store-plugin-${version}.jar"
+                "eventmesh-store-api-${version}.jar"
+            }
+        }
+        copy {
+            into '../dist/plugin/store'
+            from "../eventmesh-store-plugin/dist/apps/eventmesh-store-h2-${version}.jar"
+        }
+    }
+}

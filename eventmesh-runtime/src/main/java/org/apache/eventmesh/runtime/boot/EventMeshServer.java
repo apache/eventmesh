@@ -21,6 +21,8 @@ import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.store.api.factory.StorePluginFactory;
+import org.apache.eventmesh.store.api.openschema.SchemaAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,8 @@ public class EventMeshServer {
     public EventMeshHTTPServer eventMeshHTTPServer;
 
     private EventMeshTCPServer eventMeshTCPServer;
+    
+    private SchemaAdapter schemaAdapter;
 
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
@@ -57,12 +61,22 @@ public class EventMeshServer {
 
         serviceState = ServiceState.INITED;
         logger.info("server state:{}", serviceState);
+
+        this.schemaAdapter = StorePluginFactory.getSchemaAdapter(eventMeshHttpConfiguration.eventMeshStorePluginSchemaAdapter);
+        if (schemaAdapter == null) {
+            logger.error("can't load the schemaAdapter plugin, please check.");
+            throw new RuntimeException("doesn't load the schemaAdapter plugin, please check.");
+        }        
+        schemaAdapter.init();
     }
 
     public void start() throws Exception {
         eventMeshHTTPServer.start();
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.start();
+        }
+        if (schemaAdapter.isAdapterEnabled()) {
+        	schemaAdapter.start();            
         }
         serviceState = ServiceState.RUNNING;
         logger.info("server state:{}", serviceState);
@@ -74,6 +88,9 @@ public class EventMeshServer {
         eventMeshHTTPServer.shutdown();
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.shutdown();
+        }
+        if (schemaAdapter.isAdapterEnabled()) {
+        	schemaAdapter.shutdown();
         }
         serviceState = ServiceState.STOPED;
         logger.info("server state:{}", serviceState);
@@ -90,4 +107,5 @@ public class EventMeshServer {
     public ServiceState getServiceState() {
         return serviceState;
     }
+
 }

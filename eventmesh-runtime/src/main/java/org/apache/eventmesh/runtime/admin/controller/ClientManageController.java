@@ -22,6 +22,9 @@ import java.net.InetSocketAddress;
 
 import com.sun.net.httpserver.HttpServer;
 
+import org.apache.eventmesh.runtime.admin.handler.CreateSubjectHandler;
+import org.apache.eventmesh.runtime.admin.handler.ShowAllSubjectNamesHandler;
+import org.apache.eventmesh.runtime.admin.handler.ReadSubjectByNameHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientByIpPortHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientByPathHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientBySubSystemHandler;
@@ -42,7 +45,7 @@ public class ClientManageController {
     private EventMeshTCPServer eventMeshTCPServer;
 
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer) {
-        this.eventMeshTCPServer = eventMeshTCPServer;
+        this.eventMeshTCPServer = eventMeshTCPServer;        
     }
 
     public void start() throws IOException {
@@ -57,6 +60,10 @@ public class ClientManageController {
         server.createContext("/clientManage/redirectClientByPath", new RedirectClientByPathHandler(eventMeshTCPServer));
         server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler(eventMeshTCPServer));
         server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler(eventMeshTCPServer));
+        
+        server.createContext("/schemaRegistry/createSubject", new CreateSubjectHandler(eventMeshTCPServer));
+        server.createContext("/schemaRegistry/readSubjectByName", new ReadSubjectByNameHandler(eventMeshTCPServer));
+        server.createContext("/schemaRegistry/showAllSubjectNames", new ShowAllSubjectNamesHandler(eventMeshTCPServer));
 
         server.start();
         logger.info("ClientManageController start success, port:{}", port);

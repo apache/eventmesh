@@ -15,15 +15,19 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-test'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-store-plugin:eventmesh-store-api'
-include 'eventmesh-store-plugin:eventmesh-store-h2'
+package org.apache.eventmesh.store.api.openschema;
+
+import org.apache.eventmesh.spi.EventMeshSPI;
+
+@EventMeshSPI
+public interface SchemaAdapter {
+	public void init();     
+
+    public void start();
+
+    public void shutdown() throws Exception;
+    
+    public boolean isAdapterEnabled();
+}
+
+

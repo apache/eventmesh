@@ -17,9 +17,12 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.apache.http.Consts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
@@ -27,6 +30,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import com.sun.net.httpserver.HttpExchange;
+
 
 public class NetUtils {
 
@@ -68,5 +73,20 @@ public class NetUtils {
             sb.append(addr).append("|");
         }
         return sb.toString();
+    }
+    
+    public static String parsePostBody(HttpExchange exchange)
+            throws IOException {
+    	StringBuilder body = new StringBuilder();
+        if ("post".equalsIgnoreCase(exchange.getRequestMethod())) {        	
+            try (InputStreamReader reader = new InputStreamReader(exchange.getRequestBody(), Consts.UTF_8)) {
+                char[] buffer = new char[256];
+                int read;
+                while ((read = reader.read(buffer)) != -1) {
+                    body.append(buffer, 0, read);
+                }
+            }
+        }
+        return body.toString();
     }
 }
