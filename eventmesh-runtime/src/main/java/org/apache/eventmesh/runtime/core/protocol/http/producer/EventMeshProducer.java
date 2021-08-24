@@ -55,14 +55,14 @@ public class EventMeshProducer {
         mqProducerWrapper.send(sendMsgContext.getMsg(), sendCallback);
     }
 
-    public void request(SendMessageContext sendMsgContext, SendCallback sendCallback, RRCallback rrCallback, long timeout)
+    public void request(SendMessageContext sendMsgContext, RRCallback rrCallback, long timeout)
             throws Exception {
-        mqProducerWrapper.request(sendMsgContext.getMsg(), sendCallback, rrCallback, timeout);
+        mqProducerWrapper.request(sendMsgContext.getMsg(), rrCallback, timeout);
     }
 
-    public Message request(SendMessageContext sendMessageContext, long timeout) throws Exception {
-        return mqProducerWrapper.request(sendMessageContext.getMsg(), timeout);
-    }
+//    public Message request(SendMessageContext sendMessageContext, long timeout) throws Exception {
+//        return mqProducerWrapper.request(sendMessageContext.getMsg(), timeout);
+//    }
 
     public boolean reply(final SendMessageContext sendMsgContext, final SendCallback sendCallback) throws Exception {
         mqProducerWrapper.reply(sendMsgContext.getMsg(), sendCallback);
