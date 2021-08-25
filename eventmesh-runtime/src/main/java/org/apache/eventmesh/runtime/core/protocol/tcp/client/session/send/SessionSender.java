@@ -82,13 +82,15 @@ public class SessionSender {
                 if (Command.REQUEST_TO_SERVER == cmd) {
                     long ttl = msg.getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL) != null ? Long.parseLong(msg.getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL)) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
                     upStreamMsgContext = new UpStreamMsgContext(header.getSeq(), session, msg);
-                    session.getClientGroupWrapper().get().request(upStreamMsgContext, sendCallback, initSyncRRCallback(header, startTime, taskExecuteTime), ttl);
+                    session.getClientGroupWrapper().get().request(upStreamMsgContext, initSyncRRCallback(header, startTime, taskExecuteTime), ttl);
+                    upstreamBuff.release();
                 } else if (Command.RESPONSE_TO_SERVER == cmd) {
                     String cluster = msg.getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER);
                     if (!StringUtils.isEmpty(cluster)) {
                         String replyTopic = EventMeshConstants.RR_REPLY_TOPIC;
                         replyTopic = cluster + "-" + replyTopic;
                         msg.getSystemProperties().put(Constants.PROPERTY_MESSAGE_DESTINATION, replyTopic);
+                        msg.setTopic(replyTopic);
                     }
 
 //                    //for rocketmq support
