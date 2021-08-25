@@ -33,9 +33,7 @@ public interface MeshMQProducer extends Producer {
 
     void send(Message message, SendCallback sendCallback) throws Exception;
 
-    void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout) throws Exception;
-
-    Message request(Message message, long timeout) throws Exception;
+    void request(Message message, RRCallback rrCallback, long timeout) throws Exception;
 
     boolean reply(final Message message, final SendCallback sendCallback) throws Exception;
 
