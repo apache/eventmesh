@@ -42,8 +42,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import io.openmessaging.api.Message;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.RandomStringGenerator;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.RandomStringUtil;
 import org.apache.eventmesh.common.ThreadUtil;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
@@ -56,12 +56,10 @@ public class EventMeshUtil {
 
     public static Logger logger = LoggerFactory.getLogger(EventMeshUtil.class);
 
-    private static final RandomStringGenerator RANDOM_GENERATOR = new RandomStringGenerator.Builder().withinRange('0', '9').build();
-
     private final static Logger tcpLogger = LoggerFactory.getLogger("tcpMonitor");
 
     public static String buildPushMsgSeqNo() {
-        return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + RANDOM_GENERATOR.generate(4);
+        return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + RandomStringUtil.generateNum(4);
     }
 
     public static String buildMeshClientID(String clientGroup, String meshCluster) {

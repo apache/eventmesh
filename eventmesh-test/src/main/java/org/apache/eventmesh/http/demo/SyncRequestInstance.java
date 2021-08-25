@@ -18,11 +18,11 @@
 package org.apache.eventmesh.http.demo;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.RandomStringGenerator;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.producer.LiteProducer;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.RandomStringUtil;
 import org.apache.eventmesh.common.ThreadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +30,6 @@ import org.slf4j.LoggerFactory;
 public class SyncRequestInstance {
 
     public static Logger logger = LoggerFactory.getLogger(SyncRequestInstance.class);
-
-    private final static RandomStringGenerator randomGenerator = new RandomStringGenerator.Builder()
-            .withinRange('0', '9').build();
 
     public static void main(String[] args) throws Exception {
 
@@ -66,10 +63,10 @@ public class SyncRequestInstance {
 
             long startTime = System.currentTimeMillis();
             LiteMessage liteMessage = new LiteMessage();
-            liteMessage.setBizSeqNo(randomGenerator.generate(30))
+            liteMessage.setBizSeqNo(RandomStringUtil.generateNum(30))
                     .setContent("contentStr with special protocal")
                     .setTopic(topic)
-                    .setUniqueId(randomGenerator.generate(30));
+                    .setUniqueId(RandomStringUtil.generateNum(30));
 
             LiteMessage rsp = liteProducer.request(liteMessage, 10000);
             if (logger.isDebugEnabled()) {

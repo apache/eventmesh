@@ -32,9 +32,9 @@ import com.google.common.collect.Sets;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.text.RandomStringGenerator;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.RandomStringUtil;
 import org.apache.eventmesh.common.protocol.SubcriptionType;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
@@ -43,7 +43,6 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.OMSUtil;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -67,9 +66,6 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     private Map<String, Set<AbstractHTTPPushRequest>> waitingRequests;
 
     public String currPushUrl;
-
-    private final static RandomStringGenerator randomGenerator = new RandomStringGenerator.Builder()
-            .withinRange('0', '9').build();
 
     public AsyncHTTPPushRequest(HandleMsgContext handleMsgContext, Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
         super(handleMsgContext);
@@ -115,12 +111,12 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         List<NameValuePair> body = new ArrayList<NameValuePair>();
         body.add(new BasicNameValuePair(PushMessageRequestBody.CONTENT, content));
         if (StringUtils.isBlank(handleMsgContext.getBizSeqNo())) {
-            body.add(new BasicNameValuePair(PushMessageRequestBody.BIZSEQNO, randomGenerator.generate(20)));
+            body.add(new BasicNameValuePair(PushMessageRequestBody.BIZSEQNO, RandomStringUtil.generateNum(20)));
         } else {
             body.add(new BasicNameValuePair(PushMessageRequestBody.BIZSEQNO, handleMsgContext.getBizSeqNo()));
         }
         if (StringUtils.isBlank(handleMsgContext.getUniqueId())) {
-            body.add(new BasicNameValuePair(PushMessageRequestBody.UNIQUEID, randomGenerator.generate(20)));
+            body.add(new BasicNameValuePair(PushMessageRequestBody.UNIQUEID, RandomStringUtil.generateNum(20)));
         } else {
             body.add(new BasicNameValuePair(PushMessageRequestBody.UNIQUEID, handleMsgContext.getUniqueId()));
         }
