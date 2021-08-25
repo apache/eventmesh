@@ -115,25 +115,13 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
 
     public void request(Message message, RRCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-//        try {
-            this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
-            org.apache.rocketmq.common.message.Message msgRMQ = OMSUtil.msgConvert(message);
-            rocketmqProducer.request(msgRMQ, rrCallbackConvert(message, rrCallback), timeout);
 
-//        }catch (Exception e){
-//            String topic = message.getTopic();
-//            String msgId = message.getMsgID();
-//            OMSRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, msgId, e);
-//            OnExceptionContext context = new OnExceptionContext();
-//            context.setTopic(topic);
-//            context.setMessageId(msgId);
-//            context.setException(onsEx);
-//            sendCallback.onException(context);
-//        }
-
+        this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
+        org.apache.rocketmq.common.message.Message msgRMQ = OMSUtil.msgConvert(message);
+        rocketmqProducer.request(msgRMQ, rrCallbackConvert(message, rrCallback), timeout);
     }
 
-    private RequestCallback rrCallbackConvert(final Message message, final RRCallback rrCallback){
+    private RequestCallback rrCallbackConvert(final Message message, final RRCallback rrCallback) {
         return new RequestCallback() {
             @Override
             public void onSuccess(org.apache.rocketmq.common.message.Message message) {

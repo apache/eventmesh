@@ -85,10 +85,6 @@ public class MQProducerWrapper extends MQWrapper {
         meshMQProducer.request(message, rrCallback, timeout);
     }
 
-//    public Message request(Message message, long timeout) throws Exception {
-//        return meshMQProducer.request(message, timeout);
-//    }
-
     public boolean reply(final Message message, final SendCallback sendCallback) throws Exception {
         return meshMQProducer.reply(message, sendCallback);
     }

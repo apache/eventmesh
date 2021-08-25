@@ -60,10 +60,6 @@ public class EventMeshProducer {
         mqProducerWrapper.request(sendMsgContext.getMsg(), rrCallback, timeout);
     }
 
-//    public Message request(SendMessageContext sendMessageContext, long timeout) throws Exception {
-//        return mqProducerWrapper.request(sendMessageContext.getMsg(), timeout);
-//    }
-
     public boolean reply(final SendMessageContext sendMsgContext, final SendCallback sendCallback) throws Exception {
         mqProducerWrapper.reply(sendMsgContext.getMsg(), sendCallback);
         return true;

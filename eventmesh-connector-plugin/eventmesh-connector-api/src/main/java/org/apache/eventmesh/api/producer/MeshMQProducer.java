@@ -35,8 +35,6 @@ public interface MeshMQProducer extends Producer {
 
     void request(Message message, RRCallback rrCallback, long timeout) throws Exception;
 
-//    Message request(Message message, long timeout) throws Exception;
-
     boolean reply(final Message message, final SendCallback sendCallback) throws Exception;
 
     void checkTopicExist(String topic) throws Exception;
