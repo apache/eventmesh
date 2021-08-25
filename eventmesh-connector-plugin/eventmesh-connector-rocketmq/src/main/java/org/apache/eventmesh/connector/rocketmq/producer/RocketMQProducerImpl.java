@@ -36,6 +36,8 @@ import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWrapper;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,19 +100,16 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout)
+    public void request(Message message, RRCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        throw new UnsupportedOperationException("not support request-reply mode when eventstore=rocketmq");
-    }
-
-    @Override
-    public Message request(Message message, long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        throw new UnsupportedOperationException("not support request-reply mode when eventstore=rocketmq");
+        producer.request(message, rrCallback, timeout);
     }
 
     @Override
     public boolean reply(final Message message, final SendCallback sendCallback) throws Exception {
-        throw new UnsupportedOperationException("not support request-reply mode when eventstore=rocketmq");
+        message.putSystemProperties(MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
+        producer.sendAsync(message, sendCallback);
+        return true;
     }
 
     @Override

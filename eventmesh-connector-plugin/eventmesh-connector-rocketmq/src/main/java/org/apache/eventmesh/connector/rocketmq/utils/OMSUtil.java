@@ -136,9 +136,13 @@ public class OMSUtil {
             }
         }
 
-        systemProperties.put(Constants.PROPERTY_MESSAGE_MESSAGE_ID, rmqMsg.getMsgId());
+        if (rmqMsg.getMsgId() != null){
+            systemProperties.put(Constants.PROPERTY_MESSAGE_MESSAGE_ID, rmqMsg.getMsgId());
+        }
 
-        systemProperties.put(Constants.PROPERTY_MESSAGE_DESTINATION, rmqMsg.getTopic());
+        if (rmqMsg.getTopic() != null){
+            systemProperties.put(Constants.PROPERTY_MESSAGE_DESTINATION, rmqMsg.getTopic());
+        }
 
 //        omsMsg.putSysHeaders(BuiltinKeys.SEARCH_KEYS, rmqMsg.getKeys());
         systemProperties.put(Constants.PROPERTY_MESSAGE_BORN_HOST, String.valueOf(rmqMsg.getBornHost()));
