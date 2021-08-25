@@ -19,13 +19,13 @@ package org.apache.eventmesh.http.demo;
 
 import java.util.Properties;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.producer.LiteProducer;
 import org.apache.eventmesh.client.http.producer.RRCallback;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.RandomStringUtil;
 import org.apache.eventmesh.common.ThreadUtil;
 import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
@@ -65,10 +65,10 @@ public class AsyncSyncRequestInstance {
 
             final long startTime = System.currentTimeMillis();
             final LiteMessage liteMessage = new LiteMessage();
-            liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
+            liteMessage.setBizSeqNo(RandomStringUtil.generateNum(30))
                     .setContent("testAsyncMessage")
                     .setTopic(topic)
-                    .setUniqueId(RandomStringUtils.randomNumeric(30));
+                    .setUniqueId(RandomStringUtil.generateNum(30));
 
             liteProducer.request(liteMessage, new RRCallback() {
                 @Override
