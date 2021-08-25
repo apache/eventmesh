@@ -17,7 +17,21 @@
 
 package org.apache.eventmesh.protocol.tcp.utils;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import io.openmessaging.api.Message;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.common.config.EventMeshVersion;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.ThreadUtil;
 import org.apache.eventmesh.protocol.tcp.config.TcpProtocolConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -40,7 +54,7 @@ public class EventMeshUtil {
     private final static Logger tcpLogger = LoggerFactory.getLogger("tcpMonitor");
 
     public static String buildPushMsgSeqNo() {
-        return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + RandomStringUtil.generateNum(4);
+        return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + RandomStringUtils.generateNum(4);
     }
 
     public static String buildMeshClientID(String clientGroup, String meshCluster) {

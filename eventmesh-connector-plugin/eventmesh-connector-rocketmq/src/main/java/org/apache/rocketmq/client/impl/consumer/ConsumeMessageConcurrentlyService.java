@@ -234,7 +234,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
             }
         } else {
             for (int total = 0; total < msgs.size(); ) {
-                List<MessageExt> msgThis = new ArrayList<MessageExt>(consumeBatchSize);
+                List<MessageExt> msgThis = new ArrayList<>(consumeBatchSize);
                 for (int i = 0; i < consumeBatchSize; i++, total++) {
                     if (total < msgs.size()) {
                         msgThis.add(msgs.get(total));

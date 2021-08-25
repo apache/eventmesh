@@ -14,24 +14,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-task copyRegistryPlugin(dependsOn: ['jar']) {
-    doFirst {
-        new File(projectDir, '../eventmesh-registry-plugin/dist/apps').mkdir()
-        new File(projectDir, '../dist/plugin/registry').mkdirs()
-    }
-    doLast {
-        copy {
-            into('../eventmesh-registry-plugin/dist/apps/')
-            from project.jar.getArchivePath()
-            exclude {
-                "eventmesh-registry-plugin-${version}.jar"
-                "eventmesh-registry-api-${version}.jar"
-            }
-        }
-        copy {
-            into '../dist/plugin/registry'
-            from "../eventmesh-registry-plugin/dist/apps/eventmesh-registry-rocketmq-namesrv-${version}.jar"
-        }
-    }
-}

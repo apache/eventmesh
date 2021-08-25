@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common;
+package org.apache.eventmesh.common.utils;
 
 import org.apache.commons.text.RandomStringGenerator;
 
-public class RandomStringUtil {
+public class RandomStringUtils {
 
     private final static RandomStringGenerator randomNumGenerator = new RandomStringGenerator.Builder()
             .withinRange('0', '9').build();

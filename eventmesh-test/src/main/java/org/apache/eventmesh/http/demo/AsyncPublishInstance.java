@@ -24,8 +24,8 @@ import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.producer.LiteProducer;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.LiteMessage;
-import org.apache.eventmesh.common.RandomStringUtil;
 import org.apache.eventmesh.common.utils.IPUtil;
+import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtil;
 import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
@@ -67,11 +67,11 @@ public class AsyncPublishInstance {
             liteProducer.start();
             for (int i = 0; i < messageSize; i++) {
                 LiteMessage liteMessage = new LiteMessage();
-                liteMessage.setBizSeqNo(RandomStringUtil.generateNum(30))
+                liteMessage.setBizSeqNo(RandomStringUtils.generateNum(30))
 //                    .setContent("contentStr with special protocal")
                         .setContent("testPublishMessage")
                         .setTopic(topic)
-                        .setUniqueId(RandomStringUtil.generateNum(30))
+                        .setUniqueId(RandomStringUtils.generateNum(30))
                         .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
 
                 boolean flag = liteProducer.publish(liteMessage);

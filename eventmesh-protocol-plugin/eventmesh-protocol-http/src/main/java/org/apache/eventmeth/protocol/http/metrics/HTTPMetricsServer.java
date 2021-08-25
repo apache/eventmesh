@@ -57,7 +57,7 @@ public class HTTPMetricsServer {
         topicMetrics = new TopicMetrics(this.eventMeshHTTPServer, this.metricRegistry);
         groupMetrics = new GroupMetrics(this.eventMeshHTTPServer, this.metricRegistry);
         healthMetrics = new HealthMetrics(this.eventMeshHTTPServer, this.metricRegistry);
-        openTelemetryHTTPMetricsExporter = new OpenTelemetryHTTPMetricsExporter(this);
+        openTelemetryHTTPMetricsExporter = new OpenTelemetryHTTPMetricsExporter(this );
         logger.info("HTTPMetricsServer inited......");
     }
 
