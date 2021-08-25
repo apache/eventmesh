@@ -145,9 +145,9 @@ public class ClientGroupWrapper {
         return true;
     }
 
-    public void request(UpStreamMsgContext upStreamMsgContext, SendCallback sendCallback, RRCallback rrCallback, long timeout)
+    public void request(UpStreamMsgContext upStreamMsgContext, RRCallback rrCallback, long timeout)
             throws Exception {
-        mqProducerWrapper.request(upStreamMsgContext.getMsg(), sendCallback, rrCallback, timeout);
+        mqProducerWrapper.request(upStreamMsgContext.getMsg(), rrCallback, timeout);
     }
 
     public boolean reply(UpStreamMsgContext upStreamMsgContext) throws Exception {

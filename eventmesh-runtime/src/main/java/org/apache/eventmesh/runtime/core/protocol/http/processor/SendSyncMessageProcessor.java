@@ -205,53 +205,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 .setProp(sendMessageRequestBody.getExtFields());
 
         try {
-            eventMeshProducer.request(sendMessageContext, new SendCallback() {
-                @Override
-                public void onSuccess(SendResult sendResult) {
-                    long endTime = System.currentTimeMillis();
-                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
-                    messageLogger.info("message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                            endTime - startTime,
-                            sendMessageRequestBody.getTopic(),
-                            sendMessageRequestBody.getBizSeqNo(),
-                            sendMessageRequestBody.getUniqueId());
-                }
-
-                @Override
-                public void onException(OnExceptionContext context) {
-                    HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
-                            sendMessageResponseHeader,
-                            SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getRetCode(),
-                                    EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(context.getException(), 2)));
-                    asyncContext.onComplete(err, handler);
-                    long endTime = System.currentTimeMillis();
-                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
-                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
-                    messageLogger.error("message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                            endTime - startTime,
-                            sendMessageRequestBody.getTopic(),
-                            sendMessageRequestBody.getBizSeqNo(),
-                            sendMessageRequestBody.getUniqueId(), context.getException());
-                }
-//                }
-//
-//                @Override
-//                public void onException(Throwable e) {
-//                    HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
-//                            sendMessageResponseHeader,
-//                            SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getRetCode(),
-//                                    EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2)));
-//                    asyncContext.onComplete(err, handler);
-//                    long endTime = System.currentTimeMillis();
-//                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
-//                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
-//                    messageLogger.error("message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-//                            endTime - startTime,
-//                            sendMessageRequestBody.getTopic(),
-//                            sendMessageRequestBody.getBizSeqNo(),
-//                            sendMessageRequestBody.getUniqueId(), e);
-//                }
-            }, new RRCallback() {
+            eventMeshProducer.request(sendMessageContext, new RRCallback() {
                 @Override
                 public void onSuccess(Message omsMsg) {
                     omsMsg.getUserProperties().put(Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP, omsMsg.getSystemProperties("BORN_TIMESTAMP"));
