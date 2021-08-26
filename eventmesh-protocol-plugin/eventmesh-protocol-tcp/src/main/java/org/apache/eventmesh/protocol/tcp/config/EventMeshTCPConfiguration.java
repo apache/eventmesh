@@ -167,7 +167,7 @@ public enum EventMeshTCPConfiguration {
         public static String KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME = "eventMesh.server.tcp.pushFailIsolateTimeInMills";
         public static String KEYS_EVENTMESH_TCP_DOWNSTREAM_MAP_SIZE = "eventMesh.server.tcp.downstreamMapSize";
         public static String KEYS_EVENTMESH_SERVER_GRACEFUL_SHUTDOWN_SLEEP_TIME = "eventMesh.server.gracefulShutdown.sleepIntervalInMills";
-        public static String KEYS_EVENTMESH_SERVER_REBALANCE_REDIRECT_SLEEP_TIME = "eventMesh.server.rebalanceRedirect.sleepIntervalInM";
+        public static String KEYS_EVENTMESH_SERVER_REBALANCE_REDIRECT_SLEEP_TIME = "eventMesh.server.rebalanceRedirect.sleepIntervalInMills";
     }
 
     public static class TrafficShapingConfig {

@@ -17,58 +17,41 @@
 
 eventMesh:
   server:
-    consumer:
-      enabled: false
-    http:
-      port: 10105
-    useTls:
-      enabled: false
-    batchmsg:
-      threads:
-        num: 1000
-      speed:
-        ratelimiter: 20000
-      batch:
+    tcp:
+      port: 10000
+      enabled: true
+      readerIdleSeconds: 120
+      writerIdleSeconds: 120
+      allIdleSeconds: 120
+      clientMaxNum: 10000
+      msgReqnumPerSecond: 15000
+      RebalanceIntervalInMills: 30000
+      pushFailIsolateTimeInMills: 30000
+      taskHandleExecutorPoolSize: 8
+      msgDownStreamExecutorPoolSize: 8
+      sendBack:
         enabled: true
-      blockQ:
-        size: 1000
-    async:
-      accumulation:
-        threshold: 1000
-    busy:
-      check:
-        interval: 1000
-    sendmsg:
-      threads:
-        num: 8
-      blockQ:
-        size: 1000
-    replymsg:
-      threads:
-        num: 8
-    pushmsg:
-      threads:
-        num: 8
-      blockQ:
-        size: 1000
-    registry:
-      threads:
-        num: 10
-    clientmanage:
-      threads:
-        num: 4
-    admin:
-      threads:
-        num: 2
+    session:
+      expiredInMills: 60000
+      upstreamBufferSize: 20
+    global:
+      scheduler: 5
     retry:
-      threads:
-        num: 2
-      blockQ:
-        size: 10000
-    pull:
-      registry:
-        interval: 30000
-    clientM:
-      blockQ:
-        size: 1000
+      async:
+        pushRetryTimes: 3
+        pushRetryDelayInMills: 500
+      sync:
+        pushRetryTimes: 3
+        pushRetryDelayInMills: 500
+      pushRetryQueueSize: 10000
+    admin:
+      http:
+        port:
+          10106
+    gracefulShutdown:
+      sleepIntervalInMills: 1000
+    rebalanceRedirect:
+      sleepIntervalInMills: 200
+
+
 

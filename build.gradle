@@ -227,6 +227,11 @@ subprojects {
                     exclude 'eventmesh-runtime*.jar'
                     exclude 'commons-collections-3.2.2.jar'
                 }
+                copy {
+                    into "${rootDir}/dist/conf"
+                    from sourceSets.main.resources.srcDirs
+                    exclude 'META-INF'
+                }
             }
             if (securityPlugin.contains(project.name)) {
                 println "install security plugin" + project.name
@@ -252,6 +257,11 @@ subprojects {
                     exclude 'eventmesh-runtime*.jar'
                     exclude 'commons-collections-3.2.2.jar'
                 }
+                copy {
+                    into "${rootDir}/dist/conf"
+                    from sourceSets.main.resources.srcDirs
+                    exclude 'META-INF'
+                }
             }
             if (protocolPlugin.contains(project.name)) {
                 println "install protocol plugin" + project.name
@@ -276,6 +286,11 @@ subprojects {
                     exclude '*connector-rocketmq*.jar'
                     exclude 'eventmesh-runtime*.jar'
                     exclude 'commons-collections-3.2.2.jar'
+                }
+                copy {
+                    into "${rootDir}/dist/conf"
+                    from sourceSets.main.resources.srcDirs
+                    exclude 'META-INF'
                 }
             }
             copy {
@@ -315,12 +330,6 @@ subprojects {
             copy {
                 into '../dist/conf'
                 from '../eventmesh-runtime/conf'
-            }
-
-            copy {
-                into "${rootDir.path}/dist/conf"
-                from sourceSets.main.resources.srcDirs
-                exclude 'META-INF'
             }
         }
     }
