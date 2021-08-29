@@ -21,32 +21,43 @@ import java.util.List;
 
 import org.apache.eventmesh.spi.EventMeshSPI;
 import org.apache.eventmesh.store.api.openschema.common.ServiceException;
+import org.apache.eventmesh.store.api.openschema.request.CompatibilityCheckRequest;
+import org.apache.eventmesh.store.api.openschema.request.CompatibilityRequest;
 import org.apache.eventmesh.store.api.openschema.request.SchemaCreateRequest;
 import org.apache.eventmesh.store.api.openschema.request.SubjectCreateRequest;
-import org.apache.eventmesh.store.api.openschema.response.SchemaResponse;
-import org.apache.eventmesh.store.api.openschema.response.SubjectResponse;
-import org.apache.eventmesh.store.api.openschema.response.SubjectVersionResponse;
+import org.apache.eventmesh.store.api.openschema.response.*;
 
 @EventMeshSPI
 public interface SchemaService {
-
+    // Subject
     SubjectResponse createSubject(SubjectCreateRequest subjectCreateRequest) throws ServiceException;
-    
+
+    List<String> fetchAllSubjects() throws ServiceException;
+
+    SubjectResponse fetchSubjectByName(String subject) throws ServiceException;
+
+    SubjectResponse fetchSubjectBySchemaId(String schemaId) throws ServiceException;
+
+    List<Integer> deleteSubject(String subject) throws ServiceException;
+
+    // Schema
     SchemaResponse createSchema(SchemaCreateRequest schemaCreateRequest, String subject) throws ServiceException;
 
     SchemaResponse fetchSchemaById(String schemaId) throws ServiceException;
-    
-    SubjectResponse fetchSubjectByName(String subject) throws ServiceException;
-    
+
     SubjectResponse fetchSchemaBySubjectAndVersion(String subject, String version) throws ServiceException;
-    
+
+    List<Integer> fetchAllVersions(String subject) throws ServiceException;
+
+    Integer deleteSchemaBySubjectAndVersion(String subject, String version) throws ServiceException;
+
     List<SubjectVersionResponse> fetchAllVersionsById(String schemaId) throws ServiceException;
 
-    List<String> fetchAllSubjects() throws ServiceException;
-    
-    List<Integer> fetchAllVersions(String subject) throws ServiceException;
-    
-    List<Integer> deleteSubject(String subject) throws ServiceException;
-    
-    Integer deleteSchemaBySubjectAndVersion(String subject, String version) throws ServiceException;
+    // Compatibility
+    CompatibilityCheckResponse isSchemaCompatibleWithVersionInSubject(String subject, int version, CompatibilityCheckRequest compatibilityCheckRequest) throws ServiceException;
+
+    CompatibilityResponse alterCompatibilityBySubject(String subject, CompatibilityRequest compatibilityRequest);
+
+    CompatibilityResponse fetchCompatibilityBySubject(String subject);
+
 }
