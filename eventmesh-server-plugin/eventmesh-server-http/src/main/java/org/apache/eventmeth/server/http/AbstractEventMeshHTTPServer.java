@@ -1,0 +1,313 @@
+/*
+ * Licensed to Apache Software Foundation (ASF) under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Apache Software Foundation (ASF) licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.apache.eventmeth.server.http;
+
+import com.google.common.base.Preconditions;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpRequestDecoder;
+import io.netty.handler.codec.http.HttpResponseEncoder;
+import io.netty.handler.codec.http.multipart.DiskAttribute;
+import io.netty.handler.ssl.SslHandler;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.utils.ThreadUtil;
+import org.apache.eventmesh.server.api.EventMeshServer;
+import org.apache.eventmesh.server.api.exception.EventMeshServerException;
+import org.apache.eventmeth.server.http.config.EventMeshHTTPConfiguration;
+import org.apache.eventmeth.server.http.factory.SSLContextFactory;
+import org.apache.eventmeth.server.http.handler.HttpChannelHandler;
+import org.apache.eventmeth.server.http.handler.HttpConnectionHandler;
+import org.apache.eventmeth.server.http.metrics.HTTPMetricsServer;
+import org.apache.eventmeth.server.http.processor.AdminMetricsProcessor;
+import org.apache.eventmeth.server.http.processor.BatchSendMessageProcessor;
+import org.apache.eventmeth.server.http.processor.BatchSendMessageV2Processor;
+import org.apache.eventmeth.server.http.processor.HeartBeatProcessor;
+import org.apache.eventmeth.server.http.processor.HttpRequestProcessor;
+import org.apache.eventmeth.server.http.processor.ReplyMessageProcessor;
+import org.apache.eventmeth.server.http.processor.SendAsyncMessageProcessor;
+import org.apache.eventmeth.server.http.processor.SendSyncMessageProcessor;
+import org.apache.eventmeth.server.http.processor.SubscribeProcessor;
+import org.apache.eventmeth.server.http.processor.UnSubscribeProcessor;
+import org.apache.eventmeth.server.http.retry.HttpRetryer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public abstract class AbstractEventMeshHTTPServer implements EventMeshServer {
+
+    public final Logger logger = LoggerFactory.getLogger(AbstractEventMeshHTTPServer.class);
+
+    public EventLoopGroup bossGroup;
+
+    public EventLoopGroup ioGroup;
+
+    public EventLoopGroup workerGroup;
+
+    protected ThreadPoolExecutor batchMsgExecutor;
+
+    protected ThreadPoolExecutor sendMsgExecutor;
+
+    protected ThreadPoolExecutor replyMsgExecutor;
+
+    protected ThreadPoolExecutor pushMsgExecutor;
+
+    protected ThreadPoolExecutor clientManageExecutor;
+
+    protected ThreadPoolExecutor adminExecutor;
+
+    protected HttpRetryer httpRetryer;
+
+    private HttpChannelHandler httpChannelHandler;
+
+    private HTTPMetricsServer metrics;
+
+    private final AtomicBoolean started = new AtomicBoolean(false);
+
+    private final int port;
+
+    private final boolean useTLS;
+
+    static {
+        DiskAttribute.deleteOnExitTemporaryFile = false;
+    }
+
+    public AbstractEventMeshHTTPServer(int port, boolean useTLS) {
+        this.port = port;
+        this.useTLS = useTLS;
+    }
+
+    @Override
+    public void init() throws EventMeshServerException {
+        try {
+            metrics = new HTTPMetricsServer((EventMeshHTTPServer) this);
+            metrics.init();
+            this.httpChannelHandler = new HttpChannelHandler(started, metrics);
+
+            httpRetryer = new HttpRetryer();
+            httpRetryer.init();
+
+            initThreadPool();
+            bossGroup = new NioEventLoopGroup(
+                    1,
+                    ThreadUtil.createThreadFactory(true, "eventMesh-http-boss-")
+            );
+            ioGroup = new NioEventLoopGroup(
+                    Runtime.getRuntime().availableProcessors(),
+                    ThreadUtil.createThreadFactory(false, "eventMesh-http-io-")
+            );
+            workerGroup = new NioEventLoopGroup(
+                    Runtime.getRuntime().availableProcessors(),
+                    ThreadUtil.createThreadFactory(false, "eventMesh-http-worker-")
+            );
+            registerHTTPRequestProcessor();
+        } catch (Exception ex) {
+            throw new EventMeshServerException(ex);
+        }
+    }
+
+    @Override
+    public void start() throws EventMeshServerException {
+        if (!started.compareAndSet(false, true)) {
+            logger.warn("EventMeshHTTPServer is already started");
+            return;
+        }
+        try {
+            metrics.start();
+            httpRetryer.start();
+
+            Runnable r = () -> {
+                ServerBootstrap b = new ServerBootstrap();
+                b.group(this.bossGroup, this.workerGroup)
+                        .channel(NioServerSocketChannel.class)
+                        .childOption(ChannelOption.SO_KEEPALIVE, Boolean.TRUE)
+                        .childHandler(new ChannelInitializer<SocketChannel>() {
+                            @Override
+                            protected void initChannel(SocketChannel channel) {
+                                initNettyChannel(channel);
+                            }
+                        });
+                try {
+                    logger.info("EventMeshHTTPServer[port={}] started......", this.port);
+                    ChannelFuture future = b.bind(this.port).sync();
+                    future.channel().closeFuture().sync();
+                } catch (Exception e) {
+                    logger.error("EventMeshHTTPServer start Err!", e);
+                    try {
+                        shutdown();
+                    } catch (Exception e1) {
+                        logger.error("HTTPServer shutdown Err!", e);
+                    }
+                }
+            };
+            Thread t = new Thread(r, "eventMesh-http-server");
+            t.start();
+        } catch (Exception ex) {
+            started.set(false);
+            throw new EventMeshServerException(ex);
+        }
+    }
+
+    @Override
+    public void shutdown() throws EventMeshServerException {
+        try {
+            if (bossGroup != null) {
+                bossGroup.shutdownGracefully();
+                logger.info("shutdown bossGroup");
+            }
+
+            ThreadUtil.randomSleep(30);
+
+            if (ioGroup != null) {
+                ioGroup.shutdownGracefully();
+                logger.info("shutdown ioGroup");
+            }
+
+            if (workerGroup != null) {
+                workerGroup.shutdownGracefully();
+                logger.info("shutdown workerGroup");
+            }
+            httpRetryer.shutdown();
+
+            metrics.shutdown();
+
+            batchMsgExecutor.shutdown();
+            adminExecutor.shutdown();
+            clientManageExecutor.shutdown();
+            sendMsgExecutor.shutdown();
+            pushMsgExecutor.shutdown();
+            replyMsgExecutor.shutdown();
+        } catch (Exception ex) {
+            throw new EventMeshServerException(ex);
+        }
+    }
+
+    public void registerProcessor(Integer requestCode, HttpRequestProcessor httpRequestProcessor, ThreadPoolExecutor threadPoolExecutor) {
+        Preconditions.checkState(ObjectUtils.allNotNull(requestCode), "requestCode can't be null");
+        Preconditions.checkState(ObjectUtils.allNotNull(httpRequestProcessor), "processor can't be null");
+        Preconditions.checkState(ObjectUtils.allNotNull(threadPoolExecutor), "executor can't be null");
+        httpChannelHandler.registerProcessor(String.valueOf(requestCode), httpRequestProcessor, threadPoolExecutor);
+    }
+
+    public HttpRetryer getHttpRetryer() {
+        return httpRetryer;
+    }
+
+    public ThreadPoolExecutor getBatchMsgExecutor() {
+        return batchMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getSendMsgExecutor() {
+        return sendMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getReplyMsgExecutor() {
+        return replyMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getPushMsgExecutor() {
+        return pushMsgExecutor;
+    }
+
+    public ThreadPoolExecutor getClientManageExecutor() {
+        return clientManageExecutor;
+    }
+
+    public ThreadPoolExecutor getAdminExecutor() {
+        return adminExecutor;
+    }
+
+    public HTTPMetricsServer getMetricsServer() {
+        return metrics;
+    }
+
+    private void initNettyChannel(SocketChannel channel) {
+        ChannelPipeline pipeline = channel.pipeline();
+        if (useTLS) {
+            SSLContext sslContext = SSLContextFactory.getSslContext();
+            SSLEngine sslEngine = sslContext.createSSLEngine();
+            sslEngine.setUseClientMode(false);
+            pipeline.addFirst("ssl", new SslHandler(sslEngine));
+        }
+        pipeline.addLast(
+                new HttpRequestDecoder(),
+                new HttpResponseEncoder(),
+                new HttpConnectionHandler(),
+                new HttpObjectAggregator(Integer.MAX_VALUE),
+                httpChannelHandler
+        );
+    }
+
+    private void initThreadPool() {
+
+        BlockingQueue<Runnable> batchMsgThreadPoolQueue = new LinkedBlockingQueue<>(EventMeshHTTPConfiguration.eventMeshServerBatchBlockQSize);
+        batchMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(EventMeshHTTPConfiguration.eventMeshServerBatchMsgThreadNum,
+                EventMeshHTTPConfiguration.eventMeshServerBatchMsgThreadNum, batchMsgThreadPoolQueue, "eventMesh-batchMsg-", true);
+
+        BlockingQueue<Runnable> sendMsgThreadPoolQueue = new LinkedBlockingQueue<>(EventMeshHTTPConfiguration.eventMeshServerSendMsgBlockQSize);
+        sendMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(EventMeshHTTPConfiguration.eventMeshServerSendMsgThreadNum,
+                EventMeshHTTPConfiguration.eventMeshServerSendMsgThreadNum, sendMsgThreadPoolQueue, "eventMesh-sendMsg-", true);
+
+        BlockingQueue<Runnable> pushMsgThreadPoolQueue = new LinkedBlockingQueue<>(EventMeshHTTPConfiguration.eventMeshServerPushMsgBlockQSize);
+        pushMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(EventMeshHTTPConfiguration.eventMeshServerPushMsgThreadNum,
+                EventMeshHTTPConfiguration.eventMeshServerPushMsgThreadNum, pushMsgThreadPoolQueue, "eventMesh-pushMsg-", true);
+
+        BlockingQueue<Runnable> clientManageThreadPoolQueue = new LinkedBlockingQueue<>(EventMeshHTTPConfiguration.eventMeshServerClientManageBlockQSize);
+        clientManageExecutor = ThreadPoolFactory.createThreadPoolExecutor(EventMeshHTTPConfiguration.eventMeshServerClientManageThreadNum,
+                EventMeshHTTPConfiguration.eventMeshServerClientManageThreadNum, clientManageThreadPoolQueue, "eventMesh-clientManage-", true);
+
+        BlockingQueue<Runnable> adminThreadPoolQueue = new LinkedBlockingQueue<>(50);
+        adminExecutor = ThreadPoolFactory.createThreadPoolExecutor(EventMeshHTTPConfiguration.eventMeshServerAdminThreadNum,
+                EventMeshHTTPConfiguration.eventMeshServerAdminThreadNum, adminThreadPoolQueue, "eventMesh-admin-", true);
+
+        BlockingQueue<Runnable> replyMessageThreadPoolQueue = new LinkedBlockingQueue<Runnable>(100);
+        replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(EventMeshHTTPConfiguration.eventMeshServerReplyMsgThreadNum,
+                EventMeshHTTPConfiguration.eventMeshServerReplyMsgThreadNum, replyMessageThreadPoolQueue, "eventMesh-replyMsg-", true);
+    }
+
+    private void registerHTTPRequestProcessor() {
+        registerProcessor(RequestCode.MSG_BATCH_SEND.getRequestCode(), new BatchSendMessageProcessor((EventMeshHTTPServer) this), batchMsgExecutor);
+        registerProcessor(RequestCode.MSG_BATCH_SEND_V2.getRequestCode(), new BatchSendMessageV2Processor((EventMeshHTTPServer) this), batchMsgExecutor);
+        registerProcessor(RequestCode.MSG_SEND_SYNC.getRequestCode(), new SendSyncMessageProcessor((EventMeshHTTPServer) this), sendMsgExecutor);
+        registerProcessor(RequestCode.MSG_SEND_ASYNC.getRequestCode(), new SendAsyncMessageProcessor((EventMeshHTTPServer) this), sendMsgExecutor);
+        registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), new AdminMetricsProcessor((EventMeshHTTPServer) this), adminExecutor);
+        registerProcessor(RequestCode.HEARTBEAT.getRequestCode(), new HeartBeatProcessor((EventMeshHTTPServer) this), clientManageExecutor);
+        registerProcessor(RequestCode.SUBSCRIBE.getRequestCode(), new SubscribeProcessor((EventMeshHTTPServer) this), clientManageExecutor);
+        registerProcessor(RequestCode.UNSUBSCRIBE.getRequestCode(), new UnSubscribeProcessor((EventMeshHTTPServer) this), clientManageExecutor);
+        registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), new ReplyMessageProcessor((EventMeshHTTPServer) this), replyMsgExecutor);
+    }
+
+
+}

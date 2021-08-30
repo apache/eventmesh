@@ -26,6 +26,10 @@ eventMesh:
       enable: false
     registry:
       enabled: false
+    plugin:
+      type:
+        - "http"
+        - "tcp"
   connector:
     plugin:
       type: "rocketmq"
@@ -35,11 +39,6 @@ eventMesh:
   registry:
     plugin:
       type: "namesrv"
-  protocolServer:
-    plugin:
-      type:
-        - "http"
-        - "tcp"
   metrics:
     prometheus:
       port: 19090

@@ -41,7 +41,7 @@ public enum CommonConfiguration {
     public static boolean eventMeshServerSecurityEnable = false;
     public static String  eventMeshSecurityPluginType   = "security";
 
-    public static List<String> eventMeshProtocolServerPluginTypes = Lists.newArrayList("http", "tcp");
+    public static List<String> eventMeshServerPluginTypes = Lists.newArrayList("http", "tcp");
 
     public static boolean eventMeshServerRegistryEnable = false;
     public static String  eventMeshRegistryPluginType   = "namesrv";
@@ -69,7 +69,7 @@ public enum CommonConfiguration {
         eventMeshServerIp = yamlConfigurationReader.getString(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP, eventMeshServerIp);
         eventMeshServerSecurityEnable = yamlConfigurationReader.getBool(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED, eventMeshServerSecurityEnable);
         eventMeshSecurityPluginType = yamlConfigurationReader.getString(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE, eventMeshSecurityPluginType);
-        eventMeshProtocolServerPluginTypes = yamlConfigurationReader.getList(ConfKeys.KEYS_EVENTMESH_PROTOCOL_SERVER_PLUGIN_TYPE, eventMeshProtocolServerPluginTypes);
+        eventMeshServerPluginTypes = yamlConfigurationReader.getList(ConfKeys.KEYS_EVENTMESH_PROTOCOL_SERVER_PLUGIN_TYPE, eventMeshServerPluginTypes);
         eventMeshPrometheusPort = yamlConfigurationReader.getInt(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT, eventMeshPrometheusPort);
         eventMeshRegistryPluginType = yamlConfigurationReader.getString(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE, eventMeshRegistryPluginType);
         eventMeshServerRegistryEnable = yamlConfigurationReader.getBool(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED, eventMeshServerRegistryEnable);
@@ -95,7 +95,7 @@ public enum CommonConfiguration {
 
         public static String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
 
-        public static String KEYS_EVENTMESH_PROTOCOL_SERVER_PLUGIN_TYPE = "eventMesh.protocolServer.plugin.type";
+        public static String KEYS_EVENTMESH_PROTOCOL_SERVER_PLUGIN_TYPE = "eventMesh.server.plugin.type";
 
         public static String KEY_EVENTMESH_METRICS_PROMETHEUS_PORT = "eventMesh.metrics.prometheus.port";
 

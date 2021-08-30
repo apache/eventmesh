@@ -18,9 +18,7 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.protocol.api.EventMeshProtocolPluginFactory;
-import org.apache.eventmesh.protocol.api.EventMeshProtocolServer;
-import org.apache.eventmesh.runtime.acl.Acl;
+import org.apache.eventmesh.server.api.EventMeshServerPluginFactory;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.slf4j.Logger;
@@ -32,21 +30,20 @@ public class EventMeshServer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final List<EventMeshProtocolServer> eventMeshProtocolServers;
+    private final List<org.apache.eventmesh.server.api.EventMeshServer> eventMeshProtocolServers;
 
     private ServiceState serviceState;
 
     private ConnectorResource connectorResource;
 
     public EventMeshServer() {
-        this.eventMeshProtocolServers = EventMeshProtocolPluginFactory.getEventMeshProtocolServers(
-                CommonConfiguration.eventMeshProtocolServerPluginTypes);
+        this.eventMeshProtocolServers = EventMeshServerPluginFactory.getEventMeshServers(CommonConfiguration.eventMeshServerPluginTypes);
 
         this.connectorResource = new ConnectorResource();
     }
 
     public void init() throws Exception {
-        for (EventMeshProtocolServer eventMeshProtocolServer : eventMeshProtocolServers) {
+        for (org.apache.eventmesh.server.api.EventMeshServer eventMeshProtocolServer : eventMeshProtocolServers) {
             eventMeshProtocolServer.init();
         }
         connectorResource.init(CommonConfiguration.eventMeshConnectorPluginType);
@@ -58,7 +55,7 @@ public class EventMeshServer {
 
     public void start() throws Exception {
 
-        for (EventMeshProtocolServer eventMeshProtocolServer : eventMeshProtocolServers) {
+        for (org.apache.eventmesh.server.api.EventMeshServer eventMeshProtocolServer : eventMeshProtocolServers) {
             eventMeshProtocolServer.start();
         }
         serviceState = ServiceState.RUNNING;
@@ -68,7 +65,7 @@ public class EventMeshServer {
     public void shutdown() throws Exception {
         serviceState = ServiceState.STOPING;
         logger.info("server state:{}", serviceState);
-        for (EventMeshProtocolServer eventMeshProtocolServer : eventMeshProtocolServers) {
+        for (org.apache.eventmesh.server.api.EventMeshServer eventMeshProtocolServer : eventMeshProtocolServers) {
             eventMeshProtocolServer.shutdown();
         }
 
@@ -78,7 +75,7 @@ public class EventMeshServer {
         logger.info("server state:{}", serviceState);
     }
 
-    public List<EventMeshProtocolServer> getEventMeshProtocolServers() {
+    public List<org.apache.eventmesh.server.api.EventMeshServer> getEventMeshProtocolServers() {
         return eventMeshProtocolServers;
     }
 
