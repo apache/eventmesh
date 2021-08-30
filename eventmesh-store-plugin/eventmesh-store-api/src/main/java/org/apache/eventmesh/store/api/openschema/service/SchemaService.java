@@ -56,8 +56,8 @@ public interface SchemaService {
     // Compatibility
     CompatibilityCheckResponse isSchemaCompatibleWithVersionInSubject(String subject, int version, CompatibilityCheckRequest compatibilityCheckRequest) throws ServiceException;
 
-    CompatibilityResponse alterCompatibilityBySubject(String subject, CompatibilityRequest compatibilityRequest);
+    CompatibilityResponse alterCompatibilityBySubject(String subject, CompatibilityRequest compatibilityRequest) throws ServiceException;
 
-    CompatibilityResponse fetchCompatibilityBySubject(String subject);
+    CompatibilityResponse fetchCompatibilityBySubject(String subject) throws ServiceException;
 
 }

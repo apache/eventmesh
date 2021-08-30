@@ -56,7 +56,7 @@ public enum ServiceError {
     /**
      * 
      */
-    ERR_SERVER_ERROR("I50001", 500, "I50001 -  Internal Server Error"),
+    ERR_SERVER_ERROR("50001", 500, "I50001 -  Internal Server Error"),
 
     /**
      * resource level error definitions

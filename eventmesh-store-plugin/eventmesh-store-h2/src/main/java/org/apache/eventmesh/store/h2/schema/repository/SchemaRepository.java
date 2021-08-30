@@ -25,6 +25,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.eventmesh.store.api.openschema.request.CompatibilityRequest;
 import org.apache.eventmesh.store.api.openschema.request.SchemaCreateRequest;
 import org.apache.eventmesh.store.h2.schema.domain.Schema;
 import org.apache.eventmesh.store.h2.schema.util.DBDataSource;

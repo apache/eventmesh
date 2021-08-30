@@ -25,7 +25,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.eventmesh.store.api.openschema.request.CompatibilityRequest;
 import org.apache.eventmesh.store.api.openschema.request.SubjectCreateRequest;
+import org.apache.eventmesh.store.api.openschema.response.CompatibilityResponse;
 import org.apache.eventmesh.store.h2.schema.domain.Subject;
 import org.apache.eventmesh.store.h2.schema.util.DBDataSource;
 import org.slf4j.Logger;
@@ -160,7 +162,58 @@ public class SubjectRepository {
             }
         }
     }
-    
+
+
+    public int alterCompatibilityBySubject(String subjectName, CompatibilityRequest compatibilityRequest) throws SQLException{
+        String sql = "UPDATE schema_registry SET compatibility = ? where subject_name = ?";
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        int row = 0;
+        try {
+            connection = dataSource.getConnection();
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, compatibilityRequest.getCompatibility());
+            stmt.setString(2, subjectName);
+            row = stmt.executeUpdate();
+            return row;
+        }finally {
+            if(stmt!=null){
+                stmt.close();
+            }
+            if (connection!=null){
+                connection.close();
+            }
+        }
+    }
+
+    public CompatibilityResponse fetchCompatibilityBySubject(String subjectName) throws SQLException{
+        String sql = "SELECT compatibility FROM schema_registry WHERE subject_name = ?";
+
+        Connection connection = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            connection = dataSource.getConnection();
+            stmt = connection.prepareStatement(sql);
+            stmt.setString(1, subjectName);
+            rs = stmt.executeQuery();
+            CompatibilityResponse compatibilityResponse = null;
+            while (rs.next())
+                compatibilityResponse = new CompatibilityResponse(subjectName);
+            return compatibilityResponse;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (stmt != null) {
+                stmt.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
     public void createSubjectTable() {
     	Connection connection = null;
         Statement stmt = null;

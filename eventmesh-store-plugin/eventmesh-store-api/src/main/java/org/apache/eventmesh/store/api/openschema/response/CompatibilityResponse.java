@@ -36,5 +36,8 @@ public class CompatibilityResponse {
 	  public void setCompatibility(String compatibility) {
 	    this.compatibility = compatibility;
 	  }
-	  
+
+	public CompatibilityResponse(String compatibility) {
+		this.compatibility = compatibility;
+	}
 }
