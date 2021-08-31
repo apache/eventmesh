@@ -51,12 +51,7 @@ public class StandaloneMeshMQProducerAdaptor implements MeshMQProducer {
     }
 
     @Override
-    public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout) throws Exception {
-        throw new UnsupportedOperationException("not support request-reply mode when eventstore=standalone");
-    }
-
-    @Override
-    public Message request(Message message, long timeout) throws Exception {
+    public void request(Message message, RRCallback rrCallback, long timeout) throws Exception {
         throw new UnsupportedOperationException("not support request-reply mode when eventstore=standalone");
     }
 

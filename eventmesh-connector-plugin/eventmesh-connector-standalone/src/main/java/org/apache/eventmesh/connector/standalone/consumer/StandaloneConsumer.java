@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 public class StandaloneConsumer implements Consumer {
 
@@ -40,18 +41,15 @@ public class StandaloneConsumer implements Consumer {
 
     private AtomicBoolean isStarted;
 
-    private ConcurrentHashMap<String, AsyncMessageListener> subscribeTable;
-
-    private ConcurrentHashMap<String, SubScribeTask> subscribeTaskTable;
+    private final ConcurrentHashMap<String, SubScribeTask> subscribeTaskTable;
 
     private ExecutorService consumeExecutorService;
 
     public StandaloneConsumer(Properties properties) {
         this.standaloneBroker = StandaloneBroker.getInstance();
-        this.subscribeTable = new ConcurrentHashMap<>(16);
         this.subscribeTaskTable = new ConcurrentHashMap<>(16);
         this.isStarted = new AtomicBoolean(false);
-        consumeExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
+        this.consumeExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
                 Runtime.getRuntime().availableProcessors() * 2,
                 Runtime.getRuntime().availableProcessors() * 2,
                 "StandaloneConsumerThread"
@@ -76,16 +74,18 @@ public class StandaloneConsumer implements Consumer {
 
     @Override
     public void subscribe(String topic, String subExpression, AsyncMessageListener listener) {
-        if (isClosed()) {
+        if (listener == null) {
+            throw new IllegalArgumentException("listener cannot be null");
+        }
+        if (subscribeTaskTable.containsKey(topic)) {
             return;
         }
-        if (subscribeTable.containsKey(topic)) {
-            return;
+        synchronized (subscribeTaskTable) {
+            standaloneBroker.createTopicIfAbsent(topic);
+            SubScribeTask subScribeTask = new SubScribeTask(topic, standaloneBroker, listener);
+            subscribeTaskTable.put(topic, subScribeTask);
+            consumeExecutorService.execute(subScribeTask);
         }
-        subscribeTable.put(topic, listener);
-        SubScribeTask subScribeTask = new SubScribeTask(topic, standaloneBroker, listener);
-        subscribeTaskTable.put(topic, subScribeTask);
-        consumeExecutorService.submit(subScribeTask);
     }
 
     @Override
@@ -102,16 +102,14 @@ public class StandaloneConsumer implements Consumer {
 
     @Override
     public void unsubscribe(String topic) {
-        if (isClosed()) {
+        if (!subscribeTaskTable.containsKey(topic)) {
             return;
         }
-        if (!subscribeTable.containsKey(topic)) {
-            return;
+        synchronized (subscribeTaskTable) {
+            SubScribeTask subScribeTask = subscribeTaskTable.get(topic);
+            subScribeTask.shutdown();
+            subscribeTaskTable.remove(topic);
         }
-        subscribeTable.remove(topic);
-        SubScribeTask subScribeTask = subscribeTaskTable.get(topic);
-        subScribeTask.shutdown();
-        subscribeTaskTable.remove(topic);
     }
 
     @Override
@@ -137,7 +135,6 @@ public class StandaloneConsumer implements Consumer {
     @Override
     public void shutdown() {
         isStarted.compareAndSet(true, false);
-        subscribeTable.clear();
         subscribeTaskTable.forEach(((topic, subScribeTask) -> subScribeTask.shutdown()));
         subscribeTaskTable.clear();
     }

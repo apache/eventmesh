@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.standalone.broker;
 
 import io.openmessaging.api.Message;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
 import org.apache.eventmesh.connector.standalone.broker.task.HistoryMessageClearTask;
@@ -53,10 +54,13 @@ public class StandaloneBroker {
      * @throws InterruptedException
      */
     public MessageEntity putMessage(String topicName, Message message) throws InterruptedException {
-        TopicMetadata topicMetadata = new TopicMetadata(topicName);
-        AtomicLong topicOffset = offsetMap.computeIfAbsent(topicMetadata, k -> new AtomicLong());
-        MessageEntity messageEntity = new MessageEntity(topicMetadata, message, topicOffset.getAndIncrement(), System.currentTimeMillis());
-        messageContainer.computeIfAbsent(topicMetadata, k -> new MessageQueue()).put(messageEntity);
+        Pair<MessageQueue, AtomicLong> pair = createTopicIfAbsent(topicName);
+        AtomicLong topicOffset = pair.getRight();
+        MessageQueue messageQueue = pair.getLeft();
+
+        MessageEntity messageEntity = new MessageEntity(
+                new TopicMetadata(topicName), message, topicOffset.getAndIncrement(), System.currentTimeMillis());
+        messageQueue.put(messageEntity);
 
         return messageEntity;
     }
@@ -110,7 +114,20 @@ public class StandaloneBroker {
     }
 
     public boolean checkTopicExist(String topicName) {
-        return messageContainer.containsKey(topicName);
+        return messageContainer.containsKey(new TopicMetadata(topicName));
+    }
+
+    /**
+     * if topic not exist, create a topic
+     *
+     * @param topicName topicName
+     * @return messageQueue and offset
+     */
+    public Pair<MessageQueue, AtomicLong> createTopicIfAbsent(String topicName) {
+        TopicMetadata topicMetadata = new TopicMetadata(topicName);
+        MessageQueue messageQueue = messageContainer.computeIfAbsent(topicMetadata, k -> new MessageQueue());
+        AtomicLong offset = offsetMap.computeIfAbsent(topicMetadata, k -> new AtomicLong());
+        return Pair.of(messageQueue, offset);
     }
 
     public void updateOffset(TopicMetadata topicMetadata, long offset) {

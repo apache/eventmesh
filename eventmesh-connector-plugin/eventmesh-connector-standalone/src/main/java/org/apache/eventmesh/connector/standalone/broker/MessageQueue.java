@@ -163,10 +163,10 @@ public class MessageQueue {
             }
             MessageEntity tail = getTail();
             if (tail == null || tail.getOffset() < offset) {
-                throw new RuntimeException(String.format("The offset: %s is invalidated", offset));
+                return null;
             }
-            int offsetDis = (int) (tail.getOffset() - offset);
-            int offsetIndex = takeIndex - 1 - offsetDis;
+            int offsetDis = (int) (head.getOffset() - offset);
+            int offsetIndex = takeIndex - offsetDis;
             if (offsetIndex < 0) {
                 offsetIndex += items.length;
             }
@@ -191,6 +191,10 @@ public class MessageQueue {
         } finally {
             lock.unlock();
         }
+    }
+
+    public int getSize() {
+        return count;
     }
 
 

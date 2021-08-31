@@ -34,7 +34,7 @@ public class SubScribeTask implements Runnable {
     private String               topicName;
     private StandaloneBroker     standaloneBroker;
     private AsyncMessageListener listener;
-    private AtomicBoolean        isRunning;
+    private volatile boolean isRunning;
 
     private AtomicInteger offset;
 
@@ -46,52 +46,54 @@ public class SubScribeTask implements Runnable {
         this.topicName = topicName;
         this.standaloneBroker = standaloneBroker;
         this.listener = listener;
-        isRunning = new AtomicBoolean(true);
+        this.isRunning = true;
     }
 
     @Override
     public void run() {
-        while (isRunning.get()) {
+        while (isRunning) {
             try {
+                logger.debug("execute subscribe task, topic: {}, offset: {}", topicName, offset);
                 if (offset == null) {
                     Message message = standaloneBroker.getMessage(topicName);
                     if (message != null) {
                         offset = new AtomicInteger((int) message.getOffset());
                     }
                 }
-                if (offset == null) {
-                    return;
+                if (offset != null) {
+                    Message message = standaloneBroker.getMessage(topicName, offset.get());
+                    if (message != null) {
+                        EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
+                            @Override
+                            public void commit(EventMeshAction action) {
+                                switch (action) {
+                                    case CommitMessage:
+                                        // update offset
+                                        offset.incrementAndGet();
+                                        logger.info("message commit, topic: {}, current offset:{}", topicName, offset.get());
+                                        break;
+                                    case ReconsumeLater:
+                                        // don't update offset
+                                        break;
+                                    case ManualAck:
+                                        // update offset
+                                        offset.incrementAndGet();
+                                        logger.info("message ack, topic: {}, current offset:{}", topicName, offset.get());
+                                        break;
+                                    default:
+
+                                }
+                            }
+                        };
+                        listener.consume(message, consumeContext);
+                    }
                 }
 
-                Message message = standaloneBroker.getMessage(topicName, offset.get());
-                EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
-                    @Override
-                    public void commit(EventMeshAction action) {
-                        switch (action) {
-                            case CommitMessage:
-                                // update offset
-                                offset.incrementAndGet();
-                                logger.info("message commit, topic: {}, current offset:{}", topicName, offset.get());
-                                break;
-                            case ReconsumeLater:
-                                // don't update offset
-                                break;
-                            case ManualAck:
-                                // update offset
-                                offset.incrementAndGet();
-                                logger.info("message ack, topic: {}, current offset:{}", topicName, offset.get());
-                                break;
-                            default:
-
-                        }
-                    }
-                };
-                listener.consume(message, consumeContext);
             } catch (Exception ex) {
                 logger.error("consumer error, topic: {}, offset: {}", topicName, offset == null ? null : offset.get(), ex);
             }
             try {
-                Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 logger.error("Thread is interrupted, topic: {}, offset: {} thread name: {}",
                         topicName, offset == null ? null : offset.get(), Thread.currentThread().getName(), e);
@@ -101,7 +103,7 @@ public class SubScribeTask implements Runnable {
     }
 
     public void shutdown() {
-        isRunning.compareAndSet(true, false);
+        isRunning = false;
     }
 
 }
