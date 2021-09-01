@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.eventmesh.schema.rest.handler;
 
 import java.io.IOException;
@@ -32,54 +49,55 @@ public class SubjectsHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
     	
-    	String requestURI = httpExchange.getRequestURI().getPath();    	
+    	String requestURI = httpExchange.getRequestURI().getPath();    	    	
+    	// Create a new subject
     	if (RequestMapping.postMapping("/schemaregistry/subjects/{subject}", httpExchange)) {			
     		createSubjectHandler(httpExchange);
     		return;
     	}
     	
-    	//æ£€æŸ¥ã€�æ³¨å†ŒSchema
+    	// Register a new schema version
     	if (RequestMapping.postMapping("/schemaregistry/subjects/{subject}/versions", httpExchange)) {  
     		Map<String, String> parametersMap = new UrlMappingPattern("/schemaregistry/subjects/{subject}/versions").extractPathParameterValues(requestURI);
     		createSchemaHandler(httpExchange, parametersMap);
     		return;
     	}
     	
-    	//èŽ·å�–æ‰€æœ‰çš„subject
+    	//Read all subjects
     	if (RequestMapping.getMapping("/schemaregistry/subjects", httpExchange)) {        		
     		ShowAllSubjectNamesHandler(httpExchange);
     		return;
     	}
     	
-    	//èŽ·å�–subjectå®šä¹‰
+    	//Read a specific subject
     	if (RequestMapping.getMapping("/schemaregistry/subjects/{subject}", httpExchange)) {
     		Map<String, String> parametersMap = new UrlMappingPattern("/schemaregistry/subjects/{subject}").extractPathParameterValues(requestURI);
     		readSubjectByNameHandler(httpExchange, parametersMap);
     		return;
     	}
     	
-    	//èŽ·å�–å¯¹åº”subjectçš„æ‰€æœ‰ç‰ˆæœ¬
+    	//List all schema versions belong to a subject
     	if (RequestMapping.getMapping("/schemaregistry/subjects/{subject}/versions", httpExchange)) {
     		Map<String, String> parametersMap = new UrlMappingPattern("/schemaregistry/subjects/{subject}/versions").extractPathParameterValues(requestURI);
     		showAllVersionsBySubjectHandler(httpExchange, parametersMap);
     		return;
     	}
     	
-    	//æ ¹æ�®subjectä»¥å�Šschemaç‰ˆæœ¬èŽ·å�–schemaå®šä¹‰
+    	//Read details of schema version
     	if (RequestMapping.getMapping("/schemaregistry/subjects/{subject}/versions/{version}/schema", httpExchange)) {
     		Map<String, String> parametersMap = new UrlMappingPattern("/schemaregistry/subjects/{subject}/versions/{version}/schema").extractPathParameterValues(requestURI);
     		readSchemaBySubjectAndVersionHandler(httpExchange, parametersMap);
     		return;
     	}
     	
-    	//åˆ é™¤subjectä»¥å�Šå…¶å¯¹åº”çš„å…¼å®¹æ€§è®¾ç½®
+    	//Delete a subject along with all related schema version 
     	if (RequestMapping.deleteMapping("/schemaregistry/subjects/{subject}", httpExchange)) {        		
     		Map<String, String> parametersMap = new UrlMappingPattern("/schemaregistry/subjects/{subject}").extractPathParameterValues(requestURI);
     		deleteSubjectByNameHandler(httpExchange, parametersMap);
     		return;
     	}
     	
-    	//åˆ é™¤æŒ‡å®šsubjectæŒ‡å®šç‰ˆæœ¬çš„schema
+    	//Delete a specific schema version
     	if (RequestMapping.deleteMapping("/schemaregistry/subjects/{subject}/versions/{version}", httpExchange)) {        		
     		Map<String, String> parametersMap = new UrlMappingPattern("/schemaregistry/subjects/{subject}/versions/{version}").extractPathParameterValues(requestURI);
     		deleteSchemaBySubjectAndVersionHandler(httpExchange, parametersMap);
