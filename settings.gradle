@@ -28,3 +28,5 @@ include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
 include 'eventmesh-openschema-plugin'
 include 'eventmesh-store-plugin:eventmesh-store-api'
 include 'eventmesh-store-plugin:eventmesh-store-h2'
+include 'eventmesh-openschema-plugin'
+
