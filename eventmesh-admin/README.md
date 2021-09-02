@@ -114,7 +114,21 @@ EventMesh Administration Module for EventMesh. It manages Admin and Schema Servi
     * Response - 
     
    ```json
-    {1}
+    1
+   ```
+
+### DELETE /schemaregistrys/subjects/(string: subject)
+- Delete the subject, compatibility settings along with all versions of schemas belong to this subject.
+- Exposed DELETE endpoint to remove a subject and all related schemas from the database
+    * URL -     
+    ```url 
+    http://localhost:8081/schemaregistrys/subjects/test-topic
+    ```
+    
+    * Response - 
+    
+   ```json
+    [1, 2, 3, 4]
    ```
 
 ### GET /schemaregistrys/subjects 
@@ -135,7 +149,7 @@ EventMesh Administration Module for EventMesh. It manages Admin and Schema Servi
 - Exposed GET endpoint to retrieve the subject detail's JSON representation given the reference subject name
     * URL -     
     ```url 
-    http://localhost:8081/schemaregistrys/subjects/(string: subject)
+    http://localhost:8081/schemaregistrys/subjects/test-topic
     ```
     
     * Response -
@@ -155,7 +169,7 @@ EventMesh Administration Module for EventMesh. It manages Admin and Schema Servi
 - Exposed GET endpoint to retrieve the version numbers which belong to the given subject name
     * URL - 
     ```url 
-    http://localhost:8081/schemaregistrys/subjects/(string: subject)/versions
+    http://localhost:8081/schemaregistrys/subjects/test-topic/versions
     ```
     * Response -
     
@@ -168,7 +182,7 @@ EventMesh Administration Module for EventMesh. It manages Admin and Schema Servi
 - Exposed GET endpoint to retrieve the subject and schema version detail's JSON representation
     * URL - 
     ```url 
-    http://localhost:8081/schemaregistrys/subjects/(string: subject)/versions/(version: version)/schema
+    http://localhost:8081/schemaregistrys/subjects/test-topic/versions/1/schema
     ```
     * Response -
     
@@ -206,7 +220,7 @@ EventMesh Administration Module for EventMesh. It manages Admin and Schema Servi
 - Exposed GET endpoint to retrieve the schema version detail's JSON representation
     * URL - 
     ```url 
-    http://localhost:8081/schemaregistrys/schemas/ids/{string: id}
+    http://localhost:8081/schemaregistrys/schemas/ids/a10-b10-c10
     ```
     * Response -
     
@@ -235,7 +249,7 @@ EventMesh Administration Module for EventMesh. It manages Admin and Schema Servi
 - Exposed GET endpoint to retrieve subject name and version number
     * URL - 
     ```url 
-    http://localhost:8081/schemaregistrys/schemas/ids/{string: id}
+    http://localhost:8081/schemaregistrys/schemas/ids/a10-b10-c10
     ```
     * Response -
     
@@ -254,7 +268,7 @@ EventMesh Administration Module for EventMesh. It manages Admin and Schema Servi
 - Exposed GET endpoint to retrieve subject's compatibility setting
     * URL - 
     ```url 
-    http://localhost:8081/schemaregistrys/config/(string: subject)
+    http://localhost:8081/schemaregistrys/config/test-topic
     ```
     * Response -
     
