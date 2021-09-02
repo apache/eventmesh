@@ -15,22 +15,5 @@
  * limitations under the License.
  */
 
-task copySchemaPlugin(dependsOn: ['jar']) {
-    doFirst {
-        new File(projectDir, '../eventmesh-schema-plugin/dist/apps').mkdir()
-        new File(projectDir, '../dist/plugin/schema').mkdirs()
-    }
-    doLast {
-        copy {
-            into('../eventmesh-schema-plugin/dist/apps/')
-            from project.jar.getArchivePath()
-            exclude {
-                "eventmesh-schema-plugin-${version}.jar"
-            }
-        }
-        copy {
-            into '../dist/plugin/schema'
-            from "../eventmesh-schema-plugin/dist/apps/eventmesh-schema-rest-${version}.jar"
-        }
-    }
+dependencies {
 }
