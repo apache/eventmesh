@@ -41,7 +41,7 @@ EventMesh Administration Module for EventMesh. It manages Admin and Schema Servi
 
 ### GET /clientmanage/topics 
 - Retrieve a list of topics
-- Exposed GET endpoint to retrieve all subjects in database
+- Exposed GET endpoint to retrieve all topics
     * URL - 
     ```url 
     http://localhost:8081/clientmanage/topics
