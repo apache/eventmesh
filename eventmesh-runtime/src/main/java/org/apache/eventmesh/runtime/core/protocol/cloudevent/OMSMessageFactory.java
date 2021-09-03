@@ -32,7 +32,11 @@ import org.apache.eventmesh.runtime.core.protocol.cloudevent.impl.OMSMessageWrit
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Properties;
 
-
+/**
+ * This class provides a collection of methods to create {@link io.cloudevents.core.message.MessageReader}
+ * and {@link io.cloudevents.core.message.MessageWriter}
+ * manually serialize/deserialize {@link io.cloudevents.CloudEvent} messages.
+ */
 @ParametersAreNonnullByDefault
 public final class OMSMessageFactory {
 
@@ -40,6 +44,12 @@ public final class OMSMessageFactory {
         // prevent instantiation
     }
 
+    /**
+     * create reader by message
+     * @param message
+     * @return
+     * @throws CloudEventRWException
+     */
     public static MessageReader createReader(final Message message) throws CloudEventRWException {
         return createReader(message.getUserProperties(), message.getBody());
     }
@@ -56,14 +66,32 @@ public final class OMSMessageFactory {
     }
 
 
+    /**
+     * create writer by topic
+     * @param topic
+     * @return
+     */
     public static MessageWriter<CloudEventWriter<Message>, Message> createWriter(String topic) {
         return new OMSMessageWriter<>(topic);
     }
 
+    /**
+     * create writer by topic,keys
+     * @param topic
+     * @param keys
+     * @return
+     */
     public static MessageWriter<CloudEventWriter<Message>, Message> createWriter(String topic, String keys) {
         return new OMSMessageWriter<>(topic, keys);
     }
 
+    /**
+     * create writer by topic,keys,tags
+     * @param topic
+     * @param keys
+     * @param tags
+     * @return
+     */
     public static MessageWriter<CloudEventWriter<Message>, Message> createWriter(String topic, String keys, String tags) {
         return new OMSMessageWriter<>(topic, keys, tags);
     }

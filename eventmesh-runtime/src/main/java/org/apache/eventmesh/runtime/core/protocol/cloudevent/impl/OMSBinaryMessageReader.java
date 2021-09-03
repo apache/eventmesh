@@ -25,6 +25,9 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.function.BiConsumer;
 
+/**
+ * binary message reader
+ */
 public class OMSBinaryMessageReader extends BaseGenericBinaryMessageReaderImpl<String, String> {
 
     private final Properties headers;
@@ -36,21 +39,40 @@ public class OMSBinaryMessageReader extends BaseGenericBinaryMessageReaderImpl<S
         this.headers = headers;
     }
 
+    /**
+     * whether header key is content type
+     * @param key
+     * @return
+     */
     @Override
     protected boolean isContentTypeHeader(String key) {
         return key.equals(OMSHeaders.CONTENT_TYPE);
     }
 
+    /**
+     * whether message header is cloudEvent header
+     * @param key
+     * @return
+     */
     @Override
     protected boolean isCloudEventsHeader(String key) {
         return key.length() > 3 && key.substring(0, OMSHeaders.CE_PREFIX.length()).startsWith(OMSHeaders.CE_PREFIX);
     }
 
+    /**
+     * parse message header to cloudEvent attribute
+     * @param key
+     * @return
+     */
     @Override
     protected String toCloudEventsKey(String key) {
         return key.substring(OMSHeaders.CE_PREFIX.length()).toLowerCase();
     }
 
+    /**
+     *
+     * @param fn
+     */
     @Override
     protected void forEachHeader(BiConsumer<String, String> fn) {
         this.headers.forEach((k, v) -> {

@@ -21,10 +21,19 @@ import io.cloudevents.core.v1.CloudEventV1;
 
 import java.util.Map;
 
+/**
+ * Define the value of CE attribute in the header of ons
+ */
 public class OMSHeaders {
 
+    /**
+     * CE prefix
+     */
     public static final String CE_PREFIX = "ce_";
 
+    /**
+     * Prefix each value
+     */
     protected static final Map<String, String> ATTRIBUTES_TO_HEADERS = MessageUtils.generateAttributesToHeadersMapping(v -> CE_PREFIX + v);
 
     public static final String CONTENT_TYPE = ATTRIBUTES_TO_HEADERS.get(CloudEventV1.DATACONTENTTYPE);

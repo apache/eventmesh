@@ -26,9 +26,7 @@ import io.cloudevents.types.Time;
 import io.openmessaging.api.Message;
 import org.apache.eventmesh.runtime.core.protocol.cloudevent.OMSMessageFactory;
 import org.apache.eventmesh.runtime.core.protocol.cloudevent.impl.OMSHeaders;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.Test;
 
 import java.util.AbstractMap;
 import java.util.Map;
@@ -44,61 +42,67 @@ public class OMSWriterTest {
     private static final byte[] DATAPAYLOAD_NULL = null;
 
 
-    @ParameterizedTest
-    @MethodSource("org.apache.eventmesh.runtime.cloudevent.Data#allEventsWithoutExtensions")
-    void testRequestWithStructured(CloudEvent event) {
+    @Test
+    public void testRequestWithStructured() {
+        Stream<CloudEvent> cloudEventStream = Data.allEventsWithoutExtensions();
         //String expectedContentType = CSVFormat.INSTANCE.serializedContentType();
-        byte[] expectedBuffer = CSVFormat.INSTANCE.serialize(event);
+        cloudEventStream.forEach(event -> {
+            byte[] expectedBuffer = CSVFormat.INSTANCE.serialize(event);
 
+            String topic = "test";
+            String keys = "keys";
+            String tags = "tags";
+
+            Message message = StructuredMessageReader
+                    .from(event, CSVFormat.INSTANCE)
+                    .read(OMSMessageFactory.createWriter(topic, keys, tags));
+
+            assertThat(message.getTopic())
+                    .isEqualTo(topic);
+            assertThat(message.getKey())
+                    .isEqualTo(keys);
+            assertThat(message.getTag())
+                    .isEqualTo(tags);
+            assertThat(message.getBody())
+                    .isEqualTo(expectedBuffer);
+        });
+
+    }
+
+    @Test
+    public void testRequestWithBinary() {
+        Stream<Arguments> argumentsStream = binaryTestArguments();
         String topic = "test";
         String keys = "keys";
         String tags = "tags";
+        argumentsStream.forEach(argument -> {
+            Message message = OMSMessageFactory
+                    .createWriter(topic, keys, tags)
+                    .writeBinary(argument.cloudEvent);
 
-        Message message = StructuredMessageReader
-                .from(event, CSVFormat.INSTANCE)
-                .read(OMSMessageFactory.createWriter(topic, keys, tags));
+            assertThat(message.getTopic())
+                    .isEqualTo(topic);
+            assertThat(message.getKey())
+                    .isEqualTo(keys);
+            assertThat(message.getTag())
+                    .isEqualTo(tags);
+            assertThat(message.getBody())
+                    .isEqualTo(argument.body);
+            assertThat(message.getUserProperties()
+                    .keySet().containsAll(argument.properties.keySet()));
+            assertThat(message.getUserProperties()
+                    .values().containsAll(argument.properties.values()));
 
-        assertThat(message.getTopic())
-                .isEqualTo(topic);
-        assertThat(message.getKey())
-                .isEqualTo(keys);
-        assertThat(message.getTag())
-                .isEqualTo(tags);
-        assertThat(message.getBody())
-                .isEqualTo(expectedBuffer);
+
+        });
+
     }
 
-    @ParameterizedTest
-    @MethodSource("binaryTestArguments")
-    void testRequestWithBinary(CloudEvent event, Map<String, String> expectedHeaders, byte[] expectedBody) {
-
-        String topic = "test";
-        String keys = "keys";
-        String tags = "tags";
-
-        Message message = OMSMessageFactory
-                .createWriter(topic, keys, tags)
-                .writeBinary(event);
-
-        assertThat(message.getTopic())
-                .isEqualTo(topic);
-        assertThat(message.getKey())
-                .isEqualTo(keys);
-        assertThat(message.getTag())
-                .isEqualTo(tags);
-        assertThat(message.getBody())
-                .isEqualTo(expectedBody);
-        assertThat(message.getUserProperties()
-                .keySet().containsAll(expectedHeaders.keySet()));
-        assertThat(message.getUserProperties()
-                .values().containsAll(expectedHeaders.values()));
-    }
-
-    private static Stream<Arguments> binaryTestArguments() {
+    private Stream<Arguments> binaryTestArguments() {
 
         return Stream.of(
                 // V03
-                Arguments.of(
+                new Arguments(
                         Data.V03_MIN,
                         properties(
                                 property(CloudEventV03.SPECVERSION, SpecVersion.V03.toString()),
@@ -109,7 +113,7 @@ public class OMSWriterTest {
                         ),
                         DATAPAYLOAD_NULL
                 ),
-                Arguments.of(
+                new Arguments(
                         Data.V03_WITH_JSON_DATA,
                         properties(
                                 property(CloudEventV03.SPECVERSION, SpecVersion.V03.toString()),
@@ -124,7 +128,7 @@ public class OMSWriterTest {
                         Data.DATA_JSON_SERIALIZED
 
                 ),
-                Arguments.of(
+                new Arguments(
                         Data.V03_WITH_JSON_DATA_WITH_EXT_STRING,
                         properties(
                                 property(CloudEventV03.SPECVERSION, SpecVersion.V03.toString()),
@@ -142,7 +146,7 @@ public class OMSWriterTest {
                         Data.DATA_JSON_SERIALIZED
 
                 ),
-                Arguments.of(
+                new Arguments(
                         Data.V03_WITH_XML_DATA,
                         properties(
                                 property(CloudEventV03.SPECVERSION, SpecVersion.V03.toString()),
@@ -157,7 +161,7 @@ public class OMSWriterTest {
                         Data.DATA_XML_SERIALIZED
 
                 ),
-                Arguments.of(
+                new Arguments(
                         Data.V03_WITH_TEXT_DATA,
                         properties(
                                 property(CloudEventV03.SPECVERSION, SpecVersion.V03.toString()),
@@ -173,7 +177,7 @@ public class OMSWriterTest {
 
                 ),
                 // V1
-                Arguments.of(
+                new Arguments(
                         Data.V1_MIN,
                         properties(
                                 property(CloudEventV1.SPECVERSION, SpecVersion.V1.toString()),
@@ -186,7 +190,7 @@ public class OMSWriterTest {
                         DATAPAYLOAD_NULL
 
                 ),
-                Arguments.of(
+                new Arguments(
                         Data.V1_WITH_JSON_DATA,
                         properties(
                                 property(CloudEventV1.SPECVERSION, SpecVersion.V1.toString()),
@@ -202,7 +206,7 @@ public class OMSWriterTest {
                         Data.DATA_JSON_SERIALIZED
 
                 ),
-                Arguments.of(
+                new Arguments(
                         Data.V1_WITH_JSON_DATA_WITH_EXT_STRING,
                         properties(
                                 property(CloudEventV1.SPECVERSION, SpecVersion.V1.toString()),
@@ -221,7 +225,7 @@ public class OMSWriterTest {
                         Data.DATA_JSON_SERIALIZED
 
                 ),
-                Arguments.of(
+                new Arguments(
                         Data.V1_WITH_XML_DATA,
                         properties(
                                 property(CloudEventV1.SPECVERSION, SpecVersion.V1.toString()),
@@ -236,7 +240,7 @@ public class OMSWriterTest {
                         Data.DATA_XML_SERIALIZED
 
                 ),
-                Arguments.of(
+                new Arguments(
                         Data.V1_WITH_TEXT_DATA,
                         properties(
                                 property(CloudEventV1.SPECVERSION, SpecVersion.V1.toString()),
@@ -264,6 +268,20 @@ public class OMSWriterTest {
     private static final Map<String, String> properties(final AbstractMap.SimpleEntry<String, String>... entries) {
         return Stream.of(entries)
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
+
+    }
+
+    private class Arguments {
+        CloudEvent cloudEvent;
+        Map<String, String> properties;
+        byte[] body;
+
+        public Arguments(CloudEvent cloudEvent, Map<String, String> properties, byte[] body) {
+            this.cloudEvent = cloudEvent;
+            this.properties = properties;
+            this.body = body;
+        }
+
 
     }
 }

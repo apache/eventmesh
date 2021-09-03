@@ -25,8 +25,12 @@ import io.cloudevents.rw.CloudEventContextWriter;
 import io.cloudevents.rw.CloudEventRWException;
 import io.cloudevents.rw.CloudEventWriter;
 import io.openmessaging.api.Message;
+import org.apache.commons.lang3.StringUtils;
 
-
+/**
+ * write ce to ons
+ * @param <R>
+ */
 public final class OMSMessageWriter<R> implements MessageWriter<CloudEventWriter<Message>, Message>, CloudEventWriter<Message> {
 
     private Message message;
@@ -48,11 +52,11 @@ public final class OMSMessageWriter<R> implements MessageWriter<CloudEventWriter
     public OMSMessageWriter(String topic, String key, String tag) {
         message = new Message();
         message.setTopic(topic);
-        if (tag != null && tag.length() > 0) {
+        if (StringUtils.isNotEmpty(tag)) {
             message.setTag(tag);
         }
 
-        if (key != null && key.length() > 0) {
+        if (StringUtils.isNotEmpty(key)) {
             message.setKey(key);
         }
     }

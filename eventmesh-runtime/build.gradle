@@ -23,7 +23,6 @@ dependencies {
     api 'io.prometheus:simpleclient'
     api 'io.prometheus:simpleclient_httpserver'
     api 'io.cloudevents:cloudevents-core'
-    api 'org.junit.jupiter:junit-jupiter'
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")

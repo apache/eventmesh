@@ -22,14 +22,13 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.message.Encoding;
 import io.cloudevents.core.message.MessageReader;
+import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.core.v03.CloudEventV03;
 import io.cloudevents.core.v1.CloudEventV1;
 import io.cloudevents.types.Time;
 import org.apache.eventmesh.runtime.core.protocol.cloudevent.OMSMessageFactory;
 import org.apache.eventmesh.runtime.core.protocol.cloudevent.impl.OMSHeaders;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.Test;
 
 import java.util.AbstractMap;
 import java.util.Map;
@@ -45,37 +44,43 @@ public class OMSFactoryTest {
     private static final String DATACONTENTTYPE_NULL = null;
     private static final byte[] DATAPAYLOAD_NULL = null;
 
-    @ParameterizedTest()
-    @MethodSource("binaryTestArguments")
-    public void readBinary(final Map<String, String> props, final String contentType, final byte[] body,
-                           final CloudEvent event) {
-        if (contentType != null) {
-            props.put(OMSHeaders.CONTENT_TYPE, contentType);
-        }
-        Properties properties = new Properties();
-        properties.putAll(props);
-        final MessageReader reader = OMSMessageFactory.createReader(properties, body);
-        assertThat(reader.getEncoding()).isEqualTo(Encoding.BINARY);
-        assertThat(reader.toEvent()).isEqualTo(event);
+    @Test
+    public void readBinary() {
+        Stream<Arguments> argumentsStream=binaryTestArguments();
+        argumentsStream.forEach(argument -> {
+            if (argument.contentType != null) {
+                argument.props.put(OMSHeaders.CONTENT_TYPE, argument.contentType);
+            }
+            Properties properties = new Properties();
+            properties.putAll(argument.props);
+            final MessageReader reader = OMSMessageFactory.createReader(properties, argument.body);
+            assertThat(reader.getEncoding()).isEqualTo(Encoding.BINARY);
+            assertThat(reader.toEvent()).isEqualTo(argument.event);
+
+        });
+
     }
 
-//    @ParameterizedTest()
-//    @MethodSource("org.apache.eventmesh.runtime.cloudevent.Data#allEventsWithoutExtensions")
-    public void readStructured(final CloudEvent event) {
-        final String contentType = CSVFormat.INSTANCE.serializedContentType() + "; charset=utf8";
-        final byte[] contentPayload = CSVFormat.INSTANCE.serialize(event);
-        Properties properties = new Properties();
-        properties.put(OMSHeaders.CONTENT_TYPE, contentType);
-        final MessageReader reader = OMSMessageFactory.createReader(properties, contentPayload);
-        assertThat(reader.getEncoding()).isEqualTo(Encoding.STRUCTURED);
-        assertThat(reader.toEvent()).isEqualTo(event);
+    @Test
+    public void readStructured() {
+        Stream<CloudEvent> cloudEventStream= Data.allEventsWithoutExtensions();
+        EventFormatProvider.getInstance().registerFormat(CSVFormat.INSTANCE);
+        cloudEventStream.forEach(event -> {
+            final String contentType = CSVFormat.INSTANCE.serializedContentType() + "; charset=utf8";
+            final byte[] contentPayload = CSVFormat.INSTANCE.serialize(event);
+            Properties properties = new Properties();
+            properties.put(OMSHeaders.CONTENT_TYPE, contentType);
+            final MessageReader reader = OMSMessageFactory.createReader(properties, contentPayload);
+            assertThat(reader.getEncoding()).isEqualTo(Encoding.STRUCTURED);
+            assertThat(reader.toEvent()).isEqualTo(event);
+        });
     }
 
-    private static Stream<Arguments> binaryTestArguments() {
+    private Stream<Arguments> binaryTestArguments() {
 
         return Stream.of(
                 // V03
-                Arguments.of(
+                new Arguments(
                         properties(
                                 property(CloudEventV03.SPECVERSION, SpecVersion.V03.toString()),
                                 property(CloudEventV03.ID, Data.ID),
@@ -87,7 +92,7 @@ public class OMSFactoryTest {
                         DATAPAYLOAD_NULL,
                         Data.V03_MIN
                 ),
-                Arguments.of(
+                new Arguments(
                         properties(
                                 property(CloudEventV03.SPECVERSION, SpecVersion.V03.toString()),
                                 property(CloudEventV03.ID, Data.ID),
@@ -102,7 +107,7 @@ public class OMSFactoryTest {
                         Data.DATA_JSON_SERIALIZED,
                         Data.V03_WITH_JSON_DATA
                 ),
-                Arguments.of(
+                new Arguments(
                         properties(
                                 property(CloudEventV03.SPECVERSION, SpecVersion.V03.toString()),
                                 property(CloudEventV03.ID, Data.ID),
@@ -120,7 +125,7 @@ public class OMSFactoryTest {
                         Data.DATA_JSON_SERIALIZED,
                         Data.V03_WITH_JSON_DATA_WITH_EXT_STRING
                 ),
-                Arguments.of(
+                new Arguments(
                         properties(
                                 property(CloudEventV03.SPECVERSION, SpecVersion.V03.toString()),
                                 property(CloudEventV03.ID, Data.ID),
@@ -134,7 +139,7 @@ public class OMSFactoryTest {
                         Data.DATA_XML_SERIALIZED,
                         Data.V03_WITH_XML_DATA
                 ),
-                Arguments.of(
+                new Arguments(
                         properties(
                                 property(CloudEventV03.SPECVERSION, SpecVersion.V03.toString()),
                                 property(CloudEventV03.ID, Data.ID),
@@ -149,7 +154,7 @@ public class OMSFactoryTest {
                         Data.V03_WITH_TEXT_DATA
                 ),
                 // V1
-                Arguments.of(
+                new Arguments(
                         properties(
                                 property(CloudEventV1.SPECVERSION, SpecVersion.V1.toString()),
                                 property(CloudEventV1.ID, Data.ID),
@@ -161,7 +166,7 @@ public class OMSFactoryTest {
                         DATAPAYLOAD_NULL,
                         Data.V1_MIN
                 ),
-                Arguments.of(
+                new Arguments(
                         properties(
                                 property(CloudEventV1.SPECVERSION, SpecVersion.V1.toString()),
                                 property(CloudEventV1.ID, Data.ID),
@@ -176,7 +181,7 @@ public class OMSFactoryTest {
                         Data.DATA_JSON_SERIALIZED,
                         Data.V1_WITH_JSON_DATA
                 ),
-                Arguments.of(
+                new Arguments(
                         properties(
                                 property(CloudEventV1.SPECVERSION, SpecVersion.V1.toString()),
                                 property(CloudEventV1.ID, Data.ID),
@@ -194,7 +199,7 @@ public class OMSFactoryTest {
                         Data.DATA_JSON_SERIALIZED,
                         Data.V1_WITH_JSON_DATA_WITH_EXT_STRING
                 ),
-                Arguments.of(
+                new Arguments(
                         properties(
                                 property(CloudEventV1.SPECVERSION, SpecVersion.V1.toString()),
                                 property(CloudEventV1.ID, Data.ID),
@@ -208,7 +213,7 @@ public class OMSFactoryTest {
                         Data.DATA_XML_SERIALIZED,
                         Data.V1_WITH_XML_DATA
                 ),
-                Arguments.of(
+                new Arguments(
                         properties(
                                 property(CloudEventV1.SPECVERSION, SpecVersion.V1.toString()),
                                 property(CloudEventV1.ID, Data.ID),
@@ -236,5 +241,20 @@ public class OMSFactoryTest {
         return Stream.of(entries)
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
 
+    }
+
+
+    private class Arguments {
+        private  Map<String, String> props;
+        private  String contentType;
+        private  byte[] body;
+        private  CloudEvent event;
+
+        public Arguments(Map<String, String> props, String contentType, byte[] body, CloudEvent event) {
+            this.props = props;
+            this.contentType = contentType;
+            this.body = body;
+            this.event = event;
+        }
     }
 }
