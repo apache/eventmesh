@@ -132,11 +132,13 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 "; charset=" + EventMeshConstants.DEFAULT_CHARSET);
         response.headers().add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         response.headers().add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        // todo server span end with error, record status, we should get channel here to get span in channel's context in async call..
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     public void sendResponse(ChannelHandlerContext ctx,
                              DefaultFullHttpResponse response) {
+        // todo end server span, we should get channel here to get span in channel's context in async call.
         ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture f) throws Exception {
@@ -203,6 +205,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) throws Exception {
             HttpPostRequestDecoder decoder = null;
+            // todo start server span, we should get channel here to put span in channel's context in async call.
             try {
                 if (!httpRequest.decoderResult().isSuccess()) {
                     sendError(ctx, HttpResponseStatus.BAD_REQUEST);
@@ -210,6 +213,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 }
 
                 final HttpCommand requestCommand = new HttpCommand();
+                // todo record command opaque in span.
 
                 httpRequest.headers().set(ProtocolKey.ClientInstanceKey.IP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
 
@@ -252,6 +256,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 requestCommand.setHttpMethod(httpRequest.method().name());
                 requestCommand.setHttpVersion(httpRequest.protocolVersion().protocolName());
                 requestCommand.setRequestCode(requestCode);
+                // todo record command method, version and requestCode in span.
 
                 HttpCommand responseCommand = null;
 
@@ -293,6 +298,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 processEventMeshRequest(ctx, asyncContext);
             } catch (Exception ex) {
                 httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
+                // todo span end with exception.
             } finally {
                 try {
                     decoder.destroy();
