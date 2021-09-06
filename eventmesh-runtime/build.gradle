@@ -14,23 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-sourceCompatibility = 1.8
-
-List metrics = [
-        "io.dropwizard.metrics:metrics-core:4.1.0",
-        "io.dropwizard.metrics:metrics-healthchecks:4.1.0",
-        "io.dropwizard.metrics:metrics-annotation:4.1.0",
-        "io.dropwizard.metrics:metrics-json:4.1.0"
-]
-
-
-
-List open_message = [
-        "io.openmessaging:openmessaging-api:2.2.1-pubsub"
-]
-
 
 dependencies {
-    implementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation metrics, open_message, project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    api 'io.opentelemetry:opentelemetry-api'
+    api 'io.opentelemetry:opentelemetry-sdk'
+    api 'io.opentelemetry:opentelemetry-sdk-metrics'
+    api 'io.opentelemetry:opentelemetry-exporter-prometheus'
+    api 'io.prometheus:simpleclient'
+    api 'io.prometheus:simpleclient_httpserver'
+
+    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    implementation project(":eventmesh-security-plugin:eventmesh-security-api")
+    implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
+    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
+    implementation project(":eventmesh-registry-plugin:eventmesh-registry-rocketmq-namesrv")
+
+
+    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
+    testImplementation project(":eventmesh-security-plugin:eventmesh-security-acl")
+    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
+    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-rocketmq-namesrv")
 }

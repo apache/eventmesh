@@ -70,7 +70,10 @@ sh start.sh
 
 插件可以从classpath和插件目录下面加载. 在本地开发阶段可以将使用的插件在eventmesh-starter模块build.gradle中进行声明,或者执行gradle的copyConnectorPlugin任务
 将插件拷贝至dist/plugin目录下, eventmesh默认会加载项目下dist/plugin目录下的插件, 加载目录可以通过-DeventMeshPluginDir=your_plugin_directory来改变插件目录.
-运行时需要使用的插件实例可以在eventmesh.properties中进行配置
+运行时需要使用的插件实例可以在eventmesh.properties中进行配置.如果需要使用rocketmq插件实行快速启动，需要在eventmesh-starter模块build.gradle中进行如下声明
+```
+   implementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
+```
 
 **2.3.2 配置插件**
 

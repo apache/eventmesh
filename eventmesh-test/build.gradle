@@ -18,19 +18,15 @@
 //group 'org.apache.eventmesh'
 //version '1.2.0-SNAPSHOT'
 
-List spring_framework = [
-    "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
-]
-
 dependencies {
 //    compile log4j2, sl4j
 //    testCompile log4j2, sl4j
     implementation project(":eventmesh-sdk-java")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    implementation spring_framework
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation project(":eventmesh-sdk-java")
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation spring_framework
+    testImplementation 'org.springframework.boot:spring-boot-starter-web'
 }
 
 configurations.all {

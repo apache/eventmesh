@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.rocketmq.producer;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 
+import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.api.Message;
 import io.openmessaging.api.MessageBuilder;
 import io.openmessaging.api.OnExceptionContext;
@@ -28,13 +29,25 @@ import io.openmessaging.api.SendCallback;
 import io.openmessaging.api.SendResult;
 import io.openmessaging.api.exception.OMSRuntimeException;
 
+import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.RequestCallback;
+import org.apache.rocketmq.client.producer.RequestResponseFuture;
+import org.apache.rocketmq.client.utils.MessageUtil;
 import org.apache.rocketmq.common.message.MessageClientIDSetter;
+import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.remoting.exception.RemotingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class ProducerImpl extends AbstractOMSProducer implements Producer {
 
     public static final int eventMeshServerAsyncAccumulationThreshold = 1000;
+
+    private final Logger logger = LoggerFactory.getLogger(ProducerImpl.class);
 
     public ProducerImpl(final Properties properties) {
         super(properties);
@@ -98,6 +111,37 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
             log.error(String.format("Send message async Exception, %s", message), e);
             throw this.checkProducerException(message.getTopic(), message.getMsgID(), e);
         }
+    }
+
+    public void request(Message message, RRCallback rrCallback, long timeout)
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+
+        this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
+        org.apache.rocketmq.common.message.Message msgRMQ = OMSUtil.msgConvert(message);
+        rocketmqProducer.request(msgRMQ, rrCallbackConvert(message, rrCallback), timeout);
+    }
+
+    private RequestCallback rrCallbackConvert(final Message message, final RRCallback rrCallback) {
+        return new RequestCallback() {
+            @Override
+            public void onSuccess(org.apache.rocketmq.common.message.Message message) {
+                Message openMessage = OMSUtil.msgConvert((MessageExt) message);
+                rrCallback.onSuccess(openMessage);
+            }
+
+            @Override
+            public void onException(Throwable e) {
+                String topic = message.getTopic();
+                String msgId = message.getMsgID();
+                OMSRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, msgId, e);
+                OnExceptionContext context = new OnExceptionContext();
+                context.setTopic(topic);
+                context.setMessageId(msgId);
+                context.setException(onsEx);
+                rrCallback.onException(e);
+
+            }
+        };
     }
 
     private org.apache.rocketmq.client.producer.SendCallback sendCallbackConvert(final Message message, final SendCallback sendCallback) {

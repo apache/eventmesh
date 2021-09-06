@@ -17,6 +17,12 @@
 
 package org.apache.eventmesh.common.config;
 
+import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -24,11 +30,6 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ConfigurationWrapper {
 
@@ -72,5 +73,22 @@ public class ConfigurationWrapper {
 
     public String getProp(String key) {
         return StringUtils.isEmpty(key) ? null : properties.getProperty(key, null);
+    }
+
+    public int getIntProp(String configKey, int defaultValue) {
+        String configValue = StringUtils.deleteWhitespace(getProp(configKey));
+        if (StringUtils.isEmpty(configValue)) {
+            return defaultValue;
+        }
+        Preconditions.checkState(StringUtils.isNumeric(configValue), String.format("key:%s, value:%s error", configKey, configValue));
+        return Integer.parseInt(configValue);
+    }
+
+    public boolean getBoolProp(String configKey, boolean defaultValue) {
+        String configValue = StringUtils.deleteWhitespace(getProp(configKey));
+        if (StringUtils.isEmpty(configValue)) {
+            return defaultValue;
+        }
+        return Boolean.parseBoolean(configValue);
     }
 }

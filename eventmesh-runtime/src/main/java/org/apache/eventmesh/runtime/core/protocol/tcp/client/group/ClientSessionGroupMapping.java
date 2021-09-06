@@ -305,6 +305,7 @@ public class ClientSessionGroupMapping {
                         , session.getClientGroupWrapper().get().groupConsumerSessions);
                 if(reChooseSession != null){
                     downStreamMsgContext.session = reChooseSession;
+                    reChooseSession.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     reChooseSession.downstreamMsg(downStreamMsgContext);
                     logger.info("rePush msg form unAckMsgs,seq:{},rePushClient:{}", entry.getKey(), downStreamMsgContext.session.getClient());
                 }else{
@@ -406,6 +407,35 @@ public class ClientSessionGroupMapping {
 
     public void shutdown() throws Exception {
         logger.info("begin to close sessions gracefully");
+        for(ClientGroupWrapper clientGroupWrapper : clientGroupMap.values()){
+            for(Session subSession : clientGroupWrapper.getGroupConsumerSessions()){
+                try {
+                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, subSession, this);
+                } catch (Exception e) {
+                    logger.error("say goodbye to subSession error! {}", subSession, e);
+                }
+            }
+
+            for(Session pubSession : clientGroupWrapper.getGroupProducerSessions()){
+                try {
+                    EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, pubSession, this);
+                } catch (Exception e) {
+                    logger.error("say goodbye to pubSession error! {}", pubSession, e);
+                }
+            }
+            try {
+                Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().gracefulShutdownSleepIntervalInMills);
+            } catch (InterruptedException e) {
+                logger.warn("Thread.sleep occur InterruptedException", e);
+            }
+        }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            logger.warn("Thread.sleep occur InterruptedException", e);
+        }
+
         sessionTable.values().parallelStream().forEach(itr -> {
             try {
                 EventMeshTcp2Client.serverGoodby2Client(this.eventMeshTCPServer,itr, this);
@@ -434,6 +464,22 @@ public class ClientSessionGroupMapping {
                 Map<String, Integer> map = new HashMap<>();
                 map.put(EventMeshConstants.PURPOSE_SUB, entry.getValue().getGroupConsumerSessions().size());
                 map.put(EventMeshConstants.PURPOSE_PUB, entry.getValue().getGroupProducerSessions().size());
+                result.put(entry.getKey(), map);
+            }
+        }
+
+        return result;
+    }
+
+    public Map<String, Map<String, Integer>> prepareProxyClientDistributionData(){
+        Map<String, Map<String, Integer>> result = null;
+
+        if(!clientGroupMap.isEmpty()){
+            result = new HashMap<>();
+            for(Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()){
+                Map<String, Integer> map = new HashMap();
+                map.put(EventMeshConstants.PURPOSE_SUB,entry.getValue().getGroupConsumerSessions().size());
+                map.put(EventMeshConstants.PURPOSE_PUB,entry.getValue().getGroupProducerSessions().size());
                 result.put(entry.getKey(), map);
             }
         }
