@@ -1,6 +1,6 @@
 # EventMesh Administration Module
 
-EventMesh Administration Module for EventMesh. It manages Admin and Schema Service, Configurations.It works as a control plane and provide some interface to manage the eventmesh-runtime module and other configurations.
+EventMesh Administration Module for EventMesh. It manages Admin Service, Configurations such as topics/subscriptions management.It works as a control plane and provide some interface to manage the eventmesh-runtime module and other configurations.
 
 ## Administration Client Manager APIs
 
