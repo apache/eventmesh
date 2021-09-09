@@ -24,6 +24,7 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,8 +67,8 @@ public class IPUtil {
             }
 
             // Traversal Network interface to get the first non-loopback and non-private address
-            ArrayList<String> ipv4Result = new ArrayList<String>();
-            ArrayList<String> ipv6Result = new ArrayList<String>();
+            LinkedList<String> ipv4Result = new LinkedList<String>();
+            LinkedList<String> ipv6Result = new LinkedList<String>();
 
             if (preferNetworkInterface != null) {
                 final Enumeration<InetAddress> en = preferNetworkInterface.getInetAddresses();
@@ -91,9 +92,9 @@ public class IPUtil {
                     return ip;
                 }
 
-                return ipv4Result.get(ipv4Result.size() - 1);
+                return ipv4Result.getLast();
             } else if (!ipv6Result.isEmpty()) {
-                return ipv6Result.get(0);
+                return ipv6Result.getFirst();
             }
             //If failed to find,fall back to localhost
             final InetAddress localHost = InetAddress.getLocalHost();
@@ -134,7 +135,7 @@ public class IPUtil {
         return m.matches();
     }
 
-    private static void getIpResult(ArrayList<String> ipv4Result, ArrayList<String> ipv6Result,
+    private static void getIpResult(LinkedList<String> ipv4Result, LinkedList<String> ipv6Result,
                                     Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
