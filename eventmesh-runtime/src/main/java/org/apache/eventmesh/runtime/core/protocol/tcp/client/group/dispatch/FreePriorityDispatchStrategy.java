@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -40,8 +40,8 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
             return null;
         }
 
-        List<Session> filtered = new ArrayList<Session>();
-        List<Session> isolatedSessions = new ArrayList<>();
+        LinkedList<Session> filtered = new LinkedList<Session>();
+        LinkedList<Session> isolatedSessions = new LinkedList<>();
         for (Session session : groupConsumerSessions) {
             if (!session.isAvailable(topic)) {
                 continue;
@@ -65,7 +65,7 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
         }
 
         Collections.shuffle(filtered);
-        Session session = filtered.get(0);
+        Session session = filtered.getFirst();
         return session;
     }
 }
