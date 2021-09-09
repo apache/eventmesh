@@ -24,7 +24,7 @@ import org.apache.eventmesh.spi.loader.MetaInfExtensionClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +38,7 @@ public enum EventMeshExtensionFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(EventMeshExtensionFactory.class);
 
-    private static final List<ExtensionClassLoader> extensionClassLoaders = new ArrayList<>();
+    private static final List<ExtensionClassLoader> extensionClassLoaders = new LinkedList<>();
 
     static {
         extensionClassLoaders.add(new MetaInfExtensionClassLoader());
