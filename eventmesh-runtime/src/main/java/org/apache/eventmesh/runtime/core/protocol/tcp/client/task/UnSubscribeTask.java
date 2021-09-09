@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +48,7 @@ public class UnSubscribeTask extends AbstractTask {
         Package msg = new Package();
         try {
             synchronized (session) {
-                List<SubscriptionItem> topics = new LinkedList<SubscriptionItem>();
+                List<SubscriptionItem> topics = new ArrayList<SubscriptionItem>();
                 if (MapUtils.isNotEmpty(session.getSessionContext().subscribeTopics)) {
                     for (Map.Entry<String, SubscriptionItem> entry : session.getSessionContext().subscribeTopics.entrySet()) {
                         topics.add(entry.getValue());
