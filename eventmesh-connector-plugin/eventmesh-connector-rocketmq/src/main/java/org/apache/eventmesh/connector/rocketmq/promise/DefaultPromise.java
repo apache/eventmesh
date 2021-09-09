@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.rocketmq.promise;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import io.openmessaging.api.Future;
@@ -39,7 +39,7 @@ public class DefaultPromise<V> implements Future<V> {
 
     public DefaultPromise() {
         createTime = System.currentTimeMillis();
-        promiseListenerList = new ArrayList<>();
+        promiseListenerList = new LinkedList<>();
         timeout = 5000;
     }
 
@@ -134,7 +134,7 @@ public class DefaultPromise<V> implements Future<V> {
                 notifyNow = true;
             } else {
                 if (promiseListenerList == null) {
-                    promiseListenerList = new ArrayList<>();
+                    promiseListenerList = new LinkedList<>();
                 }
                 promiseListenerList.add(listener);
             }
