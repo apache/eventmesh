@@ -25,6 +25,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,8 +45,10 @@ public class IPUtil {
         String priority = System.getProperty("networkInterface.priority", "eth0<eth1<bond1");
 
         ArrayList<String> preferList = new ArrayList<String>();
+        HashSet<String> preferSet = new HashSet<String>();
         for (String eth : priority.split("<")) {
             preferList.add(eth);
+            preferSet.add(eth);
         }
         NetworkInterface preferNetworkInterface = null;
 
@@ -53,7 +56,7 @@ public class IPUtil {
             Enumeration<NetworkInterface> enumeration1 = NetworkInterface.getNetworkInterfaces();
             while (enumeration1.hasMoreElements()) {
                 final NetworkInterface networkInterface = enumeration1.nextElement();
-                if (!preferList.contains(networkInterface.getName())) {
+                if (!preferSet.contains(networkInterface.getName())) {
                     continue;
                 } else if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
