@@ -69,7 +69,6 @@ public class SubScribeTask implements Runnable {
                                 switch (action) {
                                     case CommitMessage:
                                         // update offset
-                                        offset.incrementAndGet();
                                         logger.info("message commit, topic: {}, current offset:{}", topicName, offset.get());
                                         break;
                                     case ReconsumeLater:
