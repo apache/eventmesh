@@ -187,6 +187,18 @@ subprojects {
         }
     }
 
+    // pluginModuleName -> pluginInstanceName
+    Map<String, String> pluginInstanceMap = [
+            "eventmesh-connector-rocketmq": "rocketmq",
+            "eventmesh-security-acl": "acl",
+            "eventmesh-registry-rocketmq-namesrv": "namesrv"
+    ]
+    Map<String, String> pluginTypeMap = [
+            "eventmesh-connector-rocketmq": "connector",
+            "eventmesh-security-acl": "security",
+            "eventmesh-registry-rocketmq-namesrv": "registry"
+    ]
+
     task dist(dependsOn: ['jar']) {
         doFirst {
             new File(projectDir, '../dist/bin').mkdirs()
@@ -196,6 +208,26 @@ subprojects {
         }
 
         doLast {
+            if (pluginInstanceMap.containsKey(project.name)) {
+                var pluginInstanceName = pluginInstanceMap.get(project.name)
+                var pluginTypeName = pluginTypeMap.get(project.name)
+                println "install connector plugin" + project.name
+                new File("${rootDir}/dist/plugin/${pluginTypeName}/${pluginInstanceName}").mkdirs()
+                copy {
+                    into "${rootDir}/dist/plugin/${pluginTypeName}/${pluginInstanceName}"
+                    from project.jar.getArchivePath()
+                }
+                copy {
+                    into "${rootDir}/dist/plugin/${pluginTypeName}/${pluginInstanceName}"
+                    from project.configurations.runtimeClasspath
+                }
+                copy {
+                    into "${rootDir}/dist/conf"
+                    from sourceSets.main.resources.srcDirs
+                    exclude 'META-INF'
+                }
+            }
+
             copy {
                 into('../dist/apps/')
                 from project.jar.getArchivePath()

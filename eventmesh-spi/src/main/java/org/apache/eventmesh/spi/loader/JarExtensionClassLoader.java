@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.spi.loader;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.eventmesh.spi.EventMeshSPI;
 import org.apache.eventmesh.spi.ExtensionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,25 +48,30 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
             new ConcurrentHashMap<>(16);
 
     private static final String EVENTMESH_EXTENSION_PLUGIN_DIR = System.getProperty("eventMeshPluginDir",
-            "./plugin");
+            Joiner.on(File.separator).join(Lists.newArrayList(".", "plugin")));
 
-    private static final String EVENTMESH_EXTENSION_META_DIR = "META-INF/eventmesh/";
+    // META-INF/eventmesh
+    private static final String EVENTMESH_EXTENSION_META_DIR =
+            Joiner.on(File.separator).join(Lists.newArrayList("META-INF", "eventmesh"));
 
     @Override
-    public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType) {
-        return EXTENSION_CLASS_CACHE.computeIfAbsent(extensionType, this::doLoadExtensionClass);
+    public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
+        return EXTENSION_CLASS_CACHE.computeIfAbsent(extensionType, t -> doLoadExtensionClass(t, extensionInstanceName));
     }
 
-    private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType) {
+    private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
         Map<String, Class<?>> extensionMap = new HashMap<>();
+        EventMeshSPI eventMeshSPIAnnotation = extensionType.getAnnotation(EventMeshSPI.class);
 
-        List<URL> pluginJarPaths = loadJarPathFromResource(EVENTMESH_EXTENSION_PLUGIN_DIR);
-        if (CollectionUtils.isEmpty(pluginJarPaths)) {
-            return extensionMap;
-        }
+        String pluginDir = Joiner.on(File.separator).join(Lists.newArrayList(
+                EVENTMESH_EXTENSION_PLUGIN_DIR,
+                eventMeshSPIAnnotation.eventMeshExtensionType().getExtensionTypeName(),
+                extensionInstanceName)
+        );
 
-        String extensionFileName = EVENTMESH_EXTENSION_META_DIR + extensionType.getName();
-        URLClassLoader urlClassLoader = URLClassLoader.newInstance(pluginJarPaths.toArray(new URL[0]));
+        String extensionFileName = EVENTMESH_EXTENSION_META_DIR + File.separator + extensionType.getName();
+        EventMeshUrlClassLoader urlClassLoader = EventMeshUrlClassLoader.getInstance();
+        urlClassLoader.addUrls(loadJarPathFromResource(pluginDir));
         try {
             Enumeration<URL> extensionUrls = urlClassLoader.getResources(extensionFileName);
             if (extensionUrls != null) {
