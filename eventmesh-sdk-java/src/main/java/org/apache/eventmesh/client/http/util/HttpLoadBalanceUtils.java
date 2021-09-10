@@ -26,7 +26,7 @@ import org.apache.eventmesh.common.loadbalance.RandomLoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.Weight;
 import org.apache.eventmesh.common.loadbalance.WeightRoundRobinLoadBalanceSelector;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -45,7 +45,7 @@ public class HttpLoadBalanceUtils {
         LoadBalanceSelector<String> eventMeshServerSelector = null;
         switch (liteClientConfig.getLoadBalanceType()) {
             case RANDOM:
-                List<String> eventMeshAddrList = new ArrayList<>();
+                List<String> eventMeshAddrList = new LinkedList<>();
                 for (String eventMeshAddr : eventMeshAddrs) {
                     if (!IP_PORT_PATTERN.matcher(eventMeshAddr).matches()) {
                         throw new EventMeshException(
@@ -56,7 +56,7 @@ public class HttpLoadBalanceUtils {
                 eventMeshServerSelector = new RandomLoadBalanceSelector<>(eventMeshAddrList);
                 break;
             case WEIGHT_ROUND_ROBIN:
-                List<Weight<String>> eventMeshAddrWeightList = new ArrayList<>();
+                List<Weight<String>> eventMeshAddrWeightList = new LinkedList<>();
                 for (String eventMeshAddrWight : eventMeshAddrs) {
                     if (!IP_PORT_WEIGHT_PATTERN.matcher(eventMeshAddrWight).matches()) {
                         throw new EventMeshException(
