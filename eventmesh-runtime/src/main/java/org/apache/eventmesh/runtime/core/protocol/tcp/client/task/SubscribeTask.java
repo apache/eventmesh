@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -51,10 +51,8 @@ public class SubscribeTask extends AbstractTask {
                 throw new Exception("subscriptionInfo is null");
             }
 
-            List<SubscriptionItem> subscriptionItems = new ArrayList<>();
-            for (int i = 0; i < subscriptionInfo.getTopicList().size(); i++) {
-                SubscriptionItem item = subscriptionInfo.getTopicList().get(i);
-
+            List<SubscriptionItem> subscriptionItems = new LinkedList<>();
+            for (SubscriptionItem item : subscriptionInfo.getTopicList()) {
                 //do acl check for receive msg
                 if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable){
                     String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
