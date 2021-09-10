@@ -235,8 +235,11 @@ public class EventMeshUtil {
         String priority = System.getProperty("networkInterface.priority", "bond1<eth1<eth0");
         logger.debug("networkInterface.priority: {}", priority);
         ArrayList<String> preferList = new ArrayList<String>();
+        HashSet<String> preferSet = new HashSet<String>();
+        
         for (String eth : priority.split("<")) {
             preferList.add(eth);
+            preferSet.add(eth);
         }
         NetworkInterface preferNetworkInterface = null;
 
@@ -244,7 +247,7 @@ public class EventMeshUtil {
             Enumeration<NetworkInterface> enumeration1 = NetworkInterface.getNetworkInterfaces();
             while (enumeration1.hasMoreElements()) {
                 final NetworkInterface networkInterface = enumeration1.nextElement();
-                if (!preferList.contains(networkInterface.getName())) {
+                if (!preferSet.contains(networkInterface.getName())) {
                     continue;
                 } else if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
