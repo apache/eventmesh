@@ -18,6 +18,7 @@
 package org.apache.eventmesh.client.http.consumer;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -176,7 +177,7 @@ public class LiteConsumer extends AbstractLiteClient {
     }
 
     private RequestParam generateHeartBeatRequestParam(List<SubscriptionItem> topics, String url) {
-        List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = new ArrayList<>();
+        List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = new LinkedList<>();
         for (SubscriptionItem item : topics) {
             HeartbeatRequestBody.HeartbeatEntity heartbeatEntity = new HeartbeatRequestBody.HeartbeatEntity();
             heartbeatEntity.topic = item.getTopic();
