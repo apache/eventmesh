@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import java.util.ArrayList;
+import java.util.LinkedList
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -137,7 +138,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         String subsystem = sendMessageBatchRequestHeader.getSys();
         int requestCode = Integer.valueOf(sendMessageBatchRequestHeader.getCode());
 
-        List<Message> msgList = new ArrayList<>();
+        List<Message> msgList = new LinkedList<>();
         Map<String, List<Message>> topicBatchMessageMappings = new ConcurrentHashMap<String, List<Message>>();
         for (SendMessageBatchRequestBody.BatchMessageEntity msg : sendMessageBatchRequestBody.getContents()) {
             if (StringUtils.isBlank(msg.topic)
