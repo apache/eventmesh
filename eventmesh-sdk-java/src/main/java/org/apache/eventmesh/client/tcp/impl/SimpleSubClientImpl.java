@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.client.tcp.impl;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +50,7 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
 
     private ReceiveMsgHook callback;
 
-    private List<SubscriptionItem> subscriptionItems = new ArrayList<SubscriptionItem>();
+    private List<SubscriptionItem> subscriptionItems = new LinkedList<SubscriptionItem>();
 
     private ScheduledFuture<?> task;
 
