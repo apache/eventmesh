@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.connector.kafka.consumer;
 
-import io.openmessaging.api.Action;
-import io.openmessaging.api.AsyncConsumeContext;
 import io.openmessaging.api.AsyncGenericMessageListener;
 import io.openmessaging.api.AsyncMessageListener;
 import io.openmessaging.api.Consumer;
@@ -28,6 +26,8 @@ import io.openmessaging.api.MessageListener;
 import io.openmessaging.api.MessageSelector;
 import io.openmessaging.api.exception.OMSRuntimeException;
 import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -87,9 +87,6 @@ public class KafkaMQConsumerImpl implements Consumer {
         }
         if (kafkaConsumerConfig.getAutoOffsetReset() != null) {
             properties.put(KafkaConsumerConfig.KafkaConsumerConfigKey.autoOffsetReset, kafkaConsumerConfig.getAutoOffsetReset());
-        }
-        if (kafkaConsumerConfig.getEnableAutoCommit() != null) {
-            properties.put(KafkaConsumerConfig.KafkaConsumerConfigKey.enableAutoCommit, kafkaConsumerConfig.getEnableAutoCommit());
         }
         if (kafkaConsumerConfig.getMaxPollRecords() != null) {
             properties.put(KafkaConsumerConfig.KafkaConsumerConfigKey.maxPollRecords, kafkaConsumerConfig.getMaxPollRecords());
@@ -169,11 +166,19 @@ public class KafkaMQConsumerImpl implements Consumer {
                             String.format("The topic/queue %s isn't attached to this consumer", record.topic()));
                 }
                 AtomicBoolean commitSuccess = new AtomicBoolean(false);
-                AsyncConsumeContext omsContext = new AsyncConsumeContext() {
+                EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
                     @Override
-                    public void commit(Action action) {
-                        if (Action.CommitMessage.equals(action)) {
-                            commitSuccess.set(true);
+                    public void commit(EventMeshAction action) {
+                        switch (action) {
+                            case ManualAck:
+                                commitSuccess.set(true);
+                                break;
+                            case CommitMessage:
+                                break;
+                            case ReconsumeLater:
+                                break;
+                            default:
+                                break;
                         }
                     }
                 };
@@ -182,8 +187,8 @@ public class KafkaMQConsumerImpl implements Consumer {
                 Message message = record.value();
                 message.putUserProperties("offset", String.valueOf(offset));
                 message.putUserProperties("partition", String.valueOf(partition));
-                listener.consume(message, omsContext);
-                if (commitSuccess.get() && kafkaConsumerConfig.getEnableAutoCommit()) {
+                listener.consume(message, consumeContext);
+                if (commitSuccess.get()) {
                     // consumer success
                     kafkaConsumer.commitSync();
                 }

@@ -30,7 +30,6 @@ public class KafkaConsumerConfig {
     private Integer maxPartitionFetchBytes;
     private Integer sessionTimeoutMs;
     private String autoOffsetReset;
-    private Boolean enableAutoCommit = false;
     private Integer maxPollRecords;
 
     public KafkaConsumerConfig(ConfigurationWrapper configurationWrapper) {
@@ -64,9 +63,6 @@ public class KafkaConsumerConfig {
         }
         if (configurationWrapper.getProperty(KafkaConsumerConfigKey.autoOffsetReset) != null) {
             this.autoOffsetReset = configurationWrapper.getProperty(KafkaConsumerConfigKey.autoOffsetReset);
-        }
-        if (configurationWrapper.getProperty(KafkaConsumerConfigKey.enableAutoCommit) != null) {
-            this.enableAutoCommit = Boolean.valueOf(configurationWrapper.getProperty(KafkaConsumerConfigKey.enableAutoCommit));
         }
         if (configurationWrapper.getProperty(KafkaConsumerConfigKey.maxPollRecords) != null) {
             this.maxPollRecords = Integer.valueOf(configurationWrapper.getProperty(KafkaConsumerConfigKey.maxPollRecords));
@@ -146,14 +142,6 @@ public class KafkaConsumerConfig {
         this.autoOffsetReset = autoOffsetReset;
     }
 
-    public Boolean getEnableAutoCommit() {
-        return enableAutoCommit;
-    }
-
-    public void setEnableAutoCommit(Boolean enableAutoCommit) {
-        this.enableAutoCommit = enableAutoCommit;
-    }
-
     public Integer getMaxPollRecords() {
         return maxPollRecords;
     }
@@ -172,7 +160,6 @@ public class KafkaConsumerConfig {
         public static String maxPartitionFetchBytes = "max.partition.fetch.bytes";
         public static String sessionTimeoutMs = "session.timeout.ms";
         public static String autoOffsetReset = "auto.offset.reset";
-        public static String enableAutoCommit = "enable.auto.commit";
         public static String maxPollRecords = "max.poll.records";
     }
 
