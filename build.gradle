@@ -187,16 +187,20 @@ subprojects {
         }
     }
 
-    // pluginModuleName -> pluginInstanceName
-    Map<String, String> pluginInstanceMap = [
-            "eventmesh-connector-rocketmq": "rocketmq",
-            "eventmesh-security-acl": "acl",
-            "eventmesh-registry-rocketmq-namesrv": "namesrv"
-    ]
-    Map<String, String> pluginTypeMap = [
-            "eventmesh-connector-rocketmq": "connector",
-            "eventmesh-security-acl": "security",
-            "eventmesh-registry-rocketmq-namesrv": "registry"
+    // pluginType:
+    //      pluginInstanceName:
+    //            moduleName
+    Map<String, Map<String, String>> pluginTypeMap = [
+            "connector": [
+                    "rocketmq"  : "eventmesh-connector-rocketmq",
+                    "standalone": "eventmesh-connector-standalone",
+            ],
+            "security" : [
+                    "acl": "eventmesh-security-acl",
+            ],
+            "registry" : [
+                    "namesrv": "eventmesh-registry-rocketmq-namesrv",
+            ]
     ]
 
     task dist(dependsOn: ['jar']) {
@@ -208,25 +212,28 @@ subprojects {
         }
 
         doLast {
-            if (pluginInstanceMap.containsKey(project.name)) {
-                var pluginInstanceName = pluginInstanceMap.get(project.name)
-                var pluginTypeName = pluginTypeMap.get(project.name)
-                println "install connector plugin" + project.name
-                new File("${rootDir}/dist/plugin/${pluginTypeName}/${pluginInstanceName}").mkdirs()
-                copy {
-                    into "${rootDir}/dist/plugin/${pluginTypeName}/${pluginInstanceName}"
-                    from project.jar.getArchivePath()
-                }
-                copy {
-                    into "${rootDir}/dist/plugin/${pluginTypeName}/${pluginInstanceName}"
-                    from project.configurations.runtimeClasspath
-                }
-                copy {
-                    into "${rootDir}/dist/conf"
-                    from sourceSets.main.resources.srcDirs
-                    exclude 'META-INF'
-                }
-            }
+            pluginTypeMap.forEach((pluginType, pluginInstanceMap) -> {
+                pluginInstanceMap.forEach((pluginInstanceName, moduleName) -> {
+                    if (moduleName == project.name) {
+                        println String.format("install plugin, pluginType: %s, pluginInstanceName: %s, module: %s",
+                                pluginType, pluginInstanceName, moduleName)
+                        new File("${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}").mkdirs()
+                        copy {
+                            into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
+                            from project.jar.getArchivePath()
+                        }
+                        copy {
+                            into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
+                            from project.configurations.runtimeClasspath
+                        }
+                        copy {
+                            into "${rootDir}/dist/conf"
+                            from sourceSets.main.resources.srcDirs
+                            exclude 'META-INF'
+                        }
+                    }
+                })
+            })
 
             copy {
                 into('../dist/apps/')

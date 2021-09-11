@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.spi.loader;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import org.apache.eventmesh.spi.EventMeshSPI;
 import org.apache.eventmesh.spi.ExtensionException;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -51,8 +51,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
             Joiner.on(File.separator).join(Lists.newArrayList(".", "plugin")));
 
     // META-INF/eventmesh
-    private static final String EVENTMESH_EXTENSION_META_DIR =
-            Joiner.on(File.separator).join(Lists.newArrayList("META-INF", "eventmesh"));
+    private static final String EVENTMESH_EXTENSION_META_DIR = Paths.get("META-INF", "eventmesh").toString();
 
     @Override
     public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
@@ -60,14 +59,14 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
     }
 
     private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
-        Map<String, Class<?>> extensionMap = new HashMap<>();
+        Map<String, Class<?>> extensionMap = new HashMap<>(16);
         EventMeshSPI eventMeshSPIAnnotation = extensionType.getAnnotation(EventMeshSPI.class);
 
-        String pluginDir = Joiner.on(File.separator).join(Lists.newArrayList(
+        String pluginDir = Paths.get(
                 EVENTMESH_EXTENSION_PLUGIN_DIR,
                 eventMeshSPIAnnotation.eventMeshExtensionType().getExtensionTypeName(),
-                extensionInstanceName)
-        );
+                extensionInstanceName
+        ).toString();
 
         String extensionFileName = EVENTMESH_EXTENSION_META_DIR + File.separator + extensionType.getName();
         EventMeshUrlClassLoader urlClassLoader = EventMeshUrlClassLoader.getInstance();
