@@ -202,6 +202,7 @@ subprojects {
                 exclude 'eventmesh-common*.jar'
                 exclude 'eventmesh-connector-api*.jar'
                 exclude 'eventmesh-connector-plugin*.jar'
+                exclude 'eventmesh-admin*.jar'
                 exclude 'eventmesh-starter*.jar'
                 exclude 'eventmesh-test*.jar'
                 exclude 'eventmesh-sdk*.jar'
