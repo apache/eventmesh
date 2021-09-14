@@ -29,7 +29,6 @@ dependencies {
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-rocketmq-namesrv")
 
-
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-acl")
