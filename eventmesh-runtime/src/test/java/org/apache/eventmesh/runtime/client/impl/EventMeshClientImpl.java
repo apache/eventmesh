@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.client.impl;
 
-import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
@@ -84,14 +84,14 @@ public class EventMeshClientImpl implements EventMeshClient {
 
     @Override
     public Package justSubscribe(String topic, SubscriptionMode subscriptionMode,
-        SubcriptionType subcriptionType) throws Exception {
-        return this.subClient.justSubscribe(topic, subscriptionMode, subcriptionType);
+        SubscriptionType subscriptionType) throws Exception {
+        return this.subClient.justSubscribe(topic, subscriptionMode, subscriptionType);
     }
 
     @Override
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
-        SubcriptionType subcriptionType) throws Exception {
-        return this.subClient.justUnsubscribe(topic, subscriptionMode, subcriptionType);
+        SubscriptionType subscriptionType) throws Exception {
+        return this.subClient.justUnsubscribe(topic, subscriptionMode, subscriptionType);
     }
 
     public void registerSubBusiHandler(ReceiveMsgHook handler) throws Exception {

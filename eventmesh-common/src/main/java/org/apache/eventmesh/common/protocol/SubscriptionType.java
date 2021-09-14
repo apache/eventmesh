@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.protocol;
 
-public enum SubcriptionType {
+public enum SubscriptionType {
     /**
      * SYNC
      */
@@ -29,7 +29,7 @@ public enum SubcriptionType {
 
     private String type;
 
-    SubcriptionType(String type) {
+    SubscriptionType(String type) {
         this.type = type;
     }
 

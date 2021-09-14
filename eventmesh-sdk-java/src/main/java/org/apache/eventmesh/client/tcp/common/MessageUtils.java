@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
@@ -56,10 +56,10 @@ public class MessageUtils {
         return msg;
     }
 
-    public static Package subscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) {
+    public static Package subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) {
         Package msg = new Package();
         msg.setHeader(new Header(Command.SUBSCRIBE_REQUEST, 0, null, generateRandomString(seqLength)));
-        msg.setBody(generateSubscription(topic, subscriptionMode, subcriptionType));
+        msg.setBody(generateSubscription(topic, subscriptionMode, subscriptionType));
         return msg;
     }
 
@@ -132,10 +132,10 @@ public class MessageUtils {
         return user;
     }
 
-    private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) {
+    private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) {
         Subscription subscription = new Subscription();
         List<SubscriptionItem> subscriptionItems = new ArrayList<>();
-        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subcriptionType));
+        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
         subscription.setTopicList(subscriptionItems);
         return subscription;
     }
