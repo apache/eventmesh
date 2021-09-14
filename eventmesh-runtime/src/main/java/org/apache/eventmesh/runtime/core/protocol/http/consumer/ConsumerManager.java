@@ -81,7 +81,7 @@ public class ConsumerManager {
                             boolean isChange = false;
                             while (clientIterator.hasNext()) {
                                 Client client = clientIterator.next();
-                                //时间差大于3次心跳周期
+                                //The time difference is greater than 3 heartbeat cycles
                                 if (System.currentTimeMillis() - client.lastUpTime.getTime() > DEFAULT_UPDATE_TIME) {
                                     logger.warn("client {} lastUpdate time {} over three heartbeat cycles",
                                             JSONObject.toJSONString(client), client.lastUpTime);
@@ -152,7 +152,7 @@ public class ConsumerManager {
     }
 
     /**
-     * notify ConsumerManager 组级别
+     * notify ConsumerManager groupLevel
      */
     public void notifyConsumerManager(String consumerGroup, ConsumerGroupConf latestConsumerGroupConfig,
                                       ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping) throws Exception {

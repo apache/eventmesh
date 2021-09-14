@@ -1,0 +1,569 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+{
+  "allowedLicenses": [
+        {
+            "moduleLicense": "Eclipse Public License - v 1.0",
+            "moduleVersion": "1.0.13",
+            "moduleName": "ch.qos.logback:logback-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "1.2.71",
+            "moduleName": "com.alibaba:fastjson"
+        },
+        {
+            "moduleLicense": "Apache 2.0",
+            "moduleVersion": "1.72",
+            "moduleName": "com.beust:jcommander"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.11.0",
+            "moduleName": "com.fasterxml.jackson.core:jackson-annotations"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.11.0",
+            "moduleName": "com.fasterxml.jackson.core:jackson-core"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.11.0",
+            "moduleName": "com.fasterxml.jackson.core:jackson-databind"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.9.9",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.9.9",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.9.9",
+            "moduleName": "com.fasterxml.jackson.module:jackson-module-parameter-names"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.3.4",
+            "moduleName": "com.fasterxml:classmate"
+        },
+        {
+            "moduleLicense": "Common Public License Version 1.0",
+            "moduleVersion": "1.16.1",
+            "moduleName": "com.github.stefanbirkner:system-rules"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "3.0.2",
+            "moduleName": "com.google.code.findbugs:jsr305"
+        },
+        {
+            "moduleLicense": "Apache 2.0",
+            "moduleVersion": "2.3.4",
+            "moduleName": "com.google.errorprone:error_prone_annotations"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.0.1",
+            "moduleName": "com.google.guava:failureaccess"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "29.0-jre",
+            "moduleName": "com.google.guava:guava"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "9999.0-empty-to-avoid-conflict-with-guava",
+            "moduleName": "com.google.guava:listenablefuture"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.3",
+            "moduleName": "com.google.j2objc:j2objc-annotations"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "0.30",
+            "moduleName": "com.google.truth:truth"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "3.4.2",
+            "moduleName": "com.lmax:disruptor"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.9.2",
+            "moduleName": "commons-beanutils:commons-beanutils"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.2",
+            "moduleName": "commons-cli:commons-cli"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.9",
+            "moduleName": "commons-codec:commons-codec"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "3.2.2",
+            "moduleName": "commons-collections:commons-collections"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.8.1",
+            "moduleName": "commons-digester:commons-digester"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.4",
+            "moduleName": "commons-io:commons-io"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.2",
+            "moduleName": "commons-logging:commons-logging"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "1.6",
+            "moduleName": "commons-validator:commons-validator"
+        },
+        {
+            "moduleLicense": "Apache License 2.0",
+            "moduleVersion": "4.1.0",
+            "moduleName": "io.dropwizard.metrics:metrics-annotation"
+        },
+        {
+            "moduleLicense": "Apache License 2.0",
+            "moduleVersion": "4.1.0",
+            "moduleName": "io.dropwizard.metrics:metrics-core"
+        },
+        {
+            "moduleLicense": "Apache License 2.0",
+            "moduleVersion": "4.1.0",
+            "moduleName": "io.dropwizard.metrics:metrics-healthchecks"
+        },
+        {
+            "moduleLicense": "Apache License 2.0",
+            "moduleVersion": "4.1.0",
+            "moduleName": "io.dropwizard.metrics:metrics-json"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.1.49.Final",
+            "moduleName": "io.netty:netty-all"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "1.1.33.Fork26",
+            "moduleName": "io.netty:netty-tcnative-boringssl-static"
+        },
+        {
+            "moduleVersion": "0.1",
+            "moduleName": "io.openmessaging.storage:dledger"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.2.1-pubsub",
+            "moduleName": "io.openmessaging:openmessaging-api"
+        },
+        {
+            "moduleLicense": "COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0",
+            "moduleVersion": "1.3.2",
+            "moduleName": "javax.annotation:javax.annotation-api"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.0.1.Final",
+            "moduleName": "javax.validation:validation-api"
+        },
+        {
+            "moduleLicense": "Eclipse Public License 1.0",
+            "moduleVersion": "4.12",
+            "moduleName": "junit:junit"
+        },
+        {
+            "moduleVersion": "4.11",
+            "moduleName": "junit:junit-dep"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.2.17",
+            "moduleName": "log4j:log4j"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.9.3",
+            "moduleName": "net.bytebuddy:byte-buddy"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.9.3",
+            "moduleName": "net.bytebuddy:byte-buddy-agent"
+        },
+        {
+            "moduleLicense": "ASL, version 2",
+            "moduleVersion": "4.2.2",
+            "moduleName": "net.java.dev.jna:jna"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.1",
+            "moduleName": "org.apache.commons:commons-collections4"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "3.6",
+            "moduleName": "org.apache.commons:commons-lang3"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "1.9",
+            "moduleName": "org.apache.commons:commons-text"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "4.5.2",
+            "moduleName": "org.apache.httpcomponents:httpclient"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "4.4.4",
+            "moduleName": "org.apache.httpcomponents:httpcore"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.13.3",
+            "moduleName": "org.apache.logging.log4j:log4j-api"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.13.3",
+            "moduleName": "org.apache.logging.log4j:log4j-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.13.3",
+            "moduleName": "org.apache.logging.log4j:log4j-slf4j-impl"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.13.3",
+            "moduleName": "org.apache.logging.log4j:log4j-web"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-acl"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-broker"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-client"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-common"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-filter"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-logging"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-namesrv"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-remoting"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-srvutil"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-store"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-test"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "4.7.1",
+            "moduleName": "org.apache.rocketmq:rocketmq-tools"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.21",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.21",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-el"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.21",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-websocket"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.6.0",
+            "moduleName": "org.assertj:assertj-core"
+        },
+        {
+            "moduleLicense": "The MIT License",
+            "moduleVersion": "2.11.1",
+            "moduleName": "org.checkerframework:checker-qual"
+        },
+        {
+            "moduleLicense": "New BSD License",
+            "moduleVersion": "1.3",
+            "moduleName": "org.hamcrest:hamcrest-core"
+        },
+        {
+            "moduleLicense": "Apache License 2.0",
+            "moduleVersion": "6.0.17.Final",
+            "moduleName": "org.hibernate.validator:hibernate-validator"
+        },
+        {
+            "moduleLicense": "Apache License 2.0",
+            "moduleVersion": "3.24.0-GA",
+            "moduleName": "org.javassist:javassist"
+        },
+        {
+            "moduleLicense": "Apache License, version 2.0",
+            "moduleVersion": "3.3.2.Final",
+            "moduleName": "org.jboss.logging:jboss-logging"
+        },
+        {
+            "moduleLicense": "The MIT License",
+            "moduleVersion": "2.23.0",
+            "moduleName": "org.mockito:mockito-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "3.0.1",
+            "moduleName": "org.objenesis:objenesis"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.0.2",
+            "moduleName": "org.powermock:powermock-api-mockito2"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.0.2",
+            "moduleName": "org.powermock:powermock-api-support"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.0.2",
+            "moduleName": "org.powermock:powermock-core"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.0.2",
+            "moduleName": "org.powermock:powermock-module-junit4"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.0.2",
+            "moduleName": "org.powermock:powermock-module-junit4-common"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.0.2",
+            "moduleName": "org.powermock:powermock-reflect"
+        },
+        {
+            "moduleLicense": "MIT License",
+            "moduleVersion": "1.7.30",
+            "moduleName": "org.slf4j:slf4j-api"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.1.6.RELEASE",
+            "moduleName": "org.springframework.boot:spring-boot"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.1.6.RELEASE",
+            "moduleName": "org.springframework.boot:spring-boot-autoconfigure"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.1.6.RELEASE",
+            "moduleName": "org.springframework.boot:spring-boot-starter"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.1.6.RELEASE",
+            "moduleName": "org.springframework.boot:spring-boot-starter-json"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.1.6.RELEASE",
+            "moduleName": "org.springframework.boot:spring-boot-starter-tomcat"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.1.6.RELEASE",
+            "moduleName": "org.springframework.boot:spring-boot-starter-web"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.1.8.RELEASE",
+            "moduleName": "org.springframework:spring-aop"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.1.8.RELEASE",
+            "moduleName": "org.springframework:spring-beans"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.1.8.RELEASE",
+            "moduleName": "org.springframework:spring-context"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.1.8.RELEASE",
+            "moduleName": "org.springframework:spring-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.1.8.RELEASE",
+            "moduleName": "org.springframework:spring-expression"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.1.8.RELEASE",
+            "moduleName": "org.springframework:spring-jcl"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.1.8.RELEASE",
+            "moduleName": "org.springframework:spring-web"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.1.8.RELEASE",
+            "moduleName": "org.springframework:spring-webmvc"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "1.19",
+            "moduleName": "org.yaml:snakeyaml"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "1.23",
+            "moduleName": "org.yaml:snakeyaml"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0",
+            "moduleName": "io.opentelemetry:opentelemetry-api"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0-alpha",
+            "moduleName": "io.opentelemetry:opentelemetry-api-metrics"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0",
+            "moduleName": "io.opentelemetry:opentelemetry-context"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0-alpha",
+            "moduleName": "io.opentelemetry:opentelemetry-exporter-prometheus"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0",
+            "moduleName": "io.opentelemetry:opentelemetry-sdk"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0",
+            "moduleName": "io.opentelemetry:opentelemetry-sdk-common"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0-alpha",
+            "moduleName": "io.opentelemetry:opentelemetry-sdk-metrics"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0",
+            "moduleName": "io.opentelemetry:opentelemetry-sdk-trace"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "1.3.0-alpha",
+            "moduleName": "io.opentelemetry:opentelemetry-semconv"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "0.8.1",
+            "moduleName": "io.prometheus:simpleclient"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "0.8.1",
+            "moduleName": "io.prometheus:simpleclient_common"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "0.8.1",
+            "moduleName": "io.prometheus:simpleclient_httpserver"
+        }
+  ]
+}

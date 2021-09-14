@@ -58,7 +58,7 @@ public class TcpSummaryMetrics {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_HTTP = "%15s : {\"maxHTTPTPS\":\"%.1f\",\"avgHTTPTPS\":\"%.1f\"," +  //EVENTMESH 接受外部HTTP 请求的TPS相关
+    public static final String EVENTMESH_MONITOR_FORMAT_HTTP = "%15s : {\"maxHTTPTPS\":\"%.1f\",\"avgHTTPTPS\":\"%.1f\"," +  //EVENTMESH tps related to accepting external http requests
             "\"maxHTTPCOST\":\"%s\",\"avgHTTPCOST\":\"%.1f\",\"avgHTTPBodyDecodeCost\":\"%.1f\"}";
 
     private float wholeCost = 0f;

@@ -50,7 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class TcpClient implements Closeable {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public int clientNo = (new Random()).nextInt(1000);
 
@@ -66,8 +66,6 @@ public abstract class TcpClient implements Closeable {
     private Channel channel;
 
     protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4, new EventMeshThreadFactoryImpl("TCPClientScheduler", true));
-
-    private ScheduledFuture<?> task;
 
     public TcpClient(String host, int port) {
         this.host = host;
@@ -119,7 +117,7 @@ public abstract class TcpClient implements Closeable {
         if (channel.isWritable()) {
             channel.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
                 if (!future.isSuccess()) {
-                    logger.warn("send msg failed", future.isSuccess(), future.cause());
+                    logger.warn("send msg failed", future.cause());
                 }
             });
         } else {

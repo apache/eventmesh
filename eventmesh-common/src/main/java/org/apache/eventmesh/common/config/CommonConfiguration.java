@@ -17,17 +17,10 @@
 
 package org.apache.eventmesh.common.config;
 
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-
 import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.IPUtil;
 
 public class CommonConfiguration {
     public String eventMeshEnv = "P";
@@ -35,57 +28,74 @@ public class CommonConfiguration {
     public String eventMeshCluster = "LS";
     public String eventMeshName = "";
     public String sysID = "5477";
-
+    public String eventMeshConnectorPluginType = "rocketmq";
+    public String eventMeshSecurityPluginType = "security";
+    public int eventMeshPrometheusPort = 19090;
+    public String eventMeshRegistryPluginType = "namesrv";
 
     public String namesrvAddr = "";
-    public String clientUserName = "username";
-    public String clientPass = "user@123";
-    public Integer consumeThreadMin = 2;
-    public Integer consumeThreadMax = 2;
-    public Integer consumeQueueSize = 10000;
-    public Integer pullBatchSize = 32;
-    public Integer ackWindow = 1000;
-    public Integer pubWindow = 100;
-    public long consumeTimeout = 0L;
-    public Integer pollNameServerInteval = 10 * 1000;
-    public Integer heartbeatBrokerInterval = 30 * 1000;
-    public Integer rebalanceInterval = 20 * 1000;
     public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
     public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
     public String eventMeshServerIp = null;
-    protected ConfigurationWraper configurationWraper;
+    public boolean eventMeshServerSecurityEnable = false;
+    public boolean eventMeshServerRegistryEnable = false;
+    protected ConfigurationWrapper configurationWrapper;
 
-    public CommonConfiguration(ConfigurationWraper configurationWraper) {
-        this.configurationWraper = configurationWraper;
+    public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
+        this.configurationWrapper = configurationWrapper;
     }
 
     public void init() {
 
-        if (configurationWraper != null) {
-            String eventMeshEnvStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_ENV);
+        if (configurationWrapper != null) {
+            String eventMeshEnvStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ENV);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshEnvStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ENV));
             eventMeshEnv = StringUtils.deleteWhitespace(eventMeshEnvStr);
 
-            String sysIdStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
+            String sysIdStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
             Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SYSID));
             sysID = StringUtils.deleteWhitespace(sysIdStr);
 
-            String eventMeshClusterStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
+            String eventMeshClusterStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshClusterStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER));
             eventMeshCluster = StringUtils.deleteWhitespace(eventMeshClusterStr);
 
-            String eventMeshNameStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
+            String eventMeshNameStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshNameStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_NAME));
             eventMeshName = StringUtils.deleteWhitespace(eventMeshNameStr);
 
-            String eventMeshIDCStr = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
+            String eventMeshIDCStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIDCStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
             eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIDCStr);
 
-            eventMeshServerIp = configurationWraper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
-            if (StringUtils.isBlank(eventMeshServerIp)) {
-                eventMeshServerIp = getLocalAddr();
+            String eventMeshPrometheusPortStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT);
+            if (StringUtils.isNotEmpty(eventMeshPrometheusPortStr)) {
+                eventMeshPrometheusPort = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshPrometheusPortStr));
             }
+
+            eventMeshServerIp = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
+            if (StringUtils.isBlank(eventMeshServerIp)) {
+                eventMeshServerIp = IPUtil.getLocalAddress();
+            }
+
+            eventMeshConnectorPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshConnectorPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE));
+
+            String eventMeshServerAclEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED);
+            if (StringUtils.isNotBlank(eventMeshServerAclEnableStr)) {
+                eventMeshServerSecurityEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
+            }
+
+            eventMeshSecurityPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshSecurityPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE));
+
+            String eventMeshServerRegistryEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED);
+            if (StringUtils.isNotBlank(eventMeshServerRegistryEnableStr)) {
+                eventMeshServerRegistryEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
+            }
+
+            eventMeshRegistryPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegistryPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE));
         }
     }
 
@@ -105,94 +115,17 @@ public class CommonConfiguration {
         public static String KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL = "eventMesh.server.registry.registerIntervalInMills";
 
         public static String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL = "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
-    }
 
-    public static String getLocalAddr() {
-        //priority of networkInterface when generating client ip
-        String priority = System.getProperty("networkInterface.priority", "bond1<eth1<eth0");
-        ArrayList<String> preferList = new ArrayList<String>();
-        for (String eth : priority.split("<")) {
-            preferList.add(eth);
-        }
-        NetworkInterface preferNetworkInterface = null;
+        public static String KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE = "eventMesh.connector.plugin.type";
 
-        try {
-            Enumeration<NetworkInterface> enumeration1 = NetworkInterface.getNetworkInterfaces();
-            while (enumeration1.hasMoreElements()) {
-                final NetworkInterface networkInterface = enumeration1.nextElement();
-                if (!preferList.contains(networkInterface.getName())) {
-                    continue;
-                } else if (preferNetworkInterface == null) {
-                    preferNetworkInterface = networkInterface;
-                }
-                //get the networkInterface that has higher priority
-                else if (preferList.indexOf(networkInterface.getName())
-                        > preferList.indexOf(preferNetworkInterface.getName())) {
-                    preferNetworkInterface = networkInterface;
-                }
-            }
+        public static String KEYS_EVENTMESH_SECURITY_ENABLED = "eventMesh.server.security.enabled";
 
-            // Traversal Network interface to get the first non-loopback and non-private address
-            ArrayList<String> ipv4Result = new ArrayList<String>();
-            ArrayList<String> ipv6Result = new ArrayList<String>();
+        public static String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
 
-            if (preferNetworkInterface != null) {
-                final Enumeration<InetAddress> en = preferNetworkInterface.getInetAddresses();
-                getIpResult(ipv4Result, ipv6Result, en);
-            } else {
-                Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
-                while (enumeration.hasMoreElements()) {
-                    final NetworkInterface networkInterface = enumeration.nextElement();
-                    final Enumeration<InetAddress> en = networkInterface.getInetAddresses();
-                    getIpResult(ipv4Result, ipv6Result, en);
-                }
-            }
+        public static String KEY_EVENTMESH_METRICS_PROMETHEUS_PORT = "eventMesh.metrics.prometheus.port";
 
-            // prefer ipv4
-            if (!ipv4Result.isEmpty()) {
-                for (String ip : ipv4Result) {
-                    if (ip.startsWith("127.0") || ip.startsWith("192.168")) {
-                        continue;
-                    }
+        public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.server.registry.enabled";
 
-                    return ip;
-                }
-
-                return ipv4Result.get(ipv4Result.size() - 1);
-            } else if (!ipv6Result.isEmpty()) {
-                return ipv6Result.get(0);
-            }
-            //If failed to find,fall back to localhost
-            final InetAddress localHost = InetAddress.getLocalHost();
-            return normalizeHostAddress(localHost);
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public static String normalizeHostAddress(final InetAddress localHost) {
-        if (localHost instanceof Inet6Address) {
-            return "[" + localHost.getHostAddress() + "]";
-        } else {
-            return localHost.getHostAddress();
-        }
-    }
-
-    private static void getIpResult(ArrayList<String> ipv4Result, ArrayList<String> ipv6Result,
-                                    Enumeration<InetAddress> en) {
-        while (en.hasMoreElements()) {
-            final InetAddress address = en.nextElement();
-            if (!address.isLoopbackAddress()) {
-                if (address instanceof Inet6Address) {
-                    ipv6Result.add(normalizeHostAddress(address));
-                } else {
-                    ipv4Result.add(normalizeHostAddress(address));
-                }
-            }
-        }
+        public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
     }
 }

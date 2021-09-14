@@ -18,12 +18,12 @@
 package org.apache.eventmesh.runtime.core.plugin;
 
 import java.util.Properties;
-import java.util.ServiceLoader;
 
 import io.openmessaging.api.Message;
 import io.openmessaging.api.SendCallback;
 
 import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 import org.apache.eventmesh.api.producer.MeshMQProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,27 +34,21 @@ public class MQProducerWrapper extends MQWrapper {
 
     protected MeshMQProducer meshMQProducer;
 
+    public MQProducerWrapper(String connectorPluginType) {
+        this.meshMQProducer = ConnectorPluginFactory.getMeshMQProducer(connectorPluginType);
+        if (meshMQProducer == null) {
+            logger.error("can't load the meshMQProducer plugin, please check.");
+            throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
+        }
+    }
+
     public synchronized void init(Properties keyValue) throws Exception {
         if (inited.get()) {
             return;
         }
 
-        meshMQProducer = getSpiMeshMQProducer();
-        if (meshMQProducer == null) {
-            logger.error("can't load the meshMQProducer plugin, please check.");
-            throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
-        }
         meshMQProducer.init(keyValue);
-
         inited.compareAndSet(false, true);
-    }
-
-    private MeshMQProducer getSpiMeshMQProducer() {
-        ServiceLoader<MeshMQProducer> meshMQProducerServiceLoader = ServiceLoader.load(MeshMQProducer.class);
-        if (meshMQProducerServiceLoader.iterator().hasNext()) {
-            return meshMQProducerServiceLoader.iterator().next();
-        }
-        return null;
     }
 
     public synchronized void start() throws Exception {
@@ -86,13 +80,9 @@ public class MQProducerWrapper extends MQWrapper {
         meshMQProducer.send(message, sendCallback);
     }
 
-    public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout)
+    public void request(Message message, RRCallback rrCallback, long timeout)
             throws Exception {
-        meshMQProducer.request(message, sendCallback, rrCallback, timeout);
-    }
-
-    public Message request(Message message, long timeout) throws Exception {
-        return meshMQProducer.request(message, timeout);
+        meshMQProducer.request(message, rrCallback, timeout);
     }
 
     public boolean reply(final Message message, final SendCallback sendCallback) throws Exception {
@@ -110,7 +100,7 @@ public class MQProducerWrapper extends MQWrapper {
 //    public static void main(String[] args) throws Exception {
 //
 //        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
-//        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
+//        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME
 //                + File.separator
 //                + EventMeshConstants.EVENTMESH_CONF_FILE, false));
 //        commonConfiguration.init();
