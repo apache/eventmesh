@@ -24,20 +24,14 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
 import com.google.common.base.Preconditions;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -61,6 +55,13 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -77,6 +78,7 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
@@ -95,6 +97,12 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     private AtomicBoolean started = new AtomicBoolean(false);
 
     private boolean useTLS;
+
+    public OpenTelemetryTraceFactory openTelemetryTraceFactory;
+
+    public Tracer tracer;
+
+    public TextMapPropagator textMapPropagator;
 
     public ThreadPoolExecutor asyncContextCompleteHandler =
             ThreadPoolFactory.createThreadPoolExecutor(10, 10, "eventMesh-http-asyncContext-");
@@ -133,12 +141,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         response.headers().add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         response.headers().add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         // todo server span end with error, record status, we should get channel here to get span in channel's context in async call..
+
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     public void sendResponse(ChannelHandlerContext ctx,
                              DefaultFullHttpResponse response) {
         // todo end server span, we should get channel here to get span in channel's context in async call.
+
         ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture f) throws Exception {
@@ -206,6 +216,24 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) throws Exception {
             HttpPostRequestDecoder decoder = null;
             // todo start server span, we should get channel here to put span in channel's context in async call.
+            Context context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>(){
+                @Override
+                public Iterable<String> keys(HttpRequest carrier) {
+                    return carrier.headers().names();
+                }
+
+                @Override
+                public String get(HttpRequest carrier, String key) {
+//                    if (carrier.headers().containsKey(key)) {
+//                        return carrier.headers().get(key).get(0);
+//                    }
+//                    return "";
+                    return carrier.headers().get(key);
+                }
+            });
+
+            Span span = tracer.spanBuilder("GET /").setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
+
             try {
                 if (!httpRequest.decoderResult().isSuccess()) {
                     sendError(ctx, HttpResponseStatus.BAD_REQUEST);
@@ -257,6 +285,9 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 requestCommand.setHttpVersion(httpRequest.protocolVersion().protocolName());
                 requestCommand.setRequestCode(requestCode);
                 // todo record command method, version and requestCode in span.
+                span.setAttribute("HttpMethod",httpRequest.method().name());
+                span.setAttribute("HttpVersion",httpRequest.protocolVersion().protocolName());
+                span.setAttribute("RequestCode",requestCode);
 
                 HttpCommand responseCommand = null;
 
@@ -299,7 +330,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             } catch (Exception ex) {
                 httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
                 // todo span end with exception.
+                span.setStatus(StatusCode.ERROR,ex.getMessage());//set this span's status to ERROR
+                span.recordException(ex);//record this exception
             } finally {
+                span.end();// closing the scope does not end the span, this has to be done manually
                 try {
                     decoder.destroy();
                 } catch (Exception e) {

@@ -22,6 +22,7 @@ dependencies {
     api 'io.opentelemetry:opentelemetry-exporter-prometheus'
     api 'io.prometheus:simpleclient'
     api 'io.prometheus:simpleclient_httpserver'
+    api 'io.opentelemetry:opentelemetry-exporter-logging'
 
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")

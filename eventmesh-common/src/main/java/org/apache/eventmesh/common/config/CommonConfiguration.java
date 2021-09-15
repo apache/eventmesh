@@ -32,6 +32,11 @@ public class CommonConfiguration {
     public String eventMeshSecurityPluginType = "security";
     public int eventMeshPrometheusPort = 19090;
     public String eventMeshRegistryPluginType = "namesrv";
+    public String eventMeshTraceExporterType = "LoggingSpanExporter";
+    public int eventMeshTraceMaxExportSize = 512;
+    public int eventMeshTraceMaxQueueSize = 2048;
+    public int eventMeshTraceExporterTimeout = 30;
+    public int eventMeshTraceExportInterval = 5;
 
     public String namesrvAddr = "";
     public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
@@ -96,6 +101,29 @@ public class CommonConfiguration {
 
             eventMeshRegistryPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegistryPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE));
+
+            eventMeshTraceExporterType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTraceExporterType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE));
+
+            String eventMeshTraceMaxExportSizeStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_MAX_EXPORT_SIZE);
+            if (StringUtils.isNotEmpty(eventMeshTraceMaxExportSizeStr)) {
+                eventMeshTraceMaxExportSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceMaxExportSizeStr));
+            }
+
+            String eventMeshTraceMaxQueueSizeStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_MAX_QUEUE_SIZE);
+            if (StringUtils.isNotEmpty(eventMeshTraceMaxQueueSizeStr)) {
+                eventMeshTraceMaxQueueSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceMaxQueueSizeStr));
+            }
+
+            String eventMeshTraceExportTimeoutStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORTER_TIMEOUT);
+            if (StringUtils.isNotEmpty(eventMeshTraceExportTimeoutStr)) {
+                eventMeshTraceExporterTimeout = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExportTimeoutStr));
+            }
+
+            String eventMeshTraceExportIntervalStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORT_INTERVAL);
+            if (StringUtils.isNotEmpty(eventMeshTraceExportIntervalStr)) {
+                eventMeshTraceExportInterval = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExportIntervalStr));
+            }
         }
     }
 
@@ -127,5 +155,16 @@ public class CommonConfiguration {
         public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.server.registry.enabled";
 
         public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
+
+        public static String KEYS_ENENTMESH_TRACE_EXPORTER_TYPE = "eventmesh.trace.exporter.type";
+
+        public static String KEYS_EVENTMESH_TRACE_MAX_EXPORT_SIZE = "eventmesh.trace.max.export.size";
+
+        public static String KEYS_EVENTMESH_TRACE_MAX_QUEUE_SIZE = "eventmesh.trace.max.queue.size";
+
+        public static String KEYS_EVENTMESH_TRACE_EXPORTER_TIMEOUT = "eventmesh.trace.exporter.timeout";
+
+        public static String KEYS_EVENTMESH_TRACE_EXPORT_INTERVAL = "5";
+
     }
 }
