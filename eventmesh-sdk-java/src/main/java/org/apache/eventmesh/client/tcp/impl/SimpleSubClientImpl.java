@@ -33,7 +33,7 @@ import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
-import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.*;
@@ -123,9 +123,9 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
     }
 
 
-    public void subscribe(String topic, SubscriptionMode subscriptionMode, SubcriptionType subcriptionType) throws Exception {
-        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subcriptionType));
-        Package request = MessageUtils.subscribe(topic, subscriptionMode, subcriptionType);
+    public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) throws Exception {
+        subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
+        Package request = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
         this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 
