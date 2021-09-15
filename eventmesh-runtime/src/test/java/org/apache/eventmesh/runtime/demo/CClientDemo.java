@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.demo;
 
 import io.netty.channel.ChannelHandlerContext;
 
-import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
@@ -45,8 +45,8 @@ public class CClientDemo {
         EventMeshClientImpl client = new EventMeshClientImpl("127.0.0.1", 10000);
         client.init();
         client.heartbeat();
-        client.justSubscribe(ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubcriptionType.ASYNC);
-        client.justSubscribe(BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubcriptionType.ASYNC);
+        client.justSubscribe(ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
+        client.justSubscribe(BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
         client.listen();
 //        for (int i = 0; i < 10000; i++) {
 //            Package rr = null;

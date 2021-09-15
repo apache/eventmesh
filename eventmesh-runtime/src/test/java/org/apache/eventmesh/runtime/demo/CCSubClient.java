@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.demo;
 
 import io.netty.channel.ChannelHandlerContext;
 
-import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
@@ -40,7 +40,7 @@ public class CCSubClient {
         subClient.init();
         subClient.heartbeat();
         subClient.listen();
-        subClient.justSubscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC);
+        subClient.justSubscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
         subClient.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
