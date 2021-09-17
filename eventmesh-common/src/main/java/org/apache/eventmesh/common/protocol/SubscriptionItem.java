@@ -23,22 +23,22 @@ public class SubscriptionItem {
 
     private SubscriptionMode mode;
 
-    private SubcriptionType type;
+    private SubscriptionType type;
 
     public SubscriptionItem() {
     }
 
-    public SubscriptionItem(String topic, SubscriptionMode mode, SubcriptionType type) {
+    public SubscriptionItem(String topic, SubscriptionMode mode, SubscriptionType type) {
         this.topic = topic;
         this.mode = mode;
         this.type = type;
     }
 
-    public SubcriptionType getType() {
+    public SubscriptionType getType() {
         return type;
     }
 
-    public void setType(SubcriptionType type) {
+    public void setType(SubscriptionType type) {
         this.type = type;
     }
 
