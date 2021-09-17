@@ -1,0 +1,18 @@
+spring:
+  h2:
+    console:
+      path: /h2-console
+      enabled: true
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:./eventmesh-openschema/eventmesh-openschema-registry/src/main/resources/h2/db
+    username: root
+    password: test
+  jpa:
+    database: h2
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  port: 13579

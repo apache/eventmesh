@@ -14,22 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.openschemaregistry.exception;
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-examples'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-security-plugin:eventmesh-security-api'
-include 'eventmesh-security-plugin:eventmesh-security-acl'
-include 'eventmesh-registry-plugin:eventmesh-registry-api'
-include 'eventmesh-registry-plugin:eventmesh-registry-rocketmq-namesrv'
-include 'eventmesh-admin'
-include 'eventmesh-openschema'
-include 'eventmesh-openschema:eventmesh-openschema-registry'
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.http.HttpStatus;
 
+@Getter
+@Setter
+@AllArgsConstructor
+public class OpenSchemaException extends RuntimeException{
+    protected HttpStatus err_status;
+    protected String err_code;
+    protected String err_message;
+
+    public OpenSchemaException(ExceptionEnum e){
+        this.err_status = e.getStatus();
+        this.err_code = e.getExceptionCode();
+        this.err_message = e.getDescription();
+    }
+}
