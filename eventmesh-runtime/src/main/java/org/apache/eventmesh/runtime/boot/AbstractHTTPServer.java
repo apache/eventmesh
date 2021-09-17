@@ -60,6 +60,8 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import org.apache.commons.collections4.MapUtils;
@@ -78,7 +80,9 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.trace.AttributeKeys;
 import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
+import org.apache.eventmesh.runtime.trace.SpanKey;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
@@ -140,14 +144,22 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 "; charset=" + EventMeshConstants.DEFAULT_CHARSET);
         response.headers().add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         response.headers().add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-        // todo server span end with error, record status, we should get channel here to get span in channel's context in async call..
-
+        //todo server span end with error, record status, we should get channel here to get span in channel's context in async call..
+        Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
+        Span span = context.get(SpanKey.SERVER_KEY);
+        try (Scope ignored = context.makeCurrent()) {
+            span.setStatus(StatusCode.ERROR);//set this span's status to ERROR
+            span.end();// closing the scope does not end the span, this has to be done manually
+        }
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     public void sendResponse(ChannelHandlerContext ctx,
                              DefaultFullHttpResponse response) {
-        // todo end server span, we should get channel here to get span in channel's context in async call.
+        //todo end server span, we should get channel here to get span in channel's context in async call.
+        Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
+        Span span = context.get(SpanKey.SERVER_KEY);
+        span.end();
 
         ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
             @Override
@@ -215,7 +227,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) throws Exception {
             HttpPostRequestDecoder decoder = null;
-            // todo start server span, we should get channel here to put span in channel's context in async call.
+            //todo start server span, we should get channel here to put span in channel's context in async call.
+            //if the client injected span context,this will extract the context from httpRequest or it will be null
             Context context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>(){
                 @Override
                 public Iterable<String> keys(HttpRequest carrier) {
@@ -231,8 +244,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     return carrier.headers().get(key);
                 }
             });
+//            //the context is used in 'setParent()'
+//            Span span = tracer.spanBuilder("eventmesh server span").setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
+//            //attach span context in server context
+//            ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(span.getSpanContext());
 
-            Span span = tracer.spanBuilder("GET /").setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
+//            ctx.writeAndFlush(span.getSpanContext());
+//            ctx.fireChannelRead(span.getSpanContext());
+            Span span = null;
 
             try {
                 if (!httpRequest.decoderResult().isSuccess()) {
@@ -241,7 +260,12 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 }
 
                 final HttpCommand requestCommand = new HttpCommand();
-                // todo record command opaque in span.
+                //todo record command opaque in span.
+                span = tracer.spanBuilder("HTTP"+requestCommand.httpMethod).setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
+                //attach the span to the server context
+                context = context.with(SpanKey.SERVER_KEY,span);
+                //put the context in channel
+                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
 
                 httpRequest.headers().set(ProtocolKey.ClientInstanceKey.IP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
 
@@ -284,7 +308,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 requestCommand.setHttpMethod(httpRequest.method().name());
                 requestCommand.setHttpVersion(httpRequest.protocolVersion().protocolName());
                 requestCommand.setRequestCode(requestCode);
-                // todo record command method, version and requestCode in span.
+                //todo record command method, version and requestCode in span.
                 span.setAttribute("HttpMethod",httpRequest.method().name());
                 span.setAttribute("HttpVersion",httpRequest.protocolVersion().protocolName());
                 span.setAttribute("RequestCode",requestCode);
@@ -329,11 +353,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 processEventMeshRequest(ctx, asyncContext);
             } catch (Exception ex) {
                 httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
-                // todo span end with exception.
+                //todo span end with exception.
                 span.setStatus(StatusCode.ERROR,ex.getMessage());//set this span's status to ERROR
                 span.recordException(ex);//record this exception
-            } finally {
                 span.end();// closing the scope does not end the span, this has to be done manually
+            } finally {
                 try {
                     decoder.destroy();
                 } catch (Exception e) {
