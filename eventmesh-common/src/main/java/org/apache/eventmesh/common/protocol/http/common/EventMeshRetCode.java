@@ -39,7 +39,8 @@ public enum EventMeshRetCode {
     EVENTMESH_SUBSCRIBE_ERR(17, "eventMesh subscribe err"),
     EVENTMESH_UNSUBSCRIBE_ERR(18, "eventMesh unsubscribe err"),
     EVENTMESH_HEARTBEAT_ERR(19, "eventMesh heartbeat err"),
-    EVENTMESH_ACL_ERR(20, "eventMesh acl err");
+    EVENTMESH_ACL_ERR(20, "eventMesh acl err"),
+    EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR(20, "eventMesh http msg send over the limit, ");
 
     private Integer retCode;
 
