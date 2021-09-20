@@ -18,21 +18,24 @@
 package org.apache.eventmesh.runtime.trace;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporter.logging.LoggingSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.runtime.exporter.logExporter;
+import org.apache.eventmesh.runtime.exporter.zipkinExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.TimeUnit;
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 public class OpenTelemetryTraceFactory {
     private static final Logger logger = LoggerFactory.getLogger(OpenTelemetryTraceFactory.class);
@@ -41,15 +44,18 @@ public class OpenTelemetryTraceFactory {
 
     private SpanExporter spanExporter;
 
-    private SpanExporter defaultExporter = new LoggingSpanExporter();
+    private SpanExporter defaultExporter = new logExporter();
 
     private SpanProcessor spanProcessor;
 
+    // Name of the service(using the instrumentationName)
+    private String SERVICE_NAME;
+
     public OpenTelemetryTraceFactory(CommonConfiguration configuration){
-        //different spanExporter
         try {
             String exporterName = configuration.eventMeshTraceExporterType;
-            spanExporter = (SpanExporter) Class.forName("io.opentelemetry.exporter."+exporterName+"."+exporterName+"SpanExporter").newInstance();
+            //todo different spanExporter
+//            spanExporter = (SpanExporter) Class.forName("org.apache.eventmesh.runtime.exporter."+exporterName+"Exporter").newInstance();
         }catch (Exception ex){
             logger.error("fail to set tracer's exporter,due to{}",ex.getMessage());
             //fail to set the exporter in configuration, changing to use the default Exporter
@@ -65,8 +71,13 @@ public class OpenTelemetryTraceFactory {
                 .setScheduleDelay(configuration.eventMeshTraceExportInterval, TimeUnit.SECONDS)// set time between two different exports
                 .build();
 
+        //set the trace service's name
+        Resource serviceNameResource =
+                Resource.create(Attributes.of(stringKey("service.name"), SERVICE_NAME));
+
         SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
                         .addSpanProcessor(spanProcessor)
+                        .setResource(Resource.getDefault().merge(serviceNameResource))
                         .build();
 
         openTelemetry = OpenTelemetrySdk.builder()
@@ -79,9 +90,10 @@ public class OpenTelemetryTraceFactory {
 
     //Gets or creates a named tracer instance
     public Tracer getTracer(String instrumentationName){
+        SERVICE_NAME = instrumentationName;
         return openTelemetry.getTracer(instrumentationName);
     }
 
-    //
+    //to inject or extract span context
     public TextMapPropagator getTextMapPropagator() {return openTelemetry.getPropagators().getTextMapPropagator();}
 }

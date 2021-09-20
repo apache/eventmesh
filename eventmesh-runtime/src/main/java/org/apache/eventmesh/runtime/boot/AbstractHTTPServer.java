@@ -24,7 +24,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
@@ -60,7 +59,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
@@ -159,7 +157,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         //todo end server span, we should get channel here to get span in channel's context in async call.
         Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
         Span span = context.get(SpanKey.SERVER_KEY);
-        span.end();
+        try (Scope ignored = context.makeCurrent()) {
+            span.addEvent("Send Response");
+            span.end();
+        }
 
         ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
             @Override
@@ -237,10 +238,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
                 @Override
                 public String get(HttpRequest carrier, String key) {
-//                    if (carrier.headers().containsKey(key)) {
-//                        return carrier.headers().get(key).get(0);
-//                    }
-//                    return "";
                     return carrier.headers().get(key);
                 }
             });
@@ -249,8 +246,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 //            //attach span context in server context
 //            ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(span.getSpanContext());
 
-//            ctx.writeAndFlush(span.getSpanContext());
-//            ctx.fireChannelRead(span.getSpanContext());
             Span span = null;
 
             try {
@@ -306,6 +301,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
                 //todo record command opaque in span.
                 span = tracer.spanBuilder("HTTP"+requestCommand.httpMethod).setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
+                span.addEvent("Span Start");
                 //attach the span to the server context
                 context = context.with(SpanKey.SERVER_KEY,span);
                 //put the context in channel
@@ -356,6 +352,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             } catch (Exception ex) {
                 httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
                 //todo span end with exception.
+                span.addEvent("End Exceptional");
                 span.setStatus(StatusCode.ERROR,ex.getMessage());//set this span's status to ERROR
                 span.recordException(ex);//record this exception
                 span.end();// closing the scope does not end the span, this has to be done manually
