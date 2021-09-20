@@ -15,30 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.tcp;
+package org.apache.eventmesh.http.demo.sub;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
-import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
-import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+public class SpringBootDemoApplication {
 
-public interface SimpleSubClient {
-    void init() throws Exception;
-
-    void close();
-
-    void heartbeat() throws Exception;
-
-    void reconnect() throws Exception;
-
-    void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) throws Exception;
-
-    void unsubscribe() throws Exception;
-
-    void listen() throws Exception;
-
-    void registerBusiHandler(ReceiveMsgHook handler) throws Exception;
-
-    UserAgent getUserAgent();
+    public static void main(String[] args) {
+        SpringApplication.run(SpringBootDemoApplication.class, args);
+    }
 }

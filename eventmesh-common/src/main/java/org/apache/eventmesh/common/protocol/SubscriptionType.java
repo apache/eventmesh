@@ -17,55 +17,27 @@
 
 package org.apache.eventmesh.common.protocol;
 
-public class SubscriptionItem {
+public enum SubscriptionType {
+    /**
+     * SYNC
+     */
+    SYNC("SYNC"),
+    /**
+     * ASYNC
+     */
+    ASYNC("ASYNC");
 
-    private String topic;
+    private String type;
 
-    private SubscriptionMode mode;
-
-    private SubscriptionType type;
-
-    public SubscriptionItem() {
-    }
-
-    public SubscriptionItem(String topic, SubscriptionMode mode, SubscriptionType type) {
-        this.topic = topic;
-        this.mode = mode;
+    SubscriptionType(String type) {
         this.type = type;
     }
 
-    public SubscriptionType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(SubscriptionType type) {
+    public void setType(String type) {
         this.type = type;
     }
-
-    public String getTopic() {
-        return topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public SubscriptionMode getMode() {
-        return mode;
-    }
-
-    public void setMode(SubscriptionMode mode) {
-        this.mode = mode;
-    }
-
-    @Override
-    public String toString() {
-        return "SubscriptionItem{" +
-                "topic=" + topic +
-                ", mode=" + mode +
-                ", type=" + type +
-                '}';
-    }
 }
-
-

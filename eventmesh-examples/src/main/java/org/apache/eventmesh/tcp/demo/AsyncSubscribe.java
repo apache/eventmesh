@@ -15,39 +15,44 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.tcp.demo;
+package org.apache.eventmesh.tcp.demo;
 
+import java.util.Properties;
 
 import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.eventmesh.client.tcp.EventMeshClient;
-import org.apache.eventmesh.client.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
+import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
+public class AsyncSubscribe implements ReceiveMsgHook {
 
-    public static Logger logger = LoggerFactory.getLogger(AsyncSubscribeBroadcast.class);
+    public static Logger logger = LoggerFactory.getLogger(AsyncSubscribe.class);
 
     private static EventMeshClient client;
 
-    public static AsyncSubscribeBroadcast handler = new AsyncSubscribeBroadcast();
+    public static AsyncSubscribe handler = new AsyncSubscribe();
 
     public static void main(String[] agrs) throws Exception {
+        Properties properties = Utils.readPropertiesFile("application.properties");
+        final String eventMeshIp = properties.getProperty("eventmesh.ip");
+        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
         try {
             UserAgent userAgent = EventMeshTestUtils.generateClient2();
-            client = new DefaultEventMeshClient("127.0.0.1", 10002, userAgent);
+            client = new DefaultEventMeshClient(eventMeshIp, eventMeshTcpPort, userAgent);
             client.init();
             client.heartbeat();
 
-            client.subscribe("TEST-TOPIC-TCP-BROADCAST", SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
+            client.subscribe("TEST-TOPIC-TCP-ASYNC", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
             client.registerSubBusiHandler(handler);
 
             client.listen();
@@ -57,13 +62,13 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
             // release resource and close client
             // client.close();
         } catch (Exception e) {
-            logger.warn("AsyncSubscribeBroadcast failed", e);
+            logger.warn("AsyncSubscribe failed", e);
         }
     }
 
     @Override
     public void handle(Package msg, ChannelHandlerContext ctx) {
         EventMeshMessage eventMeshMessage = (EventMeshMessage) msg.getBody();
-        logger.info("receive broadcast msg==============={}", eventMeshMessage);
+        logger.info("receive async msg====================={}", eventMeshMessage);
     }
 }

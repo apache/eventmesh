@@ -15,20 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.tcp.demo;
+package org.apache.eventmesh.tcp.demo;
 
+import java.util.Properties;
 
 import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.eventmesh.client.tcp.EventMeshClient;
-import org.apache.eventmesh.client.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
+import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,9 +43,12 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
     public static AsyncSubscribeBroadcast handler = new AsyncSubscribeBroadcast();
 
     public static void main(String[] agrs) throws Exception {
+        Properties properties = Utils.readPropertiesFile("application.properties");
+        final String eventMeshIp = properties.getProperty("eventmesh.ip");
+        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
         try {
             UserAgent userAgent = EventMeshTestUtils.generateClient2();
-            client = new DefaultEventMeshClient("127.0.0.1", 10002, userAgent);
+            client = new DefaultEventMeshClient(eventMeshIp, eventMeshTcpPort, userAgent);
             client.init();
             client.heartbeat();
 
