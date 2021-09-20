@@ -55,7 +55,7 @@ public class OpenTelemetryTraceFactory {
         try {
             String exporterName = configuration.eventMeshTraceExporterType;
             //todo different spanExporter
-//            spanExporter = (SpanExporter) Class.forName("org.apache.eventmesh.runtime.exporter."+exporterName+"Exporter").newInstance();
+            spanExporter = (SpanExporter) Class.forName("org.apache.eventmesh.runtime.exporter."+exporterName+"Exporter").newInstance();
         }catch (Exception ex){
             logger.error("fail to set tracer's exporter,due to{}",ex.getMessage());
             //fail to set the exporter in configuration, changing to use the default Exporter
