@@ -260,12 +260,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 }
 
                 final HttpCommand requestCommand = new HttpCommand();
-                //todo record command opaque in span.
-                span = tracer.spanBuilder("HTTP"+requestCommand.httpMethod).setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
-                //attach the span to the server context
-                context = context.with(SpanKey.SERVER_KEY,span);
-                //put the context in channel
-                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
+
 
                 httpRequest.headers().set(ProtocolKey.ClientInstanceKey.IP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
 
@@ -308,6 +303,13 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 requestCommand.setHttpMethod(httpRequest.method().name());
                 requestCommand.setHttpVersion(httpRequest.protocolVersion().protocolName());
                 requestCommand.setRequestCode(requestCode);
+
+                //todo record command opaque in span.
+                span = tracer.spanBuilder("HTTP"+requestCommand.httpMethod).setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
+                //attach the span to the server context
+                context = context.with(SpanKey.SERVER_KEY,span);
+                //put the context in channel
+                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
                 //todo record command method, version and requestCode in span.
                 span.setAttribute("HttpMethod",httpRequest.method().name());
                 span.setAttribute("HttpVersion",httpRequest.protocolVersion().protocolName());
