@@ -36,6 +36,9 @@ public class ClientConfiguration {
     public Integer pollNameServerInterval = 10 * 1000;
     public Integer heartbeatBrokerInterval = 30 * 1000;
     public Integer rebalanceInterval = 20 * 1000;
+    public String clusterName = "";
+    public String accessKey = "";
+    public String secretKey = "";
 
     protected ConfigurationWrapper configurationWrapper;
 
@@ -118,6 +121,21 @@ public class ClientConfiguration {
             Preconditions.checkState(StringUtils.isNumeric(clientRebalanceIntervalIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_REBALANCE_INTERVAL));
             rebalanceInterval = Integer.valueOf(clientRebalanceIntervalIntervalStr);
         }
+        
+        String cluster = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLUSTER);
+        if (StringUtils.isNotBlank(cluster)) {
+            clusterName = cluster;
+        }
+
+        String ak = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_ACCESS_KEY);
+        if (StringUtils.isNotBlank(ak)) {
+            accessKey = ak;
+        }
+
+        String sk = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_SECRET_KEY);
+        if (StringUtils.isNotBlank(sk)) {
+            secretKey = sk;
+        }
     }
 
     static class ConfKeys {
@@ -147,6 +165,12 @@ public class ClientConfiguration {
         public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVAL = "eventMesh.server.rocketmq.client.heartbeatBrokerInterval";
 
         public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_REBALANCE_INTERVAL = "eventMesh.server.rocketmq.client.rebalanceInterval";
+        
+        public static String KEYS_EVENTMESH_ROCKETMQ_CLUSTER = "eventMesh.server.rocketmq.cluster";
+
+        public static String KEYS_EVENTMESH_ROCKETMQ_ACCESS_KEY = "eventMesh.server.rocketmq.accessKey";
+
+        public static String KEYS_EVENTMESH_ROCKETMQ_SECRET_KEY = "eventMesh.server.rocketmq.secretKey";
 
     }
 }
