@@ -22,6 +22,7 @@ import java.util.Properties;
 import io.openmessaging.api.Message;
 import io.openmessaging.api.Producer;
 import io.openmessaging.api.SendCallback;
+import io.openmessaging.api.exception.OMSRuntimeException;
 
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
@@ -41,5 +42,7 @@ public interface MeshMQProducer extends Producer {
     void checkTopicExist(String topic) throws Exception;
 
     void setExtFields();
+    
+    void createTopic(String topicName) throws OMSRuntimeException;
 
 }

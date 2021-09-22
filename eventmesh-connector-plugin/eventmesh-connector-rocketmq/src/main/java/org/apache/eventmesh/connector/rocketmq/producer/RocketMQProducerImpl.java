@@ -28,6 +28,7 @@ import io.openmessaging.api.OMS;
 import io.openmessaging.api.OMSBuiltinKeys;
 import io.openmessaging.api.SendCallback;
 import io.openmessaging.api.SendResult;
+import io.openmessaging.api.exception.OMSRuntimeException;
 
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.producer.MeshMQProducer;
@@ -40,8 +41,10 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.remoting.exception.RemotingException;
+import org.apache.eventmesh.connector.rocketmq.admin.command.CreateTopicCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class RocketMQProducerImpl implements MeshMQProducer {
 
@@ -148,5 +151,16 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     @Override
     public <T> MessageBuilder<T> messageBuilder() {
         return null;
+    }
+	
+	@Override
+    public void createTopic(String topicName) throws OMSRuntimeException{
+        CreateTopicCommand createTopicCommand = new CreateTopicCommand();
+        createTopicCommand.setTopicName(topicName);
+        try {
+            createTopicCommand.execute();
+        } catch (Exception e) {
+            throw new OMSRuntimeException(-1, String.format("RocketMQ can not create topic %s.", topicName), e);
+        }
     }
 }
