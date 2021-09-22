@@ -16,7 +16,6 @@
  */
 
 plugins {
-    id 'java'
 }
 
 group 'org.apache.eventmesh'
