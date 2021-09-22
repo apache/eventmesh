@@ -564,6 +564,36 @@
             "moduleLicense": "The Apache Software License, Version 2.0",
             "moduleVersion": "0.8.1",
             "moduleName": "io.prometheus:simpleclient_httpserver"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.6.0",
+            "moduleName": "io.opentelemetry:opentelemetry-exporter-zipkin"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.16.3",
+            "moduleName": "io.zipkin.reporter2:zipkin-reporter"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.16.3",
+            "moduleName": "io.zipkin.reporter2:zipkin-sender-okhttp3"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.23.2",
+            "moduleName": "io.zipkin.zipkin2:zipkin"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "3.14.9",
+            "moduleName": "com.squareup.okhttp3:okhttp"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.17.2",
+            "moduleName": "com.squareup.okio:okio"
         }
   ]
 }
