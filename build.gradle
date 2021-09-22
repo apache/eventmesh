@@ -370,7 +370,6 @@ subprojects {
             dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.3.0-alpha'
             dependency 'io.prometheus:simpleclient:0.8.1'
             dependency 'io.prometheus:simpleclient_httpserver:0.8.1'
-            dependency 'io.opentelemetry:opentelemetry-exporter-logging:1.3.0'
             dependency 'io.opentelemetry:opentelemetry-exporter-zipkin:1.6.0'
 
 
