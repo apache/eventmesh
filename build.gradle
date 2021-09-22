@@ -372,7 +372,6 @@ subprojects {
             dependency 'io.prometheus:simpleclient_httpserver:0.8.1'
             dependency 'io.opentelemetry:opentelemetry-exporter-zipkin:1.6.0'
 
-
             dependency "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 
             dependency "com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0"
