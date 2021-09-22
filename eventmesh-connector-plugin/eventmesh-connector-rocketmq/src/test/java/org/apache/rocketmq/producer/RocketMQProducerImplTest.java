@@ -17,17 +17,15 @@
 
 package org.apache.rocketmq.producer;
 
-import static org.junit.Assert.assertTrue;
 import io.openmessaging.api.exception.OMSRuntimeException;
 import org.apache.eventmesh.api.producer.MeshMQProducer;
 import org.apache.eventmesh.connector.rocketmq.producer.RocketMQProducerImpl;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+
 public class RocketMQProducerImplTest {
 	
 	private String topicName = "test-it";
@@ -46,10 +44,10 @@ public class RocketMQProducerImplTest {
         
     	MeshMQProducer meshMQProducer = new RocketMQProducerImpl(); 
     	try {    		
-    		meshMQProducer.createTopic(topicName);
-    		assertTrue("Topic was created successfully", true);
+    		meshMQProducer.createTopic(topicName);    		
+    		Assert.assertTrue("Topic was created successfully", true);
     	} catch (OMSRuntimeException e) { 
-    		assertTrue(e.getMessage(), false);
+    		Assert.assertTrue(e.getMessage(), false);
     	}
     	
     }

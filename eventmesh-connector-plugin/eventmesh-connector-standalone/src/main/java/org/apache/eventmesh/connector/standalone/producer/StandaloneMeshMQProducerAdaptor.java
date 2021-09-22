@@ -21,6 +21,8 @@ import io.openmessaging.api.Message;
 import io.openmessaging.api.MessageBuilder;
 import io.openmessaging.api.SendCallback;
 import io.openmessaging.api.SendResult;
+import io.openmessaging.api.exception.OMSRuntimeException;
+
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.producer.MeshMQProducer;
 import org.apache.eventmesh.connector.standalone.MessagingAccessPointImpl;
@@ -122,4 +124,10 @@ public class StandaloneMeshMQProducerAdaptor implements MeshMQProducer {
     public <T> MessageBuilder<T> messageBuilder() {
         return null;
     }
+
+	@Override
+	public void createTopic(String topicName) throws OMSRuntimeException {
+		// TODO Auto-generated method stub
+		
+	}
 }
