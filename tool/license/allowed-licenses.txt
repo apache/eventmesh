@@ -564,6 +564,491 @@
             "moduleLicense": "The Apache Software License, Version 2.0",
             "moduleVersion": "0.8.1",
             "moduleName": "io.prometheus:simpleclient_httpserver"
+        },
+        {
+            "moduleLicense": "BSD License",
+            "moduleVersion": "2.7.7",
+            "moduleName": "antlr:antlr"
+        },
+        {
+            "moduleLicense": null,
+            "moduleVersion": "1.2.5",
+            "moduleName": "ch.qos.logback:logback-classic"
+        },
+        {
+            "moduleLicense": "Eclipse Public License - v 1.0",
+            "moduleVersion": "1.2.5",
+            "moduleName": "ch.qos.logback:logback-classic"
+        },
+        {
+            "moduleLicense": "GNU Lesser General Public License",
+            "moduleVersion": "1.2.5",
+            "moduleName": "ch.qos.logback:logback-classic"
+        },
+        {
+            "moduleLicense": null,
+            "moduleVersion": "1.2.5",
+            "moduleName": "ch.qos.logback:logback-core"
+        },
+        {
+            "moduleLicense": "Eclipse Public License - v 1.0",
+            "moduleVersion": "1.2.5",
+            "moduleName": "ch.qos.logback:logback-core"
+        },
+        {
+            "moduleLicense": "GNU Lesser General Public License",
+            "moduleVersion": "1.2.5",
+            "moduleName": "ch.qos.logback:logback-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.module:jackson-module-parameter-names"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.module:jackson-module-parameter-names"
+        },
+        {
+            "moduleLicense": null,
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson:jackson-bom"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "1.5.1",
+            "moduleName": "com.fasterxml:classmate"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.5.1",
+            "moduleName": "com.fasterxml:classmate"
+        },
+        {
+            "moduleLicense": "MPL 2.0 or EPL 1.0",
+            "moduleVersion": "1.4.200",
+            "moduleName": "com.h2database:h2"
+        },
+        {
+            "moduleLicense": "EDL 1.0",
+            "moduleVersion": "1.2.2",
+            "moduleName": "com.sun.activation:jakarta.activation"
+        },
+        {
+            "moduleLicense": "Eclipse Public License v. 2.0",
+            "moduleVersion": "1.2.2",
+            "moduleName": "com.sun.activation:jakarta.activation"
+        },
+        {
+            "moduleLicense": "GNU General Public License, version 2 with the GNU Classpath Exception",
+            "moduleVersion": "1.2.2",
+            "moduleName": "com.sun.activation:jakarta.activation"
+        },
+        {
+            "moduleLicense": "Eclipse Distribution License - v 1.0",
+            "moduleVersion": "3.0.12",
+            "moduleName": "com.sun.istack:istack-commons-runtime"
+        },
+        {
+            "moduleLicense": "Eclipse Public License v. 2.0",
+            "moduleVersion": "3.0.12",
+            "moduleName": "com.sun.istack:istack-commons-runtime"
+        },
+        {
+            "moduleLicense": "GNU General Public License, version 2 with the GNU Classpath Exception",
+            "moduleVersion": "3.0.12",
+            "moduleName": "com.sun.istack:istack-commons-runtime"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "4.0.3",
+            "moduleName": "com.zaxxer:HikariCP"
+        },
+        {
+            "moduleLicense": null,
+            "moduleVersion": "1.3.5",
+            "moduleName": "jakarta.annotation:jakarta.annotation-api"
+        },
+        {
+            "moduleLicense": "EPL 2.0",
+            "moduleVersion": "1.3.5",
+            "moduleName": "jakarta.annotation:jakarta.annotation-api"
+        },
+        {
+            "moduleLicense": "Eclipse Public License v. 2.0",
+            "moduleVersion": "1.3.5",
+            "moduleName": "jakarta.annotation:jakarta.annotation-api"
+        },
+        {
+            "moduleLicense": "GNU General Public License, version 2 with the GNU Classpath Exception",
+            "moduleVersion": "1.3.5",
+            "moduleName": "jakarta.annotation:jakarta.annotation-api"
+        },
+        {
+            "moduleLicense": "GPL2 w/ CPE",
+            "moduleVersion": "1.3.5",
+            "moduleName": "jakarta.annotation:jakarta.annotation-api"
+        },
+        {
+            "moduleLicense": null,
+            "moduleVersion": "2.2.3",
+            "moduleName": "jakarta.persistence:jakarta.persistence-api"
+        },
+        {
+            "moduleLicense": "Eclipse Distribution License v. 1.0",
+            "moduleVersion": "2.2.3",
+            "moduleName": "jakarta.persistence:jakarta.persistence-api"
+        },
+        {
+            "moduleLicense": "Eclipse Public License v. 2.0",
+            "moduleVersion": "2.2.3",
+            "moduleName": "jakarta.persistence:jakarta.persistence-api"
+        },
+        {
+            "moduleLicense": "GNU General Public License, version 2 with the GNU Classpath Exception",
+            "moduleVersion": "2.2.3",
+            "moduleName": "jakarta.persistence:jakarta.persistence-api"
+        },
+        {
+            "moduleLicense": null,
+            "moduleVersion": "1.3.3",
+            "moduleName": "jakarta.transaction:jakarta.transaction-api"
+        },
+        {
+            "moduleLicense": "EPL 2.0",
+            "moduleVersion": "1.3.3",
+            "moduleName": "jakarta.transaction:jakarta.transaction-api"
+        },
+        {
+            "moduleLicense": "Eclipse Public License v. 2.0",
+            "moduleVersion": "1.3.3",
+            "moduleName": "jakarta.transaction:jakarta.transaction-api"
+        },
+        {
+            "moduleLicense": "GNU General Public License, version 2 with the GNU Classpath Exception",
+            "moduleVersion": "1.3.3",
+            "moduleName": "jakarta.transaction:jakarta.transaction-api"
+        },
+        {
+            "moduleLicense": "GPL2 w/ CPE",
+            "moduleVersion": "1.3.3",
+            "moduleName": "jakarta.transaction:jakarta.transaction-api"
+        },
+        {
+            "moduleLicense": "Apache License 2.0",
+            "moduleVersion": "2.0.2",
+            "moduleName": "jakarta.validation:jakarta.validation-api"
+        },
+        {
+            "moduleLicense": "Eclipse Public License v. 2.0",
+            "moduleVersion": "2.0.2",
+            "moduleName": "jakarta.validation:jakarta.validation-api"
+        },
+        {
+            "moduleLicense": "GNU General Public License, version 2 with the GNU Classpath Exception",
+            "moduleVersion": "2.0.2",
+            "moduleName": "jakarta.validation:jakarta.validation-api"
+        },
+        {
+            "moduleLicense": "Eclipse Distribution License - v 1.0",
+            "moduleVersion": "2.3.3",
+            "moduleName": "jakarta.xml.bind:jakarta.xml.bind-api"
+        },
+        {
+            "moduleLicense": "Eclipse Public License v. 2.0",
+            "moduleVersion": "2.3.3",
+            "moduleName": "jakarta.xml.bind:jakarta.xml.bind-api"
+        },
+        {
+            "moduleLicense": "GNU General Public License, version 2 with the GNU Classpath Exception",
+            "moduleVersion": "2.3.3",
+            "moduleName": "jakarta.xml.bind:jakarta.xml.bind-api"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "1.10.22",
+            "moduleName": "net.bytebuddy:byte-buddy"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.14.1",
+            "moduleName": "org.apache.logging.log4j:log4j-to-slf4j"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.52",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-core"
+        },
+        {
+            "moduleLicense": "COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0",
+            "moduleVersion": "9.0.52",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.52",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-el"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.52",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-websocket"
+        },
+        {
+            "moduleLicense": "Eclipse Public License - v 2.0",
+            "moduleVersion": "1.9.7",
+            "moduleName": "org.aspectj:aspectjweaver"
+        },
+        {
+            "moduleLicense": "BSD 3-clause New License",
+            "moduleVersion": "2.1.3",
+            "moduleName": "org.dom4j:dom4j"
+        },
+        {
+            "moduleLicense": "Eclipse Distribution License - v 1.0",
+            "moduleVersion": "2.3.5",
+            "moduleName": "org.glassfish.jaxb:jaxb-runtime"
+        },
+        {
+            "moduleLicense": "Eclipse Public License v. 2.0",
+            "moduleVersion": "2.3.5",
+            "moduleName": "org.glassfish.jaxb:jaxb-runtime"
+        },
+        {
+            "moduleLicense": "GNU General Public License, version 2 with the GNU Classpath Exception",
+            "moduleVersion": "2.3.5",
+            "moduleName": "org.glassfish.jaxb:jaxb-runtime"
+        },
+        {
+            "moduleLicense": "Eclipse Distribution License - v 1.0",
+            "moduleVersion": "2.3.5",
+            "moduleName": "org.glassfish.jaxb:txw2"
+        },
+        {
+            "moduleLicense": "Eclipse Public License v. 2.0",
+            "moduleVersion": "2.3.5",
+            "moduleName": "org.glassfish.jaxb:txw2"
+        },
+        {
+            "moduleLicense": "GNU General Public License, version 2 with the GNU Classpath Exception",
+            "moduleVersion": "2.3.5",
+            "moduleName": "org.glassfish.jaxb:txw2"
+        },
+        {
+            "moduleLicense": "GNU Library General Public License v2.1 or later",
+            "moduleVersion": "5.1.2.Final",
+            "moduleName": "org.hibernate.common:hibernate-commons-annotations"
+        },
+        {
+            "moduleLicense": "Apache License 2.0",
+            "moduleVersion": "6.2.0.Final",
+            "moduleName": "org.hibernate.validator:hibernate-validator"
+        },
+        {
+            "moduleLicense": "GNU Library General Public License v2.1 or later",
+            "moduleVersion": "5.4.32.Final",
+            "moduleName": "org.hibernate:hibernate-core"
+        },
+        {
+            "moduleLicense": null,
+            "moduleVersion": "3.27.0-GA",
+            "moduleName": "org.javassist:javassist"
+        },
+        {
+            "moduleLicense": "Apache License 2.0",
+            "moduleVersion": "3.27.0-GA",
+            "moduleName": "org.javassist:javassist"
+        },
+        {
+            "moduleLicense": "LGPL 2.1",
+            "moduleVersion": "3.27.0-GA",
+            "moduleName": "org.javassist:javassist"
+        },
+        {
+            "moduleLicense": "MPL 1.1",
+            "moduleVersion": "3.27.0-GA",
+            "moduleName": "org.javassist:javassist"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "3.4.2.Final",
+            "moduleName": "org.jboss.logging:jboss-logging"
+        },
+        {
+            "moduleLicense": "Apache License, version 2.0",
+            "moduleVersion": "3.4.2.Final",
+            "moduleName": "org.jboss.logging:jboss-logging"
+        },
+        {
+            "moduleLicense": "Public Domain",
+            "moduleVersion": "3.4.2.Final",
+            "moduleName": "org.jboss.logging:jboss-logging"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.2.3.Final",
+            "moduleName": "org.jboss:jandex"
+        },
+        {
+            "moduleLicense": "Public Domain",
+            "moduleVersion": "2.2.3.Final",
+            "moduleName": "org.jboss:jandex"
+        },
+        {
+            "moduleLicense": "MIT License",
+            "moduleVersion": "1.7.32",
+            "moduleName": "org.slf4j:jul-to-slf4j"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-autoconfigure"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-starter"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-starter-aop"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-starter-data-jdbc"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-starter-data-jpa"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-starter-jdbc"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-starter-json"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-starter-logging"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-starter-tomcat"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.data:spring-data-commons"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.2.4",
+            "moduleName": "org.springframework.data:spring-data-jdbc"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.data:spring-data-jpa"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.2.4",
+            "moduleName": "org.springframework.data:spring-data-relational"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-aop"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-aspects"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-context"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-expression"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-jcl"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-jdbc"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-orm"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-tx"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-web"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-webmvc"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "1.28",
+            "moduleName": "org.yaml:snakeyaml"
         }
   ]
 }
