@@ -32,7 +32,7 @@ public class CommonConfiguration {
     public String eventMeshSecurityPluginType = "security";
     public int eventMeshPrometheusPort = 19090;
     public String eventMeshRegistryPluginType = "namesrv";
-    public String eventMeshTraceExporterType = "LoggingSpanExporter";
+    public String eventMeshTraceExporterType = "log";
     public int eventMeshTraceMaxExportSize = 512;
     public int eventMeshTraceMaxQueueSize = 2048;
     public int eventMeshTraceExporterTimeout = 30;
@@ -102,8 +102,9 @@ public class CommonConfiguration {
             eventMeshRegistryPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegistryPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE));
 
-            eventMeshTraceExporterType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE);
+            String eventMeshTraceExporterTypeStr = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTraceExporterType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE));
+            eventMeshTraceExporterType = StringUtils.deleteWhitespace(eventMeshTraceExporterTypeStr);
 
             String eventMeshTraceMaxExportSizeStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_MAX_EXPORT_SIZE);
             if (StringUtils.isNotEmpty(eventMeshTraceMaxExportSizeStr)) {
