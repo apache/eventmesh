@@ -27,8 +27,6 @@ import org.junit.Test;
 
 
 public class RocketMQProducerImplTest {
-	
-	private String topicName = "test-it";
 
     @Before
     public void before() {}
@@ -41,13 +39,20 @@ public class RocketMQProducerImplTest {
 
     @Test
     public void testCreate_OK() {
-        
-    	MeshMQProducer meshMQProducer = new RocketMQProducerImpl(); 
+            	    	
+    	MeshMQProducer meshMQProducer = new RocketMQProducerImpl();
     	try {    		
-    		meshMQProducer.createTopic(topicName);    		
-    		Assert.assertTrue("Topic was created successfully", true);
+    		meshMQProducer.createTopic("");    		
+    		Assert.assertTrue("Failed to detect empty topic", false);
     	} catch (OMSRuntimeException e) { 
-    		Assert.assertTrue(e.getMessage(), false);
+    		Assert.assertTrue("Successfully detected empty topic", true);
+    	}
+    	
+    	try {    		
+    		meshMQProducer.createTopic(null);    		
+    		Assert.assertTrue("Failed to detect null topic", false);
+    	} catch (OMSRuntimeException e) { 
+    		Assert.assertTrue("Successfully detected null topic", true);
     	}
     	
     }
