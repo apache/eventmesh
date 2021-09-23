@@ -63,6 +63,66 @@ The highlevel process of messages transmission undergoes 10 steps as follows:
 - step9: Schema Registry returns schema and EventMesh caches it.
 - step10: EventMesh patches schema in front of messages and push it to consumer.
 
+## Current Progress
+### Status
+**Current state** : Developing
+
+**Discussion thread** : ISSUE #339
+
+### Proposed Changes
+The proposal has two aspects.
+
+First is a separated Open Schema Registry, which includes storage and compatibility check for schema. 
+This proposal is under developing.
+
+Second is the integration of Open Schema in Eventmesh, which includes validation for schema. This proposal is to be developed.
+
+As for the first proposal, some developing statuses are as follows.
+
+**Status Code and Exception Code**
+
+No. | Status Code | Exception Code | Description | status
+--- | :---: | :---: | :---: | :---:
+1 | 401 | 40101 | Unauthorized Exception | ✔
+2 | 404 | 40401 | Schema Non- Exception | ✔
+3 | ^ | 40402 | Subject Non-exist Exception | ✔
+4 | ^ | 40403 | Version Non-exist Exception | ✔
+5 | 409 | 40901 | Compatibility Exception | ✔
+6 | 422 | 42201 | Schema Format Exception | ✔
+7 | ^ | 42202 | Subject Format Exception | ✔
+8 | ^ | 42203 | Version Format Exception | ✔
+9 | ^ | 42204 | Compatibility Format Exception | ✔
+10 | 500 | 50001 | Storage Service Exception | ✔
+11 | ^ | 50002 | Timeout Exception | ✔
+
+**API developing status** :
+
+No. | Type | URL | response | exception | code | test
+--- | --- | --- | --- | --- | --- | ---
+1 | GET | /schemas/ids/{string: id} | Schema.class | 40101\40401\50001 | ✔ | ❌
+2 | GET | /schemas/ids/{string: id}/subjects | SubjectAndVersion.class | 40101\40401\50001 | ✔ | ❌
+3 | GET | /subjects | List\<String> | 40101\50001 | ✔ | ❌
+4 | GET | /subjects/{string: subject}/versions | List\<Integer> | 40101\40402\50001 | ✔ | ❌
+5 | DELETE | /subjects/(string: subject) | List\<Integer> | 40101\40402\50001 | ✔ | ❌
+6 | GET | /subjects/(string: subject) | Subject.class | 40101\40402\50001 | ✔ | ❌
+7 | GET | /subjects/(string: subject)/versions/(version: version)/schema | SubjectWithSchema.class | 40101\40402\40403\50001 | ✔ | ❌
+8 | POST | /subjects/(string: subject)/versions | SchemaIdResponse.class | 40101\40901\42201\50001\50002 | - | ❌
+9 | POST | /subjects/(string: subject)/ | Subject.class | 40101\40901\42202\50001\50002 | ✔ | ❌
+10 | DELETE | /subjects/(string: subject)/versions/(version: version) | int | 40101\40402\40403\40901\50001| - | ❌
+11 | POST | /compatibility/subjects/(string: subject)/versions/(version: version) | CompatibilityResultResponse.class | 40101\40402\40403\42201\42203\50001| - | ❌
+12 | GET | /compatibility/(string: subject) | Compatibility.class | 40101\40402\50001 | ✔ | ❌
+13 | PUT | /compatibility/(string: subject) | Compatibility.class |  40101\40402\40901\42204\50001 | - | ❌
+
+**Overall Project Structure**
+
+```SchemaController.java```+```SchemaService.java``` : ```OpenSchema 7.1.1~7.1.2 (API 1~2)```
+
+```SubjectController.java```+```SubjectService.java``` : ```OpenSchema 7.2.1~7.2.8 (API 3~10)```
+
+```CompatibilityController.java```+```CompatibilityService.java``` : ```OpenSchema 7.3.1~7.3.3 (API 11~13)``` + ```Check for Compatibility```
+
+![Project_Structure](../../images/features/eventmesh-schemaregistry-projectstructure.png)
+
 
 ## References
 [1] [schema validator (github.com)](https://github.com/search?q=schema+validator)
