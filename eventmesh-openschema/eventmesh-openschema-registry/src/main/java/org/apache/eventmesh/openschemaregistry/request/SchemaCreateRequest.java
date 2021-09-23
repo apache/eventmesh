@@ -14,23 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.openschemaregistry.request;
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-examples'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-connector-plugin:eventmesh-connector-standalone'
-include 'eventmesh-security-plugin:eventmesh-security-api'
-include 'eventmesh-security-plugin:eventmesh-security-acl'
-include 'eventmesh-registry-plugin:eventmesh-registry-api'
-include 'eventmesh-registry-plugin:eventmesh-registry-rocketmq-namesrv'
-include 'eventmesh-admin'
-include 'eventmesh-openschema'
-include 'eventmesh-openschema:eventmesh-openschema-registry'
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+@Data
+@AllArgsConstructor
+public class SchemaCreateRequest {
+}
