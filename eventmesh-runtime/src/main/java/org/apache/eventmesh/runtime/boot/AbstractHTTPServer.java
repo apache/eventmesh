@@ -241,10 +241,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     return carrier.headers().get(key);
                 }
             });
-//            //the context is used in 'setParent()'
-//            Span span = tracer.spanBuilder("eventmesh server span").setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
-//            //attach span context in server context
-//            ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(span.getSpanContext());
 
             Span span = null;
 
