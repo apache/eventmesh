@@ -15,22 +15,30 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
-String jdkVersion = "${jdk}"
-include 'eventmesh-runtime'
-include 'eventmesh-sdk-java'
-include 'eventmesh-common'
-include 'eventmesh-starter'
-include 'eventmesh-examples'
-include 'eventmesh-spi'
-include 'eventmesh-connector-plugin:eventmesh-connector-api'
-include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
-include 'eventmesh-connector-plugin:eventmesh-connector-standalone'
-include 'eventmesh-security-plugin:eventmesh-security-api'
-include 'eventmesh-security-plugin:eventmesh-security-acl'
-include 'eventmesh-registry-plugin:eventmesh-registry-api'
-include 'eventmesh-registry-plugin:eventmesh-registry-rocketmq-namesrv'
-include 'eventmesh-admin'
-include 'eventmesh-openschema'
-include 'eventmesh-openschema:eventmesh-openschema-registry'
+group 'org.apache.eventmesh'
+version '1.2.0-SNAPSHOT'
 
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework:spring-beans'
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'com.h2database:h2'
+    annotationProcessor 'org.projectlombok:lombok'
+}
+
+test {
+    useJUnitPlatform()
+}
