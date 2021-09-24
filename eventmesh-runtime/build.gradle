@@ -22,7 +22,7 @@ dependencies {
     api 'io.opentelemetry:opentelemetry-exporter-prometheus'
     api 'io.prometheus:simpleclient'
     api 'io.prometheus:simpleclient_httpserver'
-
+    api 'io.cloudevents:cloudevents-core'
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
