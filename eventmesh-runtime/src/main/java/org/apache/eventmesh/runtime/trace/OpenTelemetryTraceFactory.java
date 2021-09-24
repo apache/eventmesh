@@ -50,7 +50,7 @@ public class OpenTelemetryTraceFactory {
     private SpanProcessor spanProcessor;
 
     // Name of the service(using the instrumentationName)
-    private String SERVICE_NAME = "eventmesh_http_trace";
+    private final String SERVICE_NAME = "eventmesh_trace";
 
     public OpenTelemetryTraceFactory(CommonConfiguration configuration){
         try {
@@ -94,7 +94,6 @@ public class OpenTelemetryTraceFactory {
 
     //Gets or creates a named tracer instance
     public Tracer getTracer(String instrumentationName){
-        SERVICE_NAME = instrumentationName;
         return openTelemetry.getTracer(instrumentationName);
     }
 

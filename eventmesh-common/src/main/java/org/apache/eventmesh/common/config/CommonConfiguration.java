@@ -32,7 +32,7 @@ public class CommonConfiguration {
     public String eventMeshSecurityPluginType = "security";
     public int eventMeshPrometheusPort = 19090;
     public String eventMeshRegistryPluginType = "namesrv";
-    public String eventMeshTraceExporterType = "log";
+    public String eventMeshTraceExporterType = "Log";
     public int eventMeshTraceMaxExportSize = 512;
     public int eventMeshTraceMaxQueueSize = 2048;
     public int eventMeshTraceExporterTimeout = 30;
@@ -168,18 +168,18 @@ public class CommonConfiguration {
 
         public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
 
-        public static String KEYS_ENENTMESH_TRACE_EXPORTER_TYPE = "eventmesh.trace.exporter.type";
+        public static String KEYS_ENENTMESH_TRACE_EXPORTER_TYPE = "eventMesh.trace.exporter.type";
 
-        public static String KEYS_EVENTMESH_TRACE_MAX_EXPORT_SIZE = "eventmesh.trace.max.export.size";
+        public static String KEYS_EVENTMESH_TRACE_MAX_EXPORT_SIZE = "eventMesh.trace.max.export.size";
 
-        public static String KEYS_EVENTMESH_TRACE_MAX_QUEUE_SIZE = "eventmesh.trace.max.queue.size";
+        public static String KEYS_EVENTMESH_TRACE_MAX_QUEUE_SIZE = "eventMesh.trace.max.queue.size";
 
-        public static String KEYS_EVENTMESH_TRACE_EXPORTER_TIMEOUT = "eventmesh.trace.exporter.timeout";
+        public static String KEYS_EVENTMESH_TRACE_EXPORTER_TIMEOUT = "eventMesh.trace.exporter.timeout";
 
-        public static String KEYS_EVENTMESH_TRACE_EXPORT_INTERVAL = "5";
+        public static String KEYS_EVENTMESH_TRACE_EXPORT_INTERVAL = "eventMesh.trace.exporter.interval";
 
-        public static String KEYS_EVENTMESH_EXPORTER_ZIPKIN_IP = "eventmesh.exporter.zipkin.ip";
+        public static String KEYS_EVENTMESH_EXPORTER_ZIPKIN_IP = "eventMesh.exporter.zipkin.ip";
 
-        public static String KEYS_EVENTMESH_EXPORTER_ZIPKIN_PORT = "eventmesh.exporter.zipkin.port";
+        public static String KEYS_EVENTMESH_EXPORTER_ZIPKIN_PORT = "eventMesh.exporter.zipkin.port";
     }
 }
