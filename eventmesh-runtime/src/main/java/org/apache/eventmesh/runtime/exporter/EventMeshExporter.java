@@ -16,26 +16,9 @@
  */
 package org.apache.eventmesh.runtime.exporter;
 
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 
-public class zipkinExporter implements EventMeshExporter {
-    private String ip = "localhost";
-
-    private int port = 9411;
-
-    // Zipkin API Endpoints for uploading spans
-    private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
-
-    private ZipkinSpanExporter zipkinExporter;
-
-    @Override
-    public ZipkinSpanExporter getSpanExporter(CommonConfiguration configuration) {
-        ip = configuration.eventMeshServerIp;
-        port = configuration.eventMeshExporterZipkinPort;
-        String httpUrl = String.format("http://%s:%s", ip, port);
-        zipkinExporter =
-                ZipkinSpanExporter.builder().setEndpoint(httpUrl + ENDPOINT_V2_SPANS).build();
-        return zipkinExporter;
-    }
+public interface EventMeshExporter {
+    public SpanExporter getSpanExporter(CommonConfiguration configuration);
 }

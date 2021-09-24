@@ -37,6 +37,8 @@ public class CommonConfiguration {
     public int eventMeshTraceMaxQueueSize = 2048;
     public int eventMeshTraceExporterTimeout = 30;
     public int eventMeshTraceExportInterval = 5;
+    public String eventMeshExporterZipkinIp = "localhost";
+    public int eventMeshExporterZipkinPort = 9411;
 
     public String namesrvAddr = "";
     public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
@@ -103,7 +105,7 @@ public class CommonConfiguration {
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegistryPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE));
 
             String eventMeshTraceExporterTypeStr = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTraceExporterType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE));
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTraceExporterTypeStr), String.format("%s error", ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE));
             eventMeshTraceExporterType = StringUtils.deleteWhitespace(eventMeshTraceExporterTypeStr);
 
             String eventMeshTraceMaxExportSizeStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_MAX_EXPORT_SIZE);
@@ -124,6 +126,15 @@ public class CommonConfiguration {
             String eventMeshTraceExportIntervalStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORT_INTERVAL);
             if (StringUtils.isNotEmpty(eventMeshTraceExportIntervalStr)) {
                 eventMeshTraceExportInterval = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExportIntervalStr));
+            }
+
+            String eventMeshExporterZipkinIpStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_EXPORTER_ZIPKIN_IP);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshExporterZipkinIpStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_EXPORTER_ZIPKIN_IP));
+            eventMeshExporterZipkinIp = StringUtils.deleteWhitespace(eventMeshExporterZipkinIpStr);
+
+            String eventMeshExporterZipkinPortStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_EXPORTER_ZIPKIN_PORT);
+            if (StringUtils.isNotEmpty(eventMeshExporterZipkinPortStr)) {
+                eventMeshExporterZipkinPort = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshExporterZipkinPortStr));
             }
         }
     }
@@ -167,5 +178,8 @@ public class CommonConfiguration {
 
         public static String KEYS_EVENTMESH_TRACE_EXPORT_INTERVAL = "5";
 
+        public static String KEYS_EVENTMESH_EXPORTER_ZIPKIN_IP = "eventmesh.exporter.zipkin.ip";
+
+        public static String KEYS_EVENTMESH_EXPORTER_ZIPKIN_PORT = "eventmesh.exporter.zipkin.port";
     }
 }
