@@ -18,7 +18,7 @@
 
 ## 处理逻辑
 
-![](../../images/blog/processing logic.png)
+![](../../images/blog/processing-logic.png)
 
 - 代码实现部分：
 
@@ -158,7 +158,7 @@ class HTTPHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
 - 处理器逻辑，这里以`SendAsyncMessageProcessor`消息讲解，其他处理器参照即可。
 
-![](../../images/blog/Processor processing logic.png)
+![](../../images/blog/Processor-processing-logic.png)
 
 ```java
 public class SendAsyncMessageProcessor implements HttpRequestProcessor {

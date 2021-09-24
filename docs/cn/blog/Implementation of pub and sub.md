@@ -17,7 +17,7 @@
 >- SimplePubClientImpl：实现了SimplePubClient接口，同时还继承了TcpClient ，用来定义一个具备pub功能的客户端。
 >- SimpleSubClientImpl：实现了SimpleSubClient接口，同时也继承了TcpClient ，用来定义一个具备sub功能的客户端。
 
-![](../../images/blog/Impl class diagram.png)
+![](../../images/blog/Impl-class-diagram.png)
 
 
 
