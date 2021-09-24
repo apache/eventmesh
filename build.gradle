@@ -387,12 +387,14 @@ subprojects {
             dependency "org.powermock:powermock-module-junit4:2.0.2"
             dependency "org.powermock:powermock-api-mockito2:2.0.2"
 
+
             dependency 'org.springframework.boot:spring-boot-starter-data-jdbc:2.5.4'
             dependency 'org.springframework.boot:spring-boot-starter-data-jpa:2.5.4'
             dependency 'org.springframework.boot:spring-boot-starter-jdbc:2.5.4'
             dependency 'org.springframework:spring-beans:5.1.8.RELEASE'
             dependency 'org.projectlombok:lombok:1.18.20'
             dependency 'com.h2database:h2:1.4.200'
+            dependency "io.cloudevents:cloudevents-core:2.2.0"
         }
     }
 }
