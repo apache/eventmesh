@@ -1,4 +1,4 @@
-## TCP协议文档
+# TCP协议文档
 
 #### 1. 协议格式
 
@@ -17,7 +17,7 @@
 
 消息头(header)：长度 = headerLength
 
-消息体(body)：长度 = length - headerLength - 4 - 4  
+消息体(body)：长度 = length - headerLength - 4 - 4
 ```
 
 #### 2. 业务逻辑层
