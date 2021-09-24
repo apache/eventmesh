@@ -32,7 +32,7 @@ public @interface EventMeshSPI {
 
 ### EventMeshExtensionFactory
 
-EventMeshExtensionFactory是SPI实现类的获取工厂，包含一个静态方法getExtension(Class<T> extensionType, String extensionName)，
+EventMeshExtensionFactory是SPI实现类的获取工厂，包含一个静态方法`getExtension(Class<T> extensionType, String extensionName)`，
 接收扩展接口字节码对象和扩展实例名称，用于获取扩展接口的具体实现类。
 
 ```java
@@ -44,7 +44,7 @@ public enum EventMeshExtensionFactory {
      * @param <T>           the type of the plugin
      * @return plugin instance
      */
-    public static <T> T getExtension(Class<T> extensionType, String extensionName) { 
+    public static <T> T getExtension(Class<T> extensionType, String extensionName) {
     ...
     }
 }
