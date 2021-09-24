@@ -20,8 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -64,7 +63,7 @@ public class SessionPusher {
         Command cmd;
         if (SubscriptionMode.BROADCASTING.equals(downStreamMsgContext.subscriptionItem.getMode())) {
             cmd = Command.BROADCAST_MESSAGE_TO_CLIENT;
-        } else if (SubcriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())) {
+        } else if (SubscriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())) {
             cmd = Command.REQUEST_TO_CLIENT;
         } else {
             cmd = Command.ASYNC_MESSAGE_TO_CLIENT;
@@ -101,7 +100,7 @@ public class SessionPusher {
                                 logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                                 //retry
-                                long delayTime = SubcriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
+                                long delayTime = SubscriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
                                         ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
                                         : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
                                 downStreamMsgContext.delay(delayTime);
