@@ -3,7 +3,7 @@
 ## Introduction
 
 In order to improve scalability，EventMesh introduce the SPI（Service Provider Interface）mechanism, which can help to automatically find the concrete implementation
-class of the extended interface at runtime and load it dynamically. In EventMesh, all extension modules are implemented by using plugin. 
+class of the extended interface at runtime and load it dynamically. In EventMesh, all extension modules are implemented by using plugin.
 User can develop custom plugins by simply implementing extended interfaces, and select the plugin to be run at runtime by simply declare at configuration.
 
 ## eventmesh-spi module
@@ -33,7 +33,7 @@ If this attribute is true, that means the instance of this interface will be sin
 
 ### EventMeshExtensionFactory
 
-EventMeshExtensionFactory is a factory used to get the SPI extension instance which contains a static method getExtension(Class<T> extensionType, String extensionName).
+EventMeshExtensionFactory is a factory used to get the SPI extension instance which contains a static method `getExtension(Class<T> extensionType, String extensionName)`.
 
 ```java
 public enum EventMeshExtensionFactory {
@@ -44,7 +44,7 @@ public enum EventMeshExtensionFactory {
      * @param <T>           the type of the plugin
      * @return plugin instance
      */
-    public static <T> T getExtension(Class<T> extensionType, String extensionName) { 
+    public static <T> T getExtension(Class<T> extensionType, String extensionName) {
     ...
     }
 }
@@ -84,7 +84,7 @@ In the future, we might support the implementation to load from the maven reposi
 
 The following is an example of how to use the SPI to declare a plugin.
 
-First, we create an eventmesh-connector-api module, and define the extension interface MeshMQProducer, and we use @EventMeshSPI on the MeshMQProducer, 
+First, we create an eventmesh-connector-api module, and define the extension interface MeshMQProducer, and we use @EventMeshSPI on the MeshMQProducer,
 which indicates the MeshMQProducer is an SPI interface.
 
 ```java
@@ -102,7 +102,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 }
 ```
 
-At the same time, we need to create a file with the full qualified name of the SPI interface under the resource/META-INF/eventmesh directory 
+At the same time, we need to create a file with the full qualified name of the SPI interface under the resource/META-INF/eventmesh directory
 in the eventmesh-connector-rocketmq module.
 
 org.apache.eventmesh.api.producer.MeshMQProducer
