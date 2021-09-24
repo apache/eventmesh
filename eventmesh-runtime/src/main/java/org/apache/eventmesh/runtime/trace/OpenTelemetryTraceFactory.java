@@ -31,7 +31,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.runtime.exporter.EventMeshExporter;
-import org.apache.eventmesh.runtime.exporter.logExporter;
+import org.apache.eventmesh.runtime.exporter.LogExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,12 +45,12 @@ public class OpenTelemetryTraceFactory {
 
     private SpanExporter spanExporter;
 
-    private SpanExporter defaultExporter = new logExporter();
+    private SpanExporter defaultExporter = new LogExporter();
 
     private SpanProcessor spanProcessor;
 
     // Name of the service(using the instrumentationName)
-    private String SERVICE_NAME = "eventmeshhttptrace";
+    private String SERVICE_NAME = "eventmesh_http_trace";
 
     public OpenTelemetryTraceFactory(CommonConfiguration configuration){
         try {

@@ -28,8 +28,8 @@ import java.util.Collection;
 /**
  *  Because the class 'LoggingSpanExporter' in openTelemetry exported garbled code in eventMesh's startUp, I override the 'LoggingSpanExporter'.
  */
-public class logExporter implements SpanExporter {
-    private static final Logger logger = LoggerFactory.getLogger(logExporter.class);
+public class LogExporter implements SpanExporter {
+    private static final Logger logger = LoggerFactory.getLogger(LogExporter.class);
 
     @Override
     public CompletableResultCode export(Collection<SpanData> spans) {

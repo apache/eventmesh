@@ -296,7 +296,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 requestCommand.setRequestCode(requestCode);
 
                 //todo record command opaque in span.
-                span = tracer.spanBuilder("HTTP"+requestCommand.httpMethod).setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
+                span = tracer.spanBuilder("HTTP "+requestCommand.httpMethod).setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
                 span.addEvent("Span Start");
                 //attach the span to the server context
                 context = context.with(SpanKey.SERVER_KEY,span);
