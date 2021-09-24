@@ -20,7 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.retry
 import io.openmessaging.api.Message;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -75,7 +75,7 @@ public class EventMeshTcpRetryer {
             return;
         }
 
-        int maxRetryTimes = SubcriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
+        int maxRetryTimes = SubscriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
                 ? eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgSyncRetryTimes
                 : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgAsyncRetryTimes;
         if (downStreamMsgContext.retryTimes >= maxRetryTimes) {
