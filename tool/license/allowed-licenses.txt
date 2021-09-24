@@ -879,6 +879,16 @@
             "moduleLicense": "Apache License, Version 2.0",
             "moduleVersion": "1.28",
             "moduleName": "org.yaml:snakeyaml"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.2.0",
+            "moduleName": "io.cloudevents:cloudevents-api"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.2.0",
+            "moduleName": "io.cloudevents:cloudevents-core"
         }
   ]
 }
