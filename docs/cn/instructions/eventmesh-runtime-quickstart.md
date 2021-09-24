@@ -1,4 +1,4 @@
-<h1>Eventmesh-runtime快速入门说明</h1>
+# Eventmesh-runtime 快速入门说明
 
 ## 1 远程部署
 
@@ -65,7 +65,7 @@ sh start.sh
 - eventmesh-spi : eventmesh SPI加载模块
 
 > 注：插件模块遵循eventmesh定义的SPI规范, 自定义的SPI接口需要使用注解@EventMeshSPI标识.
-> 插件实例需要在对应模块中的/main/resources/META-INF/eventmesh 下配置相关接口与实现类的映射文件,文件名为SPI接口全类名. 
+> 插件实例需要在对应模块中的/main/resources/META-INF/eventmesh 下配置相关接口与实现类的映射文件,文件名为SPI接口全类名.
 > 文件内容为插件实例名到插件实例的映射, 具体可以参考eventmesh-connector-rocketmq插件模块
 
 插件可以从classpath和插件目录下面加载. 在本地开发阶段可以将使用的插件在eventmesh-starter模块build.gradle中进行声明,或者执行gradle的copyConnectorPlugin任务
@@ -84,7 +84,7 @@ sh start.sh
 加载**RocketMQ Connector**插件配置：
 
 ```java
-#connector plugin 
+#connector plugin
 eventMesh.connector.plugin.type=rocketmq
 ```
 
@@ -187,10 +187,10 @@ docker pull rocketmqinc/rocketmq-namesrv:4.5.0-alpine
 #获取broker镜像
 docker pull rocketmqinc/rocketmq-broker:4.5.0-alpine
 
-#运行namerv容器 
-docker run -d -p 9876:9876 -v `pwd` /data/namesrv/logs:/root/logs -v `pwd`/data/namesrv/store:/root/store --name rmqnamesrv  rocketmqinc/rocketmq-namesrv:4.5.0-alpine sh mqnamesrv 
+#运行namerv容器
+docker run -d -p 9876:9876 -v `pwd` /data/namesrv/logs:/root/logs -v `pwd`/data/namesrv/store:/root/store --name rmqnamesrv  rocketmqinc/rocketmq-namesrv:4.5.0-alpine sh mqnamesrv
 
-#运行broker容器 
+#运行broker容器
 docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq-broker:4.5.0-alpine sh mqbroker -c ../conf/broker.conf
 ```
 
@@ -211,7 +211,7 @@ Linux
   **通过源码的方式进行构建**：
 
   ```shell
-  cd /* Your Deploy Path */EventMesh/eventmesh-test 
+  cd /* Your Deploy Path */EventMesh/eventmesh-test
   gradle clean testdist testtar -x test`
   ```
 
