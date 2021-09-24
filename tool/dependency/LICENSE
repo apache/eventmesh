@@ -365,6 +365,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     antlr 2.7.7: https://mvnrepository.com/artifact/antlr/antlr/2.7.7, BSD
     dom4j 2.1.3: https://mvnrepository.com/artifact/org.dom4j/dom4j/2.1.3, BSD 3-clause
     hamcrest-core 1.3: https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core/1.3, BSD 2-clause
+
 ========================================================================
 CDDL licenses
 ========================================================================
@@ -387,6 +388,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
 
     system-rules 1.16.1: https://mvnrepository.com/artifact/com.github.stefanbirkner/system-rules/1.16.1, CPL 1.0 and CPAL 1.0
     junit-dep 4.11: https://mvnrepository.com/artifact/junit/junit-dep/4.11, CPL 1.0 and CPAL 1.0
+
 ========================================================================
 EPL licenses
 ========================================================================
@@ -403,12 +405,6 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     jakarta.transaction-api 1.3.3: https://mvnrepository.com/artifact/jakarta.transaction/jakarta.transaction-api/1.3.3, EPL 2.0
     junit 4.12: https://mvnrepository.com/artifact/junit/junit/4.12, EPL 1.0
     aspectjweaver 1.9.7: https://mvnrepository.com/artifact/org.aspectj/aspectjweaver/1.9.7, EPL 2.0
-========================================================================
-EDL licenses
-========================================================================
-
-The following components are provided under the EDL License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
 
 ========================================================================
 LGPL licenses
@@ -424,15 +420,10 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
 MIT licenses
 ========================================================================
 
-The following components are provided under a MIT 2.0 license. See project link for details.
+The following components are provided under the MIT license. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
     checker-qual 2.11.1: https://mvnrepository.com/artifact/org.checkerframework/checker-qual/2.11.1, MIT
     mockito-core 2.23.0: https://mvnrepository.com/artifact/org.mockito/mockito-core/2.23.0, MIT
     jul-to-slf4j 1.7.32: https://mvnrepository.com/artifact/org.slf4j/jul-to-slf4j/1.7.32, MIT
     slf4j-api 1.7.30: https://mvnrepository.com/artifact/org.slf4j/slf4j-api/1.7.30, MIT
-========================================================================
-MPL 1.1 licenses
-========================================================================
-The following components are provided under a MPL 1.1 license. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
