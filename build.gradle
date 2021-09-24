@@ -78,11 +78,12 @@ allprojects {
     }
 
     checkLicense.doFirst {
+        def originFilePath = "tool/dependency/allowed-licenses.txt"
+        def targetFilePath = "build/license/allowed-licenses.json"
         new File("build/license").mkdirs()
-        new File("build/license/allowed-licenses.json").createNewFile()
-
-        def writer = new File("build/license/allowed-licenses.json").newPrintWriter()
-        new File("tool/license/allowed-licenses.txt").filterLine {
+        new File(targetFilePath).createNewFile()
+        def writer = new File(targetFilePath).newPrintWriter()
+        new File(originFilePath).filterLine {
             String line -> line.trim().length() != 0 && !line.startsWith("#")
         }.writeTo(writer)
         writer.flush()
