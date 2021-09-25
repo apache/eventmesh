@@ -16,7 +16,7 @@
  */
 package org.apache.eventmesh.schema.registry.server.service;
 
-import org.apache.eventmesh.openschemaregistry.domain.*;
+import org.apache.eventmesh.schema.registry.server.domain.*;
 import org.apache.eventmesh.schema.registry.server.exception.ExceptionEnum;
 import org.apache.eventmesh.schema.registry.server.exception.OpenSchemaException;
 import org.apache.eventmesh.schema.registry.server.repository.SchemaRepository;
