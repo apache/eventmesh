@@ -1,4 +1,4 @@
-# eventMesh-HTTP-trace-design
+# eventmesh-HTTP-trace-design
 
 ## Introduction
 
@@ -47,15 +47,38 @@ super.textMapPropagator = openTelemetryTraceFactory.getTextMapPropagator();
 
 2. then the trace in class "AbstractHTTPServer” will work.
 
-## Problem
+## Problems
 
-How to set different exporter in class 'OpenTelemetryTraceFactory'?
+#### How to set different exporter in class 'OpenTelemetryTraceFactory'?(Solved)
 
 After I get the exporter type from properties, how to deal with it.
 
 The 'logExporter' only needs to new it.
 
 But the 'zipkinExporter' needs to new and use the "getZipkinExporter()" method.
+
+## Solutions
+#### Solution of different exporter
+Use reflection to get an exporter.
+
+First of all, different exporter must implement the interface 'EventMeshExporter'.
+
+Then we get the exporter name from the configuration and reflect to the class.
+```java
+//different spanExporter
+String exporterName = configuration.eventMeshTraceExporterType;
+//use reflection to get spanExporter
+String className = String.format("org.apache.eventmesh.runtime.exporter.%sExporter",exporterName);
+EventMeshExporter eventMeshExporter = (EventMeshExporter) Class.forName(className).newInstance();
+spanExporter = eventMeshExporter.getSpanExporter(configuration);
+```
+
+Additional, this will surround with try catch.If the specified exporter cannot be obtained successfully, the default exporter log will be used instead
+
+#### Improvement of different exporter
+
+SPI(To be completed)
+
 
 ## Appendix
 
