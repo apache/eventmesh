@@ -74,12 +74,12 @@ allprojects {
     }
 
     licenseReport {
-        allowedLicensesFile = new File("build/license/allowed-licenses.json")
+        allowedLicensesFile = new File("build/license/allowed-dependency.json")
     }
 
     checkLicense.doFirst {
-        def originFilePath = "tool/dependency/allowed-licenses.txt"
-        def targetFilePath = "build/license/allowed-licenses.json"
+        def originFilePath = "tool/dependency/allowed-dependency.txt"
+        def targetFilePath = "build/license/allowed-dependency.json"
         new File("build/license").mkdirs()
         new File(targetFilePath).createNewFile()
         def writer = new File(targetFilePath).newPrintWriter()
