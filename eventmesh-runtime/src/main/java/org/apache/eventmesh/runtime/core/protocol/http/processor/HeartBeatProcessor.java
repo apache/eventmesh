@@ -31,10 +31,12 @@ import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatResponseBody;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.HeartbeatResponseHeader;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
@@ -49,6 +51,8 @@ import org.slf4j.LoggerFactory;
 public class HeartBeatProcessor implements HttpRequestProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
+
+    public Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -68,13 +72,11 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         HeartbeatResponseHeader heartbeatResponseHeader =
                 HeartbeatResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
 
         //validate header
         if (StringUtils.isBlank(heartbeatRequestHeader.getIdc())
-                || StringUtils.isBlank(heartbeatRequestHeader.getDcn())
                 || StringUtils.isBlank(heartbeatRequestHeader.getPid())
                 || !StringUtils.isNumeric(heartbeatRequestHeader.getPid())
                 || StringUtils.isBlank(heartbeatRequestHeader.getSys())) {
@@ -87,6 +89,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
         //validate body
         if (StringUtils.isBlank(heartbeatRequestBody.getClientType())
+                || StringUtils.isBlank(heartbeatRequestBody.getConsumerGroup())
                 || CollectionUtils.isEmpty(heartbeatRequestBody.getHeartbeatEntities())) {
 
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
@@ -97,20 +100,17 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
         }
         ConcurrentHashMap<String, List<Client>> tmp = new ConcurrentHashMap<>();
         String env = heartbeatRequestHeader.getEnv();
-        String dcn = heartbeatRequestHeader.getDcn();
         String idc = heartbeatRequestHeader.getIdc();
         String sys = heartbeatRequestHeader.getSys();
         String ip = heartbeatRequestHeader.getIp();
         String pid = heartbeatRequestHeader.getPid();
-        String consumerGroup = EventMeshUtil.buildClientGroup(heartbeatRequestHeader.getSys(),
-                heartbeatRequestHeader.getDcn());
+        String consumerGroup = heartbeatRequestBody.getConsumerGroup();
         List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = heartbeatRequestBody.getHeartbeatEntities();
         for (HeartbeatRequestBody.HeartbeatEntity heartbeatEntity : heartbeatEntities) {
             String topic = heartbeatEntity.topic;
             String url = heartbeatEntity.url;
             Client client = new Client();
             client.env = env;
-            client.dcn = dcn;
             client.idc = idc;
             client.sys = sys;
             client.ip = ip;
@@ -123,6 +123,26 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
             if (StringUtils.isBlank(client.topic)) {
                 continue;
+            }
+
+            //do acl check
+            if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+                String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+                String user = heartbeatRequestHeader.getUsername();
+                String pass = heartbeatRequestHeader.getPasswd();
+                int requestCode = Integer.valueOf(heartbeatRequestHeader.getCode());
+                try {
+                    Acl.doAclCheckInHttpHeartbeat(remoteAddr, user, pass, sys, topic, requestCode);
+                } catch (Exception e) {
+                    //String errorMsg = String.format("CLIENT HAS NO PERMISSION,send failed, topic:%s, subsys:%s, realIp:%s", topic, subsys, realIp);
+
+                    responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                            heartbeatResponseHeader,
+                            SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(), e.getMessage()));
+                    asyncContext.onComplete(responseEventMeshCommand);
+                    aclLogger.warn("CLIENT HAS NO PERMISSION,HeartBeatProcessor subscribe failed", e);
+                    return;
+                }
             }
 
             if (StringUtils.isBlank(client.url)) {

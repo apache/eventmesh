@@ -32,10 +32,9 @@ import io.openmessaging.api.SendCallback;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.OPStatus;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
@@ -162,27 +161,26 @@ public class Session {
         this.listenRequestSeq = listenRequestSeq;
     }
 
-    public void subscribe(List<String> topics) throws Exception {
-        for (String topic : topics) {
-            sessionContext.subscribeTopics.putIfAbsent(topic, topic);
-            clientGroupWrapper.get().subscribe(topic);
+    public void subscribe(List<SubscriptionItem> items) throws Exception {
+        for (SubscriptionItem item : items) {
+            sessionContext.subscribeTopics.putIfAbsent(item.getTopic(), item);
+            clientGroupWrapper.get().subscribe(item);
 
-            clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().getDefaultTopicRouteInfoFromNameServer(topic,
-                    EventMeshConstants.DEFAULT_TIME_OUT_MILLS);
+            clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().checkTopicExist(item.getTopic());
 
-            clientGroupWrapper.get().addSubscription(topic, this);
-            subscribeLogger.info("subscribe|succeed|topic={}|user={}", topic, client);
+            clientGroupWrapper.get().addSubscription(item.getTopic(), this);
+            subscribeLogger.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
         }
     }
 
-    public void unsubscribe(List<String> topics) throws Exception {
-        for (String topic : topics) {
-            sessionContext.subscribeTopics.remove(topic);
-            clientGroupWrapper.get().removeSubscription(topic, this);
+    public void unsubscribe(List<SubscriptionItem> items) throws Exception {
+        for (SubscriptionItem item : items) {
+            sessionContext.subscribeTopics.remove(item.getTopic());
+            clientGroupWrapper.get().removeSubscription(item.getTopic(), this);
 
-            if (!clientGroupWrapper.get().hasSubscription(topic)) {
-                clientGroupWrapper.get().unsubscribe(topic);
-                subscribeLogger.info("unSubscribe|succeed|topic={}|lastUser={}", topic, client);
+            if (!clientGroupWrapper.get().hasSubscription(item.getTopic())) {
+                clientGroupWrapper.get().unsubscribe(item);
+                subscribeLogger.info("unSubscribe|succeed|topic={}|lastUser={}", item.getTopic(), client);
             }
         }
     }
@@ -198,14 +196,6 @@ public class Session {
         trySendListenResponse(new Header(LISTEN_RESPONSE, OPStatus.SUCCESS.getCode(), "succeed", getListenRequestSeq()), currTime, currTime);
 
         pusher.push(downStreamMsgContext);
-    }
-
-    public boolean isDownStreamBusy() {
-        return pusher.isBusy();
-    }
-
-    public boolean isCanDownStream() {
-        return pusher.isCanDownStream();
     }
 
     public boolean isIsolated() {
@@ -235,21 +225,10 @@ public class Session {
         }
     }
 
-    /**
-     * ACK MSG
-     *
-     * @param seq
-     */
-    public void ackMsg(String seq) {
-        logger.info("ackMsg start,seq:{}", seq);
-        pusher.getPushContext().ackMsg(seq);
-        logger.info("ackMsg end,seq:{}", seq);
-    }
-
     @Override
     public String toString() {
         return "Session{" +
-                "group=" + clientGroupWrapper.get().getGroupName() +
+                "sysId=" + clientGroupWrapper.get().getSysId() +
                 ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress) +
                 ",client=" + client +
                 ",sessionState=" + sessionState +
@@ -316,7 +295,7 @@ public class Session {
                     Package msg = new Package();
                     msg.setHeader(header);
 
-                    //TODO startTime 修改了
+                    // TODO: if startTime is modified
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, context, this);
                     listenRspSend = true;
                 }
@@ -335,25 +314,22 @@ public class Session {
 
     public boolean isAvailable(String topic) {
         if (SessionState.CLOSED == sessionState) {
-            logger.warn("session is not available because session has been closed");
+            logger.warn("session is not available because session has been closed,topic:{},client:{}", topic, client);
             return false;
         }
 
         if (!sessionContext.subscribeTopics.containsKey(topic)) {
-            logger.warn("session is not available because session has not subscribe topic:{}", topic);
+            logger.warn("session is not available because session has not subscribe topic:{},client:{}", topic,client);
             return false;
         }
-        if (isIsolated()) {
-            logger.warn("session is not available because session is isolated,isolateTime:{}", isolateTime);
-            return false;
-        }
+
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int code = 37 + (client != null ? client.hashCode() : 0) + (context != null ? context.hashCode() : 0)
-                + (sessionState != null ? sessionState.hashCode() : 0);
-        return code;
-    }
+//    @Override
+//    public int hashCode() {
+//        int code = 37 + (client != null ? client.hashCode() : 0) + (context != null ? context.hashCode() : 0)
+//                + (sessionState != null ? sessionState.hashCode() : 0);
+//        return code;
+//    }
 }

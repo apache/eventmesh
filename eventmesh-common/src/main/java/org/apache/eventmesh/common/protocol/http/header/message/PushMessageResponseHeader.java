@@ -28,40 +28,34 @@ import org.apache.eventmesh.common.protocol.http.header.Header;
 
 public class PushMessageResponseHeader extends Header {
 
-    //响应码
+    //response code
     private int code;
 
-    //请求方语言描述
+    //requester language description
     private String language;
 
-    //请求方采用的协议版本, 默认1.0
+    //protocol version adopted by requester, default:1.0
     private ProtocolVersion version;
 
-    //请求方所在环境编号
+    //the environment number of the requester
     private String env;
 
-    //请求方所在区域编码
-    private String region;
-
-    //请求方所在IDC
+    //the IDC of the requester
     private String idc;
 
-    //请求方所在DCN
-    private String dcn;
-
-    //请求方的子系统
+    //subsystem of the requester
     private String sys;
 
-    //请求方的进程号
+    //PID of the requester
     private String pid;
 
-    //请求方的IP
+    //IP of the requester
     private String ip;
 
-    //请求方的USERNAME
+    //USERNAME of the requester
     private String username = "username";
 
-    //请求方的PASSWD
+    //PASSWD of the requester
     private String passwd = "user@123";
 
     public String getUsername() {
@@ -112,28 +106,12 @@ public class PushMessageResponseHeader extends Header {
         this.env = env;
     }
 
-    public String getRegion() {
-        return region;
-    }
-
-    public void setRegion(String region) {
-        this.region = region;
-    }
-
     public String getIdc() {
         return idc;
     }
 
     public void setIdc(String idc) {
         this.idc = idc;
-    }
-
-    public String getDcn() {
-        return dcn;
-    }
-
-    public void setDcn(String dcn) {
-        this.dcn = dcn;
     }
 
     public String getSys() {
@@ -160,16 +138,14 @@ public class PushMessageResponseHeader extends Header {
         this.ip = ip;
     }
 
-    public static PushMessageResponseHeader buildHeader(int requestCode, String clientEnv, String clientRegion, String clientIDC,
-                                                        String clientDCN, String clientSysId, String clientPid, String clientIP) {
+    public static PushMessageResponseHeader buildHeader(int requestCode, String clientEnv, String clientIDC,
+                                                        String clientSysId, String clientPid, String clientIP) {
         PushMessageResponseHeader pushMessageResponseHeader = new PushMessageResponseHeader();
         pushMessageResponseHeader.setCode(requestCode);
         pushMessageResponseHeader.setVersion(ProtocolVersion.V1);
         pushMessageResponseHeader.setLanguage(Constants.LANGUAGE_JAVA);
         pushMessageResponseHeader.setEnv(clientEnv);
-        pushMessageResponseHeader.setRegion(clientRegion);
         pushMessageResponseHeader.setIdc(clientIDC);
-        pushMessageResponseHeader.setDcn(clientDCN);
         pushMessageResponseHeader.setSys(clientSysId);
         pushMessageResponseHeader.setPid(clientPid);
         pushMessageResponseHeader.setIp(clientIP);
@@ -184,9 +160,7 @@ public class PushMessageResponseHeader extends Header {
                 .append("language=").append(language).append(",")
                 .append("version=").append(version).append(",")
                 .append("env=").append(env).append(",")
-                .append("region=").append(region).append(",")
                 .append("idc=").append(idc).append(",")
-                .append("dcn=").append(dcn).append(",")
                 .append("sys=").append(sys).append(",")
                 .append("pid=").append(pid).append(",")
                 .append("ip=").append(ip).append(",")
@@ -202,9 +176,7 @@ public class PushMessageResponseHeader extends Header {
         map.put(ProtocolKey.LANGUAGE, language);
         map.put(ProtocolKey.VERSION, version);
         map.put(ProtocolKey.ClientInstanceKey.ENV, env);
-        map.put(ProtocolKey.ClientInstanceKey.REGION, region);
         map.put(ProtocolKey.ClientInstanceKey.IDC, idc);
-        map.put(ProtocolKey.ClientInstanceKey.DCN, dcn);
         map.put(ProtocolKey.ClientInstanceKey.SYS, sys);
         map.put(ProtocolKey.ClientInstanceKey.PID, pid);
         map.put(ProtocolKey.ClientInstanceKey.IP, ip);

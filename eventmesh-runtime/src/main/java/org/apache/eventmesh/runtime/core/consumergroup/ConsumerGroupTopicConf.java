@@ -25,6 +25,7 @@ import java.util.Set;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +38,14 @@ public class ConsumerGroupTopicConf {
     private String topic;
 
     /**
+     * @see org.apache.eventmesh.common.protocol.SubscriptionItem
+     */
+    private SubscriptionItem subscriptionItem;
+
+    /**
      * PUSH URL
      */
-    private Map<String /** IDC*/, List<String> /** IDC内URL列表*/> idcUrls = Maps.newConcurrentMap();
+    private Map<String /** IDC */, List<String> /** URL list in IDC */> idcUrls = Maps.newConcurrentMap();
 
     /**
      * ALL IDC URLs
@@ -53,12 +59,13 @@ public class ConsumerGroupTopicConf {
         ConsumerGroupTopicConf that = (ConsumerGroupTopicConf) o;
         return consumerGroup.equals(that.consumerGroup) &&
                 Objects.equals(topic, that.topic) &&
+                Objects.equals(subscriptionItem, that.subscriptionItem) &&
                 Objects.equals(idcUrls, that.idcUrls);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(consumerGroup, topic, idcUrls);
+        return Objects.hash(consumerGroup, topic, subscriptionItem, idcUrls);
     }
 
     @Override
@@ -66,6 +73,7 @@ public class ConsumerGroupTopicConf {
         StringBuilder sb = new StringBuilder();
         sb.append("consumeTopicConfig={consumerGroup=").append(consumerGroup)
                 .append(",topic=").append(topic)
+                .append(",subscriptionMode=").append(subscriptionItem)
                 .append(",idcUrls=").append(idcUrls).append("}");
         return sb.toString();
     }
@@ -84,6 +92,14 @@ public class ConsumerGroupTopicConf {
 
     public void setTopic(String topic) {
         this.topic = topic;
+    }
+
+    public SubscriptionItem getSubscriptionItem() {
+        return subscriptionItem;
+    }
+
+    public void setSubscriptionItem(SubscriptionItem subscriptionItem) {
+        this.subscriptionItem = subscriptionItem;
     }
 
     public Map<String, List<String>> getIdcUrls() {

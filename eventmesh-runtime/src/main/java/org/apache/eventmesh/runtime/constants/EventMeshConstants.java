@@ -27,13 +27,9 @@ public class EventMeshConstants {
 
     public static final String PROTOCOL_TCP = "tcp";
 
-    public static final String BROADCAST_PREFIX = "broadcast-";
-
-    public final static String CONSUMER_GROUP_NAME_PREFIX = "ConsumerGroup-";
-
-    public final static String PRODUCER_GROUP_NAME_PREFIX = "ProducerGroup-";
-
     public static final String DEFAULT_CHARSET = "UTF-8";
+
+    public static final String IP_PORT_SEPARATOR = ":";
 
     public static final String EVENTMESH_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
@@ -85,7 +81,6 @@ public class EventMeshConstants {
 
     public static final String TAG = "TAG";
 
-    public static final String MANAGE_DCN = "dcn";
     public static final String MANAGE_SUBSYSTEM = "subSystem";
     public static final String MANAGE_IP = "ip";
     public static final String MANAGE_PORT = "port";

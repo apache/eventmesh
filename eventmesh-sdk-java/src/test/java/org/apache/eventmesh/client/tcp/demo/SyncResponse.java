@@ -23,6 +23,8 @@ import org.apache.eventmesh.client.tcp.EventMeshClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.slf4j.Logger;
@@ -43,16 +45,16 @@ public class SyncResponse implements ReceiveMsgHook {
             client.init();
             client.heartbeat();
 
-            client.subscribe("FT0-s-80000000-01-0");
-            //同步RR消息
+            client.subscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
+            // Synchronize RR messages
             client.registerSubBusiHandler(handler);
 
             client.listen();
 
             //client.unsubscribe();
 
-            //退出,销毁资源
-//            client.close();
+            // release resource and close client
+            // client.close();
         } catch (Exception e) {
             logger.warn("SyncResponse failed", e);
         }

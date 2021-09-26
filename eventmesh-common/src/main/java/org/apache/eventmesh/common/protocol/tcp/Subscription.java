@@ -17,25 +17,27 @@
 
 package org.apache.eventmesh.common.protocol.tcp;
 
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+
 import java.util.LinkedList;
 import java.util.List;
 
 public class Subscription {
 
-    private List<String> topicList = new LinkedList<>();
+    private List<SubscriptionItem> topicList = new LinkedList<>();
 
     public Subscription() {
     }
 
-    public Subscription(List<String> topicList) {
+    public Subscription(List<SubscriptionItem> topicList) {
         this.topicList = topicList;
     }
 
-    public List<String> getTopicList() {
+    public List<SubscriptionItem> getTopicList() {
         return topicList;
     }
 
-    public void setTopicList(List<String> topicList) {
+    public void setTopicList(List<SubscriptionItem> topicList) {
         this.topicList = topicList;
     }
 
@@ -45,6 +47,4 @@ public class Subscription {
                 "topicList=" + topicList +
                 '}';
     }
-
-
 }

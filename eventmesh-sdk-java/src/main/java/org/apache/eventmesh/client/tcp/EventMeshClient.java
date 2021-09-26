@@ -19,7 +19,9 @@ package org.apache.eventmesh.client.tcp;
 
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 
 public interface EventMeshClient {
 
@@ -39,7 +41,7 @@ public interface EventMeshClient {
 
     void listen() throws Exception;
 
-    void subscribe(String topic) throws Exception;
+    void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) throws Exception;
 
     void unsubscribe() throws Exception;
 

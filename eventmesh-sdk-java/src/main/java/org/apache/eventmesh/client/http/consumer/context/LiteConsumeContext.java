@@ -28,26 +28,20 @@ public class LiteConsumeContext {
 
     private String eventMeshIdc;
 
-    private String eventMeshRegion;
-
     private String eventMeshCluster;
 
-    private String eventMeshDcn;
-
-    //本地RETRY次数
+    // Local RETRY times
     private int retryTimes = 0;
 
     private long createTime = System.currentTimeMillis();
 
     public LiteConsumeContext(String eventMeshIp, String eventMeshEnv,
-                              String eventMeshIdc, String eventMeshRegion,
-                              String eventMeshCluster, String eventMeshDcn) {
+                              String eventMeshIdc,
+                              String eventMeshCluster) {
         this.eventMeshIp = eventMeshIp;
         this.eventMeshEnv = eventMeshEnv;
         this.eventMeshIdc = eventMeshIdc;
-        this.eventMeshRegion = eventMeshRegion;
         this.eventMeshCluster = eventMeshCluster;
-        this.eventMeshDcn = eventMeshDcn;
 
     }
 
@@ -75,28 +69,12 @@ public class LiteConsumeContext {
         this.eventMeshIdc = eventMeshIdc;
     }
 
-    public String getEventMeshRegion() {
-        return eventMeshRegion;
-    }
-
-    public void setEventMeshRegion(String eventMeshRegion) {
-        this.eventMeshRegion = eventMeshRegion;
-    }
-
     public String getEventMeshCluster() {
         return eventMeshCluster;
     }
 
     public void setEventMeshCluster(String eventMeshCluster) {
         this.eventMeshCluster = eventMeshCluster;
-    }
-
-    public String getEventMeshDcn() {
-        return eventMeshDcn;
-    }
-
-    public void setEventMeshDcn(String eventMeshDcn) {
-        this.eventMeshDcn = eventMeshDcn;
     }
 
     public int getRetryTimes() {
@@ -113,10 +91,8 @@ public class LiteConsumeContext {
         sb.append("liteConsumeContext={")
                 .append("eventMeshIp=").append(eventMeshIp).append(",")
                 .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-                .append("eventMeshRegion=").append(eventMeshRegion).append(",")
                 .append("eventMeshIdc=").append(eventMeshIdc).append(",")
                 .append("eventMeshCluster=").append(eventMeshCluster).append(",")
-                .append("eventMeshDcn=").append(eventMeshDcn).append(",")
                 .append("retryTimes=").append(retryTimes).append(",")
                 .append("createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT))
                 .append("}");

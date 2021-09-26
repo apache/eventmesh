@@ -119,7 +119,7 @@ public class RemotingServer {
         this.consumeExecutor = consumeExecutor;
     }
 
-    //TODO:不同的topic有不同的listener
+    // TODO: Let different topics have different listeners
     public void registerMessageListener(LiteMessageListener eventMeshMessageListener) {
         this.messageListener = eventMeshMessageListener;
     }
@@ -160,7 +160,7 @@ public class RemotingServer {
     class HTTPHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
         /**
-         * 解析请求HEADER
+         * Parse request HEADER
          *
          * @param fullReq
          * @return
@@ -187,7 +187,7 @@ public class RemotingServer {
                     return;
                 }
 
-                //协议版本核查
+                // Protocol version verification
                 String protocolVersion = StringUtils.deleteWhitespace(httpRequest.headers().get(ProtocolKey.VERSION));
                 if (StringUtils.isBlank(protocolVersion) || !ProtocolVersion.contains(protocolVersion)) {
                     httpRequest.headers().set(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
@@ -214,7 +214,7 @@ public class RemotingServer {
                     return;
                 }
 
-                /////////////////////////////////////////////////////////////////基础检查////////////////////////////////////////////////////
+                /////////////////////////////////////////////////////////////////Basic inspection////////////////////////////////////////////////////
                 String requestCode =
                         (httpRequest.method() == HttpMethod.POST) ? StringUtils.deleteWhitespace(httpRequest.headers().get(ProtocolKey.REQUEST_CODE))
                                 : MapUtils.getString(bodyMap, StringUtils.lowerCase(ProtocolKey.REQUEST_CODE), "");
@@ -225,7 +225,7 @@ public class RemotingServer {
 
                 HttpCommand responseCommand;
 
-                //校验requestCode
+                // Verify requestCode
                 if (StringUtils.isBlank(requestCode)
                         || !StringUtils.isNumeric(requestCode)
                         || (!String.valueOf(RequestCode.HTTP_PUSH_CLIENT_ASYNC.getRequestCode()).equals(requestCode)
@@ -248,7 +248,7 @@ public class RemotingServer {
 
                 String topic = pushMessageRequestBody.getTopic();
 
-                //检查是否有该TOPIC的listener
+                // Check if there is a listener for the TOPIC
 //                if (!listenerTable.containsKey(topic)) {
 //                    logger.error("no listenning for this topic, {}", topic);
 //                    responseCommand = requestCommand.createHttpCommandResponse(ClientRetCode.NOLISTEN.getRetCode(), ClientRetCode.NOLISTEN.getErrMsg());
@@ -258,8 +258,7 @@ public class RemotingServer {
 
                 final LiteConsumeContext eventMeshConsumeContext = new LiteConsumeContext(pushMessageRequestHeader.getEventMeshIp(),
                         pushMessageRequestHeader.getEventMeshEnv(), pushMessageRequestHeader.getEventMeshIdc(),
-                        pushMessageRequestHeader.getEventMeshRegion(),
-                        pushMessageRequestHeader.getEventMeshCluster(), pushMessageRequestHeader.getEventMeshDcn());
+                        pushMessageRequestHeader.getEventMeshCluster());
 
                 final LiteMessage liteMessage = new LiteMessage(pushMessageRequestBody.getBizSeqNo(), pushMessageRequestBody.getUniqueId(),
                         topic, pushMessageRequestBody.getContent());
@@ -268,7 +267,7 @@ public class RemotingServer {
                     liteMessage.addProp(entry.getKey(), entry.getValue());
                 }
 
-                //转交到消费线程池中
+                // Transfer to the consumer thread pool
                 consumeExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -329,7 +328,7 @@ public class RemotingServer {
         }
 
         /**
-         * 默认错误页面发送
+         * Send default error page
          *
          * @param ctx
          * @param status
@@ -347,7 +346,7 @@ public class RemotingServer {
 
 
         /**
-         * 发送响应
+         * Send response
          *
          * @param ctx
          * @param response

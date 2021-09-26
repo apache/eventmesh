@@ -34,6 +34,7 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
@@ -53,6 +54,8 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
     public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+
+    public Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -75,12 +78,10 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         SendMessageResponseHeader sendMessageResponseHeader =
                 SendMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshRegion,
-                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshDCN, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         //validate header
         if (StringUtils.isBlank(sendMessageRequestHeader.getIdc())
-                || StringUtils.isBlank(sendMessageRequestHeader.getDcn())
                 || StringUtils.isBlank(sendMessageRequestHeader.getPid())
                 || !StringUtils.isNumeric(sendMessageRequestHeader.getPid())
                 || StringUtils.isBlank(sendMessageRequestHeader.getSys())) {
@@ -94,6 +95,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         //validate body
         if (StringUtils.isBlank(sendMessageRequestBody.getBizSeqNo())
                 || StringUtils.isBlank(sendMessageRequestBody.getUniqueId())
+                || StringUtils.isBlank(sendMessageRequestBody.getProducerGroup())
                 || StringUtils.isBlank(sendMessageRequestBody.getTopic())
                 || StringUtils.isBlank(sendMessageRequestBody.getContent())
                 || (StringUtils.isBlank(sendMessageRequestBody.getTtl()))) {
@@ -105,8 +107,29 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String producerGroup = EventMeshUtil.buildClientGroup(sendMessageRequestHeader.getSys(),
-                sendMessageRequestHeader.getDcn());
+        //do acl check
+        if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+            String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
+            String user = sendMessageRequestHeader.getUsername();
+            String pass = sendMessageRequestHeader.getPasswd();
+            String subsystem = sendMessageRequestHeader.getSys();
+            int requestCode = Integer.valueOf(sendMessageRequestHeader.getCode());
+            String topic = sendMessageRequestBody.getTopic();
+            try {
+                Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
+            }catch (Exception e){
+                //String errorMsg = String.format("CLIENT HAS NO PERMISSION,send failed, topic:%s, subsys:%s, realIp:%s", topic, subsys, realIp);
+
+                responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                        sendMessageResponseHeader,
+                        SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(), e.getMessage()));
+                asyncContext.onComplete(responseEventMeshCommand);
+                aclLogger.warn("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);
+                return;
+            }
+        }
+
+        String producerGroup = sendMessageRequestBody.getProducerGroup();
         EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
         if (!eventMeshProducer.getStarted().get()) {

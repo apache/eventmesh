@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.ClientAckContext;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,10 +45,14 @@ public class MessageAckTask extends AbstractTask {
             logger.error("MessageAckTask failed, seq cannot be null|user={}", session.getClient());
             return;
         }
-        ClientAckContext clientAckContext = session.getPusher().getPushContext().getUnAckMsg().get(seq);
-        if (clientAckContext != null) {
-            session.ackMsg(seq);
-            session.getClientGroupWrapper().get().getDownstreamMap().remove(seq);
+        DownStreamMsgContext downStreamMsgContext = session.getPusher().getUnAckMsg().get(seq);
+        if (downStreamMsgContext != null) {// ack non-broadcast msg
+            downStreamMsgContext.ackMsg();
+            session.getPusher().getUnAckMsg().remove(seq);
+        }else {
+            if(!cmd.equals(Command.RESPONSE_TO_CLIENT_ACK)) {
+                logger.warn("MessageAckTask, seq:{}, downStreamMsgContext not in downStreamMap,client:{}", seq, session.getClient());
+            }
         }
         messageLogger.info("pkg|c2eventMesh|cmd={}|seq=[{}]|user={}|wait={}ms|cost={}ms", cmd, seq, session.getClient(),
                 taskExecuteTime - startTime, System.currentTimeMillis() - startTime);

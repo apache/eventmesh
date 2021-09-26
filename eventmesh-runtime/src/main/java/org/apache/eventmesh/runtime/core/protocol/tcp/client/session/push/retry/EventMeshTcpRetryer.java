@@ -17,17 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.retry;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.DelayQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import io.openmessaging.api.Message;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -36,6 +30,13 @@ import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class EventMeshTcpRetryer {
 
@@ -74,15 +75,18 @@ public class EventMeshTcpRetryer {
             return;
         }
 
-        int maxRetryTimes = EventMeshUtil.isService(downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION)) ? 1 : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryTimes;
+        int maxRetryTimes = SubscriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
+                ? eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgSyncRetryTimes
+                : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgAsyncRetryTimes;
         if (downStreamMsgContext.retryTimes >= maxRetryTimes) {
-            logger.warn("pushRetry fail,retry over maxRetryTimes:{}, retryTimes:{}, seq:{}, bizSeq:{}", maxRetryTimes, downStreamMsgContext.retryTimes,
-                    downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+            logger.warn("pushRetry fail,retry over maxRetryTimes:{}, pushType: {}, retryTimes:{}, seq:{}, bizSeq:{}", maxRetryTimes, downStreamMsgContext.subscriptionItem.getType(),
+                    downStreamMsgContext.retryTimes, downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
             return;
         }
 
         retrys.offer(downStreamMsgContext);
-        logger.info("pushRetry success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+        logger.info("pushRetry success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes,
+                EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
     }
 
     public void init() {
@@ -108,7 +112,8 @@ public class EventMeshTcpRetryer {
 
     private void retryHandle(DownStreamMsgContext downStreamMsgContext) {
         try {
-            logger.info("retry downStream msg start,seq:{},retryTimes:{},bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+            logger.info("retry downStream msg start,seq:{},retryTimes:{},bizSeq:{}", downStreamMsgContext.seq,
+                    downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
             if (isRetryMsgTimeout(downStreamMsgContext)) {
                 return;
@@ -118,43 +123,37 @@ public class EventMeshTcpRetryer {
 
             Session rechoosen = null;
             String topic = downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
-            if (!EventMeshUtil.isBroadcast(topic)) {
+            if (!SubscriptionMode.BROADCASTING.equals(downStreamMsgContext.subscriptionItem.getMode())) {
                 rechoosen = downStreamMsgContext.session.getClientGroupWrapper()
-                        .get().getDownstreamDispatchStrategy().select(downStreamMsgContext.session.getClientGroupWrapper().get().getGroupName()
+                        .get().getDownstreamDispatchStrategy().select(downStreamMsgContext.session.getClientGroupWrapper().get().getSysId()
                                 , topic
                                 , downStreamMsgContext.session.getClientGroupWrapper().get().getGroupConsumerSessions());
             } else {
                 rechoosen = downStreamMsgContext.session;
             }
 
-
             if (rechoosen == null) {
-                logger.warn("retry, found no session to downstream msg,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+                logger.warn("retry, found no session to downstream msg,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
+                        downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
 
-//                //需要手动ack掉没有下发成功的消息
+//                //Need to manually ack the message that did not send a successful message
 //                eventMeshAckMsg(downStreamMsgContext);
 
-//                //重试找不到下发session不再回发broker或者重试其它eventMesh
+//                //Retry cannot find the delivered session, no longer post back to the broker or retry other event Mesh
 //                String bizSeqNo = finalDownStreamMsgContext.msgExt.getKeys();
 //                String uniqueId = MapUtils.getString(finalDownStreamMsgContext.msgExt.getProperties(), WeMQConstant.RMB_UNIQ_ID, "");
 //                if(EventMeshTCPServer.getAccessConfiguration().eventMeshTcpSendBackEnabled){
 //                    sendMsgBackToBroker(finalDownStreamMsgContext.msgExt, bizSeqNo, uniqueId);
 //                }else{
-//                    //TODO 将消息推给其它eventMesh，待定
+//                    // TODO: Push the message to other EventMesh instances. To be determined.
 //                    sendMsgToOtherEventMesh(finalDownStreamMsgContext.msgExt, bizSeqNo, uniqueId);
 //                }
             } else {
                 downStreamMsgContext.session = rechoosen;
-
-                if (rechoosen.isCanDownStream()) {
-                    rechoosen.downstreamMsg(downStreamMsgContext);
-                    logger.info("retry downStream msg end,seq:{},retryTimes:{},bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
-                } else {
-                    logger.warn("session is busy,push retry again,seq:{}, session:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.session.getClient(), EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
-                    long delayTime = EventMeshUtil.isService(topic) ? 0 : eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryDelayInMills;
-                    downStreamMsgContext.delay(delayTime);
-                    pushRetry(downStreamMsgContext);
-                }
+                rechoosen.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
+                rechoosen.downstreamMsg(downStreamMsgContext);
+                logger.info("retry downStream msg end,seq:{},retryTimes:{},bizSeq:{}", downStreamMsgContext.seq,
+                        downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
             }
         } catch (Exception e) {
             logger.error("retry-dispatcher error!", e);
@@ -163,9 +162,11 @@ public class EventMeshTcpRetryer {
 
     private boolean isRetryMsgTimeout(DownStreamMsgContext downStreamMsgContext) {
         boolean flag = false;
-        long ttl = Long.parseLong(downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL));
-        //TODO 关注是否能取到
-        long storeTimestamp = Long.parseLong(downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.STORE_TIME));
+        String ttlStr = downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL);
+        long ttl = StringUtils.isNumeric(ttlStr)? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;;
+
+        String storeTimeStr = downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.STORE_TIME);
+        long storeTimestamp = StringUtils.isNumeric(storeTimeStr)? Long.parseLong(storeTimeStr) : 0;
         String leaveTimeStr = downStreamMsgContext.msgExt.getUserProperties(EventMeshConstants.LEAVE_TIME);
         long brokerCost = StringUtils.isNumeric(leaveTimeStr) ? Long.parseLong(leaveTimeStr) - storeTimestamp : 0;
 
@@ -173,7 +174,8 @@ public class EventMeshTcpRetryer {
         long accessCost = StringUtils.isNumeric(arriveTimeStr) ? System.currentTimeMillis() - Long.parseLong(arriveTimeStr) : 0;
         double elapseTime = brokerCost + accessCost;
         if (elapseTime >= ttl) {
-            logger.warn("discard the retry because timeout, seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+            logger.warn("discard the retry because timeout, seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
+                    downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
             flag = true;
             eventMeshAckMsg(downStreamMsgContext);
         }

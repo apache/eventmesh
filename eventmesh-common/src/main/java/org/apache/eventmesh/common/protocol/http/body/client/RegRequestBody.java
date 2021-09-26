@@ -25,6 +25,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 
 import org.apache.commons.collections4.MapUtils;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class RegRequestBody extends Body {
@@ -39,13 +40,13 @@ public class RegRequestBody extends Body {
 
     private String endPoint;
 
-    private List<String> topics;
+    private List<SubscriptionItem> topics;
 
-    public List<String> getTopics() {
+    public List<SubscriptionItem> getTopics() {
         return topics;
     }
 
-    public void setTopics(List<String> topics) {
+    public void setTopics(List<SubscriptionItem> topics) {
         this.topics = topics;
     }
 
@@ -69,7 +70,7 @@ public class RegRequestBody extends Body {
         RegRequestBody body = new RegRequestBody();
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
         body.setEndPoint(MapUtils.getString(bodyParam, ENDPOINT));
-        body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPICS), String.class));
+        body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPICS), SubscriptionItem.class));
         return body;
     }
 

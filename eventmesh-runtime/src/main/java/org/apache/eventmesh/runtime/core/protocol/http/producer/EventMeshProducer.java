@@ -55,13 +55,9 @@ public class EventMeshProducer {
         mqProducerWrapper.send(sendMsgContext.getMsg(), sendCallback);
     }
 
-    public void request(SendMessageContext sendMsgContext, SendCallback sendCallback, RRCallback rrCallback, long timeout)
+    public void request(SendMessageContext sendMsgContext, RRCallback rrCallback, long timeout)
             throws Exception {
-        mqProducerWrapper.request(sendMsgContext.getMsg(), sendCallback, rrCallback, timeout);
-    }
-
-    public Message request(SendMessageContext sendMessageContext, long timeout) throws Exception {
-        return mqProducerWrapper.request(sendMessageContext.getMsg(), timeout);
+        mqProducerWrapper.request(sendMsgContext.getMsg(), rrCallback, timeout);
     }
 
     public boolean reply(final SendMessageContext sendMsgContext, final SendCallback sendCallback) throws Exception {
@@ -69,7 +65,7 @@ public class EventMeshProducer {
         return true;
     }
 
-    protected MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
+    protected MQProducerWrapper mqProducerWrapper;
 
     public MQProducerWrapper getMqProducerWrapper() {
         return mqProducerWrapper;
@@ -81,12 +77,11 @@ public class EventMeshProducer {
 
         Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
-        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
-                eventMeshHttpConfiguration.eventMeshRegion, eventMeshHttpConfiguration.eventMeshCluster));
+        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(), eventMeshHttpConfiguration.eventMeshCluster));
 
         //TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.eventMeshIDC);
-
+        mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
         mqProducerWrapper.init(keyValue);
         inited.compareAndSet(false, true);
         logger.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());

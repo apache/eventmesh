@@ -32,7 +32,7 @@ Here are the workflow for contributors:
 7. Create a pull request
 
 Please follow [the pull request template](./.github/PULL_REQUEST_TEMPLATE.md). Please make sure the PR has a
-corresponding issue. [GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
+corresponding issue. [GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
 
 After creating a PR, one or more reviewers will be assigned to the pull request. The reviewers will review the code.
 
@@ -41,11 +41,11 @@ message should be clear and concise.
 
 ### Open an issue / PR
 
-We use [GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
-and [Pull Requests](https://github.com/WeBankFinTech/EventMesh/pulls) for trackers.
+We use [GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
+and [Pull Requests](https://github.com/apache/incubator-eventmesh/pulls) for trackers.
 
 If you find a typo in a document, find a bug in code, or want new features, or want to give suggestions, you
-can [open an issue on GitHub](https://github.com/WeBankFinTech/EventMesh/issues/new) to report it. Please follow the
+can [open an issue on GitHub](https://github.com/apache/incubator-eventmesh/issues/new) to report it. Please follow the
 guideline message in the issue template.
 
 If you want to contribute, please follow the [contribution workflow](#github-workflow) and create a new pull request. If
@@ -63,6 +63,17 @@ All code should be well reviewed by one or more committers. Some principles:
 - Elegance: New functions, classes or components should be well-designed.
 - Testability: Important code should be well-tested (high unit test coverage).
 
+### License review
+
+Eventmesh follows [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) policy. All source files should 
+have the Apache License header added to the file header. Eventmesh uses the [apache/skywalking-eyes](https://github.com/apache/skywalking-eyes) to check 
+the source file header. And Eventmesh uses [Gradle-License-Report](https://github.com/jk1/Gradle-License-Report) plugin to check for third-part dependencies. 
+When you need to add a three-part dependency, you need to register the newly added dependency in tool/license/allowed-licenses.txt, you can execute `./gradlew clean checkLicense` to judge 
+whether there exist dependencies isn't added, and the newly added three-part libraries need to meet [ASF 3RD PARTY LICENSE POLICY](https://apache.org/legal/resolved.html). 
+It is highly recommended communicating with Eventmesh community before you need to add a three-part library.
+
 ## Community
 
 ### Contact us
+
+Mail: dev@eventmesh.apache.org

@@ -23,10 +23,13 @@ import java.util.Map;
 
 import io.openmessaging.api.Message;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.slf4j.Logger;
@@ -48,6 +51,8 @@ public class HandleMsgContext {
 
     private String topic;
 
+    private SubscriptionItem subscriptionItem;
+
     private Message msg;
 
     private int ttl;
@@ -65,7 +70,7 @@ public class HandleMsgContext {
     private Map<String, String> props;
 
     public HandleMsgContext(String msgRandomNo, String consumerGroup, EventMeshConsumer eventMeshConsumer,
-                            String topic, Message msg,
+                            String topic, Message msg, SubscriptionItem subscriptionItem,
                             AbstractContext context, ConsumerGroupConf consumerGroupConfig,
                             EventMeshHTTPServer eventMeshHTTPServer, String bizSeqNo, String uniqueId, ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
@@ -73,13 +78,15 @@ public class HandleMsgContext {
         this.eventMeshConsumer = eventMeshConsumer;
         this.topic = topic;
         this.msg = msg;
+        this.subscriptionItem = subscriptionItem;
         this.context = context;
         this.consumerGroupConfig = consumerGroupConfig;
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.bizSeqNo = bizSeqNo;
         this.uniqueId = uniqueId;
         this.consumeTopicConfig = consumeTopicConfig;
-        this.ttl = Integer.parseInt(msg.getUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT));
+        String ttlStr = msg.getUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT);
+        this.ttl = StringUtils.isNumeric(ttlStr)? Integer.parseInt(ttlStr): EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
     }
 
     public void addProp(String key, String val) {
@@ -149,6 +156,14 @@ public class HandleMsgContext {
         this.msg = msg;
     }
 
+    public SubscriptionItem getSubscriptionItem() {
+        return subscriptionItem;
+    }
+
+    public void setSubscriptionItem(SubscriptionItem subscriptionItem) {
+        this.subscriptionItem = subscriptionItem;
+    }
+
     public long getCreateTime() {
         return createTime;
     }
@@ -185,7 +200,7 @@ public class HandleMsgContext {
 //                        msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
 //                        msg.getQueueId(), msg.getQueueOffset());
             }
-            eventMeshConsumer.updateOffset(topic, Arrays.asList(msg), context);
+            eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Arrays.asList(msg), context);
         }
     }
 
@@ -211,6 +226,7 @@ public class HandleMsgContext {
         sb.append("handleMsgContext={")
                 .append("consumerGroup=").append(consumerGroup)
                 .append(",topic=").append(topic)
+                .append(",subscriptionItem=").append(subscriptionItem)
                 .append(",consumeTopicConfig=").append(consumeTopicConfig)
                 .append(",bizSeqNo=").append(bizSeqNo)
                 .append(",uniqueId=").append(uniqueId)

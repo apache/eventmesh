@@ -17,8 +17,6 @@
 
 import java.util.concurrent.TimeUnit
 
-//import com.github.spotbugs.snom.SpotBugsTask
-
 buildscript {
     repositories {
         maven {
@@ -28,11 +26,12 @@ buildscript {
         maven {
             url "https://plugins.gradle.org/m2/"
         }
-
     }
 
     dependencies {
         classpath "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.1"
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
+        classpath "com.github.jk1:gradle-license-report:1.17"
     }
 }
 
@@ -48,21 +47,11 @@ allprojects {
     apply plugin: "pmd"
     apply plugin: "java-library"
     apply plugin: 'signing'
-
-    if (project.findProperty("jdk") == "1.7") {
-        sourceCompatibility = 1.7
-        targetCompatibility = 1.7
-        version = version + "-jdk7"
-    } else {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-        version = version + "-jdk8"
-    }
+    apply plugin: 'com.github.jk1.dependency-license-report'
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
     compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-
 
     clean.doFirst {
         delete 'build'
@@ -75,6 +64,21 @@ allprojects {
         version = version + "-SNAPSHOT"
     }
 
+    licenseReport {
+        allowedLicensesFile = new File("build/license/allowed-licenses.json")
+    }
+
+    checkLicense.doFirst {
+        new File("build/license").mkdirs()
+        new File("build/license/allowed-licenses.json").createNewFile()
+
+        def writer = new File("build/license/allowed-licenses.json").newPrintWriter()
+        new File("tool/license/allowed-licenses.txt").filterLine {
+            String line -> line.trim().length() != 0 && !line.startsWith("#")
+        }.writeTo(writer)
+        writer.flush()
+        writer.close()
+    }
 }
 
 task tar(type: Tar) {
@@ -87,7 +91,6 @@ task tar(type: Tar) {
     }
 }
 
-
 task zip(type: Zip) {
     extension = 'zip'
     archiveFileName = project.name + '.' + project.version + '.' + extension
@@ -97,67 +100,9 @@ task zip(type: Zip) {
     }
 }
 
-
 subprojects {
 
-    List fastjson = [
-            "com.alibaba:fastjson:1.2.71"
-    ]
-
-    List jackson = [
-            'com.fasterxml.jackson.core:jackson-databind:2.11.0',
-            'com.fasterxml.jackson.core:jackson-core:2.11.0',
-            'com.fasterxml.jackson.core:jackson-annotations:2.11.0'
-    ]
-
-    List apache_commons = [
-            "org.apache.commons:commons-lang3:3.6",
-            "org.apache.commons:commons-collections4:4.1"
-    ]
-
-    List httpclient = [
-            "org.apache.httpcomponents:httpclient:4.5.2"
-    ]
-
-    List guava = [
-            "com.google.guava:guava:29.0-jre"
-    ]
-
-    List netty = [
-            "io.netty:netty-all:4.1.49.Final"
-    ]
-
-    List junit = [
-            "junit:junit:4.12"
-    ]
-
-    List log = [
-            "org.slf4j:slf4j-api:1.7.30"
-    ]
-
-
-    List common = [
-            "commons-io:commons-io:2.4",
-            "org.apache.commons:commons-text:1.9"
-    ]
-
-    List assertj = [
-            "org.assertj:assertj-core:2.6.0"
-    ]
-
-    List mock = [
-            "org.mockito:mockito-core:2.23.0",
-            "org.powermock:powermock-module-junit4:2.0.2",
-            "org.powermock:powermock-api-mockito2:2.0.2",
-    ]
-
-    dependencies {
-        implementation apache_commons, guava, log, fastjson, jackson, common, httpclient, netty
-        testImplementation apache_commons, guava, log, fastjson, jackson, common, junit, assertj, mock, httpclient, netty
-        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
-        spotbugsPlugins 'com.mebigfatguy.fb-contrib:fb-contrib:7.4.7'
-    }
-
+    apply plugin: "io.spring.dependency-management"
 
     sourceSets {
         main {
@@ -176,79 +121,25 @@ subprojects {
 
     jacoco {
         toolVersion = "0.8.6"
-        reportsDir = file("$buildDir/reports/jacoco")
     }
 
     jacocoTestReport {
-//        sourceSets sourceSets.main
-//        executionData files("$buildDir/jacoco/jacocoTest.exec")
-
         reports {
-            xml.enabled false
+            xml.enabled true
             csv.enabled false
-            html.destination file("${buildDir}/reports/jacoco/html")
+            html.enabled false
         }
     }
 
-//    checkstyle {
-//        toolVersion = "8.32"
-//        ignoreFailures = true
-//        sourceSets = [sourceSets.main]
-//        configFile = '../style/codeStyle.xml' as File
-//        showViolations true
-//    }
-//
-//    tasks.withType(Checkstyle) {
-//        reports {
-//            xml.enabled false
-//            html.enabled true
-//        }
-//    }
-
-//    sourceSets {
-//        main {
-//            java {
-//                srcDir 'src/main/java'
-//            }
-//
-//            resources {
-//                srcDir 'src/main/resources'
-//            }
-//
-//        }
-//
-//        test {
-//            java {
-//                srcDir 'src/test/java'
-//            }
-//
-//            resources {
-//                srcDir 'src/test/resources'
-//            }
-//
-//        }
-//
-//
-//    }
-
-
     spotbugs {
-        //toolVersion = '4.2.3'
         ignoreFailures = true
         showProgress = true
         showStackTraces = true
-        //reportLevel = 'default'
         effort = 'default'
-        //visitors = [ 'FindSqlInjection', 'SwitchFallthrough' ]
-        //omitVisitors = [ 'FindNonShortCircuit' ]
         reportsDir = file("$buildDir/reports/spotbugs")
-        //includeFilter = file('spotbugs-include.xml')
-        //excludeFilter = file('spotbugs-exclude.xml')
-        //onlyAnalyze = ['org/apache/eventmesh/**']
         projectName = rootProject.name
         release = version
         extraArgs = ['-nested:false']
-        //jvmArgs = [ '-Duser.language=zh' ]
         maxHeapSize = '256m'
 
     }
@@ -275,14 +166,6 @@ subprojects {
             }
         }
     }
-
-//        tasks.withType(Pmd) {
-//            reports {
-//                xml.enabled = false
-//                html.enabled = true
-//            }
-//        }
-
 
     pmd {
         consoleOutput = true
@@ -319,13 +202,15 @@ subprojects {
                 from project.jar.getArchivePath()
                 exclude 'eventmesh-common*.jar'
                 exclude 'eventmesh-connector-api*.jar'
+                exclude 'eventmesh-connector-plugin*.jar'
+                exclude 'eventmesh-admin*.jar'
                 exclude 'eventmesh-starter*.jar'
                 exclude 'eventmesh-test*.jar'
                 exclude 'eventmesh-sdk*.jar'
             }
             copy {
                 into '../dist/lib'
-                from project.configurations.runtime
+                from project.configurations.runtimeClasspath
                 exclude '**/*.properties*'
                 exclude '**/*testng*.jar'
                 exclude '**/*powermock*.jar'
@@ -337,7 +222,6 @@ subprojects {
                 exclude '**/mumble-sdk-test*.jar'
                 exclude '*connector-rocketmq*.jar'
                 exclude 'eventmesh-runtime*.jar'
-//                exclude '*log4j*.jar'
                 exclude 'commons-collections-3.2.2.jar'
             }
 
@@ -355,7 +239,6 @@ subprojects {
 
     javadoc {
         source = sourceSets.main.java
-        //classpath = configurations.implementation
         destinationDir = reporting.file("javadoc")
     }
 
@@ -376,18 +259,12 @@ subprojects {
     }
 
     if (!Boolean.valueOf(signEnabled)) {
-        tasks.whenTaskAdded {task ->
-            if(task.name.contains("sign")) {
+        tasks.whenTaskAdded { task ->
+            if (task.name.contains("sign")) {
                 task.enabled = false
             }
         }
     }
-
-    signing {
-        sign packageJavadoc, packageSources, jar
-    }
-
-
 
     repositories {
         maven { url "https://maven.aliyun.com/repository/public" }
@@ -395,62 +272,130 @@ subprojects {
         mavenLocal()
     }
 
-
     configurations.all {
         resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
         resolutionStrategy.cacheDynamicVersionsFor 0, TimeUnit.SECONDS
     }
 
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                artifact packageSources
+                artifact packageJavadoc
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
+                    }
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
+                }
+                pom {
+                    name = 'EventMesh'
+                    description = 'Apache EventMesh'
+                    url = 'https://github.com/apache/incubator-eventmesh'
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'Apache EventMesh(incubating)'
+                            name = 'Apache EventMesh(incubating) of ASF'
+                            url = 'https://eventmesh.apache.org/'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
+                        developerConnection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
+                        url = 'https://github.com/apache/incubator-eventmesh'
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                def releasesRepoUrl = 'https://repository.apache.org/content/repositories/releases/'
+                def snapshotsRepoUrl = 'https://repository.apache.org/content/repositories/snapshots/'
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                credentials {
+                    username apacheUserName
+                    password apachePassWord
+                }
 
-//    uploadArchives {
-//        repositories {
-//            mavenDeployer {
-//                beforeDeployment {
-//                    MavenDeployment deployment -> signing.signPom(deployment)
-//                }
-//                // 指定上传的路径
-//                def releaseRepo = 'https://repository.apache.org/content/repositories/releases/'
-//                def snapshotsRepo = 'https://repository.apache.org/content/repositories/snapshots/'
-//                repository(url: releaseRepo) {
-//                    authentication(userName: apacheUserName, password: apachePassWord)
-//                }
-//
-//                snapshotRepository(url: snapshotsRepo) {
-//                    authentication(userName: apacheUserName, password: apachePassWord)
-//                }
-//
-//
-//                pom.project {
-//                    name 'Apache EventMesh'
-//                    packaging 'jar'
-//                    // optionally artifactId can be defined here
-//                    description 'Apache EventMesh'
-//                    url 'https://github.com/apache/incubator-eventmesh'
-//
-//                    scm {
-//                        connection 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-//                        developerConnection 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-//                        url 'https://github.com/apache/incubator-eventmesh'
-//                    }
-//
-//                    licenses {
-//                        license {
-//                            name 'The Apache License, Version 2.0'
-//                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-//                        }
-//                    }
-//
-//                    developers {
-//                        developer {
-//                            id 'Apache EventMesh(incubating)'
-//                            name 'Apache EventMesh(incubating) of ASF'
-//                            url 'https://eventmesh.apache.org/'
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
+            }
+        }
+    }
 
+    signing {
+        sign publishing.publications.mavenJava
+    }
+
+    dependencyManagement {
+        dependencies {
+            dependency "org.apache.commons:commons-lang3:3.6"
+            dependency "org.apache.commons:commons-collections4:4.1"
+            dependency "commons-io:commons-io:2.4"
+            dependency "org.apache.commons:commons-text:1.9"
+
+            dependency "com.google.guava:guava:29.0-jre"
+
+            dependency "org.slf4j:slf4j-api:1.7.30"
+            dependency "org.apache.logging.log4j:log4j-api:2.13.3"
+            dependency "org.apache.logging.log4j:log4j-core:2.13.3"
+            dependency "org.apache.logging.log4j:log4j-core:2.13.3"
+            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
+            dependency "org.apache.logging.log4j:log4j-web:2.13.3"
+
+            dependency "com.lmax:disruptor:3.4.2"
+            dependency "com.alibaba:fastjson:1.2.71"
+
+            dependency "com.fasterxml.jackson.core:jackson-databind:2.11.0"
+            dependency "com.fasterxml.jackson.core:jackson-core:2.11.0"
+            dependency "com.fasterxml.jackson.core:jackson-annotations:2.11.0"
+
+            dependency "org.apache.httpcomponents:httpclient:4.5.2"
+
+            dependency "io.netty:netty-all:4.1.49.Final"
+
+            dependency 'io.dropwizard.metrics:metrics-core:4.1.0'
+            dependency "io.dropwizard.metrics:metrics-healthchecks:4.1.0"
+            dependency "io.dropwizard.metrics:metrics-annotation:4.1.0"
+            dependency "io.dropwizard.metrics:metrics-json:4.1.0"
+
+            dependency 'io.opentelemetry:opentelemetry-api:1.3.0'
+            dependency 'io.opentelemetry:opentelemetry-sdk:1.3.0'
+            dependency 'io.opentelemetry:opentelemetry-sdk-metrics:1.3.0-alpha'
+            dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.3.0-alpha'
+            dependency 'io.prometheus:simpleclient:0.8.1'
+            dependency 'io.prometheus:simpleclient_httpserver:0.8.1'
+
+            dependency "io.openmessaging:openmessaging-api:2.2.1-pubsub"
+
+            dependency "com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0"
+            dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.4.7"
+
+            dependency "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
+
+            dependency "junit:junit:4.12"
+            dependency "com.github.stefanbirkner:system-rules:1.16.1"
+            dependency "org.assertj:assertj-core:2.6.0"
+
+            dependency "org.mockito:mockito-core:2.23.0"
+            dependency "org.powermock:powermock-module-junit4:2.0.2"
+            dependency "org.powermock:powermock-api-mockito2:2.0.2"
+
+
+            dependency 'org.springframework.boot:spring-boot-starter-data-jdbc:2.5.4'
+            dependency 'org.springframework.boot:spring-boot-starter-data-jpa:2.5.4'
+            dependency 'org.springframework.boot:spring-boot-starter-jdbc:2.5.4'
+            dependency 'org.springframework:spring-beans:5.1.8.RELEASE'
+            dependency 'org.projectlombok:lombok:1.18.20'
+            dependency 'com.h2database:h2:1.4.200'
+            dependency "io.cloudevents:cloudevents-core:2.2.0"
+        }
+    }
 }
-

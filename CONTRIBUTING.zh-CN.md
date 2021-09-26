@@ -29,7 +29,7 @@
 7. 创建PR合并请求
 
 请遵循[Pull Requests模板](./.github/PULL_REQUEST_TEMPLATE.md).
-请确保PR对应有相应的问题. [GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
+请确保PR对应有相应的问题. [GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
 
 创建PR后，将为拉取请求分配一个或多个审阅者。 审阅者将审阅代码。
 
@@ -38,10 +38,10 @@
 ### 打开问题/ PR
 
 我们将使用Issues和Pull Requests作为跟踪器
-[GitHub Issues](https://github.com/WeBankFinTech/EventMesh/issues)
-[Pull Requests](https://github.com/WeBankFinTech/EventMesh/pulls)
+[GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
+[Pull Requests](https://github.com/apache/incubator-eventmesh/pulls)
 
-如果您在文档中发现拼写错误，在代码中发现错误，想要新功能或提出建议， 您可以提出问题[在GitHub上打开问题](https://github.com/WeBankFinTech/EventMesh/issues/new)
+如果您在文档中发现拼写错误，在代码中发现错误，想要新功能或提出建议， 您可以提出问题[在GitHub上打开问题](https://github.com/apache/incubator-eventmesh/issues/new)
 请按照问题模板中的准则消息进行操作。
 
 如果您想贡献，请遵循[贡献工作流程](#github-workflow)并创建一个新的拉取请求。 如果您的PR包含较大的更改，例如组件重构或新组件，请写详细文档 有关其设计和使用的信息。
@@ -56,6 +56,17 @@
 - 优雅: 新功能，类或组件应经过精心设计
 - 可测试性: 重要代码应经过良好测试（较高的单元测试覆盖率）
 
+### License审查
+
+Eventmesh遵循[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) 政策。 
+所有的源代码文件应该在文件头部添加Apache License header，Eventmesh会使用[apache/skywalking-eyes](https://github.com/apache/skywalking-eyes)
+对源代码文件头进行校验。Eventmesh使用[Gradle-License-Report](https://github.com/jk1/Gradle-License-Report)插件
+检查第三方依赖，当你需要添加三方依赖时，你需要将新添加的依赖注册在tool/license/allowed-licenses.txt中，你可以通过执行`./gradlew clean checkLicense`命令可以判断当前是否有license尚未添加，
+同时新添加的三方库需要满足[Apache对于第三方的政策](https://apache.org/legal/resolved.html)。
+非常建议在需要添加三方依赖之前与Eventmesh社区进行沟通。
+
 ## 社区
 
 ### 联系我们
+
+邮件：dev@eventmesh.apache.org

@@ -25,26 +25,20 @@ import org.apache.eventmesh.common.protocol.http.header.Header;
 
 public class SendMessageBatchV2ResponseHeader extends Header {
 
-    //响应码, 与对应Request的code一致
+    //response code, as same as the request code
     private int code;
 
-    //处理该次Request请求的eventMesh的集群名
+    //The cluster name of the EventMesh that processes the request
     private String eventMeshCluster;
 
-    //处理该次Request请求的eventMesh的IP
+    //IP of the EventMesh that processes the request
     private String eventMeshIp;
 
-    //处理该次Request请求的eventMesh所在的环境编号
+    //Environment number of the EventMesh that processes the request
     private String eventMeshEnv;
 
-    //处理该次Request请求的eventMesh所在区域
-    private String eventMeshRegion;
-
-    //处理该次Request请求的eventMesh所在IDC
+    //IDC of the EventMesh that processes the request
     private String eventMeshIdc;
-
-    //处理该次Request请求的eventMesh所在DCN
-    private String eventMeshDcn;
 
     public int getCode() {
         return code;
@@ -78,14 +72,6 @@ public class SendMessageBatchV2ResponseHeader extends Header {
         this.eventMeshEnv = eventMeshEnv;
     }
 
-    public String getEventMeshRegion() {
-        return eventMeshRegion;
-    }
-
-    public void setEventMeshRegion(String eventMeshRegion) {
-        this.eventMeshRegion = eventMeshRegion;
-    }
-
     public String getEventMeshIdc() {
         return eventMeshIdc;
     }
@@ -94,23 +80,13 @@ public class SendMessageBatchV2ResponseHeader extends Header {
         this.eventMeshIdc = eventMeshIdc;
     }
 
-    public String getEventMeshDcn() {
-        return eventMeshDcn;
-    }
-
-    public void setEventMeshDcn(String eventMeshDcn) {
-        this.eventMeshDcn = eventMeshDcn;
-    }
-
     public static SendMessageBatchV2ResponseHeader buildHeader(Integer requestCode, String eventMeshCluster,
-                                                               String eventMeshIp, String eventMeshEnv, String eventMeshRegion,
-                                                               String eventMeshDcn, String eventMeshIDC) {
+                                                               String eventMeshIp, String eventMeshEnv,
+                                                               String eventMeshIDC) {
         SendMessageBatchV2ResponseHeader header = new SendMessageBatchV2ResponseHeader();
         header.setCode(requestCode);
         header.setEventMeshCluster(eventMeshCluster);
-        header.setEventMeshDcn(eventMeshDcn);
         header.setEventMeshEnv(eventMeshEnv);
-        header.setEventMeshRegion(eventMeshRegion);
         header.setEventMeshIdc(eventMeshIDC);
         header.setEventMeshIp(eventMeshIp);
         return header;
@@ -122,9 +98,7 @@ public class SendMessageBatchV2ResponseHeader extends Header {
         sb.append("sendMessageBatchV2ResponseHeader={")
                 .append("code=").append(code).append(",")
                 .append("eventMeshEnv=").append(eventMeshEnv).append(",")
-                .append("eventMeshRegion=").append(eventMeshRegion).append(",")
                 .append("eventMeshIdc=").append(eventMeshIdc).append(",")
-                .append("eventMeshDcn=").append(eventMeshDcn).append(",")
                 .append("eventMeshCluster=").append(eventMeshCluster).append(",")
                 .append("eventMeshIp=").append(eventMeshIp).append("}");
         return sb.toString();
@@ -137,9 +111,7 @@ public class SendMessageBatchV2ResponseHeader extends Header {
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshCluster);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshIp);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshEnv);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHREGION, eventMeshRegion);
         map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshIdc);
-        map.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHDCN, eventMeshDcn);
         return map;
     }
 }

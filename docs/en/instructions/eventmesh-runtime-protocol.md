@@ -1,4 +1,4 @@
-## TCP Protocol Document In Eventmesh-Runtime
+# TCP Protocol Document In Eventmesh-Runtime
 
 #### 1. Protocol Format
 
@@ -15,9 +15,9 @@ Message Size: 4 bit, the total length of message
 
 Header Size: 4 bit，the length of Message Header
 
-Message Header: the specific header content of message 
+Message Header: the specific header content of message
 
-Message Body: the specific body content of message 
+Message Body: the specific body content of message
 ```
 
 #### 2. Message Object in business logic layer
