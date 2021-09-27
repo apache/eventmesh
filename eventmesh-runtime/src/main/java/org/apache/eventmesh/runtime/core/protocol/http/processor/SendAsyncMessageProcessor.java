@@ -22,7 +22,6 @@ import io.openmessaging.api.Message;
 import io.openmessaging.api.OnExceptionContext;
 import io.openmessaging.api.SendCallback;
 import io.openmessaging.api.SendResult;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
@@ -46,6 +45,8 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
@@ -127,6 +128,18 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 aclLogger.warn("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);
                 return;
             }
+        }
+
+        // control flow rate limit
+        if (!eventMeshHTTPServer.getMsgRateLimiter()
+                .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                    sendMessageResponseHeader,
+                    SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getRetCode(),
+                            EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getErrMsg()));
+            eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPDiscard();
+            asyncContext.onComplete(responseEventMeshCommand);
+            return;
         }
 
         String producerGroup = sendMessageRequestBody.getProducerGroup();
