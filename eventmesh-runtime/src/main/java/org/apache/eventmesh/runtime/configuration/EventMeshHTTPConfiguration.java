@@ -18,8 +18,6 @@
 package org.apache.eventmesh.runtime.configuration;
 
 import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.RateLimiter;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
@@ -27,8 +25,6 @@ import org.apache.eventmesh.common.config.ConfigurationWrapper;
 public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public int httpServerPort = 10105;
-
-    public RateLimiter eventMeshServerBatchMsgNumLimiter = RateLimiter.create(20000);
 
     public boolean eventMeshServerBatchMsgBatchEnabled = Boolean.TRUE;
 
@@ -68,6 +64,10 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public boolean eventMeshServerUseTls = false;
 
+    public int eventMeshHttpMsgReqNumPerSecond = 15000;
+
+    public int eventMeshBatchMsgRequestNumPerSecond = 20000;
+
     public EventMeshHTTPConfiguration(ConfigurationWrapper configurationWrapper) {
         super(configurationWrapper);
     }
@@ -86,9 +86,9 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
                 eventMeshServerBatchMsgThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerBatchMsgThreadNumStr));
             }
 
-            String eventMeshServerBatchMsgNumLimiterStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_BATCHMSG_RATELIMITER);
-            if (StringUtils.isNotEmpty(eventMeshServerBatchMsgNumLimiterStr) && StringUtils.isNumeric(eventMeshServerBatchMsgNumLimiterStr)) {
-                eventMeshServerBatchMsgNumLimiter = RateLimiter.create(Double.valueOf(StringUtils.deleteWhitespace(eventMeshServerBatchMsgNumLimiterStr)));
+            String eventMeshServerBatchMsgReqNumPerSecondStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_BATCHMSG_REQ_NUM_PER_SECOND);
+            if (StringUtils.isNotEmpty(eventMeshServerBatchMsgReqNumPerSecondStr) && StringUtils.isNumeric(eventMeshServerBatchMsgReqNumPerSecondStr)) {
+                eventMeshBatchMsgRequestNumPerSecond = Integer.valueOf(eventMeshServerBatchMsgReqNumPerSecondStr);
             }
 
             String eventMeshServerBatchMsgBatchEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_BATCHMSG_BATCH_ENABLED);
@@ -180,6 +180,11 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
             if (StringUtils.isNotEmpty(eventMeshServerUseTlsStr)) {
                 eventMeshServerUseTls = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerUseTlsStr));
             }
+
+            String eventMeshHttpMsgReqNumPerSecondStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND);
+            if (StringUtils.isNotEmpty(eventMeshHttpMsgReqNumPerSecondStr) && StringUtils.isNumeric(eventMeshHttpMsgReqNumPerSecondStr)) {
+                eventMeshHttpMsgReqNumPerSecond = Integer.valueOf(eventMeshHttpMsgReqNumPerSecondStr);
+            }
         }
     }
 
@@ -189,7 +194,7 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
         public static String KEYS_EVENTMESH_BATCHMSG_THREAD_NUM = "eventMesh.server.batchmsg.threads.num";
 
-        public static String KEYS_EVENTMESH_BATCHMSG_RATELIMITER = "eventMesh.server.batchmsg.speed.ratelimiter";
+        public static String KEYS_EVENTMESH_BATCHMSG_REQ_NUM_PER_SECOND = "eventMesh.server.batchmsg.reqNumPerSecond";
 
         public static String KEYS_EVENTMESH_BATCHMSG_BATCH_ENABLED = "eventMesh.server.batchmsg.batch.enabled";
 
@@ -227,5 +232,6 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
         public static String KEY_EVENTMESH_HTTPS_ENABLED = "eventMesh.server.useTls.enabled";
 
+        public static String KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND = "eventMesh.server.http.msgReqnumPerSecond";
     }
 }
