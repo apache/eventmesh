@@ -741,7 +741,8 @@ public class ClientGroupWrapper {
             logger.warn("send msg back to broker, bizSeqno:{}, topic:{}", bizSeqNo, topic);
 
             long startTime = System.currentTimeMillis();
-            send(new UpStreamMsgContext(null, msg, null, startTime, startTime), new SendCallback() {
+            long taskExcuteTime = startTime;
+            send(new UpStreamMsgContext(null, msg, null, startTime, taskExcuteTime), new SendCallback() {
                 @Override
                 public void onSuccess(SendResult sendResult) {
                     logger.info("consumerGroup:{} consume fail, sendMessageBack success, bizSeqno:{}, topic:{}", consumerGroup, bizSeqNo, topic);
