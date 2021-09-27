@@ -889,6 +889,96 @@
             "moduleLicense": "The Apache Software License, Version 2.0",
             "moduleVersion": "2.2.0",
             "moduleName": "io.cloudevents:cloudevents-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.module:jackson-module-parameter-names"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson.module:jackson-module-parameter-names"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.52",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.52",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-el"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.52",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-websocket"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-starter-json"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-starter-tomcat"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.4",
+            "moduleName": "org.springframework.boot:spring-boot-starter-web"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-beans"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-jcl"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-web"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.9",
+            "moduleName": "org.springframework:spring-webmvc"
+        },
+        {
+            "moduleLicense": null,
+            "moduleVersion": "2.12.4",
+            "moduleName": "com.fasterxml.jackson:jackson-bom"
         }
   ]
 }
