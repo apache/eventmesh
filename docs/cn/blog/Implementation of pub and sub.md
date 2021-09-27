@@ -244,7 +244,7 @@ private void goodbye() throws Exception {
 
 ## 举例
 
-> 在eventmesh中有一个test模块，就是包含了tcp和http两种协议的演示，这些演示，就是对sdk-java作为客户端和runtime的server交互的一些举例，下面我们以tcp的单播消息来对上面的内容做一个举例说明
+> 在eventmesh中有一个examples模块，就是包含了tcp和http两种协议的演示，这些演示，就是对sdk-java作为客户端和runtime的server交互的一些举例，下面我们以tcp的单播消息来对上面的内容做一个举例说明
 
 ```java
 public class AsyncPublish {

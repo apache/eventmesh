@@ -93,7 +93,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
 > 初始化完成之后，再启动http的服务器端，这里我也同样聊聊以下几点。
 
-1. AbstractHTTPServer的启动，采用的是netty的异步模型框架搭建的。具体来讲，这里创建了两个线程池：`bossGroup`和`workerGroup`，前者是用来轮询`accept`事件并且和`client`建立连接的，后者是用来轮询`read`和`write`时间并且使用`handlers`处理`io`事件的。而且这里采用了回调机制，当调用发出后，并不一定立刻就能得到结果，而是在实际处理的时候调用这个组件完成后，通过状态、通知等回调告知调用者。
+1. AbstractHTTPServer的启动，采用的是netty的异步模型框架搭建的。具体来讲，这里创建了两个线程池：`bossGroup`和`workerGroup`，前者是用来轮询`accept`事件并且和`client`建立连接的，后者是用来轮询`read`和`write`事件并且使用`handlers`处理`io`事件的。而且这里采用了回调机制，当调用发出后，并不一定立刻就能得到结果，而是在实际处理的时候调用这个组件完成后，通过状态、通知等回调告知调用者。
 
 ```java
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
