@@ -20,7 +20,7 @@ EventMesh Administration Module for EventMesh. It manages Admin Service, Configu
    ```json
    {
         "topic": "mytopic1",
-        "created_time": "2021-09-03",
+        "created_time": "2021-09-03"
    }
    ```
 ### DELETE /clientmanage/topics/(string: topic)/
@@ -35,7 +35,7 @@ EventMesh Administration Module for EventMesh. It manages Admin Service, Configu
     
    ```json
    {
-        "topic": "mytopic1",        
+        "topic": "mytopic1"
    }
    ```
 

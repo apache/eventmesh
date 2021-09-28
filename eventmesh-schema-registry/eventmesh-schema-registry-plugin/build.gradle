@@ -1,0 +1,13 @@
+plugins {
+    id 'java'
+}
+
+group 'org.apache.eventmesh'
+version '1.2.0-SNAPSHOT'
+
+dependencies {
+}
+
+test {
+    useJUnitPlatform()
+}

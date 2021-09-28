@@ -33,4 +33,8 @@ include 'eventmesh-registry-plugin:eventmesh-registry-rocketmq-namesrv'
 include 'eventmesh-admin'
 include 'eventmesh-schema-registry'
 include 'eventmesh-schema-registry:eventmesh-schema-registry-server'
+include 'eventmesh-schema-registry:eventmesh-schema-registry-plugin'
+include 'eventmesh-schema-registry:eventmesh-schema-registry-plugin:eventmesh-schema-registry-api'
+include 'eventmesh-schema-registry:eventmesh-schema-registry-plugin:eventmesh-schema-registry-common'
+include 'eventmesh-schema-registry:eventmesh-schema-registry-plugin:eventmesh-schema-registry-openschema'
 

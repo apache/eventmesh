@@ -24,6 +24,7 @@ import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.runtime.schema.OpenSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,8 @@ public class EventMeshServer {
 
     private Registry registry;
 
+    private OpenSchema openschema;
+
     private ConnectorResource connectorResource;
 
     private ServiceState serviceState;
@@ -53,6 +56,7 @@ public class EventMeshServer {
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.acl = new Acl();
         this.registry = new Registry();
+        this.openschema = new OpenSchema();
         this.connectorResource = new ConnectorResource();
     }
 
@@ -63,6 +67,12 @@ public class EventMeshServer {
 
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             registry.init(eventMeshTCPConfiguration.eventMeshRegistryPluginType);
+        }
+
+        if(eventMeshTCPConfiguration !=null && eventMeshTCPConfiguration.eventMeshServerOpenSchemaEnable){
+            openschema.init(eventMeshTCPConfiguration.eventMeshServerOpenSchemaPluginType,
+                    eventMeshTCPConfiguration.eventMeshServerOpenSchemaValidatorPluginType,
+                    eventMeshTCPConfiguration.eventMeshOpenSchemaServerAddress);
         }
 
         connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
@@ -88,6 +98,10 @@ public class EventMeshServer {
 
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             registry.start();
+        }
+
+        if(eventMeshTCPConfiguration !=null && eventMeshTCPConfiguration.eventMeshServerOpenSchemaEnable){
+            openschema.start();
         }
 
         eventMeshHTTPServer.start();

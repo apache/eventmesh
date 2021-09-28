@@ -32,6 +32,9 @@ public class CommonConfiguration {
     public String eventMeshSecurityPluginType = "security";
     public int eventMeshPrometheusPort = 19090;
     public String eventMeshRegistryPluginType = "namesrv";
+    public String eventMeshServerOpenSchemaPluginType = "openschema";
+    public String eventMeshOpenSchemaServerAddress = "127.0.0.1:13579";
+    public String eventMeshServerOpenSchemaValidatorPluginType = "openschema-validator";
 
     public String namesrvAddr = "";
     public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
@@ -39,6 +42,7 @@ public class CommonConfiguration {
     public String eventMeshServerIp = null;
     public boolean eventMeshServerSecurityEnable = false;
     public boolean eventMeshServerRegistryEnable = false;
+    public boolean eventMeshServerOpenSchemaEnable = false;
     protected ConfigurationWrapper configurationWrapper;
 
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
@@ -96,6 +100,20 @@ public class CommonConfiguration {
 
             eventMeshRegistryPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegistryPluginType), String.format("%s error", ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE));
+
+            String eventMeshOpenSchemaEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_OPENSCHEMA_ENABLED);
+            if (StringUtils.isNotBlank(eventMeshOpenSchemaEnableStr)) {
+                eventMeshServerOpenSchemaEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshOpenSchemaEnableStr));
+            }
+
+            eventMeshServerOpenSchemaPluginType = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_OPENSCHEMA_PLUGIN_TYPE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshServerOpenSchemaPluginType), String.format("%s error", ConfKeys.KEYS_EVENTMESH_OPENSCHEMA_PLUGIN_TYPE));
+
+            eventMeshOpenSchemaServerAddress = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_OPENSCHEMA_SERVER_ADDRESS);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshOpenSchemaServerAddress), String.format("%s error", ConfKeys.KEYS_EVENTMESH_OPENSCHEMA_SERVER_ADDRESS));
+
+            eventMeshServerOpenSchemaValidatorPluginType = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_OPENSCHEMA_VALIDATOR_PLUGIN_TYPE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshServerOpenSchemaValidatorPluginType), String.format("%s error", ConfKeys.KEYS_EVENTMESH_OPENSCHEMA_VALIDATOR_PLUGIN_TYPE));
         }
     }
 
@@ -127,5 +145,13 @@ public class CommonConfiguration {
         public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.server.registry.enabled";
 
         public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
+
+        public static String KEYS_EVENTMESH_OPENSCHEMA_ENABLED = "eventMesh.server.openschema.enabled";
+
+        public static String KEYS_EVENTMESH_OPENSCHEMA_PLUGIN_TYPE = "eventMesh.server.openschema.plugin.type";
+
+        public static String KEYS_EVENTMESH_OPENSCHEMA_SERVER_ADDRESS = "eventMesh.openschema.server.address";
+
+        public static String KEYS_EVENTMESH_OPENSCHEMA_VALIDATOR_PLUGIN_TYPE = "eventMesh.server.openschema.validator.plugin.type";
     }
 }
