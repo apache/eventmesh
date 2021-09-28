@@ -39,7 +39,7 @@ public class TopicsHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
     	
     	// create a new topic
-    	if (RequestMapping.postMapping("/clientmanage/topics", httpExchange)) {
+    	if (RequestMapping.postMapping("/topicmanage", httpExchange)) {
     		createTopicHandler(httpExchange);
     		return;
     	}

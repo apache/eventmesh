@@ -33,7 +33,7 @@ public class AdminController {
 
     public void run(HttpServer server) throws IOException {
                 
-        server.createContext("/clientmanage/topics", new TopicsHandler());
+        server.createContext("/topicmanage", new TopicsHandler());
         
         logger.info("EventMesh-Admin Controller server context created successfully");
     }
