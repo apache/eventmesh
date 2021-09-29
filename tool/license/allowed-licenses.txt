@@ -976,7 +976,6 @@
             "moduleName": "org.springframework:spring-webmvc"
         },
         {
-            "moduleLicense": null,
             "moduleVersion": "2.12.4",
             "moduleName": "com.fasterxml.jackson:jackson-bom"
         }
