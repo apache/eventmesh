@@ -17,33 +17,30 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
-
-import java.util.concurrent.TimeUnit;
-
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.openmessaging.api.OnExceptionContext;
 import io.openmessaging.api.SendCallback;
 import io.openmessaging.api.SendResult;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendStatus;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 
 public class MessageTransferTask extends AbstractTask {
 
@@ -158,6 +155,13 @@ public class MessageTransferTask extends AbstractTask {
             @Override
             public void onException(OnExceptionContext context) {
                 session.getSender().getUpstreamBuff().release();
+
+                // retry
+                UpStreamMsgContext upStreamMsgContext = new UpStreamMsgContext(
+                        session, EventMeshUtil.decodeMessage(eventMeshMessage), pkg.getHeader(), startTime, taskExecuteTime);
+                upStreamMsgContext.delay(10000);
+                session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(upStreamMsgContext);
+
                 session.getSender().failMsgCount.incrementAndGet();
                 messageLogger.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(), String.valueOf
                         (System.currentTimeMillis() - createTime), new Exception(context.getException()));
