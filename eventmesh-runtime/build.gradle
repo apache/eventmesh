@@ -24,6 +24,7 @@ dependencies {
     api 'io.prometheus:simpleclient_httpserver'
     api 'io.cloudevents:cloudevents-core'
     api 'io.opentelemetry:opentelemetry-exporter-zipkin'
+    api 'io.opentelemetry:opentelemetry-semconv'
 
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
