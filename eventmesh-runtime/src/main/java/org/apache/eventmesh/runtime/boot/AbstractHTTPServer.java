@@ -358,7 +358,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
 
                 if(useTrace){
-                    span.addEvent("End Exceptional");
+                    span.setAttribute("exception",ex.getMessage());
                     span.setStatus(StatusCode.ERROR,ex.getMessage());//set this span's status to ERROR
                     span.recordException(ex);//record this exception
                     span.end();// closing the scope does not end the span, this has to be done manually
