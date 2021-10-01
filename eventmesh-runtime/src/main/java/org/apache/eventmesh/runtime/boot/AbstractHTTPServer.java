@@ -62,7 +62,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-//import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;error here
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -310,9 +310,9 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     //put the context in channel
                     ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
 
-//                    span.setAttribute(SemanticAttributes.HTTP_METHOD,httpRequest.method().name());error here
-                    span.setAttribute("HttpVersion",httpRequest.protocolVersion().protocolName());
-                    span.setAttribute("RequestCode",requestCode);
+                    span.setAttribute(SemanticAttributes.HTTP_METHOD,httpRequest.method().name());
+                    span.setAttribute(SemanticAttributes.HTTP_FLAVOR,httpRequest.protocolVersion().protocolName());
+                    span.setAttribute(String.valueOf(SemanticAttributes.HTTP_STATUS_CODE),requestCode);
                 }
 
 
@@ -358,7 +358,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
 
                 if(useTrace){
-                    span.setAttribute("exception",ex.getMessage());
+                    span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE,ex.getMessage());
                     span.setStatus(StatusCode.ERROR,ex.getMessage());//set this span's status to ERROR
                     span.recordException(ex);//record this exception
                     span.end();// closing the scope does not end the span, this has to be done manually
