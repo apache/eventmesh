@@ -29,11 +29,10 @@ import io.openmessaging.api.Message;
 import io.openmessaging.api.MessageListener;
 import io.openmessaging.api.MessageSelector;
 import io.openmessaging.api.MessagingAccessPoint;
-import io.openmessaging.api.OMS;
-import io.openmessaging.api.OMSBuiltinKeys;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.consumer.MeshMQPushConsumer;
+import org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl;
 import org.apache.eventmesh.connector.rocketmq.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
@@ -52,8 +51,6 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public Logger messageLogger = LoggerFactory.getLogger("message");
-
-    public final String DEFAULT_ACCESS_DRIVER = "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl";
 
     private PushConsumerImpl pushConsumer;
 
@@ -75,9 +72,7 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
         }
 
         String omsNamesrv = clientConfiguration.namesrvAddr;
-//        KeyValue properties = OMS.newKeyValue().put(OMSBuiltinKeys.DRIVER_IMPL, DEFAULT_ACCESS_DRIVER);
         Properties properties = new Properties();
-        properties.put(OMSBuiltinKeys.DRIVER_IMPL, DEFAULT_ACCESS_DRIVER);
         properties.put("ACCESS_POINTS", omsNamesrv);
         properties.put("REGION", "namespace");
         properties.put("instanceName", instanceName);
@@ -87,7 +82,7 @@ public class RocketMQConsumerImpl implements MeshMQPushConsumer {
         } else {
             properties.put("MESSAGE_MODEL", MessageModel.CLUSTERING.name());
         }
-        MessagingAccessPoint messagingAccessPoint = OMS.builder().build(properties);
+        MessagingAccessPoint messagingAccessPoint = new MessagingAccessPointImpl(properties);
         pushConsumer = (PushConsumerImpl) messagingAccessPoint.createConsumer(properties);
     }
 

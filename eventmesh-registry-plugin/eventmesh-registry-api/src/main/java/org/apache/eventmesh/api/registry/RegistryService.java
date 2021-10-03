@@ -20,12 +20,13 @@ import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
 import java.util.List;
 import java.util.Map;
 
-@EventMeshSPI(isSingleton = true)
+@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.REGISTRY)
 public interface RegistryService {
     void init() throws RegistryException;
 
