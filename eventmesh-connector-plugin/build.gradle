@@ -14,25 +14,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-task copyConnectorPlugin(dependsOn: ['jar']) {
-    doFirst {
-        new File(projectDir, '../eventmesh-connector-plugin/dist/apps').mkdir()
-        new File(projectDir, '../dist/plugin/connector').mkdirs()
-    }
-    doLast {
-        copy {
-            into('../eventmesh-connector-plugin/dist/apps/')
-            from project.jar.getArchivePath()
-            exclude {
-                "eventmesh-connector-plugin-${version}.jar"
-                "eventmesh-connector-api-${version}.jar"
-            }
-        }
-        copy {
-            into '../dist/plugin/connector'
-            from "../eventmesh-connector-plugin/dist/apps/eventmesh-connector-standalone-${version}.jar"
-            from "../eventmesh-connector-plugin/dist/apps/eventmesh-connector-rocketmq-${version}.jar"
-        }
-    }
-}

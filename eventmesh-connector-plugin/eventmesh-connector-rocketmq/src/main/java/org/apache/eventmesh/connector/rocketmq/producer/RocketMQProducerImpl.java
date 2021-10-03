@@ -31,6 +31,7 @@ import io.openmessaging.api.SendResult;
 
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.producer.MeshMQProducer;
+import org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWrapper;
@@ -48,8 +49,6 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
     private ProducerImpl producer;
 
-    public final String DEFAULT_ACCESS_DRIVER = "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl";
-
     @Override
     public synchronized void init(Properties keyValue) {
         ConfigurationWrapper configurationWrapper =
@@ -62,14 +61,13 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
         String omsNamesrv = clientConfiguration.namesrvAddr;
         Properties properties = new Properties();
-        properties.put(OMSBuiltinKeys.DRIVER_IMPL, DEFAULT_ACCESS_DRIVER);
         properties.put("ACCESS_POINTS", omsNamesrv);
         properties.put("REGION", "namespace");
         properties.put("RMQ_PRODUCER_GROUP", producerGroup);
         properties.put("OPERATION_TIMEOUT", 3000);
         properties.put("PRODUCER_ID", producerGroup);
 
-        MessagingAccessPoint messagingAccessPoint = OMS.builder().build(properties);
+        MessagingAccessPoint messagingAccessPoint = new MessagingAccessPointImpl(properties);
         producer = (ProducerImpl) messagingAccessPoint.createProducer(properties);
 
     }

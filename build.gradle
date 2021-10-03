@@ -187,6 +187,22 @@ subprojects {
         }
     }
 
+    // pluginType:
+    //      pluginInstanceName:
+    //            moduleName
+    Map<String, Map<String, String>> pluginTypeMap = [
+            "connector": [
+                    "rocketmq"  : "eventmesh-connector-rocketmq",
+                    "standalone": "eventmesh-connector-standalone",
+            ],
+            "security" : [
+                    "acl": "eventmesh-security-acl",
+            ],
+            "registry" : [
+                    "namesrv": "eventmesh-registry-rocketmq-namesrv",
+            ]
+    ]
+
     task dist(dependsOn: ['jar']) {
         doFirst {
             new File(projectDir, '../dist/bin').mkdirs()
@@ -196,6 +212,29 @@ subprojects {
         }
 
         doLast {
+            pluginTypeMap.forEach((pluginType, pluginInstanceMap) -> {
+                pluginInstanceMap.forEach((pluginInstanceName, moduleName) -> {
+                    if (moduleName == project.name) {
+                        println String.format("install plugin, pluginType: %s, pluginInstanceName: %s, module: %s",
+                                pluginType, pluginInstanceName, moduleName)
+                        new File("${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}").mkdirs()
+                        copy {
+                            into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
+                            from project.jar.getArchivePath()
+                        }
+                        copy {
+                            into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
+                            from project.configurations.runtimeClasspath
+                        }
+                        copy {
+                            into "${rootDir}/dist/conf"
+                            from sourceSets.main.resources.srcDirs
+                            exclude 'META-INF'
+                        }
+                    }
+                })
+            })
+
             copy {
                 into('../dist/apps/')
                 from project.jar.getArchivePath()
