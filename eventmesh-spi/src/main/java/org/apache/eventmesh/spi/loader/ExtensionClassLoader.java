@@ -29,11 +29,12 @@ import java.util.Map;
 public interface ExtensionClassLoader {
 
     /**
-     * load
+     * load extension class
      *
-     * @param extensionType extension type class
-     * @param <T>           extension type
+     * @param extensionType         extension type class
+     * @param extensionInstanceName extension instance name
+     * @param <T>                   extension type
      * @return extension instance name to extension instance class
      */
-    <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType);
+    <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType, String extensionInstanceName);
 }

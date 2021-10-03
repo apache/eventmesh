@@ -16,9 +16,10 @@
  */
 package org.apache.eventmesh.api.connector;
 
+import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
-@EventMeshSPI(isSingleton = true)
+@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
 public interface ConnectorResourceService {
 
     /**
