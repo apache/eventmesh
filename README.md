@@ -26,17 +26,26 @@ EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to d
 
 ![architecture2](docs/images/eventmesh-panels.png)
 
-
 **Support connecting event store:**
 
-* [RocketMQ](https://github.com/apache/rocketmq):RocketMQ is a distributed messaging and streaming platform with low latency, high performance and reliability, trillion-level capacity and flexible scalability.
+* [InMemory] : Standalone mode.
+* [RocketMQ](https://github.com/apache/rocketmq) : RocketMQ is a distributed messaging and streaming platform with low latency, high performance and reliability, trillion-level capacity and flexible scalability.
+* [Kafka(WIP)](https://github.com/apache/kafka/) : Kafka is a Distributed Streaming Platform.
+* [Redis(WIP)](https://github.com/redis/redis/) : Redis is an in-memory database that persists on disk.
 
 **Components:**
 
 * **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
 * **eventmesh-sdk-java** : currently supports HTTP and TCP protocols.
 * **eventmesh-connector-api** : an api layer based on OpenMessaging api and SPI pluggin, which can be implemented by popular EventStores such as IMDG, Messaging Engine and OSS etc.
+* **eventmesh-connector-plugin** : plugins for connector.
+* **eventmesh-connector-standalone** : an implementation of eventmesh-connector-api, pub event to or sub event from InMemory as EventStore.
 * **eventmesh-connector-rocketmq** : an implementation of eventmesh-connector-api, pub event to or sub event from RocketMQ as EventStore.
+* **eventmesh-connector-kafka(WIP)** : an implementation of eventmesh-connector-api, pub event to or sub event from Kafka as EventStore.
+* **eventmesh-connector-redis(WIP)** : an implementation of eventmesh-connector-api, pub event to or sub event from Redis as EventStore.
+* **eventmesh-admin** : clients,topics,subscriptions and other management.
+* **eventmesh-registry-plugin** : plugins for registry.
+* **eventmesh-security-plugin** : plugins for security.
 
 **Protocol:**
 
