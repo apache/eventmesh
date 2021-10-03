@@ -78,9 +78,9 @@ The protocol of eventmesh is easier and more convenient, you can read more [here
 
 
 ## Quick Start
-1. Build and deploy event-store(default RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
-2. Build and deploy eventmesh-runtime, see instruction ['eventmesh-runtime quickstart'](docs/en/instructions/eventmesh-runtime-quickstart.md).
-3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
+1. [event-store](https://rocketmq.apache.org/docs/quick-start/) (RocketMQ, ignore this step if use standalone).
+2. [runtime quickstart](docs/en/instructions/eventmesh-runtime-quickstart.md) or [runtime quickstart with docker](docs/en/instructions/eventmesh-runtime-quickstart-with-docker.md).
+3. [java examples ](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
 
 ## Contributing
 Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.

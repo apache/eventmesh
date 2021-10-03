@@ -64,9 +64,9 @@ eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里]
 |   WIP   |Support AsyncAPI|
 
 ## 快速开始
-1. 构建并部署event-store(RocketMQ), 请参见[说明](https://rocketmq.apache.org/docs/quick-start/)
-2. 构建并部署eventmesh-runtime，请参见说明['eventmesh-runtime quickstart.zh-CN'](docs/cn/instructions/eventmesh-runtime-quickstart.zh-CN.md)
-3. 运行eventmesh-sdk-java演示，请参见说明['eventmesh-sdk-java quickstart.zh-CN'](docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
+1. [event-store](https://rocketmq.apache.org/docs/quick-start/) (RocketMQ, ignore this step if use standalone).
+2. [runtime quickstart](docs/en/instructions/eventmesh-runtime-quickstart.md) or [runtime quickstart with docker](docs/en/instructions/eventmesh-runtime-quickstart-with-docker.md).
+3. [java examples ](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
 
 ## 贡献
 永远欢迎参与共建, 请参阅[贡献](CONTRIBUTING.zh-CN.md)了解详细指南
