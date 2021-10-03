@@ -15,13 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi.example;
+package org.apache.eventmesh.spi;
 
-import org.apache.eventmesh.spi.EventMeshExtensionType;
-import org.apache.eventmesh.spi.EventMeshSPI;
+/**
+ * An Extension can be defined by extensionTypeName and extensionInstanceName
+ */
+public enum EventMeshExtensionType {
+    UNKNOWN("unknown"),
+    CONNECTOR("connector"),
+    REGISTRY("registry"),
+    SECURITY("security"),
+    ;
 
-@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.UNKNOWN)
-public interface TestPrototypeExtension {
+    private final String extensionTypeName;
 
-    void hello();
+    EventMeshExtensionType(String extensionTypeName) {
+        this.extensionTypeName = extensionTypeName;
+    }
+
+    public String getExtensionTypeName() {
+        return extensionTypeName;
+    }
+
 }
