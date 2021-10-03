@@ -31,6 +31,7 @@ task copyConnectorPlugin(dependsOn: ['jar']) {
         }
         copy {
             into '../dist/plugin/connector'
+            from "../eventmesh-connector-plugin/dist/apps/eventmesh-connector-standalone-${version}.jar"
             from "../eventmesh-connector-plugin/dist/apps/eventmesh-connector-rocketmq-${version}.jar"
         }
     }
