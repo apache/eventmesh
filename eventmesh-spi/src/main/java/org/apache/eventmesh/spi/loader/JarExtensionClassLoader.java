@@ -37,7 +37,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Load extension from '${eventMeshPluginDir}', the default loading directory is './dist/plugin'
+ * Load extension from '${eventMeshPluginDir}', the default loading directory is './plugin'
  */
 public class JarExtensionClassLoader implements ExtensionClassLoader {
 
@@ -47,7 +47,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
             new ConcurrentHashMap<>(16);
 
     private static final String EVENTMESH_EXTENSION_PLUGIN_DIR = System.getProperty("eventMeshPluginDir",
-            "./dist/plugin");
+            "./plugin");
 
     private static final String EVENTMESH_EXTENSION_META_DIR = "META-INF/eventmesh/";
 

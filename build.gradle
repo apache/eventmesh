@@ -177,10 +177,10 @@ subprojects {
     jar {
         manifest {
             attributes("Specification-Version": project.version,
-                    "Specification-Vendor": "WeBank, Inc.",
+                    "Specification-Vendor": "Apache",
                     "Specification-Title": project.name,
                     "Implementation-Version": project.version,
-                    "Implementation-Vendor": "WeBank, Inc.",
+                    "Implementation-Vendor": "Apache",
                     "Implementation-Title": project.name,
                     "Build-Jdk": project.findProperty("jdk")
             )
@@ -199,13 +199,13 @@ subprojects {
             copy {
                 into('../dist/apps/')
                 from project.jar.getArchivePath()
-                exclude 'eventmesh-common*.jar'
-                exclude 'eventmesh-connector-api*.jar'
-                exclude 'eventmesh-connector-plugin*.jar'
-                exclude 'eventmesh-admin*.jar'
-                exclude 'eventmesh-starter*.jar'
-                exclude 'eventmesh-test*.jar'
-                exclude 'eventmesh-sdk*.jar'
+//                exclude 'eventmesh-common*.jar'
+//                exclude 'eventmesh-connector-api*.jar'
+//                exclude 'eventmesh-connector-plugin*.jar'
+//                exclude 'eventmesh-admin*.jar'
+//                exclude 'eventmesh-starter*.jar'
+//                exclude 'eventmesh-test*.jar'
+//                exclude 'eventmesh-sdk*.jar'
             }
             copy {
                 into '../dist/lib'
@@ -219,8 +219,8 @@ subprojects {
                 exclude '**/*log4j2.xml*'
                 exclude '**/spring-boot-devtools*.jar'
                 exclude '**/mumble-sdk-test*.jar'
-                exclude '*connector-rocketmq*.jar'
-                exclude 'eventmesh-runtime*.jar'
+                exclude 'eventmesh*.jar'
+//                exclude 'eventmesh-runtime*.jar'
                 exclude 'commons-collections-3.2.2.jar'
             }
 
