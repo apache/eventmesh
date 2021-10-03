@@ -199,7 +199,7 @@ subprojects {
                     "acl": "eventmesh-security-acl",
             ],
             "registry" : [
-                    "namesrv": "eventmesh-registry-rocketmq-namesrv",
+                    "namesrv": "eventmesh-registry-namesrv",
             ]
     ]
 
