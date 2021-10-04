@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.consumer;
 
+import com.google.common.eventbus.Subscribe;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,11 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.eventbus.Subscribe;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
@@ -84,7 +82,7 @@ public class ConsumerManager {
                                 //The time difference is greater than 3 heartbeat cycles
                                 if (System.currentTimeMillis() - client.lastUpTime.getTime() > DEFAULT_UPDATE_TIME) {
                                     logger.warn("client {} lastUpdate time {} over three heartbeat cycles",
-                                            JSONObject.toJSONString(client), client.lastUpTime);
+                                        JsonUtils.serialize(client), client.lastUpTime);
                                     clientIterator.remove();
                                     isChange = true;
                                 }
@@ -123,7 +121,7 @@ public class ConsumerManager {
                                         }
                                         eventMeshHTTPServer.localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);
                                         logger.info("consumerGroup {} client info changed, consumerGroupConf {}", consumerGroup,
-                                                JSONObject.toJSONString(consumerGroupConf));
+                                            JsonUtils.serialize(consumerGroupConf));
                                         try {
                                             notifyConsumerManager(consumerGroup, consumerGroupConf, eventMeshHTTPServer.localConsumerGroupMapping);
                                         } catch (Exception e) {
@@ -155,7 +153,7 @@ public class ConsumerManager {
      * notify ConsumerManager groupLevel
      */
     public void notifyConsumerManager(String consumerGroup, ConsumerGroupConf latestConsumerGroupConfig,
-                                      ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping) throws Exception {
+        ConcurrentHashMap<String, ConsumerGroupConf> localConsumerGroupMapping) throws Exception {
         ConsumerGroupManager cgm = eventMeshHTTPServer.getConsumerManager().getConsumer(consumerGroup);
         if (latestConsumerGroupConfig == null) {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
@@ -217,8 +215,9 @@ public class ConsumerManager {
     /**
      * restart consumer
      */
-    public synchronized void restartConsumer(String consumerGroup, ConsumerGroupConf consumerGroupConfig) throws Exception {
-        if(consumerTable.containsKey(consumerGroup)) {
+    public synchronized void restartConsumer(String consumerGroup,
+        ConsumerGroupConf consumerGroupConfig) throws Exception {
+        if (consumerTable.containsKey(consumerGroup)) {
             ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
             cgm.refresh(consumerGroupConfig);
         }
@@ -239,9 +238,9 @@ public class ConsumerManager {
      */
     public synchronized void delConsumer(String consumerGroup) throws Exception {
         logger.info("start delConsumer with consumerGroup {}", consumerGroup);
-        if(consumerTable.containsKey(consumerGroup)) {
+        if (consumerTable.containsKey(consumerGroup)) {
             ConsumerGroupManager cgm = consumerTable.remove(consumerGroup);
-            logger.info("start unsubscribe topic with consumer group manager {}", JSONObject.toJSONString(cgm));
+            logger.info("start unsubscribe topic with consumer group manager {}", JsonUtils.serialize(cgm));
             cgm.unsubscribe(consumerGroup);
             cgm.shutdown();
         }

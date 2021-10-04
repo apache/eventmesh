@@ -17,15 +17,13 @@
 
 package org.apache.eventmesh.common.protocol.http.body.client;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-
 import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 public class UnSubscribeRequestBody extends Body {
 
@@ -68,16 +66,17 @@ public class UnSubscribeRequestBody extends Body {
     public static UnSubscribeRequestBody buildBody(Map<String, Object> bodyParam) {
         UnSubscribeRequestBody body = new UnSubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
-        body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPIC), String.class));
+        body.setTopics(JsonUtils.deserialize(MapUtils.getString(bodyParam, TOPIC), new TypeReference<List<String>>() {
+        }));
         body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         return body;
     }
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put(URL, url);
-        map.put(TOPIC, JSON.toJSONString(topics));
+        map.put(TOPIC, JsonUtils.serialize(topics));
         map.put(CONSUMERGROUP, consumerGroup);
         return map;
     }

@@ -31,6 +31,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -106,6 +107,9 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
                 pluginUrls.addAll(loadJarPathFromResource(file.getPath()));
             }
         }
+        // TODO: Sort the path here just to guarantee load the ConsumeMessageConcurrentlyService defined in EventMesh
+        //  rather than defined in rocketmq
+        pluginUrls.sort(Comparator.comparing(URL::getPath));
         return pluginUrls;
     }
 

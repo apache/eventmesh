@@ -17,29 +17,15 @@
 
 package org.apache.eventmesh.client.http.producer;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-
-
-import com.alibaba.fastjson.JSON;
 import com.google.common.base.Preconditions;
-
 import io.netty.handler.codec.http.HttpMethod;
-
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.AbstractLiteClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.http.HttpUtil;
 import org.apache.eventmesh.client.http.http.RequestParam;
-import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.LiteMessage;
@@ -49,13 +35,12 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LiteProducer extends AbstractLiteClient {
 
@@ -135,7 +120,7 @@ public class LiteProducer extends AbstractLiteClient {
                     target, System.currentTimeMillis() - startTime, message, res);
         }
 
-        EventMeshRetObj ret = JSON.parseObject(res, EventMeshRetObj.class);
+        EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
 
         if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
             return Boolean.TRUE;
@@ -191,11 +176,11 @@ public class LiteProducer extends AbstractLiteClient {
             logger.debug("publish sync message by await, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}", target, System.currentTimeMillis() - startTime, message, res);
         }
 
-        EventMeshRetObj ret = JSON.parseObject(res, EventMeshRetObj.class);
+        EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
         if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
             LiteMessage eventMeshMessage = new LiteMessage();
             SendMessageResponseBody.ReplyMessage replyMessage =
-                    JSON.parseObject(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
+                    JsonUtils.deserialize(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
             eventMeshMessage.setContent(replyMessage.body).setProp(replyMessage.properties)
                     .setTopic(replyMessage.topic);
             return eventMeshMessage;

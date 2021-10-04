@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
@@ -24,23 +26,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONException;
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Sets;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.RandomStringUtil;
+import org.apache.eventmesh.common.exception.JsonException;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.util.OMSUtil;
@@ -67,7 +65,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
     public String currPushUrl;
 
-    public AsyncHTTPPushRequest(HandleMsgContext handleMsgContext, Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
+    public AsyncHTTPPushRequest(HandleMsgContext handleMsgContext,
+        Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
         super(handleMsgContext);
         this.waitingRequests = waitingRequests;
     }
@@ -108,7 +107,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             return;
         }
 
-        List<NameValuePair> body = new ArrayList<NameValuePair>();
+        List<NameValuePair> body = new ArrayList<>();
         body.add(new BasicNameValuePair(PushMessageRequestBody.CONTENT, content));
         if (StringUtils.isBlank(handleMsgContext.getBizSeqNo())) {
             body.add(new BasicNameValuePair(PushMessageRequestBody.BIZSEQNO, RandomStringUtil.generateNum(20)));
@@ -124,7 +123,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         body.add(new BasicNameValuePair(PushMessageRequestBody.RANDOMNO, handleMsgContext.getMsgRandomNo()));
         body.add(new BasicNameValuePair(PushMessageRequestBody.TOPIC, handleMsgContext.getTopic()));
 
-        body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS, JSON.toJSONString(OMSUtil.getMessageProp(handleMsgContext.getMsg()))));
+        body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS, JsonUtils.serialize(OMSUtil.getMessageProp(handleMsgContext.getMsg()))));
 
         try {
             builder.setEntity(new UrlEncodedFormEntity(body));
@@ -139,7 +138,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         addToWaitingMap(this);
 
         cmdLogger.info("cmd={}|eventMesh2client|from={}|to={}", requestCode,
-                IPUtil.getLocalAddress(), currPushUrl);
+            IPUtil.getLocalAddress(), currPushUrl);
 
         try {
             httpClientPool.getClient().execute(builder, new ResponseHandler<Object>() {
@@ -151,7 +150,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                         eventMeshHTTPServer.metrics.summaryMetrics.recordHttpPushMsgFailed();
                         messageLogger.info("message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
-                                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
 
                         delayRetry();
                         if (isComplete()) {
@@ -167,7 +166,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                         }
                         ClientRetCode result = processResponseContent(res);
                         messageLogger.info("message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}|uniqueId={}|cost={}", result, currPushUrl, handleMsgContext.getTopic(),
-                                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
                         if (result == ClientRetCode.OK) {
                             complete();
                             if (isComplete()) {
@@ -196,10 +195,10 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
             if (messageLogger.isDebugEnabled()) {
                 messageLogger.debug("message|eventMesh2client|url={}|topic={}|msg={}", currPushUrl, handleMsgContext.getTopic(),
-                        handleMsgContext.getMsg());
+                    handleMsgContext.getMsg());
             } else {
                 messageLogger.info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}", currPushUrl, handleMsgContext.getTopic(),
-                        handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId());
+                    handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId());
             }
         } catch (IOException e) {
             messageLogger.error("push2client err", e);
@@ -215,13 +214,13 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("asyncPushRequest={")
-                .append("bizSeqNo=").append(handleMsgContext.getBizSeqNo())
-                .append(",startIdx=").append(startIdx)
-                .append(",retryTimes=").append(retryTimes)
-                .append(",uniqueId=").append(handleMsgContext.getUniqueId())
-                .append(",executeTime=").append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT))
-                .append(",lastPushTime=").append(DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT))
-                .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
+            .append("bizSeqNo=").append(handleMsgContext.getBizSeqNo())
+            .append(",startIdx=").append(startIdx)
+            .append(",retryTimes=").append(retryTimes)
+            .append(",uniqueId=").append(handleMsgContext.getUniqueId())
+            .append(",executeTime=").append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT))
+            .append(",lastPushTime=").append(DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT))
+            .append(",createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
         return sb.toString();
     }
 
@@ -231,8 +230,9 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         }
 
         try {
-            JSONObject ret = JSONObject.parseObject(content);
-            Integer retCode = ret.getInteger("retCode");
+            Map<String, Object> ret = JsonUtils.deserialize(content, new TypeReference<Map<String, Object>>() {
+            });
+            Integer retCode = (Integer) ret.get("retCode");
             if (retCode != null && ClientRetCode.contains(retCode)) {
                 return ClientRetCode.get(retCode);
             }
@@ -241,7 +241,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         } catch (NumberFormatException e) {
             messageLogger.warn("url:{}, bizSeqno:{}, uniqueId:{}, httpResponse:{}", currPushUrl, handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             return ClientRetCode.FAIL;
-        } catch (JSONException e) {
+        } catch (JsonException e) {
             messageLogger.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl, handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
             return ClientRetCode.FAIL;
         } catch (Throwable t) {
