@@ -17,8 +17,22 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group;
 
-import com.alibaba.fastjson.JSON;
-import io.openmessaging.api.*;
+import io.openmessaging.api.AsyncConsumeContext;
+import io.openmessaging.api.AsyncMessageListener;
+import io.openmessaging.api.Message;
+import io.openmessaging.api.OnExceptionContext;
+import io.openmessaging.api.SendCallback;
+import io.openmessaging.api.SendResult;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.EventMeshAction;
@@ -27,6 +41,7 @@ import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -42,12 +57,6 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.HttpTinyClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ClientGroupWrapper {
 
@@ -95,8 +104,8 @@ public class ClientGroupWrapper {
     private MQProducerWrapper mqProducerWrapper;
 
     public ClientGroupWrapper(String sysId, String producerGroup, String consumerGroup,
-                              EventMeshTCPServer eventMeshTCPServer,
-                              DownstreamDispatchStrategy downstreamDispatchStrategy) {
+        EventMeshTCPServer eventMeshTCPServer,
+        DownstreamDispatchStrategy downstreamDispatchStrategy) {
         this.sysId = sysId;
         this.producerGroup = producerGroup;
         this.consumerGroup = consumerGroup;
@@ -134,7 +143,7 @@ public class ClientGroupWrapper {
     }
 
     public void request(UpStreamMsgContext upStreamMsgContext, RRCallback rrCallback, long timeout)
-            throws Exception {
+        throws Exception {
         mqProducerWrapper.request(upStreamMsgContext.getMsg(), rrCallback, timeout);
     }
 
@@ -149,8 +158,8 @@ public class ClientGroupWrapper {
             public void onException(OnExceptionContext context) {
                 String bizSeqNo = upStreamMsgContext.getMsg().getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_KEYS);
                 logger.error("reply err! topic:{}, bizSeqNo:{}, client:{}",
-                        upStreamMsgContext.getMsg().getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), bizSeqNo,
-                        upStreamMsgContext.getSession().getClient(), context.getException());
+                    upStreamMsgContext.getMsg().getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), bizSeqNo,
+                    upStreamMsgContext.getSession().getClient(), context.getException());
             }
         });
         return true;
@@ -190,7 +199,7 @@ public class ClientGroupWrapper {
 
     public boolean removeSubscription(String topic, Session session) {
         if (session == null
-                || !StringUtils.equalsIgnoreCase(consumerGroup, EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
+            || !StringUtils.equalsIgnoreCase(consumerGroup, EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
             logger.error("removeSubscription param error,topic:{},session:{}", topic, session);
             return false;
         }
@@ -264,7 +273,7 @@ public class ClientGroupWrapper {
 
     public boolean addGroupConsumerSession(Session session) {
         if (session == null
-                || !StringUtils.equalsIgnoreCase(consumerGroup, EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
+            || !StringUtils.equalsIgnoreCase(consumerGroup, EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
             logger.error("addGroupConsumerSession param error,session:{}", session);
             return false;
         }
@@ -286,7 +295,7 @@ public class ClientGroupWrapper {
 
     public boolean addGroupProducerSession(Session session) {
         if (session == null
-                || !StringUtils.equalsIgnoreCase(producerGroup, EventMeshUtil.buildClientGroup(session.getClient().getProducerGroup()))) {
+            || !StringUtils.equalsIgnoreCase(producerGroup, EventMeshUtil.buildClientGroup(session.getClient().getProducerGroup()))) {
             logger.error("addGroupProducerSession param error,session:{}", session);
             return false;
         }
@@ -308,7 +317,7 @@ public class ClientGroupWrapper {
 
     public boolean removeGroupConsumerSession(Session session) {
         if (session == null
-                || !StringUtils.equalsIgnoreCase(consumerGroup, EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
+            || !StringUtils.equalsIgnoreCase(consumerGroup, EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
             logger.error("removeGroupConsumerSession param error,session:{}", session);
             return false;
         }
@@ -330,7 +339,7 @@ public class ClientGroupWrapper {
 
     public boolean removeGroupProducerSession(Session session) {
         if (session == null
-                || !StringUtils.equalsIgnoreCase(producerGroup, EventMeshUtil.buildClientGroup(session.getClient().getProducerGroup()))) {
+            || !StringUtils.equalsIgnoreCase(producerGroup, EventMeshUtil.buildClientGroup(session.getClient().getProducerGroup()))) {
             logger.error("removeGroupProducerSession param error,session:{}", session);
             return false;
         }
@@ -539,7 +548,7 @@ public class ClientGroupWrapper {
                     Iterator<Session> sessionsItr = groupConsumerSessions.iterator();
 
                     DownStreamMsgContext downStreamMsgContext =
-                            new DownStreamMsgContext(message, null, broadCastMsgConsumer, eventMeshAsyncConsumeContext.getAbstractContext(), false, subscriptionItem);
+                        new DownStreamMsgContext(message, null, broadCastMsgConsumer, eventMeshAsyncConsumeContext.getAbstractContext(), false, subscriptionItem);
 
                     while (sessionsItr.hasNext()) {
                         Session session = sessionsItr.next();
@@ -612,7 +621,7 @@ public class ClientGroupWrapper {
                     }
 
                     DownStreamMsgContext downStreamMsgContext =
-                            new DownStreamMsgContext(message, session, persistentMsgConsumer, eventMeshAsyncConsumeContext.getAbstractContext(), false, subscriptionItem);
+                        new DownStreamMsgContext(message, session, persistentMsgConsumer, eventMeshAsyncConsumeContext.getAbstractContext(), false, subscriptionItem);
                     //msg put in eventmesh,waiting client ack
                     session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     session.downstreamMsg(downStreamMsgContext);
@@ -707,16 +716,16 @@ public class ClientGroupWrapper {
             logger.info("pushMsgToEventMesh,targetUrl:{},msg:{}", targetUrl.toString(), msg.toString());
             List<String> paramValues = new ArrayList<String>();
             paramValues.add("msg");
-            paramValues.add(JSON.toJSONString(msg));
+            paramValues.add(JsonUtils.serialize(msg));
             paramValues.add("group");
             paramValues.add(consumerGroup);
 
             result = HttpTinyClient.httpPost(
-                    targetUrl.toString(),
-                    null,
-                    paramValues,
-                    "UTF-8",
-                    3000);
+                targetUrl.toString(),
+                null,
+                paramValues,
+                "UTF-8",
+                3000);
         } catch (Exception e) {
             logger.error("httpPost " + targetUrl + " is fail,", e);
             //throw new RuntimeException("httpPost " + targetUrl + " is fail," , e);

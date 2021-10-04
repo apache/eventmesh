@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.common.command;
 
-import com.alibaba.fastjson.JSON;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.*;
 import org.apache.commons.collections4.MapUtils;
@@ -30,6 +29,7 @@ import org.apache.eventmesh.common.protocol.http.header.Header;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 public class HttpCommand {
 
@@ -228,8 +228,8 @@ public class HttpCommand {
         }
 
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-                HttpResponseStatus.OK,
-                Unpooled.wrappedBuffer(JSON.toJSONString(this.getBody()).getBytes(Constants.DEFAULT_CHARSET)));
+            HttpResponseStatus.OK,
+            Unpooled.wrappedBuffer(JsonUtils.serialize(this.getBody()).getBytes(Constants.DEFAULT_CHARSET)));
         response.headers().add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN +
                 "; charset=" + Constants.DEFAULT_CHARSET);
         response.headers().add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());

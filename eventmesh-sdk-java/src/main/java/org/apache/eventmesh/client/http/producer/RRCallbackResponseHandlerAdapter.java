@@ -17,12 +17,6 @@
 
 package org.apache.eventmesh.client.http.producer;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-
-
-import com.alibaba.fastjson.JSON;
-
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.common.Constants;
@@ -30,6 +24,7 @@ import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.LiteMessage;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -37,6 +32,9 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
 
 public class RRCallbackResponseHandlerAdapter implements ResponseHandler<String> {
 
@@ -77,7 +75,7 @@ public class RRCallbackResponseHandlerAdapter implements ResponseHandler<String>
         }
 
         String res = EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
-        EventMeshRetObj ret = JSON.parseObject(res, EventMeshRetObj.class);
+        EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
         if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
             rrCallback.onException(new EventMeshException(ret.getRetCode(), ret.getRetMsg()));
             return res;
@@ -86,7 +84,7 @@ public class RRCallbackResponseHandlerAdapter implements ResponseHandler<String>
         LiteMessage liteMessage = new LiteMessage();
         try {
             SendMessageResponseBody.ReplyMessage replyMessage =
-                    JSON.parseObject(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
+                    JsonUtils.deserialize(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
             liteMessage.setContent(replyMessage.body).setProp(replyMessage.properties)
                     .setTopic(replyMessage.topic);
             rrCallback.onSuccess(liteMessage);
