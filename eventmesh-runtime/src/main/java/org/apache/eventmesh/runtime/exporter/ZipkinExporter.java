@@ -32,7 +32,7 @@ public class ZipkinExporter implements EventMeshExporter {
     @Override
     public ZipkinSpanExporter getSpanExporter(CommonConfiguration configuration) {
         ip = configuration.eventMeshServerIp;
-        port = configuration.eventMeshExporterZipkinPort;
+        port = configuration.eventMeshTraceExportZipkinPort;
         String httpUrl = String.format("http://%s:%s", ip, port);
         zipkinExporter =
                 ZipkinSpanExporter.builder().setEndpoint(httpUrl + ENDPOINT_V2_SPANS).build();
