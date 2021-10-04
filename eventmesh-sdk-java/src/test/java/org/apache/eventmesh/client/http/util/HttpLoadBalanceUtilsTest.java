@@ -44,4 +44,14 @@ public class HttpLoadBalanceUtilsTest {
                 .createEventMeshServerLoadBalanceSelector(liteClientConfig);
         Assert.assertEquals(LoadBalanceType.WEIGHT_ROUND_ROBIN, weightRoundRobinSelector.getType());
     }
+
+    @Test
+    public void testCreateWeightRandomSelector() throws EventMeshException {
+        LiteClientConfig liteClientConfig = new LiteClientConfig()
+                .setLiteEventMeshAddr("127.0.0.1:1001:1;127.0.0.2:1001:2")
+                .setLoadBalanceType(LoadBalanceType.WEIGHT_RANDOM);
+        LoadBalanceSelector<String> weightRoundRobinSelector = HttpLoadBalanceUtils
+                .createEventMeshServerLoadBalanceSelector(liteClientConfig);
+        Assert.assertEquals(LoadBalanceType.WEIGHT_RANDOM, weightRoundRobinSelector.getType());
+    }
 }

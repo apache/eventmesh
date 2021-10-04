@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.RandomLoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.Weight;
 import org.apache.eventmesh.common.loadbalance.WeightRoundRobinLoadBalanceSelector;
+import org.apache.eventmesh.common.loadbalance.WeightRandomLoadBalanceSelector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,39 +38,16 @@ public class HttpLoadBalanceUtils {
 
     public static LoadBalanceSelector<String> createEventMeshServerLoadBalanceSelector(LiteClientConfig liteClientConfig)
             throws EventMeshException {
-        List<String> eventMeshAddrs = Splitter.on(";").splitToList(liteClientConfig.getLiteEventMeshAddr());
-        if (CollectionUtils.isEmpty(eventMeshAddrs)) {
-            throw new EventMeshException("liteEventMeshAddr can not be empty");
-        }
-
         LoadBalanceSelector<String> eventMeshServerSelector = null;
         switch (liteClientConfig.getLoadBalanceType()) {
             case RANDOM:
-                List<String> eventMeshAddrList = new ArrayList<>();
-                for (String eventMeshAddr : eventMeshAddrs) {
-                    if (!IP_PORT_PATTERN.matcher(eventMeshAddr).matches()) {
-                        throw new EventMeshException(
-                                String.format("liteEventMeshAddr:%s is not illegal", liteClientConfig.getLiteEventMeshAddr()));
-                    }
-                    eventMeshAddrList.add(eventMeshAddr);
-                }
-                eventMeshServerSelector = new RandomLoadBalanceSelector<>(eventMeshAddrList);
+                eventMeshServerSelector = new RandomLoadBalanceSelector<>(buildClusterGroupFromConfig(liteClientConfig));
+                break;
+            case WEIGHT_RANDOM:
+                eventMeshServerSelector = new WeightRandomLoadBalanceSelector<>(buildWeightedClusterGroupFromConfig(liteClientConfig));
                 break;
             case WEIGHT_ROUND_ROBIN:
-                List<Weight<String>> eventMeshAddrWeightList = new ArrayList<>();
-                for (String eventMeshAddrWight : eventMeshAddrs) {
-                    if (!IP_PORT_WEIGHT_PATTERN.matcher(eventMeshAddrWight).matches()) {
-                        throw new EventMeshException(
-                                String.format("liteEventMeshAddr:%s is not illegal", liteClientConfig.getLiteEventMeshAddr()));
-                    }
-                    int splitIndex = eventMeshAddrWight.lastIndexOf(":");
-                    Weight<String> weight = new Weight<>(
-                            eventMeshAddrWight.substring(0, splitIndex),
-                            Integer.parseInt(eventMeshAddrWight.substring(splitIndex + 1))
-                    );
-                    eventMeshAddrWeightList.add(weight);
-                }
-                eventMeshServerSelector = new WeightRoundRobinLoadBalanceSelector<>(eventMeshAddrWeightList);
+                eventMeshServerSelector = new WeightRoundRobinLoadBalanceSelector<>(buildWeightedClusterGroupFromConfig(liteClientConfig));
                 break;
             default:
                 // ignore
@@ -80,4 +58,44 @@ public class HttpLoadBalanceUtils {
         return eventMeshServerSelector;
     }
 
+    private static List<Weight<String>> buildWeightedClusterGroupFromConfig(LiteClientConfig liteClientConfig)
+            throws EventMeshException {
+        List<String> eventMeshAddrs = Splitter.on(";").trimResults().splitToList(liteClientConfig.getLiteEventMeshAddr());
+        if (CollectionUtils.isEmpty(eventMeshAddrs)) {
+            throw new EventMeshException("liteEventMeshAddr can not be empty");
+        }
+
+        List<Weight<String>> eventMeshAddrWeightList = new ArrayList<>();
+        for (String eventMeshAddrWight : eventMeshAddrs) {
+            if (!IP_PORT_WEIGHT_PATTERN.matcher(eventMeshAddrWight).matches()) {
+                throw new EventMeshException(
+                        String.format("liteEventMeshAddr:%s is not illegal", liteClientConfig.getLiteEventMeshAddr()));
+            }
+            int splitIndex = eventMeshAddrWight.lastIndexOf(":");
+            Weight<String> weight = new Weight<>(
+                    eventMeshAddrWight.substring(0, splitIndex),
+                    Integer.parseInt(eventMeshAddrWight.substring(splitIndex + 1))
+            );
+            eventMeshAddrWeightList.add(weight);
+        }
+        return eventMeshAddrWeightList;
+    }
+
+    private static List<String> buildClusterGroupFromConfig(LiteClientConfig liteClientConfig)
+            throws EventMeshException {
+        List<String> eventMeshAddrs = Splitter.on(";").trimResults().splitToList(liteClientConfig.getLiteEventMeshAddr());
+        if (CollectionUtils.isEmpty(eventMeshAddrs)) {
+            throw new EventMeshException("liteEventMeshAddr can not be empty");
+        }
+
+        List<String> eventMeshAddrList = new ArrayList<>();
+        for (String eventMeshAddr : eventMeshAddrs) {
+            if (!IP_PORT_PATTERN.matcher(eventMeshAddr).matches()) {
+                throw new EventMeshException(
+                        String.format("liteEventMeshAddr:%s is not illegal", liteClientConfig.getLiteEventMeshAddr()));
+            }
+            eventMeshAddrList.add(eventMeshAddr);
+        }
+        return eventMeshAddrList;
+    }
 }
