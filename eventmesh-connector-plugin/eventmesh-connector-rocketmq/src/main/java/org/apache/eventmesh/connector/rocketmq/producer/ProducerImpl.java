@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.rocketmq.producer;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 
-import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.api.Message;
 import io.openmessaging.api.MessageBuilder;
 import io.openmessaging.api.OnExceptionContext;
@@ -34,8 +33,6 @@ import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.RequestCallback;
-import org.apache.rocketmq.client.producer.RequestResponseFuture;
-import org.apache.rocketmq.client.utils.MessageUtil;
 import org.apache.rocketmq.common.message.MessageClientIDSetter;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.remoting.exception.RemotingException;
