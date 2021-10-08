@@ -54,14 +54,15 @@ Event & Service
 - [ ] Event transaction
 - [ ] At-least-once/at-most-once delivery guarantees
 
-Event Store
+Store
 - [x] RocketMQ
 - [x] InMemory
 - [ ] Kafka
 - [ ] Redis
 - [ ] Pulsar
 - [ ] RabbitMQ 
-- [ ] Cold event storage (S3, Minio, SQL, key/value, etc...)
+- [ ] DeFiBus
+- [ ] Cold storage (S3, Minio, SQL, key/value, etc...)
 
 Protocol
 - [x] TCP
@@ -108,9 +109,9 @@ Security
 
 
 ## Quick Start
-1. [event-store](https://rocketmq.apache.org/docs/quick-start/) (RocketMQ, ignore this step if use standalone).
-2. [runtime quickstart](docs/en/instructions/eventmesh-runtime-quickstart.md) or [runtime quickstart with docker](docs/en/instructions/eventmesh-runtime-quickstart-with-docker.md).
-3. [java examples ](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
+1. [Event-store](https://rocketmq.apache.org/docs/quick-start/) (RocketMQ, ignore this step if use standalone).
+2. [Runtime quickstart](docs/en/instructions/eventmesh-runtime-quickstart.md) or [Runtime quickstart with docker](docs/en/instructions/eventmesh-runtime-quickstart-with-docker.md).
+3. [Java examples ](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
 
 ## Contributing
 Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.
