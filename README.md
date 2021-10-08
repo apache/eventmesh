@@ -26,12 +26,6 @@ EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to d
 
 ![architecture2](docs/images/eventmesh-panels.png)
 
-**Support connecting event store:**
-
-* [InMemory] : Standalone mode.
-* [RocketMQ](https://github.com/apache/rocketmq) : RocketMQ is a distributed messaging and streaming platform with low latency, high performance and reliability, trillion-level capacity and flexible scalability.
-* [Kafka(WIP)](https://github.com/apache/kafka/) : Kafka is a Distributed Streaming Platform.
-* [Redis(WIP)](https://github.com/redis/redis/) : Redis is an in-memory database that persists on disk.
 
 **Components:**
 
@@ -51,30 +45,66 @@ EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to d
 
 The protocol of eventmesh is easier and more convenient, you can read more [here](docs/en/instructions/eventmesh-runtime-protocol.md)
 
-## RoadMap
-| version | feature |
-| ----    | ----    |
-| v1.0.0  |Support java-sdk , tcp pub/sub, http pub|
-| v1.1.0  |Support RocketMQ as eventstore|
-| v1.1.1  |Support https|
-| v1.2.0  |Support pluggable event store by OpenMessaging Pub/Sub API, http sub, docker|
-| V1.3.0  |Support CloudEvents, event streaming|
-|   WIP   |Support more pluggable event storage (Kafka, Pulsar, Redis, RabbitMQ, etc...)|
-|   WIP   |Support Event schema|
-|   WIP   |Support Event governance|
-|   WIP   |Support Event function,triggers and bindings|
-|   WIP   |Support Event orchestration, Servelss workflow|
-|   WIP   |Support in-memory event store|
-|   WIP   |Support Event transaction|
-|   WIP   |Support Event security|
-|   WIP   |Support multi language SDK(c\go\python\wasm)|
-|   WIP   |Support metrics exporter|
-|   WIP   |Support tracing exporter|
-|   WIP   |Support at-least-once/at-most-once delivery guarantees|
-|   WIP   |Support cold event storage (S3, Minio, SQL, key/value, etc...)|
-|   WIP   |Support gRPC protocol|
-|   WIP   |Support MQTT protocol|
-|   WIP   |Support AsyncAPI|
+## Feature
+
+Event & Service
+- [x] Pub/Sub
+- [x] Request/Reply
+- [ ] Event Streaming
+- [ ] Event transaction
+- [ ] At-least-once/at-most-once delivery guarantees
+
+Event Store
+- [x] RocketMQ
+- [x] InMemory
+- [ ] Kafka
+- [ ] Redis
+- [ ] Pulsar
+- [ ] RabbitMQ 
+- [ ] Cold event storage (S3, Minio, SQL, key/value, etc...)
+
+Protocol
+- [x] TCP
+- [x] Http
+- [ ] gRPC
+- [ ] CloudEvents
+- [ ] MQTT
+- [ ] AsyncAPI
+
+SDK
+- [x] Java
+- [ ] C
+- [ ] Go
+- [ ] Python
+
+Deploy
+- [x] Sidecar
+- [x] Gateway
+- [x] Docker
+
+Metrics
+- [x] OpenTelemetry
+- [x] Promethus exporter
+
+Tracing
+- [x] OpenTelemetry
+- [x] Zipkin exporter
+- [ ] Skywalking
+
+Governance
+- [x] Client management
+- [ ] Topic management
+- [ ] Metadata registry
+- [ ] Schema registry
+- [ ] Dynamic config
+
+Choreography
+- [ ] Servelss workflow
+- [ ] Event function,triggers and bindings
+
+Security
+- [ ] Auth
+- [ ] ACL
 
 
 ## Quick Start
