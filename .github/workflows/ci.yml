@@ -91,7 +91,7 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           java -jar ./checkstyle.jar -c ./style/checkStyle.xml -f xml ./eventmesh-* \
-               | ./reviewdog -f=checkstyle -reporter=github-pr-check -filter-mode=nofilter -fail-on-error
+               | ./reviewdog -f=checkstyle -reporter=github-pr-check -filter-mode=added -fail-on-error
 
   license-check:
     name: License Check
