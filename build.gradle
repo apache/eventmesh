@@ -426,7 +426,6 @@ subprojects {
             dependency "org.powermock:powermock-module-junit4:2.0.2"
             dependency "org.powermock:powermock-api-mockito2:2.0.2"
 
-
             dependency 'org.springframework.boot:spring-boot-starter-data-jdbc:2.5.4'
             dependency 'org.springframework.boot:spring-boot-starter-data-jpa:2.5.4'
             dependency 'org.springframework.boot:spring-boot-starter-jdbc:2.5.4'
