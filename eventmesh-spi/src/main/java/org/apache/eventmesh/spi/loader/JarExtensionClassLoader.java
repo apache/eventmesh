@@ -17,12 +17,8 @@
 
 package org.apache.eventmesh.spi.loader;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import org.apache.eventmesh.spi.EventMeshSPI;
 import org.apache.eventmesh.spi.ExtensionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +35,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+
 /**
  * Load extension from '${eventMeshPluginDir}', the default loading directory is './plugin'
  */
@@ -47,30 +49,36 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
     private static final Logger logger = LoggerFactory.getLogger(JarExtensionClassLoader.class);
 
     private static final ConcurrentHashMap<Class<?>, Map<String, Class<?>>> EXTENSION_CLASS_CACHE =
-            new ConcurrentHashMap<>(16);
+        new ConcurrentHashMap<>(16);
 
-    private static final String EVENTMESH_EXTENSION_PLUGIN_DIR = System.getProperty("eventMeshPluginDir",
+    private static final String EVENTMESH_EXTENSION_PLUGIN_DIR =
+        System.getProperty("eventMeshPluginDir",
             Joiner.on(File.separator).join(Lists.newArrayList(".", "plugin")));
 
     // META-INF/eventmesh
-    private static final String EVENTMESH_EXTENSION_META_DIR = Paths.get("META-INF", "eventmesh").toString();
+    private static final String EVENTMESH_EXTENSION_META_DIR =
+        Paths.get("META-INF", "eventmesh").toString();
 
     @Override
-    public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
-        return EXTENSION_CLASS_CACHE.computeIfAbsent(extensionType, t -> doLoadExtensionClass(t, extensionInstanceName));
+    public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType,
+                                                        String extensionInstanceName) {
+        return EXTENSION_CLASS_CACHE
+            .computeIfAbsent(extensionType, t -> doLoadExtensionClass(t, extensionInstanceName));
     }
 
-    private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
+    private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType,
+                                                           String extensionInstanceName) {
         Map<String, Class<?>> extensionMap = new HashMap<>(16);
-        EventMeshSPI eventMeshSPIAnnotation = extensionType.getAnnotation(EventMeshSPI.class);
+        EventMeshSPI eventMeshSpiAnnotation = extensionType.getAnnotation(EventMeshSPI.class);
 
         String pluginDir = Paths.get(
-                EVENTMESH_EXTENSION_PLUGIN_DIR,
-                eventMeshSPIAnnotation.eventMeshExtensionType().getExtensionTypeName(),
-                extensionInstanceName
+            EVENTMESH_EXTENSION_PLUGIN_DIR,
+            eventMeshSpiAnnotation.eventMeshExtensionType().getExtensionTypeName(),
+            extensionInstanceName
         ).toString();
 
-        String extensionFileName = EVENTMESH_EXTENSION_META_DIR + File.separator + extensionType.getName();
+        String extensionFileName =
+            EVENTMESH_EXTENSION_META_DIR + File.separator + extensionType.getName();
         EventMeshUrlClassLoader urlClassLoader = EventMeshUrlClassLoader.getInstance();
         urlClassLoader.addUrls(loadJarPathFromResource(pluginDir));
         try {
@@ -107,13 +115,15 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
                 pluginUrls.addAll(loadJarPathFromResource(file.getPath()));
             }
         }
-        // TODO: Sort the path here just to guarantee load the ConsumeMessageConcurrentlyService defined in EventMesh
-        //  rather than defined in rocketmq
+        // TODO: Sort the path here just to guarantee load the ConsumeMessageConcurrentlyService
+        //  defined in EventMesh rather than defined in rocketmq
         pluginUrls.sort(Comparator.comparing(URL::getPath));
         return pluginUrls;
     }
 
-    private static <T> Map<String, Class<?>> loadResources(URLClassLoader urlClassLoader, URL url, Class<T> extensionType) throws IOException {
+    private static <T> Map<String, Class<?>> loadResources(URLClassLoader urlClassLoader, URL url,
+                                                           Class<T> extensionType)
+        throws IOException {
         Map<String, Class<?>> extensionMap = new HashMap<>();
         try (InputStream inputStream = url.openStream()) {
             Properties properties = new Properties();
@@ -123,11 +133,13 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
                 String extensionClassStr = (String) extensionClass;
                 try {
                     Class<?> targetClass = urlClassLoader.loadClass(extensionClassStr);
-                    logger.info("load extension class success, extensionType: {}, extensionClass: {}",
+                    logger
+                        .info("load extension class success, extensionType: {}, extensionClass: {}",
                             extensionType, targetClass);
                     if (!extensionType.isAssignableFrom(targetClass)) {
                         throw new ExtensionException(
-                                String.format("class: %s is not subClass of %s", targetClass, extensionType));
+                            String.format("class: %s is not subClass of %s", targetClass,
+                                extensionType));
                     }
                     extensionMap.put(extensionNameStr, targetClass);
                 } catch (ClassNotFoundException e) {

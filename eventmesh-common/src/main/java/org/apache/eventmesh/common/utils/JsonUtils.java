@@ -17,12 +17,16 @@
 
 package org.apache.eventmesh.common.utils;
 
+import org.apache.eventmesh.common.exception.JsonException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.apache.eventmesh.common.exception.JsonException;
 
+/**
+ * Json serialize or deserialize utils.
+ */
 public class JsonUtils {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -32,10 +36,10 @@ public class JsonUtils {
     }
 
     /**
-     * Serialize object to json string
+     * Serialize object to json string.
      *
-     * @param obj
-     * @return
+     * @param obj obj
+     * @return json string
      */
     public static String serialize(Object obj) {
         try {
@@ -46,12 +50,12 @@ public class JsonUtils {
     }
 
     /**
-     * Deserialize json string to object
+     * Deserialize json string to object.
      *
      * @param str json string
      * @param clz object class
      * @param <T> object type
-     * @return
+     * @return object
      */
     public static <T> T deserialize(String str, Class<T> clz) {
         try {
@@ -62,12 +66,12 @@ public class JsonUtils {
     }
 
     /**
-     * Deserialize json string to object
+     * Deserialize json string to object.
      *
      * @param str           json string
      * @param typeReference object type reference
      * @param <T>           object type
-     * @return
+     * @return object
      */
     public static <T> T deserialize(String str, TypeReference<T> typeReference) {
         try {
