@@ -17,20 +17,23 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
 public class SendMessageBatchRequestBody extends Body {
 
-    public static final String BATCHID = "batchId";
-    public static final String CONTENTS = "contents";
-    public static final String SIZE = "size";
+    public static final String BATCHID       = "batchId";
+    public static final String CONTENTS      = "contents";
+    public static final String SIZE          = "size";
     public static final String PRODUCERGROUP = "producerGroup";
 
     private String batchId;
@@ -118,8 +121,9 @@ public class SendMessageBatchRequestBody extends Body {
         SendMessageBatchRequestBody body = new SendMessageBatchRequestBody();
         body.setBatchId(batchId);
         if (StringUtils.isNotBlank(contents)) {
-            body.setContents(JsonUtils.deserialize(contents, new TypeReference<List<BatchMessageEntity>>() {
-            }));
+            body.setContents(
+                JsonUtils.deserialize(contents, new TypeReference<List<BatchMessageEntity>>() {
+                }));
         }
         body.setSize(size);
         body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));

@@ -17,14 +17,17 @@
 
 package org.apache.eventmesh.common.protocol.http.body.client;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.utils.JsonUtils;
+
+import org.apache.commons.collections4.MapUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 public class SubscribeRequestBody extends Body {
 
@@ -67,8 +70,9 @@ public class SubscribeRequestBody extends Body {
     public static SubscribeRequestBody buildBody(Map<String, Object> bodyParam) {
         SubscribeRequestBody body = new SubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
-        body.setTopics(JsonUtils.deserialize(MapUtils.getString(bodyParam, TOPIC), new TypeReference<List<SubscriptionItem>>() {
-        }));
+        body.setTopics(JsonUtils.deserialize(MapUtils.getString(bodyParam, TOPIC),
+            new TypeReference<List<SubscriptionItem>>() {
+            }));
         body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         return body;
     }
@@ -84,10 +88,10 @@ public class SubscribeRequestBody extends Body {
 
     @Override
     public String toString() {
-        return "subscribeBody{" +
-                "consumerGroup='" + consumerGroup + '\'' +
-                ", url='" + url + '\'' +
-                ", topics=" + topics +
-                '}';
+        return "subscribeBody{"
+            + "consumerGroup='" + consumerGroup + '\''
+            + ", url='" + url + '\''
+            + ", topics=" + topics
+            + '}';
     }
 }

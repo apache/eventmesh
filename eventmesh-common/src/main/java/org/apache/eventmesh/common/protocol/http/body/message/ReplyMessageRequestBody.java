@@ -17,21 +17,24 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
 public class ReplyMessageRequestBody extends Body {
 
-    public static final String ORIGTOPIC = "origTopic";
-    public static final String BIZSEQNO = "bizSeqNo";
-    public static final String UNIQUEID = "uniqueId";
-    public static final String CONTENT = "content";
-    public static final String EXTFIELDS = "extFields";
+    public static final String ORIGTOPIC     = "origTopic";
+    public static final String BIZSEQNO      = "bizSeqNo";
+    public static final String UNIQUEID      = "uniqueId";
+    public static final String CONTENT       = "content";
+    public static final String EXTFIELDS     = "extFields";
     public static final String PRODUCERGROUP = "producerGroup";
 
     private String bizSeqNo;
@@ -102,8 +105,9 @@ public class ReplyMessageRequestBody extends Body {
         body.setOrigTopic(MapUtils.getString(bodyParam, ORIGTOPIC));
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
         if (StringUtils.isNotBlank(extFields)) {
-            body.setExtFields(JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
-            }));
+            body.setExtFields(
+                JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
+                }));
         }
         body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
         return body;
@@ -113,12 +117,12 @@ public class ReplyMessageRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("replyMessageRequestBody={")
-                .append("bizSeqNo=").append(bizSeqNo).append(",")
-                .append("uniqueId=").append(uniqueId).append(",")
-                .append("origTopic=").append(origTopic).append(",")
-                .append("content=").append(content).append(",")
-                .append("producerGroup=").append(producerGroup).append(",")
-                .append("extFields=").append(extFields).append("}");
+            .append("bizSeqNo=").append(bizSeqNo).append(",")
+            .append("uniqueId=").append(uniqueId).append(",")
+            .append("origTopic=").append(origTopic).append(",")
+            .append("content=").append(content).append(",")
+            .append("producerGroup=").append(producerGroup).append(",")
+            .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }
 

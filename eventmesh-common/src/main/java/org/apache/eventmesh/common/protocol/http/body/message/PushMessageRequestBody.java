@@ -17,21 +17,24 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
 public class PushMessageRequestBody extends Body {
 
-    public static final String RANDOMNO = "randomNo";
-    public static final String TOPIC = "topic";
-    public static final String BIZSEQNO = "bizSeqNo";
-    public static final String UNIQUEID = "uniqueId";
-    public static final String CONTENT = "content";
+    public static final String RANDOMNO  = "randomNo";
+    public static final String TOPIC     = "topic";
+    public static final String BIZSEQNO  = "bizSeqNo";
+    public static final String UNIQUEID  = "uniqueId";
+    public static final String CONTENT   = "content";
     public static final String EXTFIELDS = "extFields";
 
     private String randomNo;
@@ -104,8 +107,9 @@ public class PushMessageRequestBody extends Body {
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
 
         if (StringUtils.isNotBlank(extFields)) {
-            pushMessageRequestBody.setExtFields(JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
-            }));
+            pushMessageRequestBody.setExtFields(
+                JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
+                }));
         }
         return pushMessageRequestBody;
     }
@@ -127,12 +131,12 @@ public class PushMessageRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("pushMessageRequestBody={")
-                .append("randomNo=").append(randomNo).append(",")
-                .append("topic=").append(topic).append(",")
-                .append("bizSeqNo=").append(bizSeqNo).append(",")
-                .append("uniqueId=").append(uniqueId).append(",")
-                .append("content=").append(content).append(",")
-                .append("extFields=").append(extFields).append("}");
+            .append("randomNo=").append(randomNo).append(",")
+            .append("topic=").append(topic).append(",")
+            .append("bizSeqNo=").append(bizSeqNo).append(",")
+            .append("uniqueId=").append(uniqueId).append(",")
+            .append("content=").append(content).append(",")
+            .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }
 }

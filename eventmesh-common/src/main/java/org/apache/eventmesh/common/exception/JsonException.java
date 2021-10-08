@@ -17,8 +17,11 @@
 
 package org.apache.eventmesh.common.exception;
 
+/**
+ * Json format exception, see {@link org.apache.eventmesh.common.utils.JsonUtils}.
+ */
 public class JsonException extends RuntimeException {
-    
+
     public JsonException(String message) {
         super(message);
     }
