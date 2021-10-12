@@ -24,9 +24,10 @@ import io.openmessaging.api.Producer;
 import io.openmessaging.api.SendCallback;
 
 import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
-@EventMeshSPI(isSingleton = false)
+@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
 public interface MeshMQProducer extends Producer {
 
     void init(Properties properties) throws Exception;
