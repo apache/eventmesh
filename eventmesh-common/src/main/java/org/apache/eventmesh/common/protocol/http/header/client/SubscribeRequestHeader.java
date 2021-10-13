@@ -17,15 +17,15 @@
 
 package org.apache.eventmesh.common.protocol.http.header.client;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SubscribeRequestHeader extends Header {
 
@@ -45,9 +45,9 @@ public class SubscribeRequestHeader extends Header {
 
     private String ip;
 
-    private String username = "username";
+    private String username;
 
-    private String passwd = "user@123";
+    private String passwd;
 
     public static SubscribeRequestHeader buildHeader(Map<String, Object> headerParam) {
         SubscribeRequestHeader header = new SubscribeRequestHeader();
