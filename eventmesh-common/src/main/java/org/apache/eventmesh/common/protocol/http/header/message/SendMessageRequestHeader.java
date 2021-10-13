@@ -17,15 +17,15 @@
 
 package org.apache.eventmesh.common.protocol.http.header.message;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SendMessageRequestHeader extends Header {
 
@@ -54,10 +54,10 @@ public class SendMessageRequestHeader extends Header {
     private String ip;
 
     //USERNAME of the requester
-    private String username = "username";
+    private String username;
 
     //PASSWD of the requester
-    private String passwd = "user@123";
+    private String passwd;
 
     public String getUsername() {
         return username;
