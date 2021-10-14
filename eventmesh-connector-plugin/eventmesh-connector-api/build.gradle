@@ -16,7 +16,8 @@
  */
 
 dependencies {
-    api project(":eventmesh-spi")
+    compileOnly project(":eventmesh-spi")
+    compileOnly project(":eventmesh-common")
     api 'io.openmessaging:openmessaging-api'
     api 'io.dropwizard.metrics:metrics-core'
     api "io.dropwizard.metrics:metrics-healthchecks"
@@ -24,6 +25,7 @@ dependencies {
     api "io.dropwizard.metrics:metrics-json"
 
     testImplementation project(":eventmesh-spi")
+    testImplementation project(":eventmesh-common")
     testImplementation 'io.openmessaging:openmessaging-api'
     testImplementation 'io.dropwizard.metrics:metrics-core'
     testImplementation "io.dropwizard.metrics:metrics-healthchecks"
