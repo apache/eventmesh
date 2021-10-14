@@ -16,8 +16,8 @@
 #
 
 name: Enhancement Request
-title: "Enhancement Request"
-description: I want to suggest an enhancement for this project (and may want to implement it 🙂)!
+title: "[Enhancement] Enhancement title"
+description: I want to suggest an enhancement for this project
 labels: [ "enhancement" ]
 body:
   - type: markdown
