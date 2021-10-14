@@ -23,3 +23,6 @@ Gradle至少为5.6, 推荐 5.6.*
 ### 通信协议
 
 阅读更多[这里](eventmesh-runtime-protocol.zh-CN.md)
+
+### eventMesh 导入Eclipse 快速入门说明
+阅读更多[这里](eclipse.zh-CN.md)
