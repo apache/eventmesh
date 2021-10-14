@@ -17,21 +17,22 @@
 
 package org.apache.eventmesh.common.protocol.http.body.client;
 
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.utils.JsonUtils;
+
+import org.apache.commons.collections4.MapUtils;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-
-import org.apache.commons.collections4.MapUtils;
-import org.apache.eventmesh.common.protocol.http.body.Body;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 public class HeartbeatRequestBody extends Body {
 
-    public static final String CLIENTTYPE = "clientType";
+    public static final String CLIENTTYPE        = "clientType";
     public static final String HEARTBEATENTITIES = "heartbeatEntities";
-    public static final String CONSUMERGROUP = "consumerGroup";
+    public static final String CONSUMERGROUP     = "consumerGroup";
 
     private String consumerGroup;
 
@@ -67,16 +68,19 @@ public class HeartbeatRequestBody extends Body {
         HeartbeatRequestBody body = new HeartbeatRequestBody();
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
         body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
-        body.setHeartbeatEntities(JSONArray.parseArray(MapUtils.getString(bodyParam, HEARTBEATENTITIES), HeartbeatEntity.class));
+        body.setHeartbeatEntities(JsonUtils
+            .deserialize(MapUtils.getString(bodyParam, HEARTBEATENTITIES),
+                new TypeReference<List<HeartbeatEntity>>() {
+                }));
         return body;
     }
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put(CLIENTTYPE, clientType);
         map.put(CONSUMERGROUP, consumerGroup);
-        map.put(HEARTBEATENTITIES, JSON.toJSONString(heartbeatEntities));
+        map.put(HEARTBEATENTITIES, JsonUtils.serialize(heartbeatEntities));
         return map;
     }
 
@@ -90,10 +94,10 @@ public class HeartbeatRequestBody extends Body {
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append("heartbeatEntity={")
-                    .append("topic=").append(topic).append(",")
-                    .append("serviceId=").append(serviceId).append(",")
-                    .append("instanceId=").append(instanceId).append(",")
-                    .append("url=").append(url).append("}");
+                .append("topic=").append(topic).append(",")
+                .append("serviceId=").append(serviceId).append(",")
+                .append("instanceId=").append(instanceId).append(",")
+                .append("url=").append(url).append("}");
             return sb.toString();
         }
     }
@@ -102,8 +106,8 @@ public class HeartbeatRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("heartbeatRequestBody={")
-                .append("consumerGroup=").append(consumerGroup).append(",")
-                .append("clientType=").append(clientType).append("}");
+            .append("consumerGroup=").append(consumerGroup).append(",")
+            .append("clientType=").append(clientType).append("}");
         return sb.toString();
     }
 }
