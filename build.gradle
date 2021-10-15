@@ -99,6 +99,51 @@ task zip(type: Zip) {
     }
 }
 
+task installPlugin() {
+    // pluginType:
+    //      pluginInstanceName:
+    //            moduleName
+    Map<String, Map<String, String>> pluginTypeMap = [
+            "connector": [
+                    "rocketmq"  : "eventmesh-connector-rocketmq",
+                    "standalone": "eventmesh-connector-standalone",
+            ],
+            "security" : [
+                    "acl": "eventmesh-security-acl",
+            ],
+            "registry" : [
+                    "namesrv": "eventmesh-registry-namesrv",
+            ]
+    ]
+    String[] libJars = new File("${rootDir}/dist/lib").list()
+    getAllprojects().forEach(subProject -> {
+        pluginTypeMap.forEach((pluginType, pluginInstanceMap) -> {
+            pluginInstanceMap.forEach((pluginInstanceName, moduleName) -> {
+                if (moduleName == subProject.name) {
+                    println String.format("install plugin, pluginType: %s, pluginInstanceName: %s, module: %s",
+                            pluginType, pluginInstanceName, moduleName)
+
+                    new File("${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}").mkdirs()
+                    copy {
+                        into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
+                        from "${subProject.getProjectDir()}/dist/apps"
+                    }
+                    copy {
+                        into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
+                        from "${subProject.getProjectDir()}/dist/lib/"
+                        exclude(libJars)
+                    }
+                    copy {
+                        into "${rootDir}/dist/conf"
+                        from "${subProject.getProjectDir()}/dist/conf"
+                        exclude 'META-INF'
+                    }
+                }
+            })
+        })
+    })
+}
+
 subprojects {
 
     apply plugin: "io.spring.dependency-management"
@@ -187,90 +232,61 @@ subprojects {
         }
     }
 
-    // pluginType:
-    //      pluginInstanceName:
-    //            moduleName
-    Map<String, Map<String, String>> pluginTypeMap = [
-            "connector": [
-                    "rocketmq"  : "eventmesh-connector-rocketmq",
-                    "standalone": "eventmesh-connector-standalone",
-            ],
-            "security" : [
-                    "acl": "eventmesh-security-acl",
-            ],
-            "registry" : [
-                    "namesrv": "eventmesh-registry-namesrv",
-            ]
-    ]
-
     task dist(dependsOn: ['jar']) {
         doFirst {
-            new File(projectDir, '../dist/bin').mkdirs()
-            new File(projectDir, '../dist/apps').mkdirs()
-            new File(projectDir, '../dist/conf').mkdirs()
-            new File(projectDir, '../dist/lib').mkdirs()
+            new File("${projectDir}/dist/bin").mkdirs()
+            new File("${projectDir}/dist/apps").mkdirs()
+            new File("${projectDir}/dist/conf").mkdirs()
+            new File("${projectDir}/dist/lib").mkdirs()
         }
-
+        Set<String> rootProject = ["eventmesh-admin",
+                                   "eventmesh-common",
+                                   "eventmesh-connector-api",
+                                   "eventmesh-examples",
+                                   "eventmesh-registry-api",
+                                   "eventmesh-runtime",
+                                   "eventmesh-security-api",
+                                   "eventmesh-starter",
+                                   "eventmesh-spi"]
         doLast {
-            pluginTypeMap.forEach((pluginType, pluginInstanceMap) -> {
-                pluginInstanceMap.forEach((pluginInstanceName, moduleName) -> {
-                    if (moduleName == project.name) {
-                        println String.format("install plugin, pluginType: %s, pluginInstanceName: %s, module: %s",
-                                pluginType, pluginInstanceName, moduleName)
-                        new File("${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}").mkdirs()
-                        copy {
-                            into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
-                            from project.jar.getArchivePath()
-                        }
-                        copy {
-                            into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
-                            from project.configurations.runtimeClasspath
-                        }
-                        copy {
-                            into "${rootDir}/dist/conf"
-                            from sourceSets.main.resources.srcDirs
-                            exclude 'META-INF'
-                        }
-                    }
-                })
-            })
-
             copy {
-                into('../dist/apps/')
+                into("${projectDir}/dist/apps")
                 from project.jar.getArchivePath()
-//                exclude 'eventmesh-common*.jar'
-//                exclude 'eventmesh-connector-api*.jar'
-//                exclude 'eventmesh-connector-plugin*.jar'
-//                exclude 'eventmesh-admin*.jar'
-//                exclude 'eventmesh-starter*.jar'
-//                exclude 'eventmesh-test*.jar'
-//                exclude 'eventmesh-sdk*.jar'
             }
             copy {
-                into '../dist/lib'
+                into("${projectDir}/dist/lib")
                 from project.configurations.runtimeClasspath
-                exclude '**/*.properties*'
-                exclude '**/*testng*.jar'
-                exclude '**/*powermock*.jar'
-                exclude '**/*mockito*.jar'
-                exclude '**/*junit*.jar'
-                exclude '**/*jacoco*.jar'
-                exclude '**/*log4j2.xml*'
-                exclude '**/spring-boot-devtools*.jar'
-                exclude '**/mumble-sdk-test*.jar'
-                exclude 'eventmesh*.jar'
-//                exclude 'eventmesh-runtime*.jar'
-                exclude 'commons-collections-3.2.2.jar'
             }
-
             copy {
-                into '../dist/bin'
-                from '../eventmesh-runtime/bin'
+                into("${projectDir}/dist/bin")
+                from 'bin'
             }
-
             copy {
-                into '../dist/conf'
-                from '../eventmesh-runtime/conf'
+                into("${projectDir}/dist/conf")
+                from 'conf', sourceSets.main.resources.srcDirs
+                exclude 'META-INF'
+            }
+            if (rootProject.contains(project.name)) {
+                new File("${rootDir}/dist/apps").mkdirs()
+                new File("${rootDir}/dist/lib").mkdirs()
+                new File("${rootDir}/dist/bin").mkdirs()
+                new File("${rootDir}/dist/conf").mkdirs()
+                copy {
+                    into("${rootDir}/dist/apps")
+                    from "${projectDir}/dist/apps"
+                }
+                copy {
+                    into "${rootDir}/dist/lib"
+                    from "${projectDir}/dist/lib"
+                }
+                copy {
+                    into "${rootDir}/dist/bin"
+                    from "${projectDir}/dist/bin"
+                }
+                copy {
+                    into "${rootDir}/dist/conf"
+                    from "${projectDir}/dist/conf"
+                }
             }
         }
     }

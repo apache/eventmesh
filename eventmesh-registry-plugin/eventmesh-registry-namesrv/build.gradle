@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 dependencies {
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
+    compileOnly project(":eventmesh-registry-plugin:eventmesh-registry-api")
 
     testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
 }

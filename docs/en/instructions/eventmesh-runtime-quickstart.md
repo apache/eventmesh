@@ -57,13 +57,31 @@ Same with 1.2
 
 **2.3.1 Configure plugin**
 
-Specify the connector plugin that will be loaded after the project start by declaring in `eventMesh.properties`
+***2.3.1.1 Install Plugin***
 
-Modify the `eventMesh.properties` file in the `confPath` directory
+There are two ways to install the plugin:
+- Install from classpath: Local development can be done by declaring in the eventmesh-starter module build.gradle, for example
+ by declaring the use of rocketmq plugin
+```java
+   implementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
+```
+
+- Install from files: By installing the plugin into the plugin directory, EventMesh will automatically load the plugins in the plugin directory
+ according to the conditions when EventMesh running, you can install the plugins by executing the following command.
+```shell
+./gradlew clean jar dist
+./gradlew installPlugin
+```
+
+***2.3.1.2 Use Plugin***
+
+EventMesh will default load plugins installed in `dist/plugin`, you can change the plugin directory by `-DeventMeshPluginDir=your_plugin_directory`.
+The plugin instance to be used at runtime can be configured in the `eventmesh.properties` at the `confPath` directory.
+Example you can declare use rocketmq by following config. 
 
 ```java
 #connector plugin, default standalone, can be rocketmq
-eventMesh.connector.plugin.type=standalone
+eventMesh.connector.plugin.type=rocketmq
 ```
 
 **2.3.2 Configure VM Options**
