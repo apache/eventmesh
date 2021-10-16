@@ -17,19 +17,15 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import java.util.Map;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.openmessaging.api.Message;
 import io.openmessaging.api.OnExceptionContext;
 import io.openmessaging.api.SendCallback;
 import io.openmessaging.api.SendResult;
-
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
-import org.apache.eventmesh.common.LiteMessage;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.message.ReplyMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.ReplyMessageResponseBody;
@@ -49,6 +45,9 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class ReplyMessageProcessor implements HttpRequestProcessor {
 
@@ -100,6 +99,18 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     replyMessageResponseHeader,
                     ReplyMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
+            return;
+        }
+
+        // control flow rate limit
+        if (!eventMeshHTTPServer.getMsgRateLimiter()
+                .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                    replyMessageResponseHeader,
+                    ReplyMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getRetCode(),
+                            EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getErrMsg()));
+            eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPDiscard();
             asyncContext.onComplete(responseEventMeshCommand);
             return;
         }

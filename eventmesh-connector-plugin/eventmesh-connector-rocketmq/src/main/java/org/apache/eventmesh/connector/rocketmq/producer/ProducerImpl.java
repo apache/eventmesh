@@ -17,10 +17,22 @@
 
 package org.apache.eventmesh.connector.rocketmq.producer;
 
+import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
+
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.RequestCallback;
+import org.apache.rocketmq.common.message.MessageClientIDSetter;
+import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.remoting.exception.RemotingException;
+
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 
-import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.openmessaging.api.Message;
 import io.openmessaging.api.MessageBuilder;
 import io.openmessaging.api.OnExceptionContext;
@@ -28,20 +40,6 @@ import io.openmessaging.api.Producer;
 import io.openmessaging.api.SendCallback;
 import io.openmessaging.api.SendResult;
 import io.openmessaging.api.exception.OMSRuntimeException;
-
-import org.apache.eventmesh.api.RRCallback;
-import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
-import org.apache.rocketmq.client.exception.MQBrokerException;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.RequestCallback;
-import org.apache.rocketmq.client.producer.RequestResponseFuture;
-import org.apache.rocketmq.client.utils.MessageUtil;
-import org.apache.rocketmq.common.message.MessageClientIDSetter;
-import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.remoting.exception.RemotingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 public class ProducerImpl extends AbstractOMSProducer implements Producer {
 
@@ -63,7 +61,8 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
         super.getRocketmqProducer().setPollNameServerInterval(60000);
 
         super.getRocketmqProducer().getDefaultMQProducerImpl().getmQClientFactory()
-                .getNettyClientConfig().setClientAsyncSemaphoreValue(eventMeshServerAsyncAccumulationThreshold);
+            .getNettyClientConfig()
+            .setClientAsyncSemaphoreValue(eventMeshServerAsyncAccumulationThreshold);
         super.getRocketmqProducer().setCompressMsgBodyOverHowmuch(10);
     }
 
@@ -73,11 +72,12 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
         org.apache.rocketmq.common.message.Message msgRMQ = OMSUtil.msgConvert(message);
 
         try {
-            org.apache.rocketmq.client.producer.SendResult sendResultRMQ = this.rocketmqProducer.send(msgRMQ);
-            message.setMsgID(sendResultRMQ.getMsgId());
+            org.apache.rocketmq.client.producer.SendResult sendResultRmq =
+                this.rocketmqProducer.send(msgRMQ);
+            message.setMsgID(sendResultRmq.getMsgId());
             SendResult sendResult = new SendResult();
-            sendResult.setTopic(sendResultRMQ.getMessageQueue().getTopic());
-            sendResult.setMessageId(sendResultRMQ.getMsgId());
+            sendResult.setTopic(sendResultRmq.getMessageQueue().getTopic());
+            sendResult.setMessageId(sendResultRmq.getMsgId());
             return sendResult;
         } catch (Exception e) {
             log.error(String.format("Send message Exception, %s", message), e);
@@ -114,7 +114,7 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
     }
 
     public void request(Message message, RRCallback rrCallback, long timeout)
-            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
 
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msgRMQ = OMSUtil.msgConvert(message);
@@ -133,7 +133,8 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
             public void onException(Throwable e) {
                 String topic = message.getTopic();
                 String msgId = message.getMsgID();
-                OMSRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, msgId, e);
+                OMSRuntimeException onsEx =
+                    ProducerImpl.this.checkProducerException(topic, msgId, e);
                 OnExceptionContext context = new OnExceptionContext();
                 context.setTopic(topic);
                 context.setMessageId(msgId);
@@ -144,25 +145,28 @@ public class ProducerImpl extends AbstractOMSProducer implements Producer {
         };
     }
 
-    private org.apache.rocketmq.client.producer.SendCallback sendCallbackConvert(final Message message, final SendCallback sendCallback) {
-        org.apache.rocketmq.client.producer.SendCallback rmqSendCallback = new org.apache.rocketmq.client.producer.SendCallback() {
-            @Override
-            public void onSuccess(org.apache.rocketmq.client.producer.SendResult sendResult) {
-                sendCallback.onSuccess(OMSUtil.sendResultConvert(sendResult));
-            }
+    private org.apache.rocketmq.client.producer.SendCallback sendCallbackConvert(
+        final Message message, final SendCallback sendCallback) {
+        org.apache.rocketmq.client.producer.SendCallback rmqSendCallback =
+            new org.apache.rocketmq.client.producer.SendCallback() {
+                @Override
+                public void onSuccess(org.apache.rocketmq.client.producer.SendResult sendResult) {
+                    sendCallback.onSuccess(OMSUtil.sendResultConvert(sendResult));
+                }
 
-            @Override
-            public void onException(Throwable e) {
-                String topic = message.getTopic();
-                String msgId = message.getMsgID();
-                OMSRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, msgId, e);
-                OnExceptionContext context = new OnExceptionContext();
-                context.setTopic(topic);
-                context.setMessageId(msgId);
-                context.setException(onsEx);
-                sendCallback.onException(context);
-            }
-        };
+                @Override
+                public void onException(Throwable e) {
+                    String topic = message.getTopic();
+                    String msgId = message.getMsgID();
+                    OMSRuntimeException onsEx =
+                        ProducerImpl.this.checkProducerException(topic, msgId, e);
+                    OnExceptionContext context = new OnExceptionContext();
+                    context.setTopic(topic);
+                    context.setMessageId(msgId);
+                    context.setException(onsEx);
+                    sendCallback.onException(context);
+                }
+            };
         return rmqSendCallback;
     }
 

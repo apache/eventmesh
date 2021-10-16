@@ -177,15 +177,31 @@ subprojects {
     jar {
         manifest {
             attributes("Specification-Version": project.version,
-                    "Specification-Vendor": "WeBank, Inc.",
+                    "Specification-Vendor": "Apache",
                     "Specification-Title": project.name,
                     "Implementation-Version": project.version,
-                    "Implementation-Vendor": "WeBank, Inc.",
+                    "Implementation-Vendor": "Apache",
                     "Implementation-Title": project.name,
                     "Build-Jdk": project.findProperty("jdk")
             )
         }
     }
+
+    // pluginType:
+    //      pluginInstanceName:
+    //            moduleName
+    Map<String, Map<String, String>> pluginTypeMap = [
+            "connector": [
+                    "rocketmq"  : "eventmesh-connector-rocketmq",
+                    "standalone": "eventmesh-connector-standalone",
+            ],
+            "security" : [
+                    "acl": "eventmesh-security-acl",
+            ],
+            "registry" : [
+                    "namesrv": "eventmesh-registry-namesrv",
+            ]
+    ]
 
     task dist(dependsOn: ['jar']) {
         doFirst {
@@ -196,16 +212,39 @@ subprojects {
         }
 
         doLast {
+            pluginTypeMap.forEach((pluginType, pluginInstanceMap) -> {
+                pluginInstanceMap.forEach((pluginInstanceName, moduleName) -> {
+                    if (moduleName == project.name) {
+                        println String.format("install plugin, pluginType: %s, pluginInstanceName: %s, module: %s",
+                                pluginType, pluginInstanceName, moduleName)
+                        new File("${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}").mkdirs()
+                        copy {
+                            into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
+                            from project.jar.getArchivePath()
+                        }
+                        copy {
+                            into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
+                            from project.configurations.runtimeClasspath
+                        }
+                        copy {
+                            into "${rootDir}/dist/conf"
+                            from sourceSets.main.resources.srcDirs
+                            exclude 'META-INF'
+                        }
+                    }
+                })
+            })
+
             copy {
                 into('../dist/apps/')
                 from project.jar.getArchivePath()
-                exclude 'eventmesh-common*.jar'
-                exclude 'eventmesh-connector-api*.jar'
-                exclude 'eventmesh-connector-plugin*.jar'
-                exclude 'eventmesh-admin*.jar'
-                exclude 'eventmesh-starter*.jar'
-                exclude 'eventmesh-test*.jar'
-                exclude 'eventmesh-sdk*.jar'
+//                exclude 'eventmesh-common*.jar'
+//                exclude 'eventmesh-connector-api*.jar'
+//                exclude 'eventmesh-connector-plugin*.jar'
+//                exclude 'eventmesh-admin*.jar'
+//                exclude 'eventmesh-starter*.jar'
+//                exclude 'eventmesh-test*.jar'
+//                exclude 'eventmesh-sdk*.jar'
             }
             copy {
                 into '../dist/lib'
@@ -219,8 +258,8 @@ subprojects {
                 exclude '**/*log4j2.xml*'
                 exclude '**/spring-boot-devtools*.jar'
                 exclude '**/mumble-sdk-test*.jar'
-                exclude '*connector-rocketmq*.jar'
-                exclude 'eventmesh-runtime*.jar'
+                exclude 'eventmesh*.jar'
+//                exclude 'eventmesh-runtime*.jar'
                 exclude 'commons-collections-3.2.2.jar'
             }
 
@@ -350,7 +389,6 @@ subprojects {
             dependency "org.apache.logging.log4j:log4j-web:2.13.3"
 
             dependency "com.lmax:disruptor:3.4.2"
-            dependency "com.alibaba:fastjson:1.2.71"
 
             dependency "com.fasterxml.jackson.core:jackson-databind:2.11.0"
             dependency "com.fasterxml.jackson.core:jackson-core:2.11.0"
@@ -386,6 +424,14 @@ subprojects {
             dependency "org.mockito:mockito-core:2.23.0"
             dependency "org.powermock:powermock-module-junit4:2.0.2"
             dependency "org.powermock:powermock-api-mockito2:2.0.2"
+
+            dependency 'org.springframework.boot:spring-boot-starter-data-jdbc:2.5.4'
+            dependency 'org.springframework.boot:spring-boot-starter-data-jpa:2.5.4'
+            dependency 'org.springframework.boot:spring-boot-starter-jdbc:2.5.4'
+            dependency 'org.springframework:spring-beans:5.1.8.RELEASE'
+            dependency 'org.projectlombok:lombok:1.18.20'
+            dependency 'com.h2database:h2:1.4.200'
+            dependency "io.cloudevents:cloudevents-core:2.2.0"
         }
     }
 }
