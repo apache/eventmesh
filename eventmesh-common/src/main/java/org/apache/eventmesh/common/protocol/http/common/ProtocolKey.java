@@ -30,8 +30,8 @@ public class ProtocolKey {
         public static final String SYS = "Sys";
         public static final String PID = "Pid";
         public static final String IP = "Ip";
-        public static final String USERNAME = "";
-        public static final String PASSWD = "";
+        public static final String USERNAME = "Username";
+        public static final String PASSWD = "Passwd";
     }
 
 
