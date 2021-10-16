@@ -18,13 +18,13 @@
 package org.apache.eventmesh.common.protocol.http.header.message;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class PushMessageResponseHeader extends Header {
 
@@ -53,10 +53,10 @@ public class PushMessageResponseHeader extends Header {
     private String ip;
 
     //USERNAME of the requester
-    private String username;
+    private String username = "username";
 
     //PASSWD of the requester
-    private String passwd;
+    private String passwd = "user@123";
 
     public String getUsername() {
         return username;
