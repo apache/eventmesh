@@ -257,6 +257,7 @@ subprojects {
             copy {
                 into("${projectDir}/dist/conf")
                 from 'conf', sourceSets.main.resources.srcDirs
+                setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE)
                 exclude 'META-INF'
             }
             if (rootProject.contains(project.name)) {
