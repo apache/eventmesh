@@ -17,15 +17,15 @@
 
 package org.apache.eventmesh.common.protocol.http.header.client;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class UnSubscribeRequestHeader extends Header {
 
@@ -45,9 +45,9 @@ public class UnSubscribeRequestHeader extends Header {
 
     private String ip;
 
-    private String username;
+    private String username = "username";
 
-    private String passwd;
+    private String passwd = "user@123";
 
     public static UnSubscribeRequestHeader buildHeader(Map<String, Object> headerParam) {
         UnSubscribeRequestHeader header = new UnSubscribeRequestHeader();
