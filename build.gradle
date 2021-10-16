@@ -272,6 +272,7 @@ subprojects {
                 copy {
                     into "${rootDir}/dist/lib"
                     from "${projectDir}/dist/lib"
+                    exclude "eventmesh-*"
                 }
                 copy {
                     into "${rootDir}/dist/bin"
