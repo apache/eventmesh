@@ -17,29 +17,11 @@
 
 package org.apache.eventmesh.client.http.producer;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-
-
-import com.alibaba.fastjson.JSON;
-import com.google.common.base.Preconditions;
-
-import io.netty.handler.codec.http.HttpMethod;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.AbstractLiteClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.http.HttpUtil;
 import org.apache.eventmesh.client.http.http.RequestParam;
-import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.LiteMessage;
@@ -49,13 +31,20 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.eventmesh.common.utils.JsonUtils;
+
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+
+import io.netty.handler.codec.http.HttpMethod;
 
 public class LiteProducer extends AbstractLiteClient {
 
@@ -70,7 +59,8 @@ public class LiteProducer extends AbstractLiteClient {
     @Override
     public void start() throws Exception {
         Preconditions.checkState(liteClientConfig != null, "liteClientConfig can't be null");
-        Preconditions.checkState(liteClientConfig.getLiteEventMeshAddr() != null, "liteClientConfig.liteServerAddr can't be null");
+        Preconditions.checkState(liteClientConfig.getLiteEventMeshAddr() != null,
+            "liteClientConfig.liteServerAddr can't be null");
         if (started.get()) {
             return;
         }
@@ -100,27 +90,29 @@ public class LiteProducer extends AbstractLiteClient {
             start();
         }
         Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
-                "eventMeshMessage[topic] invalid");
+            "eventMeshMessage[topic] invalid");
         Preconditions.checkState(StringUtils.isNotBlank(message.getContent()),
-                "eventMeshMessage[content] invalid");
+            "eventMeshMessage[content] invalid");
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()))
-                .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
-                .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
-                .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
-                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, liteClientConfig.getUserName())
-                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, liteClientConfig.getPassword())
-                .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
-                .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-                .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
-                .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
-                .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
-                .addBody(SendMessageRequestBody.CONTENT, message.getContent())
-                .addBody(SendMessageRequestBody.TTL, message.getPropKey(Constants.EVENTMESH_MESSAGE_CONST_TTL))
-                .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
-                .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
+        requestParam.addHeader(ProtocolKey.REQUEST_CODE,
+            String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()))
+            .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
+            .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
+            .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
+            .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
+            .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
+            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, liteClientConfig.getUserName())
+            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, liteClientConfig.getPassword())
+            .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
+            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+            .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
+            .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
+            .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
+            .addBody(SendMessageRequestBody.CONTENT, message.getContent())
+            .addBody(SendMessageRequestBody.TTL,
+                message.getPropKey(Constants.EVENTMESH_MESSAGE_CONST_TTL))
+            .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
+            .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
@@ -132,10 +124,10 @@ public class LiteProducer extends AbstractLiteClient {
 
         if (logger.isDebugEnabled()) {
             logger.debug("publish async message, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}",
-                    target, System.currentTimeMillis() - startTime, message, res);
+                target, System.currentTimeMillis() - startTime, message, res);
         }
 
-        EventMeshRetObj ret = JSON.parseObject(res, EventMeshRetObj.class);
+        EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
 
         if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
             return Boolean.TRUE;
@@ -157,27 +149,28 @@ public class LiteProducer extends AbstractLiteClient {
             start();
         }
         Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
-                "eventMeshMessage[topic] invalid");
+            "eventMeshMessage[topic] invalid");
         Preconditions.checkState(StringUtils.isNotBlank(message.getContent()),
-                "eventMeshMessage[content] invalid");
+            "eventMeshMessage[content] invalid");
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
-                .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
-                .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
-                .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
-                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, liteClientConfig.getUserName())
-                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, liteClientConfig.getPassword())
-                .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
-                .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-                .setTimeout(timeout)
-                .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
-                .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
-                .addBody(SendMessageRequestBody.CONTENT, message.getContent())
-                .addBody(SendMessageRequestBody.TTL, String.valueOf(timeout))
-                .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
-                .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
+        requestParam.addHeader(ProtocolKey.REQUEST_CODE,
+            String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
+            .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
+            .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
+            .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
+            .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
+            .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
+            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, liteClientConfig.getUserName())
+            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, liteClientConfig.getPassword())
+            .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
+            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+            .setTimeout(timeout)
+            .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
+            .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
+            .addBody(SendMessageRequestBody.CONTENT, message.getContent())
+            .addBody(SendMessageRequestBody.TTL, String.valueOf(timeout))
+            .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
+            .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
@@ -188,16 +181,18 @@ public class LiteProducer extends AbstractLiteClient {
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("publish sync message by await, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}", target, System.currentTimeMillis() - startTime, message, res);
+            logger.debug(
+                "publish sync message by await, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}",
+                target, System.currentTimeMillis() - startTime, message, res);
         }
 
-        EventMeshRetObj ret = JSON.parseObject(res, EventMeshRetObj.class);
+        EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
         if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
             LiteMessage eventMeshMessage = new LiteMessage();
             SendMessageResponseBody.ReplyMessage replyMessage =
-                    JSON.parseObject(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
+                JsonUtils.deserialize(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
             eventMeshMessage.setContent(replyMessage.body).setProp(replyMessage.properties)
-                    .setTopic(replyMessage.topic);
+                .setTopic(replyMessage.topic);
             return eventMeshMessage;
         }
 
@@ -209,39 +204,42 @@ public class LiteProducer extends AbstractLiteClient {
             start();
         }
         Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
-                "eventMeshMessage[topic] invalid");
+            "eventMeshMessage[topic] invalid");
         Preconditions.checkState(StringUtils.isNotBlank(message.getContent()),
-                "eventMeshMessage[content] invalid");
+            "eventMeshMessage[content] invalid");
         Preconditions.checkState(ObjectUtils.allNotNull(rrCallback),
-                "rrCallback invalid");
+            "rrCallback invalid");
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam.addHeader(ProtocolKey.REQUEST_CODE, String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
-                .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-                .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-                .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
-                .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
-                .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
-                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, liteClientConfig.getUserName())
-                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, liteClientConfig.getPassword())
-                .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
-                .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-                .setTimeout(timeout)
-                .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
-                .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
-                .addBody(SendMessageRequestBody.CONTENT, message.getContent())
-                .addBody(SendMessageRequestBody.TTL, String.valueOf(timeout))
-                .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
-                .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
+        requestParam.addHeader(ProtocolKey.REQUEST_CODE,
+            String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
+            .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
+            .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
+            .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
+            .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
+            .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
+            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, liteClientConfig.getUserName())
+            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, liteClientConfig.getPassword())
+            .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
+            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+            .setTimeout(timeout)
+            .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
+            .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
+            .addBody(SendMessageRequestBody.CONTENT, message.getContent())
+            .addBody(SendMessageRequestBody.TTL, String.valueOf(timeout))
+            .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
+            .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
         long startTime = System.currentTimeMillis();
         String target = selectEventMesh();
 
         try (CloseableHttpClient httpClient = setHttpClient()) {
-            HttpUtil.post(httpClient, null, target, requestParam, new RRCallbackResponseHandlerAdapter(message, rrCallback, timeout));
+            HttpUtil.post(httpClient, null, target, requestParam,
+                new RRCallbackResponseHandlerAdapter(message, rrCallback, timeout));
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("publish sync message by async, target:{}, cost:{}, message:{}", target, System.currentTimeMillis() - startTime, message);
+            logger.debug("publish sync message by async, target:{}, cost:{}, message:{}", target,
+                System.currentTimeMillis() - startTime, message);
         }
     }
 }

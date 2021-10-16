@@ -17,23 +17,24 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.protocol.http.body.Body;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 public class PushMessageRequestBody extends Body {
 
-    public static final String RANDOMNO = "randomNo";
-    public static final String TOPIC = "topic";
-    public static final String BIZSEQNO = "bizSeqNo";
-    public static final String UNIQUEID = "uniqueId";
-    public static final String CONTENT = "content";
+    public static final String RANDOMNO  = "randomNo";
+    public static final String TOPIC     = "topic";
+    public static final String BIZSEQNO  = "bizSeqNo";
+    public static final String UNIQUEID  = "uniqueId";
+    public static final String CONTENT   = "content";
     public static final String EXTFIELDS = "extFields";
 
     private String randomNo;
@@ -96,7 +97,6 @@ public class PushMessageRequestBody extends Body {
         this.extFields = extFields;
     }
 
-    @SuppressWarnings("unchecked")
     public static PushMessageRequestBody buildBody(final Map<String, Object> bodyParam) {
         PushMessageRequestBody pushMessageRequestBody = new PushMessageRequestBody();
         pushMessageRequestBody.setContent(MapUtils.getString(bodyParam, CONTENT));
@@ -107,20 +107,22 @@ public class PushMessageRequestBody extends Body {
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
 
         if (StringUtils.isNotBlank(extFields)) {
-            pushMessageRequestBody.setExtFields((HashMap<String, String>) JSONObject.parseObject(extFields, HashMap.class));
+            pushMessageRequestBody.setExtFields(
+                JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
+                }));
         }
         return pushMessageRequestBody;
     }
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put(RANDOMNO, randomNo);
         map.put(TOPIC, topic);
         map.put(CONTENT, content);
         map.put(BIZSEQNO, bizSeqNo);
         map.put(UNIQUEID, uniqueId);
-        map.put(EXTFIELDS, JSON.toJSONString(extFields));
+        map.put(EXTFIELDS, JsonUtils.serialize(extFields));
 
         return map;
     }
@@ -129,12 +131,12 @@ public class PushMessageRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("pushMessageRequestBody={")
-                .append("randomNo=").append(randomNo).append(",")
-                .append("topic=").append(topic).append(",")
-                .append("bizSeqNo=").append(bizSeqNo).append(",")
-                .append("uniqueId=").append(uniqueId).append(",")
-                .append("content=").append(content).append(",")
-                .append("extFields=").append(extFields).append("}");
+            .append("randomNo=").append(randomNo).append(",")
+            .append("topic=").append(topic).append(",")
+            .append("bizSeqNo=").append(bizSeqNo).append(",")
+            .append("uniqueId=").append(uniqueId).append(",")
+            .append("content=").append(content).append(",")
+            .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }
 }

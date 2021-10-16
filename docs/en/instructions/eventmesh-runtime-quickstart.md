@@ -20,7 +20,7 @@ You will get **EventMesh-master.zip**
 ```$xslt
 unzip EventMesh-master.zip
 cd /*YOUR DEPLOY PATH*/EventMesh-master
-gradle clean dist copyConnectorPlugin tar -x test
+gradle clean dist
 ```
 
 You will get **EventMesh_1.3.0-SNAPSHOT.tar.gz** in directory /* YOUR DEPLOY PATH */EventMesh-master/build
