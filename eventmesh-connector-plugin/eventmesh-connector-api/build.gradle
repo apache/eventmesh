@@ -16,8 +16,8 @@
  */
 
 dependencies {
-    compileOnly project(":eventmesh-spi")
-    compileOnly project(":eventmesh-common")
+    implementation project(":eventmesh-spi")
+    implementation project(":eventmesh-common")
     api 'io.openmessaging:openmessaging-api'
     api 'io.dropwizard.metrics:metrics-core'
     api "io.dropwizard.metrics:metrics-healthchecks"
