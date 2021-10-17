@@ -16,7 +16,7 @@
  */
 
 dependencies {
-    implementation project(":eventmesh-security-plugin:eventmesh-security-api")
+    compileOnly project(":eventmesh-security-plugin:eventmesh-security-api")
 
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
 }

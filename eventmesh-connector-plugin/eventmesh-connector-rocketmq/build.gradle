@@ -45,7 +45,7 @@ List rocketmq = [
 
 dependencies {
     compileOnly project(":eventmesh-common")
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    compileOnly project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation rocketmq
 
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
