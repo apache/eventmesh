@@ -889,6 +889,215 @@
             "moduleLicense": "The Apache Software License, Version 2.0",
             "moduleVersion": "2.2.0",
             "moduleName": "io.cloudevents:cloudevents-core"
+        },
+        {
+            "moduleLicense": "Eclipse Public License - v 1.0",
+            "moduleVersion": "1.2.6",
+            "moduleName": "ch.qos.logback:logback-classic"
+        },
+        {
+            "moduleLicense": "GNU Lesser General Public License",
+            "moduleVersion": "1.2.6",
+            "moduleName": "ch.qos.logback:logback-classic"
+        },
+        {
+            "moduleLicense": "Eclipse Public License - v 1.0",
+            "moduleVersion": "1.2.6",
+            "moduleName": "ch.qos.logback:logback-core"
+        },
+        {
+            "moduleLicense": "GNU Lesser General Public License",
+            "moduleVersion": "1.2.6",
+            "moduleName": "ch.qos.logback:logback-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.12.5",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.12.5",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.12.5",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.12.5",
+            "moduleName": "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.12.5",
+            "moduleName": "com.fasterxml.jackson.module:jackson-module-parameter-names"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "2.12.5",
+            "moduleName": "com.fasterxml.jackson.module:jackson-module-parameter-names"
+        },
+        {
+            "moduleVersion": "2.12.5",
+            "moduleName": "com.fasterxml.jackson:jackson-bom"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.53",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-core"
+        },
+        {
+            "moduleLicense": "COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0",
+            "moduleVersion": "9.0.53",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.53",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-el"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "9.0.53",
+            "moduleName": "org.apache.tomcat.embed:tomcat-embed-websocket"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.boot:spring-boot"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.boot:spring-boot-autoconfigure"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.boot:spring-boot-starter"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.boot:spring-boot-starter-aop"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.boot:spring-boot-starter-data-jdbc"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.boot:spring-boot-starter-data-jpa"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.boot:spring-boot-starter-jdbc"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.boot:spring-boot-starter-json"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.boot:spring-boot-starter-logging"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.boot:spring-boot-starter-tomcat"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.boot:spring-boot-starter-web"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.data:spring-data-commons"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.2.5",
+            "moduleName": "org.springframework.data:spring-data-jdbc"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.5.5",
+            "moduleName": "org.springframework.data:spring-data-jpa"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "2.2.5",
+            "moduleName": "org.springframework.data:spring-data-relational"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-aop"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-aspects"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-beans"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-context"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-core"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-expression"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-jcl"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-jdbc"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-orm"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-tx"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-web"
+        },
+        {
+            "moduleLicense": "Apache License, Version 2.0",
+            "moduleVersion": "5.3.10",
+            "moduleName": "org.springframework:spring-webmvc"
         }
   ]
 }
