@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 
-group 'org.apache.eventmesh'
-version '1.2.0-SNAPSHOT'
-
 configurations {
     compileOnly {
         extendsFrom annotationProcessor

@@ -27,51 +27,91 @@ EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to d
 ![architecture2](docs/images/eventmesh-panels.png)
 
 
-**Support connecting event store:**
-
-* [RocketMQ](https://github.com/apache/rocketmq):RocketMQ is a distributed messaging and streaming platform with low latency, high performance and reliability, trillion-level capacity and flexible scalability.
-
 **Components:**
 
 * **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
 * **eventmesh-sdk-java** : currently supports HTTP and TCP protocols.
 * **eventmesh-connector-api** : an api layer based on OpenMessaging api and SPI pluggin, which can be implemented by popular EventStores such as IMDG, Messaging Engine and OSS etc.
+* **eventmesh-connector-plugin** : plugins for connector.
+* **eventmesh-connector-standalone** : an implementation of eventmesh-connector-api, pub event to or sub event from InMemory as EventStore.
 * **eventmesh-connector-rocketmq** : an implementation of eventmesh-connector-api, pub event to or sub event from RocketMQ as EventStore.
+* **eventmesh-connector-kafka(WIP)** : an implementation of eventmesh-connector-api, pub event to or sub event from Kafka as EventStore.
+* **eventmesh-connector-redis(WIP)** : an implementation of eventmesh-connector-api, pub event to or sub event from Redis as EventStore.
+* **eventmesh-admin** : clients,topics,subscriptions and other management.
+* **eventmesh-registry-plugin** : plugins for registry.
+* **eventmesh-security-plugin** : plugins for security.
 
 **Protocol:**
 
 The protocol of eventmesh is easier and more convenient, you can read more [here](docs/en/instructions/eventmesh-runtime-protocol.md)
 
-## RoadMap
-| version | feature |
-| ----    | ----    |
-| v1.0.0  |Support java-sdk , tcp pub/sub, http pub|
-| v1.1.0  |Support RocketMQ as eventstore|
-| v1.1.1  |Support https|
-| v1.2.0  |Support pluggable event store by OpenMessaging Pub/Sub API, http sub, docker|
-| V1.3.0  |Support CloudEvents, event streaming|
-|   WIP   |Support more pluggable event storage (Kafka, Pulsar, Redis, RabbitMQ, etc...)|
-|   WIP   |Support Event schema|
-|   WIP   |Support Event governance|
-|   WIP   |Support Event function,triggers and bindings|
-|   WIP   |Support Event orchestration, Servelss workflow|
-|   WIP   |Support in-memory event store|
-|   WIP   |Support Event transaction|
-|   WIP   |Support Event security|
-|   WIP   |Support multi language SDK(c\go\python\wasm)|
-|   WIP   |Support metrics exporter|
-|   WIP   |Support tracing exporter|
-|   WIP   |Support at-least-once/at-most-once delivery guarantees|
-|   WIP   |Support cold event storage (S3, Minio, SQL, key/value, etc...)|
-|   WIP   |Support gRPC protocol|
-|   WIP   |Support MQTT protocol|
-|   WIP   |Support AsyncAPI|
+## Feature
+
+Event & Service
+- [x] Pub/Sub
+- [x] Request/Reply
+- [ ] Event Streaming
+- [ ] Event transaction
+- [ ] At-least-once/at-most-once delivery guarantees
+
+Store
+- [x] RocketMQ
+- [x] InMemory
+- [ ] Kafka
+- [ ] Redis
+- [ ] Pulsar
+- [ ] RabbitMQ 
+- [ ] DeFiBus
+- [ ] Cold storage (S3, Minio, SQL, key/value, etc...)
+
+Protocol
+- [x] TCP
+- [x] Http
+- [ ] gRPC
+- [ ] CloudEvents
+- [ ] MQTT
+- [ ] AsyncAPI
+
+SDK
+- [x] Java
+- [ ] C
+- [ ] Go
+- [ ] Python
+
+Deploy
+- [x] Sidecar
+- [x] Gateway
+- [x] Docker
+
+Metrics
+- [x] OpenTelemetry
+- [x] Promethus exporter
+
+Tracing
+- [x] OpenTelemetry
+- [x] Zipkin exporter
+- [ ] Skywalking
+
+Governance
+- [x] Client management
+- [ ] Topic management
+- [ ] Metadata registry
+- [ ] Schema registry
+- [ ] Dynamic config
+
+Choreography
+- [ ] Servelss workflow
+- [ ] Event function,triggers and bindings
+
+Security
+- [ ] Auth
+- [ ] ACL
 
 
 ## Quick Start
-1. Build and deploy event-store(default RocketMQ), see [instruction](https://rocketmq.apache.org/docs/quick-start/).
-2. Build and deploy eventmesh-runtime, see instruction ['eventmesh-runtime quickstart'](docs/en/instructions/eventmesh-runtime-quickstart.md).
-3. Run eventmesh-sdk-java demo, see instruction ['eventmesh-sdk-java quickstart'](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
+1. [Event-store](https://rocketmq.apache.org/docs/quick-start/) (RocketMQ, ignore this step if use standalone).
+2. [Runtime quickstart](docs/en/instructions/eventmesh-runtime-quickstart.md) or [Runtime quickstart with docker](docs/en/instructions/eventmesh-runtime-quickstart-with-docker.md).
+3. [Java examples ](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
 
 ## Contributing
 Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.

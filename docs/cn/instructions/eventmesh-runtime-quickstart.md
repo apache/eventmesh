@@ -20,7 +20,7 @@ Gradle至少为7.0, 推荐 7.0.*
 ```$ xslt
 unzip EventMesh-master.zip
 cd / *您的部署路径* /EventMesh-master
-gradle clean dist copyConnectorPlugin tar -x test
+gradle clean dist
 ```
 
 您将在目录/ *您的部署路径* /EventMesh-master/eventmesh-runtime/dist中获得**eventmesh-runtime_1.0.0.tar.gz**
@@ -68,22 +68,26 @@ sh start.sh
 > 插件实例需要在对应模块中的/main/resources/META-INF/eventmesh 下配置相关接口与实现类的映射文件,文件名为SPI接口全类名.
 > 文件内容为插件实例名到插件实例的映射, 具体可以参考eventmesh-connector-rocketmq插件模块
 
-插件可以从classpath和插件目录下面加载. 在本地开发阶段可以将使用的插件在eventmesh-starter模块build.gradle中进行声明,或者执行gradle的copyConnectorPlugin任务
-将插件拷贝至dist/plugin目录下, eventmesh默认会加载项目下dist/plugin目录下的插件, 加载目录可以通过-DeventMeshPluginDir=your_plugin_directory来改变插件目录.
-运行时需要使用的插件实例可以在eventmesh.properties中进行配置.如果需要使用rocketmq插件实行快速启动，需要在eventmesh-starter模块build.gradle中进行如下声明
-```
+**2.3.2 插件说明**
+
+***2.3.2.1 安装插件***
+
+有两种方式安装插件
+- classpath加载：本地开发可以通过在eventmesh-starter模块build.gradle中进行声明，例如声明使用rocketmq插件
+```java
    implementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
 ```
+- 文件加载：通过将插件安装到插件目录，EventMesh在运行时会根据条件自动加载插件目录下的插件，可以通过执行以下命令安装插件
+```shell
+./gradlew clean jar dist
+./gradlew installPlugin
+```
 
-**2.3.2 配置插件**
+***2.3.2.2 使用插件***
 
-在`eventMesh.properties`配置文件通过声明式的方式来指定项目启动后需要加载的插件
-
-修改`confPath`目录下面的`eventMesh.properties`文件
-
-加载**RocketMQ Connector**插件配置：
-
-```java
+EventMesh会默认加载dist/plugin目录下的插件，可以通过`-DeventMeshPluginDir=your_plugin_directory`来改变插件目录。运行时需要使用的插件实例可以在
+`confPath`目录下面的`eventmesh.properties`中进行配置。例如通过以下设置声明在运行时使用rocketmq插件。
+```properties
 #connector plugin
 eventMesh.connector.plugin.type=rocketmq
 ```

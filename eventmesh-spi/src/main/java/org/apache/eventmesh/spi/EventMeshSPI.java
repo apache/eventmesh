@@ -36,5 +36,11 @@ public @interface EventMeshSPI {
      */
     boolean isSingleton() default false;
 
+    /**
+     * {@link EventMeshExtensionType}
+     * @return extension type
+     */
+    EventMeshExtensionType eventMeshExtensionType();
+
 }
 

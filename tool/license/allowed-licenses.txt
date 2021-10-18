@@ -24,7 +24,7 @@
         },
         {
             "moduleLicense": "Apache License, Version 2.0",
-            "moduleVersion": "1.2.71",
+            "moduleVersion": "1.2.69",
             "moduleName": "com.alibaba:fastjson"
         },
         {
@@ -372,7 +372,7 @@
         },
         {
             "moduleLicense": "Apache License 2.0",
-            "moduleVersion": "3.24.0-GA",
+            "moduleVersion": "3.20.0-GA",
             "moduleName": "org.javassist:javassist"
         },
         {
