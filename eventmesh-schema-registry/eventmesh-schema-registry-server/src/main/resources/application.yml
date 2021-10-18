@@ -22,7 +22,7 @@ spring:
       enabled: true
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:./eventmesh-schema-registry/eventmesh-schema-registry-server/src/main/resources/h2/db
+    url: jdbc:h2:./eventmesh-openschema/eventmesh-openschema-registry/src/main/resources/h2/db
     username: root
     password: test
   jpa:
