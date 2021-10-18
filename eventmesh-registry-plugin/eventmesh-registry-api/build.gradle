@@ -16,7 +16,7 @@
  */
 
 dependencies {
-    compileOnly project(":eventmesh-spi")
+    implementation project(":eventmesh-spi")
 
     testImplementation project(":eventmesh-spi")
 }
