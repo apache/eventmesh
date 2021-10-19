@@ -52,9 +52,9 @@ public class LiteClientConfig {
 
     private String sys;
 
-    private String userName = "userName";
+    private String userName;
 
-    private String password = "password";
+    private String password;
 
     private boolean useTls = false;
 
