@@ -23,9 +23,6 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.hamcrest.CoreMatchers.is;
 
 public class PushMessageResponseHeaderTest {
@@ -42,7 +39,5 @@ public class PushMessageResponseHeaderTest {
         Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.SYS), is("SYSID"));
         Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.PID), is("PID"));
         Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.IP), is("127.0.0.1"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.USERNAME), is("username"));
-        Assert.assertThat(header.toMap().get(ProtocolKey.ClientInstanceKey.PASSWD), is("user@123"));
     }
 }
