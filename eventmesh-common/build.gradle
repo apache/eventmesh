@@ -18,36 +18,31 @@
 dependencies {
     api "org.apache.commons:commons-lang3"
     api "org.apache.commons:commons-collections4"
-    api "commons-io:commons-io"
-    api "org.apache.commons:commons-text"
-
     api "com.google.guava:guava"
-
     api "org.slf4j:slf4j-api"
-    api "org.apache.logging.log4j:log4j-api"
-    api "org.apache.logging.log4j:log4j-core"
-    api "org.apache.logging.log4j:log4j-core"
-    api "org.apache.logging.log4j:log4j-slf4j-impl"
-    api "org.apache.logging.log4j:log4j-web"
-
-    api "com.lmax:disruptor"
-    api "com.alibaba:fastjson"
-
-    api "com.fasterxml.jackson.core:jackson-databind"
-    api "com.fasterxml.jackson.core:jackson-core"
-    api "com.fasterxml.jackson.core:jackson-annotations"
-
-    api "org.apache.httpcomponents:httpclient"
-
-    api "io.netty:netty-all"
-
     api "junit:junit"
-    api "com.github.stefanbirkner:system-rules"
     api "org.assertj:assertj-core"
 
-    api "org.mockito:mockito-core"
-    api "org.powermock:powermock-module-junit4"
-    api "org.powermock:powermock-api-mockito2"
+    implementation "commons-io:commons-io"
+    implementation "org.apache.commons:commons-text"
+
+    implementation "org.apache.logging.log4j:log4j-api"
+    implementation "org.apache.logging.log4j:log4j-core"
+    implementation "org.apache.logging.log4j:log4j-core"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl"
+    implementation "org.apache.logging.log4j:log4j-web"
+
+    implementation "com.lmax:disruptor"
+
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.core:jackson-core"
+    implementation "com.fasterxml.jackson.core:jackson-annotations"
+
+    implementation "org.apache.httpcomponents:httpclient"
+
+    implementation "io.netty:netty-all"
+
+    implementation "com.github.stefanbirkner:system-rules"
 
     testImplementation "org.apache.commons:commons-lang3"
     testImplementation "org.apache.commons:commons-collections4"
@@ -64,7 +59,6 @@ dependencies {
     testImplementation "org.apache.logging.log4j:log4j-web"
 
     testImplementation "com.lmax:disruptor"
-    testImplementation "com.alibaba:fastjson"
 
     testImplementation "com.fasterxml.jackson.core:jackson-databind"
     testImplementation "com.fasterxml.jackson.core:jackson-core"

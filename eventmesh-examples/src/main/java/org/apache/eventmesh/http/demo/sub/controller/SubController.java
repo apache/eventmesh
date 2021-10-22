@@ -17,9 +17,12 @@
 
 package org.apache.eventmesh.http.demo.sub.controller;
 
-import com.alibaba.fastjson.JSONObject;
-
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.http.demo.sub.service.SubService;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
 
 @RestController
 @RequestMapping("/sub")
@@ -40,12 +42,12 @@ public class SubController {
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
     public String subTest(@RequestBody String message) {
-        logger.info("=======receive message======= {}", JSONObject.toJSONString(message));
+        logger.info("=======receive message======= {}", JsonUtils.serialize(message));
         subService.consumeMessage(message);
 
-        JSONObject result = new JSONObject();
-        result.put("retCode", 1);
-        return result.toJSONString();
+        Map<String, Object> map = new HashMap<>();
+        map.put("retCode", 1);
+        return JsonUtils.serialize(map);
     }
 
 }

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class OpenSchemaExceptionHandler {
 
     @ExceptionHandler(value = OpenSchemaException.class)
-    public ResponseEntity<ErrorResponse> ExceptionHandler(OpenSchemaException e){
+    public ResponseEntity<ErrorResponse> exceptionHandler(OpenSchemaException e){
         return ResponseEntity.status(e.getErr_status().value()).body(new ErrorResponse(e.getErr_code(), e.getErr_message()));
     }
 }

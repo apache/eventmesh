@@ -14,8 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-dependencies {
-    api project(":eventmesh-registry-plugin:eventmesh-registry-api")
 
-    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
+package org.apache.eventmesh.common.exception;
+
+/**
+ * Json format exception, see {@link org.apache.eventmesh.common.utils.JsonUtils}.
+ */
+public class JsonException extends RuntimeException {
+
+    public JsonException(String message) {
+        super(message);
+    }
+
+    public JsonException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

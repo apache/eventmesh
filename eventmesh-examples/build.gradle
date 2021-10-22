@@ -22,11 +22,17 @@ dependencies {
 //    compile log4j2, sl4j
 //    testCompile log4j2, sl4j
     implementation project(":eventmesh-sdk-java")
+    implementation project(":eventmesh-common")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'io.netty:netty-all'
+
     testImplementation project(":eventmesh-sdk-java")
+    testImplementation project(":eventmesh-common")
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     testImplementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'io.netty:netty-all'
+
 }
 
 configurations.all {

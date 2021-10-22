@@ -28,7 +28,7 @@ public class LiteClientConfig {
      * <p>
      * E.g.
      * <p>If you use Random strategy, the format like: 127.0.0.1:10105;127.0.0.2:10105
-     * <p>If you use weighted round robin strategy, the format like: 127.0.0.1:10105:1;127.0.0.2:10105:2
+     * <p>If you use weighted round robin or weighted random strategy, the format like: 127.0.0.1:10105:1;127.0.0.2:10105:2
      */
     private String liteEventMeshAddr = "127.0.0.1:10105";
 
@@ -52,9 +52,9 @@ public class LiteClientConfig {
 
     private String sys;
 
-    private String userName = "userName";
+    private String userName;
 
-    private String password = "password";
+    private String password;
 
     private boolean useTls = false;
 

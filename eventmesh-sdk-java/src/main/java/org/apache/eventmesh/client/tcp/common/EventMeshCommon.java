@@ -52,12 +52,12 @@ public class EventMeshCommon {
     /**
      * Username used for EventMesh verification
      */
-    public static String EventMesh_USER = "EventMesh";
+    public static String EventMesh_USER = "";
 
     /**
      * Password used for EventMesh verification
      */
-    public static String EventMesh_PASS = "EventMesh@123";
+    public static String EventMesh_PASS = "";
 
     /**
      * Timeout time shared by the server

@@ -14,24 +14,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-task copyAclPlugin(dependsOn: ['jar']) {
-    doFirst {
-        new File(projectDir, '../eventmesh-security-plugin/dist/apps').mkdir()
-        new File(projectDir, '../dist/plugin/security').mkdirs()
-    }
-    doLast {
-        copy {
-            into('../eventmesh-security-plugin/dist/apps/')
-            from project.jar.getArchivePath()
-            exclude {
-                "eventmesh-security-plugin-${version}.jar"
-                "eventmesh-security-api-${version}.jar"
-            }
-        }
-        copy {
-            into '../dist/plugin/security'
-            from "../eventmesh-security-plugin/dist/apps/eventmesh-security-acl-${version}.jar"
-        }
-    }
-}
