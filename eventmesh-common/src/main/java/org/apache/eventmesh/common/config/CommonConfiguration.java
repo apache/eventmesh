@@ -55,67 +55,84 @@ public class CommonConfiguration {
     public void init() {
 
         if (configurationWrapper != null) {
-            String eventMeshEnvStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ENV);
+            String eventMeshEnvStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ENV);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshEnvStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_ENV));
             eventMeshEnv = StringUtils.deleteWhitespace(eventMeshEnvStr);
 
-            String sysIdStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
+            String sysIdStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
             Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_SYSID));
             sysID = StringUtils.deleteWhitespace(sysIdStr);
 
-            String eventMeshClusterStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
+            String eventMeshClusterStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshClusterStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER));
             eventMeshCluster = StringUtils.deleteWhitespace(eventMeshClusterStr);
 
-            String eventMeshNameStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
+            String eventMeshNameStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshNameStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_NAME));
             eventMeshName = StringUtils.deleteWhitespace(eventMeshNameStr);
 
-            String eventMeshIDCStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
+            String eventMeshIDCStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIDCStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
             eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIDCStr);
 
-            String eventMeshPrometheusPortStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT);
+            String eventMeshPrometheusPortStr =
+                    configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT);
             if (StringUtils.isNotEmpty(eventMeshPrometheusPortStr)) {
-                eventMeshPrometheusPort = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshPrometheusPortStr));
+                eventMeshPrometheusPort =
+                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshPrometheusPortStr));
             }
 
-            eventMeshServerIp = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
+            eventMeshServerIp =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
             if (StringUtils.isBlank(eventMeshServerIp)) {
                 eventMeshServerIp = IPUtil.getLocalAddress();
             }
 
-            eventMeshConnectorPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
+            eventMeshConnectorPluginType =
+                    configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshConnectorPluginType),
                     String.format("%s error", ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE));
 
-            String eventMeshServerAclEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED);
+            String eventMeshServerAclEnableStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED);
             if (StringUtils.isNotBlank(eventMeshServerAclEnableStr)) {
-                eventMeshServerSecurityEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
+                eventMeshServerSecurityEnable =
+                        Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
             }
 
-            eventMeshSecurityPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
+            eventMeshSecurityPluginType =
+                    configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshSecurityPluginType),
                     String.format("%s error", ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE));
 
-            String eventMeshServerRegistryEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED);
+            String eventMeshServerRegistryEnableStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED);
             if (StringUtils.isNotBlank(eventMeshServerRegistryEnableStr)) {
-                eventMeshServerRegistryEnable = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
+                eventMeshServerRegistryEnable =
+                        Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
             }
 
-            eventMeshRegistryPluginType = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
+            eventMeshRegistryPluginType =
+                    configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegistryPluginType),
                     String.format("%s error", ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE));
 
-            String eventMeshTraceExporterTypeStr = configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE);
+            String eventMeshTraceExporterTypeStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTraceExporterTypeStr),
                     String.format("%s error", ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE));
-            eventMeshTraceExporterType = StringUtils.deleteWhitespace(eventMeshTraceExporterTypeStr);
+            eventMeshTraceExporterType =
+                    StringUtils.deleteWhitespace(eventMeshTraceExporterTypeStr);
 
             String eventMeshTraceExporterMaxExportSizeStr =
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORTER_MAX_EXPORT_SIZE);
@@ -145,12 +162,14 @@ public class CommonConfiguration {
                         Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExporterExportIntervalStr));
             }
 
-            String eventMeshTraceExportZipkinIpStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORT_ZIPKIN_IP);
+            String eventMeshTraceExportZipkinIpStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORT_ZIPKIN_IP);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTraceExportZipkinIpStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_TRACE_EXPORT_ZIPKIN_IP));
             eventMeshTraceExportZipkinIp = StringUtils.deleteWhitespace(eventMeshTraceExportZipkinIpStr);
 
-            String eventMeshTraceExportZipkinPortStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORT_ZIPKIN_PORT);
+            String eventMeshTraceExportZipkinPortStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORT_ZIPKIN_PORT);
             if (StringUtils.isNotEmpty(eventMeshTraceExportZipkinPortStr)) {
                 eventMeshTraceExportZipkinPort =
                         Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExportZipkinPortStr));
@@ -171,7 +190,8 @@ public class CommonConfiguration {
 
         public static String KEYS_EVENTMESH_SERVER_HOST_IP = "eventMesh.server.hostIp";
 
-        public static String KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL = "eventMesh.server.registry.registerIntervalInMills";
+        public static String KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL =
+                "eventMesh.server.registry.registerIntervalInMills";
 
         public static String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL =
                 "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
