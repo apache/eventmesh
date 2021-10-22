@@ -57,7 +57,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
 
     // META-INF/eventmesh
     private static final String EVENTMESH_EXTENSION_META_DIR = "META-INF/eventmesh/";
-    // Paths.get("META-INF", "eventmesh").toString();
+    //  Paths.get("META-INF", "eventmesh").toString();
 
     @Override
     public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType,
