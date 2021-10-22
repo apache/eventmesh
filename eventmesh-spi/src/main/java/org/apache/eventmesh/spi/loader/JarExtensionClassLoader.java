@@ -56,8 +56,8 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
             Joiner.on(File.separator).join(Lists.newArrayList(".", "plugin")));
 
     // META-INF/eventmesh
-    private static final String EVENTMESH_EXTENSION_META_DIR =
-        Paths.get("META-INF", "eventmesh").toString();
+    private static final String EVENTMESH_EXTENSION_META_DIR = "META-INF/eventmesh/";
+    // Paths.get("META-INF", "eventmesh").toString();
 
     @Override
     public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType,
@@ -78,7 +78,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
         ).toString();
 
         String extensionFileName =
-            EVENTMESH_EXTENSION_META_DIR + File.separator + extensionType.getName();
+            EVENTMESH_EXTENSION_META_DIR + extensionType.getName();
         EventMeshUrlClassLoader urlClassLoader = EventMeshUrlClassLoader.getInstance();
         urlClassLoader.addUrls(loadJarPathFromResource(pluginDir));
         try {
