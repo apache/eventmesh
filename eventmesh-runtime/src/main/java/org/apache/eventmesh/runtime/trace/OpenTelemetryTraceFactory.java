@@ -99,7 +99,6 @@ public class OpenTelemetryTraceFactory {
 
     //to inject or extract span context
     public TextMapPropagator getTextMapPropagator() {
-
         return openTelemetry.getPropagators().getTextMapPropagator();
     }
 }
