@@ -69,10 +69,14 @@ public class OpenTelemetryTraceFactory {
 
         // Configure the batch spans processor. This span processor exports span in batches.
         spanProcessor = BatchSpanProcessor.builder(spanExporter)
-                .setMaxExportBatchSize(configuration.eventMeshTraceExporterMaxExportSize)// set the maximum batch size to use
-                .setMaxQueueSize(configuration.eventMeshTraceExporterMaxQueueSize) // set the queue size. This must be >= the export batch size
-                .setExporterTimeout(configuration.eventMeshTraceExporterExportTimeout, TimeUnit.SECONDS) // set the max amount of time an export can run before getting
-                .setScheduleDelay(configuration.eventMeshTraceExporterExportInterval, TimeUnit.SECONDS)// set time between two different exports
+                // set the maximum batch size to use
+                .setMaxExportBatchSize(configuration.eventMeshTraceExporterMaxExportSize)
+                // set the queue size. This must be >= the export batch size
+                .setMaxQueueSize(configuration.eventMeshTraceExporterMaxQueueSize)
+                // set the max amount of time an export can run before getting
+                .setExporterTimeout(configuration.eventMeshTraceExporterExportTimeout, TimeUnit.SECONDS)
+                // set time between two different exports
+                .setScheduleDelay(configuration.eventMeshTraceExporterExportInterval, TimeUnit.SECONDS)
                 .build();
 
         //set the trace service's name
