@@ -93,10 +93,12 @@ public class OpenTelemetryTraceFactory {
     }
 
     //Gets or creates a named tracer instance
-    public Tracer getTracer(String instrumentationName){
+    public Tracer getTracer(String instrumentationName) {
         return openTelemetry.getTracer(instrumentationName);
     }
 
     //to inject or extract span context
-    public TextMapPropagator getTextMapPropagator() {return openTelemetry.getPropagators().getTextMapPropagator();}
+    public TextMapPropagator getTextMapPropagator() {
+        return openTelemetry.getPropagators().getTextMapPropagator();
+    }
 }
