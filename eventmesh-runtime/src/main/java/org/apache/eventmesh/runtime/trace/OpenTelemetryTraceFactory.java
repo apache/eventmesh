@@ -36,21 +36,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
+
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 public class OpenTelemetryTraceFactory {
     private static final Logger logger = LoggerFactory.getLogger(OpenTelemetryTraceFactory.class);
-
-    private OpenTelemetry openTelemetry;
-
-    private SpanExporter spanExporter;
-
-    private SpanExporter defaultExporter = new LogExporter();
-
-    private SpanProcessor spanProcessor;
-
     // Name of the service(using the instrumentationName)
-    private final String SERVICE_NAME = "eventmesh_trace";
+    private final String serviceName = "eventmesh_trace";
+    private OpenTelemetry openTelemetry;
+    private SpanExporter spanExporter;
+    private SpanExporter defaultExporter = new LogExporter();
+    private SpanProcessor spanProcessor;
 
     public OpenTelemetryTraceFactory(CommonConfiguration configuration) {
         try {
@@ -60,7 +56,7 @@ public class OpenTelemetryTraceFactory {
             String className = String.format("org.apache.eventmesh.runtime.exporter.%sExporter", exporterName);
             EventMeshExporter eventMeshExporter = (EventMeshExporter) Class.forName(className).newInstance();
             spanExporter = eventMeshExporter.getSpanExporter(configuration);
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             logger.error("fail to set tracer's exporter,due to {}", ex.getMessage());
             //fail to set the exporter in configuration, changing to use the default Exporter
             spanExporter = defaultExporter;
@@ -81,12 +77,12 @@ public class OpenTelemetryTraceFactory {
 
         //set the trace service's name
         Resource serviceNameResource =
-                Resource.create(Attributes.of(stringKey("service.name"), SERVICE_NAME));
+                Resource.create(Attributes.of(stringKey("service.name"), serviceName));
 
         SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-                        .addSpanProcessor(spanProcessor)
-                        .setResource(Resource.getDefault().merge(serviceNameResource))
-                        .build();
+                .addSpanProcessor(spanProcessor)
+                .setResource(Resource.getDefault().merge(serviceNameResource))
+                .build();
 
         openTelemetry = OpenTelemetrySdk.builder()
                 .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
