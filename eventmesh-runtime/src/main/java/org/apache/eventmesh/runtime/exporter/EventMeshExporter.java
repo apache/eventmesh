@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.runtime.exporter;
 
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 
+/**
+ * different exporters should implement this interface
+ */
 public interface EventMeshExporter {
     public SpanExporter getSpanExporter(CommonConfiguration configuration);
 }

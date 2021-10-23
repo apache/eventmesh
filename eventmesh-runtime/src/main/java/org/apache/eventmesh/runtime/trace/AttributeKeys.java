@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.runtime.trace;
 
 import io.netty.util.AttributeKey;
@@ -38,5 +39,6 @@ public final class AttributeKeys {
     public static final AttributeKey<Context> CLIENT_PARENT_CONTEXT =
             AttributeKey.valueOf(AttributeKeys.class, "client-parent-context");
 
-    private AttributeKeys() {}
+    private AttributeKeys() {
+    }
 }

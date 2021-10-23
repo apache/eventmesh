@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.runtime.exporter;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -26,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- *  Because the class 'LoggingSpanExporter' in openTelemetry exported garbled code in eventMesh's startUp, I override the 'LoggingSpanExporter'.
+ * Because the class 'LoggingSpanExporter' in openTelemetry exported garbled code in eventMesh's startUp, I override the 'LoggingSpanExporter'.
  */
 public class LogExporter implements SpanExporter {
     private static final Logger logger = LoggerFactory.getLogger(LogExporter.class);
@@ -63,6 +64,7 @@ public class LogExporter implements SpanExporter {
     /**
      * Flushes the data.
      * (i guess it is not necessary for slf4j's log)
+     *
      * @return the result of the operation
      */
     @Override

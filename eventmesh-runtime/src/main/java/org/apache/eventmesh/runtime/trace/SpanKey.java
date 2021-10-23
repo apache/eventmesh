@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.runtime.trace;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
-/** Makes span keys for specific instrumentation accessible to enrich and suppress spans. */
+/**
+ * Makes span keys for specific instrumentation accessible to enrich and suppress spans.
+ */
 public final class SpanKey {
     // server span key
     public static final ContextKey<Span> SERVER_KEY =
