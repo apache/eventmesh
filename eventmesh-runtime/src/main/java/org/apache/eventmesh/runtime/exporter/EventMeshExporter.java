@@ -22,7 +22,7 @@ import org.apache.eventmesh.common.config.CommonConfiguration;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
- * different exporters should implement this interface
+ * different exporters should implement this interface.
  */
 public interface EventMeshExporter {
     public SpanExporter getSpanExporter(CommonConfiguration configuration);

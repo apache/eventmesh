@@ -79,11 +79,11 @@ public class CommonConfiguration {
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_NAME));
             eventMeshName = StringUtils.deleteWhitespace(eventMeshNameStr);
 
-            String eventMeshIDCStr =
+            String eventMeshIdcStr =
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIDCStr),
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIdcStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
-            eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIDCStr);
+            eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIdcStr);
 
             String eventMeshPrometheusPortStr =
                     configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT);

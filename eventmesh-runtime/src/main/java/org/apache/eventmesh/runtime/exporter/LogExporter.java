@@ -28,7 +28,8 @@ import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
 /**
- * Because the class 'LoggingSpanExporter' in openTelemetry exported garbled code in eventMesh's startUp, I override the 'LoggingSpanExporter'.
+ * Because the class 'LoggingSpanExporter' in openTelemetry exported garbled code in eventMesh's startUp,
+ * I override the 'LoggingSpanExporter'.
  */
 public class LogExporter implements SpanExporter {
     private static final Logger logger = LoggerFactory.getLogger(LogExporter.class);
