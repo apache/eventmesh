@@ -41,6 +41,9 @@ import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 
+/**
+ * create tracer.
+ */
 public class OpenTelemetryTraceFactory {
     private static final Logger logger = LoggerFactory.getLogger(OpenTelemetryTraceFactory.class);
     // Name of the service(using the instrumentationName)

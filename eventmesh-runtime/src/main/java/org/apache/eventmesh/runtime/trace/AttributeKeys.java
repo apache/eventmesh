@@ -21,7 +21,7 @@ import io.netty.util.AttributeKey;
 import io.opentelemetry.context.Context;
 
 /**
- * keys
+ * keys.
  */
 public final class AttributeKeys {
     public static final AttributeKey<Context> WRITE_CONTEXT =
