@@ -17,6 +17,29 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.protocol.http.header.Header;
+import org.apache.eventmesh.runtime.common.Pair;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
+import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.trace.AttributeKeys;
+import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
+import org.apache.eventmesh.runtime.trace.SpanKey;
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.runtime.util.RemotingHelper;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,13 +47,24 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -53,7 +87,6 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -63,29 +96,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.common.command.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
-import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.protocol.http.header.Header;
-import org.apache.eventmesh.runtime.common.Pair;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
-import org.apache.eventmesh.runtime.trace.AttributeKeys;
-import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
-import org.apache.eventmesh.runtime.trace.SpanKey;
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.apache.eventmesh.runtime.util.RemotingHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 

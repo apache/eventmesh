@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.runtime.exporter;
 
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import org.apache.eventmesh.common.config.CommonConfiguration;
+
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 
 public class ZipkinExporter implements EventMeshExporter {
     private String ip = "localhost";

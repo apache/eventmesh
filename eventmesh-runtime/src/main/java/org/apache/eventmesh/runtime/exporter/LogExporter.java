@@ -17,14 +17,15 @@
 
 package org.apache.eventmesh.runtime.exporter;
 
+import java.util.Collection;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
 
 /**
  * Because the class 'LoggingSpanExporter' in openTelemetry exported garbled code in eventMesh's startUp, I override the 'LoggingSpanExporter'.

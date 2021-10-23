@@ -17,6 +17,17 @@
 
 package org.apache.eventmesh.runtime.trace;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.runtime.exporter.EventMeshExporter;
+import org.apache.eventmesh.runtime.exporter.LogExporter;
+
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Tracer;
@@ -29,15 +40,6 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
-import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.runtime.exporter.EventMeshExporter;
-import org.apache.eventmesh.runtime.exporter.LogExporter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.TimeUnit;
-
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 public class OpenTelemetryTraceFactory {
     private static final Logger logger = LoggerFactory.getLogger(OpenTelemetryTraceFactory.class);

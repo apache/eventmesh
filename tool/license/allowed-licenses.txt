@@ -1128,6 +1128,26 @@
             "moduleLicense": "Apache License, Version 2.0",
             "moduleVersion": "5.3.10",
             "moduleName": "org.springframework:spring-webmvc"
+        },
+        {
+            "moduleLicense": null,
+            "moduleVersion": "3.20.0-GA",
+            "moduleName": "org.javassist:javassist"
+        },
+        {
+            "moduleLicense": "Apache License 2.0",
+            "moduleVersion": "3.20.0-GA",
+            "moduleName": "org.javassist:javassist"
+        },
+        {
+            "moduleLicense": "LGPL 2.1",
+            "moduleVersion": "3.20.0-GA",
+            "moduleName": "org.javassist:javassist"
+        },
+        {
+            "moduleLicense": "MPL 1.1",
+            "moduleVersion": "3.20.0-GA",
+            "moduleName": "org.javassist:javassist"
         }
   ]
 }
