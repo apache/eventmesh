@@ -105,7 +105,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     public Tracer tracer;
 
-    private Boolean useTrace = true;//Determine whether trace is enabled
+    private Boolean useTrace = true; //Determine whether trace is enabled
 
     public TextMapPropagator textMapPropagator;
 
@@ -146,12 +146,12 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         response.headers().add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         response.headers().add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
 
-        if(useTrace){
+        if(useTrace) {
             Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
             Span span = context.get(SpanKey.SERVER_KEY);
             try (Scope ignored = context.makeCurrent()) {
-                span.setStatus(StatusCode.ERROR);//set this span's status to ERROR
-                span.end();// closing the scope does not end the span, this has to be done manually
+                span.setStatus(StatusCode.ERROR); //set this span's status to ERROR
+                span.end(); // closing the scope does not end the span, this has to be done manually
             }
             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
         }
@@ -160,7 +160,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     public void sendResponse(ChannelHandlerContext ctx,
                              DefaultFullHttpResponse response) {
 
-        if(useTrace){
+        if(useTrace) {
             Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
             Span span = context.get(SpanKey.SERVER_KEY);
             try (Scope ignored = context.makeCurrent()) {
@@ -236,9 +236,9 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             HttpPostRequestDecoder decoder = null;
 
             Context context = null;
-            if(useTrace){
+            if(useTrace) {
                 //if the client injected span context,this will extract the context from httpRequest or it will be null
-                context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>(){
+                context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>() {
                     @Override
                     public Iterable<String> keys(HttpRequest carrier) {
                         return carrier.headers().names();
@@ -303,16 +303,19 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 requestCommand.setHttpVersion(httpRequest.protocolVersion().protocolName());
                 requestCommand.setRequestCode(requestCode);
 
-                if(useTrace){
-                    span = tracer.spanBuilder("HTTP "+requestCommand.httpMethod).setParent(context).setSpanKind(SpanKind.SERVER).startSpan();
+                if(useTrace) {
+                    span = tracer.spanBuilder("HTTP " + requestCommand.httpMethod)
+                            .setParent(context)
+                            .setSpanKind(SpanKind.SERVER)
+                            .startSpan();
                     //attach the span to the server context
-                    context = context.with(SpanKey.SERVER_KEY,span);
+                    context = context.with(SpanKey.SERVER_KEY, span);
                     //put the context in channel
                     ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
 
-                    span.setAttribute(SemanticAttributes.HTTP_METHOD,httpRequest.method().name());
-                    span.setAttribute(SemanticAttributes.HTTP_FLAVOR,httpRequest.protocolVersion().protocolName());
-                    span.setAttribute(String.valueOf(SemanticAttributes.HTTP_STATUS_CODE),requestCode);
+                    span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
+                    span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
+                    span.setAttribute(String.valueOf(SemanticAttributes.HTTP_STATUS_CODE), requestCode);
                 }
 
 
@@ -357,11 +360,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             } catch (Exception ex) {
                 httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
 
-                if(useTrace){
-                    span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE,ex.getMessage());
-                    span.setStatus(StatusCode.ERROR,ex.getMessage());//set this span's status to ERROR
-                    span.recordException(ex);//record this exception
-                    span.end();// closing the scope does not end the span, this has to be done manually
+                if(useTrace) {
+                    span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage());
+                    span.setStatus(StatusCode.ERROR, ex.getMessage()); //set this span's status to ERROR
+                    span.recordException(ex); //record this exception
+                    span.end(); // closing the scope does not end the span, this has to be done manually
                 }
             } finally {
                 try {
