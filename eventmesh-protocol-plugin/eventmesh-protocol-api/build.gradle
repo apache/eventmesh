@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(":eventmesh-spi")
+    api "io.cloudevents:cloudevents-core"
+
+    testImplementation project(":eventmesh-spi")
+    testImplementation "io.cloudevents:cloudevents-core"
+}

@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+    implementation "io.openmessaging:openmessaging-api"
+
+    testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+    testImplementation "io.openmessaging:openmessaging-api"
+}
