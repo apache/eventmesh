@@ -3,21 +3,6 @@
 Welcome to EventMesh! This document is a guideline about how to contribute to EventMesh. If you find something incorrect
 or missing, please leave comments / suggestions.
 
-## Before you get started
-
-### Setting up your development environment
-
-You should have JDK installed in your develop environment.
-
-### Code style
-
-Import [EventMesh CheckStyle](./style/checkStyle.xml) file to your IDE.
-
-For IDEA, you can import check style file by:
-```shell
-Editor -> Code Style -> Java -> Scheme -> Import Scheme -> CheckStyle Configuration
-```
-
 ## Contributing
 
 We are always very happy to have contributions, whether for typo fix, bug fix or big new features. Please do not ever

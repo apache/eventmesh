@@ -2,19 +2,6 @@
 
 欢迎使用EventMesh! 本文档是有关如何为EventMesh做出贡献的指南。 如果发现不正确或缺失的内容，请留下评论/建议。
 
-## 开始之前
-
-### 设置您的开发环境
-
-您应该在开发环境中安装了JDK。
-
-### Code Style
-
-将 [EventMesh CheckStyle](./style/checkStyle.xml) 文件导入开发者工具。如果你使用IDEA，你可以通过以下步骤导入：
-```shell
-Editor -> Code Style -> Java -> Scheme -> Import Scheme -> CheckStyle Configuration
-```
-
 ## 贡献
 
 无论是对于拼写错误，BUG修复还是重要的新功能，我们总是很乐意接受您的贡献。请不要犹豫，在Github Issue上提出或者通过邮件列表进行讨论。
