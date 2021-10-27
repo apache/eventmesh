@@ -17,6 +17,7 @@ For IDEA, you can import check style file by:
 ```shell
 Editor -> Code Style -> Java -> Scheme -> Import Scheme -> CheckStyle Configuration
 ```
+If you can't see CheckStyle Configuration section under Import Scheme, you can install CheckStyle-IDEA plugin first, and you will see it.
 
 ## Contributing
 
