@@ -14,6 +14,7 @@
 ```shell
 Editor -> Code Style -> Java -> Scheme -> Import Scheme -> CheckStyle Configuration
 ```
+如果你在Import Scheme下看不到CheckStyle Configuration选项，你可以先安装CheckStyle-IDEA插件，然后你就可以看到这个选项了。
 
 ## 贡献
 
