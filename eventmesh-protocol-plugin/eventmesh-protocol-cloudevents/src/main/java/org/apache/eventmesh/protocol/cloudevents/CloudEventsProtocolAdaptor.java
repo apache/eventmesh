@@ -15,13 +15,31 @@
  * limitations under the License.
  */
 
-dependencies {
-    compileOnly project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "io.openmessaging:openmessaging-api"
+package org.apache.eventmesh.protocol.cloudevents;
 
-    testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    testImplementation "io.cloudevents:cloudevents-core"
-    testImplementation "io.openmessaging:openmessaging-api"
-    testImplementation "junit:junit"
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+
+import io.cloudevents.core.v1.CloudEventV1;
+
+/**
+ * CloudEvents protocol adaptor, used to transform CloudEvents message to CloudEvents message.
+ *
+ * @since 1.3.0
+ */
+public class CloudEventsProtocolAdaptor implements ProtocolAdaptor {
+
+    @Override
+    public CloudEventV1 toCloudEventV1(Package cloudEvent) {
+        return null;
+    }
+
+    @Override
+    public Package fromCloudEventV1(CloudEventV1 cloudEvent) {
+        return null;
+    }
+
+    @Override
+    public String getProtocolType() {
+        return CloudEventsProtocolConstant.PROTOCOL_NAME;
+    }
 }

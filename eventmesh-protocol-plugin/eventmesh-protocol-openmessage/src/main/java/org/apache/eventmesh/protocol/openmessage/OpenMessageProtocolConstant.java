@@ -15,13 +15,11 @@
  * limitations under the License.
  */
 
-dependencies {
-    compileOnly project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "io.openmessaging:openmessaging-api"
+package org.apache.eventmesh.protocol.openmessage;
 
-    testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    testImplementation "io.cloudevents:cloudevents-core"
-    testImplementation "io.openmessaging:openmessaging-api"
-    testImplementation "junit:junit"
+public enum OpenMessageProtocolConstant {
+    ;
+
+    public static final String PROTOCOL_NAME = "openmessage";
+
 }

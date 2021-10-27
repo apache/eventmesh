@@ -15,13 +15,25 @@
  * limitations under the License.
  */
 
-dependencies {
-    compileOnly project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "io.openmessaging:openmessaging-api"
+package org.apache.eventmesh.protocol.openmessage;
 
-    testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    testImplementation "io.cloudevents:cloudevents-core"
-    testImplementation "io.openmessaging:openmessaging-api"
-    testImplementation "junit:junit"
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+public class OpenMessageProtocolAdaptorTest {
+
+    @Test
+    public void loadPlugin() {
+        ProtocolAdaptor protocolAdaptor =
+            ProtocolPluginFactory.getProtocolAdaptor(OpenMessageProtocolConstant.PROTOCOL_NAME);
+
+        Assert.assertNotNull(protocolAdaptor);
+        Assert.assertEquals(
+            OpenMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType()
+        );
+        Assert.assertEquals(OpenMessageProtocolAdaptor.class, protocolAdaptor.getClass());
+    }
 }
