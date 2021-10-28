@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
@@ -73,6 +74,13 @@ public class MessageUtils {
         Package msg = new Package();
         msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, 0, null, in.getHeader().getSeq()));
         msg.setBody(in.getBody());
+        return msg;
+    }
+
+    public static Package asyncCloudEvent(CloudEvent cloudEvent) {
+        Package msg = new Package();
+        msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_SERVER, 0, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, generateRandomString(seqLength)));
+        msg.setBody(cloudEvent);
         return msg;
     }
 

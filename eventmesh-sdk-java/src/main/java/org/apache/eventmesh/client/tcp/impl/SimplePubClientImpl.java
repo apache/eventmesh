@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -143,6 +144,11 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     public Package publish(Package msg, long timeout) throws Exception {
         logger.info("SimplePubClientImpl|{}|publish|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
         return io(msg, timeout);
+    }
+
+    @Override
+    public Package publish(CloudEvent cloudEvent, long timeout) throws Exception {
+        return io(MessageUtils.asyncCloudEvent(cloudEvent), timeout);
     }
 
     /**
