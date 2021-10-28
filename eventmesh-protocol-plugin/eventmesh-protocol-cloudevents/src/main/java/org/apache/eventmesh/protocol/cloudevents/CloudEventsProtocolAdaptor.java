@@ -15,27 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.protocol.cloudevents;
+
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+
+import io.cloudevents.core.v1.CloudEventV1;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * CloudEvents protocol adaptor, used to transform CloudEvents message to CloudEvents message.
+ *
+ * @since 1.3.0
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    ;
+public class CloudEventsProtocolAdaptor implements ProtocolAdaptor {
 
-    private final String extensionTypeName;
-
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+    @Override
+    public CloudEventV1 toCloudEventV1(Package cloudEvent) {
+        return null;
     }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+    @Override
+    public Package fromCloudEventV1(CloudEventV1 cloudEvent) {
+        return null;
     }
 
+    @Override
+    public String getProtocolType() {
+        return CloudEventsProtocolConstant.PROTOCOL_NAME;
+    }
 }

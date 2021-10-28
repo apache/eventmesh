@@ -336,18 +336,10 @@
       <property name="allowedAnnotations" value="Override, Test"/>
       <property name="tokens" value="METHOD_DEF, ANNOTATION_FIELD_DEF"/>
     </module>
-    <module name="MissingJavadocMethod">
-      <property name="scope" value="public"/>
-      <property name="minLineCount" value="2"/>
-      <property name="allowedAnnotations" value="Override, Test"/>
-      <property name="tokens" value="METHOD_DEF,
-                                   COMPACT_CTOR_DEF"/>
-    </module>
     <module name="MissingJavadocType">
       <property name="scope" value="protected"/>
       <property name="tokens"
-                value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF,
-                      RECORD_DEF, ANNOTATION_DEF"/>
+                value="INTERFACE_DEF"/>
       <property name="excludeScope" value="nothing"/>
     </module>
     <module name="MethodName">
