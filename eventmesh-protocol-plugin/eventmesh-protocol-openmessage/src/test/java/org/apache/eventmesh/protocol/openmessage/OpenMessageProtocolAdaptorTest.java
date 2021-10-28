@@ -15,27 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.protocol.openmessage;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    ;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 
-    private final String extensionTypeName;
+import org.junit.Assert;
+import org.junit.Test;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+public class OpenMessageProtocolAdaptorTest {
+
+    @Test
+    public void loadPlugin() {
+        ProtocolAdaptor protocolAdaptor =
+            ProtocolPluginFactory.getProtocolAdaptor(OpenMessageProtocolConstant.PROTOCOL_NAME);
+
+        Assert.assertNotNull(protocolAdaptor);
+        Assert.assertEquals(
+            OpenMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType()
+        );
+        Assert.assertEquals(OpenMessageProtocolAdaptor.class, protocolAdaptor.getClass());
     }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
-
 }
