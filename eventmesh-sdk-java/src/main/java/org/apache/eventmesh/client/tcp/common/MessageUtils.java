@@ -79,8 +79,8 @@ public class MessageUtils {
 
     public static Package asyncCloudEvent(CloudEvent cloudEvent) {
         Package msg = new Package();
-        msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_SERVER, 0, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME,
-                generateRandomString(seqLength)));
+        msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_SERVER, 0,
+                EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, generateRandomString(seqLength)));
         msg.setBody(cloudEvent);
         return msg;
     }
