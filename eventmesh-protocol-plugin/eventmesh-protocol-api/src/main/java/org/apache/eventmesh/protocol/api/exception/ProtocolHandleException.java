@@ -15,27 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.protocol.api.exception;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * Protocol Handle exception, will be thrown in protocol handling.
+ *
+ * @since 1.3.0
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    ;
+public class ProtocolHandleException extends Exception {
 
-    private final String extensionTypeName;
-
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+    public ProtocolHandleException(String message) {
+        super(message);
     }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+    public ProtocolHandleException(String message, Throwable cause) {
+        super(message, cause);
     }
 
 }

@@ -15,27 +15,34 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.protocol.openmessage;
+
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.v1.CloudEventV1;
+import io.openmessaging.api.Message;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * OpenMessage protocol adaptor, used to transform protocol between
+ * {@link CloudEvent} with {@link Message}.
+ *
+ * @since 1.3.0
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    ;
+public class OpenMessageProtocolAdaptor implements ProtocolAdaptor {
 
-    private final String extensionTypeName;
-
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+    @Override
+    public CloudEventV1 toCloudEventV1(Package message) {
+        return null;
     }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+    @Override
+    public Package fromCloudEventV1(CloudEventV1 cloudEvent) {
+        return null;
     }
 
+    @Override
+    public String getProtocolType() {
+        return OpenMessageProtocolConstant.PROTOCOL_NAME;
+    }
 }
