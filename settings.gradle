@@ -33,4 +33,8 @@ include 'eventmesh-registry-plugin:eventmesh-registry-namesrv'
 include 'eventmesh-admin'
 include 'eventmesh-schema-registry'
 include 'eventmesh-schema-registry:eventmesh-schema-registry-server'
+include 'eventmesh-protocol-plugin'
+include 'eventmesh-protocol-plugin:eventmesh-protocol-api'
+include 'eventmesh-protocol-plugin:eventmesh-protocol-openmessage'
+include 'eventmesh-protocol-plugin:eventmesh-protocol-cloudevents'
 

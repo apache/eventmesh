@@ -15,27 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+dependencies {
+    compileOnly project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+    implementation "io.cloudevents:cloudevents-core"
+    implementation "io.openmessaging:openmessaging-api"
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    ;
-
-    private final String extensionTypeName;
-
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
-
+    testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+    testImplementation "io.cloudevents:cloudevents-core"
+    testImplementation "io.openmessaging:openmessaging-api"
+    testImplementation "junit:junit"
 }
