@@ -76,7 +76,7 @@ public class DefaultEventMeshClient implements EventMeshClient {
 
     @Override
     public Package publish(CloudEvent cloudEvent, long timeout) throws Exception {
-        return this.pubClient.publish(cloudEvent,timeout);
+        return this.pubClient.publish(cloudEvent, timeout);
     }
 
     public void broadcast(Package msg, long timeout) throws Exception {
