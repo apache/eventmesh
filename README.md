@@ -135,6 +135,10 @@ WeChat group：
 
 ![wechat_qr](docs/images/mesh-helper.png)
 
+WeChat official account
+
+![wechat_official_qr](docs/images/wechat-official.jpg)
+
 Mailing Lists:
 
 | Name | Description |Subscribe	|Unsubscribe|Archive
