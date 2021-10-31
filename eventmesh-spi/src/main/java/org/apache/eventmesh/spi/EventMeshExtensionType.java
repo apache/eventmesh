@@ -25,6 +25,7 @@ public enum EventMeshExtensionType {
     CONNECTOR("connector"),
     REGISTRY("registry"),
     SECURITY("security"),
+    PROTOCOL("protocol"),
     ;
 
     private final String extensionTypeName;

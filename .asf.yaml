@@ -16,7 +16,7 @@
 #
 
 github:
-  description: EventMesh is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
+  description: EventMesh is a dynamic event-driven application runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
   homepage: https://eventmesh.apache.org/
   labels:
     - event-mesh
@@ -32,6 +32,7 @@ github:
     - esb
     - message-bus
     - cqrs
+    - multi-runtime
   enabled_merge_buttons:
     squash:  true
     merge:   false
