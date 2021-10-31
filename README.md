@@ -137,7 +137,7 @@ WeChat group：
 
 WeChat official account
 
-![wechat_official_qr](docs/images/wechat-official.jpg)
+![wechat_official_qr](docs/images/wechat-official-1.jpg)
 
 Mailing Lists:
 
