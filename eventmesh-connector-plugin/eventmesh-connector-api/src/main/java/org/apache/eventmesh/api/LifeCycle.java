@@ -15,32 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.consumer;
+package org.apache.eventmesh.api;
 
-import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.api.EventListener;
-import org.apache.eventmesh.api.LifeCycle;
-import org.apache.eventmesh.spi.EventMeshExtensionType;
-import org.apache.eventmesh.spi.EventMeshSPI;
-
-import java.util.List;
-import java.util.Properties;
-
-import io.cloudevents.CloudEvent;
-
-
+import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.api.producer.Producer;
 
 /**
- * Consumer Interface.
+ * The {@code LifeCycle} defines a lifecycle interface for a OMS related service endpoint,
+ * like {@link Producer}, {@link Consumer}, and so on.
  */
-@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
-public interface Consumer extends LifeCycle {
+public interface LifeCycle {
 
-    void init(Properties keyValue) throws Exception;
+    boolean isStarted();
 
-    void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context);
+    boolean isClosed();
 
-    void subscribe(String topic, final EventListener listener) throws Exception;
+    void start();
 
-    void unsubscribe(String topic);
+    void shutdown();
 }

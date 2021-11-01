@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.api.producer;
 
+import org.apache.eventmesh.api.LifeCycle;
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
@@ -31,7 +32,7 @@ import io.cloudevents.CloudEvent;
  * Producer Interface.
  */
 @EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
-public interface Producer {
+public interface Producer extends LifeCycle {
 
     void init(Properties properties) throws Exception;
 
