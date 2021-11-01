@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.api.producer;
 
-import io.cloudevents.CloudEvent;
-
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
@@ -26,6 +24,8 @@ import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
 import java.util.Properties;
+
+import io.cloudevents.CloudEvent;
 
 /**
  * Producer Interface.
