@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.api.exception;
 
-
 public class OnExceptionContext {
 
     private String messageId;
