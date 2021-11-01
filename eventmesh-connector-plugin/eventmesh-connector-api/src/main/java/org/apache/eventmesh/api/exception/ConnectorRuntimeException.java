@@ -17,21 +17,21 @@
 
 package org.apache.eventmesh.api.exception;
 
-public class ConnectorRuntimeException extends RuntimeException{
+public class ConnectorRuntimeException extends RuntimeException {
 
-    public ConnectorRuntimeException(){
+    public ConnectorRuntimeException() {
 
     }
 
-    public ConnectorRuntimeException(String message){
+    public ConnectorRuntimeException(String message) {
         super(message);
     }
 
-    public ConnectorRuntimeException(Throwable throwable){
+    public ConnectorRuntimeException(Throwable throwable) {
         super(throwable);
     }
 
-    public ConnectorRuntimeException(String message, Throwable throwable){
+    public ConnectorRuntimeException(String message, Throwable throwable) {
         super(message, throwable);
     }
 

@@ -25,8 +25,8 @@ import io.cloudevents.CloudEvent;
  *
  * <p>
  * <strong>
- * Thread safe requirements: this interface will be invoked by multi threads, so users should keep thread safe during
- * the consume process.
+ * Thread safe requirements: this interface will be invoked by multi threads,
+ * so users should keep thread safe during the consume process.
  * </strong>
  * </p>
  */

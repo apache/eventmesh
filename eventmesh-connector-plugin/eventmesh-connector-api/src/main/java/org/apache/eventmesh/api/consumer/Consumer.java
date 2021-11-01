@@ -15,39 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.producer;
+package org.apache.eventmesh.api.consumer;
 
 import io.cloudevents.CloudEvent;
 
-import org.apache.eventmesh.api.RRCallback;
-import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
+import java.util.List;
 import java.util.Properties;
 
 /**
- * Producer Interface
+ * Consumer Interface.
  */
 @EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
-public interface EMProducer {
+public interface Consumer {
 
-    void init(Properties properties) throws Exception;
+    void init(Properties keyValue) throws Exception;
 
-    SendResult publish(final CloudEvent cloudEvent);
+    void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context);
 
-    void publish(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception;
+    void subscribe(String topic, final EventListener listener) throws Exception;
 
-    void sendOneway(final CloudEvent cloudEvent);
-
-    void sendAsync(final CloudEvent cloudEvent, final SendCallback sendCallback);
-
-    void request(CloudEvent cloudEvent, RRCallback rrCallback, long timeout) throws Exception;
-
-    boolean reply(final CloudEvent cloudEvent, final SendCallback sendCallback) throws Exception;
-
-    void checkTopicExist(String topic) throws Exception;
-
-    void setExtFields();
+    void unsubscribe(String topic);
 }

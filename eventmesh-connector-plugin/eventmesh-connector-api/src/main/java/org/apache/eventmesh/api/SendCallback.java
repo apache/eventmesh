@@ -18,8 +18,13 @@
 package org.apache.eventmesh.api;
 
 
+import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.api.producer.Producer;
 
+/**
+ * Call back interface used in {@link Producer#sendAsync(CloudEvent, SendCallback)}.
+ */
 public interface SendCallback {
 
     void onSuccess(final SendResult sendResult);
