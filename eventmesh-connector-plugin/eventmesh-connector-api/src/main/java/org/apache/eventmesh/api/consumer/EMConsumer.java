@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.api.consumer;
 
-dependencies {
-    implementation project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
-    api 'io.cloudevents:cloudevents-core'
-    api 'io.openmessaging:openmessaging-api'
-    api 'io.dropwizard.metrics:metrics-core'
-    api "io.dropwizard.metrics:metrics-healthchecks"
-    api "io.dropwizard.metrics:metrics-annotation"
-    api "io.dropwizard.metrics:metrics-json"
+import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.api.EventListener;
 
-    testImplementation project(":eventmesh-spi")
-    testImplementation project(":eventmesh-common")
-    testImplementation 'io.openmessaging:openmessaging-api'
-    testImplementation 'io.dropwizard.metrics:metrics-core'
-    testImplementation "io.dropwizard.metrics:metrics-healthchecks"
-    testImplementation "io.dropwizard.metrics:metrics-annotation"
-    testImplementation "io.dropwizard.metrics:metrics-json"
+import java.util.List;
+import java.util.Properties;
+
+public interface EMConsumer {
+
+    void init(Properties keyValue) throws Exception;
+
+    void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context);
+
+    void subscribe(String topic, final EventListener listener) throws Exception;
+
+    void unsubscribe(String topic);
 }
