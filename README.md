@@ -131,9 +131,13 @@ EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apa
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation.
 
 ## Community
-WeChat group：
+|               WeChat group                |                WeChat official account                 |
+| :---------------------------------------: | :----------------------------------------------------: |
+| ![wechat_qr](docs/images/mesh-helper.png) | ![wechat_official_qr](docs/images/wechat-official.png) |
 
-![wechat_qr](docs/images/mesh-helper.png)
+
+
+
 
 Mailing Lists:
 
