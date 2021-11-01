@@ -20,6 +20,11 @@ package org.apache.eventmesh.client.tcp.common;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
+/**
+ * ReceiveMsgHook.
+ *
+ * @param <T> receive message type.
+ */
 public interface ReceiveMsgHook<T> {
     void handle(Package msg, ChannelHandlerContext ctx);
 
