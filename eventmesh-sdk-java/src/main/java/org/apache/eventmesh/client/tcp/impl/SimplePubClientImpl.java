@@ -146,8 +146,10 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
         return io(msg, timeout);
     }
 
+
     /**
-     * Publish cloudEvent message
+     * Publish cloudEvent message.
+     *
      * @param cloudEvent
      * @param timeout
      * @return
@@ -156,12 +158,14 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     @Override
     public Package publish(CloudEvent cloudEvent, long timeout) throws Exception {
         Package msg = MessageUtils.asyncCloudEvent(cloudEvent);
-        logger.info("SimplePubClientImpl|{}|publish|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        logger.info("SimplePubClientImpl|{}|publish|send|type={}|msg={}", clientNo,
+            msg.getHeader().getCommand(), msg);
         return io(MessageUtils.asyncCloudEvent(cloudEvent), timeout);
     }
 
     /**
-     * Send cloudEvent broadcast message
+     * Send cloudEvent broadcast message.
+     *
      * @param cloudEvent
      * @param timeout
      * @throws Exception
@@ -169,7 +173,8 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     @Override
     public void broadcast(CloudEvent cloudEvent, long timeout) throws Exception {
         Package msg = MessageUtils.asyncCloudEvent(cloudEvent);
-        logger.info("SimplePubClientImpl|{}|publish|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+        logger.info("SimplePubClientImpl|{}|publish|send|type={}|msg={}", clientNo,
+            msg.getHeader().getCommand(), msg);
         super.send(msg);
     }
 
