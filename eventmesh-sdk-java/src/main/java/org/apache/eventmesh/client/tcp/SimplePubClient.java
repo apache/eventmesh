@@ -42,6 +42,8 @@ public interface SimplePubClient {
 
     Package publish(CloudEvent cloudEvent, long timeout) throws Exception;
 
+    void broadcast(CloudEvent cloudEvent, long timeout) throws Exception;
+
     void broadcast(Package msg, long timeout) throws Exception;
 
     void registerBusiHandler(ReceiveMsgHook handler) throws Exception;

@@ -34,6 +34,8 @@ public interface EventMeshClient {
 
     Package publish(CloudEvent cloudEvent, long timeout) throws Exception;
 
+    void broadcast(CloudEvent cloudEvent, long timeout) throws Exception;
+
     void broadcast(Package msg, long timeout) throws Exception;
 
     void init() throws Exception;
