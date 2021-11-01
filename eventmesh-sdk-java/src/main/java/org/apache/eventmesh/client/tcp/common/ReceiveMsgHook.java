@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 
 /**
  * ReceiveMsgHook.
+ *
  * @param <T>
  */
 public interface ReceiveMsgHook<T> {
