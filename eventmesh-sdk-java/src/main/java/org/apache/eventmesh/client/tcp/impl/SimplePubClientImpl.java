@@ -30,6 +30,7 @@ import org.apache.eventmesh.client.tcp.SimplePubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
+import org.apache.eventmesh.client.tcp.common.PropertyConst;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
@@ -150,16 +151,18 @@ public class SimplePubClientImpl extends TcpClient implements SimplePubClient {
     @Override
     public Package publish(CloudEvent cloudEvent, long timeout) throws Exception {
         Package msg = MessageUtils.asyncCloudEvent(cloudEvent);
-        logger.info("SimplePubClientImpl|{}|publish|send|type={}|msg={}", clientNo,
-            msg.getHeader().getCommand(), msg);
+        logger.info("SimplePubClientImpl cloud event|{}|publish|send|type={}|protocol={}|msg={}",
+            clientNo, msg.getHeader().getCommand(),
+            msg.getHeader().getProperty(PropertyConst.PROPERTY_MESSAGE_PROTOCOL), msg);
         return io(MessageUtils.asyncCloudEvent(cloudEvent), timeout);
     }
 
     @Override
     public void broadcast(CloudEvent cloudEvent, long timeout) throws Exception {
         Package msg = MessageUtils.asyncCloudEvent(cloudEvent);
-        logger.info("SimplePubClientImpl|{}|publish|send|type={}|msg={}", clientNo,
-            msg.getHeader().getCommand(), msg);
+        logger.info("SimplePubClientImpl cloud event|{}|publish|send|type={}|protocol={}|msg={}",
+            clientNo, msg.getHeader().getCommand(),
+            msg.getHeader().getProperty(PropertyConst.PROPERTY_MESSAGE_PROTOCOL), msg);
         super.send(msg);
     }
 

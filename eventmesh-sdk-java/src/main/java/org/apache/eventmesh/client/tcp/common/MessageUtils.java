@@ -80,7 +80,11 @@ public class MessageUtils {
     public static Package asyncCloudEvent(CloudEvent cloudEvent) {
         Package msg = new Package();
         msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_SERVER, 0,
-                EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, generateRandomString(seqLength)));
+            null, generateRandomString(seqLength)));
+        msg.getHeader().putProperty(PropertyConst.PROPERTY_MESSAGE_PROTOCOL,
+            EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
+        msg.getHeader().putProperty(PropertyConst.PROPERTY_CLOUD_EVENT_VERSION,
+            cloudEvent.getSpecVersion().toString());
         msg.setBody(cloudEvent);
         return msg;
     }
