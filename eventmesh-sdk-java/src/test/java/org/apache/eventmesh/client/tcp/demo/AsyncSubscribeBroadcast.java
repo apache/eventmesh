@@ -32,7 +32,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
+public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage> {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncSubscribeBroadcast.class);
 
@@ -63,7 +63,12 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook {
 
     @Override
     public void handle(Package msg, ChannelHandlerContext ctx) {
-        EventMeshMessage eventMeshMessage = (EventMeshMessage) msg.getBody();
+        EventMeshMessage eventMeshMessage = convert(msg);
         logger.info("receive broadcast msg==============={}", eventMeshMessage);
+    }
+
+    @Override
+    public EventMeshMessage convert(Package pkg) {
+        return (EventMeshMessage) pkg.getBody();
     }
 }
