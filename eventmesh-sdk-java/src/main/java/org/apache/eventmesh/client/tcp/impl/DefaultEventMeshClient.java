@@ -18,6 +18,7 @@
 package org.apache.eventmesh.client.tcp.impl;
 
 
+import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.client.tcp.EventMeshClient;
 import org.apache.eventmesh.client.tcp.SimplePubClient;
 import org.apache.eventmesh.client.tcp.SimpleSubClient;
@@ -73,8 +74,18 @@ public class DefaultEventMeshClient implements EventMeshClient {
         return this.pubClient.publish(msg, timeout);
     }
 
+    @Override
+    public Package publish(CloudEvent cloudEvent, long timeout) throws Exception {
+        return this.pubClient.publish(cloudEvent, timeout);
+    }
+
     public void broadcast(Package msg, long timeout) throws Exception {
         this.pubClient.broadcast(msg, timeout);
+    }
+
+    @Override
+    public void broadcast(CloudEvent cloudEvent, long timeout) throws Exception {
+        this.pubClient.broadcast(cloudEvent, timeout);
     }
 
     public void init() throws Exception {
