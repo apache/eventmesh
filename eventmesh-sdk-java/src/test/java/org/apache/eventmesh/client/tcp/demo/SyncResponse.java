@@ -25,12 +25,13 @@ import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SyncResponse implements ReceiveMsgHook {
+public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
 
     public static Logger logger = LoggerFactory.getLogger(SyncResponse.class);
 
@@ -65,5 +66,10 @@ public class SyncResponse implements ReceiveMsgHook {
         logger.info("receive sync rr msg================{}", msg);
         Package pkg = EventMeshTestUtils.rrResponse(msg);
         ctx.writeAndFlush(pkg);
+    }
+
+    @Override
+    public EventMeshMessage convert(Package pkg) {
+        return null;
     }
 }
