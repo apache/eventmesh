@@ -34,7 +34,7 @@ import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AsyncSubscribe implements ReceiveMsgHook {
+public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncSubscribe.class);
 
@@ -68,7 +68,12 @@ public class AsyncSubscribe implements ReceiveMsgHook {
 
     @Override
     public void handle(Package msg, ChannelHandlerContext ctx) {
-        EventMeshMessage eventMeshMessage = (EventMeshMessage) msg.getBody();
+        EventMeshMessage eventMeshMessage = convert(msg);
         logger.info("receive async msg====================={}", eventMeshMessage);
+    }
+
+    @Override
+    public EventMeshMessage convert(Package pkg) {
+        return (EventMeshMessage) pkg.getBody();
     }
 }

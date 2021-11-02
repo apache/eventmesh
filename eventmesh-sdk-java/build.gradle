@@ -26,6 +26,8 @@ dependencies {
     implementation "io.netty:netty-all"
     implementation "org.apache.httpcomponents:httpclient"
 
+    implementation "io.cloudevents:cloudevents-core"
+
     testImplementation project(":eventmesh-common")
     testImplementation project(":eventmesh-common")
 
