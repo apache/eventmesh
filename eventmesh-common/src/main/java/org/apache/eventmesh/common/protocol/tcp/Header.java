@@ -17,21 +17,32 @@
 
 package org.apache.eventmesh.common.protocol.tcp;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Header {
 
     private Command cmd;
     private int code;
-    private String msg;
+    private String dsec;
     private String seq;
+    private Map<String,Object> properties;
 
     public Header() {
     }
 
-    public Header(Command cmd, int code, String msg, String seq) {
+    public Header(Command cmd, int code, String dsec, String seq) {
         this.cmd = cmd;
         this.code = code;
-        this.msg = msg;
+        this.dsec = dsec;
         this.seq = seq;
+    }
+
+    public Header(int code, String dsec, String seq, Map<String, Object> properties) {
+        this.code = code;
+        this.dsec = dsec;
+        this.seq = seq;
+        this.properties = properties;
     }
 
     public Command getCommand() {
@@ -50,12 +61,12 @@ public class Header {
         this.code = code;
     }
 
-    public String getMsg() {
-        return msg;
+    public String getDsec() {
+        return dsec;
     }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
+    public void setDsec(String dsec) {
+        this.dsec = dsec;
     }
 
     public String getSeq() {
@@ -66,13 +77,38 @@ public class Header {
         this.seq = seq;
     }
 
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
+    }
+
+    public void putProperty(final String name, final Object value) {
+        if (null == this.properties) {
+            this.properties = new HashMap<>();
+        }
+
+        this.properties.put(name, value);
+    }
+
+    public Object getProperty(final String name) {
+        if (null == this.properties) {
+            this.properties = new HashMap<>();
+        }
+
+        return this.properties.get(name);
+    }
+
     @Override
     public String toString() {
         return "Header{" +
-                "cmd=" + cmd +
-                ", code=" + code +
-                ", msg='" + msg + '\'' +
-                ", seq='" + seq + '\'' +
-                '}';
+            "cmd=" + cmd +
+            ", code=" + code +
+            ", dsec='" + dsec + '\'' +
+            ", seq='" + seq + '\'' +
+            ", properties=" + properties +
+            '}';
     }
 }

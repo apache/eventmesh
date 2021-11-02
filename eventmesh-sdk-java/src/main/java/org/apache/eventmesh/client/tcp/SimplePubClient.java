@@ -18,6 +18,7 @@
 package org.apache.eventmesh.client.tcp;
 
 
+import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -38,6 +39,10 @@ public interface SimplePubClient {
     void asyncRR(Package msg, AsyncRRCallback callback, long timeout) throws Exception;
 
     Package publish(Package msg, long timeout) throws Exception;
+
+    Package publish(CloudEvent cloudEvent, long timeout) throws Exception;
+
+    void broadcast(CloudEvent cloudEvent, long timeout) throws Exception;
 
     void broadcast(Package msg, long timeout) throws Exception;
 
