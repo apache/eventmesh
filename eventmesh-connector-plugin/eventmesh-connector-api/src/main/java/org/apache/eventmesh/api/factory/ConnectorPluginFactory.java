@@ -19,12 +19,12 @@
 
 package org.apache.eventmesh.api.factory;
 
-import org.apache.eventmesh.api.consumer.MeshMQPushConsumer;
-import org.apache.eventmesh.api.producer.MeshMQProducer;
+import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 /**
- * The factory to get connector {@link MeshMQProducer} and {@link MeshMQPushConsumer}
+ * The factory to get connector {@link Producer} and {@link Consumer}
  */
 public class ConnectorPluginFactory {
 
@@ -34,8 +34,8 @@ public class ConnectorPluginFactory {
      * @param connectorPluginName plugin name
      * @return MeshMQProducer instance
      */
-    public static MeshMQProducer getMeshMQProducer(String connectorPluginName) {
-        return EventMeshExtensionFactory.getExtension(MeshMQProducer.class, connectorPluginName);
+    public static Producer getMeshMQProducer(String connectorPluginName) {
+        return EventMeshExtensionFactory.getExtension(Producer.class, connectorPluginName);
     }
 
     /**
@@ -44,8 +44,8 @@ public class ConnectorPluginFactory {
      * @param connectorPluginName plugin name
      * @return MeshMQPushConsumer instance
      */
-    public static MeshMQPushConsumer getMeshMQPushConsumer(String connectorPluginName) {
-        return EventMeshExtensionFactory.getExtension(MeshMQPushConsumer.class, connectorPluginName);
+    public static Consumer getMeshMQPushConsumer(String connectorPluginName) {
+        return EventMeshExtensionFactory.getExtension(Consumer.class, connectorPluginName);
     }
 
     private static <T> T getPlugin(Class<T> pluginType, String pluginName) {

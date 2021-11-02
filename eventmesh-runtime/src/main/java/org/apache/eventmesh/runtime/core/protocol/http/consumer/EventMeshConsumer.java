@@ -21,17 +21,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.openmessaging.api.AsyncConsumeContext;
-import io.openmessaging.api.AsyncMessageListener;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.OnExceptionContext;
-import io.openmessaging.api.SendCallback;
-import io.openmessaging.api.SendResult;
+import io.cloudevents.CloudEvent;
 
 import org.apache.commons.collections4.MapUtils;
-import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.api.EventMeshAction;
-import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
+import org.apache.eventmesh.api.*;
+import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
@@ -110,12 +104,13 @@ public class EventMeshConsumer {
     }
 
     public void subscribe(String topic, SubscriptionItem subscriptionItem) throws Exception {
-        AsyncMessageListener listener = null;
+        EventListener listener = null;
         if (!SubscriptionMode.BROADCASTING.equals(subscriptionItem.getMode())) {
-            listener = new AsyncMessageListener() {
+            listener = new EventListener() {
                 @Override
-                public void consume(Message message, AsyncConsumeContext context) {
-                    String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
+                public void consume(CloudEvent event, AsyncConsumeContext context) {
+                    String topic = event.getExtension(Constants.PROPERTY_MESSAGE_DESTINATION);
+//                    String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
                     String bizSeqNo = message.getSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
                     String uniqueId = message.getUserProperties(Constants.RMB_UNIQ_ID);
 
@@ -161,9 +156,9 @@ public class EventMeshConsumer {
             };
             persistentMqConsumer.subscribe(topic, listener);
         } else {
-            listener = new AsyncMessageListener() {
+            listener = new EventListener() {
                 @Override
-                public void consume(Message message, AsyncConsumeContext context) {
+                public void consume(CloudEvent event, AsyncConsumeContext context) {
                     String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
                     String bizSeqNo = message.getSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
                     String uniqueId = message.getUserProperties(Constants.RMB_UNIQ_ID);
@@ -237,11 +232,11 @@ public class EventMeshConsumer {
         started4Broadcast.compareAndSet(true, false);
     }
 
-    public void updateOffset(String topic, SubscriptionMode subscriptionMode, List<Message> msgs, AbstractContext context) {
+    public void updateOffset(String topic, SubscriptionMode subscriptionMode, List<CloudEvent> events, AbstractContext context) {
         if (SubscriptionMode.BROADCASTING.equals(subscriptionMode)) {
-            broadcastMqConsumer.updateOffset(msgs, context);
+            broadcastMqConsumer.updateOffset(events, context);
         } else {
-            persistentMqConsumer.updateOffset(msgs, context);
+            persistentMqConsumer.updateOffset(events, context);
         }
     }
 

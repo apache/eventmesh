@@ -26,6 +26,8 @@ import io.openmessaging.api.SendResult;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.*;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -57,7 +59,13 @@ public class MessageTransferTask extends AbstractTask {
         long taskExecuteTime = System.currentTimeMillis();
         Command cmd = pkg.getHeader().getCommand();
         Command replyCmd = getReplyCmd(cmd);
+        String protocolType = "EventMeshMessage";
+        if (pkg.getHeader().getProperties() != null && pkg.getHeader().getProperty("message_protocol") != null) {
+            protocolType = (String) pkg.getHeader().getProperty("message_protocol");
+        }
+        ProtocolAdaptor protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         Package msg = new Package();
+        protocolAdaptor.toCloudEventV1(pkg);
         EventMeshMessage eventMeshMessage = (EventMeshMessage) pkg.getBody();
         int retCode = 0;
         EventMeshTcpSendResult sendStatus;
@@ -67,7 +75,7 @@ public class MessageTransferTask extends AbstractTask {
             }
 
             //do acl check in sending msg
-            if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable){
+            if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                 Acl.doAclCheckInTcpSend(remoteAddr, session.getClient(), eventMeshMessage.getTopic(), cmd.value());
             }
@@ -86,7 +94,7 @@ public class MessageTransferTask extends AbstractTask {
                         throw new Exception(sendStatus.getDetail());
                     }
                 }
-            }else{
+            } else {
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), "Tps overload, global flow control", pkg.getHeader().getSeq()));
                 ctx.writeAndFlush(msg).addListener(
                         new ChannelFutureListener() {
