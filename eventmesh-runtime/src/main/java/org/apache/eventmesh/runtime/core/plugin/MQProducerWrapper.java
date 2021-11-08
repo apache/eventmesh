@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.core.plugin;
 import java.util.Properties;
 
 import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 import org.apache.eventmesh.api.producer.Producer;
@@ -80,7 +81,7 @@ public class MQProducerWrapper extends MQWrapper {
         meshMQProducer.publish(cloudEvent, sendCallback);
     }
 
-    public void request(CloudEvent cloudEvent, RRCallback rrCallback, long timeout)
+    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout)
             throws Exception {
         meshMQProducer.request(cloudEvent, rrCallback, timeout);
     }

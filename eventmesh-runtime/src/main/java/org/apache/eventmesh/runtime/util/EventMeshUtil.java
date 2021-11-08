@@ -39,6 +39,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import io.cloudevents.CloudEvent;
 import io.openmessaging.api.Message;
 
 import org.apache.commons.lang3.StringUtils;
@@ -139,12 +140,11 @@ public class EventMeshUtil {
         return result;
     }
 
-    public static String getMessageBizSeq(Message msg) {
-        Properties properties = msg.getSystemProperties();
+    public static String getMessageBizSeq(CloudEvent event) {
 
-        String keys = properties.getProperty(EventMeshConstants.KEYS_UPPERCASE);
+        String keys = (String) event.getExtension(EventMeshConstants.KEYS_UPPERCASE);
         if (!StringUtils.isNotBlank(keys)) {
-            keys = properties.getProperty(EventMeshConstants.KEYS_LOWERCASE);
+            keys = (String) event.getExtension(EventMeshConstants.KEYS_LOWERCASE);
         }
         return keys;
     }

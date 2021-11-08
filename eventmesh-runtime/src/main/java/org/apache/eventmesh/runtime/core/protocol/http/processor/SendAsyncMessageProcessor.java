@@ -17,12 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.OnExceptionContext;
-import io.openmessaging.api.SendCallback;
-import io.openmessaging.api.SendResult;
+import jdk.nashorn.internal.runtime.URIUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.LiteMessage;
@@ -30,9 +29,13 @@ import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -46,7 +49,12 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.v1.CloudEventBuilder;
+import io.netty.channel.ChannelHandlerContext;
 
 public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
@@ -73,19 +81,34 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
-        SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
-        SendMessageRequestBody sendMessageRequestBody = (SendMessageRequestBody) asyncContext.getRequest().getBody();
+//        SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
+//        SendMessageRequestBody sendMessageRequestBody = (SendMessageRequestBody) asyncContext.getRequest().getBody();
 
         SendMessageResponseHeader sendMessageResponseHeader =
                 SendMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
+        CloudEvent event = httpCommandProtocolAdaptor.toCloudEventV1(asyncContext.getRequest());
 
-        //validate header
-        if (StringUtils.isBlank(sendMessageRequestHeader.getIdc())
-                || StringUtils.isBlank(sendMessageRequestHeader.getPid())
-                || !StringUtils.isNumeric(sendMessageRequestHeader.getPid())
-                || StringUtils.isBlank(sendMessageRequestHeader.getSys())) {
+        //validate event
+        if (StringUtils.isBlank(event.getId())
+                || event.getSource() != null
+                || event.getSpecVersion() != null
+                || StringUtils.isBlank(event.getType())
+                || StringUtils.isBlank(event.getSubject())) {
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                    sendMessageResponseHeader,
+                    SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
+            return;
+        }
+
+        //validate event-extension
+        if (StringUtils.isBlank(Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.IDC)).toString())
+                || StringUtils.isBlank(Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PID)).toString())
+                || !StringUtils.isNumeric(Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PID)).toString())
+                || StringUtils.isBlank(Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString())) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
@@ -94,13 +117,11 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         }
 
         //validate body
-        if (StringUtils.isBlank(sendMessageRequestBody.getBizSeqNo())
-                || StringUtils.isBlank(sendMessageRequestBody.getUniqueId())
-                || StringUtils.isBlank(sendMessageRequestBody.getProducerGroup())
-                || StringUtils.isBlank(sendMessageRequestBody.getTopic())
-                || StringUtils.isBlank(sendMessageRequestBody.getContent())
-                || (StringUtils.isBlank(sendMessageRequestBody.getTtl()))) {
-            //sync message TTL can't be empty
+        if (StringUtils.isBlank(event.getExtension(SendMessageRequestBody.BIZSEQNO).toString())
+                || StringUtils.isBlank(event.getId())
+                || StringUtils.isBlank(event.getExtension(SendMessageRequestBody.PRODUCERGROUP).toString())
+                || StringUtils.isBlank(event.getSubject())
+                || event.getData() != null) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
@@ -111,11 +132,11 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         //do acl check
         if(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-            String user = sendMessageRequestHeader.getUsername();
-            String pass = sendMessageRequestHeader.getPasswd();
-            String subsystem = sendMessageRequestHeader.getSys();
-            int requestCode = Integer.valueOf(sendMessageRequestHeader.getCode());
-            String topic = sendMessageRequestBody.getTopic();
+            String user = event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME).toString();
+            String pass = event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD).toString();
+            String subsystem = event.getExtension(ProtocolKey.ClientInstanceKey.SYS).toString();
+            int requestCode = Integer.parseInt(asyncContext.getRequest().getRequestCode());
+            String topic = event.getSubject();
             try {
                 Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
             }catch (Exception e){
@@ -142,7 +163,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String producerGroup = sendMessageRequestBody.getProducerGroup();
+        String producerGroup = event.getExtension(SendMessageRequestBody.PRODUCERGROUP).toString();
         EventMeshProducer eventMeshProducer = eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
         if (!eventMeshProducer.getStarted().get()) {
@@ -154,40 +175,45 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         }
 
         String ttl = String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS);
-        if (StringUtils.isNotBlank(sendMessageRequestBody.getTtl()) && StringUtils.isNumeric(sendMessageRequestBody.getTtl())) {
-            ttl = sendMessageRequestBody.getTtl();
+        if (StringUtils.isNotBlank(event.getExtension(SendMessageRequestBody.TTL).toString())
+                && StringUtils.isNumeric(event.getExtension(SendMessageRequestBody.TTL).toString())) {
+            ttl = event.getExtension(SendMessageRequestBody.TTL).toString();
         }
 
-        Message omsMsg = new Message();
         try {
             // body
-            omsMsg.setBody(sendMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
-            // topic
-            omsMsg.setTopic(sendMessageRequestBody.getTopic());
-            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION, sendMessageRequestBody.getTopic());
-
-            if (!StringUtils.isBlank(sendMessageRequestBody.getTag())) {
-                omsMsg.putUserProperties(EventMeshConstants.TAG, sendMessageRequestBody.getTag());
-            }
+//            omsMsg.setBody(sendMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
+//            // topic
+//            omsMsg.setTopic(sendMessageRequestBody.getTopic());
+//            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION, sendMessageRequestBody.getTopic());
+//
+//            if (!StringUtils.isBlank(sendMessageRequestBody.getTag())) {
+//                omsMsg.putUserProperties(EventMeshConstants.TAG, sendMessageRequestBody.getTag());
+//            }
             // ttl
-            omsMsg.putUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT, ttl);
-            // bizNo
-            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS, sendMessageRequestBody.getBizSeqNo());
-            omsMsg.putUserProperties("msgType", "persistent");
-            omsMsg.putUserProperties(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-            omsMsg.putUserProperties(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
-            omsMsg.putUserProperties(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+//            omsMsg.putUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT, ttl);
+//            // bizNo
+//            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS, sendMessageRequestBody.getBizSeqNo());
+            event = new CloudEventBuilder(event)
+                    .withExtension("msgType", "persistent")
+                    .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                    .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                    .build();
+//            omsMsg.putUserProperties("msgType", "persistent");
+//            omsMsg.putUserProperties(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+//            omsMsg.putUserProperties(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
+//            omsMsg.putUserProperties(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
 
             // new rocketmq client can't support put DeFiBusConstant.PROPERTY_MESSAGE_TTL
 //            rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL, ttl);
 
             if (messageLogger.isDebugEnabled()) {
                 messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", sendMessageRequestBody.getBizSeqNo(),
-                        sendMessageRequestBody.getTopic());
+                        event.getSubject());
             }
         } catch (Exception e) {
             messageLogger.error("msg2MQMsg err, bizSeqNo={}, topic={}", sendMessageRequestBody.getBizSeqNo(),
-                    sendMessageRequestBody.getTopic(), e);
+                    event.getSubject(), e);
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2)));
@@ -195,7 +221,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageRequestBody.getBizSeqNo(), omsMsg, eventMeshProducer, eventMeshHTTPServer);
+        final SendMessageContext sendMessageContext = new SendMessageContext(sendMessageRequestBody.getBizSeqNo(), event, eventMeshProducer, eventMeshHTTPServer);
         eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsg();
 
         long startTime = System.currentTimeMillis();
@@ -220,7 +246,10 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 .setProp(sendMessageRequestBody.getExtFields());
 
         try {
-            sendMessageContext.getMsg().getUserProperties().put(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+            CloudEvent event = new CloudEventBuilder(sendMessageContext.getEvent())
+                    .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                    .build();
+            sendMessageContext.setEvent(event);
             eventMeshProducer.send(sendMessageContext, new SendCallback() {
 
                 @Override

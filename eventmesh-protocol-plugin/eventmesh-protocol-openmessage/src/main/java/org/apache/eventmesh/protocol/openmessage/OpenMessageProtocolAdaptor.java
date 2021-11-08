@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.protocol.openmessage;
 
+import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 
 import io.cloudevents.CloudEvent;
@@ -29,10 +30,10 @@ import io.openmessaging.api.Message;
  *
  * @since 1.3.0
  */
-public class OpenMessageProtocolAdaptor implements ProtocolAdaptor {
+public class OpenMessageProtocolAdaptor<T> implements ProtocolAdaptor<T> {
 
     @Override
-    public CloudEventV1 toCloudEventV1(Package message) {
+    public CloudEventV1 toCloudEventV1(T message) {
         return null;
     }
 

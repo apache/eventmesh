@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.protocol.api;
 
+import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
@@ -32,7 +33,7 @@ import io.cloudevents.core.v1.CloudEventV1;
  * @since 1.3.0
  */
 @EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.PROTOCOL)
-public interface ProtocolAdaptor {
+public interface ProtocolAdaptor<T> {
 
     /**
      * transform protocol to {@link CloudEvent}.
@@ -40,7 +41,7 @@ public interface ProtocolAdaptor {
      * @param protocol input protocol
      * @return cloud event
      */
-    CloudEventV1 toCloudEventV1(Package protocol) throws ProtocolHandleException;
+    CloudEventV1 toCloudEventV1(T protocol) throws ProtocolHandleException;
 
 
     /**

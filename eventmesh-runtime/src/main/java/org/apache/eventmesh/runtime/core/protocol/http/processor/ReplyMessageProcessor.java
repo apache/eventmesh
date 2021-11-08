@@ -207,7 +207,9 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 //                replyMessageRequestBody.getContent());
 
         try {
-            CloudEvent clone = new CloudEventBuilder(sendMessageContext.getEvent()).withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis());
+            CloudEvent clone = new CloudEventBuilder(sendMessageContext.getEvent())
+                    .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                    .build();
             sendMessageContext.setEvent(clone);
             eventMeshProducer.reply(sendMessageContext, new SendCallback() {
                 @Override
