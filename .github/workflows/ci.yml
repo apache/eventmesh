@@ -63,7 +63,8 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build
-        run: ./gradlew clean build jacocoTestReport checkLicense
+        # skip check here, since we use Checkstyle task to check the added file
+        run: ./gradlew clean build jacocoTestReport checkLicense -x check
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v1
