@@ -15,21 +15,24 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
-    api 'io.cloudevents:cloudevents-core'
-    api 'io.openmessaging:openmessaging-api'
-    api 'io.dropwizard.metrics:metrics-core'
-    api "io.dropwizard.metrics:metrics-healthchecks"
-    api "io.dropwizard.metrics:metrics-annotation"
-    api "io.dropwizard.metrics:metrics-json"
+package org.apache.eventmesh.api.exception;
 
-    testImplementation project(":eventmesh-spi")
-    testImplementation project(":eventmesh-common")
-    testImplementation 'io.openmessaging:openmessaging-api'
-    testImplementation 'io.dropwizard.metrics:metrics-core'
-    testImplementation "io.dropwizard.metrics:metrics-healthchecks"
-    testImplementation "io.dropwizard.metrics:metrics-annotation"
-    testImplementation "io.dropwizard.metrics:metrics-json"
+public class ConnectorRuntimeException extends RuntimeException {
+
+    public ConnectorRuntimeException() {
+
+    }
+
+    public ConnectorRuntimeException(String message) {
+        super(message);
+    }
+
+    public ConnectorRuntimeException(Throwable throwable) {
+        super(throwable);
+    }
+
+    public ConnectorRuntimeException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
+
 }
