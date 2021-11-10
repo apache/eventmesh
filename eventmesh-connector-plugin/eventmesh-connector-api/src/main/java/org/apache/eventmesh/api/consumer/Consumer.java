@@ -15,21 +15,32 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
-    api 'io.cloudevents:cloudevents-core'
-    api 'io.openmessaging:openmessaging-api'
-    api 'io.dropwizard.metrics:metrics-core'
-    api "io.dropwizard.metrics:metrics-healthchecks"
-    api "io.dropwizard.metrics:metrics-annotation"
-    api "io.dropwizard.metrics:metrics-json"
+package org.apache.eventmesh.api.consumer;
 
-    testImplementation project(":eventmesh-spi")
-    testImplementation project(":eventmesh-common")
-    testImplementation 'io.openmessaging:openmessaging-api'
-    testImplementation 'io.dropwizard.metrics:metrics-core'
-    testImplementation "io.dropwizard.metrics:metrics-healthchecks"
-    testImplementation "io.dropwizard.metrics:metrics-annotation"
-    testImplementation "io.dropwizard.metrics:metrics-json"
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.api.EventListener;
+import org.apache.eventmesh.api.LifeCycle;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
+
+import java.util.List;
+import java.util.Properties;
+
+import io.cloudevents.CloudEvent;
+
+
+
+/**
+ * Consumer Interface.
+ */
+@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
+public interface Consumer extends LifeCycle {
+
+    void init(Properties keyValue) throws Exception;
+
+    void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context);
+
+    void subscribe(String topic, final EventListener listener) throws Exception;
+
+    void unsubscribe(String topic);
 }
