@@ -88,6 +88,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 SendMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+
         ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEventV1(asyncContext.getRequest());
 
@@ -104,11 +105,15 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
+        String idc = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.IDC)).toString();
+        String pid = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PID)).toString();
+        String sys = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString();
+
         //validate event-extension
-        if (StringUtils.isBlank(Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.IDC)).toString())
-                || StringUtils.isBlank(Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PID)).toString())
-                || !StringUtils.isNumeric(Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PID)).toString())
-                || StringUtils.isBlank(Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString())) {
+        if (StringUtils.isBlank(idc)
+                || StringUtils.isBlank(pid)
+                || !StringUtils.isNumeric(pid)
+                || StringUtils.isBlank(sys)) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
@@ -178,10 +183,8 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         }
 
         String ttl = String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS);
-        if (StringUtils.isNotBlank(event.getExtension(SendMessageRequestBody.TTL).toString())
-                && StringUtils.isNumeric(event.getExtension(SendMessageRequestBody.TTL).toString())) {
-            ttl = event.getExtension(SendMessageRequestBody.TTL).toString();
-        }else {
+        if (StringUtils.isBlank(event.getExtension(SendMessageRequestBody.TTL).toString())
+                && !StringUtils.isNumeric(event.getExtension(SendMessageRequestBody.TTL).toString())) {
             event = new CloudEventBuilder(event).withExtension(SendMessageRequestBody.TTL, ttl).build();
         }
 
@@ -213,12 +216,10 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 //            rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL, ttl);
 
             if (messageLogger.isDebugEnabled()) {
-                messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", event.getExtension(SendMessageRequestBody.BIZSEQNO),
-                        event.getSubject());
+                messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, topic);
             }
         } catch (Exception e) {
-            messageLogger.error("msg2MQMsg err, bizSeqNo={}, topic={}", event.getExtension(SendMessageRequestBody.BIZSEQNO),
-                    event.getSubject(), e);
+            messageLogger.error("msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, topic, e);
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2)));
