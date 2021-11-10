@@ -15,21 +15,42 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
-    api 'io.cloudevents:cloudevents-core'
-    api 'io.openmessaging:openmessaging-api'
-    api 'io.dropwizard.metrics:metrics-core'
-    api "io.dropwizard.metrics:metrics-healthchecks"
-    api "io.dropwizard.metrics:metrics-annotation"
-    api "io.dropwizard.metrics:metrics-json"
+package org.apache.eventmesh.api.exception;
 
-    testImplementation project(":eventmesh-spi")
-    testImplementation project(":eventmesh-common")
-    testImplementation 'io.openmessaging:openmessaging-api'
-    testImplementation 'io.dropwizard.metrics:metrics-core'
-    testImplementation "io.dropwizard.metrics:metrics-healthchecks"
-    testImplementation "io.dropwizard.metrics:metrics-annotation"
-    testImplementation "io.dropwizard.metrics:metrics-json"
+public class OnExceptionContext {
+
+    private String messageId;
+
+    private String topic;
+
+    /**
+     * Detailed exception stack information.
+     */
+    private ConnectorRuntimeException exception;
+
+
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+
+    public ConnectorRuntimeException getException() {
+        return exception;
+    }
+
+    public void setException(ConnectorRuntimeException exception) {
+        this.exception = exception;
+    }
 }
