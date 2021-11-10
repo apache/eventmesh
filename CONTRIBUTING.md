@@ -19,6 +19,8 @@ Editor -> Code Style -> Java -> Scheme -> Import Scheme -> CheckStyle Configurat
 ```
 If you can't see CheckStyle Configuration section under Import Scheme, you can install CheckStyle-IDEA plugin first, and you will see it.
 
+You can also use `./gradlew check` to check the code style.
+(NOTE: this command will check all file in project, when you submit a pr, the ci will only check the file has been changed in this pr).
 ## Contributing
 
 We are always very happy to have contributions, whether for typo fix, bug fix or big new features. Please do not ever
