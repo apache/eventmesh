@@ -18,10 +18,6 @@
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.OnExceptionContext;
-import io.openmessaging.api.SendCallback;
-import io.openmessaging.api.SendResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
@@ -81,6 +77,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 SendMessageBatchResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+
 
         if (StringUtils.isBlank(sendMessageBatchRequestHeader.getPid())
                 || !StringUtils.isNumeric(sendMessageBatchRequestHeader.getPid())

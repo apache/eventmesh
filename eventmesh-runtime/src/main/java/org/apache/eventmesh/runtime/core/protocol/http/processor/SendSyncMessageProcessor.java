@@ -84,11 +84,6 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             EventMeshConstants.PROTOCOL_HTTP,
             RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
-//        SendMessageRequestHeader sendMessageRequestHeader =
-//            (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
-//        SendMessageRequestBody sendMessageRequestBody =
-//            (SendMessageRequestBody) asyncContext.getRequest().getBody();
-
         ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEventV1(asyncContext.getRequest());
 
@@ -250,34 +245,24 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             eventMeshProducer.request(sendMessageContext, new RequestReplyCallback() {
                 @Override
                 public void onSuccess(CloudEvent event) {
-//                    omsMsg.getUserProperties().put(Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP,
-//                        omsMsg.getSystemProperties("BORN_TIMESTAMP"));
-//                    omsMsg.getUserProperties().put(EventMeshConstants.STORE_TIMESTAMP,
-//                        omsMsg.getSystemProperties("STORE_TIMESTAMP"));
-//                    omsMsg.getUserProperties().put(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP,
-//                        String.valueOf(System.currentTimeMillis()));
-                    messageLogger.info(
-                        "message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
+                    messageLogger.info("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
                             + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime,
                         topic, bizNo, uniqueId);
 
                     try {
-                        final String rtnMsg =
-                            new String(event.getData(), EventMeshConstants.DEFAULT_CHARSET);
                         event = new CloudEventBuilder(event)
                                 .withExtension(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP,
                                 String.valueOf(System.currentTimeMillis()))
                                 .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP,
                                         String.valueOf(System.currentTimeMillis()))
                                 .build();
+                        final String rtnMsg = new String(event.getData().toBytes(), EventMeshConstants.DEFAULT_CHARSET);
+
                         HttpCommand succ = asyncContext.getRequest().createHttpCommandResponse(
                             sendMessageResponseHeader,
                             SendMessageResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(),
                                 JsonUtils.serialize(new SendMessageResponseBody.ReplyMessage(topic,
-                                    rtnMsg,
-                                    OMSUtil.combineProp(omsMsg.getSystemProperties(),
-                                        omsMsg.getUserProperties()))
-                                )));
+                                    rtnMsg))));
                         asyncContext.onComplete(succ, handler);
                     } catch (Exception ex) {
                         HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
