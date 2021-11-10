@@ -15,21 +15,23 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
-    api 'io.cloudevents:cloudevents-core'
-    api 'io.openmessaging:openmessaging-api'
-    api 'io.dropwizard.metrics:metrics-core'
-    api "io.dropwizard.metrics:metrics-healthchecks"
-    api "io.dropwizard.metrics:metrics-annotation"
-    api "io.dropwizard.metrics:metrics-json"
+package org.apache.eventmesh.api;
 
-    testImplementation project(":eventmesh-spi")
-    testImplementation project(":eventmesh-common")
-    testImplementation 'io.openmessaging:openmessaging-api'
-    testImplementation 'io.dropwizard.metrics:metrics-core'
-    testImplementation "io.dropwizard.metrics:metrics-healthchecks"
-    testImplementation "io.dropwizard.metrics:metrics-annotation"
-    testImplementation "io.dropwizard.metrics:metrics-json"
+
+import io.cloudevents.CloudEvent;
+
+/**
+ * Event listener, registered for consume messages by consumer.
+ *
+ * <p>
+ * <strong>
+ * Thread safe requirements: this interface will be invoked by multi threads,
+ * so users should keep thread safe during the consume process.
+ * </strong>
+ * </p>
+ */
+public interface EventListener {
+
+    void consume(final CloudEvent cloudEvent, final AsyncConsumeContext context);
+
 }

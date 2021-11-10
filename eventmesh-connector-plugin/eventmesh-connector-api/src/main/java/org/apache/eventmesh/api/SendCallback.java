@@ -15,21 +15,19 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
-    api 'io.cloudevents:cloudevents-core'
-    api 'io.openmessaging:openmessaging-api'
-    api 'io.dropwizard.metrics:metrics-core'
-    api "io.dropwizard.metrics:metrics-healthchecks"
-    api "io.dropwizard.metrics:metrics-annotation"
-    api "io.dropwizard.metrics:metrics-json"
+package org.apache.eventmesh.api;
 
-    testImplementation project(":eventmesh-spi")
-    testImplementation project(":eventmesh-common")
-    testImplementation 'io.openmessaging:openmessaging-api'
-    testImplementation 'io.dropwizard.metrics:metrics-core'
-    testImplementation "io.dropwizard.metrics:metrics-healthchecks"
-    testImplementation "io.dropwizard.metrics:metrics-annotation"
-    testImplementation "io.dropwizard.metrics:metrics-json"
+import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.api.producer.Producer;
+
+import io.cloudevents.CloudEvent;
+
+/**
+ * Call back interface used in {@link Producer#sendAsync(CloudEvent, SendCallback)}.
+ */
+public interface SendCallback {
+
+    void onSuccess(final SendResult sendResult);
+
+    void onException(final OnExceptionContext context);
 }
