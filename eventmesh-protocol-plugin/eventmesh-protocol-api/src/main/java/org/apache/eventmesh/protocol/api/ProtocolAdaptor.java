@@ -25,6 +25,8 @@ import org.apache.eventmesh.spi.EventMeshSPI;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.v1.CloudEventV1;
 
+import java.util.List;
+
 /**
  * Protocol transformer SPI interface, all protocol plugin should implementation.
  *
@@ -43,6 +45,13 @@ public interface ProtocolAdaptor<T> {
      */
     CloudEventV1 toCloudEventV1(T protocol) throws ProtocolHandleException;
 
+    /**
+     * transform protocol to {@link CloudEvent} list.
+     *
+     * @param protocol input protocol
+     * @return list cloud event
+     */
+    List<CloudEventV1> toBatchCloudEventV1(T protocol) throws ProtocolHandleException;
 
     /**
      * Transform {@link CloudEvent} to target protocol.
