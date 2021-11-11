@@ -129,7 +129,7 @@ EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apa
 ## Community
 |               WeChat group                |                WeChat official account                 |
 | :---------------------------------------: | :----------------------------------------------------: |
-| ![wechat_qr](docs/images/mesh-helper.png) | ![wechat_official_qr](docs/images/wechat-official.png) |
+| ![wechat_qr](docs/images/mesh-helper.jpg) | ![wechat_official_qr](docs/images/wechat-official.png) |
 
 
 
