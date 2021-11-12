@@ -17,8 +17,7 @@
 
 package org.apache.eventmesh.connector.standalone.broker.task;
 
-import io.openmessaging.api.AsyncMessageListener;
-import io.openmessaging.api.Message;
+import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
@@ -33,7 +32,7 @@ public class SubScribeTask implements Runnable {
 
     private String               topicName;
     private StandaloneBroker     standaloneBroker;
-    private AsyncMessageListener listener;
+    private EventListener listener;
     private volatile boolean isRunning;
 
     private AtomicInteger offset;
@@ -42,7 +41,7 @@ public class SubScribeTask implements Runnable {
 
     public SubScribeTask(String topicName,
                          StandaloneBroker standaloneBroker,
-                         AsyncMessageListener listener) {
+                         EventListener listener) {
         this.topicName = topicName;
         this.standaloneBroker = standaloneBroker;
         this.listener = listener;

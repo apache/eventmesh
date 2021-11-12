@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.v1.CloudEventBuilder;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.RandomStringUtil;
@@ -106,14 +108,16 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
             handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshIDC);
 
-        handleMsgContext.getMsg().getUserProperties()
-            .put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-                String.valueOf(System.currentTimeMillis()));
+        CloudEvent event = new CloudEventBuilder(handleMsgContext.getEvent())
+                .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
+                        String.valueOf(System.currentTimeMillis()))
+                .build();
+        handleMsgContext.setEvent(event);
 
         String content = "";
         try {
             content =
-                new String(handleMsgContext.getMsg().getBody(), EventMeshConstants.DEFAULT_CHARSET);
+                new String(handleMsgContext.getEvent().getData().toBytes(), EventMeshConstants.DEFAULT_CHARSET);
         } catch (Exception ex) {
             return;
         }
@@ -140,7 +144,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         body.add(new BasicNameValuePair(PushMessageRequestBody.TOPIC, handleMsgContext.getTopic()));
 
         body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
-            JsonUtils.serialize(OMSUtil.getMessageProp(handleMsgContext.getMsg()))));
+            JsonUtils.serialize(OMSUtil.getEventProp(handleMsgContext.getEvent()))));
 
         try {
             builder.setEntity(new UrlEncodedFormEntity(body));
@@ -217,9 +221,9 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             });
 
             if (messageLogger.isDebugEnabled()) {
-                messageLogger.debug("message|eventMesh2client|url={}|topic={}|msg={}", currPushUrl,
+                messageLogger.debug("message|eventMesh2client|url={}|topic={}|event={}", currPushUrl,
                     handleMsgContext.getTopic(),
-                    handleMsgContext.getMsg());
+                    handleMsgContext.getEvent());
             } else {
                 messageLogger
                     .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",

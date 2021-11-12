@@ -193,14 +193,14 @@ public class HandleMsgContext {
     }
 
     public void finish() {
-        if (eventMeshConsumer != null && context != null && msg != null) {
+        if (eventMeshConsumer != null && context != null && event != null) {
             if (messageLogger.isDebugEnabled()) {
 //                messageLogger.debug("messageAcked|topic={}|msgId={}|cluster={}|broker={}|queueId={}|queueOffset={}", topic,
 //                        msg.getMsgId(), msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER),
 //                        msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
 //                        msg.getQueueId(), msg.getQueueOffset());
             }
-            eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Arrays.asList(msg), context);
+            eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Arrays.asList(event), context);
         }
     }
 

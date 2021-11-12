@@ -163,14 +163,17 @@ public class EventMeshConsumer {
             listener = new EventListener() {
                 @Override
                 public void consume(CloudEvent event, AsyncConsumeContext context) {
-                    String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
-                    String bizSeqNo = message.getSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
-                    String uniqueId = message.getUserProperties(Constants.RMB_UNIQ_ID);
 
-                    message.getUserProperties().put(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+                    event = new CloudEventBuilder(event)
+                            .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                            .build();
+
+                    String topic = event.getSubject();
+                    String bizSeqNo = event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS).toString();
+                    String uniqueId = event.getExtension(Constants.RMB_UNIQ_ID).toString();
 
                     if (messageLogger.isDebugEnabled()) {
-                        messageLogger.debug("message|mq2eventMesh|topic={}|msg={}", topic, message);
+                        messageLogger.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
                     } else {
                         messageLogger.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic, bizSeqNo, uniqueId);
                     }

@@ -23,6 +23,9 @@ import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.v1.CloudEventV1;
 import io.openmessaging.api.Message;
+import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+
+import java.util.List;
 
 /**
  * OpenMessage protocol adaptor, used to transform protocol between
@@ -34,6 +37,11 @@ public class OpenMessageProtocolAdaptor<T> implements ProtocolAdaptor<T> {
 
     @Override
     public CloudEventV1 toCloudEventV1(T message) {
+        return null;
+    }
+
+    @Override
+    public List<CloudEventV1> toBatchCloudEventV1(T protocol) throws ProtocolHandleException {
         return null;
     }
 
