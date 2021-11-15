@@ -45,10 +45,10 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import io.netty.handler.codec.http.HttpMethod;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class LiteProducer extends AbstractLiteClient {
-
-    public static final Logger logger = LoggerFactory.getLogger(LiteProducer.class);
 
     public LiteProducer(LiteClientConfig liteClientConfig) {
         super(liteClientConfig);
@@ -65,10 +65,10 @@ public class LiteProducer extends AbstractLiteClient {
         if (started.get()) {
             return;
         }
-        logger.info("LiteProducer starting");
+        log.info("LiteProducer starting");
         super.start();
         started.compareAndSet(false, true);
-        logger.info("LiteProducer started");
+        log.info("LiteProducer started");
     }
 
     @Override
@@ -76,10 +76,10 @@ public class LiteProducer extends AbstractLiteClient {
         if (!started.get()) {
             return;
         }
-        logger.info("LiteProducer shutting down");
+        log.info("LiteProducer shutting down");
         super.shutdown();
         started.compareAndSet(true, false);
-        logger.info("LiteProducer shutdown");
+        log.info("LiteProducer shutdown");
     }
 
     public AtomicBoolean getStarted() {
@@ -110,12 +110,11 @@ public class LiteProducer extends AbstractLiteClient {
             .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
             .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
             .addBody(SendMessageRequestBody.CONTENT, message.getContent())
-            .addBody(SendMessageRequestBody.TTL,
-                message.getPropKey(Constants.EVENTMESH_MESSAGE_CONST_TTL))
+            .addBody(SendMessageRequestBody.TTL, message.getPropKey(Constants.EVENTMESH_MESSAGE_CONST_TTL))
             .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
             .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         String target = selectEventMesh();
         String res = "";
 
@@ -123,15 +122,15 @@ public class LiteProducer extends AbstractLiteClient {
             res = HttpUtil.post(httpClient, target, requestParam);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("publish async message, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}",
-                target, System.currentTimeMillis() - startTime, message, res);
+        if (log.isDebugEnabled()) {
+            log.debug("publish async message, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}",
+                target, (System.nanoTime() - startTime) / 1000000, message, res);
         }
 
         EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
 
         if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
-            return Boolean.TRUE;
+            return true;
         } else {
             throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
         }
@@ -181,8 +180,8 @@ public class LiteProducer extends AbstractLiteClient {
             res = HttpUtil.post(httpClient, target, requestParam);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(
+        if (log.isDebugEnabled()) {
+            log.debug(
                 "publish sync message by await, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}",
                 target, (System.nanoTime() - startTime) / 1000000, message, res);
         }
@@ -238,8 +237,8 @@ public class LiteProducer extends AbstractLiteClient {
                 new RRCallbackResponseHandlerAdapter(message, rrCallback, timeout));
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("publish sync message by async, target:{}, cost:{}, message:{}", target,
+        if (log.isDebugEnabled()) {
+            log.debug("publish sync message by async, target:{}, cost:{}, message:{}", target,
                 (System.nanoTime() - startTime) / 1000000, message);
         }
     }

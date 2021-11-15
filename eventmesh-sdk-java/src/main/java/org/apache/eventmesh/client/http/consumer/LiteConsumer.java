@@ -48,18 +48,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.netty.handler.codec.http.HttpMethod;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class LiteConsumer extends AbstractLiteClient {
-
-    public static final Logger logger = LoggerFactory.getLogger(LiteConsumer.class);
 
     private ThreadPoolExecutor consumeExecutor;
 
@@ -75,11 +72,10 @@ public class LiteConsumer extends AbstractLiteClient {
     );
 
     public LiteConsumer(LiteClientConfig liteClientConfig) {
-        super(liteClientConfig);
-        this.consumeExecutor =
+        this(liteClientConfig,
             ThreadPoolFactory.createThreadPoolExecutor(liteClientConfig.getConsumeThreadCore(),
-                liteClientConfig.getConsumeThreadMax(), "EventMesh-client-consume-");
-        this.eventMeshClientConfig = liteClientConfig;
+                liteClientConfig.getConsumeThreadMax(), "EventMesh-client-consume-")
+        );
     }
 
     public LiteConsumer(LiteClientConfig liteClientConfig,
@@ -94,24 +90,32 @@ public class LiteConsumer extends AbstractLiteClient {
         Preconditions.checkNotNull(eventMeshClientConfig,
             "EventMeshClientConfig can't be null");
         Preconditions.checkNotNull(consumeExecutor, "consumeExecutor can't be null");
-        logger.info("LiteConsumer starting");
+        log.info("LiteConsumer starting");
         super.start();
         started.compareAndSet(false, true);
-        logger.info("LiteConsumer started");
+        log.info("LiteConsumer started");
     }
 
     @Override
     public void shutdown() throws Exception {
-        logger.info("LiteConsumer shutting down");
+        log.info("LiteConsumer shutting down");
         super.shutdown();
         if (consumeExecutor != null) {
             consumeExecutor.shutdown();
         }
         scheduler.shutdown();
         started.compareAndSet(true, false);
-        logger.info("LiteConsumer shutdown");
+        log.info("LiteConsumer shutdown");
     }
 
+    /**
+     * When receive message will callback the url.
+     *
+     * @param topicList topic that be subscribed
+     * @param url       url will be trigger
+     * @return true if subscribe success
+     * @throws Exception
+     */
     public boolean subscribe(List<SubscriptionItem> topicList, String url) throws Exception {
         subscription.addAll(topicList);
         if (!started.get()) {
@@ -128,8 +132,8 @@ public class LiteConsumer extends AbstractLiteClient {
             subRes = HttpUtil.post(httpClient, target, subscribeParam);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(
+        if (log.isDebugEnabled()) {
+            log.debug(
                 "subscribe message by await, targetEventMesh:{}, cost:{}ms, subscribeParam:{}, "
                     + "rtn:{}", target, (System.nanoTime() - startTime) / 1000000,
                 JsonUtils.serialize(subscribeParam), subRes);
@@ -138,6 +142,7 @@ public class LiteConsumer extends AbstractLiteClient {
         EventMeshRetObj ret = JsonUtils.deserialize(subRes, EventMeshRetObj.class);
 
         if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
+            // todo: remove return result
             return true;
         } else {
             throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
@@ -214,8 +219,8 @@ public class LiteConsumer extends AbstractLiteClient {
                         res = HttpUtil.post(httpClient, target, requestParam);
                     }
 
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(
+                    if (log.isDebugEnabled()) {
+                        log.debug(
                             "heartBeat message by await, targetEventMesh:{}, cost:{}ms, rtn:{}",
                             target, (System.nanoTime() - startTime) / 1000000, res);
                     }
@@ -226,7 +231,7 @@ public class LiteConsumer extends AbstractLiteClient {
                         throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
                     }
                 } catch (Exception e) {
-                    logger.error("send heartBeat error", e);
+                    log.error("send heartBeat error", e);
                 }
             }
         }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
@@ -246,8 +251,8 @@ public class LiteConsumer extends AbstractLiteClient {
             unSubRes = HttpUtil.post(httpClient, target, unSubscribeParam);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(
+        if (log.isDebugEnabled()) {
+            log.debug(
                 "unSubscribe message by await, targetEventMesh:{}, cost:{}ms, unSubscribeParam:{}, "
                     + "rtn:{}", target, (System.nanoTime() - startTime) / 1000000,
                 JsonUtils.serialize(unSubscribeParam), unSubRes);
