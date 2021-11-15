@@ -19,13 +19,10 @@ package org.apache.eventmesh.client.http.consumer;
 
 import org.apache.eventmesh.client.http.AbstractLiteClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
-import org.apache.eventmesh.client.http.RemotingServer;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.client.http.consumer.listener.LiteMessageListener;
 import org.apache.eventmesh.client.http.http.HttpUtil;
 import org.apache.eventmesh.client.http.http.RequestParam;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.client.tcp.common.EventMeshThreadFactoryImpl;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.ThreadPoolFactory;
@@ -44,7 +41,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -57,34 +53,33 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.netty.handler.codec.http.HttpMethod;
 
 public class LiteConsumer extends AbstractLiteClient {
 
-    public Logger logger = LoggerFactory.getLogger(LiteConsumer.class);
-
-    private RemotingServer remotingServer;
+    public static final Logger logger = LoggerFactory.getLogger(LiteConsumer.class);
 
     private ThreadPoolExecutor consumeExecutor;
 
     protected LiteClientConfig eventMeshClientConfig;
 
-    private List<SubscriptionItem> subscription = Lists.newArrayList();
+    private static final List<SubscriptionItem> subscription = Lists.newArrayList();
 
-    private LiteMessageListener messageListener;
+    private static final AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
 
-    protected final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4,
-        new EventMeshThreadFactoryImpl("TCPClientScheduler", true));
+    protected final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
+        Runtime.getRuntime().availableProcessors(),
+        new ThreadFactoryBuilder().setNameFormat("TCPClientScheduler").setDaemon(true).build()
+    );
 
-    public LiteConsumer(LiteClientConfig liteClientConfig) throws Exception {
+    public LiteConsumer(LiteClientConfig liteClientConfig) {
         super(liteClientConfig);
         this.consumeExecutor =
             ThreadPoolFactory.createThreadPoolExecutor(liteClientConfig.getConsumeThreadCore(),
-                liteClientConfig.getConsumeThreadMax(), "eventMesh-client-consume-");
+                liteClientConfig.getConsumeThreadMax(), "EventMesh-client-consume-");
         this.eventMeshClientConfig = liteClientConfig;
-//        this.remotingServer = new RemotingServer(10106, consumeExecutor);
-//        this.remotingServer.init();
     }
 
     public LiteConsumer(LiteClientConfig liteClientConfig,
@@ -92,22 +87,17 @@ public class LiteConsumer extends AbstractLiteClient {
         super(liteClientConfig);
         this.consumeExecutor = customExecutor;
         this.eventMeshClientConfig = liteClientConfig;
-//        this.remotingServer = new RemotingServer(this.consumeExecutor);
     }
-
-    private final AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
 
     @Override
     public void start() throws Exception {
-        Preconditions
-            .checkState(eventMeshClientConfig != null, "eventMeshClientConfig can't be null");
-        Preconditions.checkState(consumeExecutor != null, "consumeExecutor can't be null");
-//        Preconditions.checkState(messageListener != null, "messageListener can't be null");
+        Preconditions.checkNotNull(eventMeshClientConfig,
+            "EventMeshClientConfig can't be null");
+        Preconditions.checkNotNull(consumeExecutor, "consumeExecutor can't be null");
         logger.info("LiteConsumer starting");
         super.start();
         started.compareAndSet(false, true);
         logger.info("LiteConsumer started");
-//        this.remotingServer.start();
     }
 
     @Override
@@ -130,7 +120,7 @@ public class LiteConsumer extends AbstractLiteClient {
 
         RequestParam subscribeParam = generateSubscribeRequestParam(topicList, url);
 
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         String target = selectEventMesh();
         String subRes = "";
 
@@ -141,14 +131,14 @@ public class LiteConsumer extends AbstractLiteClient {
         if (logger.isDebugEnabled()) {
             logger.debug(
                 "subscribe message by await, targetEventMesh:{}, cost:{}ms, subscribeParam:{}, "
-                    + "rtn:{}", target, System.currentTimeMillis() - startTime,
+                    + "rtn:{}", target, (System.nanoTime() - startTime) / 1000000,
                 JsonUtils.serialize(subscribeParam), subRes);
         }
 
         EventMeshRetObj ret = JsonUtils.deserialize(subRes, EventMeshRetObj.class);
 
         if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
-            return Boolean.TRUE;
+            return true;
         } else {
             throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
         }
@@ -157,13 +147,9 @@ public class LiteConsumer extends AbstractLiteClient {
 
     private RequestParam generateSubscribeRequestParam(List<SubscriptionItem> topicList,
                                                        String url) {
-//        final LiteMessage liteMessage = new LiteMessage();
-//        liteMessage.setBizSeqNo(RandomStringUtils.randomNumeric(30))
-//                .setContent("subscribe message")
-//                .setUniqueId(RandomStringUtils.randomNumeric(30));
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam.addHeader(ProtocolKey.REQUEST_CODE,
-            String.valueOf(RequestCode.SUBSCRIBE.getRequestCode()))
+        requestParam
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.SUBSCRIBE.getRequestCode())
             .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshClientConfig.getEnv())
             .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshClientConfig.getIdc())
             .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshClientConfig.getIp())
@@ -191,8 +177,8 @@ public class LiteConsumer extends AbstractLiteClient {
         }
 
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam.addHeader(ProtocolKey.REQUEST_CODE,
-            String.valueOf(RequestCode.HEARTBEAT.getRequestCode()))
+        requestParam
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.HEARTBEAT.getRequestCode())
             .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshClientConfig.getEnv())
             .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshClientConfig.getIdc())
             .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshClientConfig.getIp())
@@ -220,7 +206,7 @@ public class LiteConsumer extends AbstractLiteClient {
                     }
                     RequestParam requestParam = generateHeartBeatRequestParam(topicList, url);
 
-                    long startTime = System.currentTimeMillis();
+                    long startTime = System.nanoTime();
                     String target = selectEventMesh();
                     String res = "";
 
@@ -231,7 +217,7 @@ public class LiteConsumer extends AbstractLiteClient {
                     if (logger.isDebugEnabled()) {
                         logger.debug(
                             "heartBeat message by await, targetEventMesh:{}, cost:{}ms, rtn:{}",
-                            target, System.currentTimeMillis() - startTime, res);
+                            target, (System.nanoTime() - startTime) / 1000000, res);
                     }
 
                     EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
@@ -248,17 +234,11 @@ public class LiteConsumer extends AbstractLiteClient {
 
     public boolean unsubscribe(List<String> topicList, String url) throws Exception {
         Set<String> unSub = new HashSet<>(topicList);
-        Iterator<SubscriptionItem> itr = subscription.iterator();
-        while (itr.hasNext()) {
-            SubscriptionItem item = itr.next();
-            if (unSub.contains(item.getTopic())) {
-                itr.remove();
-            }
-        }
+        subscription.removeIf(item -> unSub.contains(item.getTopic()));
 
         RequestParam unSubscribeParam = generateUnSubscribeRequestParam(topicList, url);
 
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         String target = selectEventMesh();
         String unSubRes = "";
 
@@ -269,14 +249,14 @@ public class LiteConsumer extends AbstractLiteClient {
         if (logger.isDebugEnabled()) {
             logger.debug(
                 "unSubscribe message by await, targetEventMesh:{}, cost:{}ms, unSubscribeParam:{}, "
-                    + "rtn:{}", target, System.currentTimeMillis() - startTime,
+                    + "rtn:{}", target, (System.nanoTime() - startTime) / 1000000,
                 JsonUtils.serialize(unSubscribeParam), unSubRes);
         }
 
         EventMeshRetObj ret = JsonUtils.deserialize(unSubRes, EventMeshRetObj.class);
 
         if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
-            return Boolean.TRUE;
+            return true;
         } else {
             throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
         }
@@ -284,8 +264,8 @@ public class LiteConsumer extends AbstractLiteClient {
 
     private RequestParam generateUnSubscribeRequestParam(List<String> topicList, String url) {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam.addHeader(ProtocolKey.REQUEST_CODE,
-            String.valueOf(RequestCode.UNSUBSCRIBE.getRequestCode()))
+        requestParam
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.UNSUBSCRIBE.getRequestCode())
             .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshClientConfig.getEnv())
             .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshClientConfig.getIdc())
             .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshClientConfig.getIp())
@@ -300,12 +280,6 @@ public class LiteConsumer extends AbstractLiteClient {
             .addBody(UnSubscribeRequestBody.CONSUMERGROUP, eventMeshClientConfig.getConsumerGroup())
             .addBody(UnSubscribeRequestBody.URL, url);
         return requestParam;
-    }
-
-    public void registerMessageListener(LiteMessageListener messageListener)
-        throws EventMeshException {
-        this.messageListener = messageListener;
-        remotingServer.registerMessageListener(this.messageListener);
     }
 
     public String selectEventMesh() {

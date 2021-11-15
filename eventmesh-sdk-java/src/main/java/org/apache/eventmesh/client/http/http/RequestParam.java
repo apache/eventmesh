@@ -113,11 +113,11 @@ public class RequestParam {
         return this;
     }
 
-    public RequestParam addHeader(String key, String value) {
+    public RequestParam addHeader(String key, Object value) {
         if (headers == null) {
             headers = new HashMap<>();
         }
-        headers.put(key, value);
+        headers.put(key, value.toString());
         return this;
     }
 

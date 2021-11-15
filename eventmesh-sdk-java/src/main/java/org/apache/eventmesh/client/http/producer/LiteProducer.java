@@ -48,19 +48,20 @@ import io.netty.handler.codec.http.HttpMethod;
 
 public class LiteProducer extends AbstractLiteClient {
 
-    public Logger logger = LoggerFactory.getLogger(LiteProducer.class);
+    public static final Logger logger = LoggerFactory.getLogger(LiteProducer.class);
 
     public LiteProducer(LiteClientConfig liteClientConfig) {
         super(liteClientConfig);
     }
 
-    private AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
+    private static final AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
 
     @Override
     public void start() throws Exception {
-        Preconditions.checkState(liteClientConfig != null, "liteClientConfig can't be null");
-        Preconditions.checkState(liteClientConfig.getLiteEventMeshAddr() != null,
-            "liteClientConfig.liteServerAddr can't be null");
+        Preconditions.checkNotNull(liteClientConfig, "liteClientConfig can't be null");
+        Preconditions.checkNotNull(
+            liteClientConfig.getLiteEventMeshAddr(), "liteClientConfig.liteServerAddr can't be null"
+        );
         if (started.get()) {
             return;
         }
@@ -94,8 +95,8 @@ public class LiteProducer extends AbstractLiteClient {
         Preconditions.checkState(StringUtils.isNotBlank(message.getContent()),
             "eventMeshMessage[content] invalid");
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam.addHeader(ProtocolKey.REQUEST_CODE,
-            String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()))
+        requestParam
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode())
             .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
             .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
             .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
@@ -153,8 +154,8 @@ public class LiteProducer extends AbstractLiteClient {
         Preconditions.checkState(StringUtils.isNotBlank(message.getContent()),
             "eventMeshMessage[content] invalid");
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam.addHeader(ProtocolKey.REQUEST_CODE,
-            String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
+        requestParam
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
             .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
             .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
             .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
@@ -172,7 +173,7 @@ public class LiteProducer extends AbstractLiteClient {
             .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
             .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         String target = selectEventMesh();
         String res = "";
 
@@ -183,7 +184,7 @@ public class LiteProducer extends AbstractLiteClient {
         if (logger.isDebugEnabled()) {
             logger.debug(
                 "publish sync message by await, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}",
-                target, System.currentTimeMillis() - startTime, message, res);
+                target, (System.nanoTime() - startTime) / 1000000, message, res);
         }
 
         EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
@@ -195,7 +196,7 @@ public class LiteProducer extends AbstractLiteClient {
                 .setTopic(replyMessage.topic);
             return eventMeshMessage;
         }
-
+        // todo: return msg
         return null;
     }
 
@@ -210,8 +211,8 @@ public class LiteProducer extends AbstractLiteClient {
         Preconditions.checkState(ObjectUtils.allNotNull(rrCallback),
             "rrCallback invalid");
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam.addHeader(ProtocolKey.REQUEST_CODE,
-            String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()))
+        requestParam
+            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
             .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
             .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
             .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
@@ -229,7 +230,7 @@ public class LiteProducer extends AbstractLiteClient {
             .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
             .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
 
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
         String target = selectEventMesh();
 
         try (CloseableHttpClient httpClient = setHttpClient()) {
@@ -239,7 +240,7 @@ public class LiteProducer extends AbstractLiteClient {
 
         if (logger.isDebugEnabled()) {
             logger.debug("publish sync message by async, target:{}, cost:{}, message:{}", target,
-                System.currentTimeMillis() - startTime, message);
+                (System.nanoTime() - startTime) / 1000000, message);
         }
     }
 }
