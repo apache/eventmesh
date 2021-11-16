@@ -81,7 +81,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 //        ReplyMessageRequestBody replyMessageRequestBody = (ReplyMessageRequestBody) asyncContext.getRequest().getBody();
 
         ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
-        CloudEvent event = httpCommandProtocolAdaptor.toCloudEventV1(asyncContext.getRequest());
+        CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         ReplyMessageResponseHeader replyMessageResponseHeader =
                 ReplyMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,

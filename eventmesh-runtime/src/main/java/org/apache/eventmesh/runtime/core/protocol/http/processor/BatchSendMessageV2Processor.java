@@ -75,7 +75,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
         ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
-        CloudEvent event = httpCommandProtocolAdaptor.toCloudEventV1(asyncContext.getRequest());
+        CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         SendMessageBatchV2ResponseHeader sendMessageBatchV2ResponseHeader =
                 SendMessageBatchV2ResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,

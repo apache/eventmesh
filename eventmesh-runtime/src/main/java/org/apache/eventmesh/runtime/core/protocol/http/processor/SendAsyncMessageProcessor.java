@@ -90,7 +90,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
-        CloudEvent event = httpCommandProtocolAdaptor.toCloudEventV1(asyncContext.getRequest());
+        CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         //validate event
         if (StringUtils.isBlank(event.getId())

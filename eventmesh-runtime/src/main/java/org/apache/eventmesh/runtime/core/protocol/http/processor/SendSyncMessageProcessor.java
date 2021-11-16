@@ -85,7 +85,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
         ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
-        CloudEvent event = httpCommandProtocolAdaptor.toCloudEventV1(asyncContext.getRequest());
+        CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         SendMessageResponseHeader sendMessageResponseHeader =
             SendMessageResponseHeader
