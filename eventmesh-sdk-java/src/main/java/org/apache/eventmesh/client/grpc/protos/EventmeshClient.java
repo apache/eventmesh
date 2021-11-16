@@ -36,42 +36,35 @@ public final class EventmeshClient {
 
     static final com.google.protobuf.Descriptors.Descriptor
             internal_static_eventmesh_client_RequestHeader_descriptor;
-    static final
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internal_static_eventmesh_client_RequestHeader_fieldAccessorTable;
     static final com.google.protobuf.Descriptors.Descriptor
             internal_static_eventmesh_client_Message_descriptor;
-    static final
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internal_static_eventmesh_client_Message_fieldAccessorTable;
     static final com.google.protobuf.Descriptors.Descriptor
             internal_static_eventmesh_client_Response_descriptor;
-    static final
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internal_static_eventmesh_client_Response_fieldAccessorTable;
     static final com.google.protobuf.Descriptors.Descriptor
             internal_static_eventmesh_client_Subscription_descriptor;
-    static final
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internal_static_eventmesh_client_Subscription_fieldAccessorTable;
     static final com.google.protobuf.Descriptors.Descriptor
             internal_static_eventmesh_client_Subscription_SubscriptionItem_descriptor;
-    static final
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internal_static_eventmesh_client_Subscription_SubscriptionItem_fieldAccessorTable;
     static final com.google.protobuf.Descriptors.Descriptor
             internal_static_eventmesh_client_Heartbeat_descriptor;
-    static final
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internal_static_eventmesh_client_Heartbeat_fieldAccessorTable;
     static final com.google.protobuf.Descriptors.Descriptor
             internal_static_eventmesh_client_Heartbeat_HeartbeatItem_descriptor;
-    static final
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    static final com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
             internal_static_eventmesh_client_Heartbeat_HeartbeatItem_fieldAccessorTable;
 
     public static com.google.protobuf.Descriptors.FileDescriptor
-    getDescriptor() {
+        getDescriptor() {
         return descriptor;
     }
 

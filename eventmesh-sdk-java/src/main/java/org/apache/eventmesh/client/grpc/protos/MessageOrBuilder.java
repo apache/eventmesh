@@ -20,6 +20,9 @@
 
 package org.apache.eventmesh.client.grpc.protos;
 
+/**
+ * MessageOrBuilder interface
+ */
 public interface MessageOrBuilder extends com.google.protobuf.MessageOrBuilder {
 
     /**
