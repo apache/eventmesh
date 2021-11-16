@@ -1,11 +1,21 @@
-syntax = "proto3";
+# gRPC Protocol Document In Eventmesh-Runtime
 
-package eventmesh.client;
+#### 1. protobuf
 
-option java_multiple_files = true;
-option java_package = "org.apache.eventmesh.client.grpc.protos";
-option java_outer_classname = "EventmeshClient";
+The `eventmesh-protocol-gprc` module contains the protobuf file of the evenmesh client. the protobuf file
+is located as `/src/main/proto/eventmesh-client.proto`.
 
+Run the gradle build to generate the gRPC codes. The generated codes are located at `/build/generated/source/proto/main`.
+
+These generated grpc codes will be used in `eventmesh-sdk-java` module.
+
+#### 2. data models
+
+- message
+
+The following is the message data model, used by `publish()`, `requestReply()` and `broadcast()` APIs.
+  
+```
 message RequestHeader {
     string env = 1;
     string region = 2;
@@ -35,7 +45,13 @@ message Response {
    string respTime = 3;
    string seqNum = 4;
 }
+```
 
+- subscription
+
+The following data model is used by `subscribe()` and `unsubscribe()` APIs.
+
+```
 message Subscription {
    RequestHeader header = 1;
    string consumerGroup = 2;
@@ -49,7 +65,13 @@ message Subscription {
 
    repeated SubscriptionItem subscriptionItems = 3;
 }
+```
 
+- heartbeat
+
+The following data model is used by `heartbeat()` API.
+
+```
 message Heartbeat {
   RequestHeader header = 1;
   string clientType = 2;
@@ -63,23 +85,37 @@ message Heartbeat {
 
   repeated HeartbeatItem heartbeatItems = 5;
 }
+```
 
-service PublisherService {
+#### 3. service operations
+
+- event publisher service APIs
+
+```
+   # Async event publish
    rpc publish(Message) returns (Response);
 
+   # Sync event publish
    rpc requestReply(Message) returns (Response);
 
+   # event broadcast
    rpc broadcast(Message) returns (Response);
-}
+```
 
-service ConsumerService {
+- event consumer service APIs
+
+```
+   # The subscribed event will be delivered by invoking the webhook url in the Subscription
    rpc subscribe(Subscription) returns (Response);
 
+   # The subscribed event will be delivered through stream of Message
    rpc subscribeStream(Subscription) returns (stream Message);
 
    rpc unsubscribe(Subscription) returns (Response);
-}
+```
 
-service HeartbeatService {
+- client heartbeat service API
+
+```
    rpc heartbeat(Heartbeat) returns (Response);
-}
+```
