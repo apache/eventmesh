@@ -17,33 +17,29 @@
 
 package org.apache.eventmesh.connector.rocketmq.producer;
 
-import java.io.File;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-
-import io.openmessaging.api.Message;
-import io.openmessaging.api.MessageBuilder;
-import io.openmessaging.api.MessagingAccessPoint;
-import io.openmessaging.api.OMS;
-import io.openmessaging.api.OMSBuiltinKeys;
-import io.openmessaging.api.SendCallback;
-import io.openmessaging.api.SendResult;
-
 import org.apache.eventmesh.api.RRCallback;
-import org.apache.eventmesh.api.producer.MeshMQProducer;
+import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWrapper;
+
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.common.MixAll;
-import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.remoting.exception.RemotingException;
+
+import java.io.File;
+import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RocketMQProducerImpl implements MeshMQProducer {
+import io.cloudevents.CloudEvent;
+import io.openmessaging.api.MessagingAccessPoint;
+
+public class RocketMQProducerImpl implements Producer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -67,8 +63,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
         properties.put("OPERATION_TIMEOUT", 3000);
         properties.put("PRODUCER_ID", producerGroup);
 
-        MessagingAccessPoint messagingAccessPoint = new MessagingAccessPointImpl(properties);
-        producer = (ProducerImpl) messagingAccessPoint.createProducer(properties);
+        producer = new ProducerImpl(properties);
 
     }
 
@@ -93,20 +88,19 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public void send(Message message, SendCallback sendCallback) throws Exception {
+    public void publish(CloudEvent message, SendCallback sendCallback) throws Exception {
         producer.sendAsync(message, sendCallback);
     }
 
     @Override
-    public void request(Message message, RRCallback rrCallback, long timeout)
+    public void request(CloudEvent message, RRCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         producer.request(message, rrCallback, timeout);
     }
 
     @Override
-    public boolean reply(final Message message, final SendCallback sendCallback) throws Exception {
-        message.putSystemProperties(MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
-        producer.sendAsync(message, sendCallback);
+    public boolean reply(final CloudEvent message, final SendCallback sendCallback) throws Exception {
+        producer.reply(message, sendCallback);
         return true;
     }
 
@@ -121,32 +115,21 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public SendResult send(Message message) {
+    public SendResult publish(CloudEvent message) {
         return producer.send(message);
     }
 
     @Override
-    public void sendOneway(Message message) {
+    public void sendOneway(CloudEvent message) {
         producer.sendOneway(message);
     }
 
     @Override
-    public void sendAsync(Message message, SendCallback sendCallback) {
+    public void sendAsync(CloudEvent message, SendCallback sendCallback) {
         producer.sendAsync(message, sendCallback);
     }
 
-    @Override
-    public void setCallbackExecutor(ExecutorService callbackExecutor) {
-        producer.setCallbackExecutor(callbackExecutor);
-    }
 
-    @Override
-    public void updateCredential(Properties credentialProperties) {
-        producer.updateCredential(credentialProperties);
-    }
 
-    @Override
-    public <T> MessageBuilder<T> messageBuilder() {
-        return null;
-    }
+
 }
