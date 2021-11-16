@@ -20,14 +20,13 @@
 
 package org.apache.eventmesh.client.grpc.protos;
 
-public interface ResponseOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:eventmesh.client.Response)
-    com.google.protobuf.MessageOrBuilder {
+public interface ResponseOrBuilder extends com.google.protobuf.MessageOrBuilder {
 
     /**
     * <code>string respCode = 1.</code>
     */
     String getRespCode();
+
     /**
     * <code>string respCode = 1.</code>
     */
@@ -37,6 +36,7 @@ public interface ResponseOrBuilder extends
     * <code>string respMsg = 2.</code>
     */
     String getRespMsg();
+
     /**
     * <code>string respMsg = 2.</code>
     */
@@ -46,6 +46,7 @@ public interface ResponseOrBuilder extends
     * <code>string respTime = 3.</code>
     */
     String getRespTime();
+
     /**
     * <code>string respTime = 3.</code>
     */
@@ -55,6 +56,7 @@ public interface ResponseOrBuilder extends
     * <code>string seqNum = 4.</code>
     */
     String getSeqNum();
+
     /**
     * <code>string seqNum = 4.</code>
     */

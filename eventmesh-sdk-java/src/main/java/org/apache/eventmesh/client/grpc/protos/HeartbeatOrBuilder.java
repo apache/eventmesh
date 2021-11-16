@@ -20,9 +20,7 @@
 
 package org.apache.eventmesh.client.grpc.protos;
 
-public interface HeartbeatOrBuilder extends
-        // @@protoc_insertion_point(interface_extends:eventmesh.client.Heartbeat)
-        com.google.protobuf.MessageOrBuilder {
+public interface HeartbeatOrBuilder extends com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>.eventmesh.client.RequestHeader header = 1.</code>

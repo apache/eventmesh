@@ -20,9 +20,7 @@
 
 package org.apache.eventmesh.client.grpc.protos;
 
-public interface SubscriptionOrBuilder extends
-        // @@protoc_insertion_point(interface_extends:eventmesh.client.Subscription)
-        com.google.protobuf.MessageOrBuilder {
+public interface SubscriptionOrBuilder extends com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>.eventmesh.client.RequestHeader header = 1.</code>
@@ -67,7 +65,8 @@ public interface SubscriptionOrBuilder extends
     /**
      * <code>repeated .eventmesh.client.Subscription.SubscriptionItem subscriptionItems = 3.</code>
      */
-    java.util.List<? extends Subscription.SubscriptionItemOrBuilder> getSubscriptionItemsOrBuilderList();
+    java.util.List<? extends Subscription.SubscriptionItemOrBuilder>
+        getSubscriptionItemsOrBuilderList();
 
     /**
      * <code>repeated .eventmesh.client.Subscription.SubscriptionItem subscriptionItems = 3.</code>

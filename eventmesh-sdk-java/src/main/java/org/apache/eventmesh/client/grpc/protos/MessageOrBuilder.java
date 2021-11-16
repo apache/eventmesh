@@ -20,9 +20,7 @@
 
 package org.apache.eventmesh.client.grpc.protos;
 
-public interface MessageOrBuilder extends
-        // @@protoc_insertion_point(interface_extends:eventmesh.client.Message)
-        com.google.protobuf.MessageOrBuilder {
+public interface MessageOrBuilder extends com.google.protobuf.MessageOrBuilder {
 
     /**
      * <code>.eventmesh.client.RequestHeader header = 1.</code>
