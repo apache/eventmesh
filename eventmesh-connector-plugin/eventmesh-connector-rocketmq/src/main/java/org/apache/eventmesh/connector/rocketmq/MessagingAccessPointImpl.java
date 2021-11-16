@@ -29,9 +29,6 @@ import io.openmessaging.api.order.OrderProducer;
 import io.openmessaging.api.transaction.LocalTransactionChecker;
 import io.openmessaging.api.transaction.TransactionProducer;
 
-import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
-import org.apache.eventmesh.connector.rocketmq.producer.ProducerImpl;
-
 public class MessagingAccessPointImpl implements MessagingAccessPoint {
 
     private Properties accessPointProperties;
@@ -52,7 +49,7 @@ public class MessagingAccessPointImpl implements MessagingAccessPoint {
 
     @Override
     public Producer createProducer(Properties properties) {
-        return new ProducerImpl(this.accessPointProperties);
+        return null;
     }
 
     @Override
@@ -72,7 +69,7 @@ public class MessagingAccessPointImpl implements MessagingAccessPoint {
 
     @Override
     public Consumer createConsumer(Properties properties) {
-        return new PushConsumerImpl(properties);
+        return null;
     }
 
     @Override
