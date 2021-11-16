@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package eventmesh.client;
+
+option java_multiple_files = true;
+option java_package = "org.apache.eventmesh.client.grpc.protos";
+option java_outer_classname = "EventmeshClient";
+
+message RequestHeader {
+    string env = 1;
+    string region = 2;
+    string idc = 3;
+    string ip = 4;
+    string pid = 5;
+    string sys = 6;
+    string username = 7;
+    string password = 8;
+    string version = 9;
+    string language = 10;
+    string seqNum = 11;
+}
+
+message Message {
+   RequestHeader header = 1;
+   string productionGroup = 2;
+   string topic = 3;
+   string content = 4;
+   string ttl = 5;
+   string uniqueId = 6;
+}
+
+message Response {
+   string respCode = 1;
+   string respMsg = 2;
+   string respTime = 3;
+   string seqNum = 4;
+}
+
+message Subscription {
+   RequestHeader header = 1;
+   string consumerGroup = 2;
+
+   message SubscriptionItem {
+      string topic = 1;
+      string mode = 2;
+      string type = 3;
+      string url = 4;
+   }
+
+   repeated SubscriptionItem subscriptionItems = 3;
+}
+
+message Heartbeat {
+  RequestHeader header = 1;
+  string clientType = 2;
+  string producerGroup = 3;
+  string consumerGroup = 4;
+
+  message HeartbeatItem {
+     string topic = 1;
+     string url = 2;
+  }
+
+  repeated HeartbeatItem heartbeatItems = 5;
+}
+
+service PublisherService {
+   rpc publish(Message) returns (Response);
+
+   rpc requestReply(Message) returns (Response);
+
+   rpc broadcast(Message) returns (Response);
+}
+
+service ConsumerService {
+   rpc subscribe(Subscription) returns (Response);
+
+   rpc subscribeStream(Subscription) returns (stream Message);
+
+   rpc unsubscribe(Subscription) returns (Response);
+}
+
+service HeartbeatService {
+   rpc heartbeat(Heartbeat) returns (Response);
+}

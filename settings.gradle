@@ -37,4 +37,6 @@ include 'eventmesh-protocol-plugin'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-api'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-openmessage'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-cloudevents'
+include 'eventmesh-protocol-plugin:eventmesh-protocol-grpc'
+findProject(':eventmesh-protocol-plugin:eventmesh-protocol-grpc')?.name = 'eventmesh-protocol-grpc'
 
