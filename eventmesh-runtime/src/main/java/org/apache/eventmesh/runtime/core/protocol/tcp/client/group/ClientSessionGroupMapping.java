@@ -22,6 +22,7 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -297,19 +298,18 @@ public class ClientSessionGroupMapping {
             for (Map.Entry<String, DownStreamMsgContext> entry : unAckMsg.entrySet()) {
                 DownStreamMsgContext downStreamMsgContext = entry.getValue();
                 if (SubscriptionMode.BROADCASTING.equals(downStreamMsgContext.subscriptionItem.getMode())) {
-                    logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}", downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt), session.getClient());
+                    logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}", downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.event), session.getClient());
                     continue;
                 }
-                Session reChooseSession = session.getClientGroupWrapper().get().getDownstreamDispatchStrategy().select(session.getClientGroupWrapper().get().getConsumerGroup()
-                        , downStreamMsgContext.msgExt.getTopic()
-                        , session.getClientGroupWrapper().get().groupConsumerSessions);
-                if(reChooseSession != null){
+                Session reChooseSession = session.getClientGroupWrapper().get().getDownstreamDispatchStrategy().select(session.getClientGroupWrapper().get().getConsumerGroup(),
+                        downStreamMsgContext.event.getSubject(), Objects.requireNonNull(session.getClientGroupWrapper().get()).groupConsumerSessions);
+                if (reChooseSession != null) {
                     downStreamMsgContext.session = reChooseSession;
                     reChooseSession.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     reChooseSession.downstreamMsg(downStreamMsgContext);
                     logger.info("rePush msg form unAckMsgs,seq:{},rePushClient:{}", entry.getKey(), downStreamMsgContext.session.getClient());
-                }else{
-                    logger.warn("select session fail in handleUnackMsgsInSession,seq:{},topic:{}", entry.getKey(), downStreamMsgContext.msgExt.getTopic());
+                } else {
+                    logger.warn("select session fail in handleUnackMsgsInSession,seq:{},topic:{}", entry.getKey(), downStreamMsgContext.event.getSubject());
                 }
             }
         }
@@ -387,7 +387,7 @@ public class ClientSessionGroupMapping {
                         downStreamMsgContext.ackMsg();
                         tmp.getPusher().getUnAckMsg().remove(seqKey);
                         logger.warn("remove expire downStreamMsgContext, session:{}, topic:{}, seq:{}", tmp,
-                                downStreamMsgContext.msgExt.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), seqKey);
+                                downStreamMsgContext.event.getSubject(), seqKey);
                     }
                 }
             }

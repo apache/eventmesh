@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.v1.CloudEventBuilder;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.RandomStringUtil;
@@ -28,6 +30,8 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.util.OMSUtil;
@@ -46,10 +50,7 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,14 +107,22 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
             handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshIDC);
 
-        handleMsgContext.getMsg().getUserProperties()
-            .put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-                String.valueOf(System.currentTimeMillis()));
+        CloudEvent event = new CloudEventBuilder(handleMsgContext.getEvent())
+                .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
+                        String.valueOf(System.currentTimeMillis()))
+                .build();
+        handleMsgContext.setEvent(event);
 
         String content = "";
         try {
-            content =
-                new String(handleMsgContext.getMsg().getBody(), EventMeshConstants.DEFAULT_CHARSET);
+            String protocolType = Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_TYPE)).toString();
+
+            ProtocolAdaptor protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+
+            content = (String) protocolAdaptor.fromCloudEvent(handleMsgContext.getEvent());
+
+//            content =
+//                new String(handleMsgContext.getEvent().getData().toBytes(), EventMeshConstants.DEFAULT_CHARSET);
         } catch (Exception ex) {
             return;
         }
@@ -140,7 +149,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         body.add(new BasicNameValuePair(PushMessageRequestBody.TOPIC, handleMsgContext.getTopic()));
 
         body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
-            JsonUtils.serialize(OMSUtil.getMessageProp(handleMsgContext.getMsg()))));
+            JsonUtils.serialize(OMSUtil.getEventProp(handleMsgContext.getEvent()))));
 
         try {
             builder.setEntity(new UrlEncodedFormEntity(body));
@@ -217,9 +226,9 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             });
 
             if (messageLogger.isDebugEnabled()) {
-                messageLogger.debug("message|eventMesh2client|url={}|topic={}|msg={}", currPushUrl,
+                messageLogger.debug("message|eventMesh2client|url={}|topic={}|event={}", currPushUrl,
                     handleMsgContext.getTopic(),
-                    handleMsgContext.getMsg());
+                    handleMsgContext.getEvent());
             } else {
                 messageLogger
                     .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",

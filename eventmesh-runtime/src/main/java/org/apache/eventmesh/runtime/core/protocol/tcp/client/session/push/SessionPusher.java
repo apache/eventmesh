@@ -17,19 +17,24 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
+import io.cloudevents.core.v1.CloudEventBuilder;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -69,14 +74,23 @@ public class SessionPusher {
             cmd = Command.ASYNC_MESSAGE_TO_CLIENT;
         }
 
+        String protocolType = Objects.requireNonNull(downStreamMsgContext.event.getExtension(Constants.PROTOCOL_TYPE)).toString();
+
+        ProtocolAdaptor protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+
         Package pkg = new Package();
-        downStreamMsgContext.msgExt.getSystemProperties().put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
+
+        downStreamMsgContext.event = new CloudEventBuilder(downStreamMsgContext.event)
+                .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                .build();
+//        downStreamMsgContext.event.getSystemProperties().put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
         EventMeshMessage body = null;
         int retCode = 0;
         String retMsg = null;
         try {
-            body = EventMeshUtil.encodeMessage(downStreamMsgContext.msgExt);
-            pkg.setBody(body);
+            pkg = (Package) protocolAdaptor.fromCloudEvent(downStreamMsgContext.event);
+//            body = EventMeshUtil.encodeMessage(downStreamMsgContext.event);
+//            pkg.setBody(downStreamMsgContext.event);
             pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, downStreamMsgContext.seq));
             messageLogger.info("pkg|mq2eventMesh|cmd={}|mqMsg={}|user={}", cmd, EventMeshUtil.printMqMessage(body), session.getClient());
         } catch (Exception e) {
@@ -91,7 +105,7 @@ public class SessionPusher {
                         @Override
                         public void operationComplete(ChannelFuture future) throws Exception {
                             if (!future.isSuccess()) {
-                                logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, msg:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, downStreamMsgContext.msgExt);
+                                logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, event:{}", downStreamMsgContext.seq, downStreamMsgContext.retryTimes, downStreamMsgContext.event);
                                 deliverFailMsgsCount.incrementAndGet();
 
                                 //how long to isolate client when push fail
@@ -108,7 +122,7 @@ public class SessionPusher {
                             } else {
                                 deliveredMsgsCount.incrementAndGet();
                                 logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
-                                        downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.msgExt));
+                                        downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.event));
 
                                 if (session.isIsolated()) {
                                     logger.info("cancel isolated,client:{}", session.getClient());
