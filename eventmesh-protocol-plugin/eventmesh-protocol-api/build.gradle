@@ -17,7 +17,7 @@
 
 dependencies {
     implementation project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
+    api project(":eventmesh-common")
 
     implementation "io.cloudevents:cloudevents-core"
 

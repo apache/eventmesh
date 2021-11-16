@@ -23,7 +23,9 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
+import io.cloudevents.CloudEvent;
 import io.openmessaging.api.Message;
 import io.openmessaging.api.OMSBuiltinKeys;
 
@@ -59,10 +61,13 @@ public class OMSUtil {
         return new HashMap<>((Map) properties);
     }
 
-    public static Map<String, String> getMessageProp(Message message) {
-        Properties p1 = message.getSystemProperties();
-        Properties p2 = message.getUserProperties();
-        return combineProp(p1, p2);
+    public static Map<String, String> getEventProp(CloudEvent event) {
+        Set<String> extensionSet = event.getExtensionNames();
+        Map<String, String> prop = new HashMap<>();
+        for (String extensionKey : extensionSet) {
+            prop.put(extensionKey, event.getExtension(extensionKey).toString());
+        }
+        return prop;
     }
 
 }

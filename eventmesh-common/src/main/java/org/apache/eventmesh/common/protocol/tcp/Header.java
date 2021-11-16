@@ -24,23 +24,23 @@ public class Header {
 
     private Command cmd;
     private int code;
-    private String dsec;
+    private String desc;
     private String seq;
-    private Map<String,Object> properties;
+    private Map<String, Object> properties;
 
     public Header() {
     }
 
-    public Header(Command cmd, int code, String dsec, String seq) {
+    public Header(Command cmd, int code, String desc, String seq) {
         this.cmd = cmd;
         this.code = code;
-        this.dsec = dsec;
+        this.desc = desc;
         this.seq = seq;
     }
 
-    public Header(int code, String dsec, String seq, Map<String, Object> properties) {
+    public Header(int code, String desc, String seq, Map<String, Object> properties) {
         this.code = code;
-        this.dsec = dsec;
+        this.desc = desc;
         this.seq = seq;
         this.properties = properties;
     }
@@ -61,12 +61,12 @@ public class Header {
         this.code = code;
     }
 
-    public String getDsec() {
-        return dsec;
+    public String getDesc() {
+        return desc;
     }
 
-    public void setDsec(String dsec) {
-        this.dsec = dsec;
+    public void setDesc(String desc) {
+        this.desc = desc;
     }
 
     public String getSeq() {
@@ -106,7 +106,7 @@ public class Header {
         return "Header{" +
             "cmd=" + cmd +
             ", code=" + code +
-            ", dsec='" + dsec + '\'' +
+            ", desc='" + desc + '\'' +
             ", seq='" + seq + '\'' +
             ", properties=" + properties +
             '}';

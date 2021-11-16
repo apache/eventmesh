@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
@@ -81,10 +82,11 @@ public class MessageUtils {
         Package msg = new Package();
         msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_SERVER, 0,
             null, generateRandomString(seqLength)));
-        msg.getHeader().putProperty(PropertyConst.PROPERTY_MESSAGE_PROTOCOL,
+        msg.getHeader().putProperty(Constants.PROTOCOL_TYPE,
             EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
-        msg.getHeader().putProperty(PropertyConst.PROPERTY_CLOUD_EVENT_VERSION,
+        msg.getHeader().putProperty(Constants.PROTOCOL_VERSION,
             cloudEvent.getSpecVersion().toString());
+        msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
         msg.setBody(cloudEvent);
         return msg;
     }
