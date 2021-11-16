@@ -20,13 +20,13 @@ package org.apache.eventmesh.connector.rocketmq.producer;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.openmessaging.api.exception.OMSMessageFormatException;
-import io.openmessaging.api.exception.OMSRuntimeException;
-import io.openmessaging.api.exception.OMSTimeOutException;
-
+import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfig;
+import org.apache.eventmesh.connector.rocketmq.exception.RMQMessageFormatException;
+import org.apache.eventmesh.connector.rocketmq.exception.RMQTimeoutException;
 import org.apache.eventmesh.connector.rocketmq.utils.BeanUtils;
 import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
+
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl;
@@ -38,7 +38,7 @@ import org.apache.rocketmq.remoting.exception.RemotingConnectException;
 import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
-public abstract class AbstractOMSProducer {
+public abstract class AbstractProducer {
 
     final static InternalLogger log = ClientLogger.getLog();
     final Properties properties;
@@ -48,14 +48,14 @@ public abstract class AbstractOMSProducer {
     private final ClientConfig clientConfig;
     private final String PRODUCER_ID = "PRODUCER_ID";
 
-    AbstractOMSProducer(final Properties properties) {
+    AbstractProducer(final Properties properties) {
         this.properties = properties;
         this.rocketmqProducer = new DefaultMQProducer();
         this.clientConfig = BeanUtils.populate(properties, ClientConfig.class);
 
         String accessPoints = clientConfig.getAccessPoints();
         if (accessPoints == null || accessPoints.isEmpty()) {
-            throw new OMSRuntimeException(-1, "OMS AccessPoints is null or empty.");
+            throw new ConnectorRuntimeException("OMS AccessPoints is null or empty.");
         }
 
         this.rocketmqProducer.setNamesrvAddr(accessPoints.replace(',', ';'));
@@ -75,7 +75,7 @@ public abstract class AbstractOMSProducer {
             try {
                 this.rocketmqProducer.start();
             } catch (MQClientException e) {
-                throw new OMSRuntimeException("-1", e);
+                throw new ConnectorRuntimeException("-1", e);
             }
         }
         this.started.set(true);
@@ -96,25 +96,30 @@ public abstract class AbstractOMSProducer {
         return !this.isStarted();
     }
 
-    OMSRuntimeException checkProducerException(String topic, String msgId, Throwable e) {
+    ConnectorRuntimeException checkProducerException(String topic, String msgId, Throwable e) {
         if (e instanceof MQClientException) {
             if (e.getCause() != null) {
                 if (e.getCause() instanceof RemotingTimeoutException) {
-                    return new OMSTimeOutException(-1, String.format("Send message to broker timeout, %dms, Topic=%s, msgId=%s",
+                    return new RMQTimeoutException(
+                        String.format("Send message to broker timeout, %dms, Topic=%s, msgId=%s",
                             this.rocketmqProducer.getSendMsgTimeout(), topic, msgId), e);
-                } else if (e.getCause() instanceof MQBrokerException || e.getCause() instanceof RemotingConnectException) {
+                } else if (e.getCause() instanceof MQBrokerException ||
+                    e.getCause() instanceof RemotingConnectException) {
                     if (e.getCause() instanceof MQBrokerException) {
                         MQBrokerException brokerException = (MQBrokerException) e.getCause();
-                        return new OMSRuntimeException(-1, String.format("Received a broker exception, Topic=%s, msgId=%s, %s",
+                        return new ConnectorRuntimeException(
+                            String.format("Received a broker exception, Topic=%s, msgId=%s, %s",
                                 topic, msgId, brokerException.getErrorMessage()), e);
                     }
 
                     if (e.getCause() instanceof RemotingConnectException) {
-                        RemotingConnectException connectException = (RemotingConnectException) e.getCause();
-                        return new OMSRuntimeException(-1,
-                                String.format("Network connection experiences failures. Topic=%s, msgId=%s, %s",
-                                        topic, msgId, connectException.getMessage()),
-                                e);
+                        RemotingConnectException connectException =
+                            (RemotingConnectException) e.getCause();
+                        return new ConnectorRuntimeException(
+                            String.format(
+                                "Network connection experiences failures. Topic=%s, msgId=%s, %s",
+                                topic, msgId, connectException.getMessage()),
+                            e);
                     }
                 }
             }
@@ -122,25 +127,33 @@ public abstract class AbstractOMSProducer {
             else {
                 MQClientException clientException = (MQClientException) e;
                 if (-1 == clientException.getResponseCode()) {
-                    return new OMSRuntimeException(-1, String.format("Topic does not exist, Topic=%s, msgId=%s",
+                    return new ConnectorRuntimeException(
+                        String.format("Topic does not exist, Topic=%s, msgId=%s",
                             topic, msgId), e);
                 } else if (ResponseCode.MESSAGE_ILLEGAL == clientException.getResponseCode()) {
-                    return new OMSMessageFormatException(-1, String.format("A illegal message for RocketMQ, Topic=%s, msgId=%s",
+                    return new RMQMessageFormatException(
+                        String.format("A illegal message for RocketMQ, Topic=%s, msgId=%s",
                             topic, msgId), e);
                 }
             }
         }
-        return new OMSRuntimeException(-1, "Send message to RocketMQ broker failed.", e);
+        return new ConnectorRuntimeException("Send message to RocketMQ broker failed.", e);
     }
 
     protected void checkProducerServiceState(DefaultMQProducerImpl producer) {
         switch (producer.getServiceState()) {
             case CREATE_JUST:
-                throw new OMSRuntimeException(String.format("You do not have start the producer, %s", producer.getServiceState()));
+                throw new ConnectorRuntimeException(
+                    String.format("You do not have start the producer, %s",
+                        producer.getServiceState()));
             case SHUTDOWN_ALREADY:
-                throw new OMSRuntimeException(String.format("Your producer has been shut down, %s", producer.getServiceState()));
+                throw new ConnectorRuntimeException(
+                    String.format("Your producer has been shut down, %s",
+                        producer.getServiceState()));
             case START_FAILED:
-                throw new OMSRuntimeException(String.format("When you start your service throws an exception, %s", producer.getServiceState()));
+                throw new ConnectorRuntimeException(
+                    String.format("When you start your service throws an exception, %s",
+                        producer.getServiceState()));
             case RUNNING:
             default:
         }
