@@ -89,6 +89,11 @@ public class SendMessageResponseBody extends Body {
         public String body;
         public Map<String, String> properties;
 
+        public ReplyMessage(String topic, String body){
+            this.topic = topic;
+            this.body = body;
+        }
+
         public ReplyMessage(String topic, String body, Map<String, String> properties) {
             this.topic = topic;
             this.body = body;

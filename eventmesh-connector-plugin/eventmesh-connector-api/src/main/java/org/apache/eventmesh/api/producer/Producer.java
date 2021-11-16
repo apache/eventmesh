@@ -17,10 +17,7 @@
 
 package org.apache.eventmesh.api.producer;
 
-import org.apache.eventmesh.api.LifeCycle;
-import org.apache.eventmesh.api.RRCallback;
-import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.*;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
@@ -45,6 +42,8 @@ public interface Producer extends LifeCycle {
     void sendAsync(final CloudEvent cloudEvent, final SendCallback sendCallback);
 
     void request(CloudEvent cloudEvent, RRCallback rrCallback, long timeout) throws Exception;
+
+    void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception;
 
     boolean reply(final CloudEvent cloudEvent, final SendCallback sendCallback) throws Exception;
 
