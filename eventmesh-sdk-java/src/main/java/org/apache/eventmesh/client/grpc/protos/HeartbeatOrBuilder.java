@@ -21,73 +21,76 @@
 package org.apache.eventmesh.client.grpc.protos;
 
 public interface HeartbeatOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:eventmesh.client.Heartbeat)
-    com.google.protobuf.MessageOrBuilder {
+        // @@protoc_insertion_point(interface_extends:eventmesh.client.Heartbeat)
+        com.google.protobuf.MessageOrBuilder {
 
-  /**
-   * <code>.eventmesh.client.RequestHeader header = 1;</code>
-   */
-  boolean hasHeader();
-  /**
-   * <code>.eventmesh.client.RequestHeader header = 1;</code>
-   */
-  RequestHeader getHeader();
-  /**
-   * <code>.eventmesh.client.RequestHeader header = 1;</code>
-   */
-  RequestHeaderOrBuilder getHeaderOrBuilder();
+    /**
+     * <code>.eventmesh.client.RequestHeader header = 1.</code>
+     */
+    boolean hasHeader();
 
-  /**
-   * <code>string clientType = 2;</code>
-   */
-  String getClientType();
-  /**
-   * <code>string clientType = 2;</code>
-   */
-  com.google.protobuf.ByteString
-      getClientTypeBytes();
+    /**
+     * <code>.eventmesh.client.RequestHeader header = 1.</code>
+     */
+    RequestHeader getHeader();
 
-  /**
-   * <code>string producerGroup = 3;</code>
-   */
-  String getProducerGroup();
-  /**
-   * <code>string producerGroup = 3;</code>
-   */
-  com.google.protobuf.ByteString
-      getProducerGroupBytes();
+    /**
+     * <code>.eventmesh.client.RequestHeader header = 1.</code>
+     */
+    RequestHeaderOrBuilder getHeaderOrBuilder();
 
-  /**
-   * <code>string consumerGroup = 4;</code>
-   */
-  String getConsumerGroup();
-  /**
-   * <code>string consumerGroup = 4;</code>
-   */
-  com.google.protobuf.ByteString
-      getConsumerGroupBytes();
+    /**
+     * <code>string clientType = 2.</code>
+     */
+    String getClientType();
 
-  /**
-   * <code>repeated .eventmesh.client.Heartbeat.HeartbeatItem heartbeatItems = 5;</code>
-   */
-  java.util.List<Heartbeat.HeartbeatItem>
-      getHeartbeatItemsList();
-  /**
-   * <code>repeated .eventmesh.client.Heartbeat.HeartbeatItem heartbeatItems = 5;</code>
-   */
-  Heartbeat.HeartbeatItem getHeartbeatItems(int index);
-  /**
-   * <code>repeated .eventmesh.client.Heartbeat.HeartbeatItem heartbeatItems = 5;</code>
-   */
-  int getHeartbeatItemsCount();
-  /**
-   * <code>repeated .eventmesh.client.Heartbeat.HeartbeatItem heartbeatItems = 5;</code>
-   */
-  java.util.List<? extends Heartbeat.HeartbeatItemOrBuilder>
-      getHeartbeatItemsOrBuilderList();
-  /**
-   * <code>repeated .eventmesh.client.Heartbeat.HeartbeatItem heartbeatItems = 5;</code>
-   */
-  Heartbeat.HeartbeatItemOrBuilder getHeartbeatItemsOrBuilder(
-      int index);
+    /**
+     * <code>string clientType = 2.</code>
+     */
+    com.google.protobuf.ByteString getClientTypeBytes();
+
+    /**
+     * <code>string producerGroup = 3.</code>
+     */
+    String getProducerGroup();
+
+    /**
+     * <code>string producerGroup = 3.</code>
+     */
+    com.google.protobuf.ByteString getProducerGroupBytes();
+
+    /**
+     * <code>string consumerGroup = 4.</code>
+     */
+    String getConsumerGroup();
+
+    /**
+     * <code>string consumerGroup = 4.</code>
+     */
+    com.google.protobuf.ByteString getConsumerGroupBytes();
+
+    /**
+     * <code>repeated .eventmesh.client.Heartbeat.HeartbeatItem heartbeatItems = 5.</code>
+     */
+    java.util.List<Heartbeat.HeartbeatItem> getHeartbeatItemsList();
+
+    /**
+     * <code>repeated .eventmesh.client.Heartbeat.HeartbeatItem heartbeatItems = 5.</code>
+     */
+    Heartbeat.HeartbeatItem getHeartbeatItems(int index);
+
+    /**
+     * <code>repeated .eventmesh.client.Heartbeat.HeartbeatItem heartbeatItems = 5.</code>
+     */
+    int getHeartbeatItemsCount();
+
+    /**
+     * <code>repeated .eventmesh.client.Heartbeat.HeartbeatItem heartbeatItems = 5.</code>
+     */
+    java.util.List<? extends Heartbeat.HeartbeatItemOrBuilder> getHeartbeatItemsOrBuilderList();
+
+    /**
+     * <code>repeated .eventmesh.client.Heartbeat.HeartbeatItem heartbeatItems = 5.</code>
+     */
+    Heartbeat.HeartbeatItemOrBuilder getHeartbeatItemsOrBuilder(int index);
 }

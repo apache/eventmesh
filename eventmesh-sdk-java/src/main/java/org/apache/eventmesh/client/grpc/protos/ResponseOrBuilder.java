@@ -24,43 +24,39 @@ public interface ResponseOrBuilder extends
     // @@protoc_insertion_point(interface_extends:eventmesh.client.Response)
     com.google.protobuf.MessageOrBuilder {
 
-  /**
-   * <code>string respCode = 1;</code>
-   */
-  String getRespCode();
-  /**
-   * <code>string respCode = 1;</code>
-   */
-  com.google.protobuf.ByteString
-      getRespCodeBytes();
+    /**
+    * <code>string respCode = 1.</code>
+    */
+    String getRespCode();
+    /**
+    * <code>string respCode = 1.</code>
+    */
+    com.google.protobuf.ByteString getRespCodeBytes();
 
-  /**
-   * <code>string respMsg = 2;</code>
-   */
-  String getRespMsg();
-  /**
-   * <code>string respMsg = 2;</code>
-   */
-  com.google.protobuf.ByteString
-      getRespMsgBytes();
+    /**
+    * <code>string respMsg = 2.</code>
+    */
+    String getRespMsg();
+    /**
+    * <code>string respMsg = 2.</code>
+    */
+    com.google.protobuf.ByteString getRespMsgBytes();
 
-  /**
-   * <code>string respTime = 3;</code>
-   */
-  String getRespTime();
-  /**
-   * <code>string respTime = 3;</code>
-   */
-  com.google.protobuf.ByteString
-      getRespTimeBytes();
+    /**
+    * <code>string respTime = 3.</code>
+    */
+    String getRespTime();
+    /**
+    * <code>string respTime = 3.</code>
+    */
+    com.google.protobuf.ByteString getRespTimeBytes();
 
-  /**
-   * <code>string seqNum = 4;</code>
-   */
-  String getSeqNum();
-  /**
-   * <code>string seqNum = 4;</code>
-   */
-  com.google.protobuf.ByteString
-      getSeqNumBytes();
+    /**
+    * <code>string seqNum = 4.</code>
+    */
+    String getSeqNum();
+    /**
+    * <code>string seqNum = 4.</code>
+    */
+    com.google.protobuf.ByteString getSeqNumBytes();
 }
