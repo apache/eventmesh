@@ -105,7 +105,7 @@ Runtime
 - [ ] WebAssembly runtime
 
 ## Quick Start
-1. [Connector quickstar](https://rocketmq.apache.org/docs/quick-start/) (RocketMQ, ignore this step if use standalone).
+1. [Connector quickstart](https://rocketmq.apache.org/docs/quick-start/) (RocketMQ, ignore this step if use standalone).
 2. [Runtime quickstart](docs/en/instructions/eventmesh-runtime-quickstart.md) or [Runtime quickstart with docker](docs/en/instructions/eventmesh-runtime-quickstart-with-docker.md).
 3. [Java SDK examples](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
 
