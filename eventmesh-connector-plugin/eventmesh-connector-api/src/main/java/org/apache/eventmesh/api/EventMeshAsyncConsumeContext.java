@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.api;
 
-import io.openmessaging.api.Action;
-import io.openmessaging.api.AsyncConsumeContext;
 
 public abstract class EventMeshAsyncConsumeContext extends AsyncConsumeContext {
 
@@ -34,8 +32,4 @@ public abstract class EventMeshAsyncConsumeContext extends AsyncConsumeContext {
 
     public abstract void commit(EventMeshAction action);
 
-    @Override
-    public void commit(Action action) {
-        throw new UnsupportedOperationException("not support yet");
-    }
 }

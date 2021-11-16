@@ -17,7 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.v1.CloudEventBuilder;
 import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.LiteMessage;
@@ -25,10 +28,13 @@ import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageResponseHeader;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -43,13 +49,13 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.openmessaging.api.Message;
 
 public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
@@ -78,10 +84,8 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             EventMeshConstants.PROTOCOL_HTTP,
             RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
-        SendMessageRequestHeader sendMessageRequestHeader =
-            (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
-        SendMessageRequestBody sendMessageRequestBody =
-            (SendMessageRequestBody) asyncContext.getRequest().getBody();
+        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
+        CloudEvent event = httpCommandProtocolAdaptor.toCloudEventV1(asyncContext.getRequest());
 
         SendMessageResponseHeader sendMessageResponseHeader =
             SendMessageResponseHeader
@@ -91,30 +95,52 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
-        if (StringUtils.isBlank(sendMessageRequestHeader.getIdc())
-            || StringUtils.isBlank(sendMessageRequestHeader.getPid())
-            || !StringUtils.isNumeric(sendMessageRequestHeader.getPid())
-            || StringUtils.isBlank(sendMessageRequestHeader.getSys())) {
+        //validate event
+        if (StringUtils.isBlank(event.getId())
+                || event.getSource() != null
+                || event.getSpecVersion() != null
+                || StringUtils.isBlank(event.getType())
+                || StringUtils.isBlank(event.getSubject())) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
-                sendMessageResponseHeader,
-                SendMessageResponseBody
-                    .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
-                        EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
+                    sendMessageResponseHeader,
+                    SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
             asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
 
-        if (StringUtils.isBlank(sendMessageRequestBody.getBizSeqNo())
-            || StringUtils.isBlank(sendMessageRequestBody.getUniqueId())
-            || StringUtils.isBlank(sendMessageRequestBody.getProducerGroup())
-            || StringUtils.isBlank(sendMessageRequestBody.getTopic())
-            || StringUtils.isBlank(sendMessageRequestBody.getContent())
-            || (StringUtils.isBlank(sendMessageRequestBody.getTtl()))) {
+        String idc = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.IDC)).toString();
+        String pid = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PID)).toString();
+        String sys = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.SYS)).toString();
+
+        //validate event-extension
+        if (StringUtils.isBlank(idc)
+                || StringUtils.isBlank(pid)
+                || !StringUtils.isNumeric(pid)
+                || StringUtils.isBlank(sys)) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
-                sendMessageResponseHeader,
-                SendMessageResponseBody
-                    .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
-                        EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
+                    sendMessageResponseHeader,
+                    SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
+                            EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
+            asyncContext.onComplete(responseEventMeshCommand);
+            return;
+        }
+
+        String bizNo = Objects.requireNonNull(event.getExtension(SendMessageRequestBody.BIZSEQNO)).toString();
+        String uniqueId = Objects.requireNonNull(event.getExtension(SendMessageRequestBody.UNIQUEID)).toString();
+        String producerGroup = Objects.requireNonNull(event.getExtension(SendMessageRequestBody.PRODUCERGROUP)).toString();
+        String topic = event.getSubject();
+        String ttl = Objects.requireNonNull(event.getExtension(SendMessageRequestBody.TTL)).toString();
+
+        //validate body
+        if (StringUtils.isBlank(bizNo)
+                || StringUtils.isBlank(uniqueId)
+                || StringUtils.isBlank(producerGroup)
+                || StringUtils.isBlank(topic)
+                || event.getData() != null
+                || StringUtils.isBlank(ttl)) {
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                    sendMessageResponseHeader,
+                    SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
             asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
@@ -122,13 +148,12 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-            String user = sendMessageRequestHeader.getUsername();
-            String pass = sendMessageRequestHeader.getPasswd();
-            String subsystem = sendMessageRequestHeader.getSys();
-            int requestCode = Integer.valueOf(sendMessageRequestHeader.getCode());
-            String topic = sendMessageRequestBody.getTopic();
+            String user = event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME).toString();
+            String pass = event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD).toString();
+            int requestCode = Integer.parseInt(asyncContext.getRequest().getRequestCode());
+
             try {
-                Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
+                Acl.doAclCheckInHttpSend(remoteAddr, user, pass, sys, topic, requestCode);
             } catch (Exception e) {
 
                 responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
@@ -156,7 +181,6 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String producerGroup = sendMessageRequestBody.getProducerGroup();
         EventMeshProducer eventMeshProducer =
             eventMeshHTTPServer.getProducerManager().getEventMeshProducer(producerGroup);
 
@@ -170,45 +194,19 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String ttl = String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS);
-        if (StringUtils.isNotBlank(sendMessageRequestBody.getTtl())
-            && StringUtils.isNumeric(sendMessageRequestBody.getTtl())) {
-            ttl = sendMessageRequestBody.getTtl();
-        }
-
-        Message omsMsg = new Message();
         try {
-            // body
-            omsMsg.setBody(
-                sendMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
-            // topic
-            omsMsg.setTopic(sendMessageRequestBody.getTopic());
-            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION,
-                sendMessageRequestBody.getTopic());
-            if (!StringUtils.isBlank(sendMessageRequestBody.getTag())) {
-                omsMsg.putUserProperties("Tag", sendMessageRequestBody.getTag());
-            }
-            // ttl
-            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_TIMEOUT, ttl);
-            // bizNo
-            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS,
-                sendMessageRequestBody.getBizSeqNo());
-            omsMsg.putUserProperties("msgType", "persistent");
-            omsMsg.putUserProperties(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP,
-                String.valueOf(System.currentTimeMillis()));
-            omsMsg.putUserProperties(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
+            event = new CloudEventBuilder(event)
+                    .withExtension("msgType", "persistent")
+                    .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                    .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                    .build();
 
             if (messageLogger.isDebugEnabled()) {
-                messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}",
-                    sendMessageRequestBody.getBizSeqNo(),
-                    sendMessageRequestBody.getTopic());
+                messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, topic);
             }
-            omsMsg.putUserProperties(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP,
-                String.valueOf(System.currentTimeMillis()));
+
         } catch (Exception e) {
-            messageLogger
-                .error("msg2MQMsg err, bizSeqNo={}, topic={}", sendMessageRequestBody.getBizSeqNo(),
-                    sendMessageRequestBody.getTopic(), e);
+            messageLogger.error("msg2MQMsg err, bizSeqNo={}, topic={}", bizNo, topic, e);
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                 sendMessageResponseHeader,
                 SendMessageResponseBody
@@ -220,7 +218,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         }
 
         final SendMessageContext sendMessageContext =
-            new SendMessageContext(sendMessageRequestBody.getBizSeqNo(), omsMsg, eventMeshProducer,
+            new SendMessageContext(bizNo, event, eventMeshProducer,
                 eventMeshHTTPServer);
         eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsg();
 
@@ -242,42 +240,29 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             }
         };
 
-        LiteMessage liteMessage = new LiteMessage(sendMessageRequestBody.getBizSeqNo(),
-            sendMessageRequestBody.getUniqueId(), sendMessageRequestBody.getTopic(),
-            sendMessageRequestBody.getContent())
-            .setProp(sendMessageRequestBody.getExtFields());
 
         try {
-            eventMeshProducer.request(sendMessageContext, new RRCallback() {
+            eventMeshProducer.request(sendMessageContext, new RequestReplyCallback() {
                 @Override
-                public void onSuccess(Message omsMsg) {
-                    omsMsg.getUserProperties().put(Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP,
-                        omsMsg.getSystemProperties("BORN_TIMESTAMP"));
-                    omsMsg.getUserProperties().put(EventMeshConstants.STORE_TIMESTAMP,
-                        omsMsg.getSystemProperties("STORE_TIMESTAMP"));
-                    omsMsg.getUserProperties().put(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP,
-                        String.valueOf(System.currentTimeMillis()));
-                    messageLogger.info(
-                        "message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
+                public void onSuccess(CloudEvent event) {
+                    messageLogger.info("message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
                             + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime,
-                        sendMessageRequestBody.getTopic(),
-                        sendMessageRequestBody.getBizSeqNo(),
-                        sendMessageRequestBody.getUniqueId());
+                        topic, bizNo, uniqueId);
 
                     try {
-                        final String rtnMsg =
-                            new String(omsMsg.getBody(), EventMeshConstants.DEFAULT_CHARSET);
-                        omsMsg.getUserProperties().put(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP,
-                            String.valueOf(System.currentTimeMillis()));
+                        event = new CloudEventBuilder(event)
+                                .withExtension(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP,
+                                String.valueOf(System.currentTimeMillis()))
+                                .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP,
+                                        String.valueOf(System.currentTimeMillis()))
+                                .build();
+                        final String rtnMsg = new String(event.getData().toBytes(), EventMeshConstants.DEFAULT_CHARSET);
+
                         HttpCommand succ = asyncContext.getRequest().createHttpCommandResponse(
                             sendMessageResponseHeader,
                             SendMessageResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(),
-                                JsonUtils.serialize(new SendMessageResponseBody.ReplyMessage(omsMsg
-                                    .getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION),
-                                    rtnMsg,
-                                    OMSUtil.combineProp(omsMsg.getSystemProperties(),
-                                        omsMsg.getUserProperties()))
-                                )));
+                                JsonUtils.serialize(new SendMessageResponseBody.ReplyMessage(topic,
+                                    rtnMsg))));
                         asyncContext.onComplete(succ, handler);
                     } catch (Exception ex) {
                         HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
@@ -305,11 +290,9 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     messageLogger.error(
                         "message|mq2eventMesh|RSP|SYNC|rrCost={}ms|topic={}"
                             + "|bizSeqNo={}|uniqueId={}", System.currentTimeMillis() - startTime,
-                        sendMessageRequestBody.getTopic(),
-                        sendMessageRequestBody.getBizSeqNo(),
-                        sendMessageRequestBody.getUniqueId(), e);
+                        topic, bizNo, uniqueId, e);
                 }
-            }, Integer.valueOf(ttl));
+            }, Integer.parseInt(ttl));
         } catch (Exception ex) {
             HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
                 sendMessageResponseHeader,
@@ -325,10 +308,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
             messageLogger.error(
                 "message|eventMesh2mq|REQ|SYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                endTime - startTime,
-                sendMessageRequestBody.getTopic(),
-                sendMessageRequestBody.getBizSeqNo(),
-                sendMessageRequestBody.getUniqueId(), ex);
+                endTime - startTime, topic, bizNo, uniqueId, ex);
         }
 
         return;

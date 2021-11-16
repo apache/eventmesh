@@ -17,24 +17,40 @@
 
 package org.apache.eventmesh.protocol.cloudevents;
 
+import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 
-import io.cloudevents.core.v1.CloudEventV1;
+import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+
+import java.util.List;
 
 /**
  * CloudEvents protocol adaptor, used to transform CloudEvents message to CloudEvents message.
  *
  * @since 1.3.0
  */
-public class CloudEventsProtocolAdaptor implements ProtocolAdaptor {
+public class CloudEventsProtocolAdaptor<T> implements ProtocolAdaptor<T> {
 
     @Override
-    public CloudEventV1 toCloudEventV1(Package cloudEvent) {
+    public CloudEvent toCloudEvent(T cloudEvent) {
+
+        if (cloudEvent instanceof Package){
+            //todo:convert package to cloudevents
+        }else if (cloudEvent instanceof HttpCommand){
+            //todo:convert httpCommand to cloudevents
+        }
         return null;
     }
 
     @Override
-    public Package fromCloudEventV1(CloudEventV1 cloudEvent) {
+    public List<CloudEvent> toBatchCloudEvent(T protocol) throws ProtocolHandleException {
+        return null;
+    }
+
+    @Override
+    public T fromCloudEvent(CloudEvent cloudEvent) {
         return null;
     }
 

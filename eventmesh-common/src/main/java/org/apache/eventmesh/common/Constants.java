@@ -29,6 +29,12 @@ public class Constants {
 
     public static final String HTTPS_PROTOCOL_PREFIX = "https://";
 
+    public static final String PROTOCOL_TYPE = "protocol_type";
+
+    public static final String PROTOCOL_VERSION = "protocol_version";
+
+    public static final String PROTOCOL_DESC = "protocol_desc";
+
     public static final int DEFAULT_HTTP_TIME_OUT = 3000;
 
     public static final String EVENTMESH_MESSAGE_CONST_TTL = "ttl";
