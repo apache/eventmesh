@@ -43,7 +43,7 @@ public interface ProtocolAdaptor<T> {
      * @param protocol input protocol
      * @return cloud event
      */
-    CloudEventV1 toCloudEventV1(T protocol) throws ProtocolHandleException;
+    CloudEvent toCloudEvent(T protocol) throws ProtocolHandleException;
 
     /**
      * transform protocol to {@link CloudEvent} list.
@@ -51,7 +51,7 @@ public interface ProtocolAdaptor<T> {
      * @param protocol input protocol
      * @return list cloud event
      */
-    List<CloudEventV1> toBatchCloudEventV1(T protocol) throws ProtocolHandleException;
+    List<CloudEvent> toBatchCloudEvent(T protocol) throws ProtocolHandleException;
 
     /**
      * Transform {@link CloudEvent} to target protocol.
@@ -59,7 +59,7 @@ public interface ProtocolAdaptor<T> {
      * @param cloudEvent clout event
      * @return target protocol
      */
-    Package fromCloudEventV1(CloudEventV1 cloudEvent) throws ProtocolHandleException;
+    T fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException;
 
     /**
      * Get protocol type.

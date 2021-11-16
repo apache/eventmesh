@@ -21,16 +21,20 @@ import io.cloudevents.core.v1.CloudEventBuilder;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -70,7 +74,12 @@ public class SessionPusher {
             cmd = Command.ASYNC_MESSAGE_TO_CLIENT;
         }
 
+        String protocolType = Objects.requireNonNull(downStreamMsgContext.event.getExtension(Constants.PROTOCOL_TYPE)).toString();
+
+        ProtocolAdaptor protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+
         Package pkg = new Package();
+
         downStreamMsgContext.event = new CloudEventBuilder(downStreamMsgContext.event)
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                 .build();
@@ -79,8 +88,9 @@ public class SessionPusher {
         int retCode = 0;
         String retMsg = null;
         try {
+            pkg = (Package) protocolAdaptor.fromCloudEvent(downStreamMsgContext.event);
 //            body = EventMeshUtil.encodeMessage(downStreamMsgContext.event);
-            pkg.setBody(downStreamMsgContext.event);
+//            pkg.setBody(downStreamMsgContext.event);
             pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, downStreamMsgContext.seq));
             messageLogger.info("pkg|mq2eventMesh|cmd={}|mqMsg={}|user={}", cmd, EventMeshUtil.printMqMessage(body), session.getClient());
         } catch (Exception e) {

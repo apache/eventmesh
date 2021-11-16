@@ -36,17 +36,17 @@ import java.util.List;
 public class OpenMessageProtocolAdaptor<T> implements ProtocolAdaptor<T> {
 
     @Override
-    public CloudEventV1 toCloudEventV1(T message) {
+    public CloudEvent toCloudEvent(T message) {
         return null;
     }
 
     @Override
-    public List<CloudEventV1> toBatchCloudEventV1(T protocol) throws ProtocolHandleException {
+    public List<CloudEvent> toBatchCloudEvent(T protocol) throws ProtocolHandleException {
         return null;
     }
 
     @Override
-    public Package fromCloudEventV1(CloudEventV1 cloudEvent) {
+    public T fromCloudEvent(CloudEvent cloudEvent) {
         return null;
     }
 

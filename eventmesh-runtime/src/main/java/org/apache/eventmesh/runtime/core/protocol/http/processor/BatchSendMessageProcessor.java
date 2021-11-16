@@ -89,7 +89,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
 
         ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
-        List<CloudEvent> eventList = httpCommandProtocolAdaptor.toBatchCloudEventV1(asyncContext.getRequest());
+        List<CloudEvent> eventList = httpCommandProtocolAdaptor.toBatchCloudEvent(asyncContext.getRequest());
 
         if (CollectionUtils.isEmpty(eventList)) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
