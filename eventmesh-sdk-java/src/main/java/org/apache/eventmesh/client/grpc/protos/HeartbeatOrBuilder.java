@@ -21,7 +21,7 @@
 package org.apache.eventmesh.client.grpc.protos;
 
 /**
- * HeartbeatOrBuilder interface
+ * HeartbeatOrBuilder interface.
  */
 public interface HeartbeatOrBuilder extends com.google.protobuf.MessageOrBuilder {
 

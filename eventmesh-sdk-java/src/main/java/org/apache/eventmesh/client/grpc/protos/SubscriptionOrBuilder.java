@@ -21,7 +21,7 @@
 package org.apache.eventmesh.client.grpc.protos;
 
 /**
- * SubscriptionOrBuilder interface
+ * SubscriptionOrBuilder interface.
  */
 public interface SubscriptionOrBuilder extends com.google.protobuf.MessageOrBuilder {
 
