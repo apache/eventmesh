@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventBuilder;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.SendCallback;
@@ -74,7 +74,10 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                 EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
-        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
+        SendMessageBatchV2RequestHeader sendMessageBatchV2RequestHeader = (SendMessageBatchV2RequestHeader) asyncContext.getRequest().getHeader();
+
+        String protocolType = sendMessageBatchV2RequestHeader.getProtocolType();
+        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         SendMessageBatchV2ResponseHeader sendMessageBatchV2ResponseHeader =
@@ -83,7 +86,8 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         //validate event
-        if (StringUtils.isBlank(event.getId())
+        if (event != null
+                || StringUtils.isBlank(event.getId())
                 || event.getSource() != null
                 || event.getSpecVersion() != null
                 || StringUtils.isBlank(event.getType())
@@ -173,12 +177,12 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         String ttl = String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS);
         if (StringUtils.isBlank(event.getExtension(SendMessageRequestBody.TTL).toString())
                 && !StringUtils.isNumeric(event.getExtension(SendMessageRequestBody.TTL).toString())) {
-            event = new CloudEventBuilder(event).withExtension(SendMessageRequestBody.TTL, ttl).build();
+            event = CloudEventBuilder.from(event).withExtension(SendMessageRequestBody.TTL, ttl).build();
         }
 
 
         try {
-            event = new CloudEventBuilder(event)
+            event = CloudEventBuilder.from(event)
                     .withExtension("msgType", "persistent")
                     .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))

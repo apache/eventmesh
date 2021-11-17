@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventBuilder;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -74,7 +74,7 @@ public class MessageTransferTask extends AbstractTask {
         EventMeshTcpSendResult sendStatus;
         CloudEvent event = null;
         try {
-            event = protocolAdaptor.toCloudEventV1(pkg);
+            event = protocolAdaptor.toCloudEvent(pkg);
             if (event == null) {
                 throw new Exception("event is null");
             }
@@ -123,13 +123,13 @@ public class MessageTransferTask extends AbstractTask {
 
     private CloudEvent addTimestamp(CloudEvent event, Command cmd, long sendTime) {
         if (cmd.equals(RESPONSE_TO_SERVER)) {
-            event = new CloudEventBuilder(event)
+            event = CloudEventBuilder.from(event)
                     .withExtension(EventMeshConstants.RSP_C2EVENTMESH_TIMESTAMP, String.valueOf(startTime))
                     .withExtension(EventMeshConstants.RSP_EVENTMESH2MQ_TIMESTAMP, String.valueOf(sendTime))
                     .withExtension(EventMeshConstants.RSP_SEND_EVENTMESH_IP, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp)
                     .build();
         } else {
-            event = new CloudEventBuilder(event)
+            event = CloudEventBuilder.from(event)
                     .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(startTime))
                     .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(sendTime))
                     .withExtension(EventMeshConstants.REQ_SEND_EVENTMESH_IP, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp)

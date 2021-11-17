@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventBuilder;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.RandomStringUtil;
@@ -107,7 +107,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
             handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshIDC);
 
-        CloudEvent event = new CloudEventBuilder(handleMsgContext.getEvent())
+        CloudEvent event = CloudEventBuilder.from(handleMsgContext.getEvent())
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
                         String.valueOf(System.currentTimeMillis()))
                 .build();

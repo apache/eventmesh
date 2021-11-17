@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 
-import io.cloudevents.core.v1.CloudEventBuilder;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.api.*;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
@@ -115,7 +115,7 @@ public class EventMeshConsumer {
                     String bizSeqNo = (String) event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
                     String uniqueId = (String) event.getExtension(Constants.RMB_UNIQ_ID);
 
-                    event = new CloudEventBuilder(event)
+                    event = CloudEventBuilder.from(event)
                             .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                             .build();
 //                    message.getUserProperties().put(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
@@ -164,7 +164,7 @@ public class EventMeshConsumer {
                 @Override
                 public void consume(CloudEvent event, AsyncConsumeContext context) {
 
-                    event = new CloudEventBuilder(event)
+                    event = CloudEventBuilder.from(event)
                             .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                             .build();
 

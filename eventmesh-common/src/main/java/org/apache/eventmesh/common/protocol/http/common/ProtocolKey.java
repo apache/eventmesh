@@ -23,6 +23,12 @@ public class ProtocolKey {
     public static final String LANGUAGE = "Language";
     public static final String VERSION = "Version";
 
+    public static final String PROTOCOL_TYPE = "protocol_type";
+
+    public static final String PROTOCOL_VERSION = "protocol_version";
+
+    public static final String PROTOCOL_DESC = "protocol_desc";
+
     public static class ClientInstanceKey {
         ////////////////////////////////////Protocol layer requester description///////////
         public static final String ENV = "Env";

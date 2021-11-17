@@ -18,16 +18,20 @@
 package org.apache.eventmesh.protocol.cloudevents;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchProtocolResolver;
+import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchV2ProtocolResolver;
+import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageRequestProtocolResolver;
+import org.apache.eventmesh.protocol.cloudevents.resolver.tcp.TcpMessageProtocolResolver;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -42,55 +46,41 @@ public class CloudEventsProtocolAdaptor<T> implements ProtocolAdaptor<T> {
     @Override
     public CloudEvent toCloudEvent(T cloudEvent) throws ProtocolHandleException {
 
-        CloudEventBuilder cloudEventBuilder;
-
         if (cloudEvent instanceof Package) {
-
             Header header = ((Package) cloudEvent).getHeader();
             Object body = ((Package) cloudEvent).getBody();
-            String protocolType = header.getProperty(Constants.PROTOCOL_TYPE).toString();
-            String protocolVersion = header.getProperty(Constants.PROTOCOL_VERSION).toString();
-            String protocolDesc = header.getProperty(Constants.PROTOCOL_DESC).toString();
 
-            if (StringUtils.isBlank(protocolType)
-                    || StringUtils.isBlank(protocolVersion)
-                    || StringUtils.isBlank(protocolDesc)) {
-                throw new ProtocolHandleException(String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
-                        protocolType, protocolVersion, protocolDesc));
-            }
+            return deserializeTcpProtocol(header, body);
 
-            if (!StringUtils.equals("cloudevents", protocolType)) {
-                throw new ProtocolHandleException(String.format("Unsupported protocolType: %s", protocolType));
-            }
-            if (StringUtils.equals("1.0", protocolVersion)) {
-                cloudEventBuilder = CloudEventBuilder.v1((CloudEvent) body);
-
-                for (String propKey : header.getProperties().keySet()) {
-                    cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
-                }
-
-                return cloudEventBuilder.build();
-
-            } else if (StringUtils.equals("0.3", protocolVersion)) {
-                cloudEventBuilder = CloudEventBuilder.v03((CloudEvent) body);
-
-                for (String propKey : header.getProperties().keySet()) {
-                    cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
-                }
-
-                return cloudEventBuilder.build();
-
-            } else {
-                throw new ProtocolHandleException(String.format("Unsupported protocolVersion: %s", protocolVersion));
-            }
         } else if (cloudEvent instanceof HttpCommand) {
             org.apache.eventmesh.common.protocol.http.header.Header header = ((HttpCommand) cloudEvent).getHeader();
             Body body = ((HttpCommand) cloudEvent).getBody();
-            //todo:convert httpCommand to cloudevents
+            String requestCode = ((HttpCommand) cloudEvent).getRequestCode();
+
+            return deserializeHttpProtocol(requestCode, header, body);
         } else {
-            throw new ProtocolHandleException("protocol class: " + cloudEvent.getClass());
+            throw new ProtocolHandleException(String.format("protocol class: %s", cloudEvent.getClass()));
         }
-        return null;
+    }
+
+    private CloudEvent deserializeTcpProtocol(Header header, Object body) throws ProtocolHandleException {
+        return TcpMessageProtocolResolver.buildEvent(header, body);
+    }
+
+    private CloudEvent deserializeHttpProtocol(String requestCode, org.apache.eventmesh.common.protocol.http.header.Header header, Body body) throws ProtocolHandleException {
+
+        if (String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()).equals(requestCode)) {
+            return SendMessageBatchProtocolResolver.buildEvent(header, body);
+        } else if (String.valueOf(RequestCode.MSG_BATCH_SEND_V2.getRequestCode()).equals(requestCode)) {
+            return SendMessageBatchV2ProtocolResolver.buildEvent(header, body);
+        } else if (String.valueOf(RequestCode.MSG_SEND_SYNC.getRequestCode()).equals(requestCode)) {
+            return SendMessageRequestProtocolResolver.buildEvent(header, body);
+        } else if (String.valueOf(RequestCode.MSG_SEND_ASYNC.getRequestCode()).equals(requestCode)) {
+            return SendMessageRequestProtocolResolver.buildEvent(header, body);
+        } else {
+            throw new ProtocolHandleException(String.format("unsupported requestCode: %s", requestCode));
+        }
+
     }
 
     @Override

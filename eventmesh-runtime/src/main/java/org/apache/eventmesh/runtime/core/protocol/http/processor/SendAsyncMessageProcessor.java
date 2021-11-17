@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import io.cloudevents.core.builder.CloudEventBuilder;
 import jdk.nashorn.internal.runtime.URIUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.SendCallback;
@@ -53,7 +54,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 
 public class SendAsyncMessageProcessor implements HttpRequestProcessor {
@@ -81,7 +81,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
-//        SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
+        SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
 //        SendMessageRequestBody sendMessageRequestBody = (SendMessageRequestBody) asyncContext.getRequest().getBody();
 
         SendMessageResponseHeader sendMessageResponseHeader =
@@ -89,11 +89,13 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
-        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
+        String protocolType = sendMessageRequestHeader.getProtocolType();
+        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         //validate event
-        if (StringUtils.isBlank(event.getId())
+        if (event != null
+                || StringUtils.isBlank(event.getId())
                 || event.getSource() != null
                 || event.getSpecVersion() != null
                 || StringUtils.isBlank(event.getType())
@@ -185,7 +187,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         String ttl = String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS);
         if (StringUtils.isBlank(event.getExtension(SendMessageRequestBody.TTL).toString())
                 && !StringUtils.isNumeric(event.getExtension(SendMessageRequestBody.TTL).toString())) {
-            event = new CloudEventBuilder(event).withExtension(SendMessageRequestBody.TTL, ttl).build();
+            event = CloudEventBuilder.from(event).withExtension(SendMessageRequestBody.TTL, ttl).build();
         }
 
         try {
@@ -202,7 +204,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 //            omsMsg.putUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT, ttl);
 //            // bizNo
 //            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS, sendMessageRequestBody.getBizSeqNo());
-            event = new CloudEventBuilder(event)
+            event = CloudEventBuilder.from(event)
                     .withExtension("msgType", "persistent")
                     .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
@@ -248,7 +250,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
 
         try {
-            event = new CloudEventBuilder(sendMessageContext.getEvent())
+            event = CloudEventBuilder.from(sendMessageContext.getEvent())
                     .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .build();
             sendMessageContext.setEvent(event);
