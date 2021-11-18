@@ -1098,6 +1098,81 @@
             "moduleLicense": "Apache License, Version 2.0",
             "moduleVersion": "5.3.10",
             "moduleName": "org.springframework:spring-webmvc"
+        },
+        {
+            "moduleLicense": "Apache-2.0",
+            "moduleVersion": "1.0.0",
+            "moduleName": "com.google.api.grpc:proto-google-common-protos"
+        },
+        {
+            "moduleLicense": "Apache 2.0",
+            "moduleVersion": "2.7",
+            "moduleName": "com.google.code.gson:gson"
+        },
+        {
+            "moduleLicense": "3-Clause BSD License",
+            "moduleVersion": "3.5.1",
+            "moduleName": "com.google.protobuf:protobuf-java"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "3.5.1",
+            "moduleName": "com.google.protobuf:protobuf-java"
+        },
+        {
+            "moduleLicense": "3-Clause BSD License",
+            "moduleVersion": "3.5.1",
+            "moduleName": "com.google.protobuf:protobuf-java-util"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "3.5.1",
+            "moduleName": "com.google.protobuf:protobuf-java-util"
+        },
+        {
+            "moduleLicense": "Apache 2.0",
+            "moduleVersion": "1.15.0",
+            "moduleName": "io.grpc:grpc-context"
+        },
+        {
+            "moduleLicense": "Apache 2.0",
+            "moduleVersion": "1.15.0",
+            "moduleName": "io.grpc:grpc-core"
+        },
+        {
+            "moduleLicense": "Apache 2.0",
+            "moduleVersion": "1.15.0",
+            "moduleName": "io.grpc:grpc-protobuf"
+        },
+        {
+            "moduleLicense": "Apache 2.0",
+            "moduleVersion": "1.15.0",
+            "moduleName": "io.grpc:grpc-protobuf-lite"
+        },
+        {
+            "moduleLicense": "Apache 2.0",
+            "moduleVersion": "1.15.0",
+            "moduleName": "io.grpc:grpc-stub"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "0.12.3",
+            "moduleName": "io.opencensus:opencensus-api"
+        },
+        {
+            "moduleLicense": "The Apache License, Version 2.0",
+            "moduleVersion": "0.12.3",
+            "moduleName": "io.opencensus:opencensus-contrib-grpc-metrics"
+        },
+        {
+            "moduleLicense": "MIT license",
+            "moduleVersion": "1.17",
+            "moduleName": "org.codehaus.mojo:animal-sniffer-annotations"
+        },
+        {
+            "moduleLicense": "The Apache Software License, Version 2.0",
+            "moduleVersion": "1.17",
+            "moduleName": "org.codehaus.mojo:animal-sniffer-annotations"
         }
   ]
 }
