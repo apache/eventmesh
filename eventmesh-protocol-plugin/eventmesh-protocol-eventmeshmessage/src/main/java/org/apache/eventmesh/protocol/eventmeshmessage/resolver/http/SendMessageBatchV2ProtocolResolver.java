@@ -1,4 +1,4 @@
-package org.apache.eventmesh.protocol.cloudevents.resolver.http;
+package org.apache.eventmesh.protocol.eventmeshmessage.resolver.http;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -12,8 +12,11 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+
+import java.nio.charset.StandardCharsets;
 
 public class SendMessageBatchV2ProtocolResolver {
     public static CloudEvent buildEvent(Header header, Body body) throws ProtocolHandleException {
@@ -39,9 +42,13 @@ public class SendMessageBatchV2ProtocolResolver {
             String content = sendMessageBatchV2RequestBody.getMsg();
 
             CloudEvent event = null;
+            CloudEventBuilder cloudEventBuilder;
             if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-                event = JsonUtils.deserialize(content, CloudEventV1.class);
-                event = CloudEventBuilder.from(event)
+                cloudEventBuilder = CloudEventBuilder.v1();
+
+                event = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
+                        .withSubject(sendMessageBatchV2RequestBody.getTopic())
+                        .withData(content.getBytes(StandardCharsets.UTF_8))
                         .withExtension(ProtocolKey.REQUEST_CODE, code)
                         .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
                         .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
@@ -55,10 +62,16 @@ public class SendMessageBatchV2ProtocolResolver {
                         .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
                         .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
                         .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                        .withExtension(SendMessageBatchV2RequestBody.BIZSEQNO, sendMessageBatchV2RequestBody.getBizSeqNo())
+                        .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, sendMessageBatchV2RequestBody.getProducerGroup())
+                        .withExtension(SendMessageBatchV2RequestBody.TTL, sendMessageBatchV2RequestBody.getTtl())
+                        .withExtension(SendMessageBatchV2RequestBody.TAG, sendMessageBatchV2RequestBody.getTag())
                         .build();
             } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
-                event = JsonUtils.deserialize(content, CloudEventV03.class);
-                event = CloudEventBuilder.from(event)
+                cloudEventBuilder = CloudEventBuilder.v03();
+                event = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
+                        .withSubject(sendMessageBatchV2RequestBody.getTopic())
+                        .withData(content.getBytes(StandardCharsets.UTF_8))
                         .withExtension(ProtocolKey.REQUEST_CODE, code)
                         .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
                         .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
@@ -72,6 +85,10 @@ public class SendMessageBatchV2ProtocolResolver {
                         .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
                         .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
                         .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                        .withExtension(SendMessageBatchV2RequestBody.BIZSEQNO, sendMessageBatchV2RequestBody.getBizSeqNo())
+                        .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, sendMessageBatchV2RequestBody.getProducerGroup())
+                        .withExtension(SendMessageBatchV2RequestBody.TTL, sendMessageBatchV2RequestBody.getTtl())
+                        .withExtension(SendMessageBatchV2RequestBody.TAG, sendMessageBatchV2RequestBody.getTag())
                         .build();
             }
             return event;
