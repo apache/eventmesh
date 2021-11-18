@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
@@ -63,8 +64,8 @@ public class MessageTransferTask extends AbstractTask {
         Command cmd = pkg.getHeader().getCommand();
         Command replyCmd = getReplyCmd(cmd);
         String protocolType = "EventMeshMessage";
-        if (pkg.getHeader().getProperties() != null && pkg.getHeader().getProperty("message_protocol") != null) {
-            protocolType = (String) pkg.getHeader().getProperty("message_protocol");
+        if (pkg.getHeader().getProperties() != null && pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE) != null) {
+            protocolType = (String) pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE);
         }
         ProtocolAdaptor protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         Package msg = new Package();
