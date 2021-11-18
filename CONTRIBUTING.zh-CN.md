@@ -16,6 +16,7 @@ Editor -> Code Style -> Java -> Scheme -> Import Scheme -> CheckStyle Configurat
 ```
 如果你在Import Scheme下看不到CheckStyle Configuration选项，你可以先安装CheckStyle-IDEA插件，然后你就可以看到这个选项了。
 
+你也可以通过执行`./gradlew check`来检查代码格式。(NOTE: 这个命令将会检查整个项目中的代码格式， 当你提交一个PR时，CI只会检查在此次PR中被被修改的文件的代码格式)
 ## 贡献
 
 无论是对于拼写错误，BUG修复还是重要的新功能，我们总是很乐意接受您的贡献。请不要犹豫，在Github Issue上提出或者通过邮件列表进行讨论。

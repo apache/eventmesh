@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventBuilder;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.eventmesh.api.*;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
@@ -445,7 +445,7 @@ public class ClientGroupWrapper {
                 public void consume(CloudEvent event, AsyncConsumeContext context) {
 
                     eventMeshTcpMonitor.getMq2EventMeshMsgNum().incrementAndGet();
-                    event = new CloudEventBuilder(event)
+                    event = CloudEventBuilder.from(event)
                             .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
                             String.valueOf(System.currentTimeMillis()))
                             .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
@@ -506,7 +506,7 @@ public class ClientGroupWrapper {
                 @Override
                 public void consume(CloudEvent event, AsyncConsumeContext context) {
                     eventMeshTcpMonitor.getMq2EventMeshMsgNum().incrementAndGet();
-                    event = new CloudEventBuilder(event)
+                    event = CloudEventBuilder.from(event)
                             .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
                                     String.valueOf(System.currentTimeMillis()))
                             .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
@@ -547,7 +547,7 @@ public class ClientGroupWrapper {
                                     consumerGroup, topic, bizSeqNo);
                             } else {
                                 sendBackTimes++;
-                                event = new CloudEventBuilder(event)
+                                event = CloudEventBuilder.from(event)
                                         .withExtension(EventMeshConstants.EVENTMESH_SEND_BACK_TIMES,
                                                 sendBackTimes.toString())
                                         .withExtension(EventMeshConstants.EVENTMESH_SEND_BACK_IP,
