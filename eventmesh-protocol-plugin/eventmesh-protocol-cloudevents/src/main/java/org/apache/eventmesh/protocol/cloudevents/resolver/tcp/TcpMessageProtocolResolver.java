@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant;
 
 public class TcpMessageProtocolResolver {
 
@@ -24,7 +25,7 @@ public class TcpMessageProtocolResolver {
                     protocolType, protocolVersion, protocolDesc));
         }
 
-        if (!StringUtils.equals("cloudevents", protocolType)) {
+        if (!StringUtils.equals(CloudEventsProtocolConstant.PROTOCOL_NAME, protocolType)) {
             throw new ProtocolHandleException(String.format("Unsupported protocolType: %s", protocolType));
         }
         if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
