@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventBuilder;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -77,11 +77,12 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                 EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
-//        ReplyMessageRequestHeader replyMessageRequestHeader = (ReplyMessageRequestHeader) asyncContext.getRequest().getHeader();
+        ReplyMessageRequestHeader replyMessageRequestHeader = (ReplyMessageRequestHeader) asyncContext.getRequest().getHeader();
 //        ReplyMessageRequestBody replyMessageRequestBody = (ReplyMessageRequestBody) asyncContext.getRequest().getBody();
 
-        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
-        CloudEvent event = httpCommandProtocolAdaptor.toCloudEventV1(asyncContext.getRequest());
+        String protocolType = replyMessageRequestHeader.getProtocolType();
+        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+        CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         ReplyMessageResponseHeader replyMessageResponseHeader =
                 ReplyMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
@@ -89,7 +90,8 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         //validate event
-        if (StringUtils.isBlank(event.getId())
+        if (event != null
+                || StringUtils.isBlank(event.getId())
                 || event.getSource() != null
                 || event.getSpecVersion() != null
                 || StringUtils.isBlank(event.getType())
@@ -179,7 +181,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
         try {
             // body
 //            omsMsg.setBody(replyMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
-            event = new CloudEventBuilder(event)
+            event = CloudEventBuilder.from(event)
                     .withSubject(replyTopic)
                     .withExtension("msgType", "persistent")
                     .withExtension(Constants.PROPERTY_MESSAGE_TIMEOUT, String.valueOf(EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS))
@@ -239,7 +241,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
 
         try {
-            CloudEvent clone = new CloudEventBuilder(sendMessageContext.getEvent())
+            CloudEvent clone = CloudEventBuilder.from(sendMessageContext.getEvent())
                     .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .build();
             sendMessageContext.setEvent(clone);

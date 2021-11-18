@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send;
 
+import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.RRCallback;
@@ -39,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventBuilder;
 
 public class SessionSender {
 
@@ -96,7 +96,7 @@ public class SessionSender {
                     if (!StringUtils.isEmpty(cluster)) {
                         String replyTopic = EventMeshConstants.RR_REPLY_TOPIC;
                         replyTopic = cluster + "-" + replyTopic;
-                        event = new CloudEventBuilder(event).withSubject(replyTopic).build();
+                        event = CloudEventBuilder.from(event).withSubject(replyTopic).build();
 //                        msg.getSystemProperties().put(Constants.PROPERTY_MESSAGE_DESTINATION, replyTopic);
 //                        event(replyTopic);
                     }
@@ -142,7 +142,7 @@ public class SessionSender {
 //                    msg.putUserProperty(EventMeshConstants.STORE_TIMESTAMP, String.valueOf(((MessageExt) msg)
 //                            .getStoreTimestamp()));
 //                }
-                event = new CloudEventBuilder(event)
+                event = CloudEventBuilder.from(event)
                         .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                         .withExtension(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP, session.getEventMeshTCPConfiguration().eventMeshServerIp)
                         .build();
@@ -157,7 +157,7 @@ public class SessionSender {
                 }
                 Package pkg = new Package();
                 pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, seq));
-                event = new CloudEventBuilder(event)
+                event = CloudEventBuilder.from(event)
                         .withExtension(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                         .build();
 //                msg.getSystemProperties().put(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
