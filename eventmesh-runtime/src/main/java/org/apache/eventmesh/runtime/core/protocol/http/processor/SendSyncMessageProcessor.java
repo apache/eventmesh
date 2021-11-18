@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventBuilder;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.common.Constants;
@@ -84,8 +84,11 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             EventMeshConstants.PROTOCOL_HTTP,
             RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
-        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
-        CloudEvent event = httpCommandProtocolAdaptor.toCloudEventV1(asyncContext.getRequest());
+        SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
+
+        String protocolType = sendMessageRequestHeader.getProtocolType();
+        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+        CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         SendMessageResponseHeader sendMessageResponseHeader =
             SendMessageResponseHeader
@@ -96,7 +99,8 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         //validate event
-        if (StringUtils.isBlank(event.getId())
+        if (event != null
+                || StringUtils.isBlank(event.getId())
                 || event.getSource() != null
                 || event.getSpecVersion() != null
                 || StringUtils.isBlank(event.getType())
@@ -195,7 +199,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         }
 
         try {
-            event = new CloudEventBuilder(event)
+            event = CloudEventBuilder.from(event)
                     .withExtension("msgType", "persistent")
                     .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
@@ -250,7 +254,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                         topic, bizNo, uniqueId);
 
                     try {
-                        event = new CloudEventBuilder(event)
+                        event = CloudEventBuilder.from(event)
                                 .withExtension(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP,
                                 String.valueOf(System.currentTimeMillis()))
                                 .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP,
