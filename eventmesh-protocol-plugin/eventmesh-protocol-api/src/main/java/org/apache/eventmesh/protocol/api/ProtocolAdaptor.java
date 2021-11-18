@@ -59,7 +59,7 @@ public interface ProtocolAdaptor<T> {
      * @param cloudEvent clout event
      * @return target protocol
      */
-    T fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException;
+    Object fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException;
 
     /**
      * Get protocol type.

@@ -10,22 +10,13 @@
 
 ![logo](docs/images/logo2.png)
 ## What is EventMesh?
-EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
+EventMesh(incubating) is a dynamic event-driven application runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
 ![architecture1](docs/images/eventmesh-multi-runtime.png)
 
-**EventMesh Ecosystem:**
-
-![architecture1](docs/images/eventmesh-define.png)
-
 **EventMesh Architecture:**
 
-![architecture1](docs/images/eventmesh-runtime.png)
-
-**EventMesh Cloud Native:**
-
-![architecture2](docs/images/eventmesh-panels.png)
-
+![architecture1](docs/images/eventmesh-runtime2.png)
 
 **Components:**
 
@@ -37,9 +28,11 @@ EventMesh(incubating) is a dynamic cloud-native eventing infrastruture used to d
 * **eventmesh-connector-rocketmq** : an implementation of eventmesh-connector-api, pub event to or sub event from RocketMQ as EventStore.
 * **eventmesh-connector-kafka(WIP)** : an implementation of eventmesh-connector-api, pub event to or sub event from Kafka as EventStore.
 * **eventmesh-connector-redis(WIP)** : an implementation of eventmesh-connector-api, pub event to or sub event from Redis as EventStore.
+* **eventmesh-connector-defibus(WIP)** : an implementation of eventmesh-connector-api, pub event to or sub event from [DeFiBus](https://github.com/webankfintech/defibus) as EventStore
 * **eventmesh-admin** : clients,topics,subscriptions and other management.
-* **eventmesh-registry-plugin** : plugins for registry.
-* **eventmesh-security-plugin** : plugins for security.
+* **eventmesh-registry-plugin** : plugins for registry adapter.
+* **eventmesh-security-plugin** : plugins for security adpater.
+* **eventmesh-protocol-plugin** : plugins for protocol adapter.
 
 **Protocol:**
 
@@ -54,9 +47,10 @@ Event & Service
 - [ ] Event transaction
 - [ ] At-least-once/at-most-once delivery guarantees
 
-Store
+Connector
 - [x] RocketMQ
 - [x] InMemory
+- [ ] Federated
 - [ ] Kafka
 - [ ] Redis
 - [ ] Pulsar
@@ -96,7 +90,7 @@ Governance
 - [x] Client management
 - [ ] Topic management
 - [ ] Metadata registry
-- [ ] Schema registry
+- [x] Schema registry
 - [ ] Dynamic config
 
 Choreography
@@ -107,11 +101,13 @@ Security
 - [ ] Auth
 - [ ] ACL
 
+Runtime
+- [ ] WebAssembly runtime
 
 ## Quick Start
-1. [Event-store](https://rocketmq.apache.org/docs/quick-start/) (RocketMQ, ignore this step if use standalone).
+1. [Connector quickstart](https://rocketmq.apache.org/docs/quick-start/) (RocketMQ, ignore this step if use standalone).
 2. [Runtime quickstart](docs/en/instructions/eventmesh-runtime-quickstart.md) or [Runtime quickstart with docker](docs/en/instructions/eventmesh-runtime-quickstart-with-docker.md).
-3. [Java examples ](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
+3. [Java SDK examples](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
 
 ## Contributing
 Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.
@@ -131,9 +127,9 @@ EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apa
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation.
 
 ## Community
-|               WeChat group                |                WeChat official account                 |
+|               WeChat group                |                WeChat public account                 |
 | :---------------------------------------: | :----------------------------------------------------: |
-| ![wechat_qr](docs/images/mesh-helper.png) | ![wechat_official_qr](docs/images/wechat-official.png) |
+| ![wechat_qr](docs/images/mesh-helper.jpg) | ![wechat_official_qr](docs/images/wechat-official.png) |
 
 
 

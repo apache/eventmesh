@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
-import io.cloudevents.core.v1.CloudEventBuilder;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import org.apache.commons.collections4.CollectionUtils;
@@ -80,7 +80,7 @@ public class SessionPusher {
 
         Package pkg = new Package();
 
-        downStreamMsgContext.event = new CloudEventBuilder(downStreamMsgContext.event)
+        downStreamMsgContext.event = CloudEventBuilder.from(downStreamMsgContext.event)
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                 .build();
 //        downStreamMsgContext.event.getSystemProperties().put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));

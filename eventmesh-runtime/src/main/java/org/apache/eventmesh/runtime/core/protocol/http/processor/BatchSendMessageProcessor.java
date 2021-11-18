@@ -19,8 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
-import io.cloudevents.core.v1.CloudEventBuilder;
-import io.cloudevents.core.v1.CloudEventV1;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -82,13 +81,15 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 EventMeshConstants.PROTOCOL_HTTP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
+        SendMessageBatchRequestHeader sendMessageBatchRequestHeader = (SendMessageBatchRequestHeader) asyncContext.getRequest().getHeader();
+
         SendMessageBatchResponseHeader sendMessageBatchResponseHeader =
                 SendMessageBatchResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
                         IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
-
-        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
+        String protocolType = sendMessageBatchRequestHeader.getProtocolType();
+        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         List<CloudEvent> eventList = httpCommandProtocolAdaptor.toBatchCloudEvent(asyncContext.getRequest());
 
         if (CollectionUtils.isEmpty(eventList)) {
@@ -212,7 +213,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 String ttl = Objects.requireNonNull(cloudEvent.getExtension(SendMessageRequestBody.TTL)).toString();
 
                 if (StringUtils.isBlank(ttl) || !StringUtils.isNumeric(ttl)) {
-                    cloudEvent = new CloudEventBuilder(cloudEvent)
+                    cloudEvent = CloudEventBuilder.from(cloudEvent)
                             .withExtension(SendMessageRequestBody.TTL, String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS))
                             .withExtension("msgType", "persistent")
                             .build();
