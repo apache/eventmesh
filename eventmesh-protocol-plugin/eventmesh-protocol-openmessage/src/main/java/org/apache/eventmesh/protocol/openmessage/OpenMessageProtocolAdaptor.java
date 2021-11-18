@@ -46,7 +46,7 @@ public class OpenMessageProtocolAdaptor<T> implements ProtocolAdaptor<T> {
     }
 
     @Override
-    public T fromCloudEvent(CloudEvent cloudEvent) {
+    public Object fromCloudEvent(CloudEvent cloudEvent) {
         return null;
     }
 

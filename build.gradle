@@ -47,6 +47,7 @@ allprojects {
     apply plugin: "pmd"
     apply plugin: "java-library"
     apply plugin: 'signing'
+    apply plugin: 'checkstyle'
     apply plugin: 'com.github.jk1.dependency-license-report'
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
@@ -78,6 +79,14 @@ allprojects {
         writer.flush()
         writer.close()
     }
+
+    checkstyle {
+        toolVersion = '9.0'
+        ignoreFailures = false
+        showViolations = true
+        maxWarnings = 0
+        configFile = new File("${rootDir}/style/checkStyle.xml")
+    }
 }
 
 task tar(type: Tar) {
@@ -103,38 +112,42 @@ task installPlugin() {
     if (!new File("${rootDir}/dist").exists()) {
         return
     }
-    // pluginType -> [pluginInstanceName -> moduleName]
-    Map<String, Map<String, String>> pluginTypeMap = [
-            "connector": ["rocketmq": "eventmesh-connector-rocketmq", "standalone": "eventmesh-connector-standalone",],
-            "security" : ["acl": "eventmesh-security-acl",],
-            "registry" : ["namesrv": "eventmesh-registry-namesrv",]
-    ]
     String[] libJars = java.util.Optional.ofNullable(new File("${rootDir}/dist/lib").list()).orElseGet(() -> new String[0])
     getAllprojects().forEach(subProject -> {
-        pluginTypeMap.forEach((pluginType, pluginInstanceMap) -> {
-            pluginInstanceMap.forEach((pluginInstanceName, moduleName) -> {
-                if (moduleName == subProject.name) {
-                    println String.format("install plugin, pluginType: %s, pluginInstanceName: %s, module: %s",
-                            pluginType, pluginInstanceName, moduleName)
+        var file = new File("${subProject.projectDir}/gradle.properties")
+        if (!file.exists()) {
+            return
+        }
+        var properties = new Properties()
+        properties.load(new FileInputStream(file))
+        var pluginType = properties.getProperty("pluginType")
+        var pluginName = properties.getProperty("pluginName")
+        if (pluginType == null || pluginName == null) {
+            return
+        }
+        var pluginFile = new File("${rootDir}/dist/plugin/${pluginType}/${pluginName}")
+        if (pluginFile.exists()) {
+            return
+        }
+        pluginFile.mkdirs()
+        println String.format(
+                "install plugin, pluginType: %s, pluginInstanceName: %s, module: %s", pluginType, pluginName, subProject.getName()
+        )
 
-                    new File("${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}").mkdirs()
-                    copy {
-                        into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
-                        from "${subProject.getProjectDir()}/dist/apps"
-                    }
-                    copy {
-                        into "${rootDir}/dist/plugin/${pluginType}/${pluginInstanceName}"
-                        from "${subProject.getProjectDir()}/dist/lib/"
-                        exclude(libJars)
-                    }
-                    copy {
-                        into "${rootDir}/dist/conf"
-                        from "${subProject.getProjectDir()}/dist/conf"
-                        exclude 'META-INF'
-                    }
-                }
-            })
-        })
+        copy {
+            into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
+            from "${subProject.getProjectDir()}/dist/apps"
+        }
+        copy {
+            into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
+            from "${subProject.getProjectDir()}/dist/lib/"
+            exclude(libJars)
+        }
+        copy {
+            into "${rootDir}/dist/conf"
+            from "${subProject.getProjectDir()}/dist/conf"
+            exclude 'META-INF'
+        }
     })
 }
 
