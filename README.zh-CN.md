@@ -36,7 +36,7 @@ EventMesh是一个动态的云原生事件驱动架构基础设施，用于分�
 
 **通信协议：**
 
-eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里](docs/cn/instructions/eventmesh-runtime-protocol.zh-CN.md)
+eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里](docs/cn/instructions/eventmesh-runtime-protocol.md)
 
 ## RoadMap
 | version | feature |
