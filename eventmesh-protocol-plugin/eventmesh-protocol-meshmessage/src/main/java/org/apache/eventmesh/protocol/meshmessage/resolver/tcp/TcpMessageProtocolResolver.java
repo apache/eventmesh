@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.protocol.eventmeshmessage.resolver.tcp;
+package org.apache.eventmesh.protocol.meshmessage.resolver.tcp;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -26,7 +26,7 @@ import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
-import org.apache.eventmesh.protocol.eventmeshmessage.EventMeshMessageProtocolConstant;
+import org.apache.eventmesh.protocol.meshmessage.MeshMessageProtocolConstant;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -50,7 +50,7 @@ public class TcpMessageProtocolResolver {
                     protocolType, protocolVersion, protocolDesc));
         }
 
-        if (!StringUtils.equals(EventMeshMessageProtocolConstant.PROTOCOL_NAME, protocolType)) {
+        if (!StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_NAME, protocolType)) {
             throw new ProtocolHandleException(String.format("Unsupported protocolType: %s", protocolType));
         }
 
