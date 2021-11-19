@@ -15,14 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.protocol.eventmeshmessage.resolver.http;
+package org.apache.eventmesh.protocol.meshmessage;
 
-import io.cloudevents.CloudEvent;
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.protocol.http.header.Header;
-
-public class SendMessageBatchProtocolResolver {
-    public static CloudEvent buildEvent(Header header, Body body) {
-        return null;
-    }
+public enum MeshMessageProtocolConstant {
+    ;
+    public static final String PROTOCOL_NAME = "eventmeshmessage";
 }
