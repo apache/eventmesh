@@ -26,6 +26,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.ProtocolTransportObject;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
@@ -90,7 +91,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         String protocolType = sendMessageRequestHeader.getProtocolType();
-        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+        ProtocolAdaptor<ProtocolTransportObject> httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         //validate event
