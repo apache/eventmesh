@@ -34,13 +34,12 @@ public class EventMeshException extends Exception {
         super(cause);
     }
 
-    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public EventMeshException(String message, Throwable cause, boolean enableSuppression,
+                              boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 
     public EventMeshException(Integer errCode, String errMsg) {
-        super((new StringBuilder()).append(errCode)
-                .append("|")
-                .append(errMsg).toString());
+        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
     }
 }

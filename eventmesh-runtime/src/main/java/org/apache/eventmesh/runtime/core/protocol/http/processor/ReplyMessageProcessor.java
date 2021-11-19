@@ -27,6 +27,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.ProtocolTransportObject;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.message.ReplyMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.ReplyMessageResponseBody;
@@ -81,7 +82,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 //        ReplyMessageRequestBody replyMessageRequestBody = (ReplyMessageRequestBody) asyncContext.getRequest().getBody();
 
         String protocolType = replyMessageRequestHeader.getProtocolType();
-        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+        ProtocolAdaptor<ProtocolTransportObject> httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         ReplyMessageResponseHeader replyMessageResponseHeader =

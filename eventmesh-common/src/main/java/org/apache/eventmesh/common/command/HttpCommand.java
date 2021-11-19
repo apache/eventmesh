@@ -18,8 +18,10 @@
 package org.apache.eventmesh.common.command;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.body.BaseResponseBody;
 import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.header.BaseResponseHeader;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -38,9 +40,9 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 
-public class HttpCommand {
+public class HttpCommand implements ProtocolTransportObject {
 
-    private static AtomicLong requestId = new AtomicLong(0);
+    private static final AtomicLong requestId = new AtomicLong(0);
 
     private long opaque;
 
@@ -63,8 +65,7 @@ public class HttpCommand {
     public CmdType cmdType = CmdType.REQ;
 
     public HttpCommand() {
-        this.reqTime = System.currentTimeMillis();
-        this.opaque = requestId.incrementAndGet();
+        this(null, null, null);
     }
 
     public HttpCommand(String httpMethod, String httpVersion, String requestCode) {
@@ -90,7 +91,7 @@ public class HttpCommand {
         return response;
     }
 
-    public HttpCommand createHttpCommandResponse(Integer retCode, String retMsg) {
+    public HttpCommand createHttpCommandResponse(EventMeshRetCode eventMeshRetCode) {
         if (StringUtils.isBlank(requestCode)) {
             return null;
         }
@@ -101,8 +102,8 @@ public class HttpCommand {
         baseResponseHeader.setCode(requestCode);
         response.setHeader(baseResponseHeader);
         BaseResponseBody baseResponseBody = new BaseResponseBody();
-        baseResponseBody.setRetCode(retCode);
-        baseResponseBody.setRetMsg(retMsg);
+        baseResponseBody.setRetCode(eventMeshRetCode.getRetCode());
+        baseResponseBody.setRetMsg(eventMeshRetCode.getErrMsg());
         response.setBody(baseResponseBody);
         response.setCmdType(CmdType.RES);
         response.setResTime(System.currentTimeMillis());

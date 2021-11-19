@@ -24,13 +24,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.netty.handler.codec.http.HttpMethod;
+import lombok.extern.slf4j.Slf4j;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class RequestParam {
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private Map<String, String[]> queryParams;
 
@@ -90,7 +90,7 @@ public class RequestParam {
                 }
             }
         } catch (UnsupportedEncodingException e) {
-            logger.error("get query params failed.", e);
+            log.error("get query params failed.", e);
             return "";
         }
         return stringBuilder.substring(1);
@@ -113,11 +113,11 @@ public class RequestParam {
         return this;
     }
 
-    public RequestParam addHeader(String key, String value) {
+    public RequestParam addHeader(String key, Object value) {
         if (headers == null) {
             headers = new HashMap<>();
         }
-        headers.put(key, value);
+        headers.put(key, value.toString());
         return this;
     }
 
