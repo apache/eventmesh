@@ -15,31 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.protocol.eventmeshmessage;
+package org.apache.eventmesh.protocol.meshmessage;
 
 import io.cloudevents.CloudEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.ProtocolTransportObject;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
-import org.apache.eventmesh.protocol.eventmeshmessage.resolver.http.SendMessageBatchProtocolResolver;
-import org.apache.eventmesh.protocol.eventmeshmessage.resolver.http.SendMessageBatchV2ProtocolResolver;
-import org.apache.eventmesh.protocol.eventmeshmessage.resolver.http.SendMessageRequestProtocolResolver;
-import org.apache.eventmesh.protocol.eventmeshmessage.resolver.tcp.TcpMessageProtocolResolver;
+import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchProtocolResolver;
+import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchV2ProtocolResolver;
+import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageRequestProtocolResolver;
+import org.apache.eventmesh.protocol.meshmessage.resolver.tcp.TcpMessageProtocolResolver;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class EventMeshMessageProtocolAdaptor<T> implements ProtocolAdaptor<T> {
+public class MeshMessageProtocolAdaptor<T extends ProtocolTransportObject>
+        implements ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
-    public CloudEvent toCloudEvent(T protocol) throws ProtocolHandleException {
+    public CloudEvent toCloudEvent(ProtocolTransportObject protocol) throws ProtocolHandleException {
         if (protocol instanceof Package) {
             Header header = ((Package) protocol).getHeader();
             Object body = ((Package) protocol).getBody();
@@ -78,16 +79,18 @@ public class EventMeshMessageProtocolAdaptor<T> implements ProtocolAdaptor<T> {
     }
 
     @Override
-    public List<CloudEvent> toBatchCloudEvent(T protocol) throws ProtocolHandleException {
+    public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol) throws ProtocolHandleException {
         return null;
     }
 
     @Override
-    public Object fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
+    public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
         String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
 
         if (StringUtils.equals("http", protocolDesc)) {
-            return new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8);
+            // todo: return command, set cloudEvent.getData() to content?
+            return null;
+//            return new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8);
         } else if (StringUtils.equals("tcp", protocolDesc)) {
             return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
         } else {
@@ -97,6 +100,6 @@ public class EventMeshMessageProtocolAdaptor<T> implements ProtocolAdaptor<T> {
 
     @Override
     public String getProtocolType() {
-        return EventMeshMessageProtocolConstant.PROTOCOL_NAME;
+        return MeshMessageProtocolConstant.PROTOCOL_NAME;
     }
 }
