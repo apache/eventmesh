@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.protocol.openmessage;
 
+import org.apache.eventmesh.common.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 
@@ -33,20 +34,20 @@ import java.util.List;
  *
  * @since 1.3.0
  */
-public class OpenMessageProtocolAdaptor<T> implements ProtocolAdaptor<T> {
+public class OpenMessageProtocolAdaptor<T extends ProtocolTransportObject> implements ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
-    public CloudEvent toCloudEvent(T message) {
+    public CloudEvent toCloudEvent(ProtocolTransportObject message) {
         return null;
     }
 
     @Override
-    public List<CloudEvent> toBatchCloudEvent(T protocol) throws ProtocolHandleException {
+    public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol) throws ProtocolHandleException {
         return null;
     }
 
     @Override
-    public Object fromCloudEvent(CloudEvent cloudEvent) {
+    public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) {
         return null;
     }
 

@@ -27,6 +27,7 @@ import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.*;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
@@ -67,7 +68,7 @@ public class MessageTransferTask extends AbstractTask {
         if (pkg.getHeader().getProperties() != null && pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE) != null) {
             protocolType = (String) pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE);
         }
-        ProtocolAdaptor protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+        ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         Package msg = new Package();
 
 //        EventMeshMessage eventMeshMessage = (EventMeshMessage) pkg.getBody();
@@ -188,16 +189,6 @@ public class MessageTransferTask extends AbstractTask {
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
             }
 
-//            @Override
-//            public void onException(Throwable e) {
-//                session.getSender().getUpstreamBuff().release();
-//                session.getSender().failMsgCount.incrementAndGet();
-//                messageLogger.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(), String.valueOf
-//                        (System.currentTimeMillis() - createTime), new Exception(e));
-//                msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), e.toString(), pkg.getHeader().getSeq()));
-//                msg.setBody(accessMessage);
-//                Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
-//            }
         };
     }
 }
