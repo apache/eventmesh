@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.protocol.api;
 
+import org.apache.eventmesh.common.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
@@ -35,7 +36,7 @@ import java.util.List;
  * @since 1.3.0
  */
 @EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.PROTOCOL)
-public interface ProtocolAdaptor<T> {
+public interface ProtocolAdaptor<T extends ProtocolTransportObject> {
 
     /**
      * transform protocol to {@link CloudEvent}.
@@ -59,7 +60,7 @@ public interface ProtocolAdaptor<T> {
      * @param cloudEvent clout event
      * @return target protocol
      */
-    Object fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException;
+    ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException;
 
     /**
      * Get protocol type.

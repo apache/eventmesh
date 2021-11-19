@@ -28,8 +28,6 @@ import org.slf4j.LoggerFactory;
 
 public class AdminMetricsProcessor implements HttpRequestProcessor {
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
-
     private EventMeshHTTPServer eventMeshHTTPServer;
 
     public AdminMetricsProcessor(EventMeshHTTPServer eventMeshHTTPServer) {

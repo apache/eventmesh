@@ -21,6 +21,7 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.ProtocolTransportObject;
 import org.apache.eventmesh.common.RandomStringUtil;
 import org.apache.eventmesh.common.exception.JsonException;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -117,11 +118,13 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         try {
             String protocolType = Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_TYPE)).toString();
 
-            ProtocolAdaptor protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+            ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
 
-            content = (String) protocolAdaptor.fromCloudEvent(handleMsgContext.getEvent());
+            // todo
+            ProtocolTransportObject protocolTransportObject =
+                protocolAdaptor.fromCloudEvent(handleMsgContext.getEvent());
 
-//            content =
+            //            content =
 //                new String(handleMsgContext.getEvent().getData().toBytes(), EventMeshConstants.DEFAULT_CHARSET);
         } catch (Exception ex) {
             return;
@@ -300,13 +303,11 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         waitingRequests
             .put(request.handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet());
         waitingRequests.get(request.handleMsgContext.getConsumerGroup()).add(request);
-        return;
     }
 
     private void removeWaitingMap(AsyncHTTPPushRequest request) {
         if (waitingRequests.containsKey(request.handleMsgContext.getConsumerGroup())) {
             waitingRequests.get(request.handleMsgContext.getConsumerGroup()).remove(request);
-            return;
         }
     }
 
