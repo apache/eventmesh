@@ -20,13 +20,13 @@ package org.apache.eventmesh.protocol.cloudevents;
 import io.cloudevents.CloudEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.ProtocolTransportObject;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
-
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchV2ProtocolResolver;
@@ -41,10 +41,11 @@ import java.util.List;
  *
  * @since 1.3.0
  */
-public class CloudEventsProtocolAdaptor<T> implements ProtocolAdaptor<T> {
+public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
+    implements ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
-    public CloudEvent toCloudEvent(T cloudEvent) throws ProtocolHandleException {
+    public CloudEvent toCloudEvent(ProtocolTransportObject cloudEvent) throws ProtocolHandleException {
 
         if (cloudEvent instanceof Package) {
             Header header = ((Package) cloudEvent).getHeader();
@@ -84,15 +85,18 @@ public class CloudEventsProtocolAdaptor<T> implements ProtocolAdaptor<T> {
     }
 
     @Override
-    public List<CloudEvent> toBatchCloudEvent(T protocol) throws ProtocolHandleException {
+    public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol)
+        throws ProtocolHandleException {
         return null;
     }
 
     @Override
-    public Object fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
+    public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
         String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
         if (StringUtils.equals("http", protocolDesc)) {
-            return new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8);
+            // todo: return command, set cloudEvent.getData() to content?
+            return null;
+//            return new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8);
         } else if (StringUtils.equals("tcp", protocolDesc)) {
             Package pkg = new Package();
             pkg.setBody(cloudEvent);
