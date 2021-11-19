@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.client.http;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
 import org.apache.eventmesh.client.http.util.HttpLoadBalanceUtils;
@@ -30,9 +32,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import java.security.SecureRandom;
 
+@Slf4j
 public abstract class AbstractLiteClient {
-
-    public Logger logger = LoggerFactory.getLogger(AbstractLiteClient.class);
 
     protected LiteClientConfig liteClientConfig;
 
@@ -51,7 +52,7 @@ public abstract class AbstractLiteClient {
     }
 
     public void shutdown() throws Exception {
-        logger.info("AbstractLiteClient shutdown");
+        log.info("AbstractLiteClient shutdown");
     }
 
     public CloseableHttpClient setHttpClient() throws Exception {
@@ -67,7 +68,7 @@ public abstract class AbstractLiteClient {
             return HttpClients.custom().setSSLContext(sslContext)
                     .setSSLHostnameVerifier(new DefaultHostnameVerifier()).build();
         } catch (Exception e) {
-            logger.error("Error in creating HttpClient.", e);
+            log.error("Error in creating HttpClient.", e);
             throw e;
         }
     }

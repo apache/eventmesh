@@ -17,7 +17,9 @@
 
 package org.apache.eventmesh.common.protocol.tcp;
 
-public class Package {
+import org.apache.eventmesh.common.ProtocolTransportObject;
+
+public class Package implements ProtocolTransportObject {
 
     private Header header;
     private Object body;
