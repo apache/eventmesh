@@ -20,7 +20,7 @@ package org.apache.eventmesh.client.http.util;
 import com.google.common.base.Splitter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.common.EventMeshException;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.RandomLoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.Weight;

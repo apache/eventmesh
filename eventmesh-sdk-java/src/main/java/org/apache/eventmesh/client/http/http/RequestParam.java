@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.client.http.http;
 
+import org.apache.eventmesh.common.Constants;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -26,21 +28,18 @@ import java.util.Map;
 import io.netty.handler.codec.http.HttpMethod;
 import lombok.extern.slf4j.Slf4j;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @Slf4j
 public class RequestParam {
 
     private Map<String, String[]> queryParams;
 
-    private HttpMethod httpMethod;
+    private final HttpMethod httpMethod;
 
     private Map<String, String> body;
 
     private Map<String, String> headers;
 
-    private long timeout;
+    private long timeout = Constants.DEFAULT_HTTP_TIME_OUT;
 
     public RequestParam(HttpMethod httpMethod) {
         this.httpMethod = httpMethod;
@@ -81,11 +80,11 @@ public class RequestParam {
             for (Map.Entry<String, String[]> query : queryParams.entrySet()) {
                 for (String val : query.getValue()) {
                     stringBuilder.append("&")
-                            .append(URLEncoder.encode(query.getKey(), "UTF-8"));
+                        .append(URLEncoder.encode(query.getKey(), "UTF-8"));
 
                     if (val != null && !val.isEmpty()) {
                         stringBuilder.append("=")
-                                .append(URLEncoder.encode(val, "UTF-8"));
+                            .append(URLEncoder.encode(val, "UTF-8"));
                     }
                 }
             }
@@ -106,7 +105,7 @@ public class RequestParam {
             queryParams = new HashMap<>();
         }
         if (!queryParams.containsKey(key)) {
-            queryParams.put(key, new String[]{value});
+            queryParams.put(key, new String[] {value});
         } else {
             queryParams.put(key, (String[]) Arrays.asList(queryParams.get(key), value).toArray());
         }

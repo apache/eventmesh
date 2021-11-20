@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common;
+package org.apache.eventmesh.common.utils;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-public class ThreadUtilTest {
+public class ThreadUtilsTest {
 
     @Test
     public void testRandomSleep() throws InterruptedException {
@@ -33,7 +33,7 @@ public class ThreadUtilTest {
 
     @Test
     public void testPID() {
-        Assert.assertNotEquals(-1, ThreadUtil.getPID());
+        Assert.assertNotEquals(-1, ThreadUtils.getPID());
     }
 
     class TestThread extends Thread {
@@ -47,7 +47,7 @@ public class ThreadUtilTest {
         public void run() {
             long startTime = System.currentTimeMillis();
             try {
-                ThreadUtil.randomSleep(50);
+                ThreadUtils.randomSleep(50);
             } catch (Exception ignore) {
             }
             sleepTime = System.currentTimeMillis() - startTime;

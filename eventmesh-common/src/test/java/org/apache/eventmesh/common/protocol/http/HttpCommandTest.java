@@ -15,13 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.command;
+package org.apache.eventmesh.common.protocol.http;
 
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import org.apache.eventmesh.common.protocol.http.body.BaseResponseBody;
+import static org.mockito.Mockito.when;
+
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.header.Header;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,11 +32,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.mockito.Mockito.when;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaderNames;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HttpCommandTest {
@@ -61,13 +61,6 @@ public class HttpCommandTest {
         Assert.assertEquals("POST", command.getHttpMethod());
         Assert.assertEquals("200", command.getRequestCode());
         Assert.assertEquals("value1", command.getHeader().toMap().get("key1"));
-    }
-
-    @Test
-    public void testCreateHttpCommandResponseWithRetCodeAndRetMsg() {
-        HttpCommand command = httpCommand.createHttpCommandResponse(200, "SUCCESS");
-        Assert.assertThat(((BaseResponseBody) command.getBody()).getRetCode(), is(200));
-        Assert.assertEquals("SUCCESS", ((BaseResponseBody) command.getBody()).getRetMsg());
     }
 
     @Test

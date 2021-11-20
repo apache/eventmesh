@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.standalone.broker.task;
 
+import io.openmessaging.api.Message;
+
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;

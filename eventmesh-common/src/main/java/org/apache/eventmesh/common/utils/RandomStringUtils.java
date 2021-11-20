@@ -15,24 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common;
+package org.apache.eventmesh.common.utils;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.apache.commons.text.RandomStringGenerator;
 
-public class IPUtilTest {
+public class RandomStringUtils {
 
-    @Test
-    public void testDockerIP() {
-        EnvironmentVariables environmentVariables = new EnvironmentVariables();
-        environmentVariables.set("docker_host_ip", "dockHostIP");
-        Assert.assertEquals("dockHostIP", IPUtil.getLocalAddress());
-    }
+    private static final RandomStringGenerator RANDOM_NUM_GENERATOR = new RandomStringGenerator.Builder()
+        .withinRange('0', '9').build();
 
-    @Test
-    public void testLocalhostIP() {
-        Assert.assertNotNull(IPUtil.getLocalAddress());
+    public static String generateNum(int length) {
+        return RANDOM_NUM_GENERATOR.generate(length);
     }
 
 }

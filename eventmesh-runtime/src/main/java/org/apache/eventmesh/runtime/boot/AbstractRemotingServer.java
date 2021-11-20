@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
-import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,7 +92,7 @@ public abstract class AbstractRemotingServer {
             logger.info("shutdown bossGroup");
         }
 
-        ThreadUtil.randomSleep(30);
+        ThreadUtils.randomSleep(30);
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();

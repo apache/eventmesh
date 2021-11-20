@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common;
+package org.apache.eventmesh.common.utils;
 
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 
 import io.netty.channel.Channel;
 
-public class IPUtil {
+public class IPUtils {
 
     public static String getLocalAddress() {
         // if the progress works under docker environment

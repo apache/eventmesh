@@ -19,16 +19,16 @@ package org.apache.eventmesh.client.http.producer;
 
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.util.EntityUtils;
 
@@ -37,6 +37,8 @@ import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * RRCallbackResponseHandlerAdapter.
@@ -53,8 +55,9 @@ public class RRCallbackResponseHandlerAdapter implements ResponseHandler<String>
 
     private long timeout;
 
-    public RRCallbackResponseHandlerAdapter(LiteMessage liteMessage, RRCallback rrCallback,
-                                            long timeout) {
+    public RRCallbackResponseHandlerAdapter(LiteMessage liteMessage, RRCallback rrCallback, long timeout) {
+        Preconditions.checkNotNull(rrCallback, "rrCallback invalid");
+        Preconditions.checkNotNull(liteMessage, "message invalid");
         this.liteMessage = liteMessage;
         this.rrCallback = rrCallback;
         this.timeout = timeout;
@@ -62,8 +65,7 @@ public class RRCallbackResponseHandlerAdapter implements ResponseHandler<String>
     }
 
     @Override
-    public String handleResponse(HttpResponse response)
-        throws ClientProtocolException, IOException {
+    public String handleResponse(HttpResponse response) throws IOException {
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
             rrCallback.onException(new EventMeshException(response.toString()));
             return response.toString();

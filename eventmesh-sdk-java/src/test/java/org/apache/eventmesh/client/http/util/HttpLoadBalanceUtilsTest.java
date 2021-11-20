@@ -18,7 +18,7 @@
 package org.apache.eventmesh.client.http.util;
 
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.common.EventMeshException;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceType;
 import org.junit.Assert;

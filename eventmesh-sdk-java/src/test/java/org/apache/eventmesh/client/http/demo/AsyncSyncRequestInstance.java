@@ -22,10 +22,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.producer.LiteProducer;
 import org.apache.eventmesh.client.http.producer.RRCallback;
-import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.LiteMessage;
-import org.apache.eventmesh.common.RandomStringUtil;
-import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,18 +51,18 @@ public class AsyncSyncRequestInstance {
                     .setProducerGroup("EventMeshTest-producerGroup")
                     .setEnv("env")
                     .setIdc("idc")
-                    .setIp(IPUtil.getLocalAddress())
+                    .setIp(IPUtils.getLocalAddress())
                     .setSys("1234")
-                    .setPid(String.valueOf(ThreadUtil.getPID()));
+                    .setPid(String.valueOf(ThreadUtils.getPID()));
 
             liteProducer = new LiteProducer(eventMeshClientConfig);
 
             final long startTime = System.currentTimeMillis();
             final LiteMessage liteMessage = new LiteMessage();
-            liteMessage.setBizSeqNo(RandomStringUtil.generateNum(30))
+            liteMessage.setBizSeqNo(RandomStringUtils.generateNum(30))
                     .setContent("testAsyncMessage")
                     .setTopic(topic)
-                    .setUniqueId(RandomStringUtil.generateNum(30));
+                    .setUniqueId(RandomStringUtils.generateNum(30));
 
             liteProducer.request(liteMessage, new RRCallback() {
                 @Override

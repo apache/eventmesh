@@ -17,229 +17,73 @@
 
 package org.apache.eventmesh.client.http.producer;
 
-import org.apache.eventmesh.client.http.AbstractLiteClient;
-import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.client.http.http.HttpUtil;
-import org.apache.eventmesh.client.http.http.RequestParam;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.EventMeshException;
 import org.apache.eventmesh.common.LiteMessage;
-import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
-import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
-import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
-import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.exception.EventMeshException;
 
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
-
-import io.netty.handler.codec.http.HttpMethod;
+import io.cloudevents.CloudEvent;
+import io.openmessaging.api.Message;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class LiteProducer extends AbstractLiteClient {
+public class LiteProducer implements AutoCloseable {
 
-    public LiteProducer(LiteClientConfig liteClientConfig) {
-        super(liteClientConfig);
+    private final EventMeshMessageProducer eventMeshMessageProducer;
+    private final CloudEventsProducer cloudEventsProducer;
+    private final OpenMessageProducer openMessageProducer;
+
+    public LiteProducer(final LiteClientConfig liteClientConfig) throws EventMeshException {
+        this.cloudEventsProducer = new CloudEventsProducer(liteClientConfig);
+        this.eventMeshMessageProducer = new EventMeshMessageProducer(liteClientConfig);
+        this.openMessageProducer = new OpenMessageProducer(liteClientConfig);
     }
 
-    private static final AtomicBoolean started = new AtomicBoolean(Boolean.FALSE);
+    public void publish(final LiteMessage message) throws EventMeshException {
+        eventMeshMessageProducer.publish(message);
+    }
+
+    public void publish(final CloudEvent cloudEvent) throws EventMeshException {
+        cloudEventsProducer.publish(cloudEvent);
+    }
+
+    public void publish(final Message openMessage) throws EventMeshException {
+        openMessageProducer.publish(openMessage);
+    }
+
+    public LiteMessage request(final LiteMessage message, final long timeout) throws EventMeshException {
+        return eventMeshMessageProducer.request(message, timeout);
+    }
+
+    public CloudEvent request(final CloudEvent cloudEvent, final long timeout) throws EventMeshException {
+        return cloudEventsProducer.request(cloudEvent, timeout);
+    }
+
+    public Message request(final Message openMessage, final long timeout) throws EventMeshException {
+        return openMessageProducer.request(openMessage, timeout);
+    }
+
+    public void request(final LiteMessage message, final RRCallback rrCallback, final long timeout)
+        throws EventMeshException {
+        eventMeshMessageProducer.request(message, rrCallback, timeout);
+    }
+
+    public void request(final CloudEvent cloudEvent, final RRCallback rrCallback, final long timeout)
+        throws EventMeshException {
+        cloudEventsProducer.request(cloudEvent, rrCallback, timeout);
+    }
+
+    public void request(final Message openMessage, final RRCallback rrCallback, final long timeout)
+        throws EventMeshException {
+        openMessageProducer.request(openMessage, rrCallback, timeout);
+    }
 
     @Override
-    public void start() throws Exception {
-        Preconditions.checkNotNull(liteClientConfig, "liteClientConfig can't be null");
-        Preconditions.checkNotNull(
-            liteClientConfig.getLiteEventMeshAddr(), "liteClientConfig.liteServerAddr can't be null"
-        );
-        if (started.get()) {
-            return;
-        }
-        log.info("LiteProducer starting");
-        super.start();
-        started.compareAndSet(false, true);
-        log.info("LiteProducer started");
-    }
-
-    @Override
-    public void shutdown() throws Exception {
-        if (!started.get()) {
-            return;
-        }
-        log.info("LiteProducer shutting down");
-        super.shutdown();
-        started.compareAndSet(true, false);
-        log.info("LiteProducer shutdown");
-    }
-
-    public AtomicBoolean getStarted() {
-        return started;
-    }
-
-    public boolean publish(LiteMessage message) throws Exception {
-        if (!started.get()) {
-            start();
-        }
-        Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
-            "eventMeshMessage[topic] invalid");
-        Preconditions.checkState(StringUtils.isNotBlank(message.getContent()),
-            "eventMeshMessage[content] invalid");
-        RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam
-            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode())
-            .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-            .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-            .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
-            .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
-            .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
-            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, liteClientConfig.getUserName())
-            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, liteClientConfig.getPassword())
-            .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
-            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-            .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
-            .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
-            .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
-            .addBody(SendMessageRequestBody.CONTENT, message.getContent())
-            .addBody(SendMessageRequestBody.TTL, message.getPropKey(Constants.EVENTMESH_MESSAGE_CONST_TTL))
-            .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
-            .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
-
-        long startTime = System.nanoTime();
-        String target = selectEventMesh();
-        String res = "";
-
-        try (CloseableHttpClient httpClient = setHttpClient()) {
-            res = HttpUtil.post(httpClient, target, requestParam);
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("publish async message, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}",
-                target, (System.nanoTime() - startTime) / 1000000, message, res);
-        }
-
-        EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
-
-        if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
-            return true;
-        } else {
-            throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
-        }
-    }
-
-    public String selectEventMesh() {
-        if (liteClientConfig.isUseTls()) {
-            return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerSelector.select();
-        } else {
-            return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerSelector.select();
-        }
-    }
-
-    public LiteMessage request(LiteMessage message, long timeout) throws Exception {
-        if (!started.get()) {
-            start();
-        }
-        Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
-            "eventMeshMessage[topic] invalid");
-        Preconditions.checkState(StringUtils.isNotBlank(message.getContent()),
-            "eventMeshMessage[content] invalid");
-        RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam
-            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
-            .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-            .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-            .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
-            .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
-            .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
-            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, liteClientConfig.getUserName())
-            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, liteClientConfig.getPassword())
-            .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
-            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-            .setTimeout(timeout)
-            .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
-            .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
-            .addBody(SendMessageRequestBody.CONTENT, message.getContent())
-            .addBody(SendMessageRequestBody.TTL, String.valueOf(timeout))
-            .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
-            .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
-
-        long startTime = System.nanoTime();
-        String target = selectEventMesh();
-        String res = "";
-
-        try (CloseableHttpClient httpClient = setHttpClient()) {
-            res = HttpUtil.post(httpClient, target, requestParam);
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug(
-                "publish sync message by await, targetEventMesh:{}, cost:{}ms, message:{}, rtn:{}",
-                target, (System.nanoTime() - startTime) / 1000000, message, res);
-        }
-
-        EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
-        if (ret.getRetCode() == EventMeshRetCode.SUCCESS.getRetCode()) {
-            LiteMessage eventMeshMessage = new LiteMessage();
-            SendMessageResponseBody.ReplyMessage replyMessage =
-                JsonUtils.deserialize(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
-            eventMeshMessage.setContent(replyMessage.body).setProp(replyMessage.properties)
-                .setTopic(replyMessage.topic);
-            return eventMeshMessage;
-        }
-        // todo: return msg
-        return null;
-    }
-
-    public void request(LiteMessage message, RRCallback rrCallback, long timeout) throws Exception {
-        if (!started.get()) {
-            start();
-        }
-        Preconditions.checkState(StringUtils.isNotBlank(message.getTopic()),
-            "eventMeshMessage[topic] invalid");
-        Preconditions.checkState(StringUtils.isNotBlank(message.getContent()),
-            "eventMeshMessage[content] invalid");
-        Preconditions.checkState(ObjectUtils.allNotNull(rrCallback),
-            "rrCallback invalid");
-        RequestParam requestParam = new RequestParam(HttpMethod.POST);
-        requestParam
-            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
-            .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-            .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-            .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
-            .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
-            .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
-            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, liteClientConfig.getUserName())
-            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, liteClientConfig.getPassword())
-            .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
-            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-            .setTimeout(timeout)
-            .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
-            .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
-            .addBody(SendMessageRequestBody.CONTENT, message.getContent())
-            .addBody(SendMessageRequestBody.TTL, String.valueOf(timeout))
-            .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
-            .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
-
-        long startTime = System.nanoTime();
-        String target = selectEventMesh();
-
-        try (CloseableHttpClient httpClient = setHttpClient()) {
-            HttpUtil.post(httpClient, null, target, requestParam,
-                new RRCallbackResponseHandlerAdapter(message, rrCallback, timeout));
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("publish sync message by async, target:{}, cost:{}, message:{}", target,
-                (System.nanoTime() - startTime) / 1000000, message);
+    public void close() throws EventMeshException {
+        try (
+            final EventMeshMessageProducer ignored = eventMeshMessageProducer;
+            final OpenMessageProducer ignored1 = openMessageProducer;
+            final CloudEventsProducer ignored2 = cloudEventsProducer) {
+            log.info("Close producer");
         }
     }
 }

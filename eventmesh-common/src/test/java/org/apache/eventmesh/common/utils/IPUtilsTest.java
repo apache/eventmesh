@@ -15,31 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common;
+package org.apache.eventmesh.common.utils;
 
-public class EventMeshException extends Exception {
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
-    public EventMeshException() {
+public class IPUtilsTest {
+
+    @Test
+    public void testDockerIP() {
+        EnvironmentVariables environmentVariables = new EnvironmentVariables();
+        environmentVariables.set("docker_host_ip", "dockHostIP");
+        Assert.assertEquals("dockHostIP", IPUtils.getLocalAddress());
     }
 
-    public EventMeshException(String message) {
-        super(message);
+    @Test
+    public void testLocalhostIP() {
+        Assert.assertNotNull(IPUtils.getLocalAddress());
     }
 
-    public EventMeshException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EventMeshException(Throwable cause) {
-        super(cause);
-    }
-
-    public EventMeshException(String message, Throwable cause, boolean enableSuppression,
-                              boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
-
-    public EventMeshException(Integer errCode, String errMsg) {
-        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
-    }
 }

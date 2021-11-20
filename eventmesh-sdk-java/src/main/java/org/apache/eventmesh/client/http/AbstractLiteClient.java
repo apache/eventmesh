@@ -17,59 +17,70 @@
 
 package org.apache.eventmesh.client.http;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
 import org.apache.eventmesh.client.http.util.HttpLoadBalanceUtils;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
+
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
+
+import java.io.IOException;
 import java.security.SecureRandom;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
+import com.google.common.base.Preconditions;
+
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
-public abstract class AbstractLiteClient {
+public abstract class AbstractLiteClient implements AutoCloseable {
 
     protected LiteClientConfig liteClientConfig;
 
     protected LoadBalanceSelector<String> eventMeshServerSelector;
 
-    public AbstractLiteClient(LiteClientConfig liteClientConfig) {
+    protected final CloseableHttpClient httpClient;
+
+    public AbstractLiteClient(LiteClientConfig liteClientConfig) throws EventMeshException {
+        Preconditions.checkNotNull(liteClientConfig, "liteClientConfig can't be null");
+        Preconditions.checkNotNull(liteClientConfig.getLiteEventMeshAddr(), "liteServerAddr can't be null");
+
         this.liteClientConfig = liteClientConfig;
+        this.eventMeshServerSelector = HttpLoadBalanceUtils.createEventMeshServerLoadBalanceSelector(liteClientConfig);
+        this.httpClient = setHttpClient();
     }
 
-    public void start() throws Exception {
-        eventMeshServerSelector = HttpLoadBalanceUtils.createEventMeshServerLoadBalanceSelector(liteClientConfig);
+    public void close() throws EventMeshException {
+        try {
+            this.httpClient.close();
+        } catch (IOException e) {
+            throw new EventMeshException("Close http client error", e);
+        }
     }
 
-    public LiteClientConfig getLiteClientConfig() {
-        return liteClientConfig;
-    }
-
-    public void shutdown() throws Exception {
-        log.info("AbstractLiteClient shutdown");
-    }
-
-    public CloseableHttpClient setHttpClient() throws Exception {
+    private CloseableHttpClient setHttpClient() throws EventMeshException {
         if (!liteClientConfig.isUseTls()) {
             return HttpClients.createDefault();
         }
-        SSLContext sslContext = null;
+        SSLContext sslContext;
         try {
             String protocol = System.getProperty("ssl.client.protocol", "TLSv1.2");
-            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
+            TrustManager[] tm = new TrustManager[] {new MyX509TrustManager()};
             sslContext = SSLContext.getInstance(protocol);
             sslContext.init(null, tm, new SecureRandom());
-            return HttpClients.custom().setSSLContext(sslContext)
-                    .setSSLHostnameVerifier(new DefaultHostnameVerifier()).build();
+            // todo: custom client pool
+            return HttpClients.custom()
+                .setSSLContext(sslContext)
+                .setSSLHostnameVerifier(new DefaultHostnameVerifier())
+                .build();
         } catch (Exception e) {
             log.error("Error in creating HttpClient.", e);
-            throw e;
+            throw new EventMeshException(e);
         }
     }
 }

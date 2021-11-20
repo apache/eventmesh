@@ -19,11 +19,11 @@ package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import org.apache.eventmesh.api.RRCallback;
+
 import org.apache.eventmesh.api.RequestReplyCallback;
-import org.apache.eventmesh.common.IPUtil;
-import org.apache.eventmesh.common.ProtocolTransportObject;
-import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
@@ -79,7 +79,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
             EventMeshConstants.PROTOCOL_HTTP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         ProtocolAdaptor<ProtocolTransportObject> httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("cloudevents");
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
@@ -88,7 +88,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             SendMessageResponseHeader
                 .buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
-                    IPUtil.getLocalAddress(),
+                    IPUtils.getLocalAddress(),
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 

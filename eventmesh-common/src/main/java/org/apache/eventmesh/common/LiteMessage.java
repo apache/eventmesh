@@ -17,11 +17,14 @@
 
 package org.apache.eventmesh.common;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.time.DateFormatUtils;
-
+/**
+ * EventMesh message
+ */
 public class LiteMessage {
 
     private String bizSeqNo;
@@ -119,13 +122,13 @@ public class LiteMessage {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("liteMessage={")
-                .append("bizSeqNo=").append(bizSeqNo).append(",")
-                .append("uniqueId=").append(uniqueId).append(",")
-                .append("topic=").append(topic).append(",")
-                .append("content=").append(content).append(",")
-                .append("prop=").append(prop).append(",")
-                .append("createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT))
-                .append("}");
+            .append("bizSeqNo=").append(bizSeqNo).append(",")
+            .append("uniqueId=").append(uniqueId).append(",")
+            .append("topic=").append(topic).append(",")
+            .append("content=").append(content).append(",")
+            .append("prop=").append(prop).append(",")
+            .append("createTime=").append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT))
+            .append("}");
         return sb.toString();
     }
 }

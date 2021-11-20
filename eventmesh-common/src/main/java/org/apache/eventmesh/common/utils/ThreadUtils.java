@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common;
+package org.apache.eventmesh.common.utils;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class ThreadUtil {
+public class ThreadUtils {
 
     private static long currentPID = -1;
 

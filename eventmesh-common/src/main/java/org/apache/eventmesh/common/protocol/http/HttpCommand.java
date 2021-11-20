@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.command;
+package org.apache.eventmesh.common.protocol.http;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.body.BaseResponseBody;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
@@ -26,10 +26,9 @@ import org.apache.eventmesh.common.protocol.http.header.BaseResponseHeader;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.netty.buffer.Unpooled;
@@ -76,8 +75,7 @@ public class HttpCommand implements ProtocolTransportObject {
         this.opaque = requestId.incrementAndGet();
     }
 
-    public HttpCommand createHttpCommandResponse(Header header,
-                                                 Body body) {
+    public HttpCommand createHttpCommandResponse(Header header, Body body) {
         if (StringUtils.isBlank(requestCode)) {
             return null;
         }
@@ -234,22 +232,13 @@ public class HttpCommand implements ProtocolTransportObject {
         if (cmdType == CmdType.REQ) {
             return null;
         }
-
-        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1,
-            HttpResponseStatus.OK,
-            Unpooled.wrappedBuffer(
-                JsonUtils.serialize(this.getBody()).getBytes(Constants.DEFAULT_CHARSET)));
-        response.headers().add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_PLAIN +
-            "; charset=" + Constants.DEFAULT_CHARSET);
-        response.headers().add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-        response.headers().add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-        Map<String, Object> customHeader = this.getHeader().toMap();
-        if (MapUtils.isNotEmpty(customHeader)) {
-            HttpHeaders heads = response.headers();
-            for (String key : customHeader.keySet()) {
-                heads.add(key, (customHeader.get(key) == null) ? "" : customHeader.get(key));
-            }
-        }
+        DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK,
+            Unpooled.wrappedBuffer(JsonUtils.serialize(this.getBody()).getBytes(Constants.DEFAULT_CHARSET)));
+        HttpHeaders headers = response.headers();
+        headers.add(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=" + Constants.DEFAULT_CHARSET);
+        headers.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+        headers.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+        Optional.of(this.getHeader().toMap()).ifPresent(customerHeader -> customerHeader.forEach(headers::add));
         return response;
     }
 

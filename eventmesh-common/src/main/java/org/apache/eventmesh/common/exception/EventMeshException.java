@@ -15,17 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common;
+package org.apache.eventmesh.common.exception;
 
-import org.apache.commons.text.RandomStringGenerator;
+public class EventMeshException extends Exception {
 
-public class RandomStringUtil {
-
-    private final static RandomStringGenerator randomNumGenerator = new RandomStringGenerator.Builder()
-            .withinRange('0', '9').build();
-
-    public static String generateNum(int length) {
-        return randomNumGenerator.generate(length);
+    public EventMeshException(String message) {
+        super(message);
     }
 
+    public EventMeshException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public EventMeshException(Throwable cause) {
+        super(cause);
+    }
+
+    public EventMeshException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+    public EventMeshException(Integer errCode, String errMsg) {
+        super(String.format("errorCode: %s, errorMessage: %s", errCode, errMsg));
+    }
 }

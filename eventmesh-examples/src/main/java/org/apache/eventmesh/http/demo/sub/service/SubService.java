@@ -27,9 +27,8 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.consumer.LiteConsumer;
-import org.apache.eventmesh.common.EventMeshException;
-import org.apache.eventmesh.common.IPUtil;
-import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
@@ -53,7 +52,7 @@ public class SubService implements InitializingBean {
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
     final List<SubscriptionItem> topicList = Arrays.asList(new SubscriptionItem("TEST-TOPIC-HTTP-ASYNC", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
-    final String localIp = IPUtil.getLocalAddress();
+    final String localIp = IPUtils.getLocalAddress();
     final String localPort = properties.getProperty("server.port");
     final String eventMeshIp = properties.getProperty("eventmesh.ip");
     final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
@@ -77,9 +76,9 @@ public class SubService implements InitializingBean {
                 .setConsumerGroup("EventMeshTest-consumerGroup")
                 .setEnv(env)
                 .setIdc(idc)
-                .setIp(IPUtil.getLocalAddress())
+                .setIp(IPUtils.getLocalAddress())
                 .setSys(subsys)
-                .setPid(String.valueOf(ThreadUtil.getPID()));
+                .setPid(String.valueOf(ThreadUtils.getPID()));
 
         liteConsumer = new LiteConsumer(eventMeshClientConfig);
         liteConsumer.start();

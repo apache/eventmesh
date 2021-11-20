@@ -17,11 +17,9 @@
 
 package org.apache.eventmesh.protocol.meshmessage;
 
-import io.cloudevents.CloudEvent;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.ProtocolTransportObject;
-import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -33,11 +31,14 @@ import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchV
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageRequestProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.tcp.TcpMessageProtocolResolver;
 
-import java.nio.charset.StandardCharsets;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.List;
 
+import io.cloudevents.CloudEvent;
+
 public class MeshMessageProtocolAdaptor<T extends ProtocolTransportObject>
-        implements ProtocolAdaptor<ProtocolTransportObject> {
+    implements ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
     public CloudEvent toCloudEvent(ProtocolTransportObject protocol) throws ProtocolHandleException {
@@ -62,7 +63,9 @@ public class MeshMessageProtocolAdaptor<T extends ProtocolTransportObject>
         return TcpMessageProtocolResolver.buildEvent(header, body);
     }
 
-    private CloudEvent deserializeHttpProtocol(String requestCode, org.apache.eventmesh.common.protocol.http.header.Header header, Body body) throws ProtocolHandleException {
+    private CloudEvent deserializeHttpProtocol(String requestCode,
+                                               org.apache.eventmesh.common.protocol.http.header.Header header,
+                                               Body body) throws ProtocolHandleException {
 
         if (String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()).equals(requestCode)) {
             return SendMessageBatchProtocolResolver.buildEvent(header, body);
