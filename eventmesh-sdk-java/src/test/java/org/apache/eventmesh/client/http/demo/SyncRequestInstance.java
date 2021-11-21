@@ -18,12 +18,13 @@
 package org.apache.eventmesh.client.http.demo;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.client.http.producer.LiteProducer;
-import org.apache.eventmesh.common.IPUtil;
-import org.apache.eventmesh.common.LiteMessage;
-import org.apache.eventmesh.common.RandomStringUtil;
-import org.apache.eventmesh.common.ThreadUtil;
+
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,7 @@ public class SyncRequestInstance {
 
     public static void main(String[] args) throws Exception {
 
-        LiteProducer liteProducer = null;
+        EventMeshHttpProducer eventMeshHttpProducer = null;
         try {
             String eventMeshIPPort = args[0];
 
@@ -44,28 +45,28 @@ public class SyncRequestInstance {
                 eventMeshIPPort = "127.0.0.1:10105";
             }
 
-            LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
+            EventMeshHttpClientConfig eventMeshClientConfig = new EventMeshHttpClientConfig();
             eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
                     .setProducerGroup("EventMeshTest-producerGroup")
                     .setEnv("env")
                     .setIdc("idc")
-                    .setIp(IPUtil.getLocalAddress())
+                    .setIp(IPUtils.getLocalAddress())
                     .setSys("1234")
-                    .setPid(String.valueOf(ThreadUtil.getPID()));
+                    .setPid(String.valueOf(ThreadUtils.getPID()));
 
-            liteProducer = new LiteProducer(eventMeshClientConfig);
-            liteProducer.start();
+            eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
+            eventMeshHttpProducer.start();
 
             long startTime = System.currentTimeMillis();
-            LiteMessage liteMessage = new LiteMessage();
-            liteMessage.setBizSeqNo(RandomStringUtil.generateNum(30))
+            EventMeshMessage eventMeshMessage = new EventMeshMessage();
+            eventMeshMessage.setBizSeqNo(RandomStringUtils.generateNum(30))
                     .setContent("contentStr with special protocal")
                     .setTopic(topic)
-                    .setUniqueId(RandomStringUtil.generateNum(30));
+                    .setUniqueId(RandomStringUtils.generateNum(30));
 
-            LiteMessage rsp = liteProducer.request(liteMessage, 10000);
+            EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10000);
             if (logger.isDebugEnabled()) {
-                logger.debug("sendmsg : {}, return : {}, cost:{}ms", liteMessage.getContent(), rsp.getContent(), System.currentTimeMillis() - startTime);
+                logger.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), rsp.getContent(), System.currentTimeMillis() - startTime);
             }
         } catch (Exception e) {
             logger.warn("send msg failed", e);
@@ -73,8 +74,8 @@ public class SyncRequestInstance {
 
         try {
             Thread.sleep(30000);
-            if (liteProducer != null) {
-                liteProducer.shutdown();
+            if (eventMeshHttpProducer != null) {
+                eventMeshHttpProducer.shutdown();
             }
         } catch (Exception e1) {
             logger.warn("producer shutdown exception", e1);

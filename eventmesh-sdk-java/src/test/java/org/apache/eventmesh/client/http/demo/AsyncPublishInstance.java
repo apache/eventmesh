@@ -17,69 +17,49 @@
 
 package org.apache.eventmesh.client.http.demo;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.client.http.producer.LiteProducer;
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.IPUtil;
-import org.apache.eventmesh.common.LiteMessage;
-import org.apache.eventmesh.common.RandomStringUtil;
-import org.apache.eventmesh.common.ThreadUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class AsyncPublishInstance {
-
-    public static Logger logger = LoggerFactory.getLogger(AsyncPublishInstance.class);
 
     public static void main(String[] args) throws Exception {
 
-        LiteProducer liteProducer = null;
-        try {
-//            String eventMeshIPPort = args[0];
-            String eventMeshIPPort = "";
-//            final String topic = args[1];
-            final String topic = "TEST-TOPIC-HTTP-ASYNC";
-            if (StringUtils.isBlank(eventMeshIPPort)) {
-                // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-                eventMeshIPPort = "127.0.0.1:10105";
-            }
+        String eventMeshIPPort = "127.0.0.1:10105";
+        final String topic = "TEST-TOPIC-HTTP-ASYNC";
 
-            LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
-            eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
-                    .setProducerGroup("EventMeshTest-producerGroup")
-                    .setEnv("env")
-                    .setIdc("idc")
-                    .setIp(IPUtil.getLocalAddress())
-                    .setSys("1234")
-                    .setPid(String.valueOf(ThreadUtil.getPID()));
+        EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
+            .liteEventMeshAddr(eventMeshIPPort)
+            .producerGroup("EventMeshTest-producerGroup")
+            .env("env")
+            .idc("idc")
+            .ip(IPUtils.getLocalAddress())
+            .sys("1234")
+            .pid(String.valueOf(ThreadUtils.getPID())).build();
 
-            liteProducer = new LiteProducer(eventMeshClientConfig);
-            liteProducer.start();
-            for (int i = 0; i < 1; i++) {
-                LiteMessage liteMessage = new LiteMessage();
-                liteMessage.setBizSeqNo(RandomStringUtil.generateNum(30))
-//                    .setContent("contentStr with special protocal")
-                        .setContent("testPublishMessage")
-                        .setTopic(topic)
-                        .setUniqueId(RandomStringUtil.generateNum(30))
-                        .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
+        EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
+        for (int i = 0; i < 1; i++) {
+            EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
+                .bizSeqNo(RandomStringUtils.generateNum(30))
+                .content("testPublishMessage")
+                .topic(topic)
+                .uniqueId(RandomStringUtils.generateNum(30))
+                .build()
+                .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
 
-                boolean flag = liteProducer.publish(liteMessage);
-                Thread.sleep(1000);
-                logger.info("publish result , {}", flag);
-            }
-        } catch (Exception e) {
-            logger.warn("publish msg failed", e);
+            eventMeshHttpProducer.publish(eventMeshMessage);
+            Thread.sleep(1000);
         }
-
-        try {
-            Thread.sleep(30000);
-            if (liteProducer != null) {
-                liteProducer.shutdown();
-            }
-        } catch (Exception e1) {
-            logger.warn("producer shutdown exception", e1);
+        Thread.sleep(30000);
+        try (EventMeshHttpProducer ignore = eventMeshHttpProducer) {
+            // ignore
         }
     }
 }

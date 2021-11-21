@@ -26,9 +26,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.IPUtil;
-import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchResponseBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
@@ -79,17 +79,17 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
                 EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
+                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         SendMessageBatchRequestHeader sendMessageBatchRequestHeader = (SendMessageBatchRequestHeader) asyncContext.getRequest().getHeader();
 
         SendMessageBatchResponseHeader sendMessageBatchResponseHeader =
                 SendMessageBatchResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
-                        IPUtil.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
+                        IPUtils.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         String protocolType = sendMessageBatchRequestHeader.getProtocolType();
-        ProtocolAdaptor httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+        ProtocolAdaptor<ProtocolTransportObject> httpCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         List<CloudEvent> eventList = httpCommandProtocolAdaptor.toBatchCloudEvent(asyncContext.getRequest());
 
         if (CollectionUtils.isEmpty(eventList)) {
