@@ -26,37 +26,32 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 public class ThreadPoolFactory {
 
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, final String threadName) {
         return createThreadPoolExecutor(core, max, threadName, true);
     }
 
-    public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, final String threadName, final boolean isDaemon) {
+    public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, final String threadName,
+                                                              final boolean isDaemon) {
         return createThreadPoolExecutor(core, max, new LinkedBlockingQueue<Runnable>(1000), threadName, isDaemon);
     }
 
-    public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue, final String threadName, final boolean isDaemon) {
-        return new ThreadPoolExecutor(core, max,
-                10 * 1000, TimeUnit.MILLISECONDS, blockingQueue, new ThreadFactory() {
-
-            private AtomicInteger seq = new AtomicInteger(0);
-
-            @Override
-            public Thread newThread(Runnable r) {
-                seq.incrementAndGet();
-                Thread t = new Thread(r, threadName + seq.get());
-                t.setDaemon(isDaemon);
-                return t;
-            }
-        });
+    public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue,
+                                                              final String threadName, final boolean isDaemon) {
+        return new ThreadPoolExecutor(core, max, 10 * 1000, TimeUnit.MILLISECONDS, blockingQueue,
+            new ThreadFactoryBuilder().setNameFormat(threadName).setDaemon(isDaemon).build()
+        );
     }
 
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, ThreadFactory threadFactory) {
         return createThreadPoolExecutor(core, max, new LinkedBlockingQueue<Runnable>(1000), threadFactory);
     }
 
-    public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue, ThreadFactory threadFactory) {
+    public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue,
+                                                              ThreadFactory threadFactory) {
         return new ThreadPoolExecutor(core, max, 10 * 1000, TimeUnit.MILLISECONDS, blockingQueue, threadFactory);
     }
 
@@ -77,7 +72,8 @@ public class ThreadPoolFactory {
         return createScheduledExecutor(core, threadName, true);
     }
 
-    public static ScheduledExecutorService createScheduledExecutor(int core, final String threadName, final boolean isDaemon) {
+    public static ScheduledExecutorService createScheduledExecutor(int core, final String threadName,
+                                                                   final boolean isDaemon) {
         return Executors.newScheduledThreadPool(core, new ThreadFactory() {
             private AtomicInteger ai = new AtomicInteger(0);
 

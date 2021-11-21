@@ -17,32 +17,28 @@
 
 package org.apache.eventmesh.tcp.demo;
 
-import io.netty.channel.ChannelHandlerContext;
-
-import org.apache.eventmesh.client.tcp.EventMeshClient;
+import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
-import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
+import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshTCPClient;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import io.netty.channel.ChannelHandlerContext;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
-
-    public static Logger logger = LoggerFactory.getLogger(SyncResponse.class);
-
-    private static EventMeshClient client;
 
     public static SyncResponse handler = new SyncResponse();
 
     public static void main(String[] agrs) throws Exception {
         try {
             UserAgent userAgent = EventMeshTestUtils.generateClient2();
-            client = new DefaultEventMeshClient("127.0.0.1", 10000, userAgent);
+            EventMeshTCPClient client = new DefaultEventMeshTCPClient("127.0.0.1", 10000, userAgent);
             client.init();
             client.heartbeat();
 
@@ -52,24 +48,20 @@ public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
 
             client.listen();
 
-            //client.unsubscribe();
-
-            // release resource and close client
-            // client.close();
         } catch (Exception e) {
-            logger.warn("SyncResponse failed", e);
+            log.warn("SyncResponse failed", e);
         }
     }
 
     @Override
     public void handle(Package msg, ChannelHandlerContext ctx) {
-        logger.info("receive sync rr msg================{}", msg);
+        log.info("receive sync rr msg================{}", msg);
         Package pkg = EventMeshTestUtils.rrResponse(msg);
         ctx.writeAndFlush(pkg);
     }
 
     @Override
-    public EventMeshMessage convert(Package pkg) {
+    public EventMeshMessage convertToProtocolMessage(Package pkg) {
         return null;
     }
 }
