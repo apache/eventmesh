@@ -17,14 +17,12 @@
 
 package org.apache.eventmesh.protocol.api;
 
-import org.apache.eventmesh.common.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventV1;
 
 import java.util.List;
 

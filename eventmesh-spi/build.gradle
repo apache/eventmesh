@@ -16,5 +16,4 @@
  */
 dependencies {
     compileOnly project(":eventmesh-common")
-    testImplementation project(":eventmesh-common")
 }

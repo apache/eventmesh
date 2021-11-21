@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import org.apache.eventmesh.common.IPUtil;
-import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
@@ -49,7 +49,7 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
             EventMeshConstants.PROTOCOL_HTTP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         eventMeshServer.shutdown();
 

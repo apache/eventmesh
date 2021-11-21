@@ -20,10 +20,10 @@ package org.apache.eventmesh.client.tcp.demo;
 
 import io.netty.channel.ChannelHandlerContext;
 
-import org.apache.eventmesh.client.tcp.EventMeshClient;
+import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
-import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
+import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshTCPClient;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
@@ -36,14 +36,14 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncSubscribe.class);
 
-    private static EventMeshClient client;
+    private static EventMeshTCPClient client;
 
     public static AsyncSubscribe handler = new AsyncSubscribe();
 
     public static void main(String[] agrs) throws Exception {
         try {
             UserAgent userAgent = EventMeshTestUtils.generateClient2();
-            client = new DefaultEventMeshClient("127.0.0.1", 10002, userAgent);
+            client = new DefaultEventMeshTCPClient("127.0.0.1", 10002, userAgent);
             client.init();
             client.heartbeat();
 
@@ -63,12 +63,12 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
     @Override
     public void handle(Package msg, ChannelHandlerContext ctx) {
-        EventMeshMessage eventMeshMessage = convert(msg);
+        EventMeshMessage eventMeshMessage = convertToProtocolMessage(msg);
         logger.info("receive async msg====================={}", eventMeshMessage);
     }
 
     @Override
-    public EventMeshMessage convert(Package pkg) {
+    public EventMeshMessage convertToProtocolMessage(Package pkg) {
         return (EventMeshMessage) pkg.getBody();
     }
 }

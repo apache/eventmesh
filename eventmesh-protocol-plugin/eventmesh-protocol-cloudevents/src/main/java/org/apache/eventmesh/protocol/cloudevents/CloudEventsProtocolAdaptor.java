@@ -20,8 +20,8 @@ package org.apache.eventmesh.protocol.cloudevents;
 import io.cloudevents.CloudEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.ProtocolTransportObject;
-import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -33,7 +33,6 @@ import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchV
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageRequestProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.tcp.TcpMessageProtocolResolver;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
