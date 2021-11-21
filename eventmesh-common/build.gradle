@@ -44,6 +44,12 @@ dependencies {
 
     implementation "com.github.stefanbirkner:system-rules"
 
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+
     testImplementation "junit:junit"
     testImplementation "org.assertj:assertj-core"
 

@@ -4,13 +4,18 @@ import org.apache.eventmesh.common.exception.EventMeshException;
 
 /**
  * EventMeshProducer, SDK should implement this interface.
+ * <ul>
+ *     <li>{@link EventMeshProtocolProducer}</li>
+ *     <li>{@link OpenMessageProducer}</li>
+ *     <li>{@link CloudEventProducer}</li>
+ * </ul>
  */
-public interface EventMeshProtocolProducer<Protocol> extends AutoCloseable {
+public interface EventMeshProtocolProducer<PROTOCOL> extends AutoCloseable {
 
-    void publish(Protocol eventMeshMessage) throws EventMeshException;
+    void publish(PROTOCOL eventMeshMessage) throws EventMeshException;
 
-    Protocol request(Protocol message, long timeout) throws EventMeshException;
+    PROTOCOL request(PROTOCOL message, long timeout) throws EventMeshException;
 
-    void request(Protocol message, RRCallback rrCallback, long timeout) throws EventMeshException;
+    void request(PROTOCOL message, RRCallback rrCallback, long timeout) throws EventMeshException;
 
 }

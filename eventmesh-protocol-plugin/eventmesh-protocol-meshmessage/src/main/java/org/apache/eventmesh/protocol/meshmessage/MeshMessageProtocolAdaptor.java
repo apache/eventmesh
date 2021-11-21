@@ -37,8 +37,7 @@ import java.util.List;
 
 import io.cloudevents.CloudEvent;
 
-public class MeshMessageProtocolAdaptor<T extends ProtocolTransportObject>
-    implements ProtocolAdaptor<ProtocolTransportObject> {
+public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
     public CloudEvent toCloudEvent(ProtocolTransportObject protocol) throws ProtocolHandleException {

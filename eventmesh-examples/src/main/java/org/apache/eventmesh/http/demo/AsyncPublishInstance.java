@@ -20,7 +20,7 @@ package org.apache.eventmesh.http.demo;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.producer.LiteProducer;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -55,25 +55,25 @@ public class AsyncPublishInstance {
 
         final String topic = "TEST-TOPIC-HTTP-ASYNC";
 
-        LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
-        eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
-            .setProducerGroup("EventMeshTest-producerGroup")
-            .setEnv("env")
-            .setIdc("idc")
-            .setIp(IPUtils.getLocalAddress())
-            .setSys("1234")
-            .setPid(String.valueOf(ThreadUtils.getPID()));
+        LiteClientConfig eventMeshClientConfig = LiteClientConfig.builder()
+            .liteEventMeshAddr(eventMeshIPPort)
+            .producerGroup("EventMeshTest-producerGroup")
+            .env("env")
+            .idc("idc")
+            .ip(IPUtils.getLocalAddress())
+            .sys("1234")
+            .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         try (LiteProducer liteProducer = new LiteProducer(eventMeshClientConfig);) {
-            liteProducer.start();
             for (int i = 0; i < messageSize; i++) {
-                LiteMessage liteMessage = new LiteMessage();
-                liteMessage.setBizSeqNo(RandomStringUtils.generateNum(30))
-                    .setContent("testPublishMessage")
-                    .setTopic(topic)
-                    .setUniqueId(RandomStringUtils.generateNum(30))
+                EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
+                    .bizSeqNo(RandomStringUtils.generateNum(30))
+                    .content("testPublishMessage")
+                    .topic(topic)
+                    .uniqueId(RandomStringUtils.generateNum(30))
+                    .build()
                     .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
-                liteProducer.publish(liteMessage);
+                liteProducer.publish(eventMeshMessage);
             }
             Thread.sleep(30000);
         }

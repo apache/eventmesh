@@ -17,18 +17,17 @@
 
 package org.apache.eventmesh.connector.standalone.broker.task;
 
-import io.openmessaging.api.Message;
-
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import io.openmessaging.api.Message;
 
 public class SubScribeTask implements Runnable {
 

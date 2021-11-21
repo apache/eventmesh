@@ -6,7 +6,7 @@ import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.http.HttpUtil;
 import org.apache.eventmesh.client.http.http.RequestParam;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
@@ -24,14 +24,14 @@ import io.netty.handler.codec.http.HttpMethod;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-class EventMeshMessageProducer extends AbstractLiteClient implements EventMeshProtocolProducer<LiteMessage> {
+class EventMeshMessageProducer extends AbstractLiteClient implements EventMeshProtocolProducer<EventMeshMessage> {
 
     public EventMeshMessageProducer(LiteClientConfig liteClientConfig) throws EventMeshException {
         super(liteClientConfig);
     }
 
     @Override
-    public void publish(LiteMessage message) throws EventMeshException {
+    public void publish(EventMeshMessage message) throws EventMeshException {
         validateEventMeshMessage(message);
         RequestParam requestParam = buildCommonPostParam(message)
             .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
@@ -50,7 +50,7 @@ class EventMeshMessageProducer extends AbstractLiteClient implements EventMeshPr
     }
 
     @Override
-    public LiteMessage request(LiteMessage message, long timeout) throws EventMeshException {
+    public EventMeshMessage request(EventMeshMessage message, long timeout) throws EventMeshException {
         validateEventMeshMessage(message);
         RequestParam requestParam = buildCommonPostParam(message)
             .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
@@ -71,7 +71,7 @@ class EventMeshMessageProducer extends AbstractLiteClient implements EventMeshPr
     }
 
     @Override
-    public void request(LiteMessage message, RRCallback rrCallback, long timeout) throws EventMeshException {
+    public void request(EventMeshMessage message, RRCallback rrCallback, long timeout) throws EventMeshException {
         validateEventMeshMessage(message);
 
         RequestParam requestParam = buildCommonPostParam(message)
@@ -87,7 +87,7 @@ class EventMeshMessageProducer extends AbstractLiteClient implements EventMeshPr
         }
     }
 
-    private void validateEventMeshMessage(LiteMessage message) {
+    private void validateEventMeshMessage(EventMeshMessage message) {
         Preconditions.checkNotNull(message, "eventMeshMessage invalid");
         Preconditions.checkNotNull(message.getTopic(), "eventMeshMessage[topic] invalid");
         Preconditions.checkNotNull(message.getContent(), "eventMeshMessage[content] invalid");
@@ -101,7 +101,7 @@ class EventMeshMessageProducer extends AbstractLiteClient implements EventMeshPr
         }
     }
 
-    private RequestParam buildCommonPostParam(LiteMessage message) {
+    private RequestParam buildCommonPostParam(EventMeshMessage message) {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam
             .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
@@ -114,21 +114,21 @@ class EventMeshMessageProducer extends AbstractLiteClient implements EventMeshPr
             .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
             .addBody(SendMessageRequestBody.PRODUCERGROUP, liteClientConfig.getProducerGroup())
+            // todo: set message to content is better
             .addBody(SendMessageRequestBody.TOPIC, message.getTopic())
             .addBody(SendMessageRequestBody.CONTENT, message.getContent())
-            .addBody(SendMessageRequestBody.TTL, message.getPropKey(Constants.EVENTMESH_MESSAGE_CONST_TTL))
+            .addBody(SendMessageRequestBody.TTL, message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL))
             .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
             .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
         return requestParam;
     }
 
-    private LiteMessage transformMessage(EventMeshRetObj retObj) {
-        LiteMessage eventMeshMessage = new LiteMessage();
-        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(
-            retObj.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
-        eventMeshMessage.setContent(replyMessage.body);
-        eventMeshMessage.setProp(replyMessage.properties);
-        eventMeshMessage.setTopic(replyMessage.topic);
-        return eventMeshMessage;
+    private EventMeshMessage transformMessage(EventMeshRetObj retObj) {
+        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(retObj.getRetMsg(),
+            SendMessageResponseBody.ReplyMessage.class);
+        return EventMeshMessage.builder()
+            .content(replyMessage.body)
+            .prop(replyMessage.properties)
+            .topic(replyMessage.topic).build();
     }
 }

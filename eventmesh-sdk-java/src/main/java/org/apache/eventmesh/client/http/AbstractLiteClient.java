@@ -56,8 +56,8 @@ public abstract class AbstractLiteClient implements AutoCloseable {
     }
 
     public void close() throws EventMeshException {
-        try {
-            this.httpClient.close();
+        try (final CloseableHttpClient ignore = this.httpClient) {
+            // ignore
         } catch (IOException e) {
             throw new EventMeshException("Close http client error", e);
         }
@@ -69,6 +69,7 @@ public abstract class AbstractLiteClient implements AutoCloseable {
         }
         SSLContext sslContext;
         try {
+            // todo: config in properties file?
             String protocol = System.getProperty("ssl.client.protocol", "TLSv1.2");
             TrustManager[] tm = new TrustManager[] {new MyX509TrustManager()};
             sslContext = SSLContext.getInstance(protocol);

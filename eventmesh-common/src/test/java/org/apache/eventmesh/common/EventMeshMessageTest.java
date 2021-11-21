@@ -17,58 +17,58 @@
 
 package org.apache.eventmesh.common;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 
-public class LiteMessageTest {
+import org.junit.Assert;
+import org.junit.Test;
+
+public class EventMeshMessageTest {
 
     @Test
     public void testGetProp() {
-        LiteMessage message = createLiteMessage();
+        EventMeshMessage message = createLiteMessage();
         Assert.assertEquals(2L, message.getProp().size());
     }
 
     @Test
     public void testSetProp() {
-        LiteMessage message = createLiteMessage();
+        EventMeshMessage message = createLiteMessage();
         Map<String, String> prop = new HashMap<>();
         prop.put("key3", "value3");
         message.setProp(prop);
         Assert.assertEquals(1L, message.getProp().size());
-        Assert.assertEquals("value3", message.getPropKey("key3"));
+        Assert.assertEquals("value3", message.getProp("key3"));
     }
 
     @Test
     public void testAddProp() {
-        LiteMessage message = createLiteMessage();
+        EventMeshMessage message = createLiteMessage();
         message.addProp("key3", "value3");
         Assert.assertEquals(3L, message.getProp().size());
-        Assert.assertEquals("value1", message.getPropKey("key1"));
+        Assert.assertEquals("value1", message.getProp("key1"));
     }
 
     @Test
     public void testGetPropKey() {
-        LiteMessage message = createLiteMessage();
-        Assert.assertEquals("value1", message.getPropKey("key1"));
+        EventMeshMessage message = createLiteMessage();
+        Assert.assertEquals("value1", message.getProp("key1"));
     }
 
     @Test
     public void testRemoveProp() {
-        LiteMessage message = createLiteMessage();
-        message.removeProp("key1");
+        EventMeshMessage message = createLiteMessage();
+        message.removePropIfPresent("key1");
         Assert.assertEquals(1L, message.getProp().size());
-        Assert.assertNull(message.getPropKey("key1"));
+        Assert.assertNull(message.getProp("key1"));
     }
 
-    private LiteMessage createLiteMessage() {
-        LiteMessage result = new LiteMessage();
+    private EventMeshMessage createLiteMessage() {
         Map<String, String> prop = new HashMap<>();
         prop.put("key1", "value1");
         prop.put("key2", "value2");
-        result.setProp(prop);
-        return result;
+        return EventMeshMessage.builder()
+            .prop(prop)
+            .build();
     }
 }

@@ -21,7 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
 import org.apache.eventmesh.client.http.producer.LiteProducer;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.slf4j.Logger;
@@ -62,15 +62,15 @@ public class SyncRequestInstance {
             liteProducer.start();
 
             long startTime = System.currentTimeMillis();
-            LiteMessage liteMessage = new LiteMessage();
-            liteMessage.setBizSeqNo(RandomStringUtils.generateNum(30))
+            EventMeshMessage eventMeshMessage = new EventMeshMessage();
+            eventMeshMessage.setBizSeqNo(RandomStringUtils.generateNum(30))
                     .setContent("contentStr with special protocal")
                     .setTopic(topic)
                     .setUniqueId(RandomStringUtils.generateNum(30));
 
-            LiteMessage rsp = liteProducer.request(liteMessage, 10000);
+            EventMeshMessage rsp = liteProducer.request(eventMeshMessage, 10000);
             if (logger.isDebugEnabled()) {
-                logger.debug("sendmsg : {}, return : {}, cost:{}ms", liteMessage.getContent(), rsp.getContent(), System.currentTimeMillis() - startTime);
+                logger.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), rsp.getContent(), System.currentTimeMillis() - startTime);
             }
         } catch (Exception e) {
             logger.warn("send msg failed", e);

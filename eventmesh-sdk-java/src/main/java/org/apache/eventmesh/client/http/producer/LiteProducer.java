@@ -18,7 +18,7 @@
 package org.apache.eventmesh.client.http.producer;
 
 import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.exception.EventMeshException;
 
 import io.cloudevents.CloudEvent;
@@ -29,47 +29,47 @@ import lombok.extern.slf4j.Slf4j;
 public class LiteProducer implements AutoCloseable {
 
     private final EventMeshMessageProducer eventMeshMessageProducer;
-    private final CloudEventsProducer cloudEventsProducer;
-    private final OpenMessageProducer openMessageProducer;
+    private final CloudEventProducer       cloudEventProducer;
+    private final OpenMessageProducer      openMessageProducer;
 
     public LiteProducer(final LiteClientConfig liteClientConfig) throws EventMeshException {
-        this.cloudEventsProducer = new CloudEventsProducer(liteClientConfig);
+        this.cloudEventProducer = new CloudEventProducer(liteClientConfig);
         this.eventMeshMessageProducer = new EventMeshMessageProducer(liteClientConfig);
         this.openMessageProducer = new OpenMessageProducer(liteClientConfig);
     }
 
-    public void publish(final LiteMessage message) throws EventMeshException {
+    public void publish(final EventMeshMessage message) throws EventMeshException {
         eventMeshMessageProducer.publish(message);
     }
 
     public void publish(final CloudEvent cloudEvent) throws EventMeshException {
-        cloudEventsProducer.publish(cloudEvent);
+        cloudEventProducer.publish(cloudEvent);
     }
 
     public void publish(final Message openMessage) throws EventMeshException {
         openMessageProducer.publish(openMessage);
     }
 
-    public LiteMessage request(final LiteMessage message, final long timeout) throws EventMeshException {
+    public EventMeshMessage request(final EventMeshMessage message, final long timeout) throws EventMeshException {
         return eventMeshMessageProducer.request(message, timeout);
     }
 
     public CloudEvent request(final CloudEvent cloudEvent, final long timeout) throws EventMeshException {
-        return cloudEventsProducer.request(cloudEvent, timeout);
+        return cloudEventProducer.request(cloudEvent, timeout);
     }
 
     public Message request(final Message openMessage, final long timeout) throws EventMeshException {
         return openMessageProducer.request(openMessage, timeout);
     }
 
-    public void request(final LiteMessage message, final RRCallback rrCallback, final long timeout)
+    public void request(final EventMeshMessage message, final RRCallback rrCallback, final long timeout)
         throws EventMeshException {
         eventMeshMessageProducer.request(message, rrCallback, timeout);
     }
 
     public void request(final CloudEvent cloudEvent, final RRCallback rrCallback, final long timeout)
         throws EventMeshException {
-        cloudEventsProducer.request(cloudEvent, rrCallback, timeout);
+        cloudEventProducer.request(cloudEvent, rrCallback, timeout);
     }
 
     public void request(final Message openMessage, final RRCallback rrCallback, final long timeout)
@@ -82,7 +82,7 @@ public class LiteProducer implements AutoCloseable {
         try (
             final EventMeshMessageProducer ignored = eventMeshMessageProducer;
             final OpenMessageProducer ignored1 = openMessageProducer;
-            final CloudEventsProducer ignored2 = cloudEventsProducer) {
+            final CloudEventProducer ignored2 = cloudEventProducer) {
             log.info("Close producer");
         }
     }
