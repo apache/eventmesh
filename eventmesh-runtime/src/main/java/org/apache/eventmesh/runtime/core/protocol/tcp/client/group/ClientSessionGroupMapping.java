@@ -31,9 +31,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.ThreadUtil;
+
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
@@ -443,7 +442,7 @@ public class ClientSessionGroupMapping {
                 logger.error("say goodbye to session error! {}", itr, e);
             }
         });
-        ThreadUtil.randomSleep(50);
+        ThreadUtils.randomSleep(50);
         logger.info("ClientSessionGroupMapping shutdown......");
     }
 

@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.protocol.cloudevents;
 
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 
@@ -27,7 +28,7 @@ public class CloudEventsProtocolAdaptorTest {
 
     @Test
     public void loadPlugin() {
-        ProtocolAdaptor protocolAdaptor =
+        ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
             ProtocolPluginFactory.getProtocolAdaptor(CloudEventsProtocolConstant.PROTOCOL_NAME);
 
         Assert.assertNotNull(protocolAdaptor);
