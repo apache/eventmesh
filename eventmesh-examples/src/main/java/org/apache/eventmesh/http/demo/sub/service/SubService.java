@@ -19,8 +19,8 @@
 
 package org.apache.eventmesh.http.demo.sub.service;
 
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.client.http.consumer.LiteConsumer;
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.http.consumer.EventMeshHttpConsumer;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -48,7 +48,7 @@ public class SubService implements InitializingBean {
 
     public static Logger logger = LoggerFactory.getLogger(SubService.class);
 
-    private LiteConsumer liteConsumer;
+    private EventMeshHttpConsumer eventMeshHttpConsumer;
 
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
@@ -71,7 +71,7 @@ public class SubService implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
 
         final String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
-        LiteClientConfig eventMeshClientConfig = LiteClientConfig.builder()
+        EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
             .liteEventMeshAddr(eventMeshIPPort)
             .consumerGroup("EventMeshTest-consumerGroup")
             .env(env)
@@ -80,9 +80,9 @@ public class SubService implements InitializingBean {
             .sys(subsys)
             .pid(String.valueOf(ThreadUtils.getPID())).build();
 
-        liteConsumer = new LiteConsumer(eventMeshClientConfig);
-        liteConsumer.heartBeat(topicList, url);
-        liteConsumer.subscribe(topicList, url);
+        eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
+        eventMeshHttpConsumer.heartBeat(topicList, url);
+        eventMeshHttpConsumer.subscribe(topicList, url);
 
         // Wait for all messaged to be consumed
         Thread stopThread = new Thread(() -> {
@@ -105,11 +105,11 @@ public class SubService implements InitializingBean {
             for (SubscriptionItem item : topicList) {
                 unSubList.add(item.getTopic());
             }
-            liteConsumer.unsubscribe(unSubList, url);
+            eventMeshHttpConsumer.unsubscribe(unSubList, url);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        try (final LiteConsumer ignore = liteConsumer) {
+        try (final EventMeshHttpConsumer ignore = eventMeshHttpConsumer) {
             // close consumer
         } catch (Exception e) {
             e.printStackTrace();

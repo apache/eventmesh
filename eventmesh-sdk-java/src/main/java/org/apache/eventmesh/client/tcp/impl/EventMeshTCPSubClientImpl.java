@@ -27,7 +27,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.eventmesh.client.tcp.SimpleSubClient;
+import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
@@ -42,7 +42,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
+public class EventMeshTCPSubClientImpl extends TcpClient implements EventMeshTCPSubClient {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -50,11 +50,11 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
 
     private ReceiveMsgHook callback;
 
-    private List<SubscriptionItem> subscriptionItems = new ArrayList<SubscriptionItem>();
+    private List<SubscriptionItem> subscriptionItems = new ArrayList<>();
 
     private ScheduledFuture<?> task;
 
-    public SimpleSubClientImpl(String accessIp, int port, UserAgent agent) {
+    public EventMeshTCPSubClientImpl(String accessIp, int port, UserAgent agent) {
         super(accessIp, port);
         this.userAgent = agent;
     }
@@ -97,10 +97,10 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
             public void run() {
                 try {
                     if (!isActive()) {
-                        SimpleSubClientImpl.this.reconnect();
+                        EventMeshTCPSubClientImpl.this.reconnect();
                     }
                     Package msg = MessageUtils.heartBeat();
-                    SimpleSubClientImpl.this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                    EventMeshTCPSubClientImpl.this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
                 } catch (Exception ignore) {
                 }
             }
@@ -144,7 +144,7 @@ public class SimpleSubClientImpl extends TcpClient implements SimpleSubClient {
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
             Command cmd = msg.getHeader().getCommand();
-            logger.info(SimpleSubClientImpl.class.getSimpleName() + "|receive|type={}|msg={}", cmd, msg);
+            logger.info(EventMeshTCPSubClientImpl.class.getSimpleName() + "|receive|type={}|msg={}", cmd, msg);
             if (cmd == Command.REQUEST_TO_CLIENT) {
                 if (callback != null) {
                     callback.handle(msg, ctx);

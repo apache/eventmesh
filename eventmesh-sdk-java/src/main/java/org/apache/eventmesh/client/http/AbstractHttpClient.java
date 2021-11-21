@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.client.http;
 
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
 import org.apache.eventmesh.client.http.util.HttpLoadBalanceUtils;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
 
@@ -38,20 +39,21 @@ import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class AbstractLiteClient implements AutoCloseable {
+public abstract class AbstractHttpClient implements AutoCloseable {
 
-    protected LiteClientConfig liteClientConfig;
+    protected EventMeshHttpClientConfig eventMeshHttpClientConfig;
 
     protected LoadBalanceSelector<String> eventMeshServerSelector;
 
     protected final CloseableHttpClient httpClient;
 
-    public AbstractLiteClient(LiteClientConfig liteClientConfig) throws EventMeshException {
-        Preconditions.checkNotNull(liteClientConfig, "liteClientConfig can't be null");
-        Preconditions.checkNotNull(liteClientConfig.getLiteEventMeshAddr(), "liteServerAddr can't be null");
+    public AbstractHttpClient(EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
+        Preconditions.checkNotNull(eventMeshHttpClientConfig, "liteClientConfig can't be null");
+        Preconditions.checkNotNull(eventMeshHttpClientConfig.getLiteEventMeshAddr(), "liteServerAddr can't be null");
 
-        this.liteClientConfig = liteClientConfig;
-        this.eventMeshServerSelector = HttpLoadBalanceUtils.createEventMeshServerLoadBalanceSelector(liteClientConfig);
+        this.eventMeshHttpClientConfig = eventMeshHttpClientConfig;
+        this.eventMeshServerSelector = HttpLoadBalanceUtils.createEventMeshServerLoadBalanceSelector(
+            eventMeshHttpClientConfig);
         this.httpClient = setHttpClient();
     }
 
@@ -64,7 +66,7 @@ public abstract class AbstractLiteClient implements AutoCloseable {
     }
 
     private CloseableHttpClient setHttpClient() throws EventMeshException {
-        if (!liteClientConfig.isUseTls()) {
+        if (!eventMeshHttpClientConfig.isUseTls()) {
             return HttpClients.createDefault();
         }
         SSLContext sslContext;
@@ -82,6 +84,14 @@ public abstract class AbstractLiteClient implements AutoCloseable {
         } catch (Exception e) {
             log.error("Error in creating HttpClient.", e);
             throw new EventMeshException(e);
+        }
+    }
+
+    protected String selectEventMesh() {
+        if (eventMeshHttpClientConfig.isUseTls()) {
+            return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerSelector.select();
+        } else {
+            return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerSelector.select();
         }
     }
 }

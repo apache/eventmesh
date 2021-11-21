@@ -17,78 +17,81 @@
 
 package org.apache.eventmesh.client.tcp.impl;
 
-
-import io.cloudevents.CloudEvent;
-import org.apache.eventmesh.client.tcp.EventMeshClient;
-import org.apache.eventmesh.client.tcp.SimplePubClient;
-import org.apache.eventmesh.client.tcp.SimpleSubClient;
+import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
+import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
+import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
+import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
-public class DefaultEventMeshClient implements EventMeshClient {
+import io.cloudevents.CloudEvent;
+import lombok.ToString;
+
+@ToString
+public class DefaultEventMeshTCPClient implements EventMeshTCPClient {
     protected UserAgent agent;
-    private String accessHost;
-    private int accessPort;
+    private   String    accessHost;
+    private   int       accessPort;
 
-    private SimplePubClient pubClient;
-    private SimpleSubClient subClient;
+    private EventMeshTCPPubClient pubClient;
+    private EventMeshTCPSubClient subClient;
 
-    public DefaultEventMeshClient(String accessHost, int accessPort, UserAgent agent) {
+    public DefaultEventMeshTCPClient(String accessHost, int accessPort, UserAgent agent) {
         this.accessHost = accessHost;
         this.accessPort = accessPort;
         this.agent = agent;
 
         UserAgent subAgent = MessageUtils.generateSubClient(agent);
-        this.subClient = new SimpleSubClientImpl(accessHost, accessPort, subAgent);
+        this.subClient = new EventMeshTCPSubClientImpl(accessHost, accessPort, subAgent);
 
         UserAgent pubAgent = MessageUtils.generatePubClient(agent);
-        this.pubClient = new SimplePubClientImpl(accessHost, accessPort, pubAgent);
+        this.pubClient = new EventMeshTCPPubClientImpl(accessHost, accessPort, pubAgent);
     }
 
-    public SimplePubClient getPubClient() {
+    public EventMeshTCPPubClient getPubClient() {
         return pubClient;
     }
 
-    public void setPubClient(SimplePubClient pubClient) {
+    public void setPubClient(EventMeshTCPPubClient pubClient) {
         this.pubClient = pubClient;
     }
 
-    public SimpleSubClient getSubClient() {
+    public EventMeshTCPSubClient getSubClient() {
         return subClient;
     }
 
-    public void setSubClient(SimpleSubClient subClient) {
+    public void setSubClient(EventMeshTCPSubClient subClient) {
         this.subClient = subClient;
     }
 
-    public Package rr(Package msg, long timeout) throws Exception {
+    public Package rr(Package msg, long timeout) throws EventMeshException {
         return this.pubClient.rr(msg, timeout);
     }
 
-    public Package publish(Package msg, long timeout) throws Exception {
+    public Package publish(Package msg, long timeout) throws EventMeshException {
         return this.pubClient.publish(msg, timeout);
     }
 
     @Override
-    public Package publish(CloudEvent cloudEvent, long timeout) throws Exception {
+    public Package publish(CloudEvent cloudEvent, long timeout) throws EventMeshException {
         return this.pubClient.publish(cloudEvent, timeout);
     }
 
-    public void broadcast(Package msg, long timeout) throws Exception {
+    public void broadcast(Package msg, long timeout) throws EventMeshException {
         this.pubClient.broadcast(msg, timeout);
     }
 
     @Override
-    public void broadcast(CloudEvent cloudEvent, long timeout) throws Exception {
+    public void broadcast(CloudEvent cloudEvent, long timeout) throws EventMeshException {
         this.pubClient.broadcast(cloudEvent, timeout);
     }
 
-    public void init() throws Exception {
+    public void init() throws EventMeshException {
         this.subClient.init();
         this.pubClient.init();
     }
@@ -98,44 +101,36 @@ public class DefaultEventMeshClient implements EventMeshClient {
         this.subClient.close();
     }
 
-    public void heartbeat() throws Exception {
+    public void heartbeat() throws EventMeshException {
         this.pubClient.heartbeat();
         this.subClient.heartbeat();
     }
 
-    public void listen() throws Exception {
+    public void listen() throws EventMeshException {
         this.subClient.listen();
     }
 
     @Override
-    public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) throws Exception {
+    public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
+        throws Exception {
         this.subClient.subscribe(topic, subscriptionMode, subscriptionType);
     }
 
     @Override
-    public void unsubscribe() throws Exception {
+    public void unsubscribe() throws EventMeshException {
         this.subClient.unsubscribe();
     }
 
-    public void registerSubBusiHandler(ReceiveMsgHook handler) throws Exception {
+    public void registerSubBusiHandler(ReceiveMsgHook handler) throws EventMeshException {
         this.subClient.registerBusiHandler(handler);
     }
 
     @Override
-    public void asyncRR(Package msg, AsyncRRCallback callback, long timeout) throws Exception {
+    public void asyncRR(Package msg, AsyncRRCallback callback, long timeout) throws EventMeshException {
         this.pubClient.asyncRR(msg, callback, timeout);
     }
 
-    public void registerPubBusiHandler(ReceiveMsgHook handler) throws Exception {
+    public void registerPubBusiHandler(ReceiveMsgHook handler) throws EventMeshException {
         this.pubClient.registerBusiHandler(handler);
-    }
-
-    @Override
-    public String toString() {
-        return "DefaultEventMeshClient{" +
-                "accessHost='" + accessHost + '\'' +
-                ", accessPort=" + accessPort +
-                ", agent=" + agent +
-                '}';
     }
 }

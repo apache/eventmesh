@@ -17,11 +17,13 @@
 
 package org.apache.eventmesh.common.utils;
 
+import org.apache.logging.log4j.util.ProcessIdUtil;
+
 import java.util.concurrent.ThreadLocalRandom;
 
 public class ThreadUtils {
 
-    private static long currentPID = -1;
+    private static volatile long currentPID = -1;
 
     public static void randomSleep(int min, int max) throws Exception {
         // nextInt is normally exclusive of the top value, so add 1 to make it inclusive
@@ -35,22 +37,18 @@ public class ThreadUtils {
     }
 
     /**
-     * get current process id only once.
+     * get current process id.
      *
      * @return process id
      */
     public static long getPID() {
-        if (currentPID >= 0) {
-            return currentPID;
-        }
-        String processName = java.lang.management.ManagementFactory.getRuntimeMXBean().getName();
-        if (processName != null && processName.length() > 0) {
-            try {
-                currentPID = Long.parseLong(processName.split("@")[0]);
-            } catch (Exception e) {
-                return 0;
+        if (currentPID == -1) {
+            synchronized (ThreadUtils.class) {
+                if (currentPID == -1) {
+                    currentPID = Long.parseLong(ProcessIdUtil.getProcessId());
+                }
             }
         }
-        return 0;
+        return currentPID;
     }
 }

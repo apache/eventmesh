@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.http.demo;
 
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.client.http.producer.LiteProducer;
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
@@ -55,7 +55,7 @@ public class AsyncPublishInstance {
 
         final String topic = "TEST-TOPIC-HTTP-ASYNC";
 
-        LiteClientConfig eventMeshClientConfig = LiteClientConfig.builder()
+        EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
             .liteEventMeshAddr(eventMeshIPPort)
             .producerGroup("EventMeshTest-producerGroup")
             .env("env")
@@ -64,7 +64,7 @@ public class AsyncPublishInstance {
             .sys("1234")
             .pid(String.valueOf(ThreadUtils.getPID())).build();
 
-        try (LiteProducer liteProducer = new LiteProducer(eventMeshClientConfig);) {
+        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);) {
             for (int i = 0; i < messageSize; i++) {
                 EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                     .bizSeqNo(RandomStringUtils.generateNum(30))
@@ -73,7 +73,7 @@ public class AsyncPublishInstance {
                     .uniqueId(RandomStringUtils.generateNum(30))
                     .build()
                     .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
-                liteProducer.publish(eventMeshMessage);
+                eventMeshHttpProducer.publish(eventMeshMessage);
             }
             Thread.sleep(30000);
         }

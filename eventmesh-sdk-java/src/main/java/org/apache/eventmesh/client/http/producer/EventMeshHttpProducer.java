@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.client.http.producer;
 
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.exception.EventMeshException;
 
@@ -26,16 +26,16 @@ import io.openmessaging.api.Message;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class LiteProducer implements AutoCloseable {
+public class EventMeshHttpProducer implements AutoCloseable {
 
     private final EventMeshMessageProducer eventMeshMessageProducer;
     private final CloudEventProducer       cloudEventProducer;
     private final OpenMessageProducer      openMessageProducer;
 
-    public LiteProducer(final LiteClientConfig liteClientConfig) throws EventMeshException {
-        this.cloudEventProducer = new CloudEventProducer(liteClientConfig);
-        this.eventMeshMessageProducer = new EventMeshMessageProducer(liteClientConfig);
-        this.openMessageProducer = new OpenMessageProducer(liteClientConfig);
+    public EventMeshHttpProducer(final EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
+        this.cloudEventProducer = new CloudEventProducer(eventMeshHttpClientConfig);
+        this.eventMeshMessageProducer = new EventMeshMessageProducer(eventMeshHttpClientConfig);
+        this.openMessageProducer = new OpenMessageProducer(eventMeshHttpClientConfig);
     }
 
     public void publish(final EventMeshMessage message) throws EventMeshException {

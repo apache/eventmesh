@@ -10,12 +10,13 @@ import org.apache.eventmesh.common.exception.EventMeshException;
  *     <li>{@link CloudEventProducer}</li>
  * </ul>
  */
-public interface EventMeshProtocolProducer<PROTOCOL> extends AutoCloseable {
+public interface EventMeshProtocolProducer<ProtocolMessage> extends AutoCloseable {
 
-    void publish(PROTOCOL eventMeshMessage) throws EventMeshException;
+    void publish(ProtocolMessage eventMeshMessage) throws EventMeshException;
 
-    PROTOCOL request(PROTOCOL message, long timeout) throws EventMeshException;
+    ProtocolMessage request(ProtocolMessage message, long timeout) throws EventMeshException;
 
-    void request(PROTOCOL message, RRCallback rrCallback, long timeout) throws EventMeshException;
+    void request(ProtocolMessage message, RRCallback<ProtocolMessage> rrCallback, long timeout)
+        throws EventMeshException;
 
 }

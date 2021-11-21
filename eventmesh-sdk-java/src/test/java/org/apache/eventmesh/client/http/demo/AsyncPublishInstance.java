@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.client.http.demo;
 
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.client.http.producer.LiteProducer;
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
@@ -35,7 +35,7 @@ public class AsyncPublishInstance {
         String eventMeshIPPort = "127.0.0.1:10105";
         final String topic = "TEST-TOPIC-HTTP-ASYNC";
 
-        LiteClientConfig eventMeshClientConfig = LiteClientConfig.builder()
+        EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
             .liteEventMeshAddr(eventMeshIPPort)
             .producerGroup("EventMeshTest-producerGroup")
             .env("env")
@@ -44,7 +44,7 @@ public class AsyncPublishInstance {
             .sys("1234")
             .pid(String.valueOf(ThreadUtils.getPID())).build();
 
-        LiteProducer liteProducer = new LiteProducer(eventMeshClientConfig);
+        EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
         for (int i = 0; i < 1; i++) {
             EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                 .bizSeqNo(RandomStringUtils.generateNum(30))
@@ -54,11 +54,11 @@ public class AsyncPublishInstance {
                 .build()
                 .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
 
-            liteProducer.publish(eventMeshMessage);
+            eventMeshHttpProducer.publish(eventMeshMessage);
             Thread.sleep(1000);
         }
         Thread.sleep(30000);
-        try (LiteProducer ignore = liteProducer) {
+        try (EventMeshHttpProducer ignore = eventMeshHttpProducer) {
             // ignore
         }
     }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.http.http;
+package org.apache.eventmesh.client.http.model;
 
 import org.apache.eventmesh.common.Constants;
 

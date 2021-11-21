@@ -17,28 +17,30 @@
 
 package org.apache.eventmesh.client.tcp;
 
-
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
-import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
-public interface SimpleSubClient {
-    void init() throws Exception;
+/**
+ * EventMesh TCP subscribe client.
+ */
+public interface EventMeshTCPSubClient<ProtocolMessage> {
+    void init() throws EventMeshException;
 
-    void close();
+    void heartbeat() throws EventMeshException;
 
-    void heartbeat() throws Exception;
+    void reconnect() throws EventMeshException;
 
-    void reconnect() throws Exception;
+    void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
+        throws EventMeshException;
 
-    void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) throws Exception;
+    void unsubscribe() throws EventMeshException;
 
-    void unsubscribe() throws Exception;
+    void listen() throws EventMeshException;
 
-    void listen() throws Exception;
+    void registerBusiHandler(ReceiveMsgHook<ProtocolMessage> handler) throws EventMeshException;
 
-    void registerBusiHandler(ReceiveMsgHook handler) throws Exception;
-
-    UserAgent getUserAgent();
+    void close() throws EventMeshException;
 }

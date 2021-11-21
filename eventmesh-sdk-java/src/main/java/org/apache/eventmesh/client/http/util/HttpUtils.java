@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.http.http;
+package org.apache.eventmesh.client.http.util;
 
+import org.apache.eventmesh.client.http.model.RequestParam;
 import org.apache.eventmesh.common.Constants;
 
 import org.apache.commons.collections4.MapUtils;
@@ -34,7 +35,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,16 +42,14 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Preconditions;
 
 import io.netty.handler.codec.http.HttpMethod;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
-public class HttpUtil {
-
-    public static Logger logger = LoggerFactory.getLogger(HttpUtil.class);
+@Slf4j
+public class HttpUtils {
 
     public static String post(CloseableHttpClient client,
                               String uri,
@@ -64,8 +62,8 @@ public class HttpUtil {
                 responseHolder.response =
                     EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
                 countDownLatch.countDown();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{}", responseHolder);
+                if (log.isDebugEnabled()) {
+                    log.debug("{}", responseHolder);
                 }
                 return responseHolder.response;
             }
@@ -91,8 +89,8 @@ public class HttpUtil {
                 responseHolder.response =
                     EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
                 countDownLatch.countDown();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{}", responseHolder);
+                if (log.isDebugEnabled()) {
+                    log.debug("{}", responseHolder);
                 }
                 return responseHolder.response;
             }
@@ -148,8 +146,8 @@ public class HttpUtil {
 
         httpPost.setConfig(configBuilder.build());
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("{}", httpPost);
+        if (log.isDebugEnabled()) {
+            log.debug("{}", httpPost);
         }
 
         client.execute(httpPost, responseHandler);
@@ -191,8 +189,8 @@ public class HttpUtil {
 
         httpGet.setConfig(configBuilder.build());
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("{}", httpGet);
+        if (log.isDebugEnabled()) {
+            log.debug("{}", httpGet);
         }
 
         client.execute(httpGet, responseHandler);
@@ -209,8 +207,8 @@ public class HttpUtil {
                 responseHolder.response =
                     EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
                 countDownLatch.countDown();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{}", responseHolder);
+                if (log.isDebugEnabled()) {
+                    log.debug("{}", responseHolder);
                 }
                 return responseHolder.response;
             }
@@ -236,8 +234,8 @@ public class HttpUtil {
                 responseHolder.response =
                     EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
                 countDownLatch.countDown();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{}", responseHolder);
+                if (log.isDebugEnabled()) {
+                    log.debug("{}", responseHolder);
                 }
                 return responseHolder.response;
             }
@@ -251,12 +249,9 @@ public class HttpUtil {
         return responseHolder.response;
     }
 
+    @Data
     public static class ResponseHolder {
         public String response;
 
-        @Override
-        public String toString() {
-            return "ResponseHolder=" + response + "";
-        }
     }
 }

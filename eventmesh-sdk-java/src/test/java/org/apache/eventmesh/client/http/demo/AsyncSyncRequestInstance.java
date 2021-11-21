@@ -18,8 +18,8 @@
 package org.apache.eventmesh.client.http.demo;
 
 
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.client.http.producer.LiteProducer;
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.client.http.producer.RRCallback;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
@@ -37,7 +37,7 @@ public class AsyncSyncRequestInstance {
 
     public static void main(String[] args) throws Exception {
 
-        LiteProducer liteProducer = null;
+        EventMeshHttpProducer eventMeshHttpProducer = null;
         try {
 //            String eventMeshIPPort = args[0];
             String eventMeshIPPort = "";
@@ -48,7 +48,7 @@ public class AsyncSyncRequestInstance {
                 eventMeshIPPort = "127.0.0.1:10105";
             }
 
-            LiteClientConfig eventMeshClientConfig = LiteClientConfig.builder()
+            EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
                 .liteEventMeshAddr(eventMeshIPPort)
                 .producerGroup("EventMeshTest-producerGroup")
                 .env("env")
@@ -57,7 +57,7 @@ public class AsyncSyncRequestInstance {
                 .sys("1234")
                 .pid(String.valueOf(ThreadUtils.getPID())).build();
 
-            liteProducer = new LiteProducer(eventMeshClientConfig);
+            eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
 
             final long startTime = System.currentTimeMillis();
             final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
@@ -66,7 +66,7 @@ public class AsyncSyncRequestInstance {
                 .topic(topic)
                 .uniqueId(RandomStringUtils.generateNum(30)).build();
 
-            liteProducer.request(eventMeshMessage, new RRCallback<EventMeshMessage>() {
+            eventMeshHttpProducer.request(eventMeshMessage, new RRCallback<EventMeshMessage>() {
                 @Override
                 public void onSuccess(EventMeshMessage o) {
                     logger.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), o.getContent(),
@@ -85,7 +85,7 @@ public class AsyncSyncRequestInstance {
         }
 
         Thread.sleep(30000);
-        try (final LiteProducer ignore = liteProducer) {
+        try (final EventMeshHttpProducer ignore = eventMeshHttpProducer) {
             // close producer
         } catch (Exception e1) {
             logger.warn("producer shutdown exception", e1);

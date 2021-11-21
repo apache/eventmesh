@@ -17,36 +17,36 @@
 
 package org.apache.eventmesh.client.tcp;
 
-
-import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
-public interface SimplePubClient {
+/**
+ * EventMesh TCP publish client.
+ */
+public interface EventMeshTCPPubClient<ProtocolMessage> extends AutoCloseable {
 
-    void init() throws Exception;
+    void init() throws EventMeshException;
 
-    void close();
+    void heartbeat() throws EventMeshException;
 
-    void heartbeat() throws Exception;
+    void reconnect() throws EventMeshException;
 
-    void reconnect() throws Exception;
+    Package rr(Package msg, long timeout) throws EventMeshException;
 
-    Package rr(Package msg, long timeout) throws Exception;
+    void asyncRR(Package msg, AsyncRRCallback callback, long timeout) throws EventMeshException;
 
-    void asyncRR(Package msg, AsyncRRCallback callback, long timeout) throws Exception;
+    Package publish(Package msg, long timeout) throws EventMeshException;
 
-    Package publish(Package msg, long timeout) throws Exception;
+    Package publish(ProtocolMessage cloudEvent, long timeout) throws EventMeshException;
 
-    Package publish(CloudEvent cloudEvent, long timeout) throws Exception;
+    void broadcast(ProtocolMessage cloudEvent, long timeout) throws EventMeshException;
 
-    void broadcast(CloudEvent cloudEvent, long timeout) throws Exception;
+    void broadcast(Package msg, long timeout) throws EventMeshException;
 
-    void broadcast(Package msg, long timeout) throws Exception;
+    void registerBusiHandler(ReceiveMsgHook<ProtocolMessage> handler) throws EventMeshException;
 
-    void registerBusiHandler(ReceiveMsgHook handler) throws Exception;
-
-    UserAgent getUserAgent();
+    void close() throws EventMeshException;
 }

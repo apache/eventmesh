@@ -24,7 +24,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class LiteClientConfig {
+public class EventMeshHttpClientConfig {
 
     /**
      * The event server address list

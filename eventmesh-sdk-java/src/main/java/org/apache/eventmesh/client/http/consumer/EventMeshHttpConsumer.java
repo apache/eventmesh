@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.client.http.consumer;
 
-import org.apache.eventmesh.client.http.AbstractLiteClient;
+import org.apache.eventmesh.client.http.AbstractHttpClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.client.http.http.HttpUtil;
-import org.apache.eventmesh.client.http.http.RequestParam;
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.http.model.RequestParam;
+import org.apache.eventmesh.client.http.util.HttpUtils;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
@@ -52,7 +52,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class LiteConsumer extends AbstractLiteClient implements AutoCloseable {
+public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoCloseable {
 
     private final ThreadPoolExecutor consumeExecutor;
 
@@ -60,16 +60,16 @@ public class LiteConsumer extends AbstractLiteClient implements AutoCloseable {
 
     private final ScheduledThreadPoolExecutor scheduler;
 
-    public LiteConsumer(LiteClientConfig liteClientConfig) throws EventMeshException {
-        this(liteClientConfig, null);
+    public EventMeshHttpConsumer(EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
+        this(eventMeshHttpClientConfig, null);
     }
 
-    public LiteConsumer(LiteClientConfig liteClientConfig, ThreadPoolExecutor customExecutor)
+    public EventMeshHttpConsumer(EventMeshHttpClientConfig eventMeshHttpClientConfig, ThreadPoolExecutor customExecutor)
         throws EventMeshException {
-        super(liteClientConfig);
+        super(eventMeshHttpClientConfig);
         this.consumeExecutor = Optional.ofNullable(customExecutor).orElseGet(
-            () -> ThreadPoolFactory.createThreadPoolExecutor(liteClientConfig.getConsumeThreadCore(),
-                liteClientConfig.getConsumeThreadMax(), "EventMesh-client-consume-")
+            () -> ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpClientConfig.getConsumeThreadCore(),
+                eventMeshHttpClientConfig.getConsumeThreadMax(), "EventMesh-client-consume-")
         );
         this.scheduler = new ScheduledThreadPoolExecutor(
             Runtime.getRuntime().availableProcessors(),
@@ -90,12 +90,12 @@ public class LiteConsumer extends AbstractLiteClient implements AutoCloseable {
         RequestParam subscribeParam = buildCommonRequestParam()
             .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.SUBSCRIBE.getRequestCode())
             .addBody(SubscribeRequestBody.TOPIC, JsonUtils.serialize(topicList))
-            .addBody(SubscribeRequestBody.CONSUMERGROUP, liteClientConfig.getConsumerGroup())
+            .addBody(SubscribeRequestBody.CONSUMERGROUP, eventMeshHttpClientConfig.getConsumerGroup())
             .addBody(SubscribeRequestBody.URL, subscribeUrl);
 
         String target = selectEventMesh();
         try {
-            String subRes = HttpUtil.post(httpClient, target, subscribeParam);
+            String subRes = HttpUtils.post(httpClient, target, subscribeParam);
             EventMeshRetObj ret = JsonUtils.deserialize(subRes, EventMeshRetObj.class);
             if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
@@ -124,7 +124,7 @@ public class LiteConsumer extends AbstractLiteClient implements AutoCloseable {
                     .addBody(HeartbeatRequestBody.CLIENTTYPE, ClientType.SUB.name())
                     .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JsonUtils.serialize(heartbeatEntities));
                 String target = selectEventMesh();
-                String res = HttpUtil.post(httpClient, target, requestParam);
+                String res = HttpUtils.post(httpClient, target, requestParam);
                 EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
                 if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
                     throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
@@ -149,7 +149,7 @@ public class LiteConsumer extends AbstractLiteClient implements AutoCloseable {
             .addBody(UnSubscribeRequestBody.URL, unSubscribeUrl);
         String target = selectEventMesh();
         try {
-            String unSubRes = HttpUtil.post(httpClient, target, unSubscribeParam);
+            String unSubRes = HttpUtils.post(httpClient, target, unSubscribeParam);
             EventMeshRetObj ret = JsonUtils.deserialize(unSubRes, EventMeshRetObj.class);
 
             if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
@@ -175,7 +175,7 @@ public class LiteConsumer extends AbstractLiteClient implements AutoCloseable {
 
     private String selectEventMesh() {
         // todo: target endpoint maybe destroy, should remove the bad endpoint
-        if (liteClientConfig.isUseTls()) {
+        if (eventMeshHttpClientConfig.isUseTls()) {
             return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerSelector.select();
         } else {
             return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerSelector.select();
@@ -184,16 +184,16 @@ public class LiteConsumer extends AbstractLiteClient implements AutoCloseable {
 
     private RequestParam buildCommonRequestParam() {
         return new RequestParam(HttpMethod.POST)
-            .addHeader(ProtocolKey.ClientInstanceKey.ENV, liteClientConfig.getEnv())
-            .addHeader(ProtocolKey.ClientInstanceKey.IDC, liteClientConfig.getIdc())
-            .addHeader(ProtocolKey.ClientInstanceKey.IP, liteClientConfig.getIp())
-            .addHeader(ProtocolKey.ClientInstanceKey.PID, liteClientConfig.getPid())
-            .addHeader(ProtocolKey.ClientInstanceKey.SYS, liteClientConfig.getSys())
-            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, liteClientConfig.getUserName())
-            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, liteClientConfig.getPassword())
+            .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpClientConfig.getEnv())
+            .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpClientConfig.getIdc())
+            .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshHttpClientConfig.getIp())
+            .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshHttpClientConfig.getPid())
+            .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshHttpClientConfig.getSys())
+            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
+            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
             .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
             .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
-            .addBody(HeartbeatRequestBody.CONSUMERGROUP, liteClientConfig.getConsumerGroup());
+            .addBody(HeartbeatRequestBody.CONSUMERGROUP, eventMeshHttpClientConfig.getConsumerGroup());
     }
 }
