@@ -17,13 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send;
 
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
 import io.openmessaging.api.Message;
 import io.openmessaging.api.SendCallback;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.RRCallback;
@@ -38,6 +33,10 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SessionSender {
 
@@ -81,14 +80,16 @@ public class SessionSender {
                 Command cmd = header.getCommand();
                 if (Command.REQUEST_TO_SERVER == cmd) {
                     long ttl = msg.getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL) != null ? Long.parseLong(msg.getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL)) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
-                    upStreamMsgContext = new UpStreamMsgContext(header.getSeq(), session, msg);
-                    session.getClientGroupWrapper().get().request(upStreamMsgContext, sendCallback, initSyncRRCallback(header, startTime, taskExecuteTime), ttl);
+                    upStreamMsgContext = new UpStreamMsgContext(session, msg, header, startTime, taskExecuteTime);
+                    session.getClientGroupWrapper().get().request(upStreamMsgContext, initSyncRRCallback(header, startTime, taskExecuteTime), ttl);
+                    upstreamBuff.release();
                 } else if (Command.RESPONSE_TO_SERVER == cmd) {
                     String cluster = msg.getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER);
                     if (!StringUtils.isEmpty(cluster)) {
                         String replyTopic = EventMeshConstants.RR_REPLY_TOPIC;
                         replyTopic = cluster + "-" + replyTopic;
                         msg.getSystemProperties().put(Constants.PROPERTY_MESSAGE_DESTINATION, replyTopic);
+                        msg.setTopic(replyTopic);
                     }
 
 //                    //for rocketmq support
@@ -96,11 +97,11 @@ public class SessionSender {
 //                    MessageAccessor.putProperty(msg, MessageConst.PROPERTY_CORRELATION_ID, msg.getProperty(DeFiBusConstant.PROPERTY_RR_REQUEST_ID));
 //                    MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT, msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO));
 
-                    upStreamMsgContext = new UpStreamMsgContext(header.getSeq(), session, msg);
+                    upStreamMsgContext = new UpStreamMsgContext(session, msg, header, startTime, taskExecuteTime);
                     session.getClientGroupWrapper().get().reply(upStreamMsgContext);
                     upstreamBuff.release();
                 } else {
-                    upStreamMsgContext = new UpStreamMsgContext(header.getSeq(), session, msg);
+                    upStreamMsgContext = new UpStreamMsgContext(session, msg, header, startTime, taskExecuteTime);
                     session.getClientGroupWrapper().get().send(upStreamMsgContext, sendCallback);
                 }
 

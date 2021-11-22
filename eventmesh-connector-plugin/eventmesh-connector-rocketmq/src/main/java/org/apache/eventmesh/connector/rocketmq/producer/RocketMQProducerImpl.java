@@ -31,11 +31,14 @@ import io.openmessaging.api.SendResult;
 
 import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.producer.MeshMQProducer;
+import org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWrapper;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +48,6 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ProducerImpl producer;
-
-    public final String DEFAULT_ACCESS_DRIVER = "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl";
 
     @Override
     public synchronized void init(Properties keyValue) {
@@ -60,14 +61,13 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 
         String omsNamesrv = clientConfiguration.namesrvAddr;
         Properties properties = new Properties();
-        properties.put(OMSBuiltinKeys.DRIVER_IMPL, DEFAULT_ACCESS_DRIVER);
         properties.put("ACCESS_POINTS", omsNamesrv);
         properties.put("REGION", "namespace");
         properties.put("RMQ_PRODUCER_GROUP", producerGroup);
         properties.put("OPERATION_TIMEOUT", 3000);
         properties.put("PRODUCER_ID", producerGroup);
 
-        MessagingAccessPoint messagingAccessPoint = OMS.builder().build(properties);
+        MessagingAccessPoint messagingAccessPoint = new MessagingAccessPointImpl(properties);
         producer = (ProducerImpl) messagingAccessPoint.createProducer(properties);
 
     }
@@ -98,19 +98,16 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     }
 
     @Override
-    public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout)
+    public void request(Message message, RRCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        throw new UnsupportedOperationException("not support request-reply mode when eventstore=rocketmq");
-    }
-
-    @Override
-    public Message request(Message message, long timeout) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        throw new UnsupportedOperationException("not support request-reply mode when eventstore=rocketmq");
+        producer.request(message, rrCallback, timeout);
     }
 
     @Override
     public boolean reply(final Message message, final SendCallback sendCallback) throws Exception {
-        throw new UnsupportedOperationException("not support request-reply mode when eventstore=rocketmq");
+        message.putSystemProperties(MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
+        producer.sendAsync(message, sendCallback);
+        return true;
     }
 
     @Override

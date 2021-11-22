@@ -15,38 +15,38 @@
  * limitations under the License.
  */
 
-//apply plugin: 'java'
-////apply plugin: "maven"
-//apply plugin: "eclipse"
-//apply plugin: "idea"
-//
-//sourceCompatibility = 1.8
-
 configurations {
     implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
 }
 
 List rocketmq = [
-        "org.apache.rocketmq:rocketmq-client:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-broker:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-common:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-store:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-namesrv:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-tools:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-remoting:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-logging:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-test:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-filter:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-acl:$rocketmq_version",
-        "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-client:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-broker:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-common:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-store:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-namesrv:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-tools:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-remoting:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-logging:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-test:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-filter:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-acl:$rocketmq_version",
+    "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
 
 ]
 
 dependencies {
-    api project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    compileOnly project(":eventmesh-common")
+    compileOnly project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation rocketmq
 
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    testImplementation project(":eventmesh-common")
+
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.powermock:powermock-module-junit4"
+    testImplementation "org.powermock:powermock-api-mockito2"
+
     testImplementation rocketmq
 }

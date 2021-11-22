@@ -24,18 +24,17 @@ import io.openmessaging.api.Producer;
 import io.openmessaging.api.SendCallback;
 
 import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
-@EventMeshSPI(isSingleton = false)
+@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
 public interface MeshMQProducer extends Producer {
 
     void init(Properties properties) throws Exception;
 
     void send(Message message, SendCallback sendCallback) throws Exception;
 
-    void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout) throws Exception;
-
-    Message request(Message message, long timeout) throws Exception;
+    void request(Message message, RRCallback rrCallback, long timeout) throws Exception;
 
     boolean reply(final Message message, final SendCallback sendCallback) throws Exception;
 

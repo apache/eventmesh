@@ -15,6 +15,6 @@
  * limitations under the License.
  */
 dependencies {
-    api project(":eventmesh-common")
+    compileOnly project(":eventmesh-common")
     testImplementation project(":eventmesh-common")
 }
