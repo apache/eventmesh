@@ -7,7 +7,6 @@ import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTcpClientConfig;
-import org.apache.eventmesh.client.tcp.impl.EventMeshTCPSubClientImpl;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
@@ -136,7 +135,7 @@ public class EventMeshMessageTCPSubClient extends TcpClient implements EventMesh
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
             Command cmd = msg.getHeader().getCommand();
-            log.info(EventMeshTCPSubClientImpl.class.getSimpleName() + "|receive|type={}|msg={}", cmd, msg);
+            log.info("|receive|type={}|msg={}", cmd, msg);
             if (cmd == Command.REQUEST_TO_CLIENT) {
                 if (callback != null) {
                     callback.handle(msg, ctx);
