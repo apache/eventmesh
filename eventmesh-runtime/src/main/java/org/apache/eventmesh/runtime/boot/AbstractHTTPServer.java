@@ -246,6 +246,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             HttpPostRequestDecoder decoder = null;
 
             Context context = null;
+            Span span = null;
             if (useTrace) {
                 //if the client injected span context,this will extract the context from httpRequest or it will be null
                 context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>() {
@@ -259,8 +260,16 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         return carrier.headers().get(key);
                     }
                 });
+                span = tracer.spanBuilder("HTTP " + httpRequest.method())
+                    .setParent(context)
+                    .setSpanKind(SpanKind.SERVER)
+                    .startSpan();
+                //attach the span to the server context
+                context = context.with(SpanKey.SERVER_KEY, span);
+                //put the context in channel
+                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
             }
-            Span span = null;
+
 
             try {
                 if (!httpRequest.decoderResult().isSuccess()) {
@@ -314,20 +323,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 requestCommand.setRequestCode(requestCode);
 
                 if (useTrace) {
-                    span = tracer.spanBuilder("HTTP " + requestCommand.httpMethod)
-                            .setParent(context)
-                            .setSpanKind(SpanKind.SERVER)
-                            .startSpan();
-                    //attach the span to the server context
-                    context = context.with(SpanKey.SERVER_KEY, span);
-                    //put the context in channel
-                    ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
-
                     span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
                     span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
                     span.setAttribute(String.valueOf(SemanticAttributes.HTTP_STATUS_CODE), requestCode);
                 }
-
 
                 HttpCommand responseCommand = null;
 
