@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
@@ -258,7 +258,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             try {
                 choosed.getObject2().submit(() -> {
                     try {
-                        if (choosed.getObject1().rejectRequest()) {
+                        HttpRequestProcessor processor = choosed.getObject1();
+                        if (processor.rejectRequest()) {
                             HttpCommand responseCommand =
                                 request.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR);
                             asyncContext.onComplete(responseCommand);
@@ -271,13 +272,13 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                             return;
                         }
 
-                        choosed.getObject1().processRequest(ctx, asyncContext);
+                        processor.processRequest(ctx, asyncContext);
                         if (!asyncContext.isComplete()) {
                             return;
                         }
 
-                        metrics.summaryMetrics.recordHTTPReqResTimeCost(
-                            System.currentTimeMillis() - request.getReqTime());
+                        metrics.summaryMetrics
+                            .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
 
                         if (httpLogger.isDebugEnabled()) {
                             httpLogger.debug("{}", asyncContext.getResponse());

@@ -19,9 +19,9 @@ package org.apache.eventmesh.tcp.demo;
 
 import java.util.Properties;
 
-import org.apache.eventmesh.client.tcp.EventMeshClient;
+import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
+import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshTCPClient;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
@@ -33,7 +33,7 @@ public class AsyncPublish {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncPublish.class);
 
-    private static EventMeshClient client;
+    private static EventMeshTCPClient client;
 
     public static AsyncPublish handler = new AsyncPublish();
 
@@ -43,7 +43,7 @@ public class AsyncPublish {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
         try {
             UserAgent userAgent = EventMeshTestUtils.generateClient1();
-            client = new DefaultEventMeshClient(eventMeshIp, eventMeshTcpPort, userAgent);
+            client = new DefaultEventMeshTCPClient(eventMeshIp, eventMeshTcpPort, userAgent);
             client.init();
             client.heartbeat();
 

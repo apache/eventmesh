@@ -38,20 +38,6 @@ dependencies {
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
-    testImplementation project(":eventmesh-common")
-    testImplementation project(":eventmesh-spi")
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
-    testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
-    testImplementation project(":eventmesh-security-plugin:eventmesh-security-acl")
-    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-namesrv")
-
-    testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-
-    testImplementation "org.apache.httpcomponents:httpclient"
-    testImplementation "io.netty:netty-all"
-
     testImplementation "org.mockito:mockito-core"
     testImplementation "org.powermock:powermock-module-junit4"
     testImplementation "org.powermock:powermock-api-mockito2"

@@ -44,32 +44,13 @@ dependencies {
 
     implementation "com.github.stefanbirkner:system-rules"
 
-    testImplementation "org.apache.commons:commons-lang3"
-    testImplementation "org.apache.commons:commons-collections4"
-    testImplementation "commons-io:commons-io"
-    testImplementation "org.apache.commons:commons-text"
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
-    testImplementation "com.google.guava:guava"
-
-    testImplementation "org.slf4j:slf4j-api"
-    testImplementation "org.apache.logging.log4j:log4j-api"
-    testImplementation "org.apache.logging.log4j:log4j-core"
-    testImplementation "org.apache.logging.log4j:log4j-core"
-    testImplementation "org.apache.logging.log4j:log4j-slf4j-impl"
-    testImplementation "org.apache.logging.log4j:log4j-web"
-
-    testImplementation "com.lmax:disruptor"
-
-    testImplementation "com.fasterxml.jackson.core:jackson-databind"
-    testImplementation "com.fasterxml.jackson.core:jackson-core"
-    testImplementation "com.fasterxml.jackson.core:jackson-annotations"
-
-    testImplementation "org.apache.httpcomponents:httpclient"
-
-    testImplementation "io.netty:netty-all"
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     testImplementation "junit:junit"
-    testImplementation "com.github.stefanbirkner:system-rules"
     testImplementation "org.assertj:assertj-core"
 
     testImplementation "org.mockito:mockito-core"

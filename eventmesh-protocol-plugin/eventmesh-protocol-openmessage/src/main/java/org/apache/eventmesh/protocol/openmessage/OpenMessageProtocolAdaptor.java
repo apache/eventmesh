@@ -17,12 +17,10 @@
 
 package org.apache.eventmesh.protocol.openmessage;
 
-import org.apache.eventmesh.common.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventV1;
 import io.openmessaging.api.Message;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 

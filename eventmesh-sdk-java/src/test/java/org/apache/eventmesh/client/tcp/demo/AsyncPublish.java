@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.client.tcp.demo;
 
-import org.apache.eventmesh.client.tcp.EventMeshClient;
+import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.EventMeshTestUtils;
-import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshClient;
+import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshTCPClient;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.slf4j.Logger;
@@ -30,14 +30,14 @@ public class AsyncPublish {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncPublish.class);
 
-    private static EventMeshClient client;
+    private static EventMeshTCPClient client;
 
     public static AsyncPublish handler = new AsyncPublish();
 
     public static void main(String[] agrs) throws Exception {
         try {
             UserAgent userAgent = EventMeshTestUtils.generateClient1();
-            client = new DefaultEventMeshClient("127.0.0.1", 10002, userAgent);
+            client = new DefaultEventMeshTCPClient("127.0.0.1", 10002, userAgent);
             client.init();
             client.heartbeat();
 
