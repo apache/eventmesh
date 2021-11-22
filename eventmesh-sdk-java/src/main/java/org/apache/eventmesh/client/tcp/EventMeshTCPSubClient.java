@@ -21,12 +21,17 @@ import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 /**
  * EventMesh TCP subscribe client.
+ * <ul>
+ *     <li>{@link org.apache.eventmesh.client.tcp.impl.cloudevent.CloudEventTCPSubClient}</li>
+ *     <li>{@link org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPSubClient}</li>
+ *     <li>{@link org.apache.eventmesh.client.tcp.impl.openmessage.OpenMessageTCPSubClient}</li>
+ * </ul>
  */
 public interface EventMeshTCPSubClient<ProtocolMessage> {
+
     void init() throws EventMeshException;
 
     void heartbeat() throws EventMeshException;
