@@ -88,6 +88,7 @@ public abstract class AbstractHttpClient implements AutoCloseable {
     }
 
     protected String selectEventMesh() {
+        // todo: target endpoint maybe destroy, should remove the bad endpoint
         if (eventMeshHttpClientConfig.isUseTls()) {
             return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerSelector.select();
         } else {

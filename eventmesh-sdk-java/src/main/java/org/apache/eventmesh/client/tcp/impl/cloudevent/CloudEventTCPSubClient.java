@@ -53,11 +53,6 @@ public class CloudEventTCPSubClient implements EventMeshTCPSubClient<CloudEvent>
     }
 
     @Override
-    public UserAgent getUserAgent() {
-        return null;
-    }
-
-    @Override
     public void close() throws EventMeshException{
 
     }

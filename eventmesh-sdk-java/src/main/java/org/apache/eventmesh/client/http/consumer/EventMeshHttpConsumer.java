@@ -37,6 +37,8 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -45,7 +47,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.netty.handler.codec.http.HttpMethod;
@@ -56,7 +57,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
 
     private final ThreadPoolExecutor consumeExecutor;
 
-    private static final List<SubscriptionItem> subscription = Lists.newArrayList();
+    private static final List<SubscriptionItem> SUBSCRIPTIONS = Collections.synchronizedList(new ArrayList<>());
 
     private final ScheduledThreadPoolExecutor scheduler;
 
@@ -100,7 +101,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
             if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
             }
-            subscription.addAll(topicList);
+            SUBSCRIPTIONS.addAll(topicList);
         } catch (Exception ex) {
             throw new EventMeshException(String.format("Subscribe topic error, target:%s", target), ex);
         }
@@ -156,7 +157,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
                 throw new EventMeshException(ret.getRetCode(), ret.getRetMsg());
             }
             // todo: avoid concurrentModifiedException
-            subscription.removeIf(item -> topicList.contains(item.getTopic()));
+            SUBSCRIPTIONS.removeIf(item -> topicList.contains(item.getTopic()));
         } catch (Exception ex) {
             throw new EventMeshException(String.format("Unsubscribe topic error, target:%s", target), ex);
         }
@@ -173,15 +174,6 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         log.info("LiteConsumer shutdown");
     }
 
-    private String selectEventMesh() {
-        // todo: target endpoint maybe destroy, should remove the bad endpoint
-        if (eventMeshHttpClientConfig.isUseTls()) {
-            return Constants.HTTPS_PROTOCOL_PREFIX + eventMeshServerSelector.select();
-        } else {
-            return Constants.HTTP_PROTOCOL_PREFIX + eventMeshServerSelector.select();
-        }
-    }
-
     private RequestParam buildCommonRequestParam() {
         return new RequestParam(HttpMethod.POST)
             .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpClientConfig.getEnv())
@@ -191,6 +183,7 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
             .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshHttpClientConfig.getSys())
             .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
             .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
+            // add protocol version?
             .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
             .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)

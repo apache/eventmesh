@@ -113,38 +113,39 @@ public class MessageUtils {
     }
 
     public static UserAgent generateSubClient(UserAgent agent) {
-        UserAgent user = new UserAgent();
-        user.setEnv(agent.getEnv());
-        user.setHost(agent.getHost());
-        user.setPassword(agent.getPassword());
-        user.setUsername(agent.getUsername());
-        user.setPath(agent.getPath());
-        user.setPort(agent.getPort());
-        user.setSubsystem(agent.getSubsystem());
-        user.setPid(agent.getPid());
-        user.setVersion(agent.getVersion());
-        user.setIdc(agent.getIdc());
-        user.setConsumerGroup(agent.getConsumerGroup());
-        user.setProducerGroup(agent.getProducerGroup());
-        user.setPurpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB);
-        return user;
+        return UserAgent.builder()
+            .env(agent.getEnv())
+            .host(agent.getHost())
+            .password(agent.getPassword())
+            .username(agent.getUsername())
+            .path(agent.getPath())
+            .port(agent.getPort())
+            .subsystem(agent.getSubsystem())
+            .pid(agent.getPid())
+            .version(agent.getVersion())
+            .idc(agent.getIdc())
+            .consumerGroup(agent.getConsumerGroup())
+            .producerGroup(agent.getProducerGroup())
+            .purpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB)
+            .build();
     }
 
     public static UserAgent generatePubClient(UserAgent agent) {
-        UserAgent user = new UserAgent();
-        user.setEnv(agent.getEnv());
-        user.setHost(agent.getHost());
-        user.setPassword(agent.getPassword());
-        user.setUsername(agent.getUsername());
-        user.setPath(agent.getPath());
-        user.setPort(agent.getPort());
-        user.setSubsystem(agent.getSubsystem());
-        user.setPid(agent.getPid());
-        user.setVersion(agent.getVersion());
-        user.setIdc(agent.getIdc());
-        user.setProducerGroup(agent.getProducerGroup());
-        user.setPurpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB);
-        return user;
+        return UserAgent.builder()
+            .env(agent.getEnv())
+            .host(agent.getHost())
+            .password(agent.getPassword())
+            .username(agent.getUsername())
+            .path(agent.getPath())
+            .port(agent.getPort())
+            .subsystem(agent.getSubsystem())
+            .pid(agent.getPid())
+            .version(agent.getVersion())
+            .idc(agent.getIdc())
+            .consumerGroup(agent.getConsumerGroup())
+            .producerGroup(agent.getProducerGroup())
+            .purpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB)
+            .build();
     }
 
     private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) {
