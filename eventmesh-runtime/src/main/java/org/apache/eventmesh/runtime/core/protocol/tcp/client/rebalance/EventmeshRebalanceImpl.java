@@ -195,7 +195,9 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         }else {
             rebalanceResult = (modNum != 0 && index < modNum && index >= 0) ? avgNum + 1 : avgNum;
         }
-        logger.info("rebalance caculateRedirectNum,group:{}, purpose:{},sum:{},avgNum:{},modNum:{},index:{}, currentNum:{},rebalanceResult:{}", group, purpose, sum, avgNum, modNum, index, currentNum, rebalanceResult);
+        logger.info("rebalance caculateRedirectNum,group:{}, purpose:{},sum:{},avgNum:{}," +
+                "modNum:{}, index:{}, currentNum:{}, rebalanceResult:{}", group, purpose, sum,
+                avgNum, modNum, index, currentNum, rebalanceResult);
         return currentNum - rebalanceResult;
     }
 
