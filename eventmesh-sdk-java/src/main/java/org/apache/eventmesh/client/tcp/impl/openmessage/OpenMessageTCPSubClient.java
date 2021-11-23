@@ -49,11 +49,6 @@ public class OpenMessageTCPSubClient implements EventMeshTCPSubClient<Message> {
     }
 
     @Override
-    public UserAgent getUserAgent() {
-        return null;
-    }
-
-    @Override
     public void close() throws EventMeshException {
 
     }

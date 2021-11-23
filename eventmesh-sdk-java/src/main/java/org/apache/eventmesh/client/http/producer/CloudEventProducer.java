@@ -20,11 +20,14 @@ import java.io.IOException;
 import com.google.common.base.Preconditions;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.handler.codec.http.HttpMethod;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocolProducer<CloudEvent> {
+
+    private static final String PROTOCOL_TYPE = "cloudevents";
 
     public CloudEventProducer(EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
         super(eventMeshHttpClientConfig);
@@ -33,8 +36,9 @@ class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocol
     @Override
     public void publish(CloudEvent cloudEvent) throws EventMeshException {
         validateCloudEvent(cloudEvent);
+        CloudEvent enhanceCloudEvent = enhanceCloudEvent(cloudEvent);
         // todo: Can put to abstract class, all protocol use the same send method? This can be a template method
-        RequestParam requestParam = buildCommonPostParam(cloudEvent)
+        RequestParam requestParam = buildCommonPostParam(enhanceCloudEvent)
             .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
         String target = selectEventMesh();
         try {
@@ -53,7 +57,8 @@ class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocol
     @Override
     public CloudEvent request(CloudEvent cloudEvent, long timeout) throws EventMeshException {
         validateCloudEvent(cloudEvent);
-        RequestParam requestParam = buildCommonPostParam(cloudEvent)
+        CloudEvent enhanceCloudEvent = enhanceCloudEvent(cloudEvent);
+        RequestParam requestParam = buildCommonPostParam(enhanceCloudEvent)
             .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
             .setTimeout(timeout);
         String target = selectEventMesh();
@@ -71,15 +76,16 @@ class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocol
     }
 
     @Override
-    public void request(CloudEvent cloudEvent, RRCallback<CloudEvent> rrCallback, long timeout)
+    public void request(final CloudEvent cloudEvent, final RRCallback<CloudEvent> rrCallback, long timeout)
         throws EventMeshException {
         validateCloudEvent(cloudEvent);
-        RequestParam requestParam = buildCommonPostParam(cloudEvent)
+        CloudEvent enhanceCloudEvent = enhanceCloudEvent(cloudEvent);
+        RequestParam requestParam = buildCommonPostParam(enhanceCloudEvent)
             .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
             .setTimeout(timeout);
         String target = selectEventMesh();
-        RRCallbackResponseHandlerAdapter<CloudEvent> adapter =
-            new RRCallbackResponseHandlerAdapter<>(cloudEvent, rrCallback, timeout);
+        RRCallbackResponseHandlerAdapter<CloudEvent> adapter = new RRCallbackResponseHandlerAdapter<>(
+            enhanceCloudEvent, rrCallback, timeout);
         try {
             HttpUtils.post(httpClient, null, target, requestParam, adapter);
         } catch (IOException e) {
@@ -97,12 +103,25 @@ class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocol
         requestParam
             .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
             .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
-            .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-            // todo: add producerGroup to header, set protocol type, protocol version
+            .addHeader(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
+            // todo: move producerGroup tp header
             .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
             .addBody(SendMessageRequestBody.CONTENT, JsonUtils.serialize(cloudEvent));
         return requestParam;
+    }
+
+    private CloudEvent enhanceCloudEvent(final CloudEvent cloudEvent) {
+        return CloudEventBuilder.from(cloudEvent)
+            .withExtension(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpClientConfig.getEnv())
+            .withExtension(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpClientConfig.getIdc())
+            .withExtension(ProtocolKey.ClientInstanceKey.IP, eventMeshHttpClientConfig.getIp())
+            .withExtension(ProtocolKey.ClientInstanceKey.PID, eventMeshHttpClientConfig.getPid())
+            .withExtension(ProtocolKey.ClientInstanceKey.SYS, eventMeshHttpClientConfig.getSys())
+            .withExtension(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+            .withExtension(ProtocolKey.PROTOCOL_DESC, cloudEvent.getSpecVersion().name())
+            .withExtension(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString())
+            .build();
     }
 
     private CloudEvent transformMessage(EventMeshRetObj retObj) {
