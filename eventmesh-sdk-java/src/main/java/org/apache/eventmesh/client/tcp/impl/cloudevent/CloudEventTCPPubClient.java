@@ -32,18 +32,13 @@ public class CloudEventTCPPubClient implements EventMeshTCPPubClient<CloudEvent>
     }
 
     @Override
-    public Package rr(Package msg, long timeout) throws EventMeshException {
+    public Package rr(CloudEvent msg, long timeout) throws EventMeshException {
         return null;
     }
 
     @Override
-    public void asyncRR(Package msg, AsyncRRCallback callback, long timeout) throws EventMeshException {
+    public void asyncRR(CloudEvent msg, AsyncRRCallback callback, long timeout) throws EventMeshException {
 
-    }
-
-    @Override
-    public Package publish(Package msg, long timeout) throws EventMeshException {
-        return null;
     }
 
     @Override
@@ -57,18 +52,8 @@ public class CloudEventTCPPubClient implements EventMeshTCPPubClient<CloudEvent>
     }
 
     @Override
-    public void broadcast(Package msg, long timeout) throws EventMeshException {
-
-    }
-
-    @Override
     public void registerBusiHandler(ReceiveMsgHook<CloudEvent> handler) throws EventMeshException {
 
-    }
-
-    @Override
-    public UserAgent getUserAgent() {
-        return null;
     }
 
     @Override
