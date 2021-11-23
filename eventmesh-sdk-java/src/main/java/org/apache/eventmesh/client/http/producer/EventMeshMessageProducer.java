@@ -1,5 +1,6 @@
 package org.apache.eventmesh.client.http.producer;
 
+import io.cloudevents.SpecVersion;
 import org.apache.eventmesh.client.http.AbstractHttpClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
@@ -25,6 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class EventMeshMessageProducer extends AbstractHttpClient implements EventMeshProtocolProducer<EventMeshMessage> {
+
+    private static final String PROTOCOL_TYPE = "eventmeshmessage";
+
+    private static final String PROTOCOL_DESC = "http";
 
     public EventMeshMessageProducer(EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
         super(eventMeshHttpClientConfig);
@@ -106,6 +111,10 @@ class EventMeshMessageProducer extends AbstractHttpClient implements EventMeshPr
             .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
             .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
             .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
+            .addHeader(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
+            .addHeader(ProtocolKey.PROTOCOL_DESC, PROTOCOL_DESC)
+            //default ce version is 1.0
+            .addHeader(ProtocolKey.PROTOCOL_VERSION, SpecVersion.V1.toString())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
             .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
             // todo: set message to content is better

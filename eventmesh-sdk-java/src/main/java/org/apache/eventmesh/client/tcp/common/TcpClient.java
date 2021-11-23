@@ -106,14 +106,13 @@ public abstract class TcpClient implements Closeable {
     }
 
     @Override
-    public void close() throws EventMeshException {
+    public void close() {
         try {
             channel.disconnect().sync();
             workers.shutdownGracefully();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.warn("close tcp client failed.|remote address={}", channel.remoteAddress(), e);
-            throw new EventMeshException(e);
         }
     }
 

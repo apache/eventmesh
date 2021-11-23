@@ -24,7 +24,6 @@ import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PR
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -35,37 +34,37 @@ public class EventMeshTestUtils {
     private static final int seqLength = 10;
 
     public static UserAgent generateClient1() {
-        UserAgent user = new UserAgent();
-        user.setEnv("test");
-        user.setHost("127.0.0.1");
-        user.setPassword(generateRandomString(8));
-        user.setUsername("PU4283");
-        user.setProducerGroup("EventmeshTest-ProducerGroup");
-        user.setConsumerGroup("EventmeshTest-ConsumerGroup");
-        user.setPath("/data/app/umg_proxy");
-        user.setPort(8362);
-        user.setSubsystem("5023");
-        user.setPid(32893);
-        user.setVersion("2.0.11");
-        user.setIdc("FT");
-        return user;
+        return UserAgent.builder()
+                .env("test")
+                .host("127.0.0.1")
+                .password(generateRandomString(8))
+                .username("PU4283")
+                .producerGroup("EventmeshTest-ProducerGroup")
+                .consumerGroup("EventmeshTest-ConsumerGroup")
+                .path("/data/app/umg_proxy")
+                .port(8362)
+                .subsystem("5023")
+                .pid(32893)
+                .version("2.0.11")
+                .idc("FT")
+                .build();
     }
 
     public static UserAgent generateClient2() {
-        UserAgent user = new UserAgent();
-        user.setEnv("test");
-        user.setHost("127.0.0.1");
-        user.setPassword(generateRandomString(8));
-        user.setUsername("PU4283");
-        user.setConsumerGroup("EventmeshTest-ConsumerGroup");
-        user.setProducerGroup("EventmeshTest-ProducerGroup");
-        user.setPath("/data/app/umg_proxy");
-        user.setPort(9362);
-        user.setSubsystem("5017");
-        user.setPid(42893);
-        user.setVersion("2.0.11");
-        user.setIdc("FT");
-        return user;
+        return UserAgent.builder()
+                .env("test")
+                .host("127.0.0.1")
+                .password(generateRandomString(8))
+                .username("PU4283")
+                .producerGroup("EventmeshTest-ProducerGroup")
+                .consumerGroup("EventmeshTest-ConsumerGroup")
+                .path("/data/app/umg_proxy")
+                .port(9362)
+                .subsystem("5017")
+                .pid(42893)
+                .version("2.0.11")
+                .idc("FT")
+                .build();
     }
 
     public static Package syncRR() {

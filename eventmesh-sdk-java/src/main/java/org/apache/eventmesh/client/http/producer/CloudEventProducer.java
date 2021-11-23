@@ -29,6 +29,8 @@ class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocol
 
     private static final String PROTOCOL_TYPE = "cloudevents";
 
+    private static final String PROTOCOL_DESC = "http";
+
     public CloudEventProducer(EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
         super(eventMeshHttpClientConfig);
     }
@@ -105,6 +107,8 @@ class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocol
             .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
             .addHeader(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
+            .addHeader(ProtocolKey.PROTOCOL_DESC, PROTOCOL_DESC)
+            .addHeader(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString())
             // todo: move producerGroup tp header
             .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
             .addBody(SendMessageRequestBody.CONTENT, JsonUtils.serialize(cloudEvent));

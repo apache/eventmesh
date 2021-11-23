@@ -85,7 +85,7 @@ public class EventMeshMessageTCPPubClient extends TcpClient implements EventMesh
     @Override
     public Package rr(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
         try {
-            Package msg = MessageUtils.asyncCloudEvent(eventMeshMessage);
+            Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.REQUEST_TO_SERVER);
             log.info("{}|rr|send|type={}|msg={}", clientNo, msg, msg);
             return io(msg, timeout);
         } catch (Exception ex) {
@@ -96,7 +96,7 @@ public class EventMeshMessageTCPPubClient extends TcpClient implements EventMesh
     @Override
     public void asyncRR(EventMeshMessage eventMeshMessage, AsyncRRCallback callback, long timeout) throws EventMeshException {
         try {
-            Package msg = MessageUtils.asyncCloudEvent(eventMeshMessage);
+            Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.REQUEST_TO_SERVER);
             super.send(msg);
             this.callbackConcurrentHashMap.put((String) RequestContext._key(msg), callback);
         } catch (Exception ex) {
@@ -109,7 +109,7 @@ public class EventMeshMessageTCPPubClient extends TcpClient implements EventMesh
     public Package publish(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
         try {
             // todo: transform EventMeshMessage to Package
-            Package msg = MessageUtils.asyncCloudEvent(eventMeshMessage);
+            Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.ASYNC_MESSAGE_TO_SERVER);
             log.info("SimplePubClientImpl cloud event|{}|publish|send|type={}|protocol={}|msg={}",
                 clientNo, msg.getHeader().getCommand(),
                 msg.getHeader().getProperty(PropertyConst.PROPERTY_MESSAGE_PROTOCOL), msg);
@@ -123,7 +123,7 @@ public class EventMeshMessageTCPPubClient extends TcpClient implements EventMesh
     public void broadcast(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
         try {
             // todo: transform EventMeshMessage to Package
-            Package msg = MessageUtils.asyncCloudEvent(eventMeshMessage);
+            Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.BROADCAST_MESSAGE_TO_SERVER);
             log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCommand(),
                 msg.getHeader().getProperty(PropertyConst.PROPERTY_MESSAGE_PROTOCOL), msg);
             super.send(msg);
@@ -138,7 +138,7 @@ public class EventMeshMessageTCPPubClient extends TcpClient implements EventMesh
     }
 
     @Override
-    public void close() throws EventMeshException {
+    public void close() {
         try {
             task.cancel(false);
             goodbye();
