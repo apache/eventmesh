@@ -21,10 +21,14 @@ import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 /**
  * EventMesh TCP publish client.
+ * <ul>
+ *     <li>{@link org.apache.eventmesh.client.tcp.impl.cloudevent.CloudEventTCPPubClient}</li>
+ *     <li>{@link org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPSubClient}</li>
+ *     <li>{@link org.apache.eventmesh.client.tcp.impl.openmessage.OpenMessageTCPPubClient}</li>
+ * </ul>
  */
 public interface EventMeshTCPPubClient<ProtocolMessage> extends AutoCloseable {
 
@@ -34,17 +38,14 @@ public interface EventMeshTCPPubClient<ProtocolMessage> extends AutoCloseable {
 
     void reconnect() throws EventMeshException;
 
-    Package rr(Package msg, long timeout) throws EventMeshException;
+    // todo: Hide package method, use ProtocolMessage
+    Package rr(ProtocolMessage msg, long timeout) throws EventMeshException;
 
-    void asyncRR(Package msg, AsyncRRCallback callback, long timeout) throws EventMeshException;
-
-    Package publish(Package msg, long timeout) throws EventMeshException;
+    void asyncRR(ProtocolMessage msg, AsyncRRCallback callback, long timeout) throws EventMeshException;
 
     Package publish(ProtocolMessage cloudEvent, long timeout) throws EventMeshException;
 
     void broadcast(ProtocolMessage cloudEvent, long timeout) throws EventMeshException;
-
-    void broadcast(Package msg, long timeout) throws EventMeshException;
 
     void registerBusiHandler(ReceiveMsgHook<ProtocolMessage> handler) throws EventMeshException;
 
