@@ -17,23 +17,21 @@
 
 package org.apache.eventmesh.connector.standalone.consumer;
 
-import io.openmessaging.api.AsyncGenericMessageListener;
-import io.openmessaging.api.AsyncMessageListener;
-import io.openmessaging.api.Consumer;
-import io.openmessaging.api.GenericMessageListener;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.MessageListener;
-import io.openmessaging.api.MessageSelector;
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.api.EventListener;
+import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
 import org.apache.eventmesh.connector.standalone.broker.task.SubScribeTask;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
+
+import io.cloudevents.CloudEvent;
 
 public class StandaloneConsumer implements Consumer {
 
@@ -50,71 +48,10 @@ public class StandaloneConsumer implements Consumer {
         this.subscribeTaskTable = new ConcurrentHashMap<>(16);
         this.isStarted = new AtomicBoolean(false);
         this.consumeExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
-                Runtime.getRuntime().availableProcessors() * 2,
-                Runtime.getRuntime().availableProcessors() * 2,
-                "StandaloneConsumerThread"
+            Runtime.getRuntime().availableProcessors() * 2,
+            Runtime.getRuntime().availableProcessors() * 2,
+            "StandaloneConsumerThread"
         );
-    }
-
-    @Override
-    public void subscribe(String topic, String subExpression, MessageListener listener) {
-    }
-
-    @Override
-    public void subscribe(String topic, MessageSelector selector, MessageListener listener) {
-    }
-
-    @Override
-    public <T> void subscribe(String topic, String subExpression, GenericMessageListener<T> listener) {
-    }
-
-    @Override
-    public <T> void subscribe(String topic, MessageSelector selector, GenericMessageListener<T> listener) {
-    }
-
-    @Override
-    public void subscribe(String topic, String subExpression, AsyncMessageListener listener) {
-        if (listener == null) {
-            throw new IllegalArgumentException("listener cannot be null");
-        }
-        if (subscribeTaskTable.containsKey(topic)) {
-            return;
-        }
-        synchronized (subscribeTaskTable) {
-            standaloneBroker.createTopicIfAbsent(topic);
-            SubScribeTask subScribeTask = new SubScribeTask(topic, standaloneBroker, listener);
-            subscribeTaskTable.put(topic, subScribeTask);
-            consumeExecutorService.execute(subScribeTask);
-        }
-    }
-
-    @Override
-    public void subscribe(String topic, MessageSelector selector, AsyncMessageListener listener) {
-    }
-
-    @Override
-    public <T> void subscribe(String topic, String subExpression, AsyncGenericMessageListener<T> listener) {
-    }
-
-    @Override
-    public <T> void subscribe(String topic, MessageSelector selector, AsyncGenericMessageListener<T> listener) {
-    }
-
-    @Override
-    public void unsubscribe(String topic) {
-        if (!subscribeTaskTable.containsKey(topic)) {
-            return;
-        }
-        synchronized (subscribeTaskTable) {
-            SubScribeTask subScribeTask = subscribeTaskTable.get(topic);
-            subScribeTask.shutdown();
-            subscribeTaskTable.remove(topic);
-        }
-    }
-
-    @Override
-    public void updateCredential(Properties credentialProperties) {
-
     }
 
     @Override
@@ -139,7 +76,44 @@ public class StandaloneConsumer implements Consumer {
         subscribeTaskTable.clear();
     }
 
-    public void updateOffset(Message message) {
-        standaloneBroker.updateOffset(new TopicMetadata(message.getTopic()), message.getOffset());
+    @Override
+    public void init(Properties keyValue) throws Exception {
+
+    }
+
+    @Override
+    public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
+        cloudEvents.forEach(cloudEvent -> standaloneBroker.updateOffset(
+            new TopicMetadata(cloudEvent.getSubject()), (Long) cloudEvent.getExtension("offset"))
+        );
+
+    }
+
+    @Override
+    public void subscribe(String topic, EventListener listener) throws Exception {
+        if (listener == null) {
+            throw new IllegalArgumentException("listener cannot be null");
+        }
+        if (subscribeTaskTable.containsKey(topic)) {
+            return;
+        }
+        synchronized (subscribeTaskTable) {
+            standaloneBroker.createTopicIfAbsent(topic);
+            SubScribeTask subScribeTask = new SubScribeTask(topic, standaloneBroker, listener);
+            subscribeTaskTable.put(topic, subScribeTask);
+            consumeExecutorService.execute(subScribeTask);
+        }
+    }
+
+    @Override
+    public void unsubscribe(String topic) {
+        if (!subscribeTaskTable.containsKey(topic)) {
+            return;
+        }
+        synchronized (subscribeTaskTable) {
+            SubScribeTask subScribeTask = subscribeTaskTable.get(topic);
+            subScribeTask.shutdown();
+            subscribeTaskTable.remove(topic);
+        }
     }
 }
