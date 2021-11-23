@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.http.push;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
@@ -120,12 +121,9 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
             ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
 
-            // todo
             ProtocolTransportObject protocolTransportObject =
                 protocolAdaptor.fromCloudEvent(handleMsgContext.getEvent());
-
-            //            content =
-//                new String(handleMsgContext.getEvent().getData().toBytes(), EventMeshConstants.DEFAULT_CHARSET);
+            content = ((HttpCommand) protocolTransportObject).getBody().toMap().get("content").toString();
         } catch (Exception ex) {
             return;
         }
