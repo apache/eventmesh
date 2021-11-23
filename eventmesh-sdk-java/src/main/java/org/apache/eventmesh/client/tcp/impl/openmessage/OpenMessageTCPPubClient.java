@@ -29,18 +29,13 @@ public class OpenMessageTCPPubClient implements EventMeshTCPPubClient<Message> {
     }
 
     @Override
-    public Package rr(Package msg, long timeout) throws EventMeshException {
+    public Package rr(Message msg, long timeout) throws EventMeshException {
         return null;
     }
 
     @Override
-    public void asyncRR(Package msg, AsyncRRCallback callback, long timeout) throws EventMeshException {
+    public void asyncRR(Message msg, AsyncRRCallback callback, long timeout) throws EventMeshException {
 
-    }
-
-    @Override
-    public Package publish(Package msg, long timeout) throws EventMeshException {
-        return null;
     }
 
     @Override
@@ -54,18 +49,8 @@ public class OpenMessageTCPPubClient implements EventMeshTCPPubClient<Message> {
     }
 
     @Override
-    public void broadcast(Package msg, long timeout) throws EventMeshException {
-
-    }
-
-    @Override
     public void registerBusiHandler(ReceiveMsgHook<Message> handler) throws EventMeshException {
 
-    }
-
-    @Override
-    public UserAgent getUserAgent() {
-        return null;
     }
 
     @Override
