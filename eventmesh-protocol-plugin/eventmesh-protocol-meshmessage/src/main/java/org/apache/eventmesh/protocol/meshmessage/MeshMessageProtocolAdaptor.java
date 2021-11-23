@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchProtocolResolver;
@@ -33,7 +34,10 @@ import org.apache.eventmesh.protocol.meshmessage.resolver.tcp.TcpMessageProtocol
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.cloudevents.CloudEvent;
 
@@ -90,9 +94,18 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
         String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
 
         if (StringUtils.equals("http", protocolDesc)) {
-            // todo: return command, set cloudEvent.getData() to content?
-            return null;
-//            return new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8);
+            HttpCommand httpCommand = new HttpCommand();
+            Body body = new Body() {
+                final Map<String, Object> map = new HashMap<>();
+                @Override
+                public Map<String, Object> toMap() {
+                    map.put("content",  new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
+                    return map;
+                }
+            };
+            body.toMap();
+            httpCommand.setBody(body);
+            return httpCommand;
         } else if (StringUtils.equals("tcp", protocolDesc)) {
             return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
         } else {
