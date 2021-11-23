@@ -83,9 +83,10 @@ public class EventMeshMessageTCPPubClient extends TcpClient implements EventMesh
     }
 
     @Override
-    public Package rr(Package msg, long timeout) throws EventMeshException {
+    public Package rr(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
         try {
-            log.info("SimplePubClientImpl|{}|rr|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+            Package msg = MessageUtils.asyncCloudEvent(eventMeshMessage);
+            log.info("{}|rr|send|type={}|msg={}", clientNo, msg, msg);
             return io(msg, timeout);
         } catch (Exception ex) {
             throw new EventMeshException("rr error");
@@ -93,24 +94,14 @@ public class EventMeshMessageTCPPubClient extends TcpClient implements EventMesh
     }
 
     @Override
-    public void asyncRR(Package msg, AsyncRRCallback callback, long timeout) throws EventMeshException {
+    public void asyncRR(EventMeshMessage eventMeshMessage, AsyncRRCallback callback, long timeout) throws EventMeshException {
         try {
+            Package msg = MessageUtils.asyncCloudEvent(eventMeshMessage);
             super.send(msg);
             this.callbackConcurrentHashMap.put((String) RequestContext._key(msg), callback);
         } catch (Exception ex) {
             // should trigger callback?
             throw new EventMeshException("asyncRR error", ex);
-        }
-    }
-
-    // todo: remove this method, just keep protocol message publish method
-    @Override
-    public Package publish(Package msg, long timeout) throws EventMeshException {
-        try {
-            log.info("SimplePubClientImpl|{}|publish|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
-            return io(msg, timeout);
-        } catch (Exception ex) {
-            throw new EventMeshException("Publish error", ex);
         }
     }
 
@@ -132,22 +123,9 @@ public class EventMeshMessageTCPPubClient extends TcpClient implements EventMesh
     public void broadcast(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
         try {
             // todo: transform EventMeshMessage to Package
-            Package msg = MessageUtils.asyncCloudEvent(cloudEvent);
-            log.info("SimplePubClientImpl cloud event|{}|publish|send|type={}|protocol={}|msg={}",
-                clientNo, msg.getHeader().getCommand(),
+            Package msg = MessageUtils.asyncCloudEvent(eventMeshMessage);
+            log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCommand(),
                 msg.getHeader().getProperty(PropertyConst.PROPERTY_MESSAGE_PROTOCOL), msg);
-            super.send(msg);
-        } catch (Exception ex) {
-            throw new EventMeshException("Broadcast message error", ex);
-        }
-    }
-
-    // todo: remove this method
-    @Override
-    public void broadcast(Package msg, long timeout) throws EventMeshException {
-        try {
-            log.info("SimplePubClientImpl|{}|broadcast|send|type={}|msg={}", clientNo, msg.getHeader().getCommand(),
-                msg);
             super.send(msg);
         } catch (Exception ex) {
             throw new EventMeshException("Broadcast message error", ex);

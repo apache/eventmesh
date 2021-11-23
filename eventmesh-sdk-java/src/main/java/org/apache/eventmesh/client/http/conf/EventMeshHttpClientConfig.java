@@ -47,7 +47,8 @@ public class EventMeshHttpClientConfig {
     @Builder.Default
     private int consumeThreadMax = 5;
 
-    private String env;
+    @Builder.Default
+    private String env = "";
 
     @Builder.Default
     private String consumerGroup = "DefaultConsumerGroup";
@@ -55,18 +56,23 @@ public class EventMeshHttpClientConfig {
     @Builder.Default
     private String producerGroup = "DefaultProducerGroup";
 
-    private String idc;
+    @Builder.Default
+    private String idc = "";
 
     @Builder.Default
     private String ip = "127.0.0.1";
 
-    private String pid;
+    @Builder.Default
+    private String pid = "";
 
-    private String sys;
+    @Builder.Default
+    private String sys = "";
 
-    private String userName;
+    @Builder.Default
+    private String userName = "";
 
-    private String password;
+    @Builder.Default
+    private String password = "";
 
     @Builder.Default
     private boolean useTls = false;
