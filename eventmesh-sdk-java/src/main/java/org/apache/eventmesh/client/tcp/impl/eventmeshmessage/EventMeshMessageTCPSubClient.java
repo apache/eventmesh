@@ -113,6 +113,25 @@ public class EventMeshMessageTCPSubClient extends TcpClient implements EventMesh
         }
     }
 
+    private void goodbye() throws Exception {
+        Package msg = MessageUtils.goodbye();
+        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+    }
+
+    private void hello() throws Exception {
+        Package msg = MessageUtils.hello(userAgent);
+        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+    }
+
+    public void listen() throws EventMeshException {
+        try {
+            Package request = MessageUtils.listen();
+            io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+        } catch (Exception ex) {
+            throw new EventMeshException("Listen error", ex);
+        }
+    }
+
 
     @Override
     public void registerBusiHandler(ReceiveMsgHook<EventMeshMessage> receiveMsgHook) throws EventMeshException {
@@ -120,13 +139,13 @@ public class EventMeshMessageTCPSubClient extends TcpClient implements EventMesh
     }
 
     @Override
-    public void close() throws EventMeshException {
+    public void close() {
         try {
             task.cancel(false);
             goodbye();
             super.close();
         } catch (Exception ex) {
-            throw new EventMeshException("Close EventMeshMessageTcpSubClient error", ex);
+            ex.printStackTrace();
         }
     }
 
@@ -169,22 +188,4 @@ public class EventMeshMessageTCPSubClient extends TcpClient implements EventMesh
         }
     }
 
-    private void goodbye() throws Exception {
-        Package msg = MessageUtils.goodbye();
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-    }
-
-    private void hello() throws Exception {
-        Package msg = MessageUtils.hello(userAgent);
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-    }
-
-    public void listen() throws EventMeshException {
-        try {
-            Package request = MessageUtils.listen();
-            io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-        } catch (Exception ex) {
-            throw new EventMeshException("Listen error", ex);
-        }
-    }
 }

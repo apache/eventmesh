@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
@@ -78,16 +79,26 @@ public class MessageUtils {
         return msg;
     }
 
-    public static Package asyncCloudEvent(CloudEvent cloudEvent) {
+    public static Package buildPackage(Object message, Command command) {
         Package msg = new Package();
-        msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_SERVER, 0,
-            null, generateRandomString(seqLength)));
-        msg.getHeader().putProperty(Constants.PROTOCOL_TYPE,
-            EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
-        msg.getHeader().putProperty(Constants.PROTOCOL_VERSION,
-            cloudEvent.getSpecVersion().toString());
+        msg.setHeader(new Header(command, 0,
+                null, generateRandomString(seqLength)));
+        if (message instanceof CloudEvent) {
+            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE,
+                    EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
+            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION,
+                    ((CloudEvent) message).getSpecVersion().toString());
+        } else if (message instanceof EventMeshMessage) {
+            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE,
+                    EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
+            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION,
+                    SpecVersion.V1.toString());
+        } else {
+            // unsupported protocol for server
+            return msg;
+        }
         msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
-        msg.setBody(cloudEvent);
+        msg.setBody(message);
         return msg;
     }
 
