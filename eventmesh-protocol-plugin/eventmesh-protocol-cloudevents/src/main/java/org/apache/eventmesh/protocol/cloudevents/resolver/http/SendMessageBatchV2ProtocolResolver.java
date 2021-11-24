@@ -5,7 +5,9 @@ import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.v03.CloudEventV03;
 import io.cloudevents.core.v1.CloudEventV1;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
@@ -42,37 +44,37 @@ public class SendMessageBatchV2ProtocolResolver {
             if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
                 event = JsonUtils.deserialize(content, CloudEventV1.class);
                 event = CloudEventBuilder.from(event)
-                        .withExtension(ProtocolKey.REQUEST_CODE, code)
-                        .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
-                        .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
-                        .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
-                        .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
-                        .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
-                        .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
-                        .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
-                        .withExtension(ProtocolKey.VERSION, version.getVersion())
-                        .withExtension(ProtocolKey.LANGUAGE, language)
-                        .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                        .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                        .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                        .build();
+                    .withExtension(ProtocolKey.REQUEST_CODE, code)
+                    .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
+                    .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
+                    .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
+                    .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
+                    .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
+                    .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
+                    .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
+                    .withExtension(ProtocolKey.VERSION, version.getVersion())
+                    .withExtension(ProtocolKey.LANGUAGE, language)
+                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                    .build();
             } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
                 event = JsonUtils.deserialize(content, CloudEventV03.class);
                 event = CloudEventBuilder.from(event)
-                        .withExtension(ProtocolKey.REQUEST_CODE, code)
-                        .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
-                        .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
-                        .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
-                        .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
-                        .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
-                        .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
-                        .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
-                        .withExtension(ProtocolKey.VERSION, version.getVersion())
-                        .withExtension(ProtocolKey.LANGUAGE, language)
-                        .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                        .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                        .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                        .build();
+                    .withExtension(ProtocolKey.REQUEST_CODE, code)
+                    .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
+                    .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
+                    .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
+                    .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
+                    .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
+                    .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
+                    .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
+                    .withExtension(ProtocolKey.VERSION, version.getVersion())
+                    .withExtension(ProtocolKey.LANGUAGE, language)
+                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                    .build();
             }
             return event;
         } catch (Exception e) {
