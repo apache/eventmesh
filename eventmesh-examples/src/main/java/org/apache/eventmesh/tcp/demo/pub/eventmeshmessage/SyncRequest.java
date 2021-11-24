@@ -15,40 +15,41 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.tcp.demo;
+package org.apache.eventmesh.tcp.demo.pub.eventmeshmessage;
 
-import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshTCPClient;
+import org.apache.eventmesh.client.tcp.conf.EventMeshTcpClientConfig;
+import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPPubClient;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SyncRequest {
 
-    public static Logger logger = LoggerFactory.getLogger(SyncRequest.class);
-
-    private static EventMeshTCPClient client;
+    private static EventMeshMessageTCPPubClient client;
 
     public static void main(String[] agrs) throws Exception {
-        try {
-            UserAgent userAgent = EventMeshTestUtils.generateClient1();
-            client = new DefaultEventMeshTCPClient("127.0.0.1", 10000, userAgent);
+        UserAgent userAgent = EventMeshTestUtils.generateClient1();
+        EventMeshTcpClientConfig eventMeshTcpClientConfig = EventMeshTcpClientConfig.builder()
+            .host("127.0.0.1")
+            .port(10000)
+            .userAgent(userAgent)
+            .build();
+        try (EventMeshMessageTCPPubClient client = new EventMeshMessageTCPPubClient(eventMeshTcpClientConfig)) {
             client.init();
             client.heartbeat();
 
-            Package rrMsg = EventMeshTestUtils.syncRR();
-            logger.info("begin send rr msg=================={}", rrMsg);
-            Package response = client.rr(rrMsg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-            logger.info("receive rr reply==================={}", response);
+            EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();
+            log.info("begin send rr msg=================={}", eventMeshMessage);
+            Package response = client.rr(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+            log.info("receive rr reply==================={}", response);
 
-            // release resource and close client
-            // client.close();
         } catch (Exception e) {
-            logger.warn("SyncRequest failed", e);
+            log.warn("SyncRequest failed", e);
         }
     }
 }

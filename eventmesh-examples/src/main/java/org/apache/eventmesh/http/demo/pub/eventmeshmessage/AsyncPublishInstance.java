@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.http.demo;
+package org.apache.eventmesh.http.demo.pub.eventmeshmessage;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
@@ -33,9 +35,8 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class AsyncPublishInstance {
-
-    public static Logger logger = LoggerFactory.getLogger(AsyncPublishInstance.class);
 
     // This messageSize is also used in SubService.java (Subscriber)
     public static int messageSize = 5;
@@ -45,7 +46,7 @@ public class AsyncPublishInstance {
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
 
-        String eventMeshIPPort;
+        final String eventMeshIPPort;
         if (StringUtils.isBlank(eventMeshIp) || StringUtils.isBlank(eventMeshHttpPort)) {
             // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
             eventMeshIPPort = "127.0.0.1:10105";

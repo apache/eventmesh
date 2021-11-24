@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.tcp.demo;
+package org.apache.eventmesh.tcp.demo.pub.eventmeshmessage;
 
 import java.util.Properties;
 
-import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.client.tcp.impl.DefaultEventMeshTCPClient;
-import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.client.tcp.conf.EventMeshTcpClientConfig;
+import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPPubClient;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
@@ -33,7 +33,7 @@ public class AsyncPublish {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncPublish.class);
 
-    private static EventMeshTCPClient client;
+    private static EventMeshMessageTCPPubClient client;
 
     public static AsyncPublish handler = new AsyncPublish();
 
@@ -43,14 +43,20 @@ public class AsyncPublish {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
         try {
             UserAgent userAgent = EventMeshTestUtils.generateClient1();
-            client = new DefaultEventMeshTCPClient(eventMeshIp, eventMeshTcpPort, userAgent);
+            EventMeshTcpClientConfig eventMeshTcpClientConfig = EventMeshTcpClientConfig.builder()
+                .host(eventMeshIp)
+                .port(eventMeshTcpPort)
+                .userAgent(userAgent)
+                .build();
+            client = new EventMeshMessageTCPPubClient(eventMeshTcpClientConfig);
             client.init();
             client.heartbeat();
 
             for (int i = 0; i < 5; i++) {
-                Package asyncMsg = EventMeshTestUtils.asyncMessage();
-                logger.info("begin send async msg[{}]==================={}", i, asyncMsg);
-                client.publish(asyncMsg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateAsyncEventMqMsg();
+
+                logger.info("begin send async msg[{}]==================={}", i, eventMeshMessage);
+                client.publish(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
                 Thread.sleep(1000);
             }
