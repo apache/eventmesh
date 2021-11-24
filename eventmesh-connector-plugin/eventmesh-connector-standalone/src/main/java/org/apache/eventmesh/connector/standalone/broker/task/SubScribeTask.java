@@ -27,14 +27,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.openmessaging.api.Message;
+import io.cloudevents.CloudEvent;
 
 public class SubScribeTask implements Runnable {
 
-    private String               topicName;
-    private StandaloneBroker     standaloneBroker;
-    private EventListener listener;
-    private volatile boolean isRunning;
+    private          String           topicName;
+    private          StandaloneBroker standaloneBroker;
+    private          EventListener    listener;
+    private volatile boolean          isRunning;
 
     private AtomicInteger offset;
 
@@ -55,13 +55,13 @@ public class SubScribeTask implements Runnable {
             try {
                 logger.debug("execute subscribe task, topic: {}, offset: {}", topicName, offset);
                 if (offset == null) {
-                    Message message = standaloneBroker.getMessage(topicName);
+                    CloudEvent message = standaloneBroker.getMessage(topicName);
                     if (message != null) {
-                        offset = new AtomicInteger((int) message.getOffset());
+                        offset = new AtomicInteger((int) message.getExtension("offset"));
                     }
                 }
                 if (offset != null) {
-                    Message message = standaloneBroker.getMessage(topicName, offset.get());
+                    CloudEvent message = standaloneBroker.getMessage(topicName, offset.get());
                     if (message != null) {
                         EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
                             @Override
@@ -69,7 +69,8 @@ public class SubScribeTask implements Runnable {
                                 switch (action) {
                                     case CommitMessage:
                                         // update offset
-                                        logger.info("message commit, topic: {}, current offset:{}", topicName, offset.get());
+                                        logger.info("message commit, topic: {}, current offset:{}", topicName,
+                                            offset.get());
                                         break;
                                     case ReconsumeLater:
                                         // don't update offset
@@ -77,7 +78,8 @@ public class SubScribeTask implements Runnable {
                                     case ManualAck:
                                         // update offset
                                         offset.incrementAndGet();
-                                        logger.info("message ack, topic: {}, current offset:{}", topicName, offset.get());
+                                        logger
+                                            .info("message ack, topic: {}, current offset:{}", topicName, offset.get());
                                         break;
                                     default:
 
@@ -89,13 +91,14 @@ public class SubScribeTask implements Runnable {
                 }
 
             } catch (Exception ex) {
-                logger.error("consumer error, topic: {}, offset: {}", topicName, offset == null ? null : offset.get(), ex);
+                logger.error("consumer error, topic: {}, offset: {}", topicName, offset == null ? null : offset.get(),
+                    ex);
             }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 logger.error("Thread is interrupted, topic: {}, offset: {} thread name: {}",
-                        topicName, offset == null ? null : offset.get(), Thread.currentThread().getName(), e);
+                    topicName, offset == null ? null : offset.get(), Thread.currentThread().getName(), e);
                 Thread.currentThread().interrupt();
             }
         }

@@ -9,9 +9,9 @@ import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTcpClientConfig;
-import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
@@ -82,6 +82,7 @@ public class EventMeshMessageTCPPubClient extends TcpClient implements EventMesh
         }
     }
 
+    // todo: Maybe use org.apache.eventmesh.common.EvetMesh here is better
     @Override
     public Package rr(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
         try {
