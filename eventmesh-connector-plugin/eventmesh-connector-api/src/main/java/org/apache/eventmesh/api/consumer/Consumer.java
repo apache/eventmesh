@@ -28,8 +28,6 @@ import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 
-
-
 /**
  * Consumer Interface.
  */
