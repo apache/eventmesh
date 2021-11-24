@@ -46,6 +46,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionStat
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,9 +57,11 @@ public class ClientSessionGroupMapping {
 
     private ConcurrentHashMap<InetSocketAddress, Session> sessionTable = new ConcurrentHashMap<>();
 
-    private ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, ClientGroupWrapper> clientGroupMap = new ConcurrentHashMap<String, ClientGroupWrapper>();
+    private ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, ClientGroupWrapper> clientGroupMap =
+        new ConcurrentHashMap<String, ClientGroupWrapper>();
 
-    private ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, Object> lockMap = new ConcurrentHashMap<String, Object>();
+    private ConcurrentHashMap<String /** subsystem eg . 5109 or 5109-1A0 */, Object> lockMap =
+        new ConcurrentHashMap<String, Object>();
 
     private EventMeshTCPServer eventMeshTCPServer;
 
@@ -123,7 +126,7 @@ public class ClientSessionGroupMapping {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
                     logger.info("close the connection to remote address[{}] result: {}", remoteAddress,
-                            future.isSuccess());
+                        future.isSuccess());
                 }
             });
             sessionLogger.info("session|close|succeed|address={}|msg={}", addr, "no session was found");
@@ -169,7 +172,7 @@ public class ClientSessionGroupMapping {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {
                         logger.info("close the connection to remote address[{}] result: {}", remoteAddress,
-                                future.isSuccess());
+                            future.isSuccess());
                     }
                 });
             }
@@ -179,7 +182,8 @@ public class ClientSessionGroupMapping {
     private ClientGroupWrapper constructClientGroupWrapper(String sysId, String producerGroup, String consumerGroup,
                                                            EventMeshTCPServer eventMeshTCPServer,
                                                            DownstreamDispatchStrategy downstreamDispatchStrategy) {
-        return new ClientGroupWrapper(sysId, producerGroup, consumerGroup, eventMeshTCPServer, downstreamDispatchStrategy);
+        return new ClientGroupWrapper(sysId, producerGroup, consumerGroup, eventMeshTCPServer,
+            downstreamDispatchStrategy);
     }
 
     private void initClientGroupWrapper(UserAgent user, Session session) throws Exception {
@@ -192,7 +196,7 @@ public class ClientSessionGroupMapping {
         synchronized (lockMap.get(user.getSubsystem())) {
             if (!clientGroupMap.containsKey(user.getSubsystem())) {
                 ClientGroupWrapper cgw = constructClientGroupWrapper(user.getSubsystem(), user.getProducerGroup(),
-                        user.getConsumerGroup(), eventMeshTCPServer, new FreePriorityDispatchStrategy());
+                    user.getConsumerGroup(), eventMeshTCPServer, new FreePriorityDispatchStrategy());
                 clientGroupMap.put(user.getSubsystem(), cgw);
                 logger.info("create new ClientGroupWrapper, subsystem:{}", user.getSubsystem());
             }
@@ -297,32 +301,40 @@ public class ClientSessionGroupMapping {
             for (Map.Entry<String, DownStreamMsgContext> entry : unAckMsg.entrySet()) {
                 DownStreamMsgContext downStreamMsgContext = entry.getValue();
                 if (SubscriptionMode.BROADCASTING.equals(downStreamMsgContext.subscriptionItem.getMode())) {
-                    logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}", downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.event), session.getClient());
+                    logger.warn("exist broadcast msg unack when closeSession,seq:{},bizSeq:{},client:{}",
+                        downStreamMsgContext.seq, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.event),
+                        session.getClient());
                     continue;
                 }
-                Session reChooseSession = session.getClientGroupWrapper().get().getDownstreamDispatchStrategy().select(session.getClientGroupWrapper().get().getConsumerGroup(),
-                        downStreamMsgContext.event.getSubject(), Objects.requireNonNull(session.getClientGroupWrapper().get()).groupConsumerSessions);
+                Session reChooseSession = session.getClientGroupWrapper().get().getDownstreamDispatchStrategy()
+                    .select(session.getClientGroupWrapper().get().getConsumerGroup(),
+                        downStreamMsgContext.event.getSubject(),
+                        Objects.requireNonNull(session.getClientGroupWrapper().get()).groupConsumerSessions);
                 if (reChooseSession != null) {
                     downStreamMsgContext.session = reChooseSession;
                     reChooseSession.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     reChooseSession.downstreamMsg(downStreamMsgContext);
-                    logger.info("rePush msg form unAckMsgs,seq:{},rePushClient:{}", entry.getKey(), downStreamMsgContext.session.getClient());
+                    logger.info("rePush msg form unAckMsgs,seq:{},rePushClient:{}", entry.getKey(),
+                        downStreamMsgContext.session.getClient());
                 } else {
-                    logger.warn("select session fail in handleUnackMsgsInSession,seq:{},topic:{}", entry.getKey(), downStreamMsgContext.event.getSubject());
+                    logger.warn("select session fail in handleUnackMsgsInSession,seq:{},topic:{}", entry.getKey(),
+                        downStreamMsgContext.event.getSubject());
                 }
             }
         }
     }
 
     private void cleanClientGroupWrapperCommon(Session session) throws Exception {
-        logger.info("GroupConsumerSessions size:{}", session.getClientGroupWrapper().get().getGroupConsumerSessions().size());
+        logger.info("GroupConsumerSessions size:{}",
+            session.getClientGroupWrapper().get().getGroupConsumerSessions().size());
         if (session.getClientGroupWrapper().get().getGroupConsumerSessions().size() == 0) {
             shutdownClientGroupConsumer(session);
         }
 
-        logger.info("GroupProducerSessions size:{}", session.getClientGroupWrapper().get().getGroupProducerSessions().size());
+        logger.info("GroupProducerSessions size:{}",
+            session.getClientGroupWrapper().get().getGroupProducerSessions().size());
         if ((session.getClientGroupWrapper().get().getGroupConsumerSessions().size() == 0)
-                && (session.getClientGroupWrapper().get().getGroupProducerSessions().size() == 0)) {
+            && (session.getClientGroupWrapper().get().getGroupProducerSessions().size() == 0)) {
             shutdownClientGroupProducer(session);
 
             clientGroupMap.remove(session.getClientGroupWrapper().get().getSysId());
@@ -350,22 +362,24 @@ public class ClientSessionGroupMapping {
 
     private void initSessionCleaner() {
         eventMeshTCPServer.getScheduler().scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                Iterator<Session> sessionIterator = sessionTable.values().iterator();
-                while (sessionIterator.hasNext()) {
-                    Session tmp = sessionIterator.next();
-                    if (System.currentTimeMillis() - tmp.getLastHeartbeatTime() > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills) {
-                        try {
-                            logger.warn("clean expired session,client:{}", tmp.getClient());
-                            closeSession(tmp.getContext());
-                        } catch (Exception e) {
-                            logger.error("say goodbye to session error! {}", tmp, e);
-                        }
-                    }
-                }
-            }
-        }, 1000, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills, TimeUnit.MILLISECONDS);
+                                                                  @Override
+                                                                  public void run() {
+                                                                      Iterator<Session> sessionIterator = sessionTable.values().iterator();
+                                                                      while (sessionIterator.hasNext()) {
+                                                                          Session tmp = sessionIterator.next();
+                                                                          if (System.currentTimeMillis() - tmp.getLastHeartbeatTime() >
+                                                                              eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills) {
+                                                                              try {
+                                                                                  logger.warn("clean expired session,client:{}", tmp.getClient());
+                                                                                  closeSession(tmp.getContext());
+                                                                              } catch (Exception e) {
+                                                                                  logger.error("say goodbye to session error! {}", tmp, e);
+                                                                              }
+                                                                          }
+                                                                      }
+                                                                  }
+                                                              }, 1000, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills,
+            TimeUnit.MILLISECONDS);
     }
 
     private void initDownStreamMsgContextCleaner() {
@@ -386,7 +400,7 @@ public class ClientSessionGroupMapping {
                         downStreamMsgContext.ackMsg();
                         tmp.getPusher().getUnAckMsg().remove(seqKey);
                         logger.warn("remove expire downStreamMsgContext, session:{}, topic:{}, seq:{}", tmp,
-                                downStreamMsgContext.event.getSubject(), seqKey);
+                            downStreamMsgContext.event.getSubject(), seqKey);
                     }
                 }
             }
@@ -406,8 +420,8 @@ public class ClientSessionGroupMapping {
 
     public void shutdown() throws Exception {
         logger.info("begin to close sessions gracefully");
-        for(ClientGroupWrapper clientGroupWrapper : clientGroupMap.values()){
-            for(Session subSession : clientGroupWrapper.getGroupConsumerSessions()){
+        for (ClientGroupWrapper clientGroupWrapper : clientGroupMap.values()) {
+            for (Session subSession : clientGroupWrapper.getGroupConsumerSessions()) {
                 try {
                     EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, subSession, this);
                 } catch (Exception e) {
@@ -415,7 +429,7 @@ public class ClientSessionGroupMapping {
                 }
             }
 
-            for(Session pubSession : clientGroupWrapper.getGroupProducerSessions()){
+            for (Session pubSession : clientGroupWrapper.getGroupProducerSessions()) {
                 try {
                     EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, pubSession, this);
                 } catch (Exception e) {
@@ -437,7 +451,7 @@ public class ClientSessionGroupMapping {
 
         sessionTable.values().parallelStream().forEach(itr -> {
             try {
-                EventMeshTcp2Client.serverGoodby2Client(this.eventMeshTCPServer,itr, this);
+                EventMeshTcp2Client.serverGoodby2Client(this.eventMeshTCPServer, itr, this);
             } catch (Exception e) {
                 logger.error("say goodbye to session error! {}", itr, e);
             }
@@ -470,15 +484,15 @@ public class ClientSessionGroupMapping {
         return result;
     }
 
-    public Map<String, Map<String, Integer>> prepareProxyClientDistributionData(){
+    public Map<String, Map<String, Integer>> prepareProxyClientDistributionData() {
         Map<String, Map<String, Integer>> result = null;
 
-        if(!clientGroupMap.isEmpty()){
+        if (!clientGroupMap.isEmpty()) {
             result = new HashMap<>();
-            for(Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()){
+            for (Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()) {
                 Map<String, Integer> map = new HashMap();
-                map.put(EventMeshConstants.PURPOSE_SUB,entry.getValue().getGroupConsumerSessions().size());
-                map.put(EventMeshConstants.PURPOSE_PUB,entry.getValue().getGroupProducerSessions().size());
+                map.put(EventMeshConstants.PURPOSE_SUB, entry.getValue().getGroupConsumerSessions().size());
+                map.put(EventMeshConstants.PURPOSE_PUB, entry.getValue().getGroupProducerSessions().size());
                 result.put(entry.getKey(), map);
             }
         }

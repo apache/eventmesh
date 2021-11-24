@@ -273,8 +273,11 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                         HttpCommand succ = asyncContext.getRequest().createHttpCommandResponse(
                             sendMessageResponseHeader,
                             SendMessageResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(),
-                                JsonUtils.serialize(new SendMessageResponseBody.ReplyMessage(topic,
-                                    rtnMsg))));
+                                JsonUtils.serialize(SendMessageResponseBody.ReplyMessage.builder()
+                                    .topic(topic)
+                                    .body(rtnMsg)
+                                    .properties(EventMeshUtil.getEventProp(event))
+                                    .build())));
                         asyncContext.onComplete(succ, handler);
                     } catch (Exception ex) {
                         HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
