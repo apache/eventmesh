@@ -17,19 +17,23 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.Subscription;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.tcp.Subscription;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.tcp.*;
-import org.apache.eventmesh.common.protocol.tcp.Package;
 
 public class MessageUtils {
     private static final int seqLength = 10;
@@ -59,7 +63,8 @@ public class MessageUtils {
         return msg;
     }
 
-    public static Package subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) {
+    public static Package subscribe(String topic, SubscriptionMode subscriptionMode,
+                                    SubscriptionType subscriptionType) {
         Package msg = new Package();
         msg.setHeader(new Header(Command.SUBSCRIBE_REQUEST, 0, null, generateRandomString(seqLength)));
         msg.setBody(generateSubscription(topic, subscriptionMode, subscriptionType));
@@ -81,18 +86,13 @@ public class MessageUtils {
 
     public static Package buildPackage(Object message, Command command) {
         Package msg = new Package();
-        msg.setHeader(new Header(command, 0,
-                null, generateRandomString(seqLength)));
+        msg.setHeader(new Header(command, 0, null, generateRandomString(seqLength)));
         if (message instanceof CloudEvent) {
-            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE,
-                    EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
-            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION,
-                    ((CloudEvent) message).getSpecVersion().toString());
+            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
+            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, ((CloudEvent) message).getSpecVersion().toString());
         } else if (message instanceof EventMeshMessage) {
-            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE,
-                    EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
-            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION,
-                    SpecVersion.V1.toString());
+            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
+            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, SpecVersion.V1.toString());
         } else {
             // unsupported protocol for server
             return msg;
@@ -159,7 +159,8 @@ public class MessageUtils {
             .build();
     }
 
-    private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) {
+    private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode,
+                                                     SubscriptionType subscriptionType) {
         Subscription subscription = new Subscription();
         List<SubscriptionItem> subscriptionItems = new ArrayList<>();
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
