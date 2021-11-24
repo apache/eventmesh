@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.standalone.broker;
 
+import io.cloudevents.CloudEvent;
 import io.openmessaging.api.Message;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
@@ -53,7 +54,7 @@ public class StandaloneBroker {
      * @param message   message
      * @throws InterruptedException
      */
-    public MessageEntity putMessage(String topicName, Message message) throws InterruptedException {
+    public MessageEntity putMessage(String topicName, CloudEvent message) throws InterruptedException {
         Pair<MessageQueue, AtomicLong> pair = createTopicIfAbsent(topicName);
         AtomicLong topicOffset = pair.getRight();
         MessageQueue messageQueue = pair.getLeft();
@@ -70,7 +71,7 @@ public class StandaloneBroker {
      *
      * @param topicName
      */
-    public Message takeMessage(String topicName) throws InterruptedException {
+    public CloudEvent takeMessage(String topicName) throws InterruptedException {
         TopicMetadata topicMetadata = new TopicMetadata(topicName);
         return messageContainer.computeIfAbsent(topicMetadata, k -> new MessageQueue()).take().getMessage();
     }
@@ -80,7 +81,7 @@ public class StandaloneBroker {
      *
      * @param topicName
      */
-    public Message getMessage(String topicName) {
+    public CloudEvent getMessage(String topicName) {
         TopicMetadata topicMetadata = new TopicMetadata(topicName);
         MessageEntity head = messageContainer.computeIfAbsent(topicMetadata, k -> new MessageQueue()).getHead();
         if (head == null) {
@@ -96,7 +97,7 @@ public class StandaloneBroker {
      * @param offset    offset
      * @return
      */
-    public Message getMessage(String topicName, long offset) {
+    public CloudEvent getMessage(String topicName, long offset) {
         TopicMetadata topicMetadata = new TopicMetadata(topicName);
         MessageEntity messageEntity = messageContainer.computeIfAbsent(topicMetadata, k -> new MessageQueue()).getByOffset(offset);
         if (messageEntity == null) {

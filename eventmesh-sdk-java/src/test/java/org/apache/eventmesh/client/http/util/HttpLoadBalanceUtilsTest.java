@@ -28,8 +28,9 @@ public class HttpLoadBalanceUtilsTest {
 
     @Test
     public void testCreateRandomSelector() throws EventMeshException {
-        EventMeshHttpClientConfig eventMeshHttpClientConfig = new EventMeshHttpClientConfig()
-                .setLiteEventMeshAddr("127.0.0.1:1001;127.0.0.2:1002");
+        EventMeshHttpClientConfig eventMeshHttpClientConfig = EventMeshHttpClientConfig.builder()
+            .liteEventMeshAddr("127.0.0.1:1001;127.0.0.2:1002")
+            .build();
         LoadBalanceSelector<String> randomSelector = HttpLoadBalanceUtils
                 .createEventMeshServerLoadBalanceSelector(eventMeshHttpClientConfig);
         Assert.assertEquals(LoadBalanceType.RANDOM, randomSelector.getType());
@@ -37,9 +38,9 @@ public class HttpLoadBalanceUtilsTest {
 
     @Test
     public void testCreateWeightRoundRobinSelector() throws EventMeshException {
-        EventMeshHttpClientConfig eventMeshHttpClientConfig = new EventMeshHttpClientConfig()
-                .setLiteEventMeshAddr("127.0.0.1:1001:1;127.0.0.2:1001:2")
-                .setLoadBalanceType(LoadBalanceType.WEIGHT_ROUND_ROBIN);
+        EventMeshHttpClientConfig eventMeshHttpClientConfig = EventMeshHttpClientConfig.builder()
+                .liteEventMeshAddr("127.0.0.1:1001:1;127.0.0.2:1001:2")
+                .loadBalanceType(LoadBalanceType.WEIGHT_ROUND_ROBIN).build();
         LoadBalanceSelector<String> weightRoundRobinSelector = HttpLoadBalanceUtils
                 .createEventMeshServerLoadBalanceSelector(eventMeshHttpClientConfig);
         Assert.assertEquals(LoadBalanceType.WEIGHT_ROUND_ROBIN, weightRoundRobinSelector.getType());
@@ -47,9 +48,9 @@ public class HttpLoadBalanceUtilsTest {
 
     @Test
     public void testCreateWeightRandomSelector() throws EventMeshException {
-        EventMeshHttpClientConfig eventMeshHttpClientConfig = new EventMeshHttpClientConfig()
-                .setLiteEventMeshAddr("127.0.0.1:1001:1;127.0.0.2:1001:2")
-                .setLoadBalanceType(LoadBalanceType.WEIGHT_RANDOM);
+        EventMeshHttpClientConfig eventMeshHttpClientConfig = EventMeshHttpClientConfig.builder()
+                .liteEventMeshAddr("127.0.0.1:1001:1;127.0.0.2:1001:2")
+                .loadBalanceType(LoadBalanceType.WEIGHT_RANDOM).build();
         LoadBalanceSelector<String> weightRoundRobinSelector = HttpLoadBalanceUtils
                 .createEventMeshServerLoadBalanceSelector(eventMeshHttpClientConfig);
         Assert.assertEquals(LoadBalanceType.WEIGHT_RANDOM, weightRoundRobinSelector.getType());
