@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.runtime.util;
 
-
-import static org.apache.eventmesh.runtime.util.OMSUtil.isOMSHeader;
-
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -28,6 +25,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -149,6 +147,15 @@ public class EventMeshUtil {
         return keys;
     }
 
+    public static Map<String, String> getEventProp(CloudEvent event) {
+        Set<String> extensionSet = event.getExtensionNames();
+        Map<String, String> prop = new HashMap<>();
+        for (String extensionKey : extensionSet) {
+            prop.put(extensionKey, event.getExtension(extensionKey).toString());
+        }
+        return prop;
+    }
+
 //    public static org.apache.rocketmq.common.message.Message decodeMessage(AccessMessage accessMessage) {
 //        org.apache.rocketmq.common.message.Message msg = new org.apache.rocketmq.common.message.Message();
 //        msg.setTopic(accessMessage.getTopic());
@@ -160,28 +167,28 @@ public class EventMeshUtil {
 //        return msg;
 //    }
 
-    public static Message decodeMessage(EventMeshMessage eventMeshMessage) {
-        Message omsMsg = new Message();
-        omsMsg.setBody(eventMeshMessage.getBody().getBytes());
-        omsMsg.setTopic(eventMeshMessage.getTopic());
-        Properties systemProperties = new Properties();
-        Properties userProperties = new Properties();
-
-        final Set<Map.Entry<String, String>> entries = eventMeshMessage.getProperties().entrySet();
-
-        for (final Map.Entry<String, String> entry : entries) {
-            if (isOMSHeader(entry.getKey())) {
-                systemProperties.put(entry.getKey(), entry.getValue());
-            } else {
-                userProperties.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        systemProperties.put(Constants.PROPERTY_MESSAGE_DESTINATION, eventMeshMessage.getTopic());
-        omsMsg.setSystemProperties(systemProperties);
-        omsMsg.setUserProperties(userProperties);
-        return omsMsg;
-    }
+//    public static Message decodeMessage(EventMeshMessage eventMeshMessage) {
+//        Message omsMsg = new Message();
+//        omsMsg.setBody(eventMeshMessage.getBody().getBytes());
+//        omsMsg.setTopic(eventMeshMessage.getTopic());
+//        Properties systemProperties = new Properties();
+//        Properties userProperties = new Properties();
+//
+//        final Set<Map.Entry<String, String>> entries = eventMeshMessage.getProperties().entrySet();
+//
+//        for (final Map.Entry<String, String> entry : entries) {
+//            if (isOMSHeader(entry.getKey())) {
+//                systemProperties.put(entry.getKey(), entry.getValue());
+//            } else {
+//                userProperties.put(entry.getKey(), entry.getValue());
+//            }
+//        }
+//
+//        systemProperties.put(Constants.PROPERTY_MESSAGE_DESTINATION, eventMeshMessage.getTopic());
+//        omsMsg.setSystemProperties(systemProperties);
+//        omsMsg.setUserProperties(userProperties);
+//        return omsMsg;
+//    }
 
 //    public static AccessMessage encodeMessage(org.apache.rocketmq.common.message.Message msg) throws Exception {
 //        AccessMessage accessMessage = new AccessMessage();
