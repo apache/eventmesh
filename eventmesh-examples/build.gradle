@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+configurations {
+    implementation.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+
 dependencies {
     implementation project(":eventmesh-sdk-java")
     implementation project(":eventmesh-common")
