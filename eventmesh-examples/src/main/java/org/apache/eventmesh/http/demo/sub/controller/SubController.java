@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.http.demo.sub.controller;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.http.demo.sub.service.SubService;
 
@@ -31,18 +33,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/sub")
 public class SubController {
-
-    public static Logger logger = LoggerFactory.getLogger(SubController.class);
 
     @Autowired
     private SubService subService;
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
     public String subTest(@RequestBody String message) {
-        logger.info("=======receive message======= {}", JsonUtils.serialize(message));
+        log.info("=======receive message======= {}", JsonUtils.serialize(message));
         subService.consumeMessage(message);
 
         Map<String, Object> map = new HashMap<>();

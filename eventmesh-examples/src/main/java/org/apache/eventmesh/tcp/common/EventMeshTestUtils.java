@@ -22,49 +22,49 @@ import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PR
 import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientBroadCast;
 import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class EventMeshTestUtils {
     private static final int seqLength = 10;
 
     public static UserAgent generateClient1() {
         return UserAgent.builder()
-                .env("test")
-                .host("127.0.0.1")
-                .password(generateRandomString(8))
-                .username("PU4283")
-                .producerGroup("EventmeshTest-ProducerGroup")
-                .consumerGroup("EventmeshTest-ConsumerGroup")
-                .path("/data/app/umg_proxy")
-                .port(8362)
-                .subsystem("5023")
-                .pid(32893)
-                .version("2.0.11")
-                .idc("FT")
-                .build();
+            .env("test")
+            .host("127.0.0.1")
+            .password(generateRandomString(8))
+            .username("PU4283")
+            .producerGroup("EventmeshTest-ProducerGroup")
+            .consumerGroup("EventmeshTest-ConsumerGroup")
+            .path("/data/app/umg_proxy")
+            .port(8362)
+            .subsystem("5023")
+            .pid(32893)
+            .version("2.0.11")
+            .idc("FT")
+            .build();
     }
 
     public static UserAgent generateClient2() {
         return UserAgent.builder()
-                .env("test")
-                .host("127.0.0.1")
-                .password(generateRandomString(8))
-                .username("PU4283")
-                .producerGroup("EventmeshTest-ProducerGroup")
-                .consumerGroup("EventmeshTest-ConsumerGroup")
-                .path("/data/app/umg_proxy")
-                .port(9362)
-                .subsystem("5017")
-                .pid(42893)
-                .version("2.0.11")
-                .idc("FT")
-                .build();
+            .env("test")
+            .host("127.0.0.1")
+            .password(generateRandomString(8))
+            .username("PU4283")
+            .producerGroup("EventmeshTest-ProducerGroup")
+            .consumerGroup("EventmeshTest-ConsumerGroup")
+            .path("/data/app/umg_proxy")
+            .port(9362)
+            .subsystem("5017")
+            .pid(42893)
+            .version("2.0.11")
+            .idc("FT")
+            .build();
     }
 
     public static Package syncRR() {
@@ -102,7 +102,7 @@ public class EventMeshTestUtils {
         return msg;
     }
 
-    private static EventMeshMessage generateSyncRRMqMsg() {
+    public static EventMeshMessage generateSyncRRMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
         mqMsg.getProperties().put("msgType", "persistent");
@@ -123,7 +123,7 @@ public class EventMeshTestUtils {
         return mqMsg;
     }
 
-    private static EventMeshMessage generateAsyncEventMqMsg() {
+    public static EventMeshMessage generateAsyncEventMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(TOPIC_PRX_WQ2ClientUniCast);
         mqMsg.getProperties().put("REPLY_TO", "127.0.0.1@ProducerGroup-producerPool-9-access#V1_4_0#CI");
@@ -133,7 +133,7 @@ public class EventMeshTestUtils {
         return mqMsg;
     }
 
-    private static EventMeshMessage generateBroadcastMqMsg() {
+    public static EventMeshMessage generateBroadcastMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(TOPIC_PRX_WQ2ClientBroadCast);
         mqMsg.getProperties().put("REPLY_TO", "127.0.0.1@ProducerGroup-producerPool-9-access#V1_4_0#CI");
