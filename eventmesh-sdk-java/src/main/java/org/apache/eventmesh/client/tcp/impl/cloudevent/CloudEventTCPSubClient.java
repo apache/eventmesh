@@ -1,13 +1,29 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.eventmesh.client.tcp.impl.cloudevent;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
-import org.apache.eventmesh.client.tcp.common.*;
-import org.apache.eventmesh.client.tcp.conf.EventMeshTcpClientConfig;
-import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPSubClient;
-import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.client.tcp.common.MessageUtils;
+import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
+import org.apache.eventmesh.client.tcp.common.RequestContext;
+import org.apache.eventmesh.client.tcp.common.TcpClient;
+import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
@@ -16,8 +32,7 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
-import io.cloudevents.CloudEvent;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,18 +40,23 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import io.cloudevents.CloudEvent;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * CloudEvent TCP subscribe client implementation.
  */
 @Slf4j
-public class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<CloudEvent> {
+class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<CloudEvent> {
 
-    private final UserAgent                        userAgent;
-    private final List<SubscriptionItem> subscriptionItems = Collections.synchronizedList(new ArrayList<>());
+    private final UserAgent                  userAgent;
+    private final List<SubscriptionItem>     subscriptionItems = Collections.synchronizedList(new ArrayList<>());
     private       ReceiveMsgHook<CloudEvent> callback;
-    private ScheduledFuture<?> task;
+    private       ScheduledFuture<?>         task;
 
-    public CloudEventTCPSubClient(EventMeshTcpClientConfig eventMeshTcpClientConfig) {
+    public CloudEventTCPSubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
         this.userAgent = eventMeshTcpClientConfig.getUserAgent();
     }
@@ -55,7 +75,7 @@ public class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSub
     @Override
     public void heartbeat() throws EventMeshException {
         if (task == null) {
-            synchronized (EventMeshMessageTCPSubClient.class) {
+            synchronized (CloudEventTCPSubClient.class) {
                 task = scheduler.scheduleAtFixedRate(new Runnable() {
                     @Override
                     public void run() {
