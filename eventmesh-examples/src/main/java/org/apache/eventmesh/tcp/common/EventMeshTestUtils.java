@@ -22,6 +22,7 @@ import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PR
 import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientBroadCast;
 import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast;
 
+import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -33,8 +34,9 @@ import java.util.concurrent.ThreadLocalRandom;
 public class EventMeshTestUtils {
     private static final int seqLength = 10;
 
+    // generate pub-client
     public static UserAgent generateClient1() {
-        return UserAgent.builder()
+        UserAgent agent = UserAgent.builder()
             .env("test")
             .host("127.0.0.1")
             .password(generateRandomString(8))
@@ -48,10 +50,12 @@ public class EventMeshTestUtils {
             .version("2.0.11")
             .idc("FT")
             .build();
+        return MessageUtils.generatePubClient(agent);
     }
 
+    // generate sub-client
     public static UserAgent generateClient2() {
-        return UserAgent.builder()
+        UserAgent agent = UserAgent.builder()
             .env("test")
             .host("127.0.0.1")
             .password(generateRandomString(8))
@@ -65,6 +69,7 @@ public class EventMeshTestUtils {
             .version("2.0.11")
             .idc("FT")
             .build();
+        return MessageUtils.generateSubClient(agent);
     }
 
     public static Package syncRR() {

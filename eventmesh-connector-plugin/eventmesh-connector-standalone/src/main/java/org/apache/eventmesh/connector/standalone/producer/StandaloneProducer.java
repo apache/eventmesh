@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.standalone.producer;
 
-import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
@@ -37,7 +36,7 @@ import com.google.common.base.Preconditions;
 
 import io.cloudevents.CloudEvent;
 
-public class StandaloneProducer implements Producer {
+public class StandaloneProducer {
 
     private Logger logger = LoggerFactory.getLogger(StandaloneProducer.class);
 
@@ -50,32 +49,26 @@ public class StandaloneProducer implements Producer {
         this.isStarted = new AtomicBoolean(false);
     }
 
-    @Override
     public boolean isStarted() {
         return isStarted.get();
     }
 
-    @Override
     public boolean isClosed() {
         return !isStarted.get();
     }
 
-    @Override
     public void start() {
         isStarted.compareAndSet(false, true);
     }
 
-    @Override
     public void shutdown() {
         isStarted.compareAndSet(true, false);
     }
 
-    @Override
-    public void init(Properties properties) throws Exception {
-
+    public StandaloneProducer init(Properties properties) throws Exception {
+        return new StandaloneProducer(properties);
     }
 
-    @Override
     public SendResult publish(CloudEvent cloudEvent) {
         Preconditions.checkNotNull(cloudEvent);
         try {
@@ -91,7 +84,6 @@ public class StandaloneProducer implements Producer {
         }
     }
 
-    @Override
     public void publish(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
         Preconditions.checkNotNull(cloudEvent);
         Preconditions.checkNotNull(sendCallback);
@@ -108,12 +100,10 @@ public class StandaloneProducer implements Producer {
         }
     }
 
-    @Override
     public void sendOneway(CloudEvent cloudEvent) {
         publish(cloudEvent);
     }
 
-    @Override
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
         Preconditions.checkNotNull(cloudEvent);
         Preconditions.checkNotNull(sendCallback);
@@ -130,22 +120,19 @@ public class StandaloneProducer implements Producer {
         }
     }
 
-    @Override
-    public void request(CloudEvent cloudEvent, RRCallback rrCallback, long timeout) throws Exception {
-        throw new ConnectorRuntimeException("Request is not supported");
-    }
+//    @Override
+//    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
+//        throw new ConnectorRuntimeException("Request is not supported");
+//    }
 
-    @Override
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
         throw new ConnectorRuntimeException("Request is not supported");
     }
 
-    @Override
     public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
         throw new ConnectorRuntimeException("Reply is not supported");
     }
 
-    @Override
     public void checkTopicExist(String topic) throws Exception {
         boolean exist = standaloneBroker.checkTopicExist(topic);
         if (!exist) {
@@ -153,7 +140,6 @@ public class StandaloneProducer implements Producer {
         }
     }
 
-    @Override
     public void setExtFields() {
 
     }

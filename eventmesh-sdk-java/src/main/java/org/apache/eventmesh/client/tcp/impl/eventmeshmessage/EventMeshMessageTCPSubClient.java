@@ -55,7 +55,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
 
     public EventMeshMessageTCPSubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
-        this.userAgent = eventMeshTcpClientConfig.getUserAgent();
+        this.userAgent = MessageUtils.generateSubClient(eventMeshTcpClientConfig.getUserAgent());
     }
 
     @Override
