@@ -17,15 +17,17 @@
 
 package org.apache.eventmesh.tcp.demo.pub.eventmeshmessage;
 
-import java.util.Properties;
-
+import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.client.tcp.conf.EventMeshTcpClientConfig;
-import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPPubClient;
+import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.client.tcp.impl.EventMeshTCPClientFactory;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
+
+import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +35,7 @@ public class AsyncPublish {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncPublish.class);
 
-    private static EventMeshMessageTCPPubClient client;
+    private static EventMeshTCPClient<EventMeshMessage> client;
 
     public static AsyncPublish handler = new AsyncPublish();
 
@@ -43,12 +45,13 @@ public class AsyncPublish {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
         try {
             UserAgent userAgent = EventMeshTestUtils.generateClient1();
-            EventMeshTcpClientConfig eventMeshTcpClientConfig = EventMeshTcpClientConfig.builder()
+            EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
                 .host(eventMeshIp)
                 .port(eventMeshTcpPort)
                 .userAgent(userAgent)
                 .build();
-            client = new EventMeshMessageTCPPubClient(eventMeshTcpClientConfig);
+            client =
+                EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
             client.heartbeat();
 
@@ -60,10 +63,8 @@ public class AsyncPublish {
 
                 Thread.sleep(1000);
             }
-
+            client.listen();
             Thread.sleep(2000);
-            // release resource and close client
-            // client.close();
         } catch (Exception e) {
             logger.warn("AsyncPublish failed", e);
         }

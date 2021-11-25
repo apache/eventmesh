@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.tcp.demo.pub.eventmeshmessage;
 
+import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.client.tcp.conf.EventMeshTcpClientConfig;
-import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPPubClient;
+import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.client.tcp.impl.EventMeshTCPClientFactory;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
@@ -39,12 +40,13 @@ public class AsyncPublishBroadcast {
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
         UserAgent userAgent = EventMeshTestUtils.generateClient1();
-        EventMeshTcpClientConfig eventMeshTcpClientConfig = EventMeshTcpClientConfig.builder()
+        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
             .host(eventMeshIp)
             .port(eventMeshTcpPort)
             .userAgent(userAgent)
             .build();
-        try (final EventMeshMessageTCPPubClient client = new EventMeshMessageTCPPubClient(eventMeshTcpClientConfig)) {
+        try (final EventMeshTCPClient<EventMeshMessage> client =
+                 EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class)) {
             client.init();
             client.heartbeat();
 

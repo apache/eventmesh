@@ -17,9 +17,7 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
-import org.apache.eventmesh.client.tcp.conf.EventMeshTcpClientConfig;
-import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 
@@ -42,7 +40,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -73,7 +70,7 @@ public abstract class TcpClient implements Closeable {
         Runtime.getRuntime().availableProcessors(),
         new ThreadFactoryBuilder().setNameFormat("TCPClientScheduler").setDaemon(true).build());
 
-    public TcpClient(EventMeshTcpClientConfig eventMeshTcpClientConfig) {
+    public TcpClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         Preconditions.checkNotNull(eventMeshTcpClientConfig, "EventMeshTcpClientConfig cannot be null");
         Preconditions.checkNotNull(eventMeshTcpClientConfig.getHost(), "Host cannot be null");
         Preconditions.checkState(eventMeshTcpClientConfig.getPort() > 0, "port is not validated");
