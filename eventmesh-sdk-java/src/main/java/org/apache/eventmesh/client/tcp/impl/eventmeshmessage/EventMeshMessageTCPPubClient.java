@@ -56,7 +56,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
 
     public EventMeshMessageTCPPubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
-        this.userAgent = eventMeshTcpClientConfig.getUserAgent();
+        this.userAgent = MessageUtils.generatePubClient(eventMeshTcpClientConfig.getUserAgent());
     }
 
     @Override
