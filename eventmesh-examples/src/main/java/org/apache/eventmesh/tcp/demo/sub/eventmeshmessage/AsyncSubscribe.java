@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.tcp.demo.sub.eventmeshmessage;
 
+import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
-import org.apache.eventmesh.client.tcp.conf.EventMeshTcpClientConfig;
-import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPSubClient;
+import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.client.tcp.impl.EventMeshTCPClientFactory;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
@@ -36,8 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
-    private static EventMeshMessageTCPSubClient client;
-
     public static AsyncSubscribe handler = new AsyncSubscribe();
 
     public static void main(String[] agrs) throws Exception {
@@ -45,17 +44,18 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
         UserAgent userAgent = EventMeshTestUtils.generateClient2();
-        EventMeshTcpClientConfig eventMeshTcpClientConfig = EventMeshTcpClientConfig.builder()
+        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
             .host(eventMeshIp)
             .port(eventMeshTcpPort)
             .userAgent(userAgent)
             .build();
-        try (EventMeshMessageTCPSubClient client = new EventMeshMessageTCPSubClient(eventMeshTcpClientConfig)) {
+        try (EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+            eventMeshTcpClientConfig, EventMeshMessage.class)) {
             client.init();
             client.heartbeat();
 
             client.subscribe("TEST-TOPIC-TCP-ASYNC", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
-            client.registerBusiHandler(handler);
+            client.registerSubBusiHandler(handler);
 
             client.listen();
 

@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.tcp.demo.pub.eventmeshmessage;
 
+import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.client.tcp.conf.EventMeshTcpClientConfig;
-import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPPubClient;
+import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.client.tcp.impl.EventMeshTCPClientFactory;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
@@ -30,16 +31,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SyncRequest {
 
-    private static EventMeshMessageTCPPubClient client;
-
     public static void main(String[] agrs) throws Exception {
         UserAgent userAgent = EventMeshTestUtils.generateClient1();
-        EventMeshTcpClientConfig eventMeshTcpClientConfig = EventMeshTcpClientConfig.builder()
+        EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
             .host("127.0.0.1")
             .port(10000)
             .userAgent(userAgent)
             .build();
-        try (EventMeshMessageTCPPubClient client = new EventMeshMessageTCPPubClient(eventMeshTcpClientConfig)) {
+        try (EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+            eventMeshTcpClientConfig, EventMeshMessage.class)) {
             client.init();
             client.heartbeat();
 
