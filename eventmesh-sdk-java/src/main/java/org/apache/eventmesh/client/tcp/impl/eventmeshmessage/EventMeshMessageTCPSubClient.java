@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.eventmesh.client.tcp.impl.eventmeshmessage;
 
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
@@ -6,7 +23,7 @@ import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
-import org.apache.eventmesh.client.tcp.conf.EventMeshTcpClientConfig;
+import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
@@ -29,14 +46,14 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubClient<EventMeshMessage> {
+class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubClient<EventMeshMessage> {
 
     private final UserAgent                        userAgent;
     private final List<SubscriptionItem>           subscriptionItems = Collections.synchronizedList(new ArrayList<>());
     private       ReceiveMsgHook<EventMeshMessage> callback;
     private       ScheduledFuture<?>               task;
 
-    public EventMeshMessageTCPSubClient(EventMeshTcpClientConfig eventMeshTcpClientConfig) {
+    public EventMeshMessageTCPSubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
         this.userAgent = eventMeshTcpClientConfig.getUserAgent();
     }
