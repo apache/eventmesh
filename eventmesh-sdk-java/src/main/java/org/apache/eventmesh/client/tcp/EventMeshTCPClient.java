@@ -17,35 +17,47 @@
 
 package org.apache.eventmesh.client.tcp;
 
+import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.protocol.tcp.Package;
 
 /**
- * EventMesh TCP subscribe client.
- * <ul>
- *     <li>{@link org.apache.eventmesh.client.tcp.impl.cloudevent.CloudEventTCPSubClient}</li>
- *     <li>{@link org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPSubClient}</li>
- *     <li>{@link org.apache.eventmesh.client.tcp.impl.openmessage.OpenMessageTCPSubClient}</li>
- * </ul>
+ * EventMesh TCP client, used to sub/pub message by tcp.
+ * You can use {@link org.apache.eventmesh.client.tcp.impl.EventMeshTCPClientFactory} to create a target client.
+ *
+ * @param <ProtocolMessage>
  */
-public interface EventMeshTCPSubClient<ProtocolMessage> extends AutoCloseable {
+public interface EventMeshTCPClient<ProtocolMessage> extends AutoCloseable {
 
     void init() throws EventMeshException;
 
+    Package rr(ProtocolMessage msg, long timeout) throws EventMeshException;
+
+    void asyncRR(ProtocolMessage msg, AsyncRRCallback callback, long timeout) throws EventMeshException;
+
+    Package publish(ProtocolMessage msg, long timeout) throws EventMeshException;
+
+    void broadcast(ProtocolMessage msg, long timeout) throws EventMeshException;
+
     void heartbeat() throws EventMeshException;
 
-    void reconnect() throws EventMeshException;
+    void listen() throws EventMeshException;
 
     void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
         throws EventMeshException;
 
     void unsubscribe() throws EventMeshException;
 
-    void listen() throws EventMeshException;
+    void registerPubBusiHandler(ReceiveMsgHook<ProtocolMessage> handler) throws EventMeshException;
 
-    void registerBusiHandler(ReceiveMsgHook<ProtocolMessage> handler) throws EventMeshException;
+    void registerSubBusiHandler(ReceiveMsgHook<ProtocolMessage> handler) throws EventMeshException;
 
     void close() throws EventMeshException;
+
+    EventMeshTCPPubClient<ProtocolMessage> getPubClient();
+
+    EventMeshTCPSubClient<ProtocolMessage> getSubClient();
 }

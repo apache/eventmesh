@@ -130,7 +130,7 @@ public class EventMeshTestUtils {
         return mqMsg;
     }
 
-    private static EventMeshMessage generateBroadcastMqMsg() {
+    public static EventMeshMessage generateBroadcastMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(TOPIC_PRX_WQ2ClientBroadCast);
         mqMsg.getProperties().put("REPLY_TO", "127.0.0.1@ProducerGroup-producerPool-9-access#V1_4_0#CI");
