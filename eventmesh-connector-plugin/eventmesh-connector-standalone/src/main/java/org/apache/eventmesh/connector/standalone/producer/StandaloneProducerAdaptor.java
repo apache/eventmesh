@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.standalone.producer;
 
-import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
@@ -61,7 +60,7 @@ public class StandaloneProducerAdaptor implements Producer {
 
     @Override
     public void init(Properties properties) throws Exception {
-        standaloneProducer.init(properties);
+        standaloneProducer = new StandaloneProducer(properties);
     }
 
     @Override
@@ -84,10 +83,10 @@ public class StandaloneProducerAdaptor implements Producer {
         standaloneProducer.sendAsync(cloudEvent, sendCallback);
     }
 
-    @Override
-    public void request(CloudEvent cloudEvent, RRCallback rrCallback, long timeout) throws Exception {
-        standaloneProducer.request(cloudEvent, rrCallback, timeout);
-    }
+//    @Override
+//    public void request(CloudEvent cloudEvent, RRCallback rrCallback, long timeout) throws Exception {
+//        standaloneProducer.request(cloudEvent, rrCallback, timeout);
+//    }
 
     @Override
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {

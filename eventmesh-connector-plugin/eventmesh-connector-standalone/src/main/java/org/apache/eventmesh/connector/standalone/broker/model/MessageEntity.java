@@ -18,7 +18,6 @@
 package org.apache.eventmesh.connector.standalone.broker.model;
 
 import io.cloudevents.CloudEvent;
-import io.openmessaging.api.Message;
 
 import java.io.Serializable;
 
