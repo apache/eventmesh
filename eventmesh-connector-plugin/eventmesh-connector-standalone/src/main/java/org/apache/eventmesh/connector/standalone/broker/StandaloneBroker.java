@@ -18,7 +18,6 @@
 package org.apache.eventmesh.connector.standalone.broker;
 
 import io.cloudevents.CloudEvent;
-import io.openmessaging.api.Message;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;

@@ -38,7 +38,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import io.cloudevents.CloudEvent;
-import io.openmessaging.api.Message;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
@@ -200,42 +199,42 @@ public class EventMeshUtil {
 //        return accessMessage;
 //    }
 
-    public static EventMeshMessage encodeMessage(Message omsMessage) throws Exception {
-
-        EventMeshMessage eventMeshMessage = new EventMeshMessage();
-        eventMeshMessage.setBody(new String(omsMessage.getBody(), StandardCharsets.UTF_8));
-
-        Properties sysHeaders = omsMessage.getSystemProperties();
-        Properties userHeaders = omsMessage.getUserProperties();
-
-        //All destinations in RocketMQ use Topic
-        eventMeshMessage.setTopic(sysHeaders.getProperty(Constants.PROPERTY_MESSAGE_DESTINATION));
-
-        if (sysHeaders.containsKey("START_TIME")) {
-            long deliverTime;
-            if (StringUtils.isBlank(sysHeaders.getProperty("START_TIME"))) {
-                deliverTime = 0;
-            } else {
-                deliverTime = Long.parseLong(sysHeaders.getProperty("START_TIME"));
-            }
-
-            if (deliverTime > 0) {
-//                rmqMessage.putUserProperty(RocketMQConstants.START_DELIVER_TIME, String.valueOf(deliverTime));
-                eventMeshMessage.getProperties().put("START_TIME", String.valueOf(deliverTime));
-            }
-        }
-
-        for (String key : userHeaders.stringPropertyNames()) {
-            eventMeshMessage.getProperties().put(key, userHeaders.getProperty(key));
-        }
-
-        //System headers has a high priority
-        for (String key : sysHeaders.stringPropertyNames()) {
-            eventMeshMessage.getProperties().put(key, sysHeaders.getProperty(key));
-        }
-
-        return eventMeshMessage;
-    }
+//    public static EventMeshMessage encodeMessage(Message omsMessage) throws Exception {
+//
+//        EventMeshMessage eventMeshMessage = new EventMeshMessage();
+//        eventMeshMessage.setBody(new String(omsMessage.getBody(), StandardCharsets.UTF_8));
+//
+//        Properties sysHeaders = omsMessage.getSystemProperties();
+//        Properties userHeaders = omsMessage.getUserProperties();
+//
+//        //All destinations in RocketMQ use Topic
+//        eventMeshMessage.setTopic(sysHeaders.getProperty(Constants.PROPERTY_MESSAGE_DESTINATION));
+//
+//        if (sysHeaders.containsKey("START_TIME")) {
+//            long deliverTime;
+//            if (StringUtils.isBlank(sysHeaders.getProperty("START_TIME"))) {
+//                deliverTime = 0;
+//            } else {
+//                deliverTime = Long.parseLong(sysHeaders.getProperty("START_TIME"));
+//            }
+//
+//            if (deliverTime > 0) {
+////                rmqMessage.putUserProperty(RocketMQConstants.START_DELIVER_TIME, String.valueOf(deliverTime));
+//                eventMeshMessage.getProperties().put("START_TIME", String.valueOf(deliverTime));
+//            }
+//        }
+//
+//        for (String key : userHeaders.stringPropertyNames()) {
+//            eventMeshMessage.getProperties().put(key, userHeaders.getProperty(key));
+//        }
+//
+//        //System headers has a high priority
+//        for (String key : sysHeaders.stringPropertyNames()) {
+//            eventMeshMessage.getProperties().put(key, sysHeaders.getProperty(key));
+//        }
+//
+//        return eventMeshMessage;
+//    }
 
     public static String getLocalAddr() {
         //priority of networkInterface when generating client ip

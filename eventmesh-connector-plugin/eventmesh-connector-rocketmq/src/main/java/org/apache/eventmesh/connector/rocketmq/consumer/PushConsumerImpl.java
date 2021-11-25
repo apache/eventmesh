@@ -50,7 +50,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
-import io.openmessaging.api.exception.OMSRuntimeException;
 
 public class PushConsumerImpl {
     private final DefaultMQPushConsumer rocketmqPushConsumer;
@@ -105,7 +104,7 @@ public class PushConsumerImpl {
             try {
                 this.rocketmqPushConsumer.start();
             } catch (Exception e) {
-                throw new OMSRuntimeException(e.getMessage());
+                throw new ConnectorRuntimeException(e.getMessage());
             }
         }
     }
@@ -137,8 +136,7 @@ public class PushConsumerImpl {
         try {
             this.rocketmqPushConsumer.subscribe(topic, subExpression);
         } catch (MQClientException e) {
-            throw new OMSRuntimeException(-1,
-                String.format("RocketMQ push consumer can't attach to %s.", topic));
+            throw new ConnectorRuntimeException(String.format("RocketMQ push consumer can't attach to %s.", topic));
         }
     }
 
@@ -148,8 +146,7 @@ public class PushConsumerImpl {
         try {
             this.rocketmqPushConsumer.unsubscribe(topic);
         } catch (Exception e) {
-            throw new OMSRuntimeException(-1,
-                String.format("RocketMQ push consumer fails to unsubscribe topic: %s", topic));
+            throw new ConnectorRuntimeException(String.format("RocketMQ push consumer fails to unsubscribe topic: %s", topic));
         }
     }
 
@@ -186,8 +183,7 @@ public class PushConsumerImpl {
             EventListener listener = PushConsumerImpl.this.subscribeTable.get(msg.getTopic());
 
             if (listener == null) {
-                throw new OMSRuntimeException(-1,
-                    String.format("The topic/queue %s isn't attached to this consumer",
+                throw new ConnectorRuntimeException(String.format("The topic/queue %s isn't attached to this consumer",
                         msg.getTopic()));
             }
 
@@ -245,8 +241,7 @@ public class PushConsumerImpl {
             EventListener listener = PushConsumerImpl.this.subscribeTable.get(msg.getTopic());
 
             if (listener == null) {
-                throw new OMSRuntimeException(-1,
-                    String.format("The topic/queue %s isn't attached to this consumer",
+                throw new ConnectorRuntimeException(String.format("The topic/queue %s isn't attached to this consumer",
                         msg.getTopic()));
             }
 

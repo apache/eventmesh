@@ -41,8 +41,8 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
 
     @Override
     public void init() throws EventMeshException {
-        eventMeshMessageTCPPubClient.init();
         eventMeshMessageTCPSubClient.init();
+        eventMeshMessageTCPPubClient.init();
     }
 
     @Override

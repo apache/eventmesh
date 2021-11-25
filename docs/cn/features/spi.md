@@ -101,7 +101,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 ```
 
 同时，还需要在eventmesh-connector-rocketmq模块中resource/META-INF/eventmesh目录下创建文件名为SPI接口全限定名的文件
-org.apache.eventmesh.api.producer.MeshMQProducer
+org.apache.eventmesh.api.producer.Producer
 
 文件内容为扩展实例名和对应的实例全类名
 

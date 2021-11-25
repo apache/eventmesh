@@ -17,12 +17,10 @@
 
 package org.apache.eventmesh.connector.rocketmq.producer;
 
-import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.producer.Producer;
-import org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWrapper;
@@ -38,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
-import io.openmessaging.api.MessagingAccessPoint;
 
 public class RocketMQProducerImpl implements Producer {
 
@@ -94,15 +91,15 @@ public class RocketMQProducerImpl implements Producer {
     }
 
     @Override
-    public void request(CloudEvent message, RRCallback rrCallback, long timeout)
+    public void request(CloudEvent message, RequestReplyCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         producer.request(message, rrCallback, timeout);
     }
 
-    @Override
-    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
-
-    }
+//    @Override
+//    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
+//
+//    }
 
     @Override
     public boolean reply(final CloudEvent message, final SendCallback sendCallback) throws Exception {
