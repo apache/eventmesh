@@ -20,7 +20,6 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.eventmesh.api.RRCallback;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.common.protocol.tcp.Command;

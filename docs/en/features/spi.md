@@ -105,7 +105,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
 At the same time, we need to create a file with the full qualified name of the SPI interface under the resource/META-INF/eventmesh directory
 in the eventmesh-connector-rocketmq module.
 
-org.apache.eventmesh.api.producer.MeshMQProducer
+org.apache.eventmesh.api.producer.Producer
 
 The content of the file is the extension instance name and the corresponding instance full class name
 

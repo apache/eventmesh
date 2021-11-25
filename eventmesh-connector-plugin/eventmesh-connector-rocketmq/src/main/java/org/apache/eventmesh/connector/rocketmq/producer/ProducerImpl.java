@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.rocketmq.producer;
 
-import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
@@ -117,7 +117,7 @@ public class ProducerImpl extends AbstractProducer {
         }
     }
 
-    public void request(CloudEvent cloudEvent, RRCallback rrCallback, long timeout)
+    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout)
         throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
 
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
@@ -142,12 +142,12 @@ public class ProducerImpl extends AbstractProducer {
 
     }
 
-    private RequestCallback rrCallbackConvert(final Message message, final RRCallback rrCallback) {
+    private RequestCallback rrCallbackConvert(final Message message, final RequestReplyCallback rrCallback) {
         return new RequestCallback() {
             @Override
             public void onSuccess(org.apache.rocketmq.common.message.Message message) {
-                io.openmessaging.api.Message openMessage = OMSUtil.msgConvert((MessageExt) message);
-                rrCallback.onSuccess(openMessage);
+                CloudEvent event = RocketMQMessageFactory.createReader(message).toEvent();
+                rrCallback.onSuccess(event);
             }
 
             @Override

@@ -19,7 +19,7 @@ dependencies {
     implementation project(":eventmesh-spi")
     implementation project(":eventmesh-common")
     api 'io.cloudevents:cloudevents-core'
-    api 'io.openmessaging:openmessaging-api'
+//    api 'io.openmessaging:openmessaging-api'
     api 'io.dropwizard.metrics:metrics-core'
     api "io.dropwizard.metrics:metrics-healthchecks"
     api "io.dropwizard.metrics:metrics-annotation"
