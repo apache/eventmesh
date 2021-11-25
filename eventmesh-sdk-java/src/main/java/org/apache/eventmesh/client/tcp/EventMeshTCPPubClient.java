@@ -39,13 +39,13 @@ public interface EventMeshTCPPubClient<ProtocolMessage> extends AutoCloseable {
     void reconnect() throws EventMeshException;
 
     // todo: Hide package method, use ProtocolMessage
-    Package rr(ProtocolMessage msg, long timeout) throws EventMeshException;
+    Package rr(ProtocolMessage event, long timeout) throws EventMeshException;
 
-    void asyncRR(ProtocolMessage msg, AsyncRRCallback callback, long timeout) throws EventMeshException;
+    void asyncRR(ProtocolMessage event, AsyncRRCallback callback, long timeout) throws EventMeshException;
 
-    Package publish(ProtocolMessage cloudEvent, long timeout) throws EventMeshException;
+    Package publish(ProtocolMessage event, long timeout) throws EventMeshException;
 
-    void broadcast(ProtocolMessage cloudEvent, long timeout) throws EventMeshException;
+    void broadcast(ProtocolMessage event, long timeout) throws EventMeshException;
 
     void registerBusiHandler(ReceiveMsgHook<ProtocolMessage> handler) throws EventMeshException;
 
