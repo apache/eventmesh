@@ -440,6 +440,7 @@ subprojects {
             dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.4.7"
 
             dependency "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
+            dependency "io.openmessaging:registry-server:0.0.1"
 
             dependency "junit:junit:4.12"
             dependency "com.github.stefanbirkner:system-rules:1.16.1"
