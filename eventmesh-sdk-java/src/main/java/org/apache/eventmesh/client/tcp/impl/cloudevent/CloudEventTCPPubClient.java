@@ -26,6 +26,7 @@ import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -128,7 +129,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
             Package msg = MessageUtils.buildPackage(cloudEvent, Command.ASYNC_MESSAGE_TO_SERVER);
             log.info("SimplePubClientImpl cloud event|{}|publish|send|type={}|protocol={}|msg={}",
                 clientNo, msg.getHeader().getCommand(),
-                msg.getHeader().getProperty(PropertyConst.PROPERTY_MESSAGE_PROTOCOL), msg);
+                msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             return io(msg, timeout);
         } catch (Exception ex) {
             throw new EventMeshException("publish error", ex);
@@ -141,7 +142,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
             // todo: transform EventMeshMessage to Package
             Package msg = MessageUtils.buildPackage(cloudEvent, Command.BROADCAST_MESSAGE_TO_SERVER);
             log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCommand(),
-                msg.getHeader().getProperty(PropertyConst.PROPERTY_MESSAGE_PROTOCOL), msg);
+                msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             super.send(msg);
         } catch (Exception ex) {
             throw new EventMeshException("Broadcast message error", ex);
