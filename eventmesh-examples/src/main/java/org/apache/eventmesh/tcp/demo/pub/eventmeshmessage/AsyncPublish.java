@@ -63,7 +63,6 @@ public class AsyncPublish {
 
                 Thread.sleep(1000);
             }
-            client.listen();
             Thread.sleep(2000);
         } catch (Exception e) {
             logger.warn("AsyncPublish failed", e);

@@ -26,6 +26,7 @@ import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
@@ -72,8 +73,8 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
 
     @Override
     public void heartbeat() throws EventMeshException {
-        if (task != null) {
-            synchronized (EventMeshMessageTCPPubClient.class) {
+//        if (task != null) {
+//            synchronized (EventMeshMessageTCPPubClient.class) {
                 task = scheduler.scheduleAtFixedRate(() -> {
                     try {
                         if (!isActive()) {
@@ -86,8 +87,8 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
                     }
                 }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
             }
-        }
-    }
+//        }
+//    }
 
     @Override
     public void reconnect() throws EventMeshException {
@@ -128,9 +129,9 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         try {
             // todo: transform EventMeshMessage to Package
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.ASYNC_MESSAGE_TO_SERVER);
-            log.info("SimplePubClientImpl cloud event|{}|publish|send|type={}|protocol={}|msg={}",
+            log.info("SimplePubClientImpl em message|{}|publish|send|type={}|protocol={}|msg={}",
                 clientNo, msg.getHeader().getCommand(),
-                msg.getHeader().getProperty(PropertyConst.PROPERTY_MESSAGE_PROTOCOL), msg);
+                msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             return io(msg, timeout);
         } catch (Exception ex) {
             throw new EventMeshException("publish error", ex);
@@ -143,7 +144,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
             // todo: transform EventMeshMessage to Package
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.BROADCAST_MESSAGE_TO_SERVER);
             log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCommand(),
-                msg.getHeader().getProperty(PropertyConst.PROPERTY_MESSAGE_PROTOCOL), msg);
+                msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             super.send(msg);
         } catch (Exception ex) {
             throw new EventMeshException("Broadcast message error", ex);

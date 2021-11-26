@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.client.tcp.impl.EventMeshTCPClientFactory;
+import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPClient;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
@@ -39,6 +40,8 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
     public static AsyncSubscribe handler = new AsyncSubscribe();
 
+    private static EventMeshTCPClient client;
+
     public static void main(String[] agrs) throws Exception {
         Properties properties = Utils.readPropertiesFile("application.properties");
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
@@ -49,8 +52,8 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
             .port(eventMeshTcpPort)
             .userAgent(userAgent)
             .build();
-        try (EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-            eventMeshTcpClientConfig, EventMeshMessage.class)) {
+        try {
+            client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
             client.heartbeat();
 
@@ -58,6 +61,11 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
             client.registerSubBusiHandler(handler);
 
             client.listen();
+
+            //client.unsubscribe();
+
+            // release resource and close client
+            // client.close();
 
         } catch (Exception e) {
             log.warn("AsyncSubscribe failed", e);
