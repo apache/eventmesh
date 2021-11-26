@@ -40,42 +40,42 @@ public class StandaloneConsumerAdaptor implements Consumer {
 
     @Override
     public boolean isStarted() {
-        return false;
+        return consumer.isStarted();
     }
 
     @Override
     public boolean isClosed() {
-        return false;
+        return consumer.isClosed();
     }
 
     @Override
     public void start() {
-
+        consumer.start();
     }
 
     @Override
     public void shutdown() {
-
+        consumer.shutdown();
     }
 
     @Override
     public void init(Properties keyValue) throws Exception {
-
+        consumer = new StandaloneConsumer(keyValue);
     }
 
     @Override
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
-
+        consumer.updateOffset(cloudEvents, context);
     }
 
     @Override
     public void subscribe(String topic, EventListener listener) throws Exception {
-
+        consumer.subscribe(topic, listener);
     }
 
     @Override
     public void unsubscribe(String topic) {
-
+        consumer.unsubscribe(topic);
     }
 
 //    @Override
