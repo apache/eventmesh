@@ -17,7 +17,7 @@
 
 
 dependencies {
-	compileOnly project(":eventmesh-common")
+    compileOnly project(":eventmesh-common")
 
     implementation "org.apache.httpcomponents:httpclient"
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
