@@ -104,13 +104,15 @@ public class ClientConfiguration {
             pullBatchSize = Integer.valueOf(clientPullBatchSizeStr);
         }
 
-        String clientPollNamesrvIntervalStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL);
+        String clientPollNamesrvIntervalStr =
+            configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL);
         if (StringUtils.isNotEmpty(clientPollNamesrvIntervalStr)) {
             Preconditions.checkState(StringUtils.isNumeric(clientPollNamesrvIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL));
             pollNameServerInterval = Integer.valueOf(clientPollNamesrvIntervalStr);
         }
 
-        String clientHeartbeatBrokerIntervalStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVAL);
+        String clientHeartbeatBrokerIntervalStr =
+            configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVAL);
         if (StringUtils.isNotEmpty(clientHeartbeatBrokerIntervalStr)) {
             Preconditions.checkState(StringUtils.isNumeric(clientHeartbeatBrokerIntervalStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVAL));
             heartbeatBrokerInterval = Integer.valueOf(clientHeartbeatBrokerIntervalStr);

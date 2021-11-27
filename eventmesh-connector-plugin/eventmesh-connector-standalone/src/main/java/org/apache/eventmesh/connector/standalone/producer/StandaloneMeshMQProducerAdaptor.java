@@ -125,9 +125,8 @@ public class StandaloneMeshMQProducerAdaptor implements MeshMQProducer {
         return null;
     }
 
-	@Override
-	public void createTopic(String topicName) throws OMSRuntimeException {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void createTopic(String topicName) throws OMSRuntimeException {
+        // TODO Auto-generated method stub
+    }
 }

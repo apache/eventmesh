@@ -34,27 +34,25 @@ public class RocketMQProducerImplTest {
 
     @After
     public void after() {
-    	//TBD:Remove topic
+        //TBD:Remove topic
     }
 
     @Test
-    public void testCreate_OK() {
-            	    	
-    	MeshMQProducer meshMQProducer = new RocketMQProducerImpl();
-    	try {    		
-    		meshMQProducer.createTopic("");    		
-    		Assert.assertTrue("Failed to detect empty topic", false);
-    	} catch (OMSRuntimeException e) { 
-    		Assert.assertTrue("Successfully detected empty topic", true);
-    	}
-    	
-    	try {    		
-    		meshMQProducer.createTopic(null);    		
-    		Assert.assertTrue("Failed to detect null topic", false);
-    	} catch (OMSRuntimeException e) { 
-    		Assert.assertTrue("Successfully detected null topic", true);
-    	}
-    	
-    }
+    public void testCreate_Ok() {
 
+        MeshMQProducer meshMQProducer = new RocketMQProducerImpl();
+        try {
+            meshMQProducer.createTopic("");
+            Assert.assertTrue("Failed to detect empty topic", false);
+        } catch (OMSRuntimeException e) {
+            Assert.assertTrue("Successfully detected empty topic", true);
+    	}
+
+        try {
+            meshMQProducer.createTopic(null);
+            Assert.assertTrue("Failed to detect null topic", false);
+        } catch (OMSRuntimeException e) {
+            Assert.assertTrue("Successfully detected null topic", true);
+    	}
+    }
 }
