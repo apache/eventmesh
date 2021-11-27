@@ -172,9 +172,11 @@ public class ClientConfiguration {
         
         public static String KEYS_EVENTMESH_ROCKETMQ_CLUSTER = "eventMesh.server.rocketmq.cluster";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_ACCESS_KEY = "eventMesh.server.rocketmq.accessKey";
+        public static String KEYS_EVENTMESH_ROCKETMQ_ACCESS_KEY =
+            "eventMesh.server.rocketmq.accessKey";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_SECRET_KEY = "eventMesh.server.rocketmq.secretKey";
+        public static String KEYS_EVENTMESH_ROCKETMQ_SECRET_KEY = 
+            "eventMesh.server.rocketmq.secretKey";
 
     }
 }
