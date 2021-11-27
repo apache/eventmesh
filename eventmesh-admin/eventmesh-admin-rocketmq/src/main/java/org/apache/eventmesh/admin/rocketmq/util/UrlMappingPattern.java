@@ -29,7 +29,8 @@ public class UrlMappingPattern {
 
     private static final String URL_PARAMETER_REGEX = "\\{(\\w*?)\\}";
 
-    private static final String URL_PARAMETER_MATCH_REGEX = "\\([%\\\\w-.\\\\~!\\$&'\\\\(\\\\)\\\\*\\\\+,;=:\\\\[\\\\]@]+?\\)";
+    private static final String URL_PARAMETER_MATCH_REGEX = 
+        "\\([%\\\\w-.\\\\~!\\$&'\\\\(\\\\)\\\\*\\\\+,;=:\\\\[\\\\]@]+?\\)";
 
     private static final Pattern URL_PARAMETER_PATTERN = Pattern.compile(URL_PARAMETER_REGEX);
 
@@ -45,36 +46,21 @@ public class UrlMappingPattern {
 
     private List<String> paramNames = new ArrayList<String>();
 
-	/**
-	 * @param pattern
-	 */
-    public UrlMappingPattern(String pattern)
-    {
+    public UrlMappingPattern(String pattern) {
         super();
         setUrlMappingPattern(pattern);
         compile();
     }
 
-    public String getMappingPattern()
-    {
+    public String getMappingPattern() {
         return getUrlMappingPattern().replaceFirst(URL_FORMAT_REGEX, "");
     }
 
-	/**
-	 * @return the pattern
-	 */
-    private String getUrlMappingPattern()
-    {
+    private String getUrlMappingPattern() {
         return urlMappingPattern;
-    }				
-	
-	/**
-	 * Extract variables from url path
-	 * 
-	 * @return the pattern
-	 */
-    public Map<String, String> extractPathParameterValues(String url)
-    {
+    }
+
+    public Map<String, String> extractPathParameterValues(String url) {
         Matcher matcher = compiledUrlMappingPattern.matcher(url);
         if (matcher.matches()) {
             return extractParameters(matcher);
@@ -82,40 +68,29 @@ public class UrlMappingPattern {
         return null;
     }
 
-	/**
-	 * Test the given URL matches REST URL Mapping pattern
-	 * 
-	 */	
-    public boolean matches(String url)
-    {
-	    return (extractPathParameterValues(url) != null);
+    public boolean matches(String url) {
+        return (extractPathParameterValues(url) != null);
     }
-	
-    public void compile()
-    {
-	    acquireParamNames();
-        String parsedPattern = getUrlMappingPattern().replaceFirst(URL_FORMAT_REGEX, URL_FORMAT_MATCH_REGEX);
+
+    public void compile() {
+        acquireParamNames();
+        String parsedPattern = 
+             getUrlMappingPattern().replaceFirst(URL_FORMAT_REGEX, URL_FORMAT_MATCH_REGEX);
         parsedPattern = parsedPattern.replaceAll(URL_PARAMETER_REGEX, URL_PARAMETER_MATCH_REGEX);
         this.compiledUrlMappingPattern = Pattern.compile(parsedPattern + URL_QUERY_STRING_REGEX);
     }
-	
-    private void acquireParamNames()
-    {
-	    Matcher m = URL_PARAMETER_PATTERN.matcher(getUrlMappingPattern());
+
+    private void acquireParamNames() {
+        Matcher m = URL_PARAMETER_PATTERN.matcher(getUrlMappingPattern());
         while (m.find()) {
             paramNames.add(m.group(1));
         }
     }
 
-	/**
-	 * Extracts parameter values from a Matcher
-	 * 
-	 */
-    private Map<String, String> extractParameters(Matcher matcher)
-    {
-	    Map<String, String> values = new HashMap<String, String>();	   
-	    for (int i = 0; i < matcher.groupCount(); i++){
-	        String value = matcher.group(i + 1);
+    private Map<String, String> extractParameters(Matcher matcher) {
+        Map<String, String> values = new HashMap<String, String>();
+        for (int i = 0; i < matcher.groupCount(); i++) {
+            String value = matcher.group(i + 1);
 
             if (value != null) {
                 values.put(paramNames.get(i), value);
@@ -124,13 +99,11 @@ public class UrlMappingPattern {
         return values;
     }
 
-    private void setUrlMappingPattern(String pattern)
-    {
+    private void setUrlMappingPattern(String pattern) {
         this.urlMappingPattern = pattern;
     }
 
-    public List<String> getParamNames()
-    {
+    public List<String> getParamNames() {
         return Collections.unmodifiableList(paramNames);
     }
 }

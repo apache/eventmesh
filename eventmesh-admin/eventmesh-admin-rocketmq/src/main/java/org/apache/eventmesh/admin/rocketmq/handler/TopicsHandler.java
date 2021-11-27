@@ -17,19 +17,22 @@
 
 package org.apache.eventmesh.admin.rocketmq.handler;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import java.io.IOException;
-import java.io.OutputStream;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.admin.rocketmq.request.TopicCreateRequest;
 import org.apache.eventmesh.admin.rocketmq.response.TopicResponse;
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
 import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
 import org.apache.eventmesh.admin.rocketmq.util.RequestMapping;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 
 public class TopicsHandler implements HttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(TopicsHandler.class);
@@ -45,7 +48,7 @@ public class TopicsHandler implements HttpHandler {
 
         OutputStream out = httpExchange.getResponseBody();
         httpExchange.sendResponseHeaders(500, 0);
-        String result = String.format("Please check your request url which does not match any API!!!");
+        String result = String.format("Please check your request url");
         logger.error(result);
         out.write(result.getBytes());
         return;
@@ -56,7 +59,8 @@ public class TopicsHandler implements HttpHandler {
         OutputStream out = httpExchange.getResponseBody();
         try {
             String params = NetUtils.parsePostBody(httpExchange);
-            TopicCreateRequest topicCreateRequest = JsonUtils.toObject(params, TopicCreateRequest.class);
+            TopicCreateRequest topicCreateRequest =
+                JsonUtils.toObject(params, TopicCreateRequest.class);
             String topic = topicCreateRequest.getName();
   
             if (StringUtils.isBlank(topic)) {

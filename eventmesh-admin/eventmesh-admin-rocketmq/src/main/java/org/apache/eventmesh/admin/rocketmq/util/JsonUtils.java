@@ -26,9 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class JsonUtils {      
-	
+
     private static ObjectMapper objectMapper;   
-    
+
     static {
         objectMapper = new ObjectMapper();        
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -38,15 +38,15 @@ public class JsonUtils {
 
     public static <T> byte[] serialize(String topic, Class<T> data) throws JsonProcessingException {
         if (data == null) {
-    	    return null;
-        }	
+            return null;
+        }
         return objectMapper.writeValueAsBytes(data);
     }
 
-    public static String toJson(Object obj) throws JsonProcessingException {    	
+    public static String toJson(Object obj) throws JsonProcessingException {
         if (obj == null) {
-      	    return null;
-        }     
+            return null;
+        }
         return objectMapper.writeValueAsString(obj);              
     }
 
@@ -56,16 +56,16 @@ public class JsonUtils {
 
     public static <T> T deserialize(Class<T> clazz, byte[] bytes) throws IOException {
         if (bytes == null || bytes.length == 0) {
-    	    return null;
-    	}
+            return null;
+        }
 
         return objectMapper.readValue(bytes, clazz);
     }
 
-    public static<T> T deserialize(Class<T> clazz, String json) throws IOException {
+    public static <T> T deserialize(Class<T> clazz, String json) throws IOException {
         if (json == null || json.length() == 0) {
-    		return null;
-    	}
+            return null;
+        }
 
         return objectMapper.readValue(json, clazz);
     }
