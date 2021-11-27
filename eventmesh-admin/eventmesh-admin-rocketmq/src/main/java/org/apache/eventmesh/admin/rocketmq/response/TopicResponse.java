@@ -21,10 +21,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TopicResponse {
-	
-	
-	private String topic;
-	private String createdTime;
+
+    private String topic;
+    private String createdTime;
 
     @JsonCreator
     public TopicResponse(@JsonProperty("topic") String topic,
@@ -43,7 +42,7 @@ public class TopicResponse {
     public void setTopic(String topic) {
         this.topic = topic;
     }
-    
+
     @JsonProperty("created_time")
     public String getCreatedTime() {
         return createdTime;
@@ -52,8 +51,8 @@ public class TopicResponse {
     @JsonProperty("created_time")
     public void setCreatedTime(String createdTime) {
         this.createdTime = createdTime;
-    }    
-    
+    } 
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

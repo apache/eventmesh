@@ -17,45 +17,44 @@
 
 package org.apache.eventmesh.admin.rocketmq.util;
 
-
 import com.sun.net.httpserver.HttpExchange;
 
 public class RequestMapping {      
-	
+
 	public static boolean postMapping(String value, HttpExchange httpExchange)  {
-    	if ("post".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
-    		String requestURI = httpExchange.getRequestURI().getPath();
-    		UrlMappingPattern matcher = new UrlMappingPattern(value);
-        	return matcher.matches(requestURI);
-    	}
-    	return false;
+        if ("post".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+    	    String requestURI = httpExchange.getRequestURI().getPath();
+    	    UrlMappingPattern matcher = new UrlMappingPattern(value);
+            return matcher.matches(requestURI);
+        }
+        return false;
     }
-    
-	public static boolean getMapping(String value, HttpExchange httpExchange)  {
-    	if ("get".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
-    		String requestURI = httpExchange.getRequestURI().getPath();
-    		UrlMappingPattern matcher = new UrlMappingPattern(value);
-        	return matcher.matches(requestURI);
-    	}
-    	return false;
+
+    public static boolean getMapping(String value, HttpExchange httpExchange)  {
+        if ("get".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+    	    String requestURI = httpExchange.getRequestURI().getPath();
+    	    UrlMappingPattern matcher = new UrlMappingPattern(value);
+            return matcher.matches(requestURI);
+        }
+        return false;
     }
-    
-	public static boolean putMapping(String value, HttpExchange httpExchange)  {
-    	if ("put".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
-    		String requestURI = httpExchange.getRequestURI().getPath();
-    		UrlMappingPattern matcher = new UrlMappingPattern(value);
-        	return matcher.matches(requestURI);
-    	}
-    	return false;
+
+    public static boolean putMapping(String value, HttpExchange httpExchange)  {
+        if ("put".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+    	    String requestURI = httpExchange.getRequestURI().getPath();
+    	    UrlMappingPattern matcher = new UrlMappingPattern(value);
+            return matcher.matches(requestURI);
+        }
+        return false;
     }
-    
-	public static boolean deleteMapping(String value, HttpExchange httpExchange)  {
-    	if ("delete".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
-    		String requestURI = httpExchange.getRequestURI().getPath();
-    		UrlMappingPattern matcher = new UrlMappingPattern(value);
-        	return matcher.matches(requestURI);
-    	}
-    	return false;
+
+    public static boolean deleteMapping(String value, HttpExchange httpExchange)  {
+        if ("delete".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+    	    String requestURI = httpExchange.getRequestURI().getPath();
+    	    UrlMappingPattern matcher = new UrlMappingPattern(value);
+            return matcher.matches(requestURI);
+        }
+        return false;
     }
-	
+
 }
