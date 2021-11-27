@@ -17,6 +17,8 @@
 
 
 dependencies {
+	compileOnly project(":eventmesh-common")
+	
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
 
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")    
