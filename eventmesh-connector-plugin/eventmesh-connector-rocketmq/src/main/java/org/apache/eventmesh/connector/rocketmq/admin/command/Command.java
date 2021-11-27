@@ -36,7 +36,7 @@ public abstract class Command {
     protected String clusterName;
 
     public void init() {
-    	ConfigurationWrapper configurationWrapper =
+        ConfigurationWrapper configurationWrapper =
                 new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME
                         + File.separator
                         + EventMeshConstants.EVENTMESH_CONF_FILE, false);

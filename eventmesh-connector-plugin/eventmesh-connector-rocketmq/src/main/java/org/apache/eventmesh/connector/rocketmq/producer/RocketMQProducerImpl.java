@@ -120,8 +120,8 @@ public class RocketMQProducerImpl implements MeshMQProducer {
     @Override
     public void checkTopicExist(String topic) throws Exception {
         this.producer.getRocketmqProducer().getDefaultMQProducerImpl().getmQClientFactory()
-        .getMQClientAPIImpl().getDefaultTopicRouteInfoFromNameServer
-        (topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+        .getMQClientAPIImpl().getDefaultTopicRouteInfoFromNameServer(topic, 
+        EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
     @Override
@@ -159,15 +159,15 @@ public class RocketMQProducerImpl implements MeshMQProducer {
         return null;
     }
 
-	@Override
-    public void createTopic(String topicName) throws OMSRuntimeException{
+    @Override
+    public void createTopic(String topicName) throws OMSRuntimeException {
         CreateTopicCommand createTopicCommand = new CreateTopicCommand();
         createTopicCommand.setTopicName(topicName);
         try {
             createTopicCommand.execute();
         } catch (Exception e) {
-            throw new OMSRuntimeException
-                (-1, String.format("RocketMQ can not create topic %s.", topicName), e);
+            throw new OMSRuntimeException(-1, 
+                String.format("RocketMQ can not create topic %s.", topicName), e);
         }
     }
 }

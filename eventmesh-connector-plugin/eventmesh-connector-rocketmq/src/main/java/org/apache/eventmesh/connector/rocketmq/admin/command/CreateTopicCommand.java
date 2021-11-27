@@ -42,8 +42,8 @@ public class CreateTopicCommand extends Command {
         try {
             init();
             adminExt.start();
-            Set<String> brokersAddr = CommandUtil.
-                fetchMasterAddrByClusterName(adminExt, clusterName);
+            Set<String> brokersAddr = CommandUtil.fetchMasterAddrByClusterName(
+                adminExt, clusterName);
             for (String masterAddr : brokersAddr) {
                 TopicConfig topicConfig = new TopicConfig();
                 topicConfig.setTopicName(topicName);

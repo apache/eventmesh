@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.producer;
 
-import io.openmessaging.api.exception.OMSRuntimeException;
+
 import org.apache.eventmesh.api.producer.MeshMQProducer;
 import org.apache.eventmesh.connector.rocketmq.producer.RocketMQProducerImpl;
 import org.junit.After;
@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.openmessaging.api.exception.OMSRuntimeException;
 
 public class RocketMQProducerImplTest {
 
@@ -46,13 +47,13 @@ public class RocketMQProducerImplTest {
             Assert.assertTrue("Failed to detect empty topic", false);
         } catch (OMSRuntimeException e) {
             Assert.assertTrue("Successfully detected empty topic", true);
-    	}
+        }
 
         try {
             meshMQProducer.createTopic(null);
             Assert.assertTrue("Failed to detect null topic", false);
         } catch (OMSRuntimeException e) {
             Assert.assertTrue("Successfully detected null topic", true);
-    	}
+        }
     }
 }
