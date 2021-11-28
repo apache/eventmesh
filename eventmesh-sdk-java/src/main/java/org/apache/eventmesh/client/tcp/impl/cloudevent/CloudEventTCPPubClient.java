@@ -21,7 +21,6 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
-import org.apache.eventmesh.client.tcp.common.PropertyConst;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
@@ -125,7 +124,6 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     @Override
     public Package publish(CloudEvent cloudEvent, long timeout) throws EventMeshException {
         try {
-            // todo: transform EventMeshMessage to Package
             Package msg = MessageUtils.buildPackage(cloudEvent, Command.ASYNC_MESSAGE_TO_SERVER);
             log.info("SimplePubClientImpl cloud event|{}|publish|send|type={}|protocol={}|msg={}",
                 clientNo, msg.getHeader().getCommand(),
@@ -139,7 +137,6 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     @Override
     public void broadcast(CloudEvent cloudEvent, long timeout) throws EventMeshException {
         try {
-            // todo: transform EventMeshMessage to Package
             Package msg = MessageUtils.buildPackage(cloudEvent, Command.BROADCAST_MESSAGE_TO_SERVER);
             log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCommand(),
                 msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
@@ -156,7 +153,15 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
 
     @Override
     public void close() {
-
+        try {
+            if (task != null) {
+                task.cancel(false);
+            }
+            goodbye();
+            super.close();
+        } catch (Exception ex) {
+            log.error("Close CloudEvent TCP publish client error", ex);
+        }
     }
 
     // todo: move to abstract class
