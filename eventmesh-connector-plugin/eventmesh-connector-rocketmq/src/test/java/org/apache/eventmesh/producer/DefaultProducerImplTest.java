@@ -46,7 +46,7 @@ public class DefaultProducerImplTest {
         try {
             meshPub.createTopic("");
         } catch (OMSRuntimeException e) {           
-            assertThat(e.getMessage()).isEqualTo("RocketMQ can not create topic .");
+            assertThat(e.getMessage()).isEqualTo("RocketMQ can not create topic");
         }
     }
 
@@ -57,7 +57,7 @@ public class DefaultProducerImplTest {
             meshPub.createTopic(null);
         } catch (OMSRuntimeException e) {
             String errorMessage = e.getMessage();
-            assertThat(errorMessage).isEqualTo("RocketMQ can not create topic null.");
+            assertThat(errorMessage).isEqualTo("RocketMQ can not create topic null");
         }
     }
 }

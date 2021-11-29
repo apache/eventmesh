@@ -167,7 +167,7 @@ public class RocketMQProducerImpl implements MeshMQProducer {
             createTopicCommand.execute();
         } catch (Exception e) {
             throw new OMSRuntimeException(-1, 
-                String.format("RocketMQ can not create topic %s.", topicName), e);
+                String.format("RocketMQ can not create topic %s", topicName), e);
         }
     }
 }
