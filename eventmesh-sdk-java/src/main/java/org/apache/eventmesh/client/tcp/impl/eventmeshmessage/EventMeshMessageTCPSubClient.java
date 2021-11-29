@@ -71,25 +71,21 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
 
     @Override
     public void heartbeat() throws EventMeshException {
-//        if (task == null) {
-//            synchronized (EventMeshMessageTCPSubClient.class) {
-                task = scheduler.scheduleAtFixedRate(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (!isActive()) {
-                                reconnect();
-                            }
-                            Package msg = MessageUtils.heartBeat();
-                            io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                        } catch (Exception ignore) {
-                            //
-                        }
+        task = scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (!isActive()) {
+                        reconnect();
                     }
-                }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
+                    Package msg = MessageUtils.heartBeat();
+                    io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                } catch (Exception ignore) {
+                    //
+                }
             }
-//        }
-//    }
+        }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
+    }
 
     @Override
     public void reconnect() throws EventMeshException {

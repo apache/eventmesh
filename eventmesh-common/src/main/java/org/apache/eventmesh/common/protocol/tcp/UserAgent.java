@@ -67,7 +67,7 @@ public class UserAgent {
     @Override
     public String toString() {
         return String.format(
-            "UserAgent{env='%s'subsystem='%s', path='%s', pid=%d, host='%s', port=%d, version='%s', idc='%s', purpose='%s', unack='%d'}",
+            "UserAgent{env='%s', subsystem='%s', path='%s', pid=%d, host='%s', port=%d, version='%s', idc='%s', purpose='%s', unack='%d'}",
             env, subsystem, path, pid, host, port, version, idc, purpose, unack);
     }
 

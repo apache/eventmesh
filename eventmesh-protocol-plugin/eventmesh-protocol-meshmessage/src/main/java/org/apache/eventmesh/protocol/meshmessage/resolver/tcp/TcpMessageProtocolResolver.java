@@ -28,6 +28,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.protocol.meshmessage.MeshMessageProtocolConstant;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,6 +73,8 @@ public class TcpMessageProtocolResolver {
 
         cloudEventBuilder = cloudEventBuilder
                 .withId(header.getSeq())
+                .withSource(URI.create("/"))
+                .withType("eventmeshmessage")
                 .withSubject(topic)
                 .withData(content.getBytes(StandardCharsets.UTF_8));
 
