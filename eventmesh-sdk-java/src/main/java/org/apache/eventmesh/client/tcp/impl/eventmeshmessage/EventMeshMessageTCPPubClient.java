@@ -21,7 +21,6 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
-import org.apache.eventmesh.client.tcp.common.PropertyConst;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
@@ -75,18 +74,18 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
     public void heartbeat() throws EventMeshException {
 //        if (task != null) {
 //            synchronized (EventMeshMessageTCPPubClient.class) {
-                task = scheduler.scheduleAtFixedRate(() -> {
-                    try {
-                        if (!isActive()) {
-                            reconnect();
-                        }
-                        Package msg = MessageUtils.heartBeat();
-                        io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                    } catch (Exception ignore) {
-                        // ignore
-                    }
-                }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
+        task = scheduler.scheduleAtFixedRate(() -> {
+            try {
+                if (!isActive()) {
+                    reconnect();
+                }
+                Package msg = MessageUtils.heartBeat();
+                io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+            } catch (Exception ignore) {
+                // ignore
             }
+        }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
+    }
 //        }
 //    }
 
@@ -113,7 +112,8 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
     }
 
     @Override
-    public void asyncRR(EventMeshMessage eventMeshMessage, AsyncRRCallback callback, long timeout) throws EventMeshException {
+    public void asyncRR(EventMeshMessage eventMeshMessage, AsyncRRCallback callback, long timeout)
+        throws EventMeshException {
         try {
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.REQUEST_TO_SERVER);
             super.send(msg);
@@ -159,11 +159,13 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
     @Override
     public void close() {
         try {
-            task.cancel(false);
+            if (task != null) {
+                task.cancel(false);
+            }
             goodbye();
             super.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Close EventMeshMessage TCP publish client error", e);
         }
     }
 
