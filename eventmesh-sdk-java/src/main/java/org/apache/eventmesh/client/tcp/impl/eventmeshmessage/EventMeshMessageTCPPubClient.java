@@ -72,8 +72,6 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
 
     @Override
     public void heartbeat() throws EventMeshException {
-//        if (task != null) {
-//            synchronized (EventMeshMessageTCPPubClient.class) {
         task = scheduler.scheduleAtFixedRate(() -> {
             try {
                 if (!isActive()) {
@@ -86,8 +84,6 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
             }
         }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
-//        }
-//    }
 
     @Override
     public void reconnect() throws EventMeshException {

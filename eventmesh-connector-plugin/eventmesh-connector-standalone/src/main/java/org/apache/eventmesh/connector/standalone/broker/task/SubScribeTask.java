@@ -57,7 +57,12 @@ public class SubScribeTask implements Runnable {
                 if (offset == null) {
                     CloudEvent message = standaloneBroker.getMessage(topicName);
                     if (message != null) {
-                        offset = new AtomicInteger((int) message.getExtension("offset"));
+                        if (message.getExtension("offset") != null) {
+                            offset = new AtomicInteger((int) message.getExtension("offset"));
+                        } else {
+                            offset = new AtomicInteger(0);
+                        }
+
                     }
                 }
                 if (offset != null) {
