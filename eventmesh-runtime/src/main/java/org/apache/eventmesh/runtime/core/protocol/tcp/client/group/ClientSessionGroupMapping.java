@@ -367,8 +367,8 @@ public class ClientSessionGroupMapping {
                                                                       Iterator<Session> sessionIterator = sessionTable.values().iterator();
                                                                       while (sessionIterator.hasNext()) {
                                                                           Session tmp = sessionIterator.next();
-                                                                          if (System.currentTimeMillis() - tmp.getLastHeartbeatTime() >
-                                                                              eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills) {
+                                                                          if (System.currentTimeMillis() - tmp.getLastHeartbeatTime()
+                                                                              > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpSessionExpiredInMills) {
                                                                               try {
                                                                                   logger.warn("clean expired session,client:{}", tmp.getClient());
                                                                                   closeSession(tmp.getContext());
