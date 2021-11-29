@@ -57,7 +57,6 @@ allprojects {
     apply plugin: "java-library"
     apply plugin: 'signing'
     apply plugin: 'checkstyle'
-    apply plugin: 'com.github.jk1.dependency-license-report'
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
@@ -71,23 +70,6 @@ allprojects {
 
     if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot") as boolean))) {
         version = version + "-SNAPSHOT"
-    }
-
-    licenseReport {
-        allowedLicensesFile = new File("build/license/allowed-dependency.json")
-    }
-
-    checkLicense.doFirst {
-        def originFilePath = "tool/dependency/allowed-dependency.txt"
-        def targetFilePath = "build/license/allowed-dependency.json"
-        new File("build/license").mkdirs()
-        new File(targetFilePath).createNewFile()
-        def writer = new File(targetFilePath).newPrintWriter()
-        new File(originFilePath).filterLine {
-            String line -> line.trim().length() != 0 && !line.startsWith("#")
-        }.writeTo(writer)
-        writer.flush()
-        writer.close()
     }
 
     checkstyle {
@@ -158,6 +140,15 @@ task installPlugin() {
             from "${subProject.getProjectDir()}/dist/conf"
             exclude 'META-INF'
         }
+    })
+}
+
+task printProjects() {
+    getAllprojects().forEach(subProject -> {
+        if ("EventMesh".equals(subProject.getName())) {
+            return
+        }
+        println String.format("%s-%s.jar", subProject.getName(), subProject.getVersion())
     })
 }
 

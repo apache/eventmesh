@@ -64,7 +64,7 @@ jobs:
 
       - name: Build
         # skip check here, since we use Checkstyle task to check the added file
-        run: ./gradlew clean build jacocoTestReport checkLicense -x check
+        run: ./gradlew clean build jacocoTestReport -x check
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v1
@@ -107,3 +107,6 @@ jobs:
         uses: apache/skywalking-eyes@9bd5feb86b5817aa6072b008f9866a2c3bbc8587
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check third party license
+        run: ./gradlew clean jar dist && ./gradlew installPlugin && ./gradlew tar && sh tools/third-party-dependencies/check-LICENSE.sh && echo "Thirty party license check success"
