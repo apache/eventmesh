@@ -17,15 +17,11 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.NetUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -34,6 +30,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 
 public class RejectAllClientHandler implements HttpHandler {
 
@@ -63,7 +65,8 @@ public class RejectAllClientHandler implements HttpHandler {
                 logger.info("rejectAllClient in admin====================");
                 if (!sessionMap.isEmpty()) {
                     for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
-                        InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
+                        InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
+                            eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
                         if (addr != null) {
                             successRemoteAddrs.add(addr);
                         }
