@@ -42,9 +42,9 @@ public class DefaultProducerImplTest {
 
     @Test
     public void testCreate_EmptyTopic() {
-        MeshMQProducer meshMQProducer = new RocketMQProducerImpl();
+        MeshMQProducer meshPub = new RocketMQProducerImpl();
         try {
-            meshMQProducer.createTopic("");
+        	meshPub.createTopic("");
         } catch (OMSRuntimeException e) {           
             assertThat(e.getMessage()).isEqualTo("RocketMQ can not create topic .");
         }
@@ -52,9 +52,9 @@ public class DefaultProducerImplTest {
 
     @Test
     public void testCreate_NullTopic() {
-    	MeshMQProducer meshMQProducer = new RocketMQProducerImpl();
+        MeshMQProducer meshPub = new RocketMQProducerImpl();
         try {
-            meshMQProducer.createTopic(null);
+        	meshPub.createTopic(null);
         } catch (OMSRuntimeException e) {
             String errorMessage = e.getMessage();
             assertThat(errorMessage).isEqualTo("RocketMQ can not create topic null.");
