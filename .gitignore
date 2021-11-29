@@ -23,3 +23,8 @@ node_modules
 .run
 
 h2/db.mv.db
+
+# license check tmp file
+all-dependencies.txt
+self-modules.txt
+third-party-dependencies.txt
