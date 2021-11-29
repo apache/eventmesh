@@ -215,104 +215,7 @@ Apache 2.0 licenses
 The following components are provided under the Apache License. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
-    fastjson 1.2.71: https://mvnrepository.com/artifact/com.alibaba/fastjson/1.2.71, Apache 2.0
-    jcommander 1.72: https://mvnrepository.com/artifact/com.beust/jcommander/1.72, Apache 2.0
-    jackson-annotations 2.11.0: https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations/2.11.0, Apache 2.0
-    jackson-databind 2.11.0: https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind/2.11.0, Apache 2.0
-    jackson-datatype-jdk8 2.9.9: https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/2.9.9, Apache 2.0
-    jackson-datatype-jsr310 2.9.9: https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310, Apache 2.0
-    jackson-module-parameter-names 2.9.9: https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-parameter-names, Apache 2.0
-    classmate 1.3.4: https://mvnrepository.com/artifact/com.fasterxml/classmate/1.3.4, Apache 2.0
-    jsr305 3.0.2: https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305/3.0.2, Apache 2.0
-    error_prone_annotations 2.3.4: https://mvnrepository.com/artifact/com.google.errorprone/error_prone_annotations/2.3.4, Apache 2.0
-    failureaccess 1.0.1: https://mvnrepository.com/artifact/com.google.guava/failureaccess/1.0.1, Apache 2.0
-    guava 29.0-jre: https://mvnrepository.com/artifact/com.google.guava/guava/29.0-jre, Apache 2.0
-    listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://mvnrepository.com/artifact/com.google.guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava, Apache 2.0
-    j2objc-annotations 1.3: https://mvnrepository.com/artifact/com.google.j2objc/j2objc-annotations/1.3, Apache 2.0
-    truth 0.30: https://mvnrepository.com/artifact/com.google.truth/truth/0.30, Apache 2.0
-    disruptor 3.4.2: https://mvnrepository.com/artifact/com.lmax/disruptor/3.4.2, Apache 2.0
-    commons-beanutils 1.9.2: https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils/1.9.2, Apache 2.0
-    commons-cli 1.2: https://mvnrepository.com/artifact/commons-cli/commons-cli/1.2, Apache 2.0
-    commons-codec 1.9: https://mvnrepository.com/artifact/commons-codec/commons-codec/1.9, Apache 2.0
-    commons-digester 1.8.1: https://mvnrepository.com/artifact/commons-digester/commons-digester/1.8.1, Apache 2.0
-    commons-io 2.4: https://mvnrepository.com/artifact/commons-io/commons-io/2.4, Apache 2.0
-    commons-logging 1.2: https://mvnrepository.com/artifact/commons-logging/commons-logging/1.2, Apache 2.0
-    commons-validator 1.6: https://mvnrepository.com/artifact/commons-validator/commons-validator/1.6, Apache 2.0
-    metrics-annotation 4.1.0: https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-annotation/4.1.10, Apache 2.0
-    metrics-core 4.1.0: https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core/4.1.10, Apache 2.0
-    metrics-healthchecks 4.1.0: https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-healthchecks/4.1.10, Apache 2.0
-    metrics-json 4.1.0: https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-json/4.1.10, Apache 2.0
-    netty-all 4.1.49.Final: https://mvnrepository.com/artifact/io.netty/netty-all/4.1.49.Final, Apache 2.0
-    netty-tcnative-boringssl-static 1.1.33.Fork26: https://mvnrepository.com/artifact/io.netty/netty-tcnative-boringssl-static/1.1.33.Fork26, Apache 2.0
-    dledger 0.1: https://mvnrepository.com/artifact/io.openmessaging.storage/dledger/0.1, Apache 2.0
-    openmessaging-api 2.2.1-pubsub: https://mvnrepository.com/artifact/io.openmessaging/openmessaging-api/2.2.1-pubsub, Apache 2.0
-    opentelemetry-api 1.3.0: https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-api/1.3.0, Apache 2.0
-    opentelemetry-api-metrics 1.3.0-alpha: https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-api-metrics/1.3.0-alpha, Apache 2.0
-    opentelemetry-context 1.3.0: https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-context/1.3.0, Apache 2.0
-    opentelemetry-exporter-prometheus 1.3.0-alpha: https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-exporter-prometheus/1.3.0-alpha, Apache 2.0
-    opentelemetry-sdk 1.3.0: https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-sdk/1.3.0, Apache 2.0
-    opentelemetry-sdk-common 1.3.0: https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-sdk-common/1.3.0, Apache 2.0
-    opentelemetry-sdk-metrics 1.3.0-alpha: https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-sdk-metrics/1.3.0-alpha, Apache 2.0
-    opentelemetry-sdk-trace 1.3.0: https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-sdk-trace/1.3.0, Apache 2.0
-    opentelemetry-semconv 1.3.0-alpha: https://mvnrepository.com/artifact/io.opentelemetry/opentelemetry-semconv/1.3.0-alpha, Apache 2.0
-    simpleclient 0.8.1: https://mvnrepository.com/artifact/io.prometheus/simpleclient/0.8.1, Apache 2.0
-    simpleclient_common 0.8.1: https://mvnrepository.com/artifact/io.prometheus/simpleclient_common/0.8.1, Apache 2.0
-    simpleclient_httpserver 0.8.1: https://mvnrepository.com/artifact/io.prometheus/simpleclient_httpserver/0.8.1, Apache 2.0
-    validation-api 2.0.1.Final: https://mvnrepository.com/artifact/javax.validation/validation-api/2.0.1.Final, Apache 2.0
-    log4j 1.2.17: https://mvnrepository.com/artifact/log4j/log4j/1.2.17, Apache 2.0
-    byte-buddy 1.9.3: https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy/1.9.3, Apache 2.0
-    byte-buddy-agent 1.9.3: https://mvnrepository.com/artifact/net.bytebuddy/byte-buddy-agent/1.9.3, Apache 2.0
-    jna 4.2.2: https://mvnrepository.com/artifact/net.java.dev.jna/jna/4.2.2, Apache 2.0 and LGPL 2.1
-    commons-collections4 4.1: https://mvnrepository.com/artifact/org.apache.commons/commons-collections4/4.1, Apache 2.0
-    commons-lang3 3.6: https://mvnrepository.com/artifact/org.apache.commons/commons-lang3/3.6, Apache 2.0
-    commons-text 1.9: https://mvnrepository.com/artifact/org.apache.commons/commons-text/1.9, Apache 2.0
-    httpclient 4.5.2: https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient/4.5.2, Apache 2.0
-    httpcore 4.4.4: https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore/4.4.4, Apache 2.0
-    log4j-api 2.13.3: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api/2.13.3, Apache 2.0
-    log4j-core 2.13.3: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core/2.13.3, Apache 2.0
-    log4j-slf4j-impl 2.13.3: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl/2.13.3, Apache 2.0
-    log4j-web 2.13.3: https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-web/2.13.3, Apache 2.0
-    rocketmq-acl 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-acl/4.7.1, Apache 2.0
-    rocketmq-broker 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-broker/4.7.1, Apache 2.0
-    rocketmq-client 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-client/4.7.1, Apache 2.0
-    rocketmq-common 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-common/4.7.1, Apache 2.0
-    rocketmq-filter 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-filter/4.7.1, Apache 2.0
-    rocketmq-logging 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-logging/4.7.1, Apache 2.0
-    rocketmq-namesrv 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-namesrv/4.7.1, Apache 2.0
-    rocketmq-remoting 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-remoting/4.7.1, Apache 2.0
-    rocketmq-srvutil 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-srvutil/4.7.1, Apache 2.0
-    rocketmq-store 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-store/4.7.1, Apache 2.0
-    ocketmq-test 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-test/4.7.1, Apache 2.0
-    ocketmq-tools 4.7.1: https://mvnrepository.com/artifact/org.apache.rocketmq/rocketmq-tools/4.7.1, Apache 2.0
-    tomcat-embed-core 9.0.21: https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-core/9.0.21, Apache 2.0
-    tomcat-embed-el 9.0.21: https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-el/9.0.21, Apache 2.0
-    tomcat-embed-websocket 9.0.21: https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-websocket/9.0.21, Apache 2.0
-    assertj-core 2.6.0: https://mvnrepository.com/artifact/org.assertj/assertj-core/2.6.0, Apache 2.0
-    hibernate-validator 6.0.17.Final: https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator/6.0.17.Final, Apache 2.0
-    javassist 3.24.0-GA: https://mvnrepository.com/artifact/org.javassist/javassist/3.24.0-GA, Apache 2.0 and LGPL 2.1 and MPL 1.1
-    jboss-logging 3.3.2.Final: https://mvnrepository.com/artifact/org.jboss.logging/jboss-logging/3.3.2.Final, Apache 2.0
-    objenesis 3.0.1: https://mvnrepository.com/artifact/org.objenesis/objenesis/3.0.1, Apache 2.0
-    snakeyaml 1.19: https://mvnrepository.com/artifact/org.yaml/snakeyaml/1.19, Apache 2.0
-    snakeyaml 1.23: https://mvnrepository.com/artifact/org.yaml/snakeyaml/1.23, Apache 2.0
-    jackson-core 2.11.0: https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core/2.11.0, Apache 2.0
-    cloudevents-api 2.2.0: https://mvnrepository.com/artifact/io.cloudevents/cloudevents-api/2.2.0, Apache 2.0
-    cloudevents-core 2.2.0: https://mvnrepository.com/artifact/io.cloudevents/cloudevents-core/2.2.0, Apache 2.0
 
-    spring-boot 2.1.6.RELEASE: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot/2.1.6.RELEASE, Apache 2,0
-    spring-boot-autoconfigure 2.1.6.RELEASE: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-autoconfigure/2.1.6.RELEASE, Apache 2.0
-    spring-boot-starter 2.1.6.RELEASE: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter/2.1.6.RELEASE, Apache 2.0
-    spring-boot-starter-json 2.1.6.RELEASE: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-json/2.1.6.RELEASE, Apache 2.0
-    spring-boot-starter-tomcat 2.1.6.RELEASE: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-tomcat/2.1.6.RELEASE, Apache 2.0
-    spring-boot-starter-web 2.1.6.RELEASE: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web/2.1.6.RELEASE, Apache 2.0
-
-    spring-aop 5.1.8.RELEASE: https://mvnrepository.com/artifact/org.springframework/spring-aop/5.1.8.RELEASE, Apache 2,0
-    spring-beans 5.1.8.RELEASE: https://mvnrepository.com/artifact/org.springframework/spring-beans/5.1.8.RELEASE, Apache 2,0
-    spring-context 5.1.8.RELEASE: https://mvnrepository.com/artifact/org.springframework/spring-context/5.1.8.RELEASE, Apache 2,0
-    spring-core 5.1.8.RELEASE: https://mvnrepository.com/artifact/org.springframework/spring-core/5.1.8.RELEASE, Apache 2,0
-    spring-expression 5.1.8.RELEASE: https://mvnrepository.com/artifact/org.springframework/spring-expression/5.1.8.RELEASE, Apache 2,0
-    spring-jcl 5.1.8.RELEASE: https://mvnrepository.com/artifact/org.springframework/spring-jcl/5.1.8.RELEASE, Apache 2,0
-    spring-web 5.1.8.RELEASE: https://mvnrepository.com/artifact/org.springframework/spring-web/5.1.8.RELEASE, Apache 2,0
-    spring-webmvc 5.1.8.RELEASE: https://mvnrepository.com/artifact/org.springframework/spring-webmvc/5.1.8.RELEASE, Apache 2,0
 
 ========================================================================
 BSD licenses
@@ -321,7 +224,6 @@ BSD licenses
 The following components are provided under a BSD license. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
-    hamcrest-core 1.3: https://mvnrepository.com/artifact/org.hamcrest/hamcrest-core/1.3, BSD 2-clause
 
 ========================================================================
 CDDL licenses
@@ -330,7 +232,6 @@ CDDL licenses
 The following components are provided under the CDDL License. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
-    javax.annotation-api 1.3.2: https://mvnrepository.com/artifact/javax.annotation/javax.annotation-api/1.3.2, CDDL and GPL 2.0
 
 ========================================================================
 CPL licenses
@@ -339,7 +240,6 @@ CPL licenses
 The following components are provided under the CPL License. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
-    system-rules 1.16.1: https://mvnrepository.com/artifact/com.github.stefanbirkner/system-rules/1.16.1, CPL 1.0 and CPAL 1.0
 
 ========================================================================
 EPL licenses
@@ -348,7 +248,6 @@ EPL licenses
 The following components are provided under the EPL License. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
-    logback-core 1.0.13: https://mvnrepository.com/artifact/ch.qos.logback/logback-core/1.0.3, EPL 1.0 and LGPL 2.1
 
 ========================================================================
 MIT licenses
@@ -357,5 +256,3 @@ MIT licenses
 The following components are provided under the MIT license. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
-    checker-qual 2.11.1: https://mvnrepository.com/artifact/org.checkerframework/checker-qual/2.11.1, MIT
-    slf4j-api 1.7.30: https://mvnrepository.com/artifact/org.slf4j/slf4j-api/1.7.30, MIT
