@@ -15,20 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.producer;
+package org.apache.eventmesh.producer;
 
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.eventmesh.api.producer.MeshMQProducer;
 import org.apache.eventmesh.connector.rocketmq.producer.RocketMQProducerImpl;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.openmessaging.api.exception.OMSRuntimeException;
 
-public class RocketMQProducerImplTest {
+public class DefaultProducerImplTest {
 
     @Before
     public void before() {}
@@ -40,21 +41,23 @@ public class RocketMQProducerImplTest {
     }
 
     @Test
-    public void testCreate_Ok() {
-
+    public void testCreate_EmptyTopic() {
         MeshMQProducer meshMQProducer = new RocketMQProducerImpl();
         try {
             meshMQProducer.createTopic("");
-            Assert.assertTrue("Failed to detect empty topic", false);
-        } catch (OMSRuntimeException e) {
-            Assert.assertTrue("Successfully detected empty topic", true);
+        } catch (OMSRuntimeException e) {           
+            assertThat(e.getMessage()).isEqualTo("RocketMQ can not create topic .");
         }
+    }
 
+    @Test
+    public void testCreate_NullTopic() {
+    	MeshMQProducer meshMQProducer = new RocketMQProducerImpl();
         try {
             meshMQProducer.createTopic(null);
-            Assert.assertTrue("Failed to detect null topic", false);
         } catch (OMSRuntimeException e) {
-            Assert.assertTrue("Successfully detected null topic", true);
+            String errorMessage = e.getMessage();
+            assertThat(errorMessage).isEqualTo("RocketMQ can not create topic null.");
         }
     }
 }
