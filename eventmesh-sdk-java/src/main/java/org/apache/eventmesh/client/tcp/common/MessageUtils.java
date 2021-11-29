@@ -34,6 +34,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
+import io.openmessaging.api.Message;
 
 public class MessageUtils {
     private static final int seqLength = 10;
@@ -93,9 +94,13 @@ public class MessageUtils {
         } else if (message instanceof EventMeshMessage) {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, SpecVersion.V1.toString());
+        } else if (message instanceof Message) {
+            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.OPEN_MESSAGE_PROTOCOL_NAME);
+            // todo: this version need to be confirmed.
+            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, SpecVersion.V1.toString());
         } else {
             // unsupported protocol for server
-            return msg;
+            throw new IllegalArgumentException("Unsupported message protocol");
         }
         msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
         msg.setBody(message);

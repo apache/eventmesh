@@ -37,6 +37,10 @@ dependencies {
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-namesrv")
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+    // for debug only, can be removed
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
 
     testImplementation "org.mockito:mockito-core"
     testImplementation "org.powermock:powermock-module-junit4"
