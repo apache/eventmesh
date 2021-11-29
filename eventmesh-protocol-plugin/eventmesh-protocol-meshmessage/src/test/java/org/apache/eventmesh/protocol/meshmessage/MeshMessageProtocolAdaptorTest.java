@@ -15,27 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.tcp;
+package org.apache.eventmesh.protocol.meshmessage;
 
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 
-import lombok.Data;
+import org.junit.Assert;
+import org.junit.Test;
 
-@Data
-public class Package implements ProtocolTransportObject {
+public class MeshMessageProtocolAdaptorTest {
 
-    private Header header;
-    private Object body;
+    @Test
+    public void loadPlugin() {
+        ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
+            ProtocolPluginFactory.getProtocolAdaptor(MeshMessageProtocolConstant.PROTOCOL_NAME);
+        Assert.assertNotNull(protocolAdaptor);
 
-    public Package() {
+        Assert.assertEquals(
+            MeshMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType()
+        );
     }
 
-    public Package(Header header) {
-        this.header = header;
-    }
-
-    public Package(Header header, Object body) {
-        this.header = header;
-        this.body = body;
+    @Test
+    public void getProtocolType() {
     }
 }
