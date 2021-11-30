@@ -17,11 +17,15 @@
 
 package org.apache.eventmesh.tcp.common;
 
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.v1.CloudEventV1;
 import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_SyncSubscribeTest;
 import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientBroadCast;
 import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast;
 
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
@@ -29,6 +33,9 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class EventMeshTestUtils {
@@ -154,5 +161,17 @@ public class EventMeshTestUtils {
             builder.append((char) ThreadLocalRandom.current().nextInt(48, 57));
         }
         return builder.toString();
+    }
+
+    public static CloudEvent generateCloudEventV1() {
+        CloudEvent event = CloudEventBuilder.v1()
+            .withId(UUID.randomUUID().toString())
+            .withSubject(TOPIC_PRX_WQ2ClientBroadCast)
+            .withSource(URI.create("/"))
+            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withData("testAsyncMessage".getBytes(StandardCharsets.UTF_8))
+            .withExtension("ttl", "30000")
+            .build();
+        return event;
     }
 }
