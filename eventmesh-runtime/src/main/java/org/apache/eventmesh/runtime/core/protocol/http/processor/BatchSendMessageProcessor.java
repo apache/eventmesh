@@ -107,8 +107,8 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         for (CloudEvent event : eventList) {
             //validate event
             if (StringUtils.isBlank(event.getId())
-                    || event.getSource() != null
-                    || event.getSpecVersion() != null
+                    || event.getSource() == null
+                    || event.getSpecVersion() == null
                     || StringUtils.isBlank(event.getType())
                     || StringUtils.isBlank(event.getSubject())) {
                 responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
@@ -185,7 +185,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
         for (CloudEvent cloudEvent : eventList) {
             if (StringUtils.isBlank(cloudEvent.getSubject())
-                    || cloudEvent.getData() != null) {
+                    || cloudEvent.getData() == null) {
                 continue;
             }
 
@@ -215,7 +215,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 if (StringUtils.isBlank(ttl) || !StringUtils.isNumeric(ttl)) {
                     cloudEvent = CloudEventBuilder.from(cloudEvent)
                             .withExtension(SendMessageRequestBody.TTL, String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS))
-                            .withExtension("msgType", "persistent")
+                            .withExtension("msgtype", "persistent")
                             .build();
                 }
 

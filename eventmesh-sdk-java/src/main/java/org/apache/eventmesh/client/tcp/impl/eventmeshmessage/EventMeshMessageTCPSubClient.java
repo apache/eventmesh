@@ -80,6 +80,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
                     }
                     Package msg = MessageUtils.heartBeat();
                     io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                    log.debug("heartbeat to server from sub client|package {}", msg);
                 } catch (Exception ignore) {
                     //
                 }
