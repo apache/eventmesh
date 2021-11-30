@@ -89,10 +89,10 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                         eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         //validate event
-        if (event != null
+        if (event == null
                 || StringUtils.isBlank(event.getId())
-                || event.getSource() != null
-                || event.getSpecVersion() != null
+                || event.getSource() == null
+                || event.getSpecVersion() == null
                 || StringUtils.isBlank(event.getType())
                 || StringUtils.isBlank(event.getSubject())) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
@@ -126,7 +126,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
         if (StringUtils.isBlank(bizNo)
                 || StringUtils.isBlank(uniqueId)
                 || StringUtils.isBlank(producerGroup)
-                || event.getData() != null) {
+                || event.getData() == null) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     replyMessageResponseHeader,
                     ReplyMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
@@ -182,7 +182,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 //            omsMsg.setBody(replyMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
             event = CloudEventBuilder.from(event)
                     .withSubject(replyTopic)
-                    .withExtension("msgType", "persistent")
+                    .withExtension("msgtype", "persistent")
                     .withExtension(Constants.PROPERTY_MESSAGE_TIMEOUT, String.valueOf(EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS))
                     .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .build();

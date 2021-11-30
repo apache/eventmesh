@@ -79,6 +79,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
                 }
                 Package msg = MessageUtils.heartBeat();
                 io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                log.debug("heartbeat to server from pub client|package {}", msg);
             } catch (Exception ignore) {
                 // ignore
             }

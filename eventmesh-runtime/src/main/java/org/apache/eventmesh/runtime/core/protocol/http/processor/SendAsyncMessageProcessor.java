@@ -92,10 +92,10 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         CloudEvent event = httpCommandProtocolAdaptor.toCloudEvent(asyncContext.getRequest());
 
         //validate event
-        if (event != null
+        if (event == null
                 || StringUtils.isBlank(event.getId())
-                || event.getSource() != null
-                || event.getSpecVersion() != null
+                || event.getSource() == null
+                || event.getSpecVersion() == null
                 || StringUtils.isBlank(event.getType())
                 || StringUtils.isBlank(event.getSubject())) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
@@ -131,7 +131,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 || StringUtils.isBlank(uniqueId)
                 || StringUtils.isBlank(producerGroup)
                 || StringUtils.isBlank(topic)
-                || event.getData() != null) {
+                || event.getData() == null) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(), EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
@@ -203,7 +203,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 //            // bizNo
 //            omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS, sendMessageRequestBody.getBizSeqNo());
             event = CloudEventBuilder.from(event)
-                    .withExtension("msgType", "persistent")
+                    .withExtension("msgtype", "persistent")
                     .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .build();
