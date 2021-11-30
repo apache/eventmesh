@@ -110,7 +110,7 @@ public class EventMeshTestUtils {
     public static EventMeshMessage generateSyncRRMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
-        mqMsg.getProperties().put("msgType", "persistent");
+        mqMsg.getProperties().put("msgtype", "persistent");
         mqMsg.getProperties().put("ttl", "300000");
         mqMsg.getProperties().put("keys", generateRandomString(16));
         mqMsg.setBody("testSyncRR");

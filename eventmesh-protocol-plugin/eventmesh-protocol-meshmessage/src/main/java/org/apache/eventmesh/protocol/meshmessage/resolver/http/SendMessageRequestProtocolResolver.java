@@ -28,6 +28,7 @@ import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import io.cloudevents.CloudEvent;
@@ -65,6 +66,8 @@ public class SendMessageRequestProtocolResolver {
 
                 event = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
                     .withSubject(sendMessageRequestBody.getTopic())
+                    .withType("eventmeshmessage")
+                    .withSource(URI.create("/"))
                     .withData(content.getBytes(StandardCharsets.UTF_8))
                     .withExtension(ProtocolKey.REQUEST_CODE, code)
                     .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
@@ -79,16 +82,19 @@ public class SendMessageRequestProtocolResolver {
                     .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
                     .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
                     .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(SendMessageBatchV2RequestBody.BIZSEQNO, sendMessageRequestBody.getBizSeqNo())
-                    .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP,
+                    .withExtension(SendMessageRequestBody.BIZSEQNO, sendMessageRequestBody.getBizSeqNo())
+                    .withExtension(SendMessageRequestBody.UNIQUEID, sendMessageRequestBody.getUniqueId())
+                    .withExtension(SendMessageRequestBody.PRODUCERGROUP,
                         sendMessageRequestBody.getProducerGroup())
-                    .withExtension(SendMessageBatchV2RequestBody.TTL, sendMessageRequestBody.getTtl())
-                    .withExtension(SendMessageBatchV2RequestBody.TAG, sendMessageRequestBody.getTag())
+                    .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl())
+                    .withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag())
                     .build();
             } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
                 cloudEventBuilder = CloudEventBuilder.v03();
                 event = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
                     .withSubject(sendMessageRequestBody.getTopic())
+                    .withType("eventmeshmessage")
+                    .withSource(URI.create("/"))
                     .withData(content.getBytes(StandardCharsets.UTF_8))
                     .withExtension(ProtocolKey.REQUEST_CODE, code)
                     .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
@@ -103,11 +109,12 @@ public class SendMessageRequestProtocolResolver {
                     .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
                     .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
                     .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(SendMessageBatchV2RequestBody.BIZSEQNO, sendMessageRequestBody.getBizSeqNo())
-                    .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP,
+                    .withExtension(SendMessageRequestBody.BIZSEQNO, sendMessageRequestBody.getBizSeqNo())
+                    .withExtension(SendMessageRequestBody.UNIQUEID, sendMessageRequestBody.getUniqueId())
+                    .withExtension(SendMessageRequestBody.PRODUCERGROUP,
                         sendMessageRequestBody.getProducerGroup())
-                    .withExtension(SendMessageBatchV2RequestBody.TTL, sendMessageRequestBody.getTtl())
-                    .withExtension(SendMessageBatchV2RequestBody.TAG, sendMessageRequestBody.getTag())
+                    .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl())
+                    .withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag())
                     .build();
             }
             return event;
