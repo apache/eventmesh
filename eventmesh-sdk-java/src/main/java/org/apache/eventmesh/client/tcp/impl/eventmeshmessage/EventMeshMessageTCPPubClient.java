@@ -34,7 +34,6 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -64,26 +63,11 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         try {
             open(new Handler());
             hello();
+            heartbeat();
         } catch (Exception ex) {
             throw new EventMeshException("Initialize EventMeshMessageTCPPubClient error", ex);
         }
 
-    }
-
-    @Override
-    public void heartbeat() throws EventMeshException {
-        task = scheduler.scheduleAtFixedRate(() -> {
-            try {
-                if (!isActive()) {
-                    reconnect();
-                }
-                Package msg = MessageUtils.heartBeat();
-                io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                log.debug("heartbeat to server from pub client|package {}", msg);
-            } catch (Exception ignore) {
-                // ignore
-            }
-        }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -124,7 +108,6 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
     @Override
     public Package publish(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
         try {
-            // todo: transform EventMeshMessage to Package
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.ASYNC_MESSAGE_TO_SERVER);
             log.info("SimplePubClientImpl em message|{}|publish|send|type={}|protocol={}|msg={}",
                 clientNo, msg.getHeader().getCommand(),
@@ -175,10 +158,11 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
 
             Command cmd = msg.getHeader().getCommand();
             if (cmd == Command.RESPONSE_TO_CLIENT) {
-                if (callback != null) {
-                    callback.handle(msg, ctx);
-                }
+                // todo: Transform to CloudEvents
                 Package pkg = MessageUtils.responseToClientAck(msg);
+                if (callback != null) {
+                    callback.handle((EventMeshMessage) pkg.getBody(), ctx);
+                }
                 send(pkg);
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
                 //TODO

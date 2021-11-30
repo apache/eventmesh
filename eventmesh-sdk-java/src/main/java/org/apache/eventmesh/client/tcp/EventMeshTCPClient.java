@@ -42,8 +42,6 @@ public interface EventMeshTCPClient<ProtocolMessage> extends AutoCloseable {
 
     void broadcast(ProtocolMessage msg, long timeout) throws EventMeshException;
 
-    void heartbeat() throws EventMeshException;
-
     void listen() throws EventMeshException;
 
     void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)

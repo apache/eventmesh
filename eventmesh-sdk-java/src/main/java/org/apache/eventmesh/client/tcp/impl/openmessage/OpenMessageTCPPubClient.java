@@ -42,11 +42,6 @@ class OpenMessageTCPPubClient implements EventMeshTCPPubClient<Message> {
     }
 
     @Override
-    public void heartbeat() throws EventMeshException {
-
-    }
-
-    @Override
     public void reconnect() throws EventMeshException {
 
     }

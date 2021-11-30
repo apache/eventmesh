@@ -48,7 +48,6 @@ public class AsyncPublishBroadcast {
         try (final EventMeshTCPClient<EventMeshMessage> client =
                  EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class)) {
             client.init();
-            client.heartbeat();
 
             EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateBroadcastMqMsg();
             logger.info("begin send broadcast msg============={}", eventMeshMessage);

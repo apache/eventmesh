@@ -20,13 +20,16 @@ package org.apache.eventmesh.common.protocol.tcp;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Data;
+
+@Data
 public class Header {
 
-    private Command cmd;
-    private int code;
-    private String desc;
-    private String seq;
-    private Map<String, Object> properties;
+    private Command             cmd;
+    private int                 code;
+    private String              desc;
+    private String              seq;
+    private Map<String, Object> properties = new HashMap<>();
 
     public Header() {
     }
@@ -44,6 +47,7 @@ public class Header {
         this.seq = seq;
         this.properties = properties;
     }
+
 
     public Command getCommand() {
         return cmd;
@@ -97,18 +101,7 @@ public class Header {
         if (null == this.properties) {
             this.properties = new HashMap<>();
         }
-
         return this.properties.get(name);
     }
 
-    @Override
-    public String toString() {
-        return "Header{" +
-            "cmd=" + cmd +
-            ", code=" + code +
-            ", desc='" + desc + '\'' +
-            ", seq='" + seq + '\'' +
-            ", properties=" + properties +
-            '}';
-    }
 }

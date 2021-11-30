@@ -20,51 +20,16 @@ package org.apache.eventmesh.common.protocol.tcp;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class EventMeshMessage {
 
-    private String topic;
-    Map<String, String> properties = new ConcurrentHashMap<>();
-    private String body;
-
-    public EventMeshMessage() {
-    }
-
-    public EventMeshMessage(String topic, Map<String, String> properties, String body) {
-        this.topic = topic;
-        this.properties = properties;
-        this.body = body;
-    }
-
-    public String getTopic() {
-        return topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public Map<String, String> getProperties() {
-        return properties;
-    }
-
-    public void setProperties(Map<String, String> properties) {
-        this.properties = properties;
-    }
-
-    public String getBody() {
-        return body;
-    }
-
-    public void setBody(String body) {
-        this.body = body;
-    }
-
-    @Override
-    public String toString() {
-        return "EventMeshMessage{" +
-                "topic='" + topic + '\'' +
-                ", properties=" + properties +
-                ", body='" + body + '\'' +
-                '}';
-    }
+    private String              topic;
+    private Map<String, String> properties = new ConcurrentHashMap<>();
+    private String              body;
 }

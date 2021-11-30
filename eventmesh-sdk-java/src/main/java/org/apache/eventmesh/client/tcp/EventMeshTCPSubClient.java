@@ -34,8 +34,6 @@ public interface EventMeshTCPSubClient<ProtocolMessage> extends AutoCloseable {
 
     void init() throws EventMeshException;
 
-    void heartbeat() throws EventMeshException;
-
     void reconnect() throws EventMeshException;
 
     void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
