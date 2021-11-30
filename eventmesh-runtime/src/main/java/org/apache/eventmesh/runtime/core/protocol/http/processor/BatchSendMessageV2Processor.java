@@ -103,8 +103,8 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         // todo: use validate processor to check
         //validate event
         if (StringUtils.isBlank(event.getId())
-            || event.getSource() != null
-            || event.getSpecVersion() != null
+            || event.getSource() == null
+            || event.getSpecVersion() == null
             || StringUtils.isBlank(event.getType())
             || StringUtils.isBlank(event.getSubject())) {
             responseEventMeshCommand = request.createHttpCommandResponse(
@@ -148,7 +148,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         if (StringUtils.isBlank(bizNo)
             || StringUtils.isBlank(topic)
             || StringUtils.isBlank(producerGroup)
-            || event.getData() != null) {
+            || event.getData() == null) {
             responseEventMeshCommand = request.createHttpCommandResponse(
                 sendMessageBatchV2ResponseHeader,
                 SendMessageBatchV2ResponseBody
@@ -221,7 +221,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
         try {
             event = CloudEventBuilder.from(event)
-                .withExtension("msgType", "persistent")
+                .withExtension("msgtype", "persistent")
                 .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP,
                     String.valueOf(System.currentTimeMillis()))
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP,

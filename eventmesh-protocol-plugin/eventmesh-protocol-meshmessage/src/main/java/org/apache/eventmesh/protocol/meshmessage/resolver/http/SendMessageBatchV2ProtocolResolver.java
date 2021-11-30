@@ -23,12 +23,14 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 public class SendMessageBatchV2ProtocolResolver {
@@ -61,6 +63,8 @@ public class SendMessageBatchV2ProtocolResolver {
 
                 event = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
                         .withSubject(sendMessageBatchV2RequestBody.getTopic())
+                        .withType("eventmeshmessage")
+                        .withSource(URI.create("/"))
                         .withData(content.getBytes(StandardCharsets.UTF_8))
                         .withExtension(ProtocolKey.REQUEST_CODE, code)
                         .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
@@ -84,6 +88,8 @@ public class SendMessageBatchV2ProtocolResolver {
                 cloudEventBuilder = CloudEventBuilder.v03();
                 event = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
                         .withSubject(sendMessageBatchV2RequestBody.getTopic())
+                        .withType("eventmeshmessage")
+                        .withSource(URI.create("/"))
                         .withData(content.getBytes(StandardCharsets.UTF_8))
                         .withExtension(ProtocolKey.REQUEST_CODE, code)
                         .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
