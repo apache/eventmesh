@@ -31,13 +31,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class SendMessageRequestBody extends Body {
 
     public static final String TOPIC         = "topic";
-    public static final String BIZSEQNO      = "bizSeqNo";
-    public static final String UNIQUEID      = "uniqueId";
+    public static final String BIZSEQNO      = "bizseqno";
+    public static final String UNIQUEID      = "uniqueid";
     public static final String CONTENT       = "content";
     public static final String TTL           = "ttl";
     public static final String TAG           = "tag";
     public static final String EXTFIELDS     = "extFields";
-    public static final String PRODUCERGROUP = "producerGroup";
+    public static final String PRODUCERGROUP = "producergroup";
 
     private String topic;
 

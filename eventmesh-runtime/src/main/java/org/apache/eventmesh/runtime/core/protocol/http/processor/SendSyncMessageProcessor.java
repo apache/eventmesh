@@ -93,10 +93,10 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         //validate event
-        if (event != null
+        if (event == null
                 || StringUtils.isBlank(event.getId())
-                || event.getSource() != null
-                || event.getSpecVersion() != null
+                || event.getSource() == null
+                || event.getSpecVersion() == null
                 || StringUtils.isBlank(event.getType())
                 || StringUtils.isBlank(event.getSubject())) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
@@ -145,7 +145,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             || StringUtils.isBlank(uniqueId)
             || StringUtils.isBlank(producerGroup)
             || StringUtils.isBlank(topic)
-            || event.getData() != null
+            || event.getData() == null
             || StringUtils.isBlank(ttl)) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                 sendMessageResponseHeader,
@@ -207,7 +207,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
         try {
             event = CloudEventBuilder.from(event)
-                    .withExtension("msgType", "persistent")
+                    .withExtension("msgtype", "persistent")
                     .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .build();
