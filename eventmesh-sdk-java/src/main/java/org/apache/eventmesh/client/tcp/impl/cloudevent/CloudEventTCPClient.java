@@ -68,12 +68,6 @@ public class CloudEventTCPClient implements EventMeshTCPClient<CloudEvent> {
     }
 
     @Override
-    public void heartbeat() throws EventMeshException {
-        cloudEventTCPPubClient.heartbeat();
-        cloudEventTCPSubClient.heartbeat();
-    }
-
-    @Override
     public void listen() throws EventMeshException {
         cloudEventTCPSubClient.listen();
     }

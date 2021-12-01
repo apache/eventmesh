@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
-import org.apache.eventmesh.common.protocol.tcp.Package;
-
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -26,19 +24,8 @@ import io.netty.channel.ChannelHandlerContext;
  *
  * @param <ProtocolMessage> receive message type.
  */
+@FunctionalInterface
 public interface ReceiveMsgHook<ProtocolMessage> {
-    void handle(Package msg, ChannelHandlerContext ctx);
+    void handle(ProtocolMessage msg, ChannelHandlerContext ctx);
 
-    /**
-     * Convert tcp package to protocolMessage.
-     * <ul>
-     *     <li>{@link org.apache.eventmesh.common.EventMeshMessage} </li>
-     *     <li>{@link io.openmessaging.api.Message}</li>
-     *     <li>{@link io.cloudevents.CloudEvent}</li>
-     * </ul>
-     *
-     * @param pkg
-     * @return
-     */
-    ProtocolMessage convertToProtocolMessage(Package pkg);
 }

@@ -34,8 +34,6 @@ public interface EventMeshTCPPubClient<ProtocolMessage> extends AutoCloseable {
 
     void init() throws EventMeshException;
 
-    void heartbeat() throws EventMeshException;
-
     void reconnect() throws EventMeshException;
 
     // todo: Hide package method, use ProtocolMessage

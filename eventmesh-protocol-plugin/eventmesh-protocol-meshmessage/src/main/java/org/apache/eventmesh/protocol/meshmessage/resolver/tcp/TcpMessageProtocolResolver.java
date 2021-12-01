@@ -36,7 +36,7 @@ import java.util.Map;
 public class TcpMessageProtocolResolver {
 
 
-    public static CloudEvent buildEvent(Header header, Object body) throws ProtocolHandleException {
+    public static CloudEvent buildEvent(Header header, EventMeshMessage message) throws ProtocolHandleException {
 
         CloudEventBuilder cloudEventBuilder;
 
@@ -54,8 +54,6 @@ public class TcpMessageProtocolResolver {
         if (!StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_NAME, protocolType)) {
             throw new ProtocolHandleException(String.format("Unsupported protocolType: %s", protocolType));
         }
-
-        EventMeshMessage message = (EventMeshMessage) body;
 
         String topic = message.getTopic();
 
@@ -91,7 +89,6 @@ public class TcpMessageProtocolResolver {
     }
 
     public static Package buildEventMeshMessage(CloudEvent cloudEvent) {
-        Package pkg = new Package();
         EventMeshMessage eventMeshMessage = new EventMeshMessage();
         eventMeshMessage.setTopic(cloudEvent.getSubject());
         eventMeshMessage.setBody(new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
@@ -102,6 +99,7 @@ public class TcpMessageProtocolResolver {
         }
         eventMeshMessage.setProperties(prop);
 
+        Package pkg = new Package();
         pkg.setBody(eventMeshMessage);
 
         return pkg;

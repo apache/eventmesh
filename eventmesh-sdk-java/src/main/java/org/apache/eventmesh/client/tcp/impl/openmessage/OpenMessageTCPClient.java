@@ -69,12 +69,6 @@ public class OpenMessageTCPClient implements EventMeshTCPClient<Message> {
     }
 
     @Override
-    public void heartbeat() throws EventMeshException {
-        eventMeshTCPPubClient.heartbeat();
-        eventMeshTCPSubClient.heartbeat();
-    }
-
-    @Override
     public void listen() throws EventMeshException {
         eventMeshTCPSubClient.listen();
     }

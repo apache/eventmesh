@@ -29,18 +29,20 @@ import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +56,6 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
     private final UserAgent                  userAgent;
     private final List<SubscriptionItem>     subscriptionItems = Collections.synchronizedList(new ArrayList<>());
     private       ReceiveMsgHook<CloudEvent> callback;
-    private       ScheduledFuture<?>         task;
 
     public CloudEventTCPSubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
@@ -66,31 +67,10 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         try {
             open(new Handler());
             hello();
+            heartbeat();
             log.info("SimpleSubClientImpl|{}|started!", clientNo);
         } catch (Exception ex) {
             throw new EventMeshException("Initialize EventMeshMessageTcpSubClient error", ex);
-        }
-    }
-
-    @Override
-    public void heartbeat() throws EventMeshException {
-        if (task == null) {
-            synchronized (CloudEventTCPSubClient.class) {
-                task = scheduler.scheduleAtFixedRate(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (!isActive()) {
-                                reconnect();
-                            }
-                            Package msg = MessageUtils.heartBeat();
-                            io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                        } catch (Exception ignore) {
-                            //
-                        }
-                    }
-                }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
-            }
         }
     }
 
@@ -161,7 +141,6 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
     @Override
     public void close() {
         try {
-            task.cancel(false);
             goodbye();
             super.close();
         } catch (Exception ex) {
@@ -173,24 +152,24 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         @SuppressWarnings("Duplicates")
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            Command cmd = msg.getHeader().getCommand();
+            Command cmd = msg.getHeader().getCmd();
             log.info("|receive|type={}|msg={}", cmd, msg);
             if (cmd == Command.REQUEST_TO_CLIENT) {
+                Package pkg = requestToClientAck(msg);
                 if (callback != null) {
-                    callback.handle(msg, ctx);
+                    callback.handle((CloudEvent) pkg.getBody(), ctx);
                 }
-                Package pkg = MessageUtils.requestToClientAck(msg);
                 send(pkg);
             } else if (cmd == Command.ASYNC_MESSAGE_TO_CLIENT) {
-                Package pkg = MessageUtils.asyncMessageAck(msg);
+                Package pkg = asyncMessageAck(msg);
                 if (callback != null) {
-                    callback.handle(msg, ctx);
+                    callback.handle((CloudEvent) msg, ctx);
                 }
                 send(pkg);
             } else if (cmd == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-                Package pkg = MessageUtils.broadcastMessageAck(msg);
+                Package pkg = broadcastMessageAck(msg);
                 if (callback != null) {
-                    callback.handle(msg, ctx);
+                    callback.handle((CloudEvent) msg, ctx);
                 }
                 send(pkg);
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
@@ -206,6 +185,30 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
                 log.error("msg ignored,context not found.|{}|{}", cmd, msg);
             }
         }
+    }
+
+    private Package requestToClientAck(Package tcpPackage) {
+        Package msg = new Package();
+        msg.setHeader(new Header(Command.REQUEST_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
+        // todo: Transform json to CloudEvents
+        msg.setBody(JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class));
+        return msg;
+    }
+
+    private Package asyncMessageAck(Package tcpPackage) {
+        Package msg = new Package();
+        msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
+        // todo: Transform to CloudEvents
+        msg.setBody(JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class));
+        return msg;
+    }
+
+    private Package broadcastMessageAck(Package tcpPackage) {
+        Package msg = new Package();
+        msg.setHeader(new Header(Command.BROADCAST_MESSAGE_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
+        // todo: Transform to CloudEvents
+        msg.setBody(JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class));
+        return msg;
     }
 
 }
