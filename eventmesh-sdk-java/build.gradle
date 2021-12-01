@@ -27,6 +27,7 @@ dependencies {
 
     // protocol
     implementation "io.cloudevents:cloudevents-core"
+    implementation "io.cloudevents:cloudevents-json-jackson"
     implementation "io.openmessaging:openmessaging-api"
 
     compileOnly 'org.projectlombok:lombok:1.18.22'

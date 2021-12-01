@@ -27,13 +27,17 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 import io.openmessaging.api.Message;
 
 public class MessageUtils {
@@ -91,9 +95,15 @@ public class MessageUtils {
         if (message instanceof CloudEvent) {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, ((CloudEvent) message).getSpecVersion().toString());
+            msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
+            byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(((CloudEvent) message).getDataContentType())
+                .serialize((CloudEvent) message);
+            msg.setBody(bodyByte);
         } else if (message instanceof EventMeshMessage) {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, SpecVersion.V1.toString());
+            msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
+            msg.setBody(message);
         } else if (message instanceof Message) {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.OPEN_MESSAGE_PROTOCOL_NAME);
             // todo: this version need to be confirmed.
@@ -102,8 +112,7 @@ public class MessageUtils {
             // unsupported protocol for server
             throw new IllegalArgumentException("Unsupported message protocol");
         }
-        msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
-        msg.setBody(message);
+
         return msg;
     }
 
