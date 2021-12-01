@@ -41,8 +41,8 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
 
     @Override
     public void init() throws EventMeshException {
-        eventMeshMessageTCPSubClient.init();
         eventMeshMessageTCPPubClient.init();
+        eventMeshMessageTCPSubClient.init();
     }
 
     @Override
@@ -64,12 +64,6 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
     @Override
     public void broadcast(EventMeshMessage eventMeshMessage, long timeout) throws EventMeshException {
         eventMeshMessageTCPPubClient.broadcast(eventMeshMessage, timeout);
-    }
-
-    @Override
-    public void heartbeat() throws EventMeshException {
-        eventMeshMessageTCPPubClient.heartbeat();
-        eventMeshMessageTCPSubClient.heartbeat();
     }
 
     @Override

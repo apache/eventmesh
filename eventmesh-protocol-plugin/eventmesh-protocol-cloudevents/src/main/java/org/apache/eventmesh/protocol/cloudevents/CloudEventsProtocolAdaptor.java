@@ -50,10 +50,11 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
     public CloudEvent toCloudEvent(ProtocolTransportObject cloudEvent) throws ProtocolHandleException {
 
         if (cloudEvent instanceof Package) {
-            Header header = ((Package) cloudEvent).getHeader();
-            Object body = ((Package) cloudEvent).getBody();
+            Package tcpPackage = (Package) cloudEvent;
+            Header header = tcpPackage.getHeader();
+            String cloudEventJson = tcpPackage.getBody().toString();
 
-            return deserializeTcpProtocol(header, body);
+            return deserializeTcpProtocol(header, cloudEventJson);
 
         } else if (cloudEvent instanceof HttpCommand) {
             org.apache.eventmesh.common.protocol.http.header.Header header = ((HttpCommand) cloudEvent).getHeader();
@@ -66,8 +67,8 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
         }
     }
 
-    private CloudEvent deserializeTcpProtocol(Header header, Object body) throws ProtocolHandleException {
-        return TcpMessageProtocolResolver.buildEvent(header, body);
+    private CloudEvent deserializeTcpProtocol(Header header, String cloudEventJson) throws ProtocolHandleException {
+        return TcpMessageProtocolResolver.buildEvent(header, cloudEventJson);
     }
 
     private CloudEvent deserializeHttpProtocol(String requestCode, org.apache.eventmesh.common.protocol.http.header.Header header, Body body) throws ProtocolHandleException {

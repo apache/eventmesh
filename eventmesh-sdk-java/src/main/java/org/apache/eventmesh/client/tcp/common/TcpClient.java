@@ -18,6 +18,7 @@
 package org.apache.eventmesh.client.tcp.common;
 
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 
@@ -26,6 +27,7 @@ import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -65,6 +67,8 @@ public abstract class TcpClient implements Closeable {
     private final EventLoopGroup workers = new NioEventLoopGroup();
 
     private Channel channel;
+
+    private ScheduledFuture<?> heartTask;
 
     protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
         Runtime.getRuntime().availableProcessors(),
@@ -107,9 +111,30 @@ public abstract class TcpClient implements Closeable {
         try {
             channel.disconnect().sync();
             workers.shutdownGracefully();
+            if (heartTask != null) {
+                heartTask.cancel(false);
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.warn("close tcp client failed.|remote address={}", channel.remoteAddress(), e);
+        }
+    }
+
+    protected void heartbeat() {
+        if (heartTask != null) {
+            synchronized (TcpClient.class) {
+                heartTask = scheduler.scheduleAtFixedRate(() -> {
+                    try {
+                        if (!isActive()) {
+                            reconnect();
+                        }
+                        Package msg = MessageUtils.heartBeat();
+                        io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                    } catch (Exception ignore) {
+                        // ignore
+                    }
+                }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
+            }
         }
     }
 

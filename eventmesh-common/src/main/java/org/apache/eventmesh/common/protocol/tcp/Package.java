@@ -19,23 +19,20 @@ package org.apache.eventmesh.common.protocol.tcp;
 
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Package implements ProtocolTransportObject {
 
     private Header header;
     private Object body;
 
-    public Package() {
-    }
-
     public Package(Header header) {
         this.header = header;
     }
 
-    public Package(Header header, Object body) {
-        this.header = header;
-        this.body = body;
-    }
 }
