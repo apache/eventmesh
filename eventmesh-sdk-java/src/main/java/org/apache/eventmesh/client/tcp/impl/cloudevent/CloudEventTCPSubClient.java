@@ -24,6 +24,7 @@ import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
@@ -37,12 +38,15 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -154,22 +158,29 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
             Command cmd = msg.getHeader().getCmd();
             log.info("|receive|type={}|msg={}", cmd, msg);
+            String protocolVersion = msg.getHeader().getProperty(Constants.PROTOCOL_VERSION).toString();
             if (cmd == Command.REQUEST_TO_CLIENT) {
                 Package pkg = requestToClientAck(msg);
                 if (callback != null) {
-                    callback.handle((CloudEvent) pkg.getBody(), ctx);
+                    CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                        .deserialize(msg.getBody().toString().getBytes(StandardCharsets.UTF_8));
+                    callback.handle(event, ctx);
                 }
                 send(pkg);
             } else if (cmd == Command.ASYNC_MESSAGE_TO_CLIENT) {
                 Package pkg = asyncMessageAck(msg);
                 if (callback != null) {
-                    callback.handle((CloudEvent) msg, ctx);
+                    CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                        .deserialize(msg.getBody().toString().getBytes(StandardCharsets.UTF_8));
+                    callback.handle(event, ctx);
                 }
                 send(pkg);
             } else if (cmd == Command.BROADCAST_MESSAGE_TO_CLIENT) {
                 Package pkg = broadcastMessageAck(msg);
                 if (callback != null) {
-                    callback.handle((CloudEvent) msg, ctx);
+                    CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                        .deserialize(msg.getBody().toString().getBytes(StandardCharsets.UTF_8));
+                    callback.handle(event, ctx);
                 }
                 send(pkg);
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
@@ -190,24 +201,21 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
     private Package requestToClientAck(Package tcpPackage) {
         Package msg = new Package();
         msg.setHeader(new Header(Command.REQUEST_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
-        // todo: Transform json to CloudEvents
-        msg.setBody(JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class));
+        msg.setBody(tcpPackage.getBody());
         return msg;
     }
 
     private Package asyncMessageAck(Package tcpPackage) {
         Package msg = new Package();
         msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
-        // todo: Transform to CloudEvents
-        msg.setBody(JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class));
+        msg.setBody(tcpPackage.getBody());
         return msg;
     }
 
     private Package broadcastMessageAck(Package tcpPackage) {
         Package msg = new Package();
         msg.setHeader(new Header(Command.BROADCAST_MESSAGE_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
-        // todo: Transform to CloudEvents
-        msg.setBody(JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class));
+        msg.setBody(tcpPackage.getBody());
         return msg;
     }
 
