@@ -41,7 +41,6 @@ public class SyncRequest {
         try (EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
             eventMeshTcpClientConfig, EventMeshMessage.class)) {
             client.init();
-            client.heartbeat();
 
             EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();
             log.info("begin send rr msg=================={}", eventMeshMessage);

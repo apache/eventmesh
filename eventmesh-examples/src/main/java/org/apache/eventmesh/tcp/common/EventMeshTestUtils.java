@@ -32,6 +32,7 @@ import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -107,10 +108,10 @@ public class EventMeshTestUtils {
         return msg;
     }
 
-    public static Package rrResponse(Package request) {
+    public static Package rrResponse(EventMeshMessage request) {
         Package msg = new Package();
         msg.setHeader(new Header(RESPONSE_TO_SERVER, 0, null, generateRandomString(seqLength)));
-        msg.setBody(request.getBody());
+        msg.setBody(request);
         return msg;
     }
 

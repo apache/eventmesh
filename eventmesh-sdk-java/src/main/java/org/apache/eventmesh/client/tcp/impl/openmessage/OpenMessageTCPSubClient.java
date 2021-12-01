@@ -42,11 +42,6 @@ class OpenMessageTCPSubClient implements EventMeshTCPSubClient<Message> {
     }
 
     @Override
-    public void heartbeat() throws EventMeshException {
-
-    }
-
-    @Override
     public void reconnect() throws EventMeshException {
 
     }

@@ -55,7 +55,6 @@ public class AsyncPublish {
             client =
                 EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
-            client.heartbeat();
 
             for (int i = 0; i < 5; i++) {
                 CloudEvent event = EventMeshTestUtils.generateCloudEventV1();

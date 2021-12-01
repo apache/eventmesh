@@ -52,7 +52,6 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage>
         try (EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
             eventMeshTcpClientConfig, EventMeshMessage.class)) {
             client.init();
-            client.heartbeat();
 
             client.subscribe("TEST-TOPIC-TCP-BROADCAST", SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
             client.registerSubBusiHandler(handler);
@@ -65,13 +64,8 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage>
     }
 
     @Override
-    public void handle(Package msg, ChannelHandlerContext ctx) {
-        EventMeshMessage eventMeshMessage = convertToProtocolMessage(msg);
-        log.info("receive broadcast msg==============={}", eventMeshMessage);
+    public void handle(EventMeshMessage msg, ChannelHandlerContext ctx) {
+        log.info("receive broadcast msg==============={}", msg);
     }
 
-    @Override
-    public EventMeshMessage convertToProtocolMessage(Package pkg) {
-        return (EventMeshMessage) pkg.getBody();
-    }
 }
