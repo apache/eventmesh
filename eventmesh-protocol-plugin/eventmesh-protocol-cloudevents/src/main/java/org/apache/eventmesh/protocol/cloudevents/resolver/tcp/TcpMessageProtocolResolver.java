@@ -11,7 +11,7 @@ import org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant;
 
 public class TcpMessageProtocolResolver {
 
-    public static CloudEvent buildEvent(Header header, Object body) throws ProtocolHandleException {
+    public static CloudEvent buildEvent(Header header, String cloudEventJson) throws ProtocolHandleException {
         CloudEventBuilder cloudEventBuilder;
 
         String protocolType = header.getProperty(Constants.PROTOCOL_TYPE).toString();
@@ -29,7 +29,8 @@ public class TcpMessageProtocolResolver {
             throw new ProtocolHandleException(String.format("Unsupported protocolType: %s", protocolType));
         }
         if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-            cloudEventBuilder = CloudEventBuilder.v1((CloudEvent) body);
+            // todo: transform cloudEventJson to cloudEvent
+            cloudEventBuilder = CloudEventBuilder.v1(null);
 
             for (String propKey : header.getProperties().keySet()) {
                 cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
@@ -38,7 +39,8 @@ public class TcpMessageProtocolResolver {
             return cloudEventBuilder.build();
 
         } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
-            cloudEventBuilder = CloudEventBuilder.v03((CloudEvent) body);
+            // todo: transform cloudEventJson to cloudEvent
+            cloudEventBuilder = CloudEventBuilder.v03(null);
 
             for (String propKey : header.getProperties().keySet()) {
                 cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());

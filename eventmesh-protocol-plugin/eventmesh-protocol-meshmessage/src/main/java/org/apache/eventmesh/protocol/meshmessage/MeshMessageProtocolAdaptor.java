@@ -22,8 +22,10 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchProtocolResolver;
@@ -45,10 +47,11 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     @Override
     public CloudEvent toCloudEvent(ProtocolTransportObject protocol) throws ProtocolHandleException {
         if (protocol instanceof Package) {
-            Header header = ((Package) protocol).getHeader();
-            Object body = ((Package) protocol).getBody();
+            Package tcpPackage = (Package) protocol;
+            Header header = tcpPackage.getHeader();
+            String bodyJson = (String) tcpPackage.getBody();
 
-            return deserializeTcpProtocol(header, body);
+            return deserializeTcpProtocol(header, bodyJson);
 
         } else if (protocol instanceof HttpCommand) {
             org.apache.eventmesh.common.protocol.http.header.Header header = ((HttpCommand) protocol).getHeader();
@@ -61,8 +64,8 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
         }
     }
 
-    private CloudEvent deserializeTcpProtocol(Header header, Object body) throws ProtocolHandleException {
-        return TcpMessageProtocolResolver.buildEvent(header, body);
+    private CloudEvent deserializeTcpProtocol(Header header, String bodyJson) throws ProtocolHandleException {
+        return TcpMessageProtocolResolver.buildEvent(header, JsonUtils.deserialize(bodyJson, EventMeshMessage.class));
     }
 
     private CloudEvent deserializeHttpProtocol(String requestCode,
