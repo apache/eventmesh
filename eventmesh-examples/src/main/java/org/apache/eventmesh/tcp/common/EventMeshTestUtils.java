@@ -36,6 +36,8 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -165,12 +167,16 @@ public class EventMeshTestUtils {
     }
 
     public static CloudEvent generateCloudEventV1() {
+        Map<String, String> content = new HashMap<>();
+        content.put("content", "testAsyncMessage");
+
         CloudEvent event = CloudEventBuilder.v1()
             .withId(UUID.randomUUID().toString())
-            .withSubject(TOPIC_PRX_WQ2ClientBroadCast)
+            .withSubject(TOPIC_PRX_WQ2ClientUniCast)
             .withSource(URI.create("/"))
+            .withDataContentType("application/cloudevents+json")
             .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-            .withData("testAsyncMessage".getBytes(StandardCharsets.UTF_8))
+            .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
             .withExtension("ttl", "30000")
             .build();
         return event;
