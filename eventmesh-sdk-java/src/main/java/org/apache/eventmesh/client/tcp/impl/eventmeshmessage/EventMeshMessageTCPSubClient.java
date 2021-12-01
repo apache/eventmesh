@@ -30,8 +30,10 @@ import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -39,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -63,29 +64,11 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
         try {
             open(new Handler());
             hello();
+            heartbeat();
             log.info("SimpleSubClientImpl|{}|started!", clientNo);
         } catch (Exception ex) {
             throw new EventMeshException("Initialize EventMeshMessageTcpSubClient error", ex);
         }
-    }
-
-    @Override
-    public void heartbeat() throws EventMeshException {
-        task = scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (!isActive()) {
-                        reconnect();
-                    }
-                    Package msg = MessageUtils.heartBeat();
-                    io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                    log.debug("heartbeat to server from sub client|package {}", msg);
-                } catch (Exception ignore) {
-                    //
-                }
-            }
-        }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -170,21 +153,21 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
             Command cmd = msg.getHeader().getCommand();
             log.info("|receive|type={}|msg={}", cmd, msg);
             if (cmd == Command.REQUEST_TO_CLIENT) {
+                Package pkg = requestToClientAck(msg);
                 if (callback != null) {
-                    callback.handle(msg, ctx);
+                    callback.handle((EventMeshMessage) pkg.getBody(), ctx);
                 }
-                Package pkg = MessageUtils.requestToClientAck(msg);
                 send(pkg);
             } else if (cmd == Command.ASYNC_MESSAGE_TO_CLIENT) {
-                Package pkg = MessageUtils.asyncMessageAck(msg);
+                Package pkg = asyncMessageAck(msg);
                 if (callback != null) {
-                    callback.handle(msg, ctx);
+                    callback.handle((EventMeshMessage) pkg.getBody(), ctx);
                 }
                 send(pkg);
             } else if (cmd == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-                Package pkg = MessageUtils.broadcastMessageAck(msg);
+                Package pkg = broadcastMessageAck(msg);
                 if (callback != null) {
-                    callback.handle(msg, ctx);
+                    callback.handle((EventMeshMessage) pkg.getBody(), ctx);
                 }
                 send(pkg);
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
@@ -200,6 +183,27 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
                 log.error("msg ignored,context not found.|{}|{}", cmd, msg);
             }
         }
+    }
+
+    private Package requestToClientAck(Package tcpPackage) {
+        Package msg = new Package();
+        msg.setHeader(new Header(Command.REQUEST_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
+        msg.setBody(JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class));
+        return msg;
+    }
+
+    private Package asyncMessageAck(Package tcpPackage) {
+        Package msg = new Package();
+        msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
+        msg.setBody(JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class));
+        return msg;
+    }
+
+    private Package broadcastMessageAck(Package tcpPackage) {
+        Package msg = new Package();
+        msg.setHeader(new Header(Command.BROADCAST_MESSAGE_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
+        msg.setBody(JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class));
+        return msg;
     }
 
 }

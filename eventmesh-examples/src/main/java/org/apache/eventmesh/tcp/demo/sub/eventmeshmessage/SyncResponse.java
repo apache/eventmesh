@@ -46,7 +46,6 @@ public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
         try (EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory
             .createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class)) {
             client.init();
-            client.heartbeat();
 
             client.subscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
             // Synchronize RR messages
@@ -60,14 +59,10 @@ public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
     }
 
     @Override
-    public void handle(Package msg, ChannelHandlerContext ctx) {
+    public void handle(EventMeshMessage msg, ChannelHandlerContext ctx) {
         log.info("receive sync rr msg================{}", msg);
         Package pkg = EventMeshTestUtils.rrResponse(msg);
         ctx.writeAndFlush(pkg);
     }
 
-    @Override
-    public EventMeshMessage convertToProtocolMessage(Package pkg) {
-        return null;
-    }
 }

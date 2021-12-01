@@ -28,8 +28,11 @@ import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
@@ -64,27 +67,9 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
         try {
             open(new Handler());
             hello();
+            heartbeat();
         } catch (Exception ex) {
             throw new EventMeshException("Initialize EventMeshMessageTCPPubClient error", ex);
-        }
-    }
-
-    @Override
-    public void heartbeat() throws EventMeshException {
-        if (task != null) {
-            synchronized (CloudEventTCPPubClient.class) {
-                task = scheduler.scheduleAtFixedRate(() -> {
-                    try {
-                        if (!isActive()) {
-                            reconnect();
-                        }
-                        Package msg = MessageUtils.heartBeat();
-                        io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                    } catch (Exception ignore) {
-                        // ignore
-                    }
-                }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
-            }
         }
     }
 
@@ -154,9 +139,6 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     @Override
     public void close() {
         try {
-            if (task != null) {
-                task.cancel(false);
-            }
             goodbye();
             super.close();
         } catch (Exception ex) {
@@ -173,10 +155,10 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
 
             Command cmd = msg.getHeader().getCommand();
             if (cmd == Command.RESPONSE_TO_CLIENT) {
+                Package pkg = responseToClientAck(msg);
                 if (callback != null) {
-                    callback.handle(msg, ctx);
+                    callback.handle((CloudEvent) pkg.getBody(), ctx);
                 }
-                Package pkg = MessageUtils.responseToClientAck(msg);
                 send(pkg);
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
                 //TODO
@@ -200,5 +182,12 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     private void goodbye() throws Exception {
         Package msg = MessageUtils.goodbye();
         this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+    }
+
+    private Package responseToClientAck(Package in) {
+        Package msg = new Package();
+        msg.setHeader(new Header(Command.RESPONSE_TO_CLIENT_ACK, 0, null, in.getHeader().getSeq()));
+        msg.setBody(JsonUtils.deserialize(in.getBody().toString(), EventMeshMessage.class));
+        return msg;
     }
 }

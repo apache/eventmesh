@@ -50,6 +50,8 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
+
 public class ClientSessionGroupMapping {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -490,7 +492,7 @@ public class ClientSessionGroupMapping {
         if (!clientGroupMap.isEmpty()) {
             result = new HashMap<>();
             for (Map.Entry<String, ClientGroupWrapper> entry : clientGroupMap.entrySet()) {
-                Map<String, Integer> map = new HashMap();
+                Map<String, Integer> map = new HashMap<>();
                 map.put(EventMeshConstants.PURPOSE_SUB, entry.getValue().getGroupConsumerSessions().size());
                 map.put(EventMeshConstants.PURPOSE_PUB, entry.getValue().getGroupProducerSessions().size());
                 result.put(entry.getKey(), map);

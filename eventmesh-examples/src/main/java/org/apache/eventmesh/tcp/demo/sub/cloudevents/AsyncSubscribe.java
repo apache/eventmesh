@@ -42,7 +42,7 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
 
     public static AsyncSubscribe handler = new AsyncSubscribe();
 
-    private static EventMeshTCPClient client;
+    private static EventMeshTCPClient<CloudEvent> client;
 
     public static void main(String[] agrs) throws Exception {
         Properties properties = Utils.readPropertiesFile("application.properties");
@@ -57,7 +57,6 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
         try {
             client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
-            client.heartbeat();
 
             client.subscribe("TEST-TOPIC-TCP-ASYNC", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
             client.registerSubBusiHandler(handler);
@@ -75,13 +74,7 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
     }
 
     @Override
-    public void handle(Package msg, ChannelHandlerContext ctx) {
-        CloudEvent event = convertToProtocolMessage(msg);
-        log.info("receive async msg====================={}", event);
-    }
-
-    @Override
-    public CloudEvent convertToProtocolMessage(Package pkg) {
-        return CloudEventBuilder.from((CloudEvent) pkg.getBody()).build();
+    public void handle(CloudEvent msg, ChannelHandlerContext ctx) {
+        log.info("receive async msg====================={}", msg);
     }
 }
