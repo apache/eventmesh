@@ -21,12 +21,12 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.client.tcp.impl.EventMeshTCPClientFactory;
-import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPClient;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
@@ -40,7 +40,7 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
     public static AsyncSubscribe handler = new AsyncSubscribe();
 
-    private static EventMeshTCPClient client;
+    private static EventMeshTCPClient<EventMeshMessage> client;
 
     public static void main(String[] agrs) throws Exception {
         Properties properties = Utils.readPropertiesFile("application.properties");
@@ -53,11 +53,12 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
             .userAgent(userAgent)
             .build();
         try {
-            client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
+            client =
+                EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
-            client.heartbeat();
 
-            client.subscribe("TEST-TOPIC-TCP-ASYNC", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
+            client.subscribe(EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast, SubscriptionMode.CLUSTERING,
+                SubscriptionType.ASYNC);
             client.registerSubBusiHandler(handler);
 
             client.listen();
@@ -73,13 +74,7 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
     }
 
     @Override
-    public void handle(Package msg, ChannelHandlerContext ctx) {
-        EventMeshMessage eventMeshMessage = convertToProtocolMessage(msg);
-        log.info("receive async msg====================={}", eventMeshMessage);
-    }
-
-    @Override
-    public EventMeshMessage convertToProtocolMessage(Package pkg) {
-        return (EventMeshMessage) pkg.getBody();
+    public void handle(EventMeshMessage msg, ChannelHandlerContext ctx) {
+        log.info("receive async msg====================={}", msg);
     }
 }

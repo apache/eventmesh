@@ -53,7 +53,6 @@ public class AsyncPublish {
             client =
                 EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
-            client.heartbeat();
 
             for (int i = 0; i < 5; i++) {
                 EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateAsyncEventMqMsg();
