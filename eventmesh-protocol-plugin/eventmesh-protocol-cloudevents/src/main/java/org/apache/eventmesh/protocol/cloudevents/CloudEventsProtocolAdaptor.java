@@ -18,6 +18,8 @@
 package org.apache.eventmesh.protocol.cloudevents;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.provider.EventFormatProvider;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
@@ -111,7 +113,9 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
             return httpCommand;
         } else if (StringUtils.equals("tcp", protocolDesc)) {
             Package pkg = new Package();
-            pkg.setBody(cloudEvent);
+            byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
+                .serialize(cloudEvent);
+            pkg.setBody(bodyByte);
             return pkg;
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));

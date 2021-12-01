@@ -76,7 +76,13 @@ public class Codec {
             final String bodyJson = pkg != null ? OBJECT_MAPPER.writeValueAsString(pkg.getBody()) : null;
 
             final byte[] headerData = serializeBytes(headerJson);
-            final byte[] bodyData = serializeBytes(bodyJson);
+//            final byte[] bodyData = serializeBytes(bodyJson);
+
+            byte[] bodyData = serializeBytes(bodyJson);
+
+            if (headerJson.contains("cloudevents")) {
+                bodyData = (byte[]) pkg.getBody();
+            }
 
             if (log.isDebugEnabled()) {
                 log.debug("Encoder headerJson={}|bodyJson={}", headerJson, bodyJson);
