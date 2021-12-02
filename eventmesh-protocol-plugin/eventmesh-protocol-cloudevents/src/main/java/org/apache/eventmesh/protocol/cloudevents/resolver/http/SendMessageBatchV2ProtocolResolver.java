@@ -20,19 +20,24 @@ package org.apache.eventmesh.protocol.cloudevents.resolver.http;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.core.v03.CloudEventV03;
 import io.cloudevents.core.v1.CloudEventV1;
+import io.cloudevents.jackson.JsonFormat;
 
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+
+import java.nio.charset.StandardCharsets;
 
 public class SendMessageBatchV2ProtocolResolver {
     public static CloudEvent buildEvent(Header header, Body body) throws ProtocolHandleException {
@@ -55,11 +60,13 @@ public class SendMessageBatchV2ProtocolResolver {
             ProtocolVersion version = sendMessageBatchV2RequestHeader.getVersion();
             String language = sendMessageBatchV2RequestHeader.getLanguage();
 
+            String producerGroup = sendMessageBatchV2RequestBody.getProducerGroup();
             String content = sendMessageBatchV2RequestBody.getMsg();
 
             CloudEvent event = null;
             if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-                event = JsonUtils.deserialize(content, CloudEventV1.class);
+                event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                    .deserialize(content.getBytes(StandardCharsets.UTF_8));
                 event = CloudEventBuilder.from(event)
                     .withExtension(ProtocolKey.REQUEST_CODE, code)
                     .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
@@ -74,9 +81,11 @@ public class SendMessageBatchV2ProtocolResolver {
                     .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
                     .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
                     .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                    .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, producerGroup)
                     .build();
             } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
-                event = JsonUtils.deserialize(content, CloudEventV03.class);
+                event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                    .deserialize(content.getBytes(StandardCharsets.UTF_8));
                 event = CloudEventBuilder.from(event)
                     .withExtension(ProtocolKey.REQUEST_CODE, code)
                     .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
@@ -91,6 +100,7 @@ public class SendMessageBatchV2ProtocolResolver {
                     .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
                     .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
                     .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                    .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, producerGroup)
                     .build();
             }
             return event;
