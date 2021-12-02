@@ -158,6 +158,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
             Command cmd = msg.getHeader().getCmd();
             log.info("|receive|type={}|msg={}", cmd, msg);
+            String protocolVersion = msg.getHeader().getProperty(Constants.PROTOCOL_VERSION).toString();
             if (cmd == Command.REQUEST_TO_CLIENT) {
                 Package pkg = requestToClientAck(msg);
                 if (callback != null) {
