@@ -89,10 +89,9 @@ public class SessionPusher {
         String retMsg = null;
         try {
             pkg = (Package) protocolAdaptor.fromCloudEvent(downStreamMsgContext.event);
-//            body = EventMeshUtil.encodeMessage(downStreamMsgContext.event);
-//            pkg.setBody(downStreamMsgContext.event);
             pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, downStreamMsgContext.seq));
-            messageLogger.info("pkg|mq2eventMesh|cmd={}|mqMsg={}|user={}", cmd, EventMeshUtil.printMqMessage(body), session.getClient());
+            pkg.getHeader().putProperty(Constants.PROTOCOL_TYPE, protocolType);
+            messageLogger.info("pkg|mq2eventMesh|cmd={}|mqMsg={}|user={}", cmd, pkg, session.getClient());
         } catch (Exception e) {
             pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), e.getStackTrace().toString(), downStreamMsgContext.seq));
             retCode = -1;

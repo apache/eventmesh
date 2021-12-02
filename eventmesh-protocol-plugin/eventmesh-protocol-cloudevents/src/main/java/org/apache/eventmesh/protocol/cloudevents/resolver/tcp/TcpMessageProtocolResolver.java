@@ -19,7 +19,6 @@ package org.apache.eventmesh.protocol.cloudevents.resolver.tcp;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant;
 
@@ -32,8 +31,6 @@ import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 
 import java.nio.charset.StandardCharsets;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class TcpMessageProtocolResolver {
 
@@ -57,8 +54,9 @@ public class TcpMessageProtocolResolver {
         }
 
         if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).deserialize(cloudEventJson.getBytes(
-                StandardCharsets.UTF_8));
+            // todo:resolve different format
+            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                .deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
             cloudEventBuilder = CloudEventBuilder.v1(event);
             for (String propKey : header.getProperties().keySet()) {
                 cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
@@ -67,8 +65,9 @@ public class TcpMessageProtocolResolver {
             return cloudEventBuilder.build();
 
         } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
-            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).deserialize(cloudEventJson.getBytes(
-                StandardCharsets.UTF_8));
+            // todo:resolve different format
+            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                .deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
             cloudEventBuilder = CloudEventBuilder.v03(event);
 
             for (String propKey : header.getProperties().keySet()) {
