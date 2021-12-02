@@ -58,7 +58,6 @@ public class AsyncPublish {
 
             for (int i = 0; i < 5; i++) {
                 CloudEvent event = EventMeshTestUtils.generateCloudEventV1();
-
                 logger.info("begin send async msg[{}]==================={}", i, event);
                 client.publish(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 

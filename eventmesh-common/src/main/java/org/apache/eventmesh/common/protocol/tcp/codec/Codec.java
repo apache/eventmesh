@@ -26,6 +26,7 @@ import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -80,8 +81,12 @@ public class Codec {
 
             byte[] bodyData = serializeBytes(bodyJson);
 
-            if (headerJson.contains("cloudevents")) {
-                bodyData = (byte[]) pkg.getBody();
+            String protocolType = "";
+            if (pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE) != null) {
+                protocolType = pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE).toString();
+                if (StringUtils.equals(CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
+                    bodyData = (byte[]) pkg.getBody();
+                }
             }
 
             if (log.isDebugEnabled()) {
