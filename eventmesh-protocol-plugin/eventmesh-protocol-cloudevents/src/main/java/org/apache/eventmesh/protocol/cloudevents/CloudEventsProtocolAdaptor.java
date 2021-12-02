@@ -19,6 +19,7 @@ package org.apache.eventmesh.protocol.cloudevents;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
@@ -36,6 +37,7 @@ import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchV
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageRequestProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.tcp.TcpMessageProtocolResolver;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,7 +106,8 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
                 final Map<String, Object> map = new HashMap<>();
                 @Override
                 public Map<String, Object> toMap() {
-                    map.put("content", JsonUtils.serialize(cloudEvent));
+                    byte[] eventByte = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(cloudEvent);
+                    map.put("content", new String(eventByte, StandardCharsets.UTF_8));
                     return map;
                 }
             };
