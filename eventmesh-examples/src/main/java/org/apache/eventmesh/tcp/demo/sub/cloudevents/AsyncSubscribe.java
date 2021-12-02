@@ -23,17 +23,14 @@ import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.client.tcp.impl.EventMeshTCPClientFactory;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.SpecVersion;
-import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,6 +72,7 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
 
     @Override
     public void handle(CloudEvent msg, ChannelHandlerContext ctx) {
-        log.info("receive async msg====================={}", msg);
+        String content = new String(msg.getData().toBytes(), StandardCharsets.UTF_8);
+        log.info("receive async msg====================={}|{}", msg, content);
     }
 }
