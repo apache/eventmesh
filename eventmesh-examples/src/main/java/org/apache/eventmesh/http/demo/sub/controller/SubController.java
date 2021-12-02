@@ -43,7 +43,8 @@ public class SubController {
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
     public String subTest(@RequestBody String message) {
-        log.info("=======receive message======= {}", JsonUtils.serialize(message));
+        log.info("=======receive message======= {}", message);
+
         subService.consumeMessage(message);
 
         Map<String, Object> map = new HashMap<>();
