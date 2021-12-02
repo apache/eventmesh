@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.client.tcp.impl.cloudevent;
 
+import org.apache.eventmesh.client.tcp.AbstractEventMeshTCPSubHandler;
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
@@ -24,31 +25,26 @@ import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -57,19 +53,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<CloudEvent> {
 
-    private final UserAgent                  userAgent;
-    private final List<SubscriptionItem>     subscriptionItems = Collections.synchronizedList(new ArrayList<>());
+    private final List<SubscriptionItem>     subscriptionItems = Collections.synchronizedList(new LinkedList<>());
     private       ReceiveMsgHook<CloudEvent> callback;
 
     public CloudEventTCPSubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
-        this.userAgent = eventMeshTcpClientConfig.getUserAgent();
     }
 
     @Override
     public void init() throws EventMeshException {
         try {
-            open(new Handler());
+            open(new CloudEventTCPSubHandler(contexts));
             hello();
             heartbeat();
             log.info("SimpleSubClientImpl|{}|started!", clientNo);
@@ -127,16 +121,6 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         }
     }
 
-    private void goodbye() throws Exception {
-        Package msg = MessageUtils.goodbye();
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-    }
-
-    private void hello() throws Exception {
-        Package msg = MessageUtils.hello(userAgent);
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-    }
-
     @Override
     public void registerBusiHandler(ReceiveMsgHook<CloudEvent> handler) throws EventMeshException {
         this.callback = handler;
@@ -152,71 +136,37 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         }
     }
 
-    private class Handler extends SimpleChannelInboundHandler<Package> {
-        @SuppressWarnings("Duplicates")
+    private class CloudEventTCPSubHandler extends AbstractEventMeshTCPSubHandler<CloudEvent> {
+
+        public CloudEventTCPSubHandler(
+            ConcurrentHashMap<Object, RequestContext> contexts) {
+            super(contexts);
+        }
+
         @Override
-        protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            Command cmd = msg.getHeader().getCmd();
-            log.info("|receive|type={}|msg={}", cmd, msg);
-            String protocolVersion = msg.getHeader().getProperty(Constants.PROTOCOL_VERSION).toString();
-            if (cmd == Command.REQUEST_TO_CLIENT) {
-                Package pkg = requestToClientAck(msg);
-                if (callback != null) {
-                    CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                        .deserialize(msg.getBody().toString().getBytes(StandardCharsets.UTF_8));
-                    callback.handle(event, ctx);
-                }
-                send(pkg);
-            } else if (cmd == Command.ASYNC_MESSAGE_TO_CLIENT) {
-                Package pkg = asyncMessageAck(msg);
-                if (callback != null) {
-                    CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                        .deserialize(msg.getBody().toString().getBytes(StandardCharsets.UTF_8));
-                    callback.handle(event, ctx);
-                }
-                send(pkg);
-            } else if (cmd == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-                Package pkg = broadcastMessageAck(msg);
-                if (callback != null) {
-                    CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                        .deserialize(msg.getBody().toString().getBytes(StandardCharsets.UTF_8));
-                    callback.handle(event, ctx);
-                }
-                send(pkg);
-            } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                //TODO
-            } else {
-                log.error("msg ignored|{}|{}", cmd, msg);
+        public CloudEvent getProtocolMessage(Package tcpPackage) {
+            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
+            if (eventFormat == null) {
+                throw new IllegalArgumentException(
+                    String.format("Cannot find the cloudevent format: %s", JsonFormat.CONTENT_TYPE));
             }
-            RequestContext context = contexts.get(RequestContext._key(msg));
-            if (context != null) {
-                contexts.remove(context.getKey());
-                context.finish(msg);
-            } else {
-                log.error("msg ignored,context not found.|{}|{}", cmd, msg);
+            return eventFormat.deserialize(tcpPackage.getBody().toString().getBytes(StandardCharsets.UTF_8));
+        }
+
+        @Override
+        public void callback(CloudEvent cloudEvent, ChannelHandlerContext ctx) {
+            if(callback != null) {
+                callback.handle(cloudEvent, ctx);
+            }
+        }
+
+        @Override
+        public void response(Package tcpPackage) {
+            try {
+                send(tcpPackage);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
             }
         }
     }
-
-    private Package requestToClientAck(Package tcpPackage) {
-        Package msg = new Package();
-        msg.setHeader(new Header(Command.REQUEST_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
-        msg.setBody(tcpPackage.getBody());
-        return msg;
-    }
-
-    private Package asyncMessageAck(Package tcpPackage) {
-        Package msg = new Package();
-        msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
-        msg.setBody(tcpPackage.getBody());
-        return msg;
-    }
-
-    private Package broadcastMessageAck(Package tcpPackage) {
-        Package msg = new Package();
-        msg.setHeader(new Header(Command.BROADCAST_MESSAGE_TO_CLIENT_ACK, 0, null, tcpPackage.getHeader().getSeq()));
-        msg.setBody(tcpPackage.getBody());
-        return msg;
-    }
-
 }

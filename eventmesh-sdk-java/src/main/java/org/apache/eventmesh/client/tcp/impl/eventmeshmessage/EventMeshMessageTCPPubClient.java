@@ -19,7 +19,6 @@ package org.apache.eventmesh.client.tcp.impl.eventmeshmessage;
 
 import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
@@ -46,16 +45,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubClient<EventMeshMessage> {
 
-    private final UserAgent userAgent;
-
     private ReceiveMsgHook<EventMeshMessage> callback;
 
     private final ConcurrentHashMap<String, AsyncRRCallback> callbackConcurrentHashMap = new ConcurrentHashMap<>();
-    private       ScheduledFuture<?>                         task;
 
     public EventMeshMessageTCPPubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
-        this.userAgent = MessageUtils.generatePubClient(eventMeshTcpClientConfig.getUserAgent());
     }
 
     @Override
@@ -139,10 +134,6 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
     @Override
     public void close() {
         try {
-            if (task != null) {
-                task.cancel(false);
-            }
-            goodbye();
             super.close();
         } catch (Exception e) {
             log.error("Close EventMeshMessage TCP publish client error", e);
@@ -174,17 +165,5 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
                 context.finish(msg);
             }
         }
-    }
-
-    // todo: remove hello
-    private void hello() throws Exception {
-        Package msg = MessageUtils.hello(userAgent);
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-    }
-
-    // todo: remove goodbye
-    private void goodbye() throws Exception {
-        Package msg = MessageUtils.goodbye();
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 }

@@ -19,7 +19,6 @@ package org.apache.eventmesh.client.tcp.impl.cloudevent;
 
 import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
@@ -31,12 +30,9 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelHandler;
@@ -50,24 +46,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<CloudEvent> {
 
-    private final UserAgent userAgent;
-
     private ReceiveMsgHook<CloudEvent> callback;
 
     private final ConcurrentHashMap<String, AsyncRRCallback> callbackConcurrentHashMap = new ConcurrentHashMap<>();
-    private       ScheduledFuture<?>                         task;
 
     public CloudEventTCPPubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
-        this.userAgent = eventMeshTcpClientConfig.getUserAgent();
     }
 
     @Override
     public void init() throws EventMeshException {
         try {
-            open(new Handler());
-            hello();
-            heartbeat();
+            super.open(new Handler());
+            super.hello();
+            super.heartbeat();
         } catch (Exception ex) {
             throw new EventMeshException("Initialize EventMeshMessageTCPPubClient error", ex);
         }
@@ -77,7 +69,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     public void reconnect() throws EventMeshException {
         try {
             super.reconnect();
-            hello();
+            super.hello();
         } catch (Exception ex) {
             throw new EventMeshException("reconnect error", ex);
         }
@@ -139,7 +131,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     @Override
     public void close() {
         try {
-            goodbye();
+            super.goodbye();
             super.close();
         } catch (Exception ex) {
             log.error("Close CloudEvent TCP publish client error", ex);
@@ -170,18 +162,6 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
                 context.finish(msg);
             }
         }
-    }
-
-    // todo: remove hello
-    private void hello() throws Exception {
-        Package msg = MessageUtils.hello(userAgent);
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-    }
-
-    // todo: remove goodbye
-    private void goodbye() throws Exception {
-        Package msg = MessageUtils.goodbye();
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 
     private Package responseToClientAck(Package in) {
