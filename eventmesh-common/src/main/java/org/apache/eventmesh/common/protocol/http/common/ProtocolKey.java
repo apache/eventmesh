@@ -38,6 +38,8 @@ public class ProtocolKey {
         public static final String IP = "ip";
         public static final String USERNAME = "username";
         public static final String PASSWD = "passwd";
+        public static final String BIZSEQNO = "bizseqno";
+        public static final String UNIQUEID = "uniqueid";
     }
 
 

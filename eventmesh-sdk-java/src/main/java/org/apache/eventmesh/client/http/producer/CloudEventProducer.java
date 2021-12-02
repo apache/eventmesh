@@ -14,13 +14,16 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.RandomStringUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import com.google.common.base.Preconditions;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.provider.EventFormatProvider;
 import io.netty.handler.codec.http.HttpMethod;
 import lombok.extern.slf4j.Slf4j;
 
@@ -101,17 +104,27 @@ class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocol
     }
 
     private RequestParam buildCommonPostParam(CloudEvent cloudEvent) {
+        byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
+            .serialize(cloudEvent);
+        String content = new String(bodyByte, StandardCharsets.UTF_8);
+
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam
+            .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpClientConfig.getEnv())
+            .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpClientConfig.getIdc())
+            .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshHttpClientConfig.getIp())
+            .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshHttpClientConfig.getPid())
+            .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshHttpClientConfig.getSys())
             .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
             .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
             .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
             .addHeader(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
             .addHeader(ProtocolKey.PROTOCOL_DESC, PROTOCOL_DESC)
             .addHeader(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString())
+
             // todo: move producerGroup tp header
             .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
-            .addBody(SendMessageRequestBody.CONTENT, JsonUtils.serialize(cloudEvent));
+            .addBody(SendMessageRequestBody.CONTENT, content);
         return requestParam;
     }
 
@@ -125,6 +138,8 @@ class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocol
             .withExtension(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
             .withExtension(ProtocolKey.PROTOCOL_DESC, cloudEvent.getSpecVersion().name())
             .withExtension(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString())
+            .withExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO, RandomStringUtils.generateNum(30))
+            .withExtension(ProtocolKey.ClientInstanceKey.UNIQUEID, RandomStringUtils.generateNum(30))
             .build();
     }
 
