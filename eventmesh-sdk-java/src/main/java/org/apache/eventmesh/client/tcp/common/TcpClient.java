@@ -121,7 +121,7 @@ public abstract class TcpClient implements Closeable {
     }
 
     protected void heartbeat() {
-        if (heartTask != null) {
+        if (heartTask == null) {
             synchronized (TcpClient.class) {
                 heartTask = scheduler.scheduleAtFixedRate(() -> {
                     try {
@@ -130,6 +130,7 @@ public abstract class TcpClient implements Closeable {
                         }
                         Package msg = MessageUtils.heartBeat();
                         io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                        log.debug("heart beat start {}", msg);
                     } catch (Exception ignore) {
                         // ignore
                     }
