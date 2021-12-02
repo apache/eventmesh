@@ -32,7 +32,7 @@ public class ReplyMessageRequestBody extends Body {
 
     public static final String ORIGTOPIC     = "origtopic";
     public static final String BIZSEQNO      = "bizseqno";
-    public static final String UNIQUEID      = "uniqueId";
+    public static final String UNIQUEID      = "uniqueid";
     public static final String CONTENT       = "content";
     public static final String EXTFIELDS     = "extFields";
     public static final String PRODUCERGROUP = "producergroup";
