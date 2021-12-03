@@ -50,8 +50,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import org.slf4j.Logger;
@@ -152,11 +152,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
             JsonUtils.serialize(EventMeshUtil.getEventProp(handleMsgContext.getEvent()))));
 
-        try {
-            builder.setEntity(new UrlEncodedFormEntity(body));
-        } catch (UnsupportedEncodingException e) {
-            return;
-        }
+        builder.setEntity(new UrlEncodedFormEntity(body, StandardCharsets.UTF_8));
 
         eventMeshHTTPServer.metrics.summaryMetrics.recordPushMsg();
 
