@@ -26,6 +26,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'io.netty:netty-all'
     implementation "io.cloudevents:cloudevents-core"
+    implementation "io.cloudevents:cloudevents-json-jackson"
     implementation "io.openmessaging:openmessaging-api"
 
     compileOnly 'org.projectlombok:lombok:1.18.22'
