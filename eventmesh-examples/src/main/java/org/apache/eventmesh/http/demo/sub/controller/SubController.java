@@ -17,21 +17,29 @@
 
 package org.apache.eventmesh.http.demo.sub.controller;
 
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.http.demo.sub.service.SubService;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
 
 @Slf4j
 @RestController
@@ -42,10 +50,18 @@ public class SubController {
     private SubService subService;
 
     @RequestMapping(value = "/test", method = RequestMethod.POST)
-    public String subTest(@RequestBody String message) {
-        log.info("=======receive message======= {}", message);
+    public String subTest(HttpServletRequest request) {
+        String content = request.getParameter("content");
+        log.info("=======receive message======= {}", content);
+        Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
+        if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, contentMap.get(ProtocolKey.PROTOCOL_TYPE))) {
+            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                .deserialize(content.getBytes(StandardCharsets.UTF_8));
+            String data = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+            log.info("=======receive data======= {}", data);
+        }
 
-        subService.consumeMessage(message);
+        subService.consumeMessage(content);
 
         Map<String, Object> map = new HashMap<>();
         map.put("retCode", 1);
