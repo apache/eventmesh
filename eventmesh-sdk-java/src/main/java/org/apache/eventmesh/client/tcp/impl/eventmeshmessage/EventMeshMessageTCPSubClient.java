@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.client.tcp.impl.eventmeshmessage;
 
-import org.apache.eventmesh.client.tcp.AbstractEventMeshTCPSubHandler;
+import org.apache.eventmesh.client.tcp.impl.AbstractEventMeshTCPSubHandler;
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;

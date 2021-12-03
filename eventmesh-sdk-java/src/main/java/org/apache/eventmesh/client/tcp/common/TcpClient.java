@@ -57,7 +57,7 @@ public abstract class TcpClient implements Closeable {
 
     public final int clientNo = (new Random()).nextInt(1000);
 
-    protected ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
 
     protected final String    host;
     protected final int       port;

@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.client.tcp.impl.cloudevent;
 
-import org.apache.eventmesh.client.tcp.AbstractEventMeshTCPSubHandler;
+import org.apache.eventmesh.client.tcp.impl.AbstractEventMeshTCPSubHandler;
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
@@ -37,8 +37,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.base.Preconditions;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.format.EventFormat;
@@ -146,16 +147,14 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         @Override
         public CloudEvent getProtocolMessage(Package tcpPackage) {
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
-            if (eventFormat == null) {
-                throw new IllegalArgumentException(
-                    String.format("Cannot find the cloudevent format: %s", JsonFormat.CONTENT_TYPE));
-            }
+            Preconditions.checkNotNull(eventFormat,
+                String.format("Cannot find the cloudevent format: %s", JsonFormat.CONTENT_TYPE));
             return eventFormat.deserialize(tcpPackage.getBody().toString().getBytes(StandardCharsets.UTF_8));
         }
 
         @Override
         public void callback(CloudEvent cloudEvent, ChannelHandlerContext ctx) {
-            if(callback != null) {
+            if (callback != null) {
                 callback.handle(cloudEvent, ctx);
             }
         }

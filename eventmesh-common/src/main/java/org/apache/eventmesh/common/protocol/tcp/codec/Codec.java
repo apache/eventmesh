@@ -206,7 +206,8 @@ public class Codec {
             case RESPONSE_TO_CLIENT_ACK:
             case ASYNC_MESSAGE_TO_CLIENT_ACK:
             case BROADCAST_MESSAGE_TO_CLIENT_ACK:
-                // The message json will be deserialized by protocol plugin
+                // The message string will be deserialized by protocol plugin, if the event is cloudevents, the body is
+                // just a string.
                 return bodyJsonString;
             case REDIRECT_TO_CLIENT:
                 return OBJECT_MAPPER.readValue(bodyJsonString, RedirectInfo.class);

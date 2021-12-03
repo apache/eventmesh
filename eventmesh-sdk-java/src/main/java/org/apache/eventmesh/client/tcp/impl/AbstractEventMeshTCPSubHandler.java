@@ -1,4 +1,4 @@
-package org.apache.eventmesh.client.tcp;
+package org.apache.eventmesh.client.tcp.impl;
 
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
@@ -6,6 +6,8 @@ import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.base.Preconditions;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -22,12 +24,8 @@ public abstract class AbstractEventMeshTCPSubHandler<ProtocolMessage> extends Si
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-        if (msg == null) {
-            throw new IllegalArgumentException("TCP package cannot be null");
-        }
-        if (msg.getHeader() == null) {
-            throw new IllegalArgumentException("TCP package header cannot be null");
-        }
+        Preconditions.checkNotNull(msg, "TCP package cannot be null");
+        Preconditions.checkNotNull(msg.getHeader(), "TCP package header cannot be null");
         Command cmd = msg.getHeader().getCmd();
         log.info("|receive|type={}|msg={}", cmd, msg);
         switch (cmd) {
