@@ -19,30 +19,28 @@ package org.apache.eventmesh.client.tcp.impl.cloudevent;
 
 import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.client.tcp.impl.AbstractEventMeshTCPPubHandler;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.common.utils.JsonUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import io.cloudevents.CloudEvent;
-import io.netty.channel.ChannelHandler;
+import io.cloudevents.core.format.EventFormat;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
+
+import com.google.common.base.Preconditions;
 
 /**
  * A CloudEvent TCP publish client implementation.
@@ -50,24 +48,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<CloudEvent> {
 
-    private final UserAgent userAgent;
-
     private ReceiveMsgHook<CloudEvent> callback;
 
     private final ConcurrentHashMap<String, AsyncRRCallback> callbackConcurrentHashMap = new ConcurrentHashMap<>();
-    private       ScheduledFuture<?>                         task;
 
     public CloudEventTCPPubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
-        this.userAgent = eventMeshTcpClientConfig.getUserAgent();
     }
 
     @Override
     public void init() throws EventMeshException {
         try {
-            open(new Handler());
-            hello();
-            heartbeat();
+            super.open(new CloudEventTCPPubHandler(contexts));
+            super.hello();
+            super.heartbeat();
         } catch (Exception ex) {
             throw new EventMeshException("Initialize EventMeshMessageTCPPubClient error", ex);
         }
@@ -77,7 +71,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     public void reconnect() throws EventMeshException {
         try {
             super.reconnect();
-            hello();
+            super.hello();
         } catch (Exception ex) {
             throw new EventMeshException("reconnect error", ex);
         }
@@ -111,8 +105,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
         try {
             Package msg = MessageUtils.buildPackage(cloudEvent, Command.ASYNC_MESSAGE_TO_SERVER);
             log.info("SimplePubClientImpl cloud event|{}|publish|send|type={}|protocol={}|msg={}",
-                clientNo, msg.getHeader().getCommand(),
-                msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
+                clientNo, msg.getHeader().getCmd(), msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             return io(msg, timeout);
         } catch (Exception ex) {
             throw new EventMeshException("publish error", ex);
@@ -123,7 +116,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     public void broadcast(CloudEvent cloudEvent, long timeout) throws EventMeshException {
         try {
             Package msg = MessageUtils.buildPackage(cloudEvent, Command.BROADCAST_MESSAGE_TO_SERVER);
-            log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCommand(),
+            log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCmd(),
                 msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             super.send(msg);
         } catch (Exception ex) {
@@ -139,55 +132,40 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     @Override
     public void close() {
         try {
-            goodbye();
             super.close();
         } catch (Exception ex) {
             log.error("Close CloudEvent TCP publish client error", ex);
         }
     }
 
-    // todo: move to abstract class
-    @ChannelHandler.Sharable
-    private class Handler extends SimpleChannelInboundHandler<Package> {
+    private class CloudEventTCPPubHandler extends AbstractEventMeshTCPPubHandler<CloudEvent> {
+
+        public CloudEventTCPPubHandler(ConcurrentHashMap<Object, RequestContext> contexts) {
+            super(contexts);
+        }
+
         @Override
-        protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            log.info("SimplePubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader(), msg);
-
-            Command cmd = msg.getHeader().getCommand();
-            if (cmd == Command.RESPONSE_TO_CLIENT) {
-                Package pkg = responseToClientAck(msg);
-                if (callback != null) {
-                    callback.handle((CloudEvent) pkg.getBody(), ctx);
-                }
-                send(pkg);
-            } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                //TODO
-            }
-
-            RequestContext context = contexts.get(RequestContext._key(msg));
-            if (context != null) {
-                contexts.remove(context.getKey());
-                context.finish(msg);
+        public void callback(CloudEvent cloudEvent, ChannelHandlerContext ctx) {
+            if (callback != null) {
+                callback.handle(cloudEvent, ctx);
             }
         }
-    }
 
-    // todo: remove hello
-    private void hello() throws Exception {
-        Package msg = MessageUtils.hello(userAgent);
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-    }
+        @Override
+        public CloudEvent getMessage(Package tcpPackage) {
+            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
+            Preconditions.checkNotNull(eventFormat,
+                String.format("Cannot find the cloudevent format: %s", JsonFormat.CONTENT_TYPE));
+            return eventFormat.deserialize(tcpPackage.getBody().toString().getBytes(StandardCharsets.UTF_8));
+        }
 
-    // todo: remove goodbye
-    private void goodbye() throws Exception {
-        Package msg = MessageUtils.goodbye();
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-    }
-
-    private Package responseToClientAck(Package in) {
-        Package msg = new Package();
-        msg.setHeader(new Header(Command.RESPONSE_TO_CLIENT_ACK, 0, null, in.getHeader().getSeq()));
-        msg.setBody(JsonUtils.deserialize(in.getBody().toString(), EventMeshMessage.class));
-        return msg;
+        @Override
+        public void sendResponse(Package tcpPackage) {
+            try {
+                send(tcpPackage);
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
+        }
     }
 }

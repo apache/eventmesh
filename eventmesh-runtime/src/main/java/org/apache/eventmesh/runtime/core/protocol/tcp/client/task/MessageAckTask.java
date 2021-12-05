@@ -39,7 +39,7 @@ public class MessageAckTask extends AbstractTask {
     public void run() {
         long taskExecuteTime = System.currentTimeMillis();
         String seq = pkg.getHeader().getSeq();
-        Command cmd = pkg.getHeader().getCommand();
+        Command cmd = pkg.getHeader().getCmd();
 
         if (seq == null) {
             logger.error("MessageAckTask failed, seq cannot be null|user={}", session.getClient());

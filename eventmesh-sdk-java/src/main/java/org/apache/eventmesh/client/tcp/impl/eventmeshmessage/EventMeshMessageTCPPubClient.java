@@ -19,25 +19,22 @@ package org.apache.eventmesh.client.tcp.impl.eventmeshmessage;
 
 import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.client.tcp.impl.AbstractEventMeshTCPPubHandler;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
 
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -46,22 +43,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubClient<EventMeshMessage> {
 
-    private final UserAgent userAgent;
-
     private ReceiveMsgHook<EventMeshMessage> callback;
 
     private final ConcurrentHashMap<String, AsyncRRCallback> callbackConcurrentHashMap = new ConcurrentHashMap<>();
-    private       ScheduledFuture<?>                         task;
 
     public EventMeshMessageTCPPubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
-        this.userAgent = MessageUtils.generatePubClient(eventMeshTcpClientConfig.getUserAgent());
     }
 
     @Override
     public void init() throws EventMeshException {
         try {
-            open(new Handler());
+            open(new EventMeshTCPPubHandler(contexts));
             hello();
             heartbeat();
         } catch (Exception ex) {
@@ -110,7 +103,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         try {
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.ASYNC_MESSAGE_TO_SERVER);
             log.info("SimplePubClientImpl em message|{}|publish|send|type={}|protocol={}|msg={}",
-                clientNo, msg.getHeader().getCommand(),
+                clientNo, msg.getHeader().getCmd(),
                 msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             return io(msg, timeout);
         } catch (Exception ex) {
@@ -123,7 +116,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         try {
             // todo: transform EventMeshMessage to Package
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.BROADCAST_MESSAGE_TO_SERVER);
-            log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCommand(),
+            log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCmd(),
                 msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             super.send(msg);
         } catch (Exception ex) {
@@ -139,52 +132,38 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
     @Override
     public void close() {
         try {
-            if (task != null) {
-                task.cancel(false);
-            }
-            goodbye();
             super.close();
         } catch (Exception e) {
             log.error("Close EventMeshMessage TCP publish client error", e);
         }
     }
 
-    // todo: move to abstract class
-    @ChannelHandler.Sharable
-    private class Handler extends SimpleChannelInboundHandler<Package> {
+    private class EventMeshTCPPubHandler extends AbstractEventMeshTCPPubHandler<EventMeshMessage> {
+
+        public EventMeshTCPPubHandler(ConcurrentHashMap<Object, RequestContext> contexts) {
+            super(contexts);
+        }
+
         @Override
-        protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
-            log.info("SimplePubClientImpl|{}|receive|type={}|msg={}", clientNo, msg.getHeader(), msg);
-
-            Command cmd = msg.getHeader().getCommand();
-            if (cmd == Command.RESPONSE_TO_CLIENT) {
-                // todo: Transform to CloudEvents
-                Package pkg = MessageUtils.responseToClientAck(msg);
-                if (callback != null) {
-                    callback.handle((EventMeshMessage) pkg.getBody(), ctx);
-                }
-                send(pkg);
-            } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                //TODO
+        public void callback(EventMeshMessage eventMeshMessage, ChannelHandlerContext ctx) {
+            if (callback != null) {
+                callback.handle(eventMeshMessage, ctx);
             }
+        }
 
-            RequestContext context = contexts.get(RequestContext._key(msg));
-            if (context != null) {
-                contexts.remove(context.getKey());
-                context.finish(msg);
+        @Override
+        public EventMeshMessage getMessage(Package tcpPackage) {
+            return JsonUtils.deserialize(tcpPackage.getBody().toString(), EventMeshMessage.class);
+        }
+
+        @Override
+        public void sendResponse(Package tcpPackage) {
+            try {
+                send(tcpPackage);
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
             }
         }
     }
 
-    // todo: remove hello
-    private void hello() throws Exception {
-        Package msg = MessageUtils.hello(userAgent);
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-    }
-
-    // todo: remove goodbye
-    private void goodbye() throws Exception {
-        Package msg = MessageUtils.goodbye();
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-    }
 }
