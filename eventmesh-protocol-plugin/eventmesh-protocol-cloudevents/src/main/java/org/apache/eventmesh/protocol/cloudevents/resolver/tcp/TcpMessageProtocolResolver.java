@@ -24,13 +24,16 @@ import org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
+
+import com.google.common.base.Preconditions;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
-
-import java.nio.charset.StandardCharsets;
 
 public class TcpMessageProtocolResolver {
 
@@ -43,9 +46,10 @@ public class TcpMessageProtocolResolver {
         String protocolDesc = header.getProperty(Constants.PROTOCOL_DESC).toString();
 
         if (StringUtils.isBlank(protocolType)
-                || StringUtils.isBlank(protocolVersion)
-                || StringUtils.isBlank(protocolDesc)) {
-            throw new ProtocolHandleException(String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
+            || StringUtils.isBlank(protocolVersion)
+            || StringUtils.isBlank(protocolDesc)) {
+            throw new ProtocolHandleException(
+                String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
                     protocolType, protocolVersion, protocolDesc));
         }
 
@@ -55,8 +59,10 @@ public class TcpMessageProtocolResolver {
 
         if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
             // todo:resolve different format
-            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                .deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
+            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
+            Preconditions
+                .checkNotNull(eventFormat, String.format("EventFormat: %s is not supported", JsonFormat.CONTENT_TYPE));
+            CloudEvent event = eventFormat.deserialize(cloudEventJson.getBytes(StandardCharsets.UTF_8));
             cloudEventBuilder = CloudEventBuilder.v1(event);
             for (String propKey : header.getProperties().keySet()) {
                 cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
