@@ -49,46 +49,6 @@ public class Header {
     }
 
 
-    public Command getCommand() {
-        return cmd;
-    }
-
-    public void setCommand(Command cmd) {
-        this.cmd = cmd;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getDesc() {
-        return desc;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
-
-    public String getSeq() {
-        return seq;
-    }
-
-    public void setSeq(String seq) {
-        this.seq = seq;
-    }
-
-    public Map<String, Object> getProperties() {
-        return properties;
-    }
-
-    public void setProperties(Map<String, Object> properties) {
-        this.properties = properties;
-    }
-
     public void putProperty(final String name, final Object value) {
         if (null == this.properties) {
             this.properties = new HashMap<>();
@@ -99,9 +59,17 @@ public class Header {
 
     public Object getProperty(final String name) {
         if (null == this.properties) {
-            this.properties = new HashMap<>();
+            return null;
         }
         return this.properties.get(name);
+    }
+
+    public String getStringProperty(final String name) {
+        Object property = getProperty(name);
+        if (null == property) {
+            return null;
+        }
+        return property.toString();
     }
 
 }

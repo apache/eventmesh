@@ -18,9 +18,8 @@
 dependencies {
     compileOnly project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
     implementation "io.cloudevents:cloudevents-core"
+    implementation "com.google.guava:guava"
     implementation "io.cloudevents:cloudevents-json-jackson"
 
-    testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    testImplementation "io.cloudevents:cloudevents-core"
     testImplementation "junit:junit"
 }

@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.tcp.impl;
+package org.apache.eventmesh.client.tcp;
 
-import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.client.tcp.impl.cloudevent.CloudEventTCPClient;
 import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPClient;
