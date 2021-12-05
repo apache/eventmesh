@@ -17,11 +17,6 @@
 
 package org.apache.eventmesh.protocol.cloudevents;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
@@ -29,7 +24,6 @@ import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchProtocolResolver;
@@ -37,10 +31,19 @@ import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchV
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageRequestProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.tcp.TcpMessageProtocolResolver;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.common.base.Preconditions;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.format.EventFormat;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 
 /**
  * CloudEvents protocol adaptor, used to transform CloudEvents message to CloudEvents message.
@@ -75,7 +78,9 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
         return TcpMessageProtocolResolver.buildEvent(header, cloudEventJson);
     }
 
-    private CloudEvent deserializeHttpProtocol(String requestCode, org.apache.eventmesh.common.protocol.http.header.Header header, Body body) throws ProtocolHandleException {
+    private CloudEvent deserializeHttpProtocol(String requestCode,
+                                               org.apache.eventmesh.common.protocol.http.header.Header header,
+                                               Body body) throws ProtocolHandleException {
 
         if (String.valueOf(RequestCode.MSG_BATCH_SEND.getRequestCode()).equals(requestCode)) {
             return SendMessageBatchProtocolResolver.buildEvent(header, body);
@@ -104,9 +109,11 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
             HttpCommand httpCommand = new HttpCommand();
             Body body = new Body() {
                 final Map<String, Object> map = new HashMap<>();
+
                 @Override
                 public Map<String, Object> toMap() {
-                    byte[] eventByte = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(cloudEvent);
+                    byte[] eventByte =
+                        EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(cloudEvent);
                     map.put("content", new String(eventByte, StandardCharsets.UTF_8));
                     return map;
                 }
@@ -116,9 +123,12 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
             return httpCommand;
         } else if (StringUtils.equals("tcp", protocolDesc)) {
             Package pkg = new Package();
-            byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
-                .serialize(cloudEvent);
-            pkg.setBody(bodyByte);
+            String dataContentType = cloudEvent.getDataContentType();
+            Preconditions.checkNotNull(dataContentType, "DateContentType cannot be null");
+            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(dataContentType);
+            Preconditions.checkNotNull(eventFormat,
+                String.format("DateContentType:%s is not supported", dataContentType));
+            pkg.setBody(eventFormat.serialize(cloudEvent));
             return pkg;
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));

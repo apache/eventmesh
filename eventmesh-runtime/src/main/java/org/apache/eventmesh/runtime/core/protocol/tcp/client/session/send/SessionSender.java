@@ -79,7 +79,7 @@ public class SessionSender {
             if (upstreamBuff.tryAcquire(TRY_PERMIT_TIME_OUT, TimeUnit.MILLISECONDS)) {
                 upMsgs.incrementAndGet();
                 UpStreamMsgContext upStreamMsgContext = null;
-                Command cmd = header.getCommand();
+                Command cmd = header.getCmd();
                 long ttl = EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
                 if (Command.REQUEST_TO_SERVER == cmd) {
                     if (event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL) != null){
@@ -148,7 +148,7 @@ public class SessionSender {
                 session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getMq2EventMeshMsgNum().incrementAndGet();
 
                 Command cmd;
-                if (header.getCommand().equals(Command.REQUEST_TO_SERVER)) {
+                if (header.getCmd().equals(Command.REQUEST_TO_SERVER)) {
                     cmd = Command.RESPONSE_TO_CLIENT;
                 } else {
                     messageLogger.error("invalid message|messageHeader={}|event={}", header, event);
