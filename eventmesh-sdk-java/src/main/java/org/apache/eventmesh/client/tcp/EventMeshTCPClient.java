@@ -26,9 +26,10 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 
 /**
  * EventMesh TCP client, used to sub/pub message by tcp.
- * You can use {@link org.apache.eventmesh.client.tcp.impl.EventMeshTCPClientFactory} to create a target client.
+ * You can use {@link EventMeshTCPClientFactory} to create a target client.
  *
- * @param <ProtocolMessage>
+ * @param <ProtocolMessage> protocol message type
+ * @since 1.3.0
  */
 public interface EventMeshTCPClient<ProtocolMessage> extends AutoCloseable {
 
