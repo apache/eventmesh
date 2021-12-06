@@ -213,7 +213,7 @@ public class Codec {
             case REDIRECT_TO_CLIENT:
                 return OBJECT_MAPPER.readValue(bodyJsonString, RedirectInfo.class);
             default:
-                log.error("Invalidate TCP command: {}", command);
+                log.warn("Invalidate TCP command: {}", command);
                 return null;
         }
     }

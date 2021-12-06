@@ -64,7 +64,7 @@ public class SendMessageRequestProtocolResolver {
             if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
                 cloudEventBuilder = CloudEventBuilder.v1();
 
-                event = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
+                cloudEventBuilder = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
                     .withSubject(sendMessageRequestBody.getTopic())
                     .withType("eventmeshmessage")
                     .withSource(URI.create("/"))
@@ -86,12 +86,14 @@ public class SendMessageRequestProtocolResolver {
                     .withExtension(SendMessageRequestBody.UNIQUEID, sendMessageRequestBody.getUniqueId())
                     .withExtension(SendMessageRequestBody.PRODUCERGROUP,
                         sendMessageRequestBody.getProducerGroup())
-                    .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl())
-                    .withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag())
-                    .build();
+                    .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl());
+                if (StringUtils.isNotEmpty(sendMessageRequestBody.getTag())) {
+                    cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag());
+                }
+                event = cloudEventBuilder.build();
             } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
                 cloudEventBuilder = CloudEventBuilder.v03();
-                event = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
+                cloudEventBuilder = cloudEventBuilder.withId(sendMessageRequestBody.getBizSeqNo())
                     .withSubject(sendMessageRequestBody.getTopic())
                     .withType("eventmeshmessage")
                     .withSource(URI.create("/"))
@@ -113,9 +115,11 @@ public class SendMessageRequestProtocolResolver {
                     .withExtension(SendMessageRequestBody.UNIQUEID, sendMessageRequestBody.getUniqueId())
                     .withExtension(SendMessageRequestBody.PRODUCERGROUP,
                         sendMessageRequestBody.getProducerGroup())
-                    .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl())
-                    .withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag())
-                    .build();
+                    .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl());
+                if (StringUtils.isNotEmpty(sendMessageRequestBody.getTag())) {
+                    cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag());
+                }
+                event = cloudEventBuilder.build();
             }
             return event;
         } catch (Exception e) {
