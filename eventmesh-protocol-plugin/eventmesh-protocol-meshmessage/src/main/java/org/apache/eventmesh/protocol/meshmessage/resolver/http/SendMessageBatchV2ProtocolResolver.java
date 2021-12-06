@@ -61,7 +61,7 @@ public class SendMessageBatchV2ProtocolResolver {
             if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
                 cloudEventBuilder = CloudEventBuilder.v1();
 
-                event = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
+                cloudEventBuilder = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
                         .withSubject(sendMessageBatchV2RequestBody.getTopic())
                         .withType("eventmeshmessage")
                         .withSource(URI.create("/"))
@@ -81,12 +81,14 @@ public class SendMessageBatchV2ProtocolResolver {
                         .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
                         .withExtension(SendMessageBatchV2RequestBody.BIZSEQNO, sendMessageBatchV2RequestBody.getBizSeqNo())
                         .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, sendMessageBatchV2RequestBody.getProducerGroup())
-                        .withExtension(SendMessageBatchV2RequestBody.TTL, sendMessageBatchV2RequestBody.getTtl())
-                        .withExtension(SendMessageBatchV2RequestBody.TAG, sendMessageBatchV2RequestBody.getTag())
-                        .build();
+                        .withExtension(SendMessageBatchV2RequestBody.TTL, sendMessageBatchV2RequestBody.getTtl());
+                if (StringUtils.isNotEmpty(sendMessageBatchV2RequestBody.getTag())) {
+                    cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageBatchV2RequestBody.getTag());
+                }
+                event = cloudEventBuilder.build();
             } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
                 cloudEventBuilder = CloudEventBuilder.v03();
-                event = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
+                cloudEventBuilder = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
                         .withSubject(sendMessageBatchV2RequestBody.getTopic())
                         .withType("eventmeshmessage")
                         .withSource(URI.create("/"))
@@ -106,9 +108,11 @@ public class SendMessageBatchV2ProtocolResolver {
                         .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
                         .withExtension(SendMessageBatchV2RequestBody.BIZSEQNO, sendMessageBatchV2RequestBody.getBizSeqNo())
                         .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, sendMessageBatchV2RequestBody.getProducerGroup())
-                        .withExtension(SendMessageBatchV2RequestBody.TTL, sendMessageBatchV2RequestBody.getTtl())
-                        .withExtension(SendMessageBatchV2RequestBody.TAG, sendMessageBatchV2RequestBody.getTag())
-                        .build();
+                        .withExtension(SendMessageBatchV2RequestBody.TTL, sendMessageBatchV2RequestBody.getTtl());
+                if (StringUtils.isNotEmpty(sendMessageBatchV2RequestBody.getTag())) {
+                    cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageBatchV2RequestBody.getTag());
+                }
+                event = cloudEventBuilder.build();
             }
             return event;
         } catch (Exception e) {
