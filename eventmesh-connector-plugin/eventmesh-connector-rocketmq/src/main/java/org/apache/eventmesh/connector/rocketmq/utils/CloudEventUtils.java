@@ -64,7 +64,7 @@ public class CloudEventUtils {
             String.valueOf(rmqMsg.getBornTimestamp()));
         MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_STORE_HOST),
             String.valueOf(rmqMsg.getStoreHost()));
-        MessageAccessor.putProperty(message, buildCloudEventPropertyKey("STORE_TIMESTAMP"),
+        MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_STORE_TIMESTAMP),
             String.valueOf(rmqMsg.getStoreTimestamp()));
 
         //use in manual ack

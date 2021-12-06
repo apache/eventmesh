@@ -74,14 +74,6 @@ public class AsyncPublishInstance {
 
         try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig)) {
             for (int i = 0; i < messageSize; i++) {
-                EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                    .bizSeqNo(RandomStringUtils.generateNum(30))
-                    .content("testPublishMessage")
-                    .topic(topic)
-                    .uniqueId(RandomStringUtils.generateNum(30))
-                    .build()
-                    .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
-
                 Map<String, String> content = new HashMap<>();
                 content.put("content", "testAsyncMessage");
 

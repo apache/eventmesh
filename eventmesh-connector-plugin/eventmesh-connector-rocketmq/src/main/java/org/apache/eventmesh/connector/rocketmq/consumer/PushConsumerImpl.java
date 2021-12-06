@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.AsyncConsumeContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.cloudevent.RocketMQMessageFactory;
@@ -250,7 +251,7 @@ public class PushConsumerImpl {
             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
                 EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
 
-            AsyncConsumeContext asyncConsumeContext = new AsyncConsumeContext() {
+            EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
                 @Override
                 public void commit(EventMeshAction action) {
                     switch (action) {
@@ -272,7 +273,9 @@ public class PushConsumerImpl {
                 }
             };
 
-            listener.consume(cloudEvent, asyncConsumeContext);
+            eventMeshAsyncConsumeContext.setAbstractContext(context);
+
+            listener.consume(cloudEvent, eventMeshAsyncConsumeContext);
 
             return EventMeshConsumeConcurrentlyStatus.valueOf(
                 contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
