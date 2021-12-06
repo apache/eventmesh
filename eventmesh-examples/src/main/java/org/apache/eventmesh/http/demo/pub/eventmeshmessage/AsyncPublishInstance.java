@@ -24,16 +24,16 @@ import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.util.Utils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class AsyncPublishInstance {
@@ -63,13 +63,19 @@ public class AsyncPublishInstance {
             .idc("idc")
             .ip(IPUtils.getLocalAddress())
             .sys("1234")
-            .pid(String.valueOf(ThreadUtils.getPID())).build();
+            .pid(String.valueOf(ThreadUtils.getPID()))
+            .userName("eventmesh")
+            .password("pass")
+            .build();
 
         try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);) {
             for (int i = 0; i < messageSize; i++) {
+                Map<String, String> content = new HashMap<>();
+                content.put("content", "testPublishMessage");
+
                 EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                     .bizSeqNo(RandomStringUtils.generateNum(30))
-                    .content("testPublishMessage")
+                    .content(JsonUtils.serialize(content))
                     .topic(topic)
                     .uniqueId(RandomStringUtils.generateNum(30))
                     .build()
