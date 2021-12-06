@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.assertj.core.util.Preconditions;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.provider.EventFormatProvider;
@@ -90,10 +92,12 @@ public class MessageUtils {
         Package msg = new Package();
         msg.setHeader(new Header(command, 0, null, generateRandomString(seqLength)));
         if (message instanceof CloudEvent) {
+            CloudEvent cloudEvent = (CloudEvent) message;
+            Preconditions.checkNotNull(cloudEvent.getDataContentType(), "DateContentType cannot be null");
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
-            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, ((CloudEvent) message).getSpecVersion().toString());
+            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString());
             msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
-            byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(((CloudEvent) message).getDataContentType())
+            byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
                 .serialize((CloudEvent) message);
             msg.setBody(bodyByte);
         } else if (message instanceof EventMeshMessage) {

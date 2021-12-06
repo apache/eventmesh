@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +39,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Preconditions;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -73,24 +75,20 @@ public class Codec {
     public static class Encoder extends MessageToByteEncoder<Package> {
         @Override
         public void encode(ChannelHandlerContext ctx, Package pkg, ByteBuf out) throws Exception {
-            final String headerJson = pkg != null ? OBJECT_MAPPER.writeValueAsString(pkg.getHeader()) : null;
-            final String bodyJson = pkg != null ? OBJECT_MAPPER.writeValueAsString(pkg.getBody()) : null;
-
-            final byte[] headerData = serializeBytes(headerJson);
-//            final byte[] bodyData = serializeBytes(bodyJson);
-
-            byte[] bodyData = serializeBytes(bodyJson);
-
-            String protocolType = "";
-            if (pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE) != null) {
-                protocolType = pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE).toString();
-                if (StringUtils.equals(CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
-                    bodyData = (byte[]) pkg.getBody();
-                }
+            Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
+            final Header header = pkg.getHeader();
+            Preconditions.checkNotNull(header, "TcpPackage header cannot be null", header);
+            if (log.isDebugEnabled()) {
+                log.debug("Encoder pkg={}", JsonUtils.serialize(pkg));
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug("Encoder headerJson={}|bodyJson={}", headerJson, bodyJson);
+            final byte[] headerData = serializeBytes(OBJECT_MAPPER.writeValueAsString(header));
+            final byte[] bodyData;
+
+            if (StringUtils.equals(CLOUD_EVENTS_PROTOCOL_NAME, header.getStringProperty(Constants.PROTOCOL_TYPE))) {
+                bodyData = (byte[]) pkg.getBody();
+            } else {
+                bodyData = serializeBytes(OBJECT_MAPPER.writeValueAsString(pkg.getBody()));
             }
 
             int headerLength = ArrayUtils.getLength(headerData);
@@ -188,7 +186,7 @@ public class Codec {
     }
 
     private static Object deserializeBody(String bodyJsonString, Header header) throws JsonProcessingException {
-        Command command = header.getCommand();
+        Command command = header.getCmd();
         switch (command) {
             case HELLO_REQUEST:
             case RECOMMEND_REQUEST:
@@ -208,7 +206,8 @@ public class Codec {
             case RESPONSE_TO_CLIENT_ACK:
             case ASYNC_MESSAGE_TO_CLIENT_ACK:
             case BROADCAST_MESSAGE_TO_CLIENT_ACK:
-                // The message json will be deserialized by protocol plugin
+                // The message string will be deserialized by protocol plugin, if the event is cloudevents, the body is
+                // just a string.
                 return bodyJsonString;
             case REDIRECT_TO_CLIENT:
                 return OBJECT_MAPPER.readValue(bodyJsonString, RedirectInfo.class);

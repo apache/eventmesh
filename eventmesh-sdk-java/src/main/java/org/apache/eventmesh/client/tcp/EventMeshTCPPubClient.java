@@ -29,6 +29,8 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
  *     <li>{@link org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPSubClient}</li>
  *     <li>{@link org.apache.eventmesh.client.tcp.impl.openmessage.OpenMessageTCPPubClient}</li>
  * </ul>
+ *
+ * @since 1.3.0
  */
 public interface EventMeshTCPPubClient<ProtocolMessage> extends AutoCloseable {
 

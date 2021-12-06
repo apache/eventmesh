@@ -18,8 +18,8 @@
 package org.apache.eventmesh.client.tcp.common;
 
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
-import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 
 import java.io.Closeable;
@@ -57,10 +57,11 @@ public abstract class TcpClient implements Closeable {
 
     public final int clientNo = (new Random()).nextInt(1000);
 
-    protected ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
 
-    protected final String host;
-    protected final int    port;
+    protected final String    host;
+    protected final int       port;
+    protected final UserAgent userAgent;
 
     private final Bootstrap bootstrap = new Bootstrap();
 
@@ -80,6 +81,7 @@ public abstract class TcpClient implements Closeable {
         Preconditions.checkState(eventMeshTcpClientConfig.getPort() > 0, "port is not validated");
         this.host = eventMeshTcpClientConfig.getHost();
         this.port = eventMeshTcpClientConfig.getPort();
+        this.userAgent = eventMeshTcpClientConfig.getUserAgent();
     }
 
     protected synchronized void open(SimpleChannelInboundHandler<Package> handler) throws Exception {
@@ -114,7 +116,8 @@ public abstract class TcpClient implements Closeable {
             if (heartTask != null) {
                 heartTask.cancel(false);
             }
-        } catch (InterruptedException e) {
+            goodbye();
+        } catch (Exception e) {
             Thread.currentThread().interrupt();
             log.warn("close tcp client failed.|remote address={}", channel.remoteAddress(), e);
         }
@@ -174,6 +177,18 @@ public abstract class TcpClient implements Closeable {
             throw new TimeoutException("operation timeout, context.key=" + c.getKey());
         }
         return c.getResponse();
+    }
+
+    // todo: remove hello
+    protected void hello() throws Exception {
+        Package msg = MessageUtils.hello(userAgent);
+        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+    }
+
+    // todo: remove goodbye
+    protected void goodbye() throws Exception {
+        Package msg = MessageUtils.goodbye();
+        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 
     private ChannelDuplexHandler newExceptionHandler() {
