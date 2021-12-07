@@ -31,6 +31,7 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.RequestCallback;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageAccessor;
 import org.apache.rocketmq.common.message.MessageClientIDSetter;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -130,7 +131,7 @@ public class ProducerImpl extends AbstractProducer {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
             RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
-        msg.putUserProperty(MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
+        MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
         try {
             this.rocketmqProducer.send(msg, this.sendCallbackConvert(msg, sendCallback));
         } catch (Exception e) {
