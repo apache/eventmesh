@@ -18,16 +18,17 @@
 package org.apache.eventmesh.runtime.metrics.http;
 
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HealthMetrics {
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private EventMeshHTTPServer eventMeshHttpServer;
 
     public Logger logger = LoggerFactory.getLogger("httpMonitor");
 
-    public HealthMetrics(EventMeshHTTPServer eventMeshHTTPServer) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
+    public HealthMetrics(EventMeshHTTPServer eventMeshHttpServer) {
+        this.eventMeshHttpServer = eventMeshHttpServer;
     }
 }

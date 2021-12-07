@@ -110,7 +110,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                     replyMessageResponseHeader,
                     ReplyMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getRetCode(),
                             EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getErrMsg()));
-            eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPDiscard();
+            eventMeshHTTPServer.metrics.summaryMetrics.recordHttpDiscard();
             asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
@@ -195,7 +195,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
                         httpLogger.debug("{}", httpCommand);
                     }
                     eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                    eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+                    eventMeshHTTPServer.metrics.summaryMetrics.recordHttpReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
                 } catch (Exception ex) {
                 }
             }

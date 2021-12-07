@@ -30,7 +30,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.push.AbstractHTTPPushRequest;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.metrics.http.HttpMetricsServer;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -162,7 +162,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         msgRateLimiter = RateLimiter.create(eventMeshHttpConfiguration.eventMeshHttpMsgReqNumPerSecond);
         batchRateLimiter = RateLimiter.create(eventMeshHttpConfiguration.eventMeshBatchMsgRequestNumPerSecond);
 
-        metrics = new HTTPMetricsServer(this);
+        metrics = new HttpMetricsServer(this);
         metrics.init();
 
         consumerManager = new ConsumerManager(this);

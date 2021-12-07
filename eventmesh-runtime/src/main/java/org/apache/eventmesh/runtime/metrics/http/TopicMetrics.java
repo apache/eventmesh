@@ -21,9 +21,9 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 
 public class TopicMetrics {
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private EventMeshHTTPServer eventMeshHttpServer;
 
-    public TopicMetrics(EventMeshHTTPServer eventMeshHTTPServer) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
+    public TopicMetrics(EventMeshHTTPServer eventMeshHttpServer) {
+        this.eventMeshHttpServer = eventMeshHttpServer;
     }
 }

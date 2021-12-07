@@ -21,9 +21,9 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 
 public class GroupMetrics {
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private EventMeshHTTPServer eventMeshHttpServer;
 
-    public GroupMetrics(EventMeshHTTPServer eventMeshHTTPServer) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
+    public GroupMetrics(EventMeshHTTPServer eventMeshHttpServer) {
+        this.eventMeshHttpServer = eventMeshHttpServer;
     }
 }

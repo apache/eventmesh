@@ -18,7 +18,7 @@
 package org.apache.eventmesh.runtime.metrics.http;
 
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.apache.eventmesh.runtime.metrics.opentelemetry.OpenTelemetryHTTPMetricsExporter;
+import org.apache.eventmesh.runtime.metrics.opentelemetry.OpenTelemetryHttpMetricsExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +28,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class HTTPMetricsServer {
+public class HttpMetricsServer {
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private EventMeshHTTPServer eventMeshHttpServer;
 
     public SummaryMetrics summaryMetrics;
 
@@ -40,37 +40,38 @@ public class HTTPMetricsServer {
 
     public GroupMetrics groupMetrics;
 
-    public OpenTelemetryHTTPMetricsExporter openTelemetryHTTPMetricsExporter;
+    public OpenTelemetryHttpMetricsExporter openTelemetryHttpMetricsExporter;
 
     private Logger httpLogger = LoggerFactory.getLogger("httpMonitor");
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public HTTPMetricsServer(EventMeshHTTPServer eventMeshHTTPServer) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
+    public HttpMetricsServer(EventMeshHTTPServer eventMeshHttpServer) {
+        this.eventMeshHttpServer = eventMeshHttpServer;
     }
 
     public void init() throws Exception {
-        summaryMetrics = new SummaryMetrics(this.eventMeshHTTPServer);
-        topicMetrics = new TopicMetrics(this.eventMeshHTTPServer);
-        groupMetrics = new GroupMetrics(this.eventMeshHTTPServer);
-        healthMetrics = new HealthMetrics(this.eventMeshHTTPServer);
+        summaryMetrics = new SummaryMetrics(this.eventMeshHttpServer);
+        topicMetrics = new TopicMetrics(this.eventMeshHttpServer);
+        groupMetrics = new GroupMetrics(this.eventMeshHttpServer);
+        healthMetrics = new HealthMetrics(this.eventMeshHttpServer);
 
-        openTelemetryHTTPMetricsExporter = new OpenTelemetryHTTPMetricsExporter(this,this.eventMeshHTTPServer.getEventMeshHttpConfiguration());
+        openTelemetryHttpMetricsExporter = new OpenTelemetryHttpMetricsExporter(this,
+                this.eventMeshHttpServer.getEventMeshHttpConfiguration());
 
         logger.info("HTTPMetricsServer inited......");
     }
 
     public void start() throws Exception {
-        openTelemetryHTTPMetricsExporter.start();
+        openTelemetryHttpMetricsExporter.start();
         metricsSchedule.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 try {
-                    summaryMetrics.snapshotHTTPTPS();
-                    summaryMetrics.snapshotSendBatchMsgTPS();
-                    summaryMetrics.snapshotSendMsgTPS();
-                    summaryMetrics.snapshotPushMsgTPS();
+                    summaryMetrics.snapshotHttpTps();
+                    summaryMetrics.snapshotSendBatchMsgTps();
+                    summaryMetrics.snapshotSendMsgTps();
+                    summaryMetrics.snapshotPushMsgTps();
                 } catch (Exception ex) {
                     logger.warn("eventMesh snapshot tps metrics err", ex);
                 }
@@ -93,37 +94,39 @@ public class HTTPMetricsServer {
 
     public void shutdown() throws Exception {
         metricsSchedule.shutdown();
-        openTelemetryHTTPMetricsExporter.shutdown();
+        openTelemetryHttpMetricsExporter.shutdown();
         logger.info("HTTPMetricsServer shutdown......");
     }
 
-    protected static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(2, new ThreadFactory() {
-        private AtomicInteger seq = new AtomicInteger(0);
+    protected static ScheduledExecutorService metricsSchedule = Executors.newScheduledThreadPool(
+            2, new ThreadFactory() {
+                private AtomicInteger seq = new AtomicInteger(0);
 
-        @Override
-        public Thread newThread(Runnable r) {
-            seq.incrementAndGet();
-            Thread t = new Thread(r, "eventMesh-metrics-" + seq.get());
-            t.setDaemon(true);
-            return t;
-        }
-    });
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        seq.incrementAndGet();
+                        Thread t = new Thread(r, "eventMesh-metrics-" + seq.get());
+                        t.setDaemon(true);
+                        return t;
+                    }
+            }
+    );
 
     private void logPrintServerMetrics() {
-        httpLogger.info("===========================================SERVER METRICS==================================================");
+        httpLogger.info("=====================SERVER METRICS==============================");
 
         httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_HTTP,
-                summaryMetrics.maxHTTPTPS(),
-                summaryMetrics.avgHTTPTPS(),
-                summaryMetrics.maxHTTPCost(),
-                summaryMetrics.avgHTTPCost(),
-                summaryMetrics.avgHTTPBodyDecodeCost(),
+                summaryMetrics.maxHttpTps(),
+                summaryMetrics.avgHttpTps(),
+                summaryMetrics.maxHttpCost(),
+                summaryMetrics.avgHttpCost(),
+                summaryMetrics.avgHttpBodyDecodeCost(),
                 summaryMetrics.getHttpDiscard()));
         summaryMetrics.httpStatInfoClear();
 
         httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_BATCHSENDMSG,
-                summaryMetrics.maxSendBatchMsgTPS(),
-                summaryMetrics.avgSendBatchMsgTPS(),
+                summaryMetrics.maxSendBatchMsgTps(),
+                summaryMetrics.avgSendBatchMsgTps(),
                 summaryMetrics.getSendBatchMsgNumSum(),
                 summaryMetrics.getSendBatchMsgFailNumSum(),
                 summaryMetrics.getSendBatchMsgFailRate(),
@@ -132,8 +135,8 @@ public class HTTPMetricsServer {
         summaryMetrics.cleanSendBatchStat();
 
         httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_SENDMSG,
-                summaryMetrics.maxSendMsgTPS(),
-                summaryMetrics.avgSendMsgTPS(),
+                summaryMetrics.maxSendMsgTps(),
+                summaryMetrics.avgSendMsgTps(),
                 summaryMetrics.getSendMsgNumSum(),
                 summaryMetrics.getSendMsgFailNumSum(),
                 summaryMetrics.getSendMsgFailRate(),
@@ -143,43 +146,43 @@ public class HTTPMetricsServer {
         summaryMetrics.cleanSendMsgStat();
 
         httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_PUSHMSG,
-                summaryMetrics.maxPushMsgTPS(),
-                summaryMetrics.avgPushMsgTPS(),
+                summaryMetrics.maxPushMsgTps(),
+                summaryMetrics.avgPushMsgTps(),
                 summaryMetrics.getHttpPushMsgNumSum(),
                 summaryMetrics.getHttpPushFailNumSum(),
                 summaryMetrics.getHttpPushMsgFailRate(),
-                summaryMetrics.maxHTTPPushLatency(),
-                summaryMetrics.avgHTTPPushLatency()
+                summaryMetrics.maxHttpPushLatency(),
+                summaryMetrics.avgHttpPushLatency()
         ));
         summaryMetrics.cleanHttpPushMsgStat();
 
         httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_BLOCKQ,
-                eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getSendMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getPushMsgExecutor().getQueue().size(),
-                eventMeshHTTPServer.getHttpRetryer().size()));
+                eventMeshHttpServer.getBatchMsgExecutor().getQueue().size(),
+                eventMeshHttpServer.getSendMsgExecutor().getQueue().size(),
+                eventMeshHttpServer.getPushMsgExecutor().getQueue().size(),
+                eventMeshHttpServer.getHttpRetryer().size()));
 
         httpLogger.info(String.format(SummaryMetrics.EVENTMESH_MONITOR_FORMAT_MQ_CLIENT,
                 summaryMetrics.avgBatchSendMsgCost(),
                 summaryMetrics.avgSendMsgCost(),
                 summaryMetrics.avgReplyMsgCost()));
-        summaryMetrics.send2MQStatInfoClear();
+        summaryMetrics.send2MqStatInfoClear();
     }
 
-    public int getBatchMsgQ(){
-        return eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size();
+    public int getBatchMsgQ() {
+        return eventMeshHttpServer.getBatchMsgExecutor().getQueue().size();
     }
 
-    public int getSendMsgQ(){
-        return eventMeshHTTPServer.getSendMsgExecutor().getQueue().size();
+    public int getSendMsgQ() {
+        return eventMeshHttpServer.getSendMsgExecutor().getQueue().size();
     }
 
-    public int getPushMsgQ(){
-        return eventMeshHTTPServer.getPushMsgExecutor().getQueue().size();
+    public int getPushMsgQ() {
+        return eventMeshHttpServer.getPushMsgExecutor().getQueue().size();
     }
 
-    public int getHttpRetryQ(){
-        return eventMeshHTTPServer.getHttpRetryer().size();
+    public int getHttpRetryQ() {
+        return eventMeshHttpServer.getHttpRetryer().size();
     }
 
     public HealthMetrics getHealthMetrics() {
