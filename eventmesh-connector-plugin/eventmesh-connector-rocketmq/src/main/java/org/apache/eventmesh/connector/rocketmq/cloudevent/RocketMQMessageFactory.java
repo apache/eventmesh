@@ -53,8 +53,8 @@ public final class RocketMQMessageFactory {
         throws CloudEventRWException {
 
         return MessageUtils.parseStructuredOrBinaryMessage(
-            () -> props.get(RocketMQHeaders.CONTENT_TYPE),
-            format -> new GenericStructuredMessageReader(format, body),
+            () -> null,
+            format -> null,
             () -> props.get(RocketMQHeaders.SPEC_VERSION),
             sv -> new RocketMQBinaryMessageReader(sv, props, body)
         );
