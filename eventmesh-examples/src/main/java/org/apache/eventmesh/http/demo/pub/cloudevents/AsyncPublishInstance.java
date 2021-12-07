@@ -70,7 +70,10 @@ public class AsyncPublishInstance {
             .idc("idc")
             .ip(IPUtils.getLocalAddress())
             .sys("1234")
-            .pid(String.valueOf(ThreadUtils.getPID())).build();
+            .pid(String.valueOf(ThreadUtils.getPID()))
+            .userName("eventmesh")
+            .password("pass")
+            .build();
 
         try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig)) {
             for (int i = 0; i < messageSize; i++) {
