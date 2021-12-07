@@ -38,4 +38,4 @@ include 'eventmesh-protocol-plugin:eventmesh-protocol-api'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-openmessage'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-cloudevents'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-grpc'
-
+include 'eventmesh-admin:eventmesh-admin-rocketmq'
