@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.runtime.metrics.http;
 
-import com.codahale.metrics.MetricRegistry;
-
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +24,10 @@ import org.slf4j.LoggerFactory;
 public class HealthMetrics {
 
     private EventMeshHTTPServer eventMeshHTTPServer;
-    private MetricRegistry metricRegistry;
 
     public Logger logger = LoggerFactory.getLogger("httpMonitor");
 
-    public HealthMetrics(EventMeshHTTPServer eventMeshHTTPServer, MetricRegistry metricRegistry) {
+    public HealthMetrics(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
-        this.metricRegistry = metricRegistry;
     }
 }

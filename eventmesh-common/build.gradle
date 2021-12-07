@@ -23,14 +23,12 @@ dependencies {
     api "junit:junit"
     api "org.assertj:assertj-core"
 
-    implementation "commons-io:commons-io"
     implementation "org.apache.commons:commons-text"
 
     implementation "org.apache.logging.log4j:log4j-api"
     implementation "org.apache.logging.log4j:log4j-core"
     implementation "org.apache.logging.log4j:log4j-core"
     implementation "org.apache.logging.log4j:log4j-slf4j-impl"
-    implementation "org.apache.logging.log4j:log4j-web"
 
     implementation "com.lmax:disruptor"
 
@@ -45,7 +43,7 @@ dependencies {
     implementation "com.github.stefanbirkner:system-rules"
 
     testImplementation "org.apache.commons:commons-lang3"
-    testImplementation "org.apache.commons:commons-collections4"
+
     testImplementation "commons-io:commons-io"
     testImplementation "org.apache.commons:commons-text"
 

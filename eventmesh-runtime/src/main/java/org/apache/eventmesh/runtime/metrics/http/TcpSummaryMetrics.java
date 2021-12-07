@@ -17,27 +17,23 @@
 
 package org.apache.eventmesh.runtime.metrics.http;
 
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicLong;
-
-import com.codahale.metrics.MetricRegistry;
-
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TcpSummaryMetrics {
 
     public Logger logger = LoggerFactory.getLogger("httpMonitor");
 
     private EventMeshHTTPServer eventMeshHTTPServer;
-    private MetricRegistry metricRegistry;
 
-    public TcpSummaryMetrics(EventMeshHTTPServer eventMeshHTTPServer, MetricRegistry metricRegistry) {
+    public TcpSummaryMetrics(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
-        this.metricRegistry = metricRegistry;
     }
 
     public static final int STATIC_PERIOD = 30 * 1000;

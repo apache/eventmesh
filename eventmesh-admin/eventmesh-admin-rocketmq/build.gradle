@@ -22,5 +22,8 @@ dependencies {
     implementation "org.apache.httpcomponents:httpclient"
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
 
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.11.0"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.11.0"
+
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")    
 }

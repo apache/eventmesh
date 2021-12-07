@@ -17,24 +17,20 @@
 
 package org.apache.eventmesh.runtime.metrics.http;
 
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.metrics.opentelemetry.OpenTelemetryHTTPMetricsExporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.codahale.metrics.MetricRegistry;
-
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.apache.eventmesh.runtime.metrics.opentelemetry.OpenTelemetryHTTPMetricsExporter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class HTTPMetricsServer {
 
     private EventMeshHTTPServer eventMeshHTTPServer;
-
-    private MetricRegistry metricRegistry = new MetricRegistry();
 
     public SummaryMetrics summaryMetrics;
 
@@ -55,10 +51,10 @@ public class HTTPMetricsServer {
     }
 
     public void init() throws Exception {
-        summaryMetrics = new SummaryMetrics(this.eventMeshHTTPServer, this.metricRegistry);
-        topicMetrics = new TopicMetrics(this.eventMeshHTTPServer, this.metricRegistry);
-        groupMetrics = new GroupMetrics(this.eventMeshHTTPServer, this.metricRegistry);
-        healthMetrics = new HealthMetrics(this.eventMeshHTTPServer, this.metricRegistry);
+        summaryMetrics = new SummaryMetrics(this.eventMeshHTTPServer);
+        topicMetrics = new TopicMetrics(this.eventMeshHTTPServer);
+        groupMetrics = new GroupMetrics(this.eventMeshHTTPServer);
+        healthMetrics = new HealthMetrics(this.eventMeshHTTPServer);
 
         openTelemetryHTTPMetricsExporter = new OpenTelemetryHTTPMetricsExporter(this,this.eventMeshHTTPServer.getEventMeshHttpConfiguration());
 
