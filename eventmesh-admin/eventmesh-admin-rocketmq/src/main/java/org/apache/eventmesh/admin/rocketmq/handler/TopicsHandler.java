@@ -17,22 +17,19 @@
 
 package org.apache.eventmesh.admin.rocketmq.handler;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.admin.rocketmq.request.TopicCreateRequest;
 import org.apache.eventmesh.admin.rocketmq.response.TopicResponse;
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
 import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
 import org.apache.eventmesh.admin.rocketmq.util.RequestMapping;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class TopicsHandler implements HttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(TopicsHandler.class);
