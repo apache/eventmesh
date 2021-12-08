@@ -41,7 +41,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import io.cloudevents.CloudEvent;
-import io.openmessaging.api.OMSBuiltinKeys;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PushConsumerImplTest {
@@ -53,8 +52,8 @@ public class PushConsumerImplTest {
     @Before
     public void before() throws Exception {
         Properties consumerProp = new Properties();
-        consumerProp.setProperty(OMSBuiltinKeys.DRIVER_IMPL,
-            "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
+//        consumerProp.setProperty(OMSBuiltinKeys.DRIVER_IMPL,
+//            "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
         consumerProp.setProperty("access_points", "IP1:9876,IP2:9876");
         //final MessagingAccessPoint messagingAccessPoint = OMS.builder().build(consumerProp);//.endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build(config);
 

@@ -31,15 +31,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SyncRequest {
 
+    private static EventMeshTCPClient<EventMeshMessage> client;
+
     public static void main(String[] agrs) throws Exception {
         UserAgent userAgent = EventMeshTestUtils.generateClient1();
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
             .host("127.0.0.1")
-            .port(10000)
+            .port(10002)
             .userAgent(userAgent)
             .build();
-        try (EventMeshTCPClient<EventMeshMessage> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-            eventMeshTcpClientConfig, EventMeshMessage.class)) {
+        try {
+            client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+                eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
 
             EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();

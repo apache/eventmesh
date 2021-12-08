@@ -50,7 +50,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import io.openmessaging.api.OMSBuiltinKeys;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProducerImplTest {
@@ -62,7 +61,7 @@ public class ProducerImplTest {
     @Before
     public void before() throws NoSuchFieldException, IllegalAccessException {
         Properties config = new Properties();
-        config.setProperty(OMSBuiltinKeys.DRIVER_IMPL, "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
+//        config.setProperty(OMSBuiltinKeys.DRIVER_IMPL, "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
         config.setProperty("access_points", "IP1:9876,IP2:9876");
         producer = new ProducerImpl(config);
 
@@ -148,7 +147,6 @@ public class ProducerImplTest {
         Mockito.when(rocketmqProducer.send(any(Message.class))).thenThrow(exception);
 
         try {
-            io.openmessaging.api.Message message = new io.openmessaging.api.Message("HELLO_TOPIC", "", new byte[]{'a'});
             CloudEvent cloudEvent = CloudEventBuilder.v1()
                 .withId("id1")
                 .withSource(URI.create("https://github.com/cloudevents/*****"))
