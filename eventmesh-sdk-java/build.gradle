@@ -17,16 +17,15 @@
 
 dependencies {
     implementation project(":eventmesh-common")
-    implementation project(":eventmesh-common")
 
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.fasterxml.jackson.core:jackson-core"
     implementation "com.fasterxml.jackson.core:jackson-annotations"
+    implementation "org.apache.commons:commons-collections4"
 
     implementation "io.netty:netty-all"
     implementation "org.apache.httpcomponents:httpclient"
 
-    testImplementation project(":eventmesh-common")
     testImplementation project(":eventmesh-common")
 
     testImplementation "com.fasterxml.jackson.core:jackson-databind"
