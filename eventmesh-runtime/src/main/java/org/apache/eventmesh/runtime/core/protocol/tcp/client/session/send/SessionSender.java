@@ -22,10 +22,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -82,7 +85,7 @@ public class SessionSender {
                 Command cmd = header.getCmd();
                 long ttl = EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
                 if (Command.REQUEST_TO_SERVER == cmd) {
-                    if (event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL) != null){
+                    if (event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL) != null) {
                        ttl = Long.parseLong((String) Objects.requireNonNull(event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL)));
                     }
 //                    long ttl = msg.getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL) != null ? Long.parseLong(msg.getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL)) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
@@ -154,16 +157,21 @@ public class SessionSender {
                     messageLogger.error("invalid message|messageHeader={}|event={}", header, event);
                     return;
                 }
-                Package pkg = new Package();
-                pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, seq));
                 event = CloudEventBuilder.from(event)
-                        .withExtension(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
-                        .build();
+                    .withExtension(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                    .build();
+                String protocolType = Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_TYPE)).toString();
+
+                ProtocolAdaptor protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+
+                Package pkg = new Package();
+
 //                msg.getSystemProperties().put(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                 try {
 //                    pkg.setBody(EventMeshUtil.encodeMessage(msg));
-                    pkg.setBody(event);
+                    pkg = (Package) protocolAdaptor.fromCloudEvent(event);
                     pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, seq));
+                    pkg.getHeader().putProperty(Constants.PROTOCOL_TYPE, protocolType);
                 } catch (Exception e) {
                     pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), null, seq));
                 } finally {

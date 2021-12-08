@@ -166,7 +166,7 @@ public class EventMeshTestUtils {
         return builder.toString();
     }
 
-    public static CloudEvent generateCloudEventV1() {
+    public static CloudEvent generateCloudEventV1Async() {
         Map<String, String> content = new HashMap<>();
         content.put("content", "testAsyncMessage");
 
@@ -178,6 +178,24 @@ public class EventMeshTestUtils {
             .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
             .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
             .withExtension("ttl", "30000")
+            .build();
+        return event;
+    }
+
+    public static CloudEvent generateCloudEventV1SyncRR() {
+        Map<String, String> content = new HashMap<>();
+        content.put("content", "testSyncRR");
+
+        CloudEvent event = CloudEventBuilder.v1()
+            .withId(UUID.randomUUID().toString())
+            .withSubject(TOPIC_PRX_SyncSubscribeTest)
+            .withSource(URI.create("/"))
+            .withDataContentType("application/cloudevents+json")
+            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+            .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
+            .withExtension("ttl", "30000")
+            .withExtension("msgtype", "persistent")
+            .withExtension("keys", generateRandomString(16))
             .build();
         return event;
     }

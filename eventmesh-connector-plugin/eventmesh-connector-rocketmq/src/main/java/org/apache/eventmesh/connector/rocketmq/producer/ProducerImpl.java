@@ -26,6 +26,7 @@ import org.apache.eventmesh.connector.rocketmq.cloudevent.RocketMQMessageFactory
 import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
 import org.apache.eventmesh.connector.rocketmq.utils.CloudEventUtils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.RequestCallback;
@@ -132,6 +133,16 @@ public class ProducerImpl extends AbstractProducer {
         org.apache.rocketmq.common.message.Message msg =
             RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
         MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
+        if (StringUtils.isNotEmpty(cloudEvent.getExtension("cluster").toString())) {
+            MessageAccessor.putProperty(msg, MessageConst.PROPERTY_CLUSTER, cloudEvent.getExtension("cluster").toString());
+        }
+        if (StringUtils.isNotEmpty(cloudEvent.getExtension("replytoclient").toString())) {
+            MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT, cloudEvent.getExtension("replytoclient").toString());
+        }
+        if (StringUtils.isNotEmpty(cloudEvent.getExtension("correlationid").toString())) {
+            MessageAccessor.putProperty(msg, MessageConst.PROPERTY_CORRELATION_ID, cloudEvent.getExtension("correlationid").toString());
+        }
+
         try {
             this.rocketmqProducer.send(msg, this.sendCallbackConvert(msg, sendCallback));
         } catch (Exception e) {

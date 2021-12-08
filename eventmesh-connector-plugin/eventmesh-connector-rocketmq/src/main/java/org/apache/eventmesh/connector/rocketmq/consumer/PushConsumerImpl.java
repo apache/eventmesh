@@ -35,10 +35,13 @@ import org.apache.eventmesh.connector.rocketmq.utils.BeanUtils;
 import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
 import org.apache.eventmesh.connector.rocketmq.utils.CloudEventUtils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
 import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
+import org.apache.rocketmq.client.utils.MessageUtil;
+import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
@@ -51,6 +54,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class PushConsumerImpl {
     private final DefaultMQPushConsumer rocketmqPushConsumer;
@@ -178,8 +182,27 @@ public class PushConsumerImpl {
             msg.putUserProperty(Constants.PROPERTY_MESSAGE_STORE_TIMESTAMP,
                 String.valueOf(msg.getStoreTimestamp()));
 
+            //for rr request/reply
+            String cluster = msg.getProperty(MessageConst.PROPERTY_CLUSTER);
+            String replyClient = msg.getProperty(MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT);
+            String correlationId = msg.getProperty(MessageConst.PROPERTY_CORRELATION_ID);
+
             CloudEvent cloudEvent =
                 RocketMQMessageFactory.createReader(CloudEventUtils.msgConvert(msg)).toEvent();
+
+            CloudEventBuilder cloudEventBuilder;
+            if (StringUtils.isNotEmpty(cluster)) {
+                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("cluster", cluster);
+                cloudEvent = cloudEventBuilder.build();
+            }
+            if (StringUtils.isNotEmpty(replyClient)) {
+                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("replytoclient", replyClient);
+                cloudEvent = cloudEventBuilder.build();
+            }
+            if (StringUtils.isNotEmpty(correlationId)) {
+                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("correlationid", correlationId);
+                cloudEvent = cloudEventBuilder.build();
+            }
 
             EventListener listener = PushConsumerImpl.this.subscribeTable.get(msg.getTopic());
 
@@ -236,8 +259,27 @@ public class PushConsumerImpl {
             msg.putUserProperty(EventMeshConstants.STORE_TIMESTAMP,
                 String.valueOf(msg.getStoreTimestamp()));
 
+            //for rr request/reply
+            String cluster = msg.getProperty(MessageConst.PROPERTY_CLUSTER);
+            String replyClient = msg.getProperty(MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT);
+            String correlationId = msg.getProperty(MessageConst.PROPERTY_CORRELATION_ID);
+
             CloudEvent cloudEvent =
                 RocketMQMessageFactory.createReader(CloudEventUtils.msgConvert(msg)).toEvent();
+
+            CloudEventBuilder cloudEventBuilder;
+            if (StringUtils.isNotEmpty(cluster)) {
+                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("cluster", cluster);
+                cloudEvent = cloudEventBuilder.build();
+            }
+            if (StringUtils.isNotEmpty(replyClient)) {
+                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("replytoclient", replyClient);
+                cloudEvent = cloudEventBuilder.build();
+            }
+            if (StringUtils.isNotEmpty(correlationId)) {
+                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("correlationid", correlationId);
+                cloudEvent = cloudEventBuilder.build();
+            }
 
             EventListener listener = PushConsumerImpl.this.subscribeTable.get(msg.getTopic());
 
