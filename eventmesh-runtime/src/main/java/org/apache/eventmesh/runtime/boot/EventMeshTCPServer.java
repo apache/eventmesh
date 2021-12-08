@@ -31,8 +31,8 @@ import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
-import org.apache.eventmesh.common.EventMeshException;
-import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
@@ -287,7 +287,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     public boolean registerToRegistry() {
         boolean registerResult = false;
         try{
-            String endPoints = IPUtil.getLocalAddress()
+            String endPoints = IPUtils.getLocalAddress()
                     + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshTCPConfiguration.eventMeshTcpServerPort;
             EventMeshRegisterInfo self = new EventMeshRegisterInfo();
             self.setEventMeshClusterName(eventMeshTCPConfiguration.eventMeshCluster);

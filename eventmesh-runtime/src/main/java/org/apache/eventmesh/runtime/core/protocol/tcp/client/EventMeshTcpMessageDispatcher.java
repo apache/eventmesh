@@ -47,7 +47,7 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
         Command cmd = null;
         try {
             Runnable task;
-            cmd = pkg.getHeader().getCommand();
+            cmd = pkg.getHeader().getCmd();
             if (cmd.equals(Command.RECOMMEND_REQUEST)) {
                 messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                 task = new RecommendTask(pkg, ctx, startTime, eventMeshTCPServer);
@@ -134,7 +134,7 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
             logger.error("the incoming message does not have a header|pkg={}", pkg);
             throw new Exception("the incoming message does not have a header.");
         }
-        if (pkg.getHeader().getCommand() == null) {
+        if (pkg.getHeader().getCmd() == null) {
             logger.error("the incoming message does not have a command type|pkg={}", pkg);
             throw new Exception("the incoming message does not have a command type.");
         }

@@ -17,13 +17,14 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry;
 
-import io.openmessaging.api.Message;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
+import io.cloudevents.CloudEvent;
+
 public abstract class RetryContext implements Delayed {
 
-    public Message msgExt;
+    public CloudEvent event;
 
     public String seq;
 

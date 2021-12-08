@@ -35,8 +35,14 @@ dependencies {
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-namesrv")
+    implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+
+    // for debug only, can be removed
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
 
     testImplementation project(":eventmesh-common")
     testImplementation project(":eventmesh-spi")
@@ -46,6 +52,7 @@ dependencies {
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-namesrv")
+    testImplementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
 
     testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
