@@ -15,22 +15,28 @@
  * limitations under the License.
  */
 
-task copyEventMeshAdmin(dependsOn: ['jar']) {
-    doFirst {
-        new File(projectDir, '../eventmesh-admin/dist/apps').mkdir()
-        new File(projectDir, '../dist/admin/').mkdirs()
+package org.apache.eventmesh.admin.rocketmq.controller;
+
+import org.apache.eventmesh.admin.rocketmq.handler.TopicsHandler;
+
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.net.httpserver.HttpServer;
+
+public class AdminController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
+
+    public AdminController() {
     }
-    doLast {
-        copy {
-            into('../eventmesh-admin/dist/apps/')
-            from project.jar.getArchivePath()
-            exclude {
-                "eventmesh-admin-${version}.jar"                
-            }
-        }
-        copy {
-            into '../dist/admin'
-            from "../eventmesh-admin/dist/apps/eventmesh-admin-rocketmq-${version}.jar"
-        }
+
+    public void run(HttpServer server) throws IOException {
+                
+        server.createContext("/topicmanage", new TopicsHandler());
+        
+        logger.info("EventMesh-Admin Controller server context created successfully");
     }
 }

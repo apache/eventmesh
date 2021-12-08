@@ -16,4 +16,6 @@
  */
 dependencies {
     compileOnly project(":eventmesh-common")
+    implementation "org.apache.commons:commons-collections4"
+    testImplementation project(":eventmesh-common")
 }
