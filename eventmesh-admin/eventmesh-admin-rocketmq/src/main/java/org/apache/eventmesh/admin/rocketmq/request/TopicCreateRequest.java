@@ -15,22 +15,33 @@
  * limitations under the License.
  */
 
-task copyEventMeshAdmin(dependsOn: ['jar']) {
-    doFirst {
-        new File(projectDir, '../eventmesh-admin/dist/apps').mkdir()
-        new File(projectDir, '../dist/admin/').mkdirs()
+package org.apache.eventmesh.admin.rocketmq.request;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class TopicCreateRequest {
+
+    private String name;
+
+    @JsonCreator
+    public TopicCreateRequest(@JsonProperty("name") String topic) {
+        super();
+        this.name = topic;
     }
-    doLast {
-        copy {
-            into('../eventmesh-admin/dist/apps/')
-            from project.jar.getArchivePath()
-            exclude {
-                "eventmesh-admin-${version}.jar"                
-            }
-        }
-        copy {
-            into '../dist/admin'
-            from "../eventmesh-admin/dist/apps/eventmesh-admin-rocketmq-${version}.jar"
-        }
+
+    @JsonProperty("name")
+    public String getName() {
+        return this.name;
     }
+
+    @JsonProperty("name")
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }

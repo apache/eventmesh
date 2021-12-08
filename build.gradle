@@ -35,6 +35,15 @@ buildscript {
     }
 }
 
+//Remove doclint warnings that pollute javadoc logs when building with java8
+if(JavaVersion.current().isJava8Compatible()){
+    allprojects {
+        tasks.withType(Javadoc){
+            options.addStringOption('xdoclint:none','-quiet')
+        }
+    }
+}
+
 allprojects {
     apply plugin: 'java'
     apply plugin: "eclipse"
@@ -60,7 +69,7 @@ allprojects {
         delete 'out'
     }
 
-    if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot")))) {
+    if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot") as boolean))) {
         version = version + "-SNAPSHOT"
     }
 
@@ -400,17 +409,15 @@ subprojects {
         dependencies {
             dependency "org.apache.commons:commons-lang3:3.6"
             dependency "org.apache.commons:commons-collections4:4.1"
-            dependency "commons-io:commons-io:2.4"
             dependency "org.apache.commons:commons-text:1.9"
 
-            dependency "com.google.guava:guava:29.0-jre"
 
+            dependency "com.google.guava:guava:29.0-jre"
+            
             dependency "org.slf4j:slf4j-api:1.7.30"
             dependency "org.apache.logging.log4j:log4j-api:2.13.3"
             dependency "org.apache.logging.log4j:log4j-core:2.13.3"
-            dependency "org.apache.logging.log4j:log4j-core:2.13.3"
             dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
-            dependency "org.apache.logging.log4j:log4j-web:2.13.3"
 
             dependency "com.lmax:disruptor:3.4.2"
 
