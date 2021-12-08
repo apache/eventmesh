@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.tcp.demo.sub.eventmeshmessage;
+package org.apache.eventmesh.tcp.demo.sub.cloudevents;
 
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
+import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
-import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
@@ -30,16 +30,18 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 
+import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
-import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
+
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
-public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
+public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
 
     public static SyncResponse handler = new SyncResponse();
 
-    private static EventMeshTCPClient<EventMeshMessage> client;
+    private static EventMeshTCPClient<CloudEvent> client;
 
     public static void main(String[] agrs) throws Exception {
         UserAgent userAgent = EventMeshTestUtils.generateClient2();
@@ -50,7 +52,7 @@ public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
             .build();
         try {
             client = EventMeshTCPClientFactory
-                .createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
+                .createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
             client.subscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
@@ -65,9 +67,10 @@ public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
     }
 
     @Override
-    public void handle(EventMeshMessage msg, ChannelHandlerContext ctx) {
-        log.info("receive sync rr msg================{}", msg);
-        Package pkg = MessageUtils.buildPackage(msg, Command.RESPONSE_TO_SERVER);
+    public void handle(CloudEvent event, ChannelHandlerContext ctx) {
+        String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+        log.info("receive sync rr msg================{}|{}", event, content);
+        Package pkg = MessageUtils.buildPackage(event, Command.RESPONSE_TO_SERVER);
         ctx.writeAndFlush(pkg);
     }
 

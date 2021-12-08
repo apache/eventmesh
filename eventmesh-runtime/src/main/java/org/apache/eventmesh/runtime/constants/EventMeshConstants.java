@@ -101,7 +101,7 @@ public class EventMeshConstants {
 
     public static final String RR_REPLY_TOPIC = "rr-reply-topic";
 
-    public static final String PROPERTY_MESSAGE_CLUSTER = "CLUSTER";
+    public static final String PROPERTY_MESSAGE_CLUSTER = "cluster";
 
     public static final String PROPERTY_MESSAGE_TTL = "ttl";
 

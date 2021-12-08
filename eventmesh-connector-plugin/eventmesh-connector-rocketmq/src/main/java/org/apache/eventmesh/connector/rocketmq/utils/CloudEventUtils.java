@@ -58,7 +58,7 @@ public class CloudEventUtils {
         }
 
         //
-        MessageAccessor.putProperty(message,buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_BORN_HOST),
+        MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_BORN_HOST),
             String.valueOf(rmqMsg.getBornHost()));
         MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP),
             String.valueOf(rmqMsg.getBornTimestamp()));
