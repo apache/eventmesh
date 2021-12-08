@@ -15,60 +15,51 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.tcp.demo.sub.eventmeshmessage;
+package org.apache.eventmesh.tcp.demo.pub.cloudevents;
 
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
-import org.apache.eventmesh.client.tcp.common.MessageUtils;
-import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
-import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 
-import io.netty.channel.ChannelHandlerContext;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 import lombok.extern.slf4j.Slf4j;
-import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
+
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
-public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
+public class SyncRequest {
 
-    public static SyncResponse handler = new SyncResponse();
-
-    private static EventMeshTCPClient<EventMeshMessage> client;
+    private static EventMeshTCPClient<CloudEvent> client;
 
     public static void main(String[] agrs) throws Exception {
-        UserAgent userAgent = EventMeshTestUtils.generateClient2();
+        UserAgent userAgent = EventMeshTestUtils.generateClient1();
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
             .host("127.0.0.1")
             .port(10002)
             .userAgent(userAgent)
             .build();
         try {
-            client = EventMeshTCPClientFactory
-                .createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class);
+            client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+                eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
-            client.subscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
-            // Synchronize RR messages
-            client.registerSubBusiHandler(handler);
-
-            client.listen();
+            CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
+            log.info("begin send rr msg=================={}", event);
+            Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+            CloudEvent replyEvent = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
+                .deserialize(response.getBody().toString().getBytes(StandardCharsets.UTF_8));
+            String content = new String(replyEvent.getData().toBytes(), StandardCharsets.UTF_8);
+            log.info("receive rr reply==================={}|{}", response, content);
 
         } catch (Exception e) {
-            log.warn("SyncResponse failed", e);
+            log.warn("SyncRequest failed", e);
         }
     }
-
-    @Override
-    public void handle(EventMeshMessage msg, ChannelHandlerContext ctx) {
-        log.info("receive sync rr msg================{}", msg);
-        Package pkg = MessageUtils.buildPackage(msg, Command.RESPONSE_TO_SERVER);
-        ctx.writeAndFlush(pkg);
-    }
-
 }
