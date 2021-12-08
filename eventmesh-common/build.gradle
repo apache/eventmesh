@@ -17,7 +17,6 @@
 
 dependencies {
     api "org.apache.commons:commons-lang3"
-    api "org.apache.commons:commons-collections4"
     api "com.google.guava:guava"
     api "org.slf4j:slf4j-api"
     api "junit:junit"
@@ -43,7 +42,6 @@ dependencies {
     implementation "com.github.stefanbirkner:system-rules"
 
     testImplementation "org.apache.commons:commons-lang3"
-    testImplementation "org.apache.commons:commons-collections4"
     testImplementation "commons-io:commons-io"
     testImplementation "org.apache.commons:commons-text"
 
