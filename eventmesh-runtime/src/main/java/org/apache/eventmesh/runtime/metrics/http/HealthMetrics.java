@@ -17,21 +17,18 @@
 
 package org.apache.eventmesh.runtime.metrics.http;
 
-import com.codahale.metrics.MetricRegistry;
-
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HealthMetrics {
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
-    private MetricRegistry metricRegistry;
+    private EventMeshHTTPServer eventMeshHttpServer;
 
     public Logger logger = LoggerFactory.getLogger("httpMonitor");
 
-    public HealthMetrics(EventMeshHTTPServer eventMeshHTTPServer, MetricRegistry metricRegistry) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
-        this.metricRegistry = metricRegistry;
+    public HealthMetrics(EventMeshHTTPServer eventMeshHttpServer) {
+        this.eventMeshHttpServer = eventMeshHttpServer;
     }
 }

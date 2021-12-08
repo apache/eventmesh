@@ -17,17 +17,13 @@
 
 package org.apache.eventmesh.runtime.metrics.http;
 
-import com.codahale.metrics.MetricRegistry;
-
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 
 public class TopicMetrics {
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
-    private MetricRegistry metricRegistry;
+    private EventMeshHTTPServer eventMeshHttpServer;
 
-    public TopicMetrics(EventMeshHTTPServer eventMeshHTTPServer, MetricRegistry metricRegistry) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
-        this.metricRegistry = metricRegistry;
+    public TopicMetrics(EventMeshHTTPServer eventMeshHttpServer) {
+        this.eventMeshHttpServer = eventMeshHttpServer;
     }
 }

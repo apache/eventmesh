@@ -163,7 +163,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                 public Object handleResponse(HttpResponse response) {
                     removeWaitingMap(AsyncHTTPPushRequest.this);
                     long cost = System.currentTimeMillis() - lastPushTime;
-                    eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPPushTimeCost(cost);
+                    eventMeshHTTPServer.metrics.summaryMetrics.recordHttpPushTimeCost(cost);
                     if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                         eventMeshHTTPServer.metrics.summaryMetrics.recordHttpPushMsgFailed();
                         messageLogger.info(

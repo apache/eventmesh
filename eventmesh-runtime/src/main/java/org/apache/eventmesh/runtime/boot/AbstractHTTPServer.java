@@ -76,7 +76,7 @@ import org.apache.eventmesh.runtime.common.Pair;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.metrics.http.HttpMetricsServer;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
@@ -88,7 +88,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
-    public HTTPMetricsServer metrics;
+    public HttpMetricsServer metrics;
 
     public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
 
@@ -223,7 +223,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     httpRequest.headers().set(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
                 }
 
-                metrics.summaryMetrics.recordHTTPRequest();
+                metrics.summaryMetrics.recordHttpRequest();
 
                 long bodyDecodeStart = System.currentTimeMillis();
 
@@ -330,7 +330,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                             return;
                         }
 
-                        metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+                        metrics.summaryMetrics.recordHttpReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
 
                         if (httpLogger.isDebugEnabled()) {
                             httpLogger.debug("{}", asyncContext.getResponse());
@@ -344,8 +344,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             } catch (RejectedExecutionException re) {
                 HttpCommand responseCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.OVERLOAD.getRetCode(), EventMeshRetCode.OVERLOAD.getErrMsg());
                 asyncContext.onComplete(responseCommand);
-                metrics.summaryMetrics.recordHTTPDiscard();
-                metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - responseCommand.getReqTime());
+                metrics.summaryMetrics.recordHttpDiscard();
+                metrics.summaryMetrics.recordHttpReqResTimeCost(System.currentTimeMillis() - responseCommand.getReqTime());
                 try {
                     sendResponse(ctx, asyncContext.getResponse().httpResponse());
                 } catch (Exception e) {

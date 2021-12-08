@@ -184,7 +184,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                             httpLogger.debug("{}", httpCommand);
                         }
                         eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                        eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+                        eventMeshHTTPServer.metrics.summaryMetrics.recordHttpReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
                     } catch (Exception ex) {
                     }
                 }

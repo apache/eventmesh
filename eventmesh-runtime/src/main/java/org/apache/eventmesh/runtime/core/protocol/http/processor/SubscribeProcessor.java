@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import io.netty.channel.ChannelHandlerContext;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.IPUtil;
 import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
@@ -39,22 +42,10 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.channel.ChannelHandlerContext;
+import java.util.*;
 
 public class SubscribeProcessor implements HttpRequestProcessor {
 
@@ -232,7 +223,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                                 httpLogger.debug("{}", httpCommand);
                             }
                             eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                            eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(
+                            eventMeshHTTPServer.metrics.summaryMetrics.recordHttpReqResTimeCost(
                                     System.currentTimeMillis()
                                             - asyncContext.getRequest().getReqTime());
                         } catch (Exception ex) {

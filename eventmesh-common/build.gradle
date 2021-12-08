@@ -16,21 +16,17 @@
  */
 
 dependencies {
-    api "org.apache.commons:commons-lang3"
-    api "org.apache.commons:commons-collections4"
     api "com.google.guava:guava"
     api "org.slf4j:slf4j-api"
     api "junit:junit"
     api "org.assertj:assertj-core"
-
-    implementation "commons-io:commons-io"
-    implementation "org.apache.commons:commons-text"
+    api "org.apache.commons:commons-collections4"
+    api "org.apache.commons:commons-text"
+    api "org.apache.commons:commons-lang3"
 
     implementation "org.apache.logging.log4j:log4j-api"
     implementation "org.apache.logging.log4j:log4j-core"
-    implementation "org.apache.logging.log4j:log4j-core"
     implementation "org.apache.logging.log4j:log4j-slf4j-impl"
-    implementation "org.apache.logging.log4j:log4j-web"
 
     implementation "com.lmax:disruptor"
 
@@ -45,18 +41,13 @@ dependencies {
     implementation "com.github.stefanbirkner:system-rules"
 
     testImplementation "org.apache.commons:commons-lang3"
-    testImplementation "org.apache.commons:commons-collections4"
-    testImplementation "commons-io:commons-io"
-    testImplementation "org.apache.commons:commons-text"
 
     testImplementation "com.google.guava:guava"
 
     testImplementation "org.slf4j:slf4j-api"
     testImplementation "org.apache.logging.log4j:log4j-api"
     testImplementation "org.apache.logging.log4j:log4j-core"
-    testImplementation "org.apache.logging.log4j:log4j-core"
     testImplementation "org.apache.logging.log4j:log4j-slf4j-impl"
-    testImplementation "org.apache.logging.log4j:log4j-web"
 
     testImplementation "com.lmax:disruptor"
 
