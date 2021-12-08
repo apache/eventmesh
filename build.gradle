@@ -35,6 +35,15 @@ buildscript {
     }
 }
 
+//Remove doclint warnings that pollute javadoc logs when building with java8
+if(JavaVersion.current().isJava8Compatible()){
+    allprojects {
+        tasks.withType(Javadoc){
+            options.addStringOption('xdoclint:none','-quiet')
+        }
+    }
+}
+
 allprojects {
     apply plugin: 'java'
     apply plugin: "eclipse"
@@ -60,7 +69,7 @@ allprojects {
         delete 'out'
     }
 
-    if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot")))) {
+    if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot") as boolean))) {
         version = version + "-SNAPSHOT"
     }
 
