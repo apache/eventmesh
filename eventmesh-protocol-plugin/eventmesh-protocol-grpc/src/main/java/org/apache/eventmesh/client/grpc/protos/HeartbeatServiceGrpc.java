@@ -18,7 +18,6 @@
 package org.apache.eventmesh.client.grpc.protos;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
 import static io.grpc.stub.ClientCalls.blockingUnaryCall;
 import static io.grpc.stub.ClientCalls.futureUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnaryCall;
@@ -144,7 +143,7 @@ public final class HeartbeatServiceGrpc {
          */
         public void heartbeat(org.apache.eventmesh.client.grpc.protos.Heartbeat request,
                               io.grpc.stub.StreamObserver<org.apache.eventmesh.client.grpc.protos.Response> responseObserver) {
-            asyncUnaryCall(
+            ClientCalls.asyncUnaryCall(
                     getChannel().newCall(getHeartbeatMethod(), getCallOptions()), request, responseObserver);
         }
     }

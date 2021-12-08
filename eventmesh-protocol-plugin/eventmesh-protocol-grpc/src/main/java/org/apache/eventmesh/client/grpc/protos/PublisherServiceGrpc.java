@@ -18,7 +18,6 @@
 package org.apache.eventmesh.client.grpc.protos;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
 import static io.grpc.stub.ClientCalls.blockingUnaryCall;
 import static io.grpc.stub.ClientCalls.futureUnaryCall;
 import static io.grpc.stub.ServerCalls.asyncUnaryCall;
@@ -238,7 +237,7 @@ public final class PublisherServiceGrpc {
          */
         public void publish(org.apache.eventmesh.client.grpc.protos.Message request,
                             io.grpc.stub.StreamObserver<org.apache.eventmesh.client.grpc.protos.Response> responseObserver) {
-            asyncUnaryCall(
+            ClientCalls.asyncUnaryCall(
                     getChannel().newCall(getPublishMethod(), getCallOptions()), request, responseObserver);
         }
 
@@ -247,7 +246,7 @@ public final class PublisherServiceGrpc {
          */
         public void requestReply(org.apache.eventmesh.client.grpc.protos.Message request,
                                  io.grpc.stub.StreamObserver<org.apache.eventmesh.client.grpc.protos.Response> responseObserver) {
-            asyncUnaryCall(
+            ClientCalls.asyncUnaryCall(
                     getChannel().newCall(getRequestReplyMethod(), getCallOptions()), request, responseObserver);
         }
 
@@ -256,7 +255,7 @@ public final class PublisherServiceGrpc {
          */
         public void broadcast(org.apache.eventmesh.client.grpc.protos.Message request,
                               io.grpc.stub.StreamObserver<org.apache.eventmesh.client.grpc.protos.Response> responseObserver) {
-            asyncUnaryCall(
+            ClientCalls.asyncUnaryCall(
                     getChannel().newCall(getBroadcastMethod(), getCallOptions()), request, responseObserver);
         }
     }

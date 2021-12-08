@@ -17,12 +17,10 @@
 
 package org.apache.eventmesh.client.grpc.protos;
 
+import io.grpc.stub.ClientCalls;
+
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
 import static io.grpc.stub.ClientCalls.*;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
 import static io.grpc.stub.ServerCalls.*;
 
 /**
@@ -239,7 +237,7 @@ public final class ConsumerServiceGrpc {
          */
         public void subscribe(org.apache.eventmesh.client.grpc.protos.Subscription request,
                               io.grpc.stub.StreamObserver<org.apache.eventmesh.client.grpc.protos.Response> responseObserver) {
-            asyncUnaryCall(
+            ClientCalls.asyncUnaryCall(
                     getChannel().newCall(getSubscribeMethod(), getCallOptions()), request, responseObserver);
         }
 
@@ -248,7 +246,7 @@ public final class ConsumerServiceGrpc {
          */
         public void subscribeStream(org.apache.eventmesh.client.grpc.protos.Subscription request,
                                     io.grpc.stub.StreamObserver<org.apache.eventmesh.client.grpc.protos.Message> responseObserver) {
-            asyncServerStreamingCall(
+            ClientCalls.asyncServerStreamingCall(
                     getChannel().newCall(getSubscribeStreamMethod(), getCallOptions()), request, responseObserver);
         }
 
@@ -257,7 +255,7 @@ public final class ConsumerServiceGrpc {
          */
         public void unsubscribe(org.apache.eventmesh.client.grpc.protos.Subscription request,
                                 io.grpc.stub.StreamObserver<org.apache.eventmesh.client.grpc.protos.Response> responseObserver) {
-            asyncUnaryCall(
+            ClientCalls.asyncUnaryCall(
                     getChannel().newCall(getUnsubscribeMethod(), getCallOptions()), request, responseObserver);
         }
     }

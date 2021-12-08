@@ -34,8 +34,4 @@ dependencies {
 
     testImplementation "io.netty:netty-all"
     testImplementation "org.apache.httpcomponents:httpclient"
-
-    implementation "io.grpc:grpc-protobuf:1.15.0"
-    implementation "io.grpc:grpc-stub:1.15.0"
-    implementation "com.google.protobuf:protobuf-java-util:3.5.1"
 }
