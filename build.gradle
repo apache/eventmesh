@@ -399,9 +399,10 @@ subprojects {
     dependencyManagement {
         dependencies {
             dependency "org.apache.commons:commons-lang3:3.6"
+            dependency "org.apache.commons:commons-collections4:4.1"
 
             dependency "com.google.guava:guava:29.0-jre"
-
+            
             dependency "org.slf4j:slf4j-api:1.7.30"
             dependency "org.apache.logging.log4j:log4j-api:2.13.3"
             dependency "org.apache.logging.log4j:log4j-core:2.13.3"
