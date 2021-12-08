@@ -38,7 +38,7 @@ public class OMSUtil {
      * @return a unique instance name
      */
     public static String buildInstanceName() {
-        return Integer.toString(UtilAll.getPid()) + "%OpenMessaging" + "%" + System.nanoTime();
+        return Integer.toString(UtilAll.getPid()) + "%EventMesh" + "%" + System.nanoTime();
     }
 
 //    public static org.apache.rocketmq.common.message.Message msgConvert(Message omsMessage) {
