@@ -399,7 +399,6 @@ subprojects {
     dependencyManagement {
         dependencies {
             dependency "org.apache.commons:commons-lang3:3.6"
-            dependency "org.apache.commons:commons-collections4:4.1"
             dependency "commons-io:commons-io:2.4"
             dependency "org.apache.commons:commons-text:1.9"
 
