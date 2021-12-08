@@ -17,7 +17,9 @@
 
 plugins {
     id 'java'
-    id 'com.google.protobuf' version '0.8.17'
+
+    // uncomment it for generating new grpc code
+    //id 'com.google.protobuf' version '0.8.17'
 }
 
 repositories {
@@ -36,6 +38,8 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
+/******* uncomment this section when generate new grpc code
+ * Newly generated grpc code will be located at /build/
 protobuf {
     protoc { artifact = "com.google.protobuf:protoc:${protocVersion}" }
     plugins {
@@ -47,7 +51,7 @@ protobuf {
         }
     }
 }
-
+******/
 test {
     useJUnitPlatform()
 }

@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.client.grpc.protos;
 
+import io.grpc.stub.ClientCalls;
+
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 import static io.grpc.stub.ClientCalls.blockingUnaryCall;
 import static io.grpc.stub.ClientCalls.futureUnaryCall;
