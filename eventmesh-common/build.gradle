@@ -23,6 +23,7 @@ dependencies {
     api "org.assertj:assertj-core"
 
     implementation "org.apache.commons:commons-collections4"
+    implementation "org.apache.commons:commons-text"
 
     implementation "org.apache.logging.log4j:log4j-api"
     implementation "org.apache.logging.log4j:log4j-core"
