@@ -28,9 +28,7 @@ dependencies {
 
     implementation "org.apache.logging.log4j:log4j-api"
     implementation "org.apache.logging.log4j:log4j-core"
-    implementation "org.apache.logging.log4j:log4j-core"
     implementation "org.apache.logging.log4j:log4j-slf4j-impl"
-    implementation "org.apache.logging.log4j:log4j-web"
 
     implementation "com.lmax:disruptor"
 
@@ -54,9 +52,7 @@ dependencies {
     testImplementation "org.slf4j:slf4j-api"
     testImplementation "org.apache.logging.log4j:log4j-api"
     testImplementation "org.apache.logging.log4j:log4j-core"
-    testImplementation "org.apache.logging.log4j:log4j-core"
     testImplementation "org.apache.logging.log4j:log4j-slf4j-impl"
-    testImplementation "org.apache.logging.log4j:log4j-web"
 
     testImplementation "com.lmax:disruptor"
 
