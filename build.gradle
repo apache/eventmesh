@@ -400,6 +400,8 @@ subprojects {
         dependencies {
             dependency "org.apache.commons:commons-lang3:3.6"
             dependency "org.apache.commons:commons-collections4:4.1"
+            dependency "org.apache.commons:commons-text:1.9"
+
 
             dependency "com.google.guava:guava:29.0-jre"
             
