@@ -459,6 +459,11 @@ subprojects {
             dependency "org.powermock:powermock-api-mockito2:2.0.2"
 
             dependency "io.cloudevents:cloudevents-core:2.2.0"
+
+            dependency "io.grpc:grpc-protobuf:1.15.0"
+            dependency "io.grpc:grpc-stub:1.15.0"
+            dependency "io.grpc:grpc-netty:1.15.0"
+            dependency "io.grpc:grpc-netty-shaded:1.15.0"
         }
     }
 }

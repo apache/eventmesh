@@ -40,6 +40,9 @@ dependencies {
 
     implementation "com.github.stefanbirkner:system-rules"
 
+    implementation "io.grpc:grpc-protobuf:1.15.0"
+    implementation "io.grpc:grpc-stub:1.15.0"
+
     testImplementation "org.apache.commons:commons-lang3"
 
     testImplementation "com.google.guava:guava"

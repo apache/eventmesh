@@ -31,6 +31,8 @@ public class EventMeshServer {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private EventMeshGrpcServer eventMeshGrpcServer;
+
     public EventMeshHTTPServer eventMeshHTTPServer;
 
     private EventMeshTCPServer eventMeshTCPServer;
@@ -57,24 +59,33 @@ public class EventMeshServer {
     }
 
     public void init() throws Exception {
-        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
+        if(eventMeshHttpConfiguration != null
+                && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
             acl.init(eventMeshHttpConfiguration.eventMeshSecurityPluginType);
         }
 
-        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled
+                && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             registry.init(eventMeshTCPConfiguration.eventMeshRegistryPluginType);
         }
 
         connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
 
-        eventMeshHTTPServer = new EventMeshHTTPServer(this, eventMeshHttpConfiguration);
+        eventMeshGrpcServer = new EventMeshGrpcServer();
+        eventMeshGrpcServer.init();
+
+        eventMeshHTTPServer = new EventMeshHTTPServer(this,
+                eventMeshHttpConfiguration);
         eventMeshHTTPServer.init();
-        eventMeshTCPServer = new EventMeshTCPServer(this, eventMeshTCPConfiguration, registry);
-        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
+        eventMeshTCPServer = new EventMeshTCPServer(this,
+                eventMeshTCPConfiguration, registry);
+        if (eventMeshTCPConfiguration != null
+                && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.init();
         }
 
-        String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
+        String eventStore = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES,
+                System.getenv(EventMeshConstants.EVENT_STORE_ENV));
         logger.info("eventStore : {}", eventStore);
 
         serviceState = ServiceState.INITED;
@@ -82,16 +93,21 @@ public class EventMeshServer {
     }
 
     public void start() throws Exception {
-        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
+        if(eventMeshHttpConfiguration != null
+                && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
             acl.start();
         }
 
-        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled
+                && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             registry.start();
         }
 
+        eventMeshGrpcServer.start();
+
         eventMeshHTTPServer.start();
-        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTCPConfiguration != null
+                && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.start();
         }
         serviceState = ServiceState.RUNNING;
@@ -101,8 +117,12 @@ public class EventMeshServer {
     public void shutdown() throws Exception {
         serviceState = ServiceState.STOPING;
         logger.info("server state:{}", serviceState);
+
+        eventMeshGrpcServer.shutdown();
+
         eventMeshHTTPServer.shutdown();
-        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTCPConfiguration != null
+                && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.shutdown();
             if(eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
                 registry.shutdown();
@@ -111,7 +131,8 @@ public class EventMeshServer {
 
         connectorResource.release();
 
-        if(eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
+        if(eventMeshHttpConfiguration != null
+                && eventMeshHttpConfiguration.eventMeshServerSecurityEnable){
             acl.shutdown();
         }
         serviceState = ServiceState.STOPED;

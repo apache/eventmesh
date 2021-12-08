@@ -27,6 +27,13 @@ dependencies {
     implementation "org.apache.httpcomponents:httpclient"
     implementation 'io.netty:netty-all'
 
+    implementation "io.grpc:grpc-protobuf:1.15.0"
+    implementation "io.grpc:grpc-stub:1.15.0"
+    implementation "io.grpc:grpc-netty:1.15.0"
+    implementation "io.grpc:grpc-netty-shaded:1.15.0"
+
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-grpc")
+
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-spi")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
@@ -36,8 +43,6 @@ dependencies {
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-namesrv")
     implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
-
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
     testImplementation project(":eventmesh-common")
     testImplementation project(":eventmesh-spi")
