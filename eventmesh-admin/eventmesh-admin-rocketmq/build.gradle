@@ -20,6 +20,10 @@ dependencies {
     compileOnly project(":eventmesh-common")
 
     implementation "org.apache.httpcomponents:httpclient"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.core:jackson-core"
+    implementation "com.fasterxml.jackson.core:jackson-annotations"
+
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
 
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")    
