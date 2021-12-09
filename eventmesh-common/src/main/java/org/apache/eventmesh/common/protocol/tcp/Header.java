@@ -17,62 +17,59 @@
 
 package org.apache.eventmesh.common.protocol.tcp;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import lombok.Data;
+
+@Data
 public class Header {
 
-    private Command cmd;
-    private int code;
-    private String msg;
-    private String seq;
+    private Command             cmd;
+    private int                 code;
+    private String              desc;
+    private String              seq;
+    private Map<String, Object> properties = new HashMap<>();
 
     public Header() {
     }
 
-    public Header(Command cmd, int code, String msg, String seq) {
+    public Header(Command cmd, int code, String desc, String seq) {
         this.cmd = cmd;
         this.code = code;
-        this.msg = msg;
+        this.desc = desc;
         this.seq = seq;
     }
 
-    public Command getCommand() {
-        return cmd;
-    }
-
-    public void setCommand(Command cmd) {
-        this.cmd = cmd;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
+    public Header(int code, String desc, String seq, Map<String, Object> properties) {
         this.code = code;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
-    public String getSeq() {
-        return seq;
-    }
-
-    public void setSeq(String seq) {
+        this.desc = desc;
         this.seq = seq;
+        this.properties = properties;
     }
 
-    @Override
-    public String toString() {
-        return "Header{" +
-                "cmd=" + cmd +
-                ", code=" + code +
-                ", msg='" + msg + '\'' +
-                ", seq='" + seq + '\'' +
-                '}';
+
+    public void putProperty(final String name, final Object value) {
+        if (null == this.properties) {
+            this.properties = new HashMap<>();
+        }
+
+        this.properties.put(name, value);
     }
+
+    public Object getProperty(final String name) {
+        if (null == this.properties) {
+            return null;
+        }
+        return this.properties.get(name);
+    }
+
+    public String getStringProperty(final String name) {
+        Object property = getProperty(name);
+        if (null == property) {
+            return null;
+        }
+        return property.toString();
+    }
+
 }

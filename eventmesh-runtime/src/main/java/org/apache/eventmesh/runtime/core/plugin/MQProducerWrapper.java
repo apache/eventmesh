@@ -19,20 +19,20 @@ package org.apache.eventmesh.runtime.core.plugin;
 
 import java.util.Properties;
 
-import io.openmessaging.api.Message;
-import io.openmessaging.api.SendCallback;
-
-import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.api.RequestReplyCallback;
+import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
-import org.apache.eventmesh.api.producer.MeshMQProducer;
+import org.apache.eventmesh.api.producer.Producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
 
 public class MQProducerWrapper extends MQWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected MeshMQProducer meshMQProducer;
+    protected Producer meshMQProducer;
 
     public MQProducerWrapper(String connectorPluginType) {
         this.meshMQProducer = ConnectorPluginFactory.getMeshMQProducer(connectorPluginType);
@@ -76,34 +76,21 @@ public class MQProducerWrapper extends MQWrapper {
         started.compareAndSet(true, false);
     }
 
-    public void send(Message message, SendCallback sendCallback) throws Exception {
-        meshMQProducer.send(message, sendCallback);
+    public void send(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
+        meshMQProducer.publish(cloudEvent, sendCallback);
     }
 
-    public void request(Message message, RRCallback rrCallback, long timeout)
+    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout)
             throws Exception {
-        meshMQProducer.request(message, rrCallback, timeout);
+        meshMQProducer.request(cloudEvent, rrCallback, timeout);
     }
 
-    public boolean reply(final Message message, final SendCallback sendCallback) throws Exception {
-        return meshMQProducer.reply(message, sendCallback);
+    public boolean reply(final CloudEvent cloudEvent, final SendCallback sendCallback) throws Exception {
+        return meshMQProducer.reply(cloudEvent, sendCallback);
     }
 
-    public MeshMQProducer getMeshMQProducer() {
+    public Producer getMeshMQProducer() {
         return meshMQProducer;
     }
 
-//    public MeshMQProducer getDefaultMQProducer() {
-//        return meshMQProducer.getDefaultMQProducer();
-//    }
-
-//    public static void main(String[] args) throws Exception {
-//
-//        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
-//        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME
-//                + File.separator
-//                + EventMeshConstants.EVENTMESH_CONF_FILE, false));
-//        commonConfiguration.init();
-//        mqProducerWrapper.init(commonConfiguration, "TEST");
-//    }
 }

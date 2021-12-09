@@ -18,11 +18,11 @@ config env varible
 
 ```
 // create producer
-LiteClientConfig liteClientConfig = new liteClientConfig();
+LiteClientConfig eventMeshHttpClientConfig = new eventMeshHttpClientConfig();
 ...
 // enable TLS
-liteClientConfig.setUseTls(true);
-LiteProducer producer = new LiteProducer(liteClientConfig);
+eventMeshHttpClientConfig.setUseTls(true);
+LiteProducer producer = new LiteProducer(eventMeshHttpClientConfig);
 
 
 config env varible

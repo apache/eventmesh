@@ -17,12 +17,12 @@ config env varible
 
 ```
 //创建producer
-LiteClientConfig liteClientConfig = new liteClientConfig();
+LiteClientConfig eventMeshHttpClientConfig = new eventMeshHttpClientConfig();
 ...
 
 //设置开启TLS
-liteClientConfig.setUseTls(true);
-LiteProducer producer = new LiteProducer(liteClientConfig);
+eventMeshHttpClientConfig.setUseTls(true);
+LiteProducer producer = new LiteProducer(eventMeshHttpClientConfig);
 
 
 //配置环境变量

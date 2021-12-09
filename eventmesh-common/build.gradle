@@ -30,15 +30,21 @@ dependencies {
 
     implementation "com.lmax:disruptor"
 
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
+    api "com.fasterxml.jackson.core:jackson-databind"
+    api "com.fasterxml.jackson.core:jackson-core"
+    api "com.fasterxml.jackson.core:jackson-annotations"
 
     implementation "org.apache.httpcomponents:httpclient"
 
     implementation "io.netty:netty-all"
 
     implementation "com.github.stefanbirkner:system-rules"
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     testImplementation "org.apache.commons:commons-lang3"
 
@@ -60,7 +66,6 @@ dependencies {
     testImplementation "io.netty:netty-all"
 
     testImplementation "junit:junit"
-    testImplementation "com.github.stefanbirkner:system-rules"
     testImplementation "org.assertj:assertj-core"
 
     testImplementation "org.mockito:mockito-core"
