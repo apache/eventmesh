@@ -120,4 +120,9 @@ public class EventMeshCommon {
     public static String PREFIX_SESSION_TPS_STAT_EVENTSEND = "event_send_tps_";
 
     public static String PREFIX_SESSION_TPS_STAT_EVENTREV = "event_rev_tps_";
+
+    // protocol type
+    public static String CLOUD_EVENTS_PROTOCOL_NAME = "cloudevents";
+    public static String EM_MESSAGE_PROTOCOL_NAME = "eventmeshmessage";
+    public static String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
 }

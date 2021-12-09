@@ -188,7 +188,7 @@ public class MessageUtils {
     public static EventMeshMessage generateRRMsg(String topic, int i) {
         EventMeshMessage msg = new EventMeshMessage();
         msg.setTopic(topic);
-        msg.getProperties().put("msgType", "persistent");
+        msg.getProperties().put("msgtype", "persistent");
         msg.getProperties().put("TTL", "300000");
         msg.getProperties().put("KEYS", generateRandomString(16));
         msg.setBody("testRR" + i);

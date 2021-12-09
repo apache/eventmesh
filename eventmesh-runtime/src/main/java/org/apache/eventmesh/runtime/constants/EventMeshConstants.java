@@ -35,19 +35,19 @@ public class EventMeshConstants {
 
     public static final String EVENTMESH_CONF_FILE = "eventmesh.properties";
 
-    public static final String REQ_C2EVENTMESH_TIMESTAMP = "req_c2eventMesh_timestamp";
-    public static final String REQ_EVENTMESH2MQ_TIMESTAMP = "req_eventMesh2mq_timestamp";
-    public static final String REQ_MQ2EVENTMESH_TIMESTAMP = "req_mq2eventMesh_timestamp";
-    public static final String REQ_EVENTMESH2C_TIMESTAMP = "req_eventMesh2c_timestamp";
-    public static final String RSP_C2EVENTMESH_TIMESTAMP = "rsp_c2eventMesh_timestamp";
-    public static final String RSP_EVENTMESH2MQ_TIMESTAMP = "rsp_eventMesh2mq_timestamp";
-    public static final String RSP_MQ2EVENTMESH_TIMESTAMP = "rsp_mq2eventMesh_timestamp";
-    public static final String RSP_EVENTMESH2C_TIMESTAMP = "rsp_eventMesh2c_timestamp";
+    public static final String REQ_C2EVENTMESH_TIMESTAMP = "reqc2eventmeshtimestamp";
+    public static final String REQ_EVENTMESH2MQ_TIMESTAMP = "reqeventmesh2mqtimestamp";
+    public static final String REQ_MQ2EVENTMESH_TIMESTAMP = "reqmq2eventmeshtimestamp";
+    public static final String REQ_EVENTMESH2C_TIMESTAMP = "reqeventmesh2ctimestamp";
+    public static final String RSP_C2EVENTMESH_TIMESTAMP = "rspc2eventmeshtimestamp";
+    public static final String RSP_EVENTMESH2MQ_TIMESTAMP = "rspeventmesh2mqtimestamp";
+    public static final String RSP_MQ2EVENTMESH_TIMESTAMP = "rspmq2eventmeshtimestamp";
+    public static final String RSP_EVENTMESH2C_TIMESTAMP = "rspeventmesh2ctimestamp";
 
-    public static final String REQ_SEND_EVENTMESH_IP = "req_send_eventMesh_ip";
-    public static final String REQ_RECEIVE_EVENTMESH_IP = "req_receive_eventMesh_ip";
-    public static final String RSP_SEND_EVENTMESH_IP = "rsp_send_eventMesh_ip";
-    public static final String RSP_RECEIVE_EVENTMESH_IP = "rsp_receive_eventMesh_ip";
+    public static final String REQ_SEND_EVENTMESH_IP = "reqsendeventmeship";
+    public static final String REQ_RECEIVE_EVENTMESH_IP = "reqreceiveeventmeship";
+    public static final String RSP_SEND_EVENTMESH_IP = "rspsendeventmeship";
+    public static final String RSP_RECEIVE_EVENTMESH_IP = "rspreceiveeventmeship";
 
     //default TTL 4 hours
     public static final Integer DEFAULT_MSG_TTL_MILLS = 14400000;
@@ -77,23 +77,23 @@ public class EventMeshConstants {
     public static final String KEYS_UPPERCASE = "KEYS";
     public static final String KEYS_LOWERCASE = "keys";
     public static final String RR_REQUEST_UNIQ_ID = "RR_REQUEST_UNIQ_ID";
-    public static final String TTL = "TTL";
+    public static final String TTL = "ttl";
 
     public static final String TAG = "TAG";
 
-    public static final String MANAGE_SUBSYSTEM = "subSystem";
+    public static final String MANAGE_SUBSYSTEM = "subsystem";
     public static final String MANAGE_IP = "ip";
     public static final String MANAGE_PORT = "port";
-    public static final String MANAGE_DEST_IP = "desteventMeshIp";
-    public static final String MANAGE_DEST_PORT = "desteventMeshPort";
+    public static final String MANAGE_DEST_IP = "desteventmeshIp";
+    public static final String MANAGE_DEST_PORT = "desteventmeshport";
     public static final String MANAGE_PATH = "path";
     public static final String MANAGE_GROUP = "group";
     public static final String MANAGE_PURPOSE = "purpose";
     public static final String MANAGE_TOPIC = "topic";
 
-    public static final String EVENTMESH_SEND_BACK_TIMES = "eventMeshSendBackTimes";
+    public static final String EVENTMESH_SEND_BACK_TIMES = "eventmeshdendbacktimes";
 
-    public static final String EVENTMESH_SEND_BACK_IP = "eventMeshSendBackIp";
+    public static final String EVENTMESH_SEND_BACK_IP = "eventmeshsendbackip";
 
     public static final String EVENTMESH_REGISTRY_ADDR_KEY = "eventMeshRegistryAddr";
 
@@ -101,18 +101,18 @@ public class EventMeshConstants {
 
     public static final String RR_REPLY_TOPIC = "rr-reply-topic";
 
-    public static final String PROPERTY_MESSAGE_CLUSTER = "CLUSTER";
+    public static final String PROPERTY_MESSAGE_CLUSTER = "cluster";
 
-    public static final String PROPERTY_MESSAGE_TTL = "TTL";
+    public static final String PROPERTY_MESSAGE_TTL = "ttl";
 
-    public static final String PROPERTY_MESSAGE_KEYS = "KEYS";
+    public static final String PROPERTY_MESSAGE_KEYS = "keys";
 
     public static final String PROPERTY_MESSAGE_REPLY_TO = "REPLY_TO";  //requester clientId
 
     public static final String PROPERTY_RR_REQUEST_ID = "RR_REQUEST_UNIQ_ID";
 
-    public static final String LEAVE_TIME = "LEAVE_TIME";            //leaveBrokerTime
-    public static final String ARRIVE_TIME = "ARRIVE_TIME";
-    public static final String STORE_TIME = "STORE_TIME";
+    public static final String LEAVE_TIME = "leavetime";            //leaveBrokerTime
+    public static final String ARRIVE_TIME = "arrivetime";
+    public static final String STORE_TIME = "storetime";
 
 }

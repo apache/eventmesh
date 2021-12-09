@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import org.apache.eventmesh.common.IPUtil;
-import org.apache.eventmesh.common.command.HttpCommand;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeResponseBody;
@@ -72,33 +72,35 @@ public class SubscribeProcessor implements HttpRequestProcessor {
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext)
             throws Exception {
         HttpCommand responseEventMeshCommand;
+        final HttpCommand request = asyncContext.getRequest();
+        final Integer requestCode = Integer.valueOf(asyncContext.getRequest().getRequestCode());
+
         httpLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-                EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
-        SubscribeRequestHeader subscribeRequestHeader =
-                (SubscribeRequestHeader) asyncContext.getRequest().getHeader();
-        SubscribeRequestBody subscribeRequestBody =
-                (SubscribeRequestBody) asyncContext.getRequest().getBody();
+            RequestCode.get(requestCode),
+            EventMeshConstants.PROTOCOL_HTTP,
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress()
+        );
+        SubscribeRequestHeader subscribeRequestHeader = (SubscribeRequestHeader) request.getHeader();
+        SubscribeRequestBody subscribeRequestBody = (SubscribeRequestBody) request.getBody();
 
         SubscribeResponseHeader subscribeResponseHeader =
-                SubscribeResponseHeader
-                        .buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
-                                IPUtil.getLocalAddress(),
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+            SubscribeResponseHeader
+                .buildHeader(requestCode,
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
+                    IPUtils.getLocalAddress(),
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         //validate header
         if (StringUtils.isBlank(subscribeRequestHeader.getIdc())
-                || StringUtils.isBlank(subscribeRequestHeader.getPid())
-                || !StringUtils.isNumeric(subscribeRequestHeader.getPid())
-                || StringUtils.isBlank(subscribeRequestHeader.getSys())) {
-            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
-                    subscribeResponseHeader,
-                    SubscribeResponseBody
-                            .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
-                                    EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
+            || StringUtils.isBlank(subscribeRequestHeader.getPid())
+            || !StringUtils.isNumeric(subscribeRequestHeader.getPid())
+            || StringUtils.isBlank(subscribeRequestHeader.getSys())) {
+            responseEventMeshCommand = request.createHttpCommandResponse(
+                subscribeResponseHeader,
+                SubscribeResponseBody
+                    .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
+                        EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
             asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
@@ -108,11 +110,11 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 || CollectionUtils.isEmpty(subscribeRequestBody.getTopics())
                 || StringUtils.isBlank(subscribeRequestBody.getConsumerGroup())) {
 
-            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
-                    subscribeResponseHeader,
-                    SubscribeResponseBody
-                            .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
-                                    EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
+            responseEventMeshCommand = request.createHttpCommandResponse(
+                subscribeResponseHeader,
+                SubscribeResponseBody
+                    .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
+                        EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
             asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
@@ -124,7 +126,6 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             String user = subscribeRequestHeader.getUsername();
             String pass = subscribeRequestHeader.getPasswd();
             String subsystem = subscribeRequestHeader.getSys();
-            int requestCode = Integer.valueOf(subscribeRequestHeader.getCode());
             for (SubscriptionItem item : subTopicList) {
                 try {
                     Acl.doAclCheckInHttpReceive(remoteAddr, user, pass, subsystem, item.getTopic(),
@@ -233,16 +234,14 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                             }
                             eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
                             eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(
-                                    System.currentTimeMillis()
-                                            - asyncContext.getRequest().getReqTime());
+                                System.currentTimeMillis() - request.getReqTime());
                         } catch (Exception ex) {
                             // ignore
                         }
                     }
                 };
 
-                responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
-                        EventMeshRetCode.SUCCESS.getRetCode(), EventMeshRetCode.SUCCESS.getErrMsg());
+                responseEventMeshCommand = request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
                 asyncContext.onComplete(responseEventMeshCommand, handler);
             } catch (Exception e) {
                 HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(

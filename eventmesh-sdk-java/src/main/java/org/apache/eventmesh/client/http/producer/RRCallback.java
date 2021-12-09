@@ -17,12 +17,17 @@
 
 package org.apache.eventmesh.client.http.producer;
 
+/**
+ * ProtocolMessage can be
+ * <ul>
+ *     <li>{@link org.apache.eventmesh.common.EventMeshMessage}</li>
+ *     <li>{@link io.cloudevents.CloudEvent}</li>
+ *     <li>{@link io.openmessaging.api.Message}</li>
+ * </ul>
+ */
+public interface RRCallback<ProtocolMessage> {
 
-import org.apache.eventmesh.common.LiteMessage;
-
-public interface RRCallback {
-
-    void onSuccess(LiteMessage liteMessage);
+    void onSuccess(ProtocolMessage protocolMessage);
 
     void onException(Throwable e);
 

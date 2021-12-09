@@ -19,7 +19,7 @@ package org.apache.eventmesh.common.loadbalance;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.eventmesh.common.EventMeshException;
+import org.apache.eventmesh.common.exception.EventMeshException;
 
 import java.util.List;
 

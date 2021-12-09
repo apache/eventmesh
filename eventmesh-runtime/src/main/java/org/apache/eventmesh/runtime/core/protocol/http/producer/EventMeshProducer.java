@@ -20,10 +20,8 @@ package org.apache.eventmesh.runtime.core.protocol.http.producer;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.openmessaging.api.Message;
-import io.openmessaging.api.SendCallback;
-
-import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.api.RequestReplyCallback;
+import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
@@ -52,16 +50,16 @@ public class EventMeshProducer {
     protected EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
     public void send(SendMessageContext sendMsgContext, SendCallback sendCallback) throws Exception {
-        mqProducerWrapper.send(sendMsgContext.getMsg(), sendCallback);
+        mqProducerWrapper.send(sendMsgContext.getEvent(), sendCallback);
     }
 
-    public void request(SendMessageContext sendMsgContext, RRCallback rrCallback, long timeout)
+    public void request(SendMessageContext sendMsgContext, RequestReplyCallback rrCallback, long timeout)
             throws Exception {
-        mqProducerWrapper.request(sendMsgContext.getMsg(), rrCallback, timeout);
+        mqProducerWrapper.request(sendMsgContext.getEvent(), rrCallback, timeout);
     }
 
     public boolean reply(final SendMessageContext sendMsgContext, final SendCallback sendCallback) throws Exception {
-        mqProducerWrapper.reply(sendMsgContext.getMsg(), sendCallback);
+        mqProducerWrapper.reply(sendMsgContext.getEvent(), sendCallback);
         return true;
     }
 
