@@ -17,20 +17,23 @@
 
 package org.apache.eventmesh.protocol.api;
 
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import lombok.experimental.UtilityClass;
 
 /**
  * A factory to get Protocol plugin instance.
  *
  * @since 1.3.0
  */
-public enum ProtocolPluginFactory {
-    ;
+@UtilityClass
+public class ProtocolPluginFactory {
 
-    private static final Map<String, ProtocolAdaptor> PROTOCOL_ADAPTOR_MAP =
+    private static final Map<String, ProtocolAdaptor<ProtocolTransportObject>> PROTOCOL_ADAPTOR_MAP =
         new ConcurrentHashMap<>(16);
 
     /**
@@ -40,8 +43,9 @@ public enum ProtocolPluginFactory {
      * @return protocol adaptor
      * @throws IllegalArgumentException if protocol not found
      */
-    public static ProtocolAdaptor getProtocolAdaptor(String protocolType) {
-        ProtocolAdaptor protocolAdaptor = PROTOCOL_ADAPTOR_MAP.computeIfAbsent(
+    @SuppressWarnings("unchecked")
+    public static ProtocolAdaptor<ProtocolTransportObject> getProtocolAdaptor(String protocolType) {
+        ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = PROTOCOL_ADAPTOR_MAP.computeIfAbsent(
             protocolType,
             (type) -> EventMeshExtensionFactory.getExtension(ProtocolAdaptor.class, type)
         );

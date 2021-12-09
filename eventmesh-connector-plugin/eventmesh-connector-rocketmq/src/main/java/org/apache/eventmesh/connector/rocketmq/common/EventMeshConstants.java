@@ -69,33 +69,33 @@ public class EventMeshConstants {
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
 
-    public static final String BORN_TIMESTAMP = "BORN_TIME";
-    public static final String STORE_TIMESTAMP = "STORE_TIME";
-    public static final String LEAVE_TIMESTAMP = "LEAVE_TIME";
-    public static final String ARRIVE_TIMESTAMP = "ARRIVE_TIME";
+    public static final String BORN_TIMESTAMP = "borntime";
+    public static final String STORE_TIMESTAMP = "storetime";
+    public static final String LEAVE_TIMESTAMP = "leavetime";
+    public static final String ARRIVE_TIMESTAMP = "arrivetime";
 
     public static final String KEYS_UPPERCASE = "KEYS";
     public static final String KEYS_LOWERCASE = "keys";
     public static final String RR_REQUEST_UNIQ_ID = "RR_REQUEST_UNIQ_ID";
-    public static final String TTL = "TTL";
+    public static final String TTL = "ttl";
 
-    public static final String TAG = "TAG";
+    public static final String TAG = "tag";
 
-    public static final String MANAGE_SUBSYSTEM = "subSystem";
+    public static final String MANAGE_SUBSYSTEM = "subsystem";
     public static final String MANAGE_IP = "ip";
     public static final String MANAGE_PORT = "port";
-    public static final String MANAGE_DEST_IP = "destEventMeshIp";
-    public static final String MANAGE_DEST_PORT = "destEventMeshPort";
+    public static final String MANAGE_DEST_IP = "desteventmeship";
+    public static final String MANAGE_DEST_PORT = "desteventmeshport";
     public static final String MANAGE_PATH = "path";
     public static final String MANAGE_GROUP = "group";
     public static final String MANAGE_PURPOSE = "purpose";
     public static final String MANAGE_TOPIC = "topic";
 
-    public static final String EventMesh_SEND_BACK_TIMES = "EventMeshSendBackTimes";
+    public static final String EventMesh_SEND_BACK_TIMES = "eventmeshsendbacktimes";
 
-    public static final String EventMesh_SEND_BACK_IP = "EventMeshSendBackIp";
+    public static final String EventMesh_SEND_BACK_IP = "eventmeshsendbackip";
 
-    public static final String EventMesh_REGISTRY_ADDR_KEY = "EventMeshRegistryAddr";
+    public static final String EventMesh_REGISTRY_ADDR_KEY = "eventmeshregistryaddr";
 
     public static int DEFAULT_TIME_OUT_MILLS = 5 * 1000;
 

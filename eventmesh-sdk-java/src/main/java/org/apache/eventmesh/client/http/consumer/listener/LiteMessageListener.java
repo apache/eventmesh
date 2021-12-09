@@ -20,11 +20,11 @@ package org.apache.eventmesh.client.http.consumer.listener;
 
 import org.apache.eventmesh.client.http.consumer.HandleResult;
 import org.apache.eventmesh.client.http.consumer.context.LiteConsumeContext;
-import org.apache.eventmesh.common.LiteMessage;
+import org.apache.eventmesh.common.EventMeshMessage;
 
 public interface LiteMessageListener {
 
-    HandleResult handle(LiteMessage liteMessage, LiteConsumeContext liteConsumeContext);
+    HandleResult handle(EventMeshMessage eventMeshMessage, LiteConsumeContext liteConsumeContext);
 
     boolean reject();
 

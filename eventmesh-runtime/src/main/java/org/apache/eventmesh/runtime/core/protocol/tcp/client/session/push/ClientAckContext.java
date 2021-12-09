@@ -19,8 +19,7 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
 import java.util.List;
 
-import io.openmessaging.api.Message;
-
+import io.cloudevents.CloudEvent;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -44,17 +43,17 @@ public class ClientAckContext {
 
     private long expireTime;
 
-    private List<Message> msgs;
+    private List<CloudEvent> events;
 
     private MQConsumerWrapper consumer;
 
-    public ClientAckContext(String seq, AbstractContext context, List<Message> msgs, MQConsumerWrapper consumer) {
+    public ClientAckContext(String seq, AbstractContext context, List<CloudEvent> events, MQConsumerWrapper consumer) {
         this.seq = seq;
         this.context = context;
-        this.msgs = msgs;
+        this.events = events;
         this.consumer = consumer;
         this.createTime = System.currentTimeMillis();
-        String ttlStr = msgs.get(0).getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL);
+        String ttlStr = events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL).toString();
         long ttl = StringUtils.isNumeric(ttlStr)? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
         this.expireTime = System.currentTimeMillis() + ttl;
     }
@@ -87,12 +86,12 @@ public class ClientAckContext {
         this.createTime = createTime;
     }
 
-    public List<Message> getMsgs() {
-        return msgs;
+    public List<CloudEvent> getEvents() {
+        return events;
     }
 
-    public void setMsgs(List<Message> msgs) {
-        this.msgs = msgs;
+    public void setEvents(List<CloudEvent> events) {
+        this.events = events;
     }
 
     public long getExpireTime() {
@@ -108,13 +107,13 @@ public class ClientAckContext {
     }
 
     public void ackMsg() {
-        if (consumer != null && context != null && msgs != null) {
-            consumer.updateOffset(msgs, context);
+        if (consumer != null && context != null && events != null) {
+            consumer.updateOffset(events, context);
 //            ConsumeMessageService consumeMessageService = consumer..getDefaultMQPushConsumerImpl().getConsumeMessageService();
 //            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, context);
-            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), EventMeshUtil.getMessageBizSeq(msgs.get(0)));
+            logger.info("ackMsg topic:{}, bizSeq:{}", events.get(0).getSubject(), EventMeshUtil.getMessageBizSeq(events.get(0)));
         } else {
-            logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}", consumer == null, context == null, msgs == null);
+            logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}", consumer == null, context == null, events == null);
         }
     }
 
@@ -124,7 +123,7 @@ public class ClientAckContext {
                 ",seq=" + seq +
 // TODO               ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
 //                ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
-                ",topic=" + (CollectionUtils.size(msgs) > 0 ? msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION) : null) +
+                ",topic=" + (CollectionUtils.size(events) > 0 ? events.get(0).getSubject() : null) +
                 ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) +
                 ",expireTime=" + DateFormatUtils.format(expireTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
