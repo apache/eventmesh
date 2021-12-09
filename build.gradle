@@ -457,6 +457,7 @@ subprojects {
             dependency "org.powermock:powermock-api-mockito2:2.0.2"
 
             dependency "io.cloudevents:cloudevents-core:2.2.0"
+            dependency "io.cloudevents:cloudevents-json-jackson:2.2.0"
         }
     }
 }

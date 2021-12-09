@@ -26,6 +26,11 @@ dependencies {
     implementation "io.netty:netty-all"
     implementation "org.apache.httpcomponents:httpclient"
 
+    // protocol
+    implementation "io.cloudevents:cloudevents-core"
+    implementation "io.cloudevents:cloudevents-json-jackson"
+    implementation "io.openmessaging:openmessaging-api"
+
     testImplementation project(":eventmesh-common")
 
     testImplementation "com.fasterxml.jackson.core:jackson-databind"
@@ -34,5 +39,11 @@ dependencies {
 
     testImplementation "io.netty:netty-all"
     testImplementation "org.apache.httpcomponents:httpclient"
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
 }

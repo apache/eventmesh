@@ -21,8 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.openmessaging.api.Message;
-
+import io.cloudevents.CloudEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.AbstractContext;
@@ -53,7 +52,7 @@ public class HandleMsgContext {
 
     private SubscriptionItem subscriptionItem;
 
-    private Message msg;
+    private CloudEvent event;
 
     private int ttl;
 
@@ -70,14 +69,14 @@ public class HandleMsgContext {
     private Map<String, String> props;
 
     public HandleMsgContext(String msgRandomNo, String consumerGroup, EventMeshConsumer eventMeshConsumer,
-                            String topic, Message msg, SubscriptionItem subscriptionItem,
+                            String topic, CloudEvent event, SubscriptionItem subscriptionItem,
                             AbstractContext context, ConsumerGroupConf consumerGroupConfig,
                             EventMeshHTTPServer eventMeshHTTPServer, String bizSeqNo, String uniqueId, ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
         this.consumerGroup = consumerGroup;
         this.eventMeshConsumer = eventMeshConsumer;
         this.topic = topic;
-        this.msg = msg;
+        this.event = event;
         this.subscriptionItem = subscriptionItem;
         this.context = context;
         this.consumerGroupConfig = consumerGroupConfig;
@@ -85,7 +84,8 @@ public class HandleMsgContext {
         this.bizSeqNo = bizSeqNo;
         this.uniqueId = uniqueId;
         this.consumeTopicConfig = consumeTopicConfig;
-        String ttlStr = msg.getUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT);
+
+        String ttlStr = (String) event.getExtension(Constants.PROPERTY_MESSAGE_TIMEOUT);
         this.ttl = StringUtils.isNumeric(ttlStr)? Integer.parseInt(ttlStr): EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
     }
 
@@ -148,12 +148,12 @@ public class HandleMsgContext {
         this.topic = topic;
     }
 
-    public Message getMsg() {
-        return msg;
+    public CloudEvent getEvent() {
+        return event;
     }
 
-    public void setMsg(Message msg) {
-        this.msg = msg;
+    public void setEvent(CloudEvent event) {
+        this.event = event;
     }
 
     public SubscriptionItem getSubscriptionItem() {
@@ -193,14 +193,14 @@ public class HandleMsgContext {
     }
 
     public void finish() {
-        if (eventMeshConsumer != null && context != null && msg != null) {
+        if (eventMeshConsumer != null && context != null && event != null) {
             if (messageLogger.isDebugEnabled()) {
 //                messageLogger.debug("messageAcked|topic={}|msgId={}|cluster={}|broker={}|queueId={}|queueOffset={}", topic,
 //                        msg.getMsgId(), msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER),
 //                        msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
 //                        msg.getQueueId(), msg.getQueueOffset());
             }
-            eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Arrays.asList(msg), context);
+            eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Arrays.asList(event), context);
         }
     }
 

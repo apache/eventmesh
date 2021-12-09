@@ -17,11 +17,14 @@
 
 package org.apache.eventmesh.protocol.openmessage;
 
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventV1;
 import io.openmessaging.api.Message;
+import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+
+import java.util.List;
 
 /**
  * OpenMessage protocol adaptor, used to transform protocol between
@@ -29,15 +32,20 @@ import io.openmessaging.api.Message;
  *
  * @since 1.3.0
  */
-public class OpenMessageProtocolAdaptor implements ProtocolAdaptor {
+public class OpenMessageProtocolAdaptor<T extends ProtocolTransportObject> implements ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
-    public CloudEventV1 toCloudEventV1(Package message) {
+    public CloudEvent toCloudEvent(ProtocolTransportObject message) {
         return null;
     }
 
     @Override
-    public Package fromCloudEventV1(CloudEventV1 cloudEvent) {
+    public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol) throws ProtocolHandleException {
+        return null;
+    }
+
+    @Override
+    public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) {
         return null;
     }
 

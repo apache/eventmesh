@@ -32,7 +32,7 @@ public class PushMessageRequestBody extends Body {
 
     public static final String RANDOMNO  = "randomNo";
     public static final String TOPIC     = "topic";
-    public static final String BIZSEQNO  = "bizSeqNo";
+    public static final String BIZSEQNO  = "bizseqno";
     public static final String UNIQUEID  = "uniqueId";
     public static final String CONTENT   = "content";
     public static final String EXTFIELDS = "extFields";

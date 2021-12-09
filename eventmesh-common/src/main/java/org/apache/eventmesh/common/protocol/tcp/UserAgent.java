@@ -17,14 +17,21 @@
 
 package org.apache.eventmesh.common.protocol.tcp;
 
+import lombok.Builder;
+import lombok.Data;
+
+import java.util.Objects;
+
+@Data
+@Builder
 public class UserAgent {
 
     private String env;
     private String subsystem;
     private String path;
-    private int pid;
+    private int    pid;
     private String host;
-    private int port;
+    private int    port;
     private String version;
     private String username;
     private String password;
@@ -32,137 +39,36 @@ public class UserAgent {
     private String producerGroup;
     private String consumerGroup;
     private String purpose;
-    private int unack = 0;
+    @Builder.Default
+    private int    unack = 0;
 
     public UserAgent() {
     }
 
-    public String getProducerGroup() {
-        return producerGroup;
-    }
-
-    public void setProducerGroup(String producerGroup) {
-        this.producerGroup = producerGroup;
-    }
-
-    public String getConsumerGroup() {
-        return consumerGroup;
-    }
-
-    public void setConsumerGroup(String consumerGroup) {
-        this.consumerGroup = consumerGroup;
-    }
-
-    public String getEnv() {
-        return env;
-    }
-
-    public void setEnv(String env) {
+    public UserAgent(String env, String subsystem, String path, int pid, String host, int port, String version,
+                     String username, String password, String idc, String producerGroup, String consumerGroup,
+                     String purpose, int unack) {
         this.env = env;
-    }
-
-    public String getPurpose() {
-        return purpose;
-    }
-
-    public void setPurpose(String purpose) {
-        this.purpose = purpose;
-    }
-
-    public String getSubsystem() {
-        return subsystem;
-    }
-
-    public void setSubsystem(String subsystem) {
         this.subsystem = subsystem;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
         this.path = path;
-    }
-
-    public int getPid() {
-        return pid;
-    }
-
-    public void setPid(int pid) {
         this.pid = pid;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
         this.host = host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
         this.port = port;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
         this.version = version;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getIdc() {
-        return idc;
-    }
-
-    public void setIdc(String idc) {
         this.idc = idc;
-    }
-
-    public int getUnack() {
-        return unack;
-    }
-
-    public void setUnack(int unack) {
+        this.producerGroup = producerGroup;
+        this.consumerGroup = consumerGroup;
+        this.purpose = purpose;
         this.unack = unack;
     }
 
     @Override
     public String toString() {
-        return "UserAgent{" +
-                "env='" + env + '\'' +
-                "subsystem='" + subsystem + '\'' +
-                ", path='" + path + '\'' +
-                ", pid=" + pid +
-                ", host='" + host + '\'' +
-                ", port=" + port +
-                ", version='" + version + '\'' +
-                ", idc='" + idc + '\'' +
-                ", purpose='" + purpose + '\'' +
-                ", unack='" + unack + '\'' +
-                '}';
+        return String.format(
+            "UserAgent{env='%s', subsystem='%s', path='%s', pid=%d, host='%s', port=%d, version='%s', idc='%s', purpose='%s', unack='%d'}",
+            env, subsystem, path, pid, host, port, version, idc, purpose, unack);
     }
 
     @Override
@@ -175,15 +81,15 @@ public class UserAgent {
         if (pid != userAgent.pid) return false;
         if (port != userAgent.port) return false;
         if (unack != userAgent.unack) return false;
-        if (subsystem != null ? !subsystem.equals(userAgent.subsystem) : userAgent.subsystem != null) return false;
-        if (path != null ? !path.equals(userAgent.path) : userAgent.path != null) return false;
-        if (host != null ? !host.equals(userAgent.host) : userAgent.host != null) return false;
-        if (purpose != null ? !purpose.equals(userAgent.purpose) : userAgent.purpose != null) return false;
-        if (version != null ? !version.equals(userAgent.version) : userAgent.version != null) return false;
-        if (username != null ? !username.equals(userAgent.username) : userAgent.username != null) return false;
-        if (password != null ? !password.equals(userAgent.password) : userAgent.password != null) return false;
-        if (env != null ? !env.equals(userAgent.env) : userAgent.env != null) return false;
-        return idc != null ? idc.equals(userAgent.idc) : userAgent.idc == null;
+        if (!Objects.equals(subsystem, userAgent.subsystem)) return false;
+        if (!Objects.equals(path, userAgent.path)) return false;
+        if (!Objects.equals(host, userAgent.host)) return false;
+        if (!Objects.equals(purpose, userAgent.purpose)) return false;
+        if (!Objects.equals(version, userAgent.version)) return false;
+        if (!Objects.equals(username, userAgent.username)) return false;
+        if (!Objects.equals(password, userAgent.password)) return false;
+        if (!Objects.equals(env, userAgent.env)) return false;
+        return Objects.equals(idc, userAgent.idc);
     }
 
     @Override
