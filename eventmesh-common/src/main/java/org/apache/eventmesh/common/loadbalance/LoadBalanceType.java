@@ -21,7 +21,8 @@ package org.apache.eventmesh.common.loadbalance;
 
 public enum LoadBalanceType {
     RANDOM(0, "random load balance strategy"),
-    WEIGHT_ROUND_ROBIN(1, "weight round robin load balance strategy");
+    WEIGHT_ROUND_ROBIN(1, "weight round robin load balance strategy"),
+    WEIGHT_RANDOM(2, "weight random load balance strategy");
 
     private int code;
     private String desc;

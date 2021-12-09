@@ -35,6 +35,15 @@ buildscript {
     }
 }
 
+//Remove doclint warnings that pollute javadoc logs when building with java8
+if(JavaVersion.current().isJava8Compatible()){
+    allprojects {
+        tasks.withType(Javadoc){
+            options.addStringOption('xdoclint:none','-quiet')
+        }
+    }
+}
+
 allprojects {
     apply plugin: 'java'
     apply plugin: "eclipse"
@@ -47,6 +56,7 @@ allprojects {
     apply plugin: "pmd"
     apply plugin: "java-library"
     apply plugin: 'signing'
+    apply plugin: 'checkstyle'
     apply plugin: 'com.github.jk1.dependency-license-report'
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
@@ -59,8 +69,8 @@ allprojects {
         delete 'out'
     }
 
-    if ((project.findProperty("snapshot") instanceof String) &&
-            (Boolean.valueOf(project.property("snapshot")))) {
+
+    if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot") as boolean))) {
         version = version + "-SNAPSHOT"
     }
 
@@ -78,6 +88,14 @@ allprojects {
         }.writeTo(writer)
         writer.flush()
         writer.close()
+    }
+
+    checkstyle {
+        toolVersion = '9.0'
+        ignoreFailures = false
+        showViolations = true
+        maxWarnings = 0
+        configFile = new File("${rootDir}/style/checkStyle.xml")
     }
 }
 
@@ -98,6 +116,49 @@ task zip(type: Zip) {
     into('/') {
         from 'dist'
     }
+}
+
+task installPlugin() {
+    if (!new File("${rootDir}/dist").exists()) {
+        return
+    }
+    String[] libJars = java.util.Optional.ofNullable(new File("${rootDir}/dist/lib").list()).orElseGet(() -> new String[0])
+    getAllprojects().forEach(subProject -> {
+        var file = new File("${subProject.projectDir}/gradle.properties")
+        if (!file.exists()) {
+            return
+        }
+        var properties = new Properties()
+        properties.load(new FileInputStream(file))
+        var pluginType = properties.getProperty("pluginType")
+        var pluginName = properties.getProperty("pluginName")
+        if (pluginType == null || pluginName == null) {
+            return
+        }
+        var pluginFile = new File("${rootDir}/dist/plugin/${pluginType}/${pluginName}")
+        if (pluginFile.exists()) {
+            return
+        }
+        pluginFile.mkdirs()
+        println String.format(
+                "install plugin, pluginType: %s, pluginInstanceName: %s, module: %s", pluginType, pluginName, subProject.getName()
+        )
+
+        copy {
+            into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
+            from "${subProject.getProjectDir()}/dist/apps"
+        }
+        copy {
+            into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
+            from "${subProject.getProjectDir()}/dist/lib/"
+            exclude(libJars)
+        }
+        copy {
+            into "${rootDir}/dist/conf"
+            from "${subProject.getProjectDir()}/dist/conf"
+            exclude 'META-INF'
+        }
+    })
 }
 
 subprojects {
@@ -178,10 +239,10 @@ subprojects {
     jar {
         manifest {
             attributes("Specification-Version": project.version,
-                    "Specification-Vendor": "WeBank, Inc.",
+                    "Specification-Vendor": "Apache",
                     "Specification-Title": project.name,
                     "Implementation-Version": project.version,
-                    "Implementation-Vendor": "WeBank, Inc.",
+                    "Implementation-Vendor": "Apache",
                     "Implementation-Title": project.name,
                     "Build-Jdk": project.findProperty("jdk")
             )
@@ -190,49 +251,60 @@ subprojects {
 
     task dist(dependsOn: ['jar']) {
         doFirst {
-            new File(projectDir, '../dist/bin').mkdirs()
-            new File(projectDir, '../dist/apps').mkdirs()
-            new File(projectDir, '../dist/conf').mkdirs()
-            new File(projectDir, '../dist/lib').mkdirs()
+            new File("${projectDir}/dist/bin").mkdirs()
+            new File("${projectDir}/dist/apps").mkdirs()
+            new File("${projectDir}/dist/conf").mkdirs()
+            new File("${projectDir}/dist/lib").mkdirs()
         }
-
+        Set<String> rootProject = ["eventmesh-admin",
+                                   "eventmesh-common",
+                                   "eventmesh-connector-api",
+                                   "eventmesh-registry-api",
+                                   "eventmesh-runtime",
+                                   "eventmesh-security-api",
+                                   "eventmesh-starter",
+                                   "eventmesh-spi"]
         doLast {
             copy {
-                into('../dist/apps/')
+                into("${projectDir}/dist/apps")
                 from project.jar.getArchivePath()
-                exclude 'eventmesh-common*.jar'
-                exclude 'eventmesh-connector-api*.jar'
-                exclude 'eventmesh-connector-plugin*.jar'
-                exclude 'eventmesh-admin*.jar'
-                exclude 'eventmesh-starter*.jar'
-                exclude 'eventmesh-test*.jar'
-                exclude 'eventmesh-sdk*.jar'
             }
             copy {
-                into '../dist/lib'
+                into("${projectDir}/dist/lib")
                 from project.configurations.runtimeClasspath
-                exclude '**/*.properties*'
-                exclude '**/*testng*.jar'
-                exclude '**/*powermock*.jar'
-                exclude '**/*mockito*.jar'
-                exclude '**/*junit*.jar'
-                exclude '**/*jacoco*.jar'
-                exclude '**/*log4j2.xml*'
-                exclude '**/spring-boot-devtools*.jar'
-                exclude '**/mumble-sdk-test*.jar'
-                exclude '*connector-rocketmq*.jar'
-                exclude 'eventmesh-runtime*.jar'
-                exclude 'commons-collections-3.2.2.jar'
             }
-
             copy {
-                into '../dist/bin'
-                from '../eventmesh-runtime/bin'
+                into("${projectDir}/dist/bin")
+                from 'bin'
             }
-
             copy {
-                into '../dist/conf'
-                from '../eventmesh-runtime/conf'
+                into("${projectDir}/dist/conf")
+                from 'conf', sourceSets.main.resources.srcDirs
+                setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+                exclude 'META-INF'
+            }
+            if (rootProject.contains(project.name)) {
+                new File("${rootDir}/dist/apps").mkdirs()
+                new File("${rootDir}/dist/lib").mkdirs()
+                new File("${rootDir}/dist/bin").mkdirs()
+                new File("${rootDir}/dist/conf").mkdirs()
+                copy {
+                    into("${rootDir}/dist/apps")
+                    from "${projectDir}/dist/apps"
+                }
+                copy {
+                    into "${rootDir}/dist/lib"
+                    from "${projectDir}/dist/lib"
+                    exclude "eventmesh-*"
+                }
+                copy {
+                    into "${rootDir}/dist/bin"
+                    from "${projectDir}/dist/bin"
+                }
+                copy {
+                    into "${rootDir}/dist/conf"
+                    from "${projectDir}/dist/conf"
+                }
             }
         }
     }
@@ -338,20 +410,17 @@ subprojects {
         dependencies {
             dependency "org.apache.commons:commons-lang3:3.6"
             dependency "org.apache.commons:commons-collections4:4.1"
-            dependency "commons-io:commons-io:2.4"
             dependency "org.apache.commons:commons-text:1.9"
 
-            dependency "com.google.guava:guava:29.0-jre"
 
+            dependency "com.google.guava:guava:29.0-jre"
+            
             dependency "org.slf4j:slf4j-api:1.7.30"
             dependency "org.apache.logging.log4j:log4j-api:2.13.3"
             dependency "org.apache.logging.log4j:log4j-core:2.13.3"
-            dependency "org.apache.logging.log4j:log4j-core:2.13.3"
             dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
-            dependency "org.apache.logging.log4j:log4j-web:2.13.3"
 
             dependency "com.lmax:disruptor:3.4.2"
-            dependency "com.alibaba:fastjson:1.2.71"
 
             dependency "com.fasterxml.jackson.core:jackson-databind:2.11.0"
             dependency "com.fasterxml.jackson.core:jackson-core:2.11.0"
@@ -388,13 +457,6 @@ subprojects {
             dependency "org.powermock:powermock-module-junit4:2.0.2"
             dependency "org.powermock:powermock-api-mockito2:2.0.2"
 
-
-            dependency 'org.springframework.boot:spring-boot-starter-data-jdbc:2.5.4'
-            dependency 'org.springframework.boot:spring-boot-starter-data-jpa:2.5.4'
-            dependency 'org.springframework.boot:spring-boot-starter-jdbc:2.5.4'
-            dependency 'org.springframework:spring-beans:5.1.8.RELEASE'
-            dependency 'org.projectlombok:lombok:1.18.20'
-            dependency 'com.h2database:h2:1.4.200'
             dependency "io.cloudevents:cloudevents-core:2.2.0"
         }
     }

@@ -63,7 +63,8 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build
-        run: ./gradlew clean build jacocoTestReport checkLicense
+        # skip check here, since we use Checkstyle task to check the added file
+        run: ./gradlew clean build jacocoTestReport checkLicense -x check
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v1
@@ -91,7 +92,7 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           java -jar ./checkstyle.jar -c ./style/checkStyle.xml -f xml ./eventmesh-* \
-               | ./reviewdog -f=checkstyle -reporter=github-pr-check -filter-mode=nofilter -fail-on-error
+               | ./reviewdog -f=checkstyle -reporter=github-pr-check -filter-mode=added -fail-on-error
 
   license-check:
     name: License Check

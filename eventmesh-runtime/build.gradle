@@ -16,24 +16,45 @@
  */
 
 dependencies {
-    api 'io.opentelemetry:opentelemetry-api'
-    api 'io.opentelemetry:opentelemetry-sdk'
-    api 'io.opentelemetry:opentelemetry-sdk-metrics'
-    api 'io.opentelemetry:opentelemetry-exporter-prometheus'
-    api 'io.prometheus:simpleclient'
-    api 'io.prometheus:simpleclient_httpserver'
-    api 'io.cloudevents:cloudevents-core'
+    implementation 'io.opentelemetry:opentelemetry-api'
+    implementation 'io.opentelemetry:opentelemetry-sdk'
+    implementation 'io.opentelemetry:opentelemetry-sdk-metrics'
+    implementation 'io.opentelemetry:opentelemetry-exporter-prometheus'
+    implementation 'io.prometheus:simpleclient'
+    implementation 'io.prometheus:simpleclient_httpserver'
+    implementation 'io.cloudevents:cloudevents-core'
+
+    implementation "org.apache.httpcomponents:httpclient"
+    implementation 'io.netty:netty-all'
+
+    implementation project(":eventmesh-common")
+    implementation project(":eventmesh-spi")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-rocketmq-namesrv")
+    implementation project(":eventmesh-registry-plugin:eventmesh-registry-namesrv")
+    implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
 
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+
+    testImplementation project(":eventmesh-common")
+    testImplementation project(":eventmesh-spi")
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
     testImplementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-rocketmq-namesrv")
+    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-namesrv")
+    testImplementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
+    
+    testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+
+    testImplementation "org.apache.httpcomponents:httpclient"
+    testImplementation "io.netty:netty-all"
+
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.powermock:powermock-module-junit4"
+    testImplementation "org.powermock:powermock-api-mockito2"
 }

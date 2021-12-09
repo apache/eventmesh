@@ -31,17 +31,7 @@ import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-<<<<<<< HEAD:eventmesh-common/src/main/java/org/apache/eventmesh/common/config/ConfigurationWraper.java
-import org.apache.commons.io.Charsets;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class ConfigurationWraper {
-=======
 public class ConfigurationWrapper {
->>>>>>> upstream/develop:eventmesh-common/src/main/java/org/apache/eventmesh/common/config/ConfigurationWrapper.java
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -75,7 +65,7 @@ public class ConfigurationWrapper {
         try {
             logger.info("loading config: {}", file);
             properties.load(new BufferedReader(new FileReader(
-                    file, Charsets.UTF_8)));
+                    new File(file))));
         } catch (IOException e) {
             logger.error("loading properties [{}] error", file, e);
         }
