@@ -35,6 +35,15 @@ buildscript {
     }
 }
 
+//Remove doclint warnings that pollute javadoc logs when building with java8
+if(JavaVersion.current().isJava8Compatible()){
+    allprojects {
+        tasks.withType(Javadoc){
+            options.addStringOption('xdoclint:none','-quiet')
+        }
+    }
+}
+
 allprojects {
     apply plugin: 'java'
     apply plugin: "eclipse"
@@ -48,7 +57,6 @@ allprojects {
     apply plugin: "java-library"
     apply plugin: 'signing'
     apply plugin: 'checkstyle'
-    apply plugin: 'com.github.jk1.dependency-license-report'
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
@@ -60,24 +68,8 @@ allprojects {
         delete 'out'
     }
 
-    if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot")))) {
+    if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot") as boolean))) {
         version = version + "-SNAPSHOT"
-    }
-
-    licenseReport {
-        allowedLicensesFile = new File("build/license/allowed-licenses.json")
-    }
-
-    checkLicense.doFirst {
-        new File("build/license").mkdirs()
-        new File("build/license/allowed-licenses.json").createNewFile()
-
-        def writer = new File("build/license/allowed-licenses.json").newPrintWriter()
-        new File("tool/license/allowed-licenses.txt").filterLine {
-            String line -> line.trim().length() != 0 && !line.startsWith("#")
-        }.writeTo(writer)
-        writer.flush()
-        writer.close()
     }
 
     checkstyle {
@@ -148,6 +140,15 @@ task installPlugin() {
             from "${subProject.getProjectDir()}/dist/conf"
             exclude 'META-INF'
         }
+    })
+}
+
+task printProjects() {
+    getAllprojects().forEach(subProject -> {
+        if ("EventMesh".equals(subProject.getName())) {
+            return
+        }
+        println String.format("%s-%s.jar", subProject.getName(), subProject.getVersion())
     })
 }
 
@@ -400,17 +401,15 @@ subprojects {
         dependencies {
             dependency "org.apache.commons:commons-lang3:3.6"
             dependency "org.apache.commons:commons-collections4:4.1"
-            dependency "commons-io:commons-io:2.4"
             dependency "org.apache.commons:commons-text:1.9"
 
-            dependency "com.google.guava:guava:29.0-jre"
 
+            dependency "com.google.guava:guava:29.0-jre"
+            
             dependency "org.slf4j:slf4j-api:1.7.30"
             dependency "org.apache.logging.log4j:log4j-api:2.13.3"
             dependency "org.apache.logging.log4j:log4j-core:2.13.3"
-            dependency "org.apache.logging.log4j:log4j-core:2.13.3"
             dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
-            dependency "org.apache.logging.log4j:log4j-web:2.13.3"
 
             dependency "com.lmax:disruptor:3.4.2"
 
@@ -442,6 +441,7 @@ subprojects {
             dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.4.7"
 
             dependency "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
+            dependency "io.openmessaging:registry-server:0.0.1"
 
             dependency "junit:junit:4.12"
             dependency "com.github.stefanbirkner:system-rules:1.16.1"
@@ -452,6 +452,7 @@ subprojects {
             dependency "org.powermock:powermock-api-mockito2:2.0.2"
 
             dependency "io.cloudevents:cloudevents-core:2.2.0"
+            dependency "io.cloudevents:cloudevents-json-jackson:2.2.0"
         }
     }
 }

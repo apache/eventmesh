@@ -130,7 +130,7 @@ EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apa
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation.
 
 ## Community
-|              WeChat Assistan                            |                WeChat public account                   | Slack                                                  |
+|              WeChat Assistant                           |                WeChat public account                   | Slack                                                  |
 | :----------------------------------------------------:  | :----------------------------------------------------: | :----------------------------------------------------: |
 | ![wechat_qr](docs/images/mesh-helper.jpg) | ![wechat_official_qr](docs/images/wechat-official.png) |[Join slack chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-yx3n2ak7-HcVG98CDqb~7PwgoDzgfMA) |
 

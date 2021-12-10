@@ -20,7 +20,7 @@ package org.apache.eventmesh.common.config;
 import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.utils.IPUtils;
 
 public class CommonConfiguration {
     public String eventMeshEnv = "P";
@@ -95,7 +95,7 @@ public class CommonConfiguration {
             eventMeshServerIp =
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
             if (StringUtils.isBlank(eventMeshServerIp)) {
-                eventMeshServerIp = IPUtil.getLocalAddress();
+                eventMeshServerIp = IPUtils.getLocalAddress();
             }
 
             eventMeshConnectorPluginType =

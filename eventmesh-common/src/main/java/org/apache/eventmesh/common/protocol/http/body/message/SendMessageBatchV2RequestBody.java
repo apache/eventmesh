@@ -25,12 +25,12 @@ import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class SendMessageBatchV2RequestBody extends Body {
 
-    public static final String BIZSEQNO = "bizSeqNo";
+    public static final String BIZSEQNO = "bizseqno";
     public static final String TOPIC = "topic";
     public static final String MSG = "msg";
     public static final String TAG = "tag";
     public static final String TTL = "ttl";
-    public static final String PRODUCERGROUP = "producerGroup";
+    public static final String PRODUCERGROUP = "producergroup";
 
     private String bizSeqNo;
 

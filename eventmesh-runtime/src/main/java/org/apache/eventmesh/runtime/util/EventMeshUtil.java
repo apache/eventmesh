@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.runtime.util;
 
-
-import static org.apache.eventmesh.runtime.util.OMSUtil.isOMSHeader;
-
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -28,6 +25,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -39,12 +37,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-import io.openmessaging.api.Message;
+import io.cloudevents.CloudEvent;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.RandomStringUtil;
-import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -59,14 +57,14 @@ public class EventMeshUtil {
     private final static Logger tcpLogger = LoggerFactory.getLogger("tcpMonitor");
 
     public static String buildPushMsgSeqNo() {
-        return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + RandomStringUtil.generateNum(4);
+        return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + RandomStringUtils.generateNum(4);
     }
 
     public static String buildMeshClientID(String clientGroup, String meshCluster) {
         return StringUtils.trim(clientGroup)
                 + "(" + StringUtils.trim(meshCluster) + ")"
                 + "-" + EventMeshVersion.getCurrentVersionDesc()
-                + "-" + ThreadUtil.getPID();
+                + "-" + ThreadUtils.getPID();
     }
 
     public static String buildMeshTcpClientID(String clientSysId, String purpose, String meshCluster) {
@@ -74,7 +72,7 @@ public class EventMeshUtil {
                 + "-" + StringUtils.trim(purpose)
                 + "-" + StringUtils.trim(meshCluster)
                 + "-" + EventMeshVersion.getCurrentVersionDesc()
-                + "-" + ThreadUtil.getPID();
+                + "-" + ThreadUtils.getPID();
     }
 
     public static String buildClientGroup(String systemId) {
@@ -139,14 +137,22 @@ public class EventMeshUtil {
         return result;
     }
 
-    public static String getMessageBizSeq(Message msg) {
-        Properties properties = msg.getSystemProperties();
+    public static String getMessageBizSeq(CloudEvent event) {
 
-        String keys = properties.getProperty(EventMeshConstants.KEYS_UPPERCASE);
+        String keys = (String) event.getExtension(EventMeshConstants.KEYS_UPPERCASE);
         if (!StringUtils.isNotBlank(keys)) {
-            keys = properties.getProperty(EventMeshConstants.KEYS_LOWERCASE);
+            keys = (String) event.getExtension(EventMeshConstants.KEYS_LOWERCASE);
         }
         return keys;
+    }
+
+    public static Map<String, String> getEventProp(CloudEvent event) {
+        Set<String> extensionSet = event.getExtensionNames();
+        Map<String, String> prop = new HashMap<>();
+        for (String extensionKey : extensionSet) {
+            prop.put(extensionKey, event.getExtension(extensionKey).toString());
+        }
+        return prop;
     }
 
 //    public static org.apache.rocketmq.common.message.Message decodeMessage(AccessMessage accessMessage) {
@@ -160,28 +166,28 @@ public class EventMeshUtil {
 //        return msg;
 //    }
 
-    public static Message decodeMessage(EventMeshMessage eventMeshMessage) {
-        Message omsMsg = new Message();
-        omsMsg.setBody(eventMeshMessage.getBody().getBytes());
-        omsMsg.setTopic(eventMeshMessage.getTopic());
-        Properties systemProperties = new Properties();
-        Properties userProperties = new Properties();
-
-        final Set<Map.Entry<String, String>> entries = eventMeshMessage.getProperties().entrySet();
-
-        for (final Map.Entry<String, String> entry : entries) {
-            if (isOMSHeader(entry.getKey())) {
-                systemProperties.put(entry.getKey(), entry.getValue());
-            } else {
-                userProperties.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        systemProperties.put(Constants.PROPERTY_MESSAGE_DESTINATION, eventMeshMessage.getTopic());
-        omsMsg.setSystemProperties(systemProperties);
-        omsMsg.setUserProperties(userProperties);
-        return omsMsg;
-    }
+//    public static Message decodeMessage(EventMeshMessage eventMeshMessage) {
+//        Message omsMsg = new Message();
+//        omsMsg.setBody(eventMeshMessage.getBody().getBytes());
+//        omsMsg.setTopic(eventMeshMessage.getTopic());
+//        Properties systemProperties = new Properties();
+//        Properties userProperties = new Properties();
+//
+//        final Set<Map.Entry<String, String>> entries = eventMeshMessage.getProperties().entrySet();
+//
+//        for (final Map.Entry<String, String> entry : entries) {
+//            if (isOMSHeader(entry.getKey())) {
+//                systemProperties.put(entry.getKey(), entry.getValue());
+//            } else {
+//                userProperties.put(entry.getKey(), entry.getValue());
+//            }
+//        }
+//
+//        systemProperties.put(Constants.PROPERTY_MESSAGE_DESTINATION, eventMeshMessage.getTopic());
+//        omsMsg.setSystemProperties(systemProperties);
+//        omsMsg.setUserProperties(userProperties);
+//        return omsMsg;
+//    }
 
 //    public static AccessMessage encodeMessage(org.apache.rocketmq.common.message.Message msg) throws Exception {
 //        AccessMessage accessMessage = new AccessMessage();
@@ -193,42 +199,42 @@ public class EventMeshUtil {
 //        return accessMessage;
 //    }
 
-    public static EventMeshMessage encodeMessage(Message omsMessage) throws Exception {
-
-        EventMeshMessage eventMeshMessage = new EventMeshMessage();
-        eventMeshMessage.setBody(new String(omsMessage.getBody(), StandardCharsets.UTF_8));
-
-        Properties sysHeaders = omsMessage.getSystemProperties();
-        Properties userHeaders = omsMessage.getUserProperties();
-
-        //All destinations in RocketMQ use Topic
-        eventMeshMessage.setTopic(sysHeaders.getProperty(Constants.PROPERTY_MESSAGE_DESTINATION));
-
-        if (sysHeaders.containsKey("START_TIME")) {
-            long deliverTime;
-            if (StringUtils.isBlank(sysHeaders.getProperty("START_TIME"))) {
-                deliverTime = 0;
-            } else {
-                deliverTime = Long.parseLong(sysHeaders.getProperty("START_TIME"));
-            }
-
-            if (deliverTime > 0) {
-//                rmqMessage.putUserProperty(RocketMQConstants.START_DELIVER_TIME, String.valueOf(deliverTime));
-                eventMeshMessage.getProperties().put("START_TIME", String.valueOf(deliverTime));
-            }
-        }
-
-        for (String key : userHeaders.stringPropertyNames()) {
-            eventMeshMessage.getProperties().put(key, userHeaders.getProperty(key));
-        }
-
-        //System headers has a high priority
-        for (String key : sysHeaders.stringPropertyNames()) {
-            eventMeshMessage.getProperties().put(key, sysHeaders.getProperty(key));
-        }
-
-        return eventMeshMessage;
-    }
+//    public static EventMeshMessage encodeMessage(Message omsMessage) throws Exception {
+//
+//        EventMeshMessage eventMeshMessage = new EventMeshMessage();
+//        eventMeshMessage.setBody(new String(omsMessage.getBody(), StandardCharsets.UTF_8));
+//
+//        Properties sysHeaders = omsMessage.getSystemProperties();
+//        Properties userHeaders = omsMessage.getUserProperties();
+//
+//        //All destinations in RocketMQ use Topic
+//        eventMeshMessage.setTopic(sysHeaders.getProperty(Constants.PROPERTY_MESSAGE_DESTINATION));
+//
+//        if (sysHeaders.containsKey("START_TIME")) {
+//            long deliverTime;
+//            if (StringUtils.isBlank(sysHeaders.getProperty("START_TIME"))) {
+//                deliverTime = 0;
+//            } else {
+//                deliverTime = Long.parseLong(sysHeaders.getProperty("START_TIME"));
+//            }
+//
+//            if (deliverTime > 0) {
+////                rmqMessage.putUserProperty(RocketMQConstants.START_DELIVER_TIME, String.valueOf(deliverTime));
+//                eventMeshMessage.getProperties().put("START_TIME", String.valueOf(deliverTime));
+//            }
+//        }
+//
+//        for (String key : userHeaders.stringPropertyNames()) {
+//            eventMeshMessage.getProperties().put(key, userHeaders.getProperty(key));
+//        }
+//
+//        //System headers has a high priority
+//        for (String key : sysHeaders.stringPropertyNames()) {
+//            eventMeshMessage.getProperties().put(key, sysHeaders.getProperty(key));
+//        }
+//
+//        return eventMeshMessage;
+//    }
 
     public static String getLocalAddr() {
         //priority of networkInterface when generating client ip
