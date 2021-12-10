@@ -25,7 +25,7 @@ public class AsyncPublish {
                 .setSys("1234")
                 .setPid(String.valueOf(ThreadUtil.getPID()));
 
-        Publisher publisher = new Publisher(clientConfig);
+        Producer publisher = new Producer(clientConfig);
 
         publisher.start();
         publisher.publish("hello world grpc!!");

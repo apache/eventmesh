@@ -165,7 +165,7 @@ public class ClientConfig {
                 .append("pid=").append(pid).append(",")
                 .append("sys=").append(sys).append(",")
                 .append("userName=").append(userName).append(",")
-                .append("password=").append(password).append(",")
+                .append("password=").append("***").append(",")
                 .append("useTls=").append(useTls).append("}");
         return sb.toString();
     }
