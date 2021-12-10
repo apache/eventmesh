@@ -108,7 +108,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Check license header
-        uses: apache/skywalking-eyes@9bd5feb86b5817aa6072b008f9866a2c3bbc8587
+        uses: apache/skywalking-eyes@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
