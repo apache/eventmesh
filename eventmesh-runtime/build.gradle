@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+def grpcVersion = '1.15.0'
+
 dependencies {
     implementation 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
@@ -40,6 +42,11 @@ dependencies {
     implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-netty:${grpcVersion}"
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     // for debug only, can be removed
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")

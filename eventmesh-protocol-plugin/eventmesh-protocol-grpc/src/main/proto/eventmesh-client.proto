@@ -17,11 +17,11 @@
 
 syntax = "proto3";
 
-package eventmesh.client;
+package eventmesh.common.protocol.grpc;
 
 option java_multiple_files = true;
-option java_package = "org.apache.eventmesh.client.grpc.protos";
-option java_outer_classname = "EventmeshClient";
+option java_package = "org.apache.eventmesh.common.protocol.grpc.protos";
+option java_outer_classname = "EventmeshGrpc";
 
 message RequestHeader {
     string env = 1;
@@ -39,7 +39,7 @@ message RequestHeader {
 
 message Message {
    RequestHeader header = 1;
-   string productionGroup = 2;
+   string producerGroup = 2;
    string topic = 3;
    string content = 4;
    string ttl = 5;
