@@ -453,6 +453,11 @@ subprojects {
 
             dependency "io.cloudevents:cloudevents-core:2.2.0"
             dependency "io.cloudevents:cloudevents-json-jackson:2.2.0"
+
+            dependency "io.grpc:grpc-protobuf:1.15.0"
+            dependency "io.grpc:grpc-stub:1.15.0"
+            dependency "io.grpc:grpc-netty:1.15.0"
+            dependency "io.grpc:grpc-netty-shaded:1.15.0"
         }
     }
 }

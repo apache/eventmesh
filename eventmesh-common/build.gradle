@@ -38,6 +38,9 @@ dependencies {
 
     implementation "io.netty:netty-all"
 
+    implementation "io.grpc:grpc-protobuf:1.15.0"
+    implementation "io.grpc:grpc-stub:1.15.0"
+
     implementation "com.github.stefanbirkner:system-rules"
 
     compileOnly 'org.projectlombok:lombok:1.18.22'
