@@ -36,7 +36,7 @@ buildscript {
 }
 
 //Remove doclint warnings that pollute javadoc logs when building with java8
-if(JavaVersion.current().isJava8Compatible()){
+if(JavaVersion.current().isJava8()){
     allprojects {
         tasks.withType(Javadoc){
             options.addStringOption('xdoclint:none','-quiet')
