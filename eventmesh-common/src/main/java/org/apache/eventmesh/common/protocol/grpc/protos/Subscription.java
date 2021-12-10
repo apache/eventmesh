@@ -116,7 +116,7 @@ private static final long serialVersionUID = 0L;
     return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Subscription_descriptor;
   }
 
-  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+  protected FieldAccessorTable
       internalGetFieldAccessorTable() {
     return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Subscription_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -258,7 +258,7 @@ private static final long serialVersionUID = 0L;
       return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Subscription_SubscriptionItem_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Subscription_SubscriptionItem_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -577,7 +577,7 @@ private static final long serialVersionUID = 0L;
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -593,7 +593,7 @@ private static final long serialVersionUID = 0L;
         return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Subscription_SubscriptionItem_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Subscription_SubscriptionItem_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -606,7 +606,7 @@ private static final long serialVersionUID = 0L;
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1325,7 +1325,7 @@ private static final long serialVersionUID = 0L;
 
   @Override
   protected Builder newBuilderForType(
-      com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
@@ -1341,7 +1341,7 @@ private static final long serialVersionUID = 0L;
       return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Subscription_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Subscription_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1354,7 +1354,7 @@ private static final long serialVersionUID = 0L;
     }
 
     private Builder(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }

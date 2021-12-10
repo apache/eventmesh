@@ -38,14 +38,14 @@ public interface MessageOrBuilder extends
   RequestHeaderOrBuilder getHeaderOrBuilder();
 
   /**
-   * <code>string productionGroup = 2;</code>
+   * <code>string producerGroup = 2;</code>
    */
-  String getProductionGroup();
+  String getProducerGroup();
   /**
-   * <code>string productionGroup = 2;</code>
+   * <code>string producerGroup = 2;</code>
    */
   com.google.protobuf.ByteString
-      getProductionGroupBytes();
+      getProducerGroupBytes();
 
   /**
    * <code>string topic = 3;</code>

@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
+import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.connector.ConnectorResource;
@@ -29,13 +30,15 @@ import org.slf4j.LoggerFactory;
 
 public class EventMeshServer {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private EventMeshGrpcServer eventMeshGrpcServer;
 
-    public EventMeshHTTPServer eventMeshHTTPServer;
+    private EventMeshHTTPServer eventMeshHTTPServer;
 
     private EventMeshTCPServer eventMeshTCPServer;
+
+    private EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
@@ -50,9 +53,11 @@ public class EventMeshServer {
     private ServiceState serviceState;
 
     public EventMeshServer(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
-                           EventMeshTCPConfiguration eventMeshTCPConfiguration) {
+                           EventMeshTCPConfiguration eventMeshTCPConfiguration,
+                           EventMeshGrpcConfiguration eventMeshGrpcConfiguration) {
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
+        this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
         this.acl = new Acl();
         this.registry = new Registry();
         this.connectorResource = new ConnectorResource();
@@ -71,8 +76,10 @@ public class EventMeshServer {
 
         connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
 
-        eventMeshGrpcServer = new EventMeshGrpcServer();
-        eventMeshGrpcServer.init();
+        if (eventMeshGrpcConfiguration != null) {
+            eventMeshGrpcServer = new EventMeshGrpcServer(eventMeshGrpcConfiguration);
+            eventMeshGrpcServer.init();
+        }
 
         eventMeshHTTPServer = new EventMeshHTTPServer(this,
                 eventMeshHttpConfiguration);

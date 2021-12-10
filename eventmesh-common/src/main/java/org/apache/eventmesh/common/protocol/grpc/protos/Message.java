@@ -33,7 +33,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private Message() {
-    productionGroup_ = "";
+    producerGroup_ = "";
     topic_ = "";
     content_ = "";
     ttl_ = "";
@@ -87,7 +87,7 @@ private static final long serialVersionUID = 0L;
           case 18: {
             String s = input.readStringRequireUtf8();
 
-            productionGroup_ = s;
+            producerGroup_ = s;
             break;
           }
           case 26: {
@@ -131,7 +131,7 @@ private static final long serialVersionUID = 0L;
     return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Message_descriptor;
   }
 
-  protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+  protected FieldAccessorTable
       internalGetFieldAccessorTable() {
     return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Message_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
@@ -159,34 +159,34 @@ private static final long serialVersionUID = 0L;
     return getHeader();
   }
 
-  public static final int PRODUCTIONGROUP_FIELD_NUMBER = 2;
-  private volatile Object productionGroup_;
+  public static final int PRODUCERGROUP_FIELD_NUMBER = 2;
+  private volatile Object producerGroup_;
   /**
-   * <code>string productionGroup = 2;</code>
+   * <code>string producerGroup = 2;</code>
    */
-  public String getProductionGroup() {
-    Object ref = productionGroup_;
+  public String getProducerGroup() {
+    Object ref = producerGroup_;
     if (ref instanceof String) {
       return (String) ref;
     } else {
       com.google.protobuf.ByteString bs = 
           (com.google.protobuf.ByteString) ref;
       String s = bs.toStringUtf8();
-      productionGroup_ = s;
+      producerGroup_ = s;
       return s;
     }
   }
   /**
-   * <code>string productionGroup = 2;</code>
+   * <code>string producerGroup = 2;</code>
    */
   public com.google.protobuf.ByteString
-      getProductionGroupBytes() {
-    Object ref = productionGroup_;
+      getProducerGroupBytes() {
+    Object ref = producerGroup_;
     if (ref instanceof String) {
       com.google.protobuf.ByteString b = 
           com.google.protobuf.ByteString.copyFromUtf8(
               (String) ref);
-      productionGroup_ = b;
+      producerGroup_ = b;
       return b;
     } else {
       return (com.google.protobuf.ByteString) ref;
@@ -344,8 +344,8 @@ private static final long serialVersionUID = 0L;
     if (header_ != null) {
       output.writeMessage(1, getHeader());
     }
-    if (!getProductionGroupBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, productionGroup_);
+    if (!getProducerGroupBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, producerGroup_);
     }
     if (!getTopicBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, topic_);
@@ -371,8 +371,8 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(1, getHeader());
     }
-    if (!getProductionGroupBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, productionGroup_);
+    if (!getProducerGroupBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, producerGroup_);
     }
     if (!getTopicBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, topic_);
@@ -407,8 +407,8 @@ private static final long serialVersionUID = 0L;
       result = result && getHeader()
           .equals(other.getHeader());
     }
-    result = result && getProductionGroup()
-        .equals(other.getProductionGroup());
+    result = result && getProducerGroup()
+        .equals(other.getProducerGroup());
     result = result && getTopic()
         .equals(other.getTopic());
     result = result && getContent()
@@ -432,8 +432,8 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + HEADER_FIELD_NUMBER;
       hash = (53 * hash) + getHeader().hashCode();
     }
-    hash = (37 * hash) + PRODUCTIONGROUP_FIELD_NUMBER;
-    hash = (53 * hash) + getProductionGroup().hashCode();
+    hash = (37 * hash) + PRODUCERGROUP_FIELD_NUMBER;
+    hash = (53 * hash) + getProducerGroup().hashCode();
     hash = (37 * hash) + TOPIC_FIELD_NUMBER;
     hash = (53 * hash) + getTopic().hashCode();
     hash = (37 * hash) + CONTENT_FIELD_NUMBER;
@@ -531,7 +531,7 @@ private static final long serialVersionUID = 0L;
 
   @Override
   protected Builder newBuilderForType(
-      com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      BuilderParent parent) {
     Builder builder = new Builder(parent);
     return builder;
   }
@@ -547,7 +547,7 @@ private static final long serialVersionUID = 0L;
       return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Message_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Message_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -560,7 +560,7 @@ private static final long serialVersionUID = 0L;
     }
 
     private Builder(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       super(parent);
       maybeForceBuilderInitialization();
     }
@@ -577,7 +577,7 @@ private static final long serialVersionUID = 0L;
         header_ = null;
         headerBuilder_ = null;
       }
-      productionGroup_ = "";
+      producerGroup_ = "";
 
       topic_ = "";
 
@@ -614,7 +614,7 @@ private static final long serialVersionUID = 0L;
       } else {
         result.header_ = headerBuilder_.build();
       }
-      result.productionGroup_ = productionGroup_;
+      result.producerGroup_ = producerGroup_;
       result.topic_ = topic_;
       result.content_ = content_;
       result.ttl_ = ttl_;
@@ -663,8 +663,8 @@ private static final long serialVersionUID = 0L;
       if (other.hasHeader()) {
         mergeHeader(other.getHeader());
       }
-      if (!other.getProductionGroup().isEmpty()) {
-        productionGroup_ = other.productionGroup_;
+      if (!other.getProducerGroup().isEmpty()) {
+        producerGroup_ = other.producerGroup_;
         onChanged();
       }
       if (!other.getTopic().isEmpty()) {
@@ -827,71 +827,71 @@ private static final long serialVersionUID = 0L;
       return headerBuilder_;
     }
 
-    private Object productionGroup_ = "";
+    private Object producerGroup_ = "";
     /**
-     * <code>string productionGroup = 2;</code>
+     * <code>string producerGroup = 2;</code>
      */
-    public String getProductionGroup() {
-      Object ref = productionGroup_;
+    public String getProducerGroup() {
+      Object ref = producerGroup_;
       if (!(ref instanceof String)) {
         com.google.protobuf.ByteString bs =
             (com.google.protobuf.ByteString) ref;
         String s = bs.toStringUtf8();
-        productionGroup_ = s;
+        producerGroup_ = s;
         return s;
       } else {
         return (String) ref;
       }
     }
     /**
-     * <code>string productionGroup = 2;</code>
+     * <code>string producerGroup = 2;</code>
      */
     public com.google.protobuf.ByteString
-        getProductionGroupBytes() {
-      Object ref = productionGroup_;
+        getProducerGroupBytes() {
+      Object ref = producerGroup_;
       if (ref instanceof String) {
         com.google.protobuf.ByteString b = 
             com.google.protobuf.ByteString.copyFromUtf8(
                 (String) ref);
-        productionGroup_ = b;
+        producerGroup_ = b;
         return b;
       } else {
         return (com.google.protobuf.ByteString) ref;
       }
     }
     /**
-     * <code>string productionGroup = 2;</code>
+     * <code>string producerGroup = 2;</code>
      */
-    public Builder setProductionGroup(
+    public Builder setProducerGroup(
         String value) {
       if (value == null) {
     throw new NullPointerException();
   }
   
-      productionGroup_ = value;
+      producerGroup_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>string productionGroup = 2;</code>
+     * <code>string producerGroup = 2;</code>
      */
-    public Builder clearProductionGroup() {
+    public Builder clearProducerGroup() {
       
-      productionGroup_ = getDefaultInstance().getProductionGroup();
+      producerGroup_ = getDefaultInstance().getProducerGroup();
       onChanged();
       return this;
     }
     /**
-     * <code>string productionGroup = 2;</code>
+     * <code>string producerGroup = 2;</code>
      */
-    public Builder setProductionGroupBytes(
+    public Builder setProducerGroupBytes(
         com.google.protobuf.ByteString value) {
       if (value == null) {
     throw new NullPointerException();
   }
   checkByteStringIsUtf8(value);
       
-      productionGroup_ = value;
+      producerGroup_ = value;
       onChanged();
       return this;
     }
