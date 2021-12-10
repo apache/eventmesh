@@ -79,6 +79,8 @@ allprojects {
         maxWarnings = 0
         configFile = new File("${rootDir}/style/checkStyle.xml")
     }
+
+    checkstyleMain.exclude '**/org/apache/eventmesh/client/grpc/protos**'
 }
 
 task tar(type: Tar) {
