@@ -63,8 +63,9 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build
-        # skip check here, since we use Checkstyle task to check the added file
-        run: ./gradlew clean build jacocoTestReport -x check
+        # We use -x check to skip check code style here, since this task will check all files.
+        # We use Checkstyle task to check the added file
+        run: ./gradlew clean build jar dist jacocoTestReport -x check
 
       - name: Install plugin
         run: ./gradlew installPlugin
