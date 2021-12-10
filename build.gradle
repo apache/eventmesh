@@ -407,9 +407,9 @@ subprojects {
             dependency "com.google.guava:guava:29.0-jre"
             
             dependency "org.slf4j:slf4j-api:1.7.30"
-            dependency "org.apache.logging.log4j:log4j-api:2.13.3"
-            dependency "org.apache.logging.log4j:log4j-core:2.13.3"
-            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
+            dependency "org.apache.logging.log4j:log4j-api:2.15.0"
+            dependency "org.apache.logging.log4j:log4j-core:2.15.0"
+            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.15.0"
 
             dependency "com.lmax:disruptor:3.4.2"
 
