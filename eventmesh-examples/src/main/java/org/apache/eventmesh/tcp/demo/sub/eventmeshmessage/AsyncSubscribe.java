@@ -29,6 +29,7 @@ import org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
+import java.util.Optional;
 import java.util.Properties;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -73,7 +74,8 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
     }
 
     @Override
-    public void handle(EventMeshMessage msg, ChannelHandlerContext ctx) {
+    public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
         log.info("receive async msg====================={}", msg);
+        return Optional.empty();
     }
 }

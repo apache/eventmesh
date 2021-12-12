@@ -16,13 +16,18 @@
  */
 
 dependencies {
-    implementation project(":eventmesh-spi")
+    api project(":eventmesh-spi")
     implementation project(":eventmesh-common")
     api 'io.cloudevents:cloudevents-core'
-//    api 'io.openmessaging:openmessaging-api'
     api 'io.dropwizard.metrics:metrics-core'
     api "io.dropwizard.metrics:metrics-healthchecks"
     api "io.dropwizard.metrics:metrics-annotation"
     api "io.dropwizard.metrics:metrics-json"
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
 }
