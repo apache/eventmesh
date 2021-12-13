@@ -35,15 +35,17 @@ public class EventMeshGrpcServer {
 
         initThreadPool();
 
+        int serverPort = eventMeshGrpcConfiguration.grpcServerPort;
+
         producerManager = new ProducerManager(this);
         producerManager.init();
 
-        server = ServerBuilder.forPort(5005)
+        server = ServerBuilder.forPort(serverPort)
             .intercept(new MetricsInterceptor())
             .addService(new ProducerService(this, sendMsgExecutor))
             .build();
 
-        logger.info("GRPCServer[port=5005] started");
+        logger.info("GRPCServer[port={}] started", serverPort);
         logger.info("-----------------EventMeshGRPCServer initialized");
     }
 

@@ -37,4 +37,6 @@ include 'eventmesh-protocol-plugin:eventmesh-protocol-cloudevents'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-meshmessage'
 include 'eventmesh-admin:eventmesh-admin-rocketmq'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-grpc'
+include 'eventmesh-protocol-plugin:eventmesh-protocol-grpcmessage'
+findProject(':eventmesh-protocol-plugin:eventmesh-protocol-grpcmessage')?.name = 'eventmesh-protocol-grpcmessage'
 

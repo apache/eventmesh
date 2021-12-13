@@ -19,6 +19,7 @@ package org.apache.eventmesh.protocol.meshmessage;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
@@ -28,6 +29,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.meshmessage.resolver.grpc.GrpcMessageProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchV2ProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageRequestProtocolResolver;
@@ -59,9 +61,17 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             String requestCode = ((HttpCommand) protocol).getRequestCode();
 
             return deserializeHttpProtocol(requestCode, header, body);
+        } else if (protocol instanceof EventMeshMessageWrapper) {
+            org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage message = ((EventMeshMessageWrapper)protocol).getMessage();
+            return deserializeGrpcProtocol(message);
         } else {
             throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));
         }
+    }
+
+    private CloudEvent deserializeGrpcProtocol(org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage message)
+        throws ProtocolHandleException {
+        return GrpcMessageProtocolResolver.buildEvent(message);
     }
 
     private CloudEvent deserializeTcpProtocol(Header header, String bodyJson) throws ProtocolHandleException {
