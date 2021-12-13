@@ -81,4 +81,6 @@ public class Constants {
 
     public static final String PROPERTY_MESSAGE_STORE_TIMESTAMP = "storetimestamp";
 
+    public static final String MESSAGE_PROP_SEPARATOR = "99";
+
 }

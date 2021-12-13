@@ -183,24 +183,18 @@ public class PushConsumerImpl {
                 String.valueOf(msg.getStoreTimestamp()));
 
             //for rr request/reply
-            String cluster = msg.getProperty(MessageConst.PROPERTY_CLUSTER);
-            String replyClient = msg.getProperty(MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT);
-            String correlationId = msg.getProperty(MessageConst.PROPERTY_CORRELATION_ID);
-
             CloudEvent cloudEvent =
                 RocketMQMessageFactory.createReader(CloudEventUtils.msgConvert(msg)).toEvent();
 
-            CloudEventBuilder cloudEventBuilder;
-            if (StringUtils.isNotEmpty(cluster)) {
-                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("cluster", cluster);
-                cloudEvent = cloudEventBuilder.build();
+            CloudEventBuilder cloudEventBuilder = null;
+            for (String sysPropKey : MessageConst.STRING_HASH_SET) {
+                if (StringUtils.isNotEmpty(msg.getProperty(sysPropKey))) {
+                    String prop = msg.getProperty(sysPropKey);
+                    sysPropKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+                    cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension(sysPropKey, prop);
+                }
             }
-            if (StringUtils.isNotEmpty(replyClient)) {
-                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("replytoclient", replyClient);
-                cloudEvent = cloudEventBuilder.build();
-            }
-            if (StringUtils.isNotEmpty(correlationId)) {
-                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("correlationid", correlationId);
+            if (cloudEventBuilder != null) {
                 cloudEvent = cloudEventBuilder.build();
             }
 
@@ -259,25 +253,19 @@ public class PushConsumerImpl {
             msg.putUserProperty(EventMeshConstants.STORE_TIMESTAMP,
                 String.valueOf(msg.getStoreTimestamp()));
 
-            //for rr request/reply
-            String cluster = msg.getProperty(MessageConst.PROPERTY_CLUSTER);
-            String replyClient = msg.getProperty(MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT);
-            String correlationId = msg.getProperty(MessageConst.PROPERTY_CORRELATION_ID);
-
             CloudEvent cloudEvent =
                 RocketMQMessageFactory.createReader(CloudEventUtils.msgConvert(msg)).toEvent();
 
-            CloudEventBuilder cloudEventBuilder;
-            if (StringUtils.isNotEmpty(cluster)) {
-                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("cluster", cluster);
-                cloudEvent = cloudEventBuilder.build();
+            CloudEventBuilder cloudEventBuilder = null;
+
+            for (String sysPropKey : MessageConst.STRING_HASH_SET) {
+                if (StringUtils.isNotEmpty(msg.getProperty(sysPropKey))) {
+                    String prop = msg.getProperty(sysPropKey);
+                    sysPropKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+                    cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension(sysPropKey, prop);
+                }
             }
-            if (StringUtils.isNotEmpty(replyClient)) {
-                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("replytoclient", replyClient);
-                cloudEvent = cloudEventBuilder.build();
-            }
-            if (StringUtils.isNotEmpty(correlationId)) {
-                cloudEventBuilder = CloudEventBuilder.from(cloudEvent).withExtension("correlationid", correlationId);
+            if (cloudEventBuilder != null) {
                 cloudEvent = cloudEventBuilder.build();
             }
 
