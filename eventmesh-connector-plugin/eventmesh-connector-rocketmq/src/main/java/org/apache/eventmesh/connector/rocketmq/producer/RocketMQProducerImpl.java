@@ -23,33 +23,25 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
-import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWrapper;
 
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 
-import java.io.File;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+@SuppressWarnings("deprecation")
 public class RocketMQProducerImpl implements Producer {
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ProducerImpl producer;
 
     @Override
     public synchronized void init(Properties keyValue) {
-        ConfigurationWrapper configurationWrapper =
-                new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME
-                        + File.separator
-                        + EventMeshConstants.EVENTMESH_CONF_FILE, false);
-        final ClientConfiguration clientConfiguration = new ClientConfiguration(configurationWrapper);
+        final ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.init();
         String producerGroup = keyValue.getProperty("producerGroup");
 
@@ -92,14 +84,9 @@ public class RocketMQProducerImpl implements Producer {
 
     @Override
     public void request(CloudEvent message, RequestReplyCallback rrCallback, long timeout)
-            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         producer.request(message, rrCallback, timeout);
     }
-
-//    @Override
-//    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
-//
-//    }
 
     @Override
     public boolean reply(final CloudEvent message, final SendCallback sendCallback) throws Exception {
@@ -109,7 +96,8 @@ public class RocketMQProducerImpl implements Producer {
 
     @Override
     public void checkTopicExist(String topic) throws Exception {
-        this.producer.getRocketmqProducer().getDefaultMQProducerImpl().getmQClientFactory().getMQClientAPIImpl().getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+        this.producer.getRocketmqProducer().getDefaultMQProducerImpl().getmQClientFactory().getMQClientAPIImpl()
+            .getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
     @Override
@@ -131,8 +119,6 @@ public class RocketMQProducerImpl implements Producer {
     public void sendAsync(CloudEvent message, SendCallback sendCallback) {
         producer.sendAsync(message, sendCallback);
     }
-
-
 
 
 }
