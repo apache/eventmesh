@@ -46,14 +46,14 @@ public class RocketMQBinaryMessageReader
 
     @Override
     protected boolean isCloudEventsHeader(String key) {
-//        return key.length() > 3 && key.substring(0, RocketMQHeaders.CE_PREFIX.length())
-//            .startsWith(RocketMQHeaders.CE_PREFIX);
+        // return key.length() > 3 && key.substring(0, RocketMQHeaders.CE_PREFIX.length())
+        //.startsWith(RocketMQHeaders.CE_PREFIX);
         return true;
     }
 
     @Override
     protected String toCloudEventsKey(String key) {
-//        return key.substring(RocketMQHeaders.CE_PREFIX.length()).toLowerCase();
+        //return key.substring(RocketMQHeaders.CE_PREFIX.length()).toLowerCase();
         return key.toLowerCase();
     }
 
