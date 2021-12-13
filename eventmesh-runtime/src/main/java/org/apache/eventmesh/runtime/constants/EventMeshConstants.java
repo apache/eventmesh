@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.constants;
 
+import org.apache.eventmesh.common.Constants;
+
 public class EventMeshConstants {
 
     public static final String EVENT_STORE_PROPERTIES = "eventstore";
@@ -111,8 +113,10 @@ public class EventMeshConstants {
 
     public static final String PROPERTY_RR_REQUEST_ID = "RR_REQUEST_UNIQ_ID";
 
-    public static final String LEAVE_TIME = "leavetime";            //leaveBrokerTime
-    public static final String ARRIVE_TIME = "arrivetime";
-    public static final String STORE_TIME = "storetime";
+    public static final String LEAVE_TIME = "leave" + Constants.MESSAGE_PROP_SEPARATOR + "time";            //leaveBrokerTime
+    public static final String ARRIVE_TIME = "arrive" + Constants.MESSAGE_PROP_SEPARATOR + "time";
+    public static final String STORE_TIME = "store" + Constants.MESSAGE_PROP_SEPARATOR + "time";
+
+
 
 }

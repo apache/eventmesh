@@ -14,8 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-dependencies {
-    compileOnly project(":eventmesh-registry-plugin:eventmesh-registry-api")
 
-    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
+package org.apache.eventmesh.connector.rocketmq.config;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+public class ConfigurationWrapperTest {
+
+    @Test
+    public void getProp() {
+        String namesrcAddr = ConfigurationWrapper.getProp("eventMesh.server.rocketmq.namesrvAddr");
+        Assert.assertNotNull(namesrcAddr);
+    }
 }
