@@ -17,14 +17,19 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
+import io.cloudevents.CloudEvent;
 import io.grpc.stub.StreamObserver;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.common.protocol.grpc.protos.Message;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
+import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
@@ -40,37 +45,39 @@ public class SendAsyncMessageProcessor {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
-    public void process(Object request, StreamObserver<Response> responseObserver) throws Exception {
-        Message message = (Message) request;
+    public void process(EventMeshMessage message, StreamObserver<Response> responseObserver) throws Exception {
         RequestHeader requestHeader = message.getHeader();
 
         if (!ServiceUtils.validateHeader(requestHeader)) {
-            ServiceUtils.sendResp(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseObserver);
+            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseObserver);
             return;
         }
 
         if (!ServiceUtils.validateMessage(message)) {
-            ServiceUtils.sendResp(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseObserver);
+            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, responseObserver);
             return;
         }
+
+        String protocolType = requestHeader.getProtocolType();
+        ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+        CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new EventMeshMessageWrapper(message));
 
         String producerGroup = message.getProducerGroup();
 
         ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
         EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
 
-        SendMessageContext sendMessageContext = new SendMessageContext(requestHeader.getSeqNum(), null,
-            eventMeshProducer, eventMeshGrpcServer);
+        SendMessageContext sendMessageContext = new SendMessageContext(message.getSeqNum(), cloudEvent, eventMeshProducer, eventMeshGrpcServer);
 
         eventMeshProducer.send(sendMessageContext, new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
-                ServiceUtils.sendResp(EventMeshRetCode.SUCCESS, sendResult.toString(), responseObserver);
+                ServiceUtils.sendResp(StatusCode.SUCCESS, sendResult.toString(), responseObserver);
             }
 
             @Override
             public void onException(OnExceptionContext context) {
-                ServiceUtils.sendResp(EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
+                ServiceUtils.sendResp(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
                     EventMeshUtil.stackTrace(context.getException(), 2), responseObserver);
             }
         });

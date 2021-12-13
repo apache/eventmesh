@@ -1,0 +1,65 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.eventmesh.client.grpc;
+
+import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
+import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.RandomStringUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
+
+@Slf4j
+public class AsyncPublishInstance {
+
+    public static void main(String[] args) throws Exception {
+
+        final String topic = "FT0-e-80010001-01-1";
+
+        EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
+            .serverAddr("127.0.0.1")
+            .serverPort(10205)
+            .producerGroup("EventMeshTest-producerGroup")
+            .env("env")
+            .idc("idc")
+            .ip(IPUtils.getLocalAddress())
+            .sys("1234")
+            .pid(String.valueOf(ThreadUtils.getPID())).build();
+
+        EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(eventMeshClientConfig);
+
+        eventMeshGrpcProducer.init();
+
+        for (int i = 0; i < 1; i++) {
+            EventMeshMessage message = EventMeshMessage.newBuilder()
+                .setContent("testPublishMessage")
+                .setTopic(topic)
+                .setUniqueId(RandomStringUtils.generateNum(30))
+                .setSeqNum(RandomStringUtils.generateNum(30))
+                .setTtl(String.valueOf(4 * 1000))
+                .build();
+
+            eventMeshGrpcProducer.publish(message);
+            Thread.sleep(1000);
+        }
+        Thread.sleep(30000);
+        try (EventMeshGrpcProducer ignore = eventMeshGrpcProducer) {
+            // ignore
+        }
+    }
+}

@@ -1,20 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.apache.eventmesh.common.protocol.grpc.protos;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
@@ -44,30 +27,30 @@ public final class PublisherServiceGrpc {
   public static final String SERVICE_NAME = "eventmesh.common.protocol.grpc.PublisherService";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<Message,
-      Response> getPublishMethod;
+  private static volatile io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage,
+      org.apache.eventmesh.common.protocol.grpc.protos.Response> getPublishMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "publish",
-      requestType = Message.class,
-      responseType = Response.class,
+      requestType = org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage.class,
+      responseType = org.apache.eventmesh.common.protocol.grpc.protos.Response.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<Message,
-      Response> getPublishMethod() {
-    io.grpc.MethodDescriptor<Message, Response> getPublishMethod;
+  public static io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage,
+      org.apache.eventmesh.common.protocol.grpc.protos.Response> getPublishMethod() {
+    io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage, org.apache.eventmesh.common.protocol.grpc.protos.Response> getPublishMethod;
     if ((getPublishMethod = PublisherServiceGrpc.getPublishMethod) == null) {
       synchronized (PublisherServiceGrpc.class) {
         if ((getPublishMethod = PublisherServiceGrpc.getPublishMethod) == null) {
           PublisherServiceGrpc.getPublishMethod = getPublishMethod = 
-              io.grpc.MethodDescriptor.<Message, Response>newBuilder()
+              io.grpc.MethodDescriptor.<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage, org.apache.eventmesh.common.protocol.grpc.protos.Response>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(
                   "eventmesh.common.protocol.grpc.PublisherService", "publish"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Message.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Response.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.Response.getDefaultInstance()))
                   .setSchemaDescriptor(new PublisherServiceMethodDescriptorSupplier("publish"))
                   .build();
           }
@@ -76,30 +59,30 @@ public final class PublisherServiceGrpc {
      return getPublishMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<Message,
-      Response> getRequestReplyMethod;
+  private static volatile io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage,
+      org.apache.eventmesh.common.protocol.grpc.protos.Response> getRequestReplyMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "requestReply",
-      requestType = Message.class,
-      responseType = Response.class,
+      requestType = org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage.class,
+      responseType = org.apache.eventmesh.common.protocol.grpc.protos.Response.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<Message,
-      Response> getRequestReplyMethod() {
-    io.grpc.MethodDescriptor<Message, Response> getRequestReplyMethod;
+  public static io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage,
+      org.apache.eventmesh.common.protocol.grpc.protos.Response> getRequestReplyMethod() {
+    io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage, org.apache.eventmesh.common.protocol.grpc.protos.Response> getRequestReplyMethod;
     if ((getRequestReplyMethod = PublisherServiceGrpc.getRequestReplyMethod) == null) {
       synchronized (PublisherServiceGrpc.class) {
         if ((getRequestReplyMethod = PublisherServiceGrpc.getRequestReplyMethod) == null) {
           PublisherServiceGrpc.getRequestReplyMethod = getRequestReplyMethod = 
-              io.grpc.MethodDescriptor.<Message, Response>newBuilder()
+              io.grpc.MethodDescriptor.<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage, org.apache.eventmesh.common.protocol.grpc.protos.Response>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(
                   "eventmesh.common.protocol.grpc.PublisherService", "requestReply"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Message.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Response.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.Response.getDefaultInstance()))
                   .setSchemaDescriptor(new PublisherServiceMethodDescriptorSupplier("requestReply"))
                   .build();
           }
@@ -108,30 +91,30 @@ public final class PublisherServiceGrpc {
      return getRequestReplyMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<Message,
-      Response> getBroadcastMethod;
+  private static volatile io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage,
+      org.apache.eventmesh.common.protocol.grpc.protos.Response> getBroadcastMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "broadcast",
-      requestType = Message.class,
-      responseType = Response.class,
+      requestType = org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage.class,
+      responseType = org.apache.eventmesh.common.protocol.grpc.protos.Response.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<Message,
-      Response> getBroadcastMethod() {
-    io.grpc.MethodDescriptor<Message, Response> getBroadcastMethod;
+  public static io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage,
+      org.apache.eventmesh.common.protocol.grpc.protos.Response> getBroadcastMethod() {
+    io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage, org.apache.eventmesh.common.protocol.grpc.protos.Response> getBroadcastMethod;
     if ((getBroadcastMethod = PublisherServiceGrpc.getBroadcastMethod) == null) {
       synchronized (PublisherServiceGrpc.class) {
         if ((getBroadcastMethod = PublisherServiceGrpc.getBroadcastMethod) == null) {
           PublisherServiceGrpc.getBroadcastMethod = getBroadcastMethod = 
-              io.grpc.MethodDescriptor.<Message, Response>newBuilder()
+              io.grpc.MethodDescriptor.<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage, org.apache.eventmesh.common.protocol.grpc.protos.Response>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(
                   "eventmesh.common.protocol.grpc.PublisherService", "broadcast"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Message.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Response.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.Response.getDefaultInstance()))
                   .setSchemaDescriptor(new PublisherServiceMethodDescriptorSupplier("broadcast"))
                   .build();
           }
@@ -169,22 +152,22 @@ public final class PublisherServiceGrpc {
 
     /**
      */
-    public void publish(Message request,
-                        io.grpc.stub.StreamObserver<Response> responseObserver) {
+    public void publish(org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
       asyncUnimplementedUnaryCall(getPublishMethod(), responseObserver);
     }
 
     /**
      */
-    public void requestReply(Message request,
-                             io.grpc.stub.StreamObserver<Response> responseObserver) {
+    public void requestReply(org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
       asyncUnimplementedUnaryCall(getRequestReplyMethod(), responseObserver);
     }
 
     /**
      */
-    public void broadcast(Message request,
-                          io.grpc.stub.StreamObserver<Response> responseObserver) {
+    public void broadcast(org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
       asyncUnimplementedUnaryCall(getBroadcastMethod(), responseObserver);
     }
 
@@ -194,22 +177,22 @@ public final class PublisherServiceGrpc {
             getPublishMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                Message,
-                Response>(
+                org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage,
+                org.apache.eventmesh.common.protocol.grpc.protos.Response>(
                   this, METHODID_PUBLISH)))
           .addMethod(
             getRequestReplyMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                Message,
-                Response>(
+                org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage,
+                org.apache.eventmesh.common.protocol.grpc.protos.Response>(
                   this, METHODID_REQUEST_REPLY)))
           .addMethod(
             getBroadcastMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                Message,
-                Response>(
+                org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage,
+                org.apache.eventmesh.common.protocol.grpc.protos.Response>(
                   this, METHODID_BROADCAST)))
           .build();
     }
@@ -235,24 +218,24 @@ public final class PublisherServiceGrpc {
 
     /**
      */
-    public void publish(Message request,
-                        io.grpc.stub.StreamObserver<Response> responseObserver) {
+    public void publish(org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getPublishMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void requestReply(Message request,
-                             io.grpc.stub.StreamObserver<Response> responseObserver) {
+    public void requestReply(org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getRequestReplyMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void broadcast(Message request,
-                          io.grpc.stub.StreamObserver<Response> responseObserver) {
+    public void broadcast(org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getBroadcastMethod(), getCallOptions()), request, responseObserver);
     }
@@ -278,21 +261,21 @@ public final class PublisherServiceGrpc {
 
     /**
      */
-    public Response publish(Message request) {
+    public org.apache.eventmesh.common.protocol.grpc.protos.Response publish(org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request) {
       return blockingUnaryCall(
           getChannel(), getPublishMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public Response requestReply(Message request) {
+    public org.apache.eventmesh.common.protocol.grpc.protos.Response requestReply(org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request) {
       return blockingUnaryCall(
           getChannel(), getRequestReplyMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public Response broadcast(Message request) {
+    public org.apache.eventmesh.common.protocol.grpc.protos.Response broadcast(org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request) {
       return blockingUnaryCall(
           getChannel(), getBroadcastMethod(), getCallOptions(), request);
     }
@@ -318,24 +301,24 @@ public final class PublisherServiceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<Response> publish(
-        Message request) {
+    public com.google.common.util.concurrent.ListenableFuture<org.apache.eventmesh.common.protocol.grpc.protos.Response> publish(
+        org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request) {
       return futureUnaryCall(
           getChannel().newCall(getPublishMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<Response> requestReply(
-        Message request) {
+    public com.google.common.util.concurrent.ListenableFuture<org.apache.eventmesh.common.protocol.grpc.protos.Response> requestReply(
+        org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request) {
       return futureUnaryCall(
           getChannel().newCall(getRequestReplyMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<Response> broadcast(
-        Message request) {
+    public com.google.common.util.concurrent.ListenableFuture<org.apache.eventmesh.common.protocol.grpc.protos.Response> broadcast(
+        org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage request) {
       return futureUnaryCall(
           getChannel().newCall(getBroadcastMethod(), getCallOptions()), request);
     }
@@ -363,16 +346,16 @@ public final class PublisherServiceGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_PUBLISH:
-          serviceImpl.publish((Message) request,
-              (io.grpc.stub.StreamObserver<Response>) responseObserver);
+          serviceImpl.publish((org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage) request,
+              (io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response>) responseObserver);
           break;
         case METHODID_REQUEST_REPLY:
-          serviceImpl.requestReply((Message) request,
-              (io.grpc.stub.StreamObserver<Response>) responseObserver);
+          serviceImpl.requestReply((org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage) request,
+              (io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response>) responseObserver);
           break;
         case METHODID_BROADCAST:
-          serviceImpl.broadcast((Message) request,
-              (io.grpc.stub.StreamObserver<Response>) responseObserver);
+          serviceImpl.broadcast((org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage) request,
+              (io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response>) responseObserver);
           break;
         default:
           throw new AssertionError();

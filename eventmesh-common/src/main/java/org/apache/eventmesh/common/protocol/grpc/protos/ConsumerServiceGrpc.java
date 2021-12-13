@@ -1,20 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.apache.eventmesh.common.protocol.grpc.protos;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
@@ -44,30 +27,30 @@ public final class ConsumerServiceGrpc {
   public static final String SERVICE_NAME = "eventmesh.common.protocol.grpc.ConsumerService";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<Subscription,
-      Response> getSubscribeMethod;
+  private static volatile io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Subscription,
+      org.apache.eventmesh.common.protocol.grpc.protos.Response> getSubscribeMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "subscribe",
-      requestType = Subscription.class,
-      responseType = Response.class,
+      requestType = org.apache.eventmesh.common.protocol.grpc.protos.Subscription.class,
+      responseType = org.apache.eventmesh.common.protocol.grpc.protos.Response.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<Subscription,
-      Response> getSubscribeMethod() {
-    io.grpc.MethodDescriptor<Subscription, Response> getSubscribeMethod;
+  public static io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Subscription,
+      org.apache.eventmesh.common.protocol.grpc.protos.Response> getSubscribeMethod() {
+    io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Subscription, org.apache.eventmesh.common.protocol.grpc.protos.Response> getSubscribeMethod;
     if ((getSubscribeMethod = ConsumerServiceGrpc.getSubscribeMethod) == null) {
       synchronized (ConsumerServiceGrpc.class) {
         if ((getSubscribeMethod = ConsumerServiceGrpc.getSubscribeMethod) == null) {
           ConsumerServiceGrpc.getSubscribeMethod = getSubscribeMethod = 
-              io.grpc.MethodDescriptor.<Subscription, Response>newBuilder()
+              io.grpc.MethodDescriptor.<org.apache.eventmesh.common.protocol.grpc.protos.Subscription, org.apache.eventmesh.common.protocol.grpc.protos.Response>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(
                   "eventmesh.common.protocol.grpc.ConsumerService", "subscribe"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Subscription.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.Subscription.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Response.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.Response.getDefaultInstance()))
                   .setSchemaDescriptor(new ConsumerServiceMethodDescriptorSupplier("subscribe"))
                   .build();
           }
@@ -76,30 +59,30 @@ public final class ConsumerServiceGrpc {
      return getSubscribeMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<Subscription,
-      Message> getSubscribeStreamMethod;
+  private static volatile io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Subscription,
+      org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage> getSubscribeStreamMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "subscribeStream",
-      requestType = Subscription.class,
-      responseType = Message.class,
+      requestType = org.apache.eventmesh.common.protocol.grpc.protos.Subscription.class,
+      responseType = org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage.class,
       methodType = io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
-  public static io.grpc.MethodDescriptor<Subscription,
-      Message> getSubscribeStreamMethod() {
-    io.grpc.MethodDescriptor<Subscription, Message> getSubscribeStreamMethod;
+  public static io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Subscription,
+      org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage> getSubscribeStreamMethod() {
+    io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Subscription, org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage> getSubscribeStreamMethod;
     if ((getSubscribeStreamMethod = ConsumerServiceGrpc.getSubscribeStreamMethod) == null) {
       synchronized (ConsumerServiceGrpc.class) {
         if ((getSubscribeStreamMethod = ConsumerServiceGrpc.getSubscribeStreamMethod) == null) {
           ConsumerServiceGrpc.getSubscribeStreamMethod = getSubscribeStreamMethod = 
-              io.grpc.MethodDescriptor.<Subscription, Message>newBuilder()
+              io.grpc.MethodDescriptor.<org.apache.eventmesh.common.protocol.grpc.protos.Subscription, org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
               .setFullMethodName(generateFullMethodName(
                   "eventmesh.common.protocol.grpc.ConsumerService", "subscribeStream"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Subscription.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.Subscription.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Message.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage.getDefaultInstance()))
                   .setSchemaDescriptor(new ConsumerServiceMethodDescriptorSupplier("subscribeStream"))
                   .build();
           }
@@ -108,30 +91,30 @@ public final class ConsumerServiceGrpc {
      return getSubscribeStreamMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<Subscription,
-      Response> getUnsubscribeMethod;
+  private static volatile io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Subscription,
+      org.apache.eventmesh.common.protocol.grpc.protos.Response> getUnsubscribeMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "unsubscribe",
-      requestType = Subscription.class,
-      responseType = Response.class,
+      requestType = org.apache.eventmesh.common.protocol.grpc.protos.Subscription.class,
+      responseType = org.apache.eventmesh.common.protocol.grpc.protos.Response.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<Subscription,
-      Response> getUnsubscribeMethod() {
-    io.grpc.MethodDescriptor<Subscription, Response> getUnsubscribeMethod;
+  public static io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Subscription,
+      org.apache.eventmesh.common.protocol.grpc.protos.Response> getUnsubscribeMethod() {
+    io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Subscription, org.apache.eventmesh.common.protocol.grpc.protos.Response> getUnsubscribeMethod;
     if ((getUnsubscribeMethod = ConsumerServiceGrpc.getUnsubscribeMethod) == null) {
       synchronized (ConsumerServiceGrpc.class) {
         if ((getUnsubscribeMethod = ConsumerServiceGrpc.getUnsubscribeMethod) == null) {
           ConsumerServiceGrpc.getUnsubscribeMethod = getUnsubscribeMethod = 
-              io.grpc.MethodDescriptor.<Subscription, Response>newBuilder()
+              io.grpc.MethodDescriptor.<org.apache.eventmesh.common.protocol.grpc.protos.Subscription, org.apache.eventmesh.common.protocol.grpc.protos.Response>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(
                   "eventmesh.common.protocol.grpc.ConsumerService", "unsubscribe"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Subscription.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.Subscription.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  Response.getDefaultInstance()))
+                  org.apache.eventmesh.common.protocol.grpc.protos.Response.getDefaultInstance()))
                   .setSchemaDescriptor(new ConsumerServiceMethodDescriptorSupplier("unsubscribe"))
                   .build();
           }
@@ -169,22 +152,22 @@ public final class ConsumerServiceGrpc {
 
     /**
      */
-    public void subscribe(Subscription request,
-                          io.grpc.stub.StreamObserver<Response> responseObserver) {
+    public void subscribe(org.apache.eventmesh.common.protocol.grpc.protos.Subscription request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
       asyncUnimplementedUnaryCall(getSubscribeMethod(), responseObserver);
     }
 
     /**
      */
-    public void subscribeStream(Subscription request,
-                                io.grpc.stub.StreamObserver<Message> responseObserver) {
+    public void subscribeStream(org.apache.eventmesh.common.protocol.grpc.protos.Subscription request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage> responseObserver) {
       asyncUnimplementedUnaryCall(getSubscribeStreamMethod(), responseObserver);
     }
 
     /**
      */
-    public void unsubscribe(Subscription request,
-                            io.grpc.stub.StreamObserver<Response> responseObserver) {
+    public void unsubscribe(org.apache.eventmesh.common.protocol.grpc.protos.Subscription request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
       asyncUnimplementedUnaryCall(getUnsubscribeMethod(), responseObserver);
     }
 
@@ -194,22 +177,22 @@ public final class ConsumerServiceGrpc {
             getSubscribeMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                Subscription,
-                Response>(
+                org.apache.eventmesh.common.protocol.grpc.protos.Subscription,
+                org.apache.eventmesh.common.protocol.grpc.protos.Response>(
                   this, METHODID_SUBSCRIBE)))
           .addMethod(
             getSubscribeStreamMethod(),
             asyncServerStreamingCall(
               new MethodHandlers<
-                Subscription,
-                Message>(
+                org.apache.eventmesh.common.protocol.grpc.protos.Subscription,
+                org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage>(
                   this, METHODID_SUBSCRIBE_STREAM)))
           .addMethod(
             getUnsubscribeMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                Subscription,
-                Response>(
+                org.apache.eventmesh.common.protocol.grpc.protos.Subscription,
+                org.apache.eventmesh.common.protocol.grpc.protos.Response>(
                   this, METHODID_UNSUBSCRIBE)))
           .build();
     }
@@ -235,24 +218,24 @@ public final class ConsumerServiceGrpc {
 
     /**
      */
-    public void subscribe(Subscription request,
-                          io.grpc.stub.StreamObserver<Response> responseObserver) {
+    public void subscribe(org.apache.eventmesh.common.protocol.grpc.protos.Subscription request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getSubscribeMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void subscribeStream(Subscription request,
-                                io.grpc.stub.StreamObserver<Message> responseObserver) {
+    public void subscribeStream(org.apache.eventmesh.common.protocol.grpc.protos.Subscription request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage> responseObserver) {
       asyncServerStreamingCall(
           getChannel().newCall(getSubscribeStreamMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void unsubscribe(Subscription request,
-                            io.grpc.stub.StreamObserver<Response> responseObserver) {
+    public void unsubscribe(org.apache.eventmesh.common.protocol.grpc.protos.Subscription request,
+        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getUnsubscribeMethod(), getCallOptions()), request, responseObserver);
     }
@@ -278,22 +261,22 @@ public final class ConsumerServiceGrpc {
 
     /**
      */
-    public Response subscribe(Subscription request) {
+    public org.apache.eventmesh.common.protocol.grpc.protos.Response subscribe(org.apache.eventmesh.common.protocol.grpc.protos.Subscription request) {
       return blockingUnaryCall(
           getChannel(), getSubscribeMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public java.util.Iterator<Message> subscribeStream(
-        Subscription request) {
+    public java.util.Iterator<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage> subscribeStream(
+        org.apache.eventmesh.common.protocol.grpc.protos.Subscription request) {
       return blockingServerStreamingCall(
           getChannel(), getSubscribeStreamMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public Response unsubscribe(Subscription request) {
+    public org.apache.eventmesh.common.protocol.grpc.protos.Response unsubscribe(org.apache.eventmesh.common.protocol.grpc.protos.Subscription request) {
       return blockingUnaryCall(
           getChannel(), getUnsubscribeMethod(), getCallOptions(), request);
     }
@@ -319,16 +302,16 @@ public final class ConsumerServiceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<Response> subscribe(
-        Subscription request) {
+    public com.google.common.util.concurrent.ListenableFuture<org.apache.eventmesh.common.protocol.grpc.protos.Response> subscribe(
+        org.apache.eventmesh.common.protocol.grpc.protos.Subscription request) {
       return futureUnaryCall(
           getChannel().newCall(getSubscribeMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<Response> unsubscribe(
-        Subscription request) {
+    public com.google.common.util.concurrent.ListenableFuture<org.apache.eventmesh.common.protocol.grpc.protos.Response> unsubscribe(
+        org.apache.eventmesh.common.protocol.grpc.protos.Subscription request) {
       return futureUnaryCall(
           getChannel().newCall(getUnsubscribeMethod(), getCallOptions()), request);
     }
@@ -356,16 +339,16 @@ public final class ConsumerServiceGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_SUBSCRIBE:
-          serviceImpl.subscribe((Subscription) request,
-              (io.grpc.stub.StreamObserver<Response>) responseObserver);
+          serviceImpl.subscribe((org.apache.eventmesh.common.protocol.grpc.protos.Subscription) request,
+              (io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response>) responseObserver);
           break;
         case METHODID_SUBSCRIBE_STREAM:
-          serviceImpl.subscribeStream((Subscription) request,
-              (io.grpc.stub.StreamObserver<Message>) responseObserver);
+          serviceImpl.subscribeStream((org.apache.eventmesh.common.protocol.grpc.protos.Subscription) request,
+              (io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage>) responseObserver);
           break;
         case METHODID_UNSUBSCRIBE:
-          serviceImpl.unsubscribe((Subscription) request,
-              (io.grpc.stub.StreamObserver<Response>) responseObserver);
+          serviceImpl.unsubscribe((org.apache.eventmesh.common.protocol.grpc.protos.Subscription) request,
+              (io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response>) responseObserver);
           break;
         default:
           throw new AssertionError();
