@@ -39,9 +39,6 @@ import org.apache.rocketmq.remoting.exception.RemotingException;
 
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 
