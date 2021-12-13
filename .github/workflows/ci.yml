@@ -34,15 +34,15 @@ jobs:
   build:
     name: Build
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, macOS-latest]
         language:
           - 'java'
-        java:
-          - 8
+        java: [8, 11]
 
     steps:
       - name: Checkout repository
@@ -63,8 +63,12 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build
-        # skip check here, since we use Checkstyle task to check the added file
-        run: ./gradlew clean build jacocoTestReport checkLicense -x check
+        # We use -x check to skip check code style here, since this task will check all files.
+        # We use Checkstyle task to check the added file
+        run: ./gradlew clean build jar dist jacocoTestReport -x check
+
+      - name: Install plugin
+        run: ./gradlew installPlugin
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v1
@@ -94,8 +98,8 @@ jobs:
           java -jar ./checkstyle.jar -c ./style/checkStyle.xml -f xml ./eventmesh-* \
                | ./reviewdog -f=checkstyle -reporter=github-pr-check -filter-mode=added -fail-on-error
 
-  license-check:
-    name: License Check
+  license-header-check:
+    name: License header Check
 
     runs-on: ubuntu-latest
 
@@ -104,6 +108,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Check license header
-        uses: apache/skywalking-eyes@9bd5feb86b5817aa6072b008f9866a2c3bbc8587
+        uses: apache/skywalking-eyes@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check third party license
+        run: ./gradlew clean jar dist && ./gradlew installPlugin && ./gradlew tar && sh tools/third-party-dependencies/check-LICENSE.sh && echo "Thirty party license check success"

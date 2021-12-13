@@ -36,7 +36,7 @@ buildscript {
 }
 
 //Remove doclint warnings that pollute javadoc logs when building with java8
-if(JavaVersion.current().isJava8Compatible()){
+if(JavaVersion.current().isJava8()){
     allprojects {
         tasks.withType(Javadoc){
             options.addStringOption('xdoclint:none','-quiet')
@@ -57,7 +57,6 @@ allprojects {
     apply plugin: "java-library"
     apply plugin: 'signing'
     apply plugin: 'checkstyle'
-    apply plugin: 'com.github.jk1.dependency-license-report'
 
     [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
@@ -71,22 +70,6 @@ allprojects {
 
     if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot") as boolean))) {
         version = version + "-SNAPSHOT"
-    }
-
-    licenseReport {
-        allowedLicensesFile = new File("build/license/allowed-licenses.json")
-    }
-
-    checkLicense.doFirst {
-        new File("build/license").mkdirs()
-        new File("build/license/allowed-licenses.json").createNewFile()
-
-        def writer = new File("build/license/allowed-licenses.json").newPrintWriter()
-        new File("tool/license/allowed-licenses.txt").filterLine {
-            String line -> line.trim().length() != 0 && !line.startsWith("#")
-        }.writeTo(writer)
-        writer.flush()
-        writer.close()
     }
 
     checkstyle {
@@ -157,6 +140,15 @@ task installPlugin() {
             from "${subProject.getProjectDir()}/dist/conf"
             exclude 'META-INF'
         }
+    })
+}
+
+task printProjects() {
+    getAllprojects().forEach(subProject -> {
+        if ("EventMesh".equals(subProject.getName())) {
+            return
+        }
+        println String.format("%s-%s.jar", subProject.getName(), subProject.getVersion())
     })
 }
 
@@ -447,6 +439,7 @@ subprojects {
             dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.4.7"
 
             dependency "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
+            dependency "io.openmessaging:registry-server:0.0.1"
 
             dependency "junit:junit:4.12"
             dependency "com.github.stefanbirkner:system-rules:1.16.1"
