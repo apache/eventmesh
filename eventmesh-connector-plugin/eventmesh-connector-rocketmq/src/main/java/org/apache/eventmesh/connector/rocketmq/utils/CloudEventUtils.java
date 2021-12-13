@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.connector.rocketmq.utils;
 
-
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.connector.rocketmq.cloudevent.impl.RocketMQHeaders;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageAccessor;
+import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.common.message.MessageExt;
 
 import java.util.Map;
@@ -90,13 +90,23 @@ public class CloudEventUtils {
         MessageAccessor.putProperty(message, buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET),
             String.valueOf(rmqMsg.getQueueOffset()));
 
+        for (String sysPropKey : MessageConst.STRING_HASH_SET) {
+            if (StringUtils.isNotEmpty(message.getProperty(sysPropKey))) {
+                String prop = message.getProperty(sysPropKey);
+                String tmpPropKey = sysPropKey.toLowerCase().replaceAll("_", Constants.MESSAGE_PROP_SEPARATOR);
+                MessageAccessor.putProperty(message, tmpPropKey, prop);
+                message.getProperties().remove(sysPropKey);
+            }
+        }
+
         return message;
     }
 
 
 
     private static String buildCloudEventPropertyKey(String propName) {
-        return RocketMQHeaders.CE_PREFIX + propName;
+        //return RocketMQHeaders.CE_PREFIX + propName;
+        return propName;
     }
 
     public static org.apache.rocketmq.common.message.MessageExt msgConvertExt(Message message) {
@@ -121,8 +131,8 @@ public class CloudEventUtils {
             rmqMessageExt.setTopic(message.getTopic());
 
             int queueId =
-                (int) Integer.valueOf(message.getProperty(buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_QUEUE_ID)));
-            long queueOffset = (long) Long.valueOf(
+                Integer.parseInt(message.getProperty(buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_QUEUE_ID)));
+            long queueOffset = Long.parseLong(
                 message.getProperty(buildCloudEventPropertyKey(Constants.PROPERTY_MESSAGE_QUEUE_OFFSET)));
             //use in manual ack
             rmqMessageExt.setQueueId(queueId);
