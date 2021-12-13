@@ -21,12 +21,10 @@ import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.connector.rocketmq.common.Constants;
-import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
-import org.apache.eventmesh.connector.rocketmq.config.ConfigurationWrapper;
+
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 
-import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
@@ -34,10 +32,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class RocketMQConsumerImpl implements Consumer {
-
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public Logger messageLogger = LoggerFactory.getLogger("message");
 
@@ -45,15 +43,11 @@ public class RocketMQConsumerImpl implements Consumer {
 
     @Override
     public synchronized void init(Properties keyValue) throws Exception {
-        ConfigurationWrapper configurationWrapper =
-            new ConfigurationWrapper(getRocketMqConfigFile(), false);
-        final ClientConfiguration clientConfiguration =
-            new ClientConfiguration(configurationWrapper);
+        final ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.init();
         boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast"));
         String consumerGroup = keyValue.getProperty("consumerGroup");
         String instanceName = keyValue.getProperty("instanceName");
-
 
         if (isBroadcast) {
             consumerGroup = Constants.BROADCAST_PREFIX + consumerGroup;
@@ -113,16 +107,4 @@ public class RocketMQConsumerImpl implements Consumer {
         return pushConsumer.attributes();
     }
 
-    private String getRocketMqConfigFile() {
-        // get from classpath
-        String configFile = RocketMQConsumerImpl.class.getClassLoader()
-            .getResource(EventMeshConstants.EVENTMESH_CONF_FILE).getPath();
-        if (new File(configFile).exists()) {
-            return configFile;
-        }
-        // get from config home
-        configFile = EventMeshConstants.EVENTMESH_CONF_HOME + File.separator
-            + EventMeshConstants.EVENTMESH_CONF_FILE;
-        return configFile;
-    }
 }
