@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
-import io.netty.channel.ChannelHandlerContext;
+import java.util.Optional;
 
 /**
  * ReceiveMsgHook.
@@ -26,6 +26,13 @@ import io.netty.channel.ChannelHandlerContext;
  */
 @FunctionalInterface
 public interface ReceiveMsgHook<ProtocolMessage> {
-    void handle(ProtocolMessage msg, ChannelHandlerContext ctx);
+
+    /**
+     * Handle the received message, return the response message.
+     *
+     * @param msg
+     * @return
+     */
+    Optional<ProtocolMessage> handle(ProtocolMessage msg);
 
 }
