@@ -40,7 +40,7 @@ public abstract class AbstractEventMeshTCPPubHandler<ProtocolMessage> extends Si
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Package msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Package msg) {
         log.info("SimplePubClientImpl|receive|msg={}", msg);
 
         Preconditions.checkNotNull(msg.getHeader(), "Tcp package header cannot be null");
