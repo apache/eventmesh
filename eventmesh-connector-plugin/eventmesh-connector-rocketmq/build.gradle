@@ -37,8 +37,8 @@ List rocketmq = [
 ]
 
 dependencies {
-    compileOnly project(":eventmesh-common")
-    compileOnly project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    implementation project(":eventmesh-common")
+    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation rocketmq
 
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
@@ -49,4 +49,10 @@ dependencies {
     testImplementation "org.powermock:powermock-api-mockito2"
 
     testImplementation rocketmq
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }
