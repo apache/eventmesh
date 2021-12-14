@@ -44,8 +44,6 @@ public interface Producer extends LifeCycle {
 
     void sendAsync(final CloudEvent cloudEvent, final SendCallback sendCallback);
 
-//    void request(CloudEvent cloudEvent, RRCallback rrCallback, long timeout) throws Exception;
-
     void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception;
 
     boolean reply(final CloudEvent cloudEvent, final SendCallback sendCallback) throws Exception;
