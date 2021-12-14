@@ -18,8 +18,14 @@
 package org.apache.eventmesh.client.tcp.common;
 
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.eventmesh.common.protocol.tcp.Package;
 
-public interface ReceiveMsgHook {
-    void handle(Package msg, ChannelHandlerContext ctx);
+/**
+ * ReceiveMsgHook.
+ *
+ * @param <ProtocolMessage> receive message type.
+ */
+@FunctionalInterface
+public interface ReceiveMsgHook<ProtocolMessage> {
+    void handle(ProtocolMessage msg, ChannelHandlerContext ctx);
+
 }

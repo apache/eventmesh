@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.standalone.broker.model;
 
-import io.openmessaging.api.Message;
+import io.cloudevents.CloudEvent;
 
 import java.io.Serializable;
 
@@ -25,13 +25,13 @@ public class MessageEntity implements Serializable {
 
     private TopicMetadata topicMetadata;
 
-    private Message message;
+    private CloudEvent message;
 
     private long offset;
 
     private long createTimeMills;
 
-    public MessageEntity(TopicMetadata topicMetadata, Message message, long offset, long currentTimeMills) {
+    public MessageEntity(TopicMetadata topicMetadata, CloudEvent message, long offset, long currentTimeMills) {
         this.topicMetadata = topicMetadata;
         this.message = message;
         this.offset = offset;
@@ -46,11 +46,11 @@ public class MessageEntity implements Serializable {
         this.topicMetadata = topicMetadata;
     }
 
-    public Message getMessage() {
+    public CloudEvent getMessage() {
         return message;
     }
 
-    public void setMessage(Message message) {
+    public void setMessage(CloudEvent message) {
         this.message = message;
     }
 

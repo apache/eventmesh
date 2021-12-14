@@ -17,67 +17,82 @@
 
 package org.apache.eventmesh.common.protocol.tcp.codec;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
+import org.apache.eventmesh.common.protocol.tcp.Subscription;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.utils.JsonUtils;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.base.Preconditions;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.ReplayingDecoder;
+import lombok.extern.slf4j.Slf4j;
 
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
-import org.apache.eventmesh.common.protocol.tcp.Subscription;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@Slf4j
 public class Codec {
 
-    private final static Logger logger = LoggerFactory.getLogger(Codec.class);
-    private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
-    private static Charset UTF8 = Charset.forName("UTF-8");
+    private static final int     FRAME_MAX_LENGTH = 1024 * 1024 * 4;
+    private static final Charset DEFAULT_CHARSET  = Charset.forName(Constants.DEFAULT_CHARSET);
 
-    private static final byte[] CONSTANT_MAGIC_FLAG = "EventMesh".getBytes(UTF8);
+    private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
+    private static final byte[] VERSION             = serializeBytes("0000");
 
-    private static final byte[] VERSION = "0000".getBytes(UTF8);
+    // todo: move to constants
+    public static String CLOUD_EVENTS_PROTOCOL_NAME = "cloudevents";
+    public static String EM_MESSAGE_PROTOCOL_NAME   = "eventmeshmessage";
+    public static String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
 
-    private static ObjectMapper jsonMapper;
+    // todo: use json util
+    private static ObjectMapper OBJECT_MAPPER;
 
     static {
-        jsonMapper = new ObjectMapper();
-        jsonMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        jsonMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        jsonMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        jsonMapper.setTimeZone(TimeZone.getDefault());
+        OBJECT_MAPPER = new ObjectMapper();
+        OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        OBJECT_MAPPER.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        OBJECT_MAPPER.setTimeZone(TimeZone.getDefault());
     }
 
     public static class Encoder extends MessageToByteEncoder<Package> {
         @Override
         public void encode(ChannelHandlerContext ctx, Package pkg, ByteBuf out) throws Exception {
-            byte[] headerData;
-            byte[] bodyData;
+            Preconditions.checkNotNull(pkg, "TcpPackage cannot be null");
+            final Header header = pkg.getHeader();
+            Preconditions.checkNotNull(header, "TcpPackage header cannot be null", header);
+            if (log.isDebugEnabled()) {
+                log.debug("Encoder pkg={}", JsonUtils.serialize(pkg));
+            }
 
-            final String headerJson = pkg != null ? jsonMapper.writeValueAsString(pkg.getHeader()) : null;
-            final String bodyJson = pkg != null ? jsonMapper.writeValueAsString(pkg.getBody()) : null;
+            final byte[] headerData = serializeBytes(OBJECT_MAPPER.writeValueAsString(header));
+            final byte[] bodyData;
 
-            headerData = headerJson == null ? null : headerJson.getBytes(UTF8);
-            bodyData = bodyJson == null ? null : bodyJson.getBytes(UTF8);
+            if (StringUtils.equals(CLOUD_EVENTS_PROTOCOL_NAME, header.getStringProperty(Constants.PROTOCOL_TYPE))) {
+                bodyData = (byte[]) pkg.getBody();
+            } else {
+                bodyData = serializeBytes(OBJECT_MAPPER.writeValueAsString(pkg.getBody()));
+            }
 
-            logger.debug("headerJson={}|bodyJson={}", headerJson, bodyJson);
-
-            int headerLength = headerData == null ? 0 : headerData.length;
-            int bodyLength = bodyData == null ? 0 : bodyData.length;
+            int headerLength = ArrayUtils.getLength(headerData);
+            int bodyLength = ArrayUtils.getLength(bodyData);
 
             int length = 4 + 4 + headerLength + bodyLength;
 
@@ -89,94 +104,141 @@ public class Codec {
             out.writeBytes(VERSION);
             out.writeInt(length);
             out.writeInt(headerLength);
-            if (headerData != null)
+            if (headerData != null) {
                 out.writeBytes(headerData);
-            if (bodyData != null)
+            }
+            if (bodyData != null) {
                 out.writeBytes(bodyData);
-        }
-    }
-
-    public static class Decoder extends ReplayingDecoder {
-        @Override
-        public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-            Header header = null;
-            Object body = null;
-
-            int length = 0;
-            int headerLength = 0;
-            int bodyLength = 0;
-
-            try {
-                if (null == in)
-                    return;
-
-                byte[] flagBytes = new byte[CONSTANT_MAGIC_FLAG.length];
-                byte[] versionBytes = new byte[VERSION.length];
-
-                in.readBytes(flagBytes);
-                in.readBytes(versionBytes);
-                if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
-                    String errorMsg = String.format("invalid magic flag or " +
-                            "version|flag=%s|version=%s|remoteAddress=%s", new String(flagBytes, UTF8), new String
-                            (versionBytes, UTF8), ctx.channel().remoteAddress());
-                    throw new Exception(errorMsg);
-                }
-
-                length = in.readInt();
-                headerLength = in.readInt();
-                bodyLength = length - 8 - headerLength;
-                byte[] headerData = new byte[headerLength];
-                byte[] bodyData = new byte[bodyLength];
-
-                if (headerLength > 0) {
-                    in.readBytes(headerData);
-                    header = jsonMapper.readValue(new String(headerData, UTF8), Header.class);
-                }
-
-                if (bodyLength > 0 && header != null) {
-                    in.readBytes(bodyData);
-                    body = parseFromJson(header.getCommand(), new String(bodyData, UTF8));
-                }
-
-                logger.debug("headerJson={}|bodyJson={}", new String(headerData, UTF8), new String(bodyData, UTF8));
-
-                Package pkg = new Package(header, body);
-                out.add(pkg);
-            } catch (Exception e) {
-                logger.error("decode|length={}|headerLength={}|bodyLength={}|header={}|body={}.", length,
-                        headerLength, bodyLength, header, body);
-                throw e;
             }
         }
     }
 
-    private static Object parseFromJson(Command cmd, String data) throws Exception {
-        switch (cmd) {
+    public static class Decoder extends ReplayingDecoder<Package> {
+        @Override
+        public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+            try {
+                if (null == in) {
+                    return;
+                }
+
+                byte[] flagBytes = parseFlag(in);
+                byte[] versionBytes = parseVersion(in);
+                validateFlag(flagBytes, versionBytes, ctx);
+
+                final int length = in.readInt();
+                final int headerLength = in.readInt();
+                final int bodyLength = length - 8 - headerLength;
+                Header header = parseHeader(in, headerLength);
+                Object body = parseBody(in, header, bodyLength);
+
+                Package pkg = new Package(header, body);
+                out.add(pkg);
+            } catch (Exception e) {
+                log.error("decode error| receive: {}.", deserializeBytes(in.array()));
+                throw e;
+            }
+        }
+
+        private byte[] parseFlag(ByteBuf in) {
+            final byte[] flagBytes = new byte[CONSTANT_MAGIC_FLAG.length];
+            in.readBytes(flagBytes);
+            return flagBytes;
+        }
+
+        private byte[] parseVersion(ByteBuf in) {
+            final byte[] versionBytes = new byte[VERSION.length];
+            in.readBytes(versionBytes);
+            return versionBytes;
+        }
+
+        private Header parseHeader(ByteBuf in, int headerLength) throws JsonProcessingException {
+            if (headerLength <= 0) {
+                return null;
+            }
+            final byte[] headerData = new byte[headerLength];
+            in.readBytes(headerData);
+            if (log.isDebugEnabled()) {
+                log.debug("Decode headerJson={}", deserializeBytes(headerData));
+            }
+            return OBJECT_MAPPER.readValue(deserializeBytes(headerData), Header.class);
+        }
+
+        private Object parseBody(ByteBuf in, Header header, int bodyLength) throws JsonProcessingException {
+            if (bodyLength <= 0 || header == null) {
+                return null;
+            }
+            final byte[] bodyData = new byte[bodyLength];
+            in.readBytes(bodyData);
+            if (log.isDebugEnabled()) {
+                log.debug("Decode bodyJson={}", deserializeBytes(bodyData));
+            }
+            return deserializeBody(deserializeBytes(bodyData), header);
+        }
+
+        private void validateFlag(byte[] flagBytes, byte[] versionBytes, ChannelHandlerContext ctx) {
+            if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
+                String errorMsg = String.format(
+                    "invalid magic flag or version|flag=%s|version=%s|remoteAddress=%s",
+                    deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
+                throw new IllegalArgumentException(errorMsg);
+            }
+        }
+    }
+
+    private static Object deserializeBody(String bodyJsonString, Header header) throws JsonProcessingException {
+        Command command = header.getCmd();
+        switch (command) {
             case HELLO_REQUEST:
             case RECOMMEND_REQUEST:
-                return jsonMapper.readValue(data, UserAgent.class);
+                return OBJECT_MAPPER.readValue(bodyJsonString, UserAgent.class);
             case SUBSCRIBE_REQUEST:
             case UNSUBSCRIBE_REQUEST:
-                return jsonMapper.readValue(data, Subscription.class);
+                return OBJECT_MAPPER.readValue(bodyJsonString, Subscription.class);
             case REQUEST_TO_SERVER:
             case RESPONSE_TO_SERVER:
             case ASYNC_MESSAGE_TO_SERVER:
             case BROADCAST_MESSAGE_TO_SERVER:
-                return jsonMapper.readValue(data, EventMeshMessage.class);
             case REQUEST_TO_CLIENT:
             case RESPONSE_TO_CLIENT:
             case ASYNC_MESSAGE_TO_CLIENT:
             case BROADCAST_MESSAGE_TO_CLIENT:
-                return jsonMapper.readValue(data, EventMeshMessage.class);
             case REQUEST_TO_CLIENT_ACK:
             case RESPONSE_TO_CLIENT_ACK:
             case ASYNC_MESSAGE_TO_CLIENT_ACK:
             case BROADCAST_MESSAGE_TO_CLIENT_ACK:
-                return jsonMapper.readValue(data, EventMeshMessage.class);
+                // The message string will be deserialized by protocol plugin, if the event is cloudevents, the body is
+                // just a string.
+                return bodyJsonString;
             case REDIRECT_TO_CLIENT:
-                return jsonMapper.readValue(data, RedirectInfo.class);
+                return OBJECT_MAPPER.readValue(bodyJsonString, RedirectInfo.class);
             default:
+                log.warn("Invalidate TCP command: {}", command);
                 return null;
         }
     }
+
+    /**
+     * Deserialize bytes to String.
+     *
+     * @param bytes
+     * @return
+     */
+    private static String deserializeBytes(byte[] bytes) {
+        return new String(bytes, DEFAULT_CHARSET);
+    }
+
+    /**
+     * Serialize String to bytes.
+     *
+     * @param str
+     * @return
+     */
+    private static byte[] serializeBytes(String str) {
+        if (str == null) {
+            return null;
+        }
+        return str.getBytes(DEFAULT_CHARSET);
+    }
+
+
 }

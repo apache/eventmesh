@@ -17,24 +17,26 @@
 
 package org.apache.eventmesh.connector.standalone.producer;
 
-import com.google.common.base.Preconditions;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.MessageBuilder;
-import io.openmessaging.api.OnExceptionContext;
-import io.openmessaging.api.Producer;
-import io.openmessaging.api.SendCallback;
-import io.openmessaging.api.SendResult;
-import io.openmessaging.api.exception.OMSRuntimeException;
+import org.apache.eventmesh.api.RequestReplyCallback;
+import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
+
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.google.common.base.Preconditions;
 
-public class StandaloneProducer implements Producer {
+import io.cloudevents.CloudEvent;
+
+public class StandaloneProducer {
 
     private Logger logger = LoggerFactory.getLogger(StandaloneProducer.class);
 
@@ -47,81 +49,98 @@ public class StandaloneProducer implements Producer {
         this.isStarted = new AtomicBoolean(false);
     }
 
-    @Override
-    public SendResult send(Message message) {
-        Preconditions.checkNotNull(message);
-        try {
-            MessageEntity messageEntity = standaloneBroker.putMessage(message.getTopic(), message);
-            SendResult sendResult = new SendResult();
-            sendResult.setTopic(message.getTopic());
-            sendResult.setMessageId(String.valueOf(messageEntity.getOffset()));
-            return sendResult;
-        } catch (Exception e) {
-            logger.error("send message error, topic: {}", message.getTopic(), e);
-            throw new OMSRuntimeException(String.format("Send message error, topic: %s", message.getTopic()));
-        }
-    }
-
-    @Override
-    public void sendOneway(Message message) {
-        send(message);
-    }
-
-    @Override
-    public void sendAsync(Message message, SendCallback sendCallback) {
-        Preconditions.checkNotNull(message);
-        Preconditions.checkNotNull(sendCallback);
-
-        try {
-            SendResult sendResult = send(message);
-            sendCallback.onSuccess(sendResult);
-        } catch (Exception ex) {
-            OnExceptionContext exceptionContext = new OnExceptionContext();
-            exceptionContext.setTopic(message.getTopic());
-            exceptionContext.setException(new OMSRuntimeException(ex));
-            exceptionContext.setMessageId(message.getMsgID());
-            sendCallback.onException(exceptionContext);
-        }
-
-    }
-
-    @Override
-    public void setCallbackExecutor(ExecutorService callbackExecutor) {
-
-    }
-
-    @Override
-    public void updateCredential(Properties credentialProperties) {
-
-    }
-
-    @Override
     public boolean isStarted() {
         return isStarted.get();
     }
 
-    @Override
     public boolean isClosed() {
         return !isStarted.get();
     }
 
-    @Override
     public void start() {
         isStarted.compareAndSet(false, true);
     }
 
-    @Override
     public void shutdown() {
         isStarted.compareAndSet(true, false);
-
     }
 
-    @Override
-    public <T> MessageBuilder<T> messageBuilder() {
-        return null;
+    public StandaloneProducer init(Properties properties) throws Exception {
+        return new StandaloneProducer(properties);
     }
 
-    public boolean checkTopicExist(String topicName) {
-        return standaloneBroker.checkTopicExist(topicName);
+    public SendResult publish(CloudEvent cloudEvent) {
+        Preconditions.checkNotNull(cloudEvent);
+        try {
+            MessageEntity messageEntity = standaloneBroker.putMessage(cloudEvent.getSubject(), cloudEvent);
+            SendResult sendResult = new SendResult();
+            sendResult.setTopic(cloudEvent.getSubject());
+            sendResult.setMessageId(String.valueOf(messageEntity.getOffset()));
+            return sendResult;
+        } catch (Exception e) {
+            logger.error("send message error, topic: {}", cloudEvent.getSubject(), e);
+            throw new ConnectorRuntimeException(
+                String.format("Send message error, topic: %s", cloudEvent.getSubject()));
+        }
+    }
+
+    public void publish(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
+        Preconditions.checkNotNull(cloudEvent);
+        Preconditions.checkNotNull(sendCallback);
+
+        try {
+            SendResult sendResult = publish(cloudEvent);
+            sendCallback.onSuccess(sendResult);
+        } catch (Exception ex) {
+            OnExceptionContext onExceptionContext = new OnExceptionContext();
+            onExceptionContext.setMessageId(cloudEvent.getId());
+            onExceptionContext.setTopic(cloudEvent.getSubject());
+            onExceptionContext.setException(new ConnectorRuntimeException(ex));
+            sendCallback.onException(onExceptionContext);
+        }
+    }
+
+    public void sendOneway(CloudEvent cloudEvent) {
+        publish(cloudEvent);
+    }
+
+    public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
+        Preconditions.checkNotNull(cloudEvent);
+        Preconditions.checkNotNull(sendCallback);
+        // todo: current is not async
+        try {
+            SendResult sendResult = publish(cloudEvent);
+            sendCallback.onSuccess(sendResult);
+        } catch (Exception ex) {
+            OnExceptionContext onExceptionContext = new OnExceptionContext();
+            onExceptionContext.setMessageId(cloudEvent.getId());
+            onExceptionContext.setTopic(cloudEvent.getSubject());
+            onExceptionContext.setException(new ConnectorRuntimeException(ex));
+            sendCallback.onException(onExceptionContext);
+        }
+    }
+
+//    @Override
+//    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
+//        throw new ConnectorRuntimeException("Request is not supported");
+//    }
+
+    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
+        throw new ConnectorRuntimeException("Request is not supported");
+    }
+
+    public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
+        throw new ConnectorRuntimeException("Reply is not supported");
+    }
+
+    public void checkTopicExist(String topic) throws Exception {
+        boolean exist = standaloneBroker.checkTopicExist(topic);
+        if (!exist) {
+            throw new ConnectorRuntimeException(String.format("topic:%s is not exist", topic));
+        }
+    }
+
+    public void setExtFields() {
+
     }
 }

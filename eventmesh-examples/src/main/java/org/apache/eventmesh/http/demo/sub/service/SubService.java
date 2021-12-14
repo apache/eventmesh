@@ -19,48 +19,50 @@
 
 package org.apache.eventmesh.http.demo.sub.service;
 
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.http.consumer.EventMeshHttpConsumer;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
+import org.apache.eventmesh.http.demo.pub.eventmeshmessage.AsyncPublishInstance;
+import org.apache.eventmesh.util.Utils;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.client.http.conf.LiteClientConfig;
-import org.apache.eventmesh.client.http.consumer.LiteConsumer;
-import org.apache.eventmesh.common.EventMeshException;
-import org.apache.eventmesh.common.IPUtil;
-import org.apache.eventmesh.common.ThreadUtil;
-import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.http.demo.AsyncPublishInstance;
-import org.apache.eventmesh.util.Utils;
+
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
-import javax.annotation.PreDestroy;
+
+import com.google.common.collect.Lists;
 
 @Component
 public class SubService implements InitializingBean {
 
     public static Logger logger = LoggerFactory.getLogger(SubService.class);
 
-    private LiteConsumer liteConsumer;
-
-    private String eventMeshIPPort = "";
+    private EventMeshHttpConsumer eventMeshHttpConsumer;
 
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
-    final List<SubscriptionItem> topicList = Arrays.asList(new SubscriptionItem("TEST-TOPIC-HTTP-ASYNC", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
-    final String localIp = IPUtil.getLocalAddress();
-    final String localPort = properties.getProperty("server.port");
-    final String eventMeshIp = properties.getProperty("eventmesh.ip");
-    final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
-    final String url = "http://" + localIp + ":" + localPort + "/sub/test";
-    final String env = "P";
-    final String idc = "FT";
-    final String subsys = "1234";
+    final List<SubscriptionItem> topicList         = Lists.newArrayList(
+        new SubscriptionItem("TEST-TOPIC-HTTP-ASYNC", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
+    );
+    final String                 localIp           = IPUtils.getLocalAddress();
+    final String                 localPort         = properties.getProperty("server.port");
+    final String                 eventMeshIp       = properties.getProperty("eventmesh.ip");
+    final String                 eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
+    final String                 url               = "http://" + localIp + ":" + localPort + "/sub/test";
+    final String                 env               = "P";
+    final String                 idc               = "FT";
+    final String                 subsys            = "1234";
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
@@ -68,23 +70,19 @@ public class SubService implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
 
-        if (StringUtils.isBlank(eventMeshIPPort)) {
-            // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-            eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
-        }
-        LiteClientConfig eventMeshClientConfig = new LiteClientConfig();
-        eventMeshClientConfig.setLiteEventMeshAddr(eventMeshIPPort)
-                .setConsumerGroup("EventMeshTest-consumerGroup")
-                .setEnv(env)
-                .setIdc(idc)
-                .setIp(IPUtil.getLocalAddress())
-                .setSys(subsys)
-                .setPid(String.valueOf(ThreadUtil.getPID()));
+        final String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
+        EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
+            .liteEventMeshAddr(eventMeshIPPort)
+            .consumerGroup("EventMeshTest-consumerGroup")
+            .env(env)
+            .idc(idc)
+            .ip(IPUtils.getLocalAddress())
+            .sys(subsys)
+            .pid(String.valueOf(ThreadUtils.getPID())).build();
 
-        liteConsumer = new LiteConsumer(eventMeshClientConfig);
-        liteConsumer.start();
-        liteConsumer.heartBeat(topicList, url);
-        liteConsumer.subscribe(topicList, url);
+        eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
+        eventMeshHttpConsumer.heartBeat(topicList, url);
+        eventMeshHttpConsumer.subscribe(topicList, url);
 
         // Wait for all messaged to be consumed
         Thread stopThread = new Thread(() -> {
@@ -104,15 +102,15 @@ public class SubService implements InitializingBean {
         logger.info("start destory ....");
         try {
             List<String> unSubList = new ArrayList<>();
-            for (SubscriptionItem item:topicList) {
+            for (SubscriptionItem item : topicList) {
                 unSubList.add(item.getTopic());
             }
-            liteConsumer.unsubscribe(unSubList, url);
+            eventMeshHttpConsumer.unsubscribe(unSubList, url);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        try {
-            liteConsumer.shutdown();
+        try (final EventMeshHttpConsumer ignore = eventMeshHttpConsumer) {
+            // close consumer
         } catch (Exception e) {
             e.printStackTrace();
         }

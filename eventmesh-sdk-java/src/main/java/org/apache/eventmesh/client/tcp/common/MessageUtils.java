@@ -17,16 +17,27 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.Subscription;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.tcp.Subscription;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.tcp.*;
-import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.assertj.core.util.Preconditions;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.openmessaging.api.Message;
 
 public class MessageUtils {
     private static final int seqLength = 10;
@@ -56,7 +67,8 @@ public class MessageUtils {
         return msg;
     }
 
-    public static Package subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) {
+    public static Package subscribe(String topic, SubscriptionMode subscriptionMode,
+                                    SubscriptionType subscriptionType) {
         Package msg = new Package();
         msg.setHeader(new Header(Command.SUBSCRIBE_REQUEST, 0, null, generateRandomString(seqLength)));
         msg.setBody(generateSubscription(topic, subscriptionMode, subscriptionType));
@@ -73,6 +85,35 @@ public class MessageUtils {
         Package msg = new Package();
         msg.setHeader(new Header(Command.ASYNC_MESSAGE_TO_CLIENT_ACK, 0, null, in.getHeader().getSeq()));
         msg.setBody(in.getBody());
+        return msg;
+    }
+
+    public static Package buildPackage(Object message, Command command) {
+        Package msg = new Package();
+        msg.setHeader(new Header(command, 0, null, generateRandomString(seqLength)));
+        if (message instanceof CloudEvent) {
+            CloudEvent cloudEvent = (CloudEvent) message;
+            Preconditions.checkNotNull(cloudEvent.getDataContentType(), "DateContentType cannot be null");
+            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME);
+            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString());
+            msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
+            byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
+                .serialize((CloudEvent) message);
+            msg.setBody(bodyByte);
+        } else if (message instanceof EventMeshMessage) {
+            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
+            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, SpecVersion.V1.toString());
+            msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
+            msg.setBody(message);
+        } else if (message instanceof Message) {
+            msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.OPEN_MESSAGE_PROTOCOL_NAME);
+            // todo: this version need to be confirmed.
+            msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, SpecVersion.V1.toString());
+        } else {
+            // unsupported protocol for server
+            throw new IllegalArgumentException("Unsupported message protocol");
+        }
+
         return msg;
     }
 
@@ -98,41 +139,43 @@ public class MessageUtils {
     }
 
     public static UserAgent generateSubClient(UserAgent agent) {
-        UserAgent user = new UserAgent();
-        user.setEnv(agent.getEnv());
-        user.setHost(agent.getHost());
-        user.setPassword(agent.getPassword());
-        user.setUsername(agent.getUsername());
-        user.setPath(agent.getPath());
-        user.setPort(agent.getPort());
-        user.setSubsystem(agent.getSubsystem());
-        user.setPid(agent.getPid());
-        user.setVersion(agent.getVersion());
-        user.setIdc(agent.getIdc());
-        user.setConsumerGroup(agent.getConsumerGroup());
-        user.setProducerGroup(agent.getProducerGroup());
-        user.setPurpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB);
-        return user;
+        return UserAgent.builder()
+            .env(agent.getEnv())
+            .host(agent.getHost())
+            .password(agent.getPassword())
+            .username(agent.getUsername())
+            .path(agent.getPath())
+            .port(agent.getPort())
+            .subsystem(agent.getSubsystem())
+            .pid(agent.getPid())
+            .version(agent.getVersion())
+            .idc(agent.getIdc())
+            .consumerGroup(agent.getConsumerGroup())
+            .producerGroup(agent.getProducerGroup())
+            .purpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB)
+            .build();
     }
 
     public static UserAgent generatePubClient(UserAgent agent) {
-        UserAgent user = new UserAgent();
-        user.setEnv(agent.getEnv());
-        user.setHost(agent.getHost());
-        user.setPassword(agent.getPassword());
-        user.setUsername(agent.getUsername());
-        user.setPath(agent.getPath());
-        user.setPort(agent.getPort());
-        user.setSubsystem(agent.getSubsystem());
-        user.setPid(agent.getPid());
-        user.setVersion(agent.getVersion());
-        user.setIdc(agent.getIdc());
-        user.setProducerGroup(agent.getProducerGroup());
-        user.setPurpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB);
-        return user;
+        return UserAgent.builder()
+            .env(agent.getEnv())
+            .host(agent.getHost())
+            .password(agent.getPassword())
+            .username(agent.getUsername())
+            .path(agent.getPath())
+            .port(agent.getPort())
+            .subsystem(agent.getSubsystem())
+            .pid(agent.getPid())
+            .version(agent.getVersion())
+            .idc(agent.getIdc())
+            .consumerGroup(agent.getConsumerGroup())
+            .producerGroup(agent.getProducerGroup())
+            .purpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB)
+            .build();
     }
 
-    private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType) {
+    private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode,
+                                                     SubscriptionType subscriptionType) {
         Subscription subscription = new Subscription();
         List<SubscriptionItem> subscriptionItems = new ArrayList<>();
         subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
