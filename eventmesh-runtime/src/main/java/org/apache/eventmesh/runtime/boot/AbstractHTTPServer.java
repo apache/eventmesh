@@ -30,6 +30,9 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.trace.AttributeKeys;
+import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
+import org.apache.eventmesh.runtime.trace.SpanKey;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import org.apache.commons.collections4.MapUtils;
@@ -37,31 +40,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.common.command.HttpCommand;
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
-import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.protocol.http.header.Header;
-import org.apache.eventmesh.runtime.common.Pair;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
-import org.apache.eventmesh.runtime.trace.AttributeKeys;
-import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
-import org.apache.eventmesh.runtime.trace.SpanKey;
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.apache.eventmesh.runtime.util.RemotingHelper;
-
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -109,10 +88,6 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
-import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
@@ -121,7 +96,6 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-
 
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
@@ -137,13 +111,13 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     private boolean useTLS;
 
-    public OpenTelemetryTraceFactory openTelemetryTraceFactory;
-
-    public Tracer tracer;
-
     private Boolean useTrace = true; //Determine whether trace is enabled
 
     public TextMapPropagator textMapPropagator;
+
+    public OpenTelemetryTraceFactory openTelemetryTraceFactory;
+
+    public Tracer tracer;
 
     public ThreadPoolExecutor asyncContextCompleteHandler =
         ThreadPoolFactory.createThreadPoolExecutor(10, 10, "EventMesh-http-asyncContext-");
@@ -249,6 +223,87 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         this.processorTable.put(requestCode.toString(), pair);
     }
 
+    private Map<String, Object> parseHTTPHeader(HttpRequest fullReq) {
+        Map<String, Object> headerParam = new HashMap<>();
+        for (String key : fullReq.headers().names()) {
+            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
+                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
+                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
+                continue;
+            }
+            headerParam.put(key, fullReq.headers().get(key));
+        }
+        return headerParam;
+    }
+
+    /**
+     * Validate request, return error status.
+     *
+     * @param httpRequest
+     * @return if request is validated return null else return error status
+     */
+    private HttpResponseStatus validateHTTPRequest(HttpRequest httpRequest) {
+        if (!started.get()) {
+            return HttpResponseStatus.SERVICE_UNAVAILABLE;
+        }
+        if (!httpRequest.decoderResult().isSuccess()) {
+            return HttpResponseStatus.BAD_REQUEST;
+        }
+        if (!HttpMethod.GET.equals(httpRequest.method()) && !HttpMethod.POST.equals(httpRequest.method())) {
+            return HttpResponseStatus.METHOD_NOT_ALLOWED;
+        }
+        final String protocolVersion = httpRequest.headers().get(ProtocolKey.VERSION);
+        if (!ProtocolVersion.contains(protocolVersion)) {
+            return HttpResponseStatus.BAD_REQUEST;
+        }
+        return null;
+    }
+
+    /**
+     * Inject ip and protocol version, if the protocol version is empty, set default to {@link ProtocolVersion#V1}.
+     *
+     * @param ctx
+     * @param httpRequest
+     */
+    private void preProcessHTTPRequestHeader(ChannelHandlerContext ctx, HttpRequest httpRequest) {
+        HttpHeaders requestHeaders = httpRequest.headers();
+        requestHeaders.set(ProtocolKey.ClientInstanceKey.IP,
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+
+        String protocolVersion = httpRequest.headers().get(ProtocolKey.VERSION);
+        if (StringUtils.isBlank(protocolVersion)) {
+            requestHeaders.set(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
+        }
+    }
+
+    /**
+     * Parse request body to map
+     *
+     * @param httpRequest
+     * @return
+     */
+    private Map<String, Object> parseHttpRequestBody(HttpRequest httpRequest) throws IOException {
+        final long bodyDecodeStart = System.currentTimeMillis();
+        Map<String, Object> httpRequestBody = new HashMap<>();
+
+        if (HttpMethod.GET.equals(httpRequest.method())) {
+            QueryStringDecoder getDecoder = new QueryStringDecoder(httpRequest.uri());
+            getDecoder.parameters().forEach((key, value) -> httpRequestBody.put(key, value.get(0)));
+        } else if (HttpMethod.POST.equals(httpRequest.method())) {
+            HttpPostRequestDecoder decoder =
+                new HttpPostRequestDecoder(defaultHttpDataFactory, httpRequest);
+            for (InterfaceHttpData parm : decoder.getBodyHttpDatas()) {
+                if (parm.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
+                    Attribute data = (Attribute) parm;
+                    httpRequestBody.put(data.getName(), data.getValue());
+                }
+            }
+            decoder.destroy();
+        }
+        metrics.summaryMetrics.recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
+        return httpRequestBody;
+    }
+
     class HTTPHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
         @Override
@@ -341,11 +396,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     span.setStatus(StatusCode.ERROR, ex.getMessage()); //set this span's status to ERROR
                     span.recordException(ex); //record this exception
                     span.end(); // closing the scope does not end the span, this has to be done manually
-                }
-            } finally {
-                try {
-                    decoder.destroy();
-                } catch (Exception e) {
                 }
             }
         }
@@ -492,87 +542,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 new HttpObjectAggregator(Integer.MAX_VALUE),
                 new HTTPHandler());
         }
-    }
-
-    private Map<String, Object> parseHTTPHeader(HttpRequest fullReq) {
-        Map<String, Object> headerParam = new HashMap<>();
-        for (String key : fullReq.headers().names()) {
-            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
-                continue;
-            }
-            headerParam.put(key, fullReq.headers().get(key));
-        }
-        return headerParam;
-    }
-
-    /**
-     * Validate request, return error status.
-     *
-     * @param httpRequest
-     * @return if request is validated return null else return error status
-     */
-    private HttpResponseStatus validateHTTPRequest(HttpRequest httpRequest) {
-        if (!started.get()) {
-            return HttpResponseStatus.SERVICE_UNAVAILABLE;
-        }
-        if (!httpRequest.decoderResult().isSuccess()) {
-            return HttpResponseStatus.BAD_REQUEST;
-        }
-        if (!HttpMethod.GET.equals(httpRequest.method()) && !HttpMethod.POST.equals(httpRequest.method())) {
-            return HttpResponseStatus.METHOD_NOT_ALLOWED;
-        }
-        final String protocolVersion = httpRequest.headers().get(ProtocolKey.VERSION);
-        if (!ProtocolVersion.contains(protocolVersion)) {
-            return HttpResponseStatus.BAD_REQUEST;
-        }
-        return null;
-    }
-
-    /**
-     * Inject ip and protocol version, if the protocol version is empty, set default to {@link ProtocolVersion#V1}.
-     *
-     * @param ctx
-     * @param httpRequest
-     */
-    private void preProcessHTTPRequestHeader(ChannelHandlerContext ctx, HttpRequest httpRequest) {
-        HttpHeaders requestHeaders = httpRequest.headers();
-        requestHeaders.set(ProtocolKey.ClientInstanceKey.IP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
-
-        String protocolVersion = httpRequest.headers().get(ProtocolKey.VERSION);
-        if (StringUtils.isBlank(protocolVersion)) {
-            requestHeaders.set(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
-        }
-    }
-
-    /**
-     * Parse request body to map
-     *
-     * @param httpRequest
-     * @return
-     */
-    private Map<String, Object> parseHttpRequestBody(HttpRequest httpRequest) throws IOException {
-        final long bodyDecodeStart = System.currentTimeMillis();
-        Map<String, Object> httpRequestBody = new HashMap<>();
-
-        if (HttpMethod.GET.equals(httpRequest.method())) {
-            QueryStringDecoder getDecoder = new QueryStringDecoder(httpRequest.uri());
-            getDecoder.parameters().forEach((key, value) -> httpRequestBody.put(key, value.get(0)));
-        } else if (HttpMethod.POST.equals(httpRequest.method())) {
-            HttpPostRequestDecoder decoder =
-                new HttpPostRequestDecoder(defaultHttpDataFactory, httpRequest);
-            for (InterfaceHttpData parm : decoder.getBodyHttpDatas()) {
-                if (parm.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
-                    Attribute data = (Attribute) parm;
-                    httpRequestBody.put(data.getName(), data.getValue());
-                }
-            }
-            decoder.destroy();
-        }
-        metrics.summaryMetrics.recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
-        return httpRequestBody;
     }
 
 }
