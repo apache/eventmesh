@@ -29,6 +29,7 @@ import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
@@ -72,8 +73,9 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
     }
 
     @Override
-    public void handle(CloudEvent msg, ChannelHandlerContext ctx) {
+    public Optional<CloudEvent> handle(CloudEvent msg) {
         String content = new String(msg.getData().toBytes(), StandardCharsets.UTF_8);
         log.info("receive async msg====================={}|{}", msg, content);
+        return Optional.empty();
     }
 }

@@ -94,7 +94,7 @@ public class StandaloneBroker {
      *
      * @param topicName topic name
      * @param offset    offset
-     * @return
+     * @return CloudEvent
      */
     public CloudEvent getMessage(String topicName, long offset) {
         TopicMetadata topicMetadata = new TopicMetadata(topicName);
