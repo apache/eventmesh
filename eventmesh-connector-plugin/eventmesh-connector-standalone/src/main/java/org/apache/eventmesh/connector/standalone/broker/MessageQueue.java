@@ -81,7 +81,7 @@ public class MessageQueue {
      * Get the first message at this queue, waiting for the message is available if the queue is empty,
      * this method will not remove the message
      *
-     * @return
+     * @return MessageEntity
      * @throws InterruptedException
      */
     public MessageEntity take() throws InterruptedException {
@@ -100,7 +100,7 @@ public class MessageQueue {
     /**
      * Get the first message at this queue, if the queue is empty return null immediately
      *
-     * @return
+     * @return MessageEntity
      */
     public MessageEntity peek() {
         ReentrantLock lock = this.lock;
@@ -115,7 +115,7 @@ public class MessageQueue {
     /**
      * Get the head in this queue
      *
-     * @return
+     * @return MessageEntity
      */
     public MessageEntity getHead() {
         return peek();
@@ -124,7 +124,7 @@ public class MessageQueue {
     /**
      * Get the tail in this queue
      *
-     * @return
+     * @return MessageEntity
      */
     public MessageEntity getTail() {
         ReentrantLock lock = this.lock;
@@ -148,7 +148,7 @@ public class MessageQueue {
      * and calculate the index of this offset
      *
      * @param offset
-     * @return
+     * @return MessageEntity
      */
     public MessageEntity getByOffset(long offset) {
         ReentrantLock lock = this.lock;
