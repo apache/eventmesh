@@ -34,6 +34,8 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 
+import java.util.Optional;
+
 @Slf4j
 public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
 
@@ -65,10 +67,9 @@ public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {
     }
 
     @Override
-    public void handle(EventMeshMessage msg, ChannelHandlerContext ctx) {
+    public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
         log.info("receive sync rr msg================{}", msg);
-        Package pkg = MessageUtils.buildPackage(msg, Command.RESPONSE_TO_SERVER);
-        ctx.writeAndFlush(pkg);
+        return Optional.ofNullable(msg);
     }
 
 }

@@ -16,7 +16,7 @@
  */
 
 dependencies {
-    implementation project(":eventmesh-spi")
+    api project(":eventmesh-spi")
 
     testImplementation project(":eventmesh-spi")
 }

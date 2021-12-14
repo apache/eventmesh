@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.util;
 
+import org.apache.commons.lang3.SystemUtils;
+
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -46,13 +48,7 @@ public class Utils {
      * @return
      */
     public static boolean isWindowsOS() {
-        boolean isWindowsOS = false;
-        // JRE (runtime)system,not OS
-        String osName = System.getProperty("os.name");
-        if (osName.toLowerCase().contains("windows")) {
-            isWindowsOS = true;
-        }
-        return isWindowsOS;
+        return SystemUtils.IS_OS_WINDOWS;
     }
 
     /**
@@ -90,7 +86,7 @@ public class Utils {
 
     /**
      * @param fileName
-     * @return
+     * @return Properties
      */
     public static Properties readPropertiesFile(String fileName) {
         try (final InputStream inputStream = Utils.class.getClassLoader().getResourceAsStream(fileName)) {
