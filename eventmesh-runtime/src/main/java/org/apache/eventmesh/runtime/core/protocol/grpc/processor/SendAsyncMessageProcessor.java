@@ -36,8 +36,12 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SendAsyncMessageProcessor {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     private EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -62,6 +66,9 @@ public class SendAsyncMessageProcessor {
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new EventMeshMessageWrapper(message));
 
+        String seqNum = message.getSeqNum();
+        String uniqueId = message.getUniqueId();
+        String topic = message.getTopic();
         String producerGroup = message.getProducerGroup();
 
         ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
@@ -69,16 +76,23 @@ public class SendAsyncMessageProcessor {
 
         SendMessageContext sendMessageContext = new SendMessageContext(message.getSeqNum(), cloudEvent, eventMeshProducer, eventMeshGrpcServer);
 
+        long startTime = System.currentTimeMillis();
         eventMeshProducer.send(sendMessageContext, new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
                 ServiceUtils.sendResp(StatusCode.SUCCESS, sendResult.toString(), responseObserver);
+                long endTime = System.currentTimeMillis();
+                logger.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    endTime - startTime, topic, seqNum, uniqueId);
             }
 
             @Override
             public void onException(OnExceptionContext context) {
                 ServiceUtils.sendResp(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
                     EventMeshUtil.stackTrace(context.getException(), 2), responseObserver);
+                long endTime = System.currentTimeMillis();
+                logger.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    endTime - startTime, topic, seqNum, uniqueId, context.getException());
             }
         });
 
