@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
+import org.apache.eventmesh.util.Utils;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
@@ -32,6 +33,7 @@ import io.cloudevents.jackson.JsonFormat;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 @Slf4j
 public class SyncRequest {
@@ -39,10 +41,13 @@ public class SyncRequest {
     private static EventMeshTCPClient<CloudEvent> client;
 
     public static void main(String[] agrs) throws Exception {
+        Properties properties = Utils.readPropertiesFile("application.properties");
+        final String eventMeshIp = properties.getProperty("eventmesh.ip");
+        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
         UserAgent userAgent = EventMeshTestUtils.generateClient1();
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-            .host("127.0.0.1")
-            .port(10002)
+            .host(eventMeshIp)
+            .port(eventMeshTcpPort)
             .userAgent(userAgent)
             .build();
         try {
