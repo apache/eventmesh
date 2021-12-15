@@ -242,7 +242,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
      * @param httpRequest
      * @return if request is validated return null else return error status
      */
-    private HttpResponseStatus validateHTTPRequest(HttpRequest httpRequest) {
+    private HttpResponseStatus validateHttpRequest(HttpRequest httpRequest) {
         if (!started.get()) {
             return HttpResponseStatus.SERVICE_UNAVAILABLE;
         }
@@ -265,7 +265,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
      * @param ctx
      * @param httpRequest
      */
-    private void preProcessHTTPRequestHeader(ChannelHandlerContext ctx, HttpRequest httpRequest) {
+    private void preProcessHttpRequestHeader(ChannelHandlerContext ctx, HttpRequest httpRequest) {
         HttpHeaders requestHeaders = httpRequest.headers();
         requestHeaders.set(ProtocolKey.ClientInstanceKey.IP,
             RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
@@ -334,8 +334,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             }
 
             try {
-                preProcessHTTPRequestHeader(ctx, httpRequest);
-                final HttpResponseStatus errorStatus = validateHTTPRequest(httpRequest);
+                preProcessHttpRequestHeader(ctx, httpRequest);
+                final HttpResponseStatus errorStatus = validateHttpRequest(httpRequest);
                 if (errorStatus != null) {
                     sendError(ctx, errorStatus);
                     return;
