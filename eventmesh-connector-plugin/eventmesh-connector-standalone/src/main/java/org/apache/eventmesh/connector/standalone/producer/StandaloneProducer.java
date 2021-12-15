@@ -22,7 +22,6 @@ import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 
@@ -92,10 +91,11 @@ public class StandaloneProducer {
             SendResult sendResult = publish(cloudEvent);
             sendCallback.onSuccess(sendResult);
         } catch (Exception ex) {
-            OnExceptionContext onExceptionContext = new OnExceptionContext();
-            onExceptionContext.setMessageId(cloudEvent.getId());
-            onExceptionContext.setTopic(cloudEvent.getSubject());
-            onExceptionContext.setException(new ConnectorRuntimeException(ex));
+            OnExceptionContext onExceptionContext = OnExceptionContext.builder()
+                .messageId(cloudEvent.getId())
+                .topic(cloudEvent.getSubject())
+                .exception(new ConnectorRuntimeException(ex))
+                .build();
             sendCallback.onException(onExceptionContext);
         }
     }
@@ -105,25 +105,21 @@ public class StandaloneProducer {
     }
 
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
-        Preconditions.checkNotNull(cloudEvent);
-        Preconditions.checkNotNull(sendCallback);
+        Preconditions.checkNotNull(cloudEvent, "CloudEvent cannot be null");
+        Preconditions.checkNotNull(sendCallback, "Callback cannot be null");
         // todo: current is not async
         try {
             SendResult sendResult = publish(cloudEvent);
             sendCallback.onSuccess(sendResult);
         } catch (Exception ex) {
-            OnExceptionContext onExceptionContext = new OnExceptionContext();
-            onExceptionContext.setMessageId(cloudEvent.getId());
-            onExceptionContext.setTopic(cloudEvent.getSubject());
-            onExceptionContext.setException(new ConnectorRuntimeException(ex));
+            OnExceptionContext onExceptionContext = OnExceptionContext.builder()
+                .messageId(cloudEvent.getId())
+                .topic(cloudEvent.getSubject())
+                .exception(new ConnectorRuntimeException(ex))
+                .build();
             sendCallback.onException(onExceptionContext);
         }
     }
-
-//    @Override
-//    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
-//        throw new ConnectorRuntimeException("Request is not supported");
-//    }
 
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
         throw new ConnectorRuntimeException("Request is not supported");

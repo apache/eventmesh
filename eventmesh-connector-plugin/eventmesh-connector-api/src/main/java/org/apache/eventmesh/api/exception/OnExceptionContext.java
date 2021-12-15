@@ -17,6 +17,15 @@
 
 package org.apache.eventmesh.api.exception;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OnExceptionContext {
 
     private String messageId;
@@ -27,30 +36,4 @@ public class OnExceptionContext {
      * Detailed exception stack information.
      */
     private ConnectorRuntimeException exception;
-
-
-    public String getMessageId() {
-        return messageId;
-    }
-
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
-
-    public String getTopic() {
-        return topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-
-    public ConnectorRuntimeException getException() {
-        return exception;
-    }
-
-    public void setException(ConnectorRuntimeException exception) {
-        this.exception = exception;
-    }
 }
