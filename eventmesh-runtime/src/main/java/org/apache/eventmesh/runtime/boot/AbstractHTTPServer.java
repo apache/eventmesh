@@ -223,7 +223,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         this.processorTable.put(requestCode.toString(), pair);
     }
 
-    private Map<String, Object> parseHTTPHeader(HttpRequest fullReq) {
+    private Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
         Map<String, Object> headerParam = new HashMap<>();
         for (String key : fullReq.headers().names()) {
             if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
@@ -373,7 +373,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 }
 
                 try {
-                    requestCommand.setHeader(Header.buildHeader(requestCode, parseHTTPHeader(httpRequest)));
+                    requestCommand.setHeader(Header.buildHeader(requestCode, parseHttpHeader(httpRequest)));
                     requestCommand.setBody(Body.buildBody(requestCode, bodyMap));
                 } catch (Exception e) {
                     responseCommand = requestCommand.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_RUNTIME_ERR);
