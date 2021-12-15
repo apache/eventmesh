@@ -248,6 +248,7 @@ subprojects {
             new File("${projectDir}/dist/apps").mkdirs()
             new File("${projectDir}/dist/conf").mkdirs()
             new File("${projectDir}/dist/lib").mkdirs()
+            new File("${projectDir}/dist/licenses").mkdirs()
         }
         Set<String> rootProject = ["eventmesh-admin",
                                    "eventmesh-common",
@@ -298,6 +299,10 @@ subprojects {
                     into "${rootDir}/dist/conf"
                     from "${projectDir}/dist/conf"
                 }
+            }
+            copy {
+                into "${rootDir}/dist/licenses"
+                from "${rootDir}/tools/third-party-licenses/licenses"
             }
         }
     }
