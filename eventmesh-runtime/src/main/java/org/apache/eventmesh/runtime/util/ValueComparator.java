@@ -23,6 +23,10 @@ import java.util.Map;
 public class ValueComparator implements Comparator<Map.Entry<String, Integer>> {
     @Override
     public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
-        return x.getValue().intValue() - y.getValue().intValue();
+        if(x.getValue().intValue() != y.getValue().intValue()){
+            return x.getValue().intValue() - y.getValue().intValue();
+        }else {
+            return x.getKey().compareTo(y.getKey());
+        }
     }
 }
