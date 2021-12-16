@@ -36,7 +36,7 @@ public class OpenTelemetryHTTPMetricsExporter {
         this.summaryMetrics = httpMetricsServer.summaryMetrics;
     }
 
-    public void start(){
+    public void start() {
         Meter meter = GlobalMeterProvider.getMeter("apache-eventmesh");
         //maxHTTPTPS
         meter
