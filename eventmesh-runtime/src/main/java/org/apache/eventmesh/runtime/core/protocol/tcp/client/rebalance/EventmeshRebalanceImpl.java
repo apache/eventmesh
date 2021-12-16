@@ -97,59 +97,108 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
     }
 
     private void doRebalanceByGroup(String cluster, String group, String purpose, Map<String, String> eventMeshMap) throws Exception{
+        logger.info("doRebalanceByGroup start, cluster:{}, group:{}, purpose:{}", cluster, group, purpose);
+
         //query distribute data of loacl idc
         Map<String, Integer> clientDistributionMap = queryLocalEventMeshDistributeData(cluster, group, purpose, eventMeshMap);
         if(clientDistributionMap == null || clientDistributionMap.size() == 0){
             return;
         }
 
+        doRebalanceRedirect(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshName, group, purpose, eventMeshMap, clientDistributionMap);
+        logger.info("doRebalanceByGroup end, cluster:{}, group:{}, purpose:{}", cluster, group, purpose);
+        
+    }
+
+    private void doRebalanceRedirect(String currEventMeshName, String group, String purpose, Map<String, String> eventMeshMap, Map<String, Integer> clientDistributionMap)throws Exception{
+        if(clientDistributionMap == null || clientDistributionMap.size() == 0){
+            return;
+        }
+
+        //caculate client num need to redirect in currEventMesh
+        int judge = caculateRedirectNum(currEventMeshName, group, purpose, clientDistributionMap);
+
+        if(judge > 0) {
+
+            //select redirect target eventmesh lisg
+            List<String> eventMeshRecommendResult = selectRedirectEventMesh(group, eventMeshMap, clientDistributionMap, judge, currEventMeshName);
+            if(eventMeshRecommendResult == null || eventMeshRecommendResult.size() != judge){
+                logger.warn("doRebalance failed,recommendEventMeshNum is not consistent,recommendResult:{},judge:{}", eventMeshRecommendResult, judge);
+                return;
+            }
+
+            //do redirect
+            doRedirect(group, purpose, judge, eventMeshRecommendResult);
+        }else{
+            logger.info("rebalance condition not satisfy,group:{}, purpose:{},judge:{}", group, purpose, judge);
+        }
+    }
+
+    private void doRedirect(String group, String purpose, int judge, List<String> eventMeshRecommendResult) throws Exception{
+        logger.info("doRebalance redirect start---------------------group:{},judge:{}", group, judge);
+        Set<Session> sessionSet = null;
+        if(EventMeshConstants.PURPOSE_SUB.equals(purpose)) {
+            sessionSet = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().get(group).getGroupConsumerSessions();
+        }else if(EventMeshConstants.PURPOSE_PUB.equals(purpose)){
+            sessionSet = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().get(group).getGroupProducerSessions();
+        }else{
+            logger.warn("doRebalance failed,param is illegal, group:{}, purpose:{}",group, purpose);
+            return;
+        }
+        List<Session> sessionList = new ArrayList<>(sessionSet);
+        Collections.shuffle(new ArrayList<>(sessionList));
+
+        for(int i= 0; i<judge; i++){
+            //String redirectSessionAddr = ProxyTcp2Client.redirectClientForRebalance(sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
+            String newProxyIp = eventMeshRecommendResult.get(i).split(":")[0];
+            String newProxyPort = eventMeshRecommendResult.get(i).split(":")[1];
+            String redirectSessionAddr = EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,newProxyIp,Integer.valueOf(newProxyPort),sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
+            logger.info("doRebalance,redirect sessionAddr:{}", redirectSessionAddr);
+            try {
+                Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().sleepIntervalInRebalanceRedirectMills);
+            } catch (InterruptedException e) {
+                logger.warn("Thread.sleep occur InterruptedException", e);
+            }
+        }
+        logger.info("doRebalance redirect end---------------------group:{}", group);
+    }
+    
+    private List<String> selectRedirectEventMesh(String group, Map<String, String> eventMeshMap, Map<String, Integer> clientDistributionMap, int judge, String evenMeshName)throws Exception{
+        EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
+        return eventMeshRecommendStrategy.calculateRedirectRecommendEventMesh(eventMeshMap, clientDistributionMap, group, judge, evenMeshName);
+    }
+
+    public int caculateRedirectNum(String eventMeshName, String group, String purpose, Map<String, Integer> clientDistributionMap) throws Exception{
         int sum = 0;
         for(Integer item : clientDistributionMap.values()){
             sum += item.intValue();
         }
         int currentNum = 0;
-        if(clientDistributionMap.get(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshName) != null){
-            currentNum = clientDistributionMap.get(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshName);
+        if(clientDistributionMap.get(eventMeshName) != null){
+            currentNum = clientDistributionMap.get(eventMeshName);
         }
         int avgNum = sum / clientDistributionMap.size();
-        int judge = avgNum >= 2 ? avgNum/2 : 1;
+        int modNum = sum % clientDistributionMap.size();
 
-        if(currentNum - avgNum > judge) {
-            Set<Session> sessionSet = null;
-            if(EventMeshConstants.PURPOSE_PUB.equals(purpose)){
-                sessionSet = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().get(group).getGroupProducerSessions();
-            }else if(EventMeshConstants.PURPOSE_SUB.equals(purpose)){
-                sessionSet = eventMeshTCPServer.getClientSessionGroupMapping().getClientGroupMap().get(group).getGroupConsumerSessions();
-            }else{
-                logger.warn("doRebalance failed,purpose is not support,purpose:{}", purpose);
-                return;
+        List<String> eventMeshList = new ArrayList<>(clientDistributionMap.keySet());
+        Collections.sort(eventMeshList);
+        int index = -1;
+        for(int i=0; i < Math.min(modNum, eventMeshList.size()); i++){
+            if(StringUtils.equals(eventMeshName, eventMeshList.get(i))){
+                index = i;
+                break;
             }
-
-            List<Session> sessionList = new ArrayList<>(sessionSet);
-            Collections.shuffle(new ArrayList<>(sessionList));
-            EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
-            List<String> eventMeshRecommendResult = eventMeshRecommendStrategy.calculateRedirectRecommendEventMesh(eventMeshMap, clientDistributionMap, group, judge);
-            if(eventMeshRecommendResult == null || eventMeshRecommendResult.size() != judge){
-                logger.warn("doRebalance failed,recommendProxyNum is not consistent,recommendResult:{},judge:{}", eventMeshRecommendResult, judge);
-                return;
-            }
-            logger.info("doRebalance redirect start---------------------group:{},purpose:{},judge:{}", group, purpose, judge);
-            for(int i= 0; i<judge; i++){
-                //String redirectSessionAddr = ProxyTcp2Client.redirectClientForRebalance(sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
-                String newProxyIp = eventMeshRecommendResult.get(i).split(":")[0];
-                String newProxyPort = eventMeshRecommendResult.get(i).split(":")[1];
-                String redirectSessionAddr = EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,newProxyIp,Integer.valueOf(newProxyPort),sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
-                logger.info("doRebalance,redirect sessionAddr:{}", redirectSessionAddr);
-                try {
-                    Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().sleepIntervalInRebalanceRedirectMills);
-                } catch (InterruptedException e) {
-                    logger.warn("Thread.sleep occur InterruptedException", e);
-                }
-            }
-            logger.info("doRebalance redirect end---------------------group:{}, purpose:{}", group, purpose);
-        }else{
-            logger.info("rebalance condition not satisfy,group:{},sum:{},currentNum:{},avgNum:{},judge:{}", group, sum, currentNum, avgNum, judge);
         }
+        int rebalanceResult = 0;
+        if(avgNum == 0){
+            rebalanceResult = 1;
+        }else {
+            rebalanceResult = (modNum != 0 && index < modNum && index >= 0) ? avgNum + 1 : avgNum;
+        }
+        logger.info("rebalance caculateRedirectNum,group:{}, purpose:{},sum:{},avgNum:{}," +
+                "modNum:{}, index:{}, currentNum:{}, rebalanceResult:{}", group, purpose, sum,
+                avgNum, modNum, index, currentNum, rebalanceResult);
+        return currentNum - rebalanceResult;
     }
 
     private Map<String, Integer> queryLocalEventMeshDistributeData(String cluster, String group, String purpose, Map<String, String> eventMeshMap){
@@ -196,13 +245,5 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         }
 
         return localEventMeshDistributeData;
-    }
-
-
-    private class ValueComparator implements Comparator<Map.Entry<String, Integer>> {
-        @Override
-        public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
-            return x.getValue().intValue() - y.getValue().intValue();
-        }
     }
 }
