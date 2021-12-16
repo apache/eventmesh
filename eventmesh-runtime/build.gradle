@@ -23,6 +23,9 @@ dependencies {
     implementation 'io.prometheus:simpleclient'
     implementation 'io.prometheus:simpleclient_httpserver'
     implementation 'io.cloudevents:cloudevents-core'
+    implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
+    implementation 'io.opentelemetry:opentelemetry-semconv'
+
 
     implementation "org.apache.httpcomponents:httpclient"
     implementation 'io.netty:netty-all'
