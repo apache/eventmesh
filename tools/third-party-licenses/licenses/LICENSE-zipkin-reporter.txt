@@ -178,7 +178,7 @@
    APPENDIX: How to apply the Apache License to your work.
 
       To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
+      boilerplate notice, with the fields enclosed by brackets "{}"
       replaced with your own identifying information. (Don't include
       the brackets!)  The text should be enclosed in the appropriate
       comment syntax for the file format. We also recommend that a
@@ -186,7 +186,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright [yyyy] [name of copyright owner]
+   Copyright {yyyy} {name of copyright owner}
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -199,139 +199,3 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-=======================================================================
-Apache EventMesh (incubating) Subcomponents:
-
-The Apache EventMesh (incubating) project contains subcomponents with separate copyright
-notices and license terms. Your use of the source code for the these
-subcomponents is subject to the terms and conditions of the following
-licenses.
-
-========================================================================
-Apache 2.0 licenses
-========================================================================
-
-The following components are provided under the Apache License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
-assertj-core 2.6.0: https://github.com/assertj/assertj-core, Apache 2.0
-cloudevents-api 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
-cloudevents-core 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
-cloudevents-json-jackson 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
-commons-beanutils 1.9.2: https://github.com/apache/commons-beanutils, Apache 2.0
-commons-cli 1.2: https://github.com/apache/commons-cli, Apache 2.0
-commons-codec 1.9: https://github.com/apache/commons-codec, Apache 2.0
-commons-collections 3.2.2: https://github.com/apache/commons-collections, Apache 2.0
-commons-collections4 4.1: https://github.com/apache/commons-collections, Apache 2.0
-commons-digester 1.8.1: https://github.com/apache/commons-digester, Apache 2.0
-commons-lang3 3.6: https://github.com/apache/commons-lang, Apache 2.0
-commons-logging 1.2: https://github.com/apache/commons-logging, Apache 2.0
-commons-text 1.9: https://github.com/apache/commons-text, Apache 2.0
-commons-validator 1.6: https://github.com/apache/commons-validator, Apache 2.0
-disruptor 3.4.2: https://github.com/LMAX-Exchange/disruptor, Apache 2.0
-dledger 0.1: https://github.com/openmessaging/dledger, Apache 2.0
-error_prone_annotations 2.3.4: https://github.com/google/error-prone, Apache 2.0
-failureaccess 1.0.1: https://github.com/google/guava, Apache 2.0
-listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://github.com/google/guava, Apache 2.0
-fastjson 1.2.69: https://github.com/alibaba/fastjson, Apache 2.0
-guava 29.0-jre: https://github.com/google/guava, Apache 2.0
-httpclient 4.5.2: https://github.com/apache/httpcomponents-client, Apache 2.0
-httpcore 4.4.4: https://github.com/apache/httpcomponents-core, Apache 2.0
-j2objc-annotations 1.3: https://github.com/google/j2objc, Apache 2.0
-jackson-annotations 2.11.0: https://github.com/FasterXML/jackson-annotations, Apache 2.0
-jackson-core 2.11.0:https://github.com/FasterXML/jackson-core, Apache 2.0
-jackson-databind 2.11.0: https://github.com/FasterXML/jackson-databind, Apache 2.0
-javassist 3.20.0-GA/3.24.0-GA: https://github.com/jboss-javassist/javassist, Apache 2.0
-jcommander 1.72: https://github.com/cbeust/jcommander, Apache 2.0
-jna 4.2.2: https://github.com/java-native-access/jna, Apache 2.0
-log4j 1.2.17: https://github.com/apache/log4j, Apache 2.0
-log4j-api 2.13.3: https://github.com/apache/log4j, Apache 2.0
-log4j-core 2.13.3: https://github.com/apache/log4j, Apache 2.0
-metrics-annotation 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
-metrics-core 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
-metrics-healthchecks 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
-metrics-json 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
-netty-all 4.1.49.Final: https://github.com/netty/netty, Apache 2.0
-netty-tcnative-boringssl-static 1.1.33.Fork26: https://github.com/netty/netty, Apache 2.0
-okio 1.17.2: https://github.com/square/okio, Apache 2.0
-okhttp 3.14.9: https://github.com/square/okhttp
-openmessaging-api 2.22.1-pubsub: https://github.com/openmessaging/dledger, Apache 2.0
-opentelemetry-api 1.3.0: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
-opentelemetry-api-metrics 1.3.0-alpha: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
-opentelemetry-context 1.3.0: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
-opentelemetry-exporter-prometheus 1.3.0-alpha: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
-opentelemetry-exporter-zipkin 1.3.0: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
-opentelemetry-sdk 1.3.0: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
-opentelemetry-sdk-common 1.3.0: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
-opentelemetry-sdk-metrics 1.3.0-alpha: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
-opentelemetry-sdk-trace 1.3.0: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
-opentelemetry-semconv 1.3.0-alpha: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
-rocketmq-acl 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-rocketmq-broker 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-rocketmq-client 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-rocketmq-common 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-rocketmq-filter 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-rocketmq-logging 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-rocketmq-namesrv 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-rocketmq-remoting 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-rocketmq-srvutil 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-rocketmq-store 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-rocketmq-test 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-rocketmq-tools 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
-simpleclient 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
-simpleclient_common 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
-simpleclient_httpserver 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
-snakeyaml 1.19/1.23: https://bitbucket.org/asomov/snakeyaml, Apache 2.0
-truth 0.30: https://github.com/google/truth, Apache 2.0
-zipkin 2.23.2: https://github.com/openzipkin/zipkin, Apache 2.0
-zipkin-reporter 2.16.3: https://github.com/openzipkin/zipkin-reporter-java, Apache 2.0
-zipkin-sender-okhttp3 2.16.3: https://github.com/openzipkin/zipkin-reporter-java, Apache 2.0
-
-========================================================================
-BSD licenses
-========================================================================
-
-The following components are provided under a BSD license. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
-hamcrest-core 1.3: https://github.com/hamcrest/JavaHamcrest, BSD
-jsr305 3.0.2: https://code.google.com/archive/p/jsr-305, BSD
-
-========================================================================
-CDDL licenses
-========================================================================
-
-The following components are provided under the CDDL License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
-
-========================================================================
-CPL licenses
-========================================================================
-
-The following components are provided under the CPL License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
-system-rules 1.16.1: https://github.com/stefanbirkner/system-rules
-
-========================================================================
-EPL licenses
-========================================================================
-
-The following components are provided under the EPL License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
-junit 4.12: https://github.com/junit-team/junit5, EPL
-logback-core 1.0.13: https://github.com/qos-ch/logback, EPL
-
-========================================================================
-MIT licenses
-========================================================================
-
-The following components are provided under the MIT license. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
-checker-qual 2.11.1: https://github.com/typetools/checker-framework, MIT
-log4j-slf4j-impl 2.13.3: https://github.com/qos-ch/slf4j, MIT
-slf4j-api 1.7.30: https://github.com/qos-ch/slf4j, MIT
