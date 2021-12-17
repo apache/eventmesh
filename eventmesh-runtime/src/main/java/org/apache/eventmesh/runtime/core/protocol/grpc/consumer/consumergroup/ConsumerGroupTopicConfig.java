@@ -1,6 +1,5 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
-import com.google.common.collect.Maps;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ConsumerGroupTopicConfig {
     public static Logger logger = LoggerFactory.getLogger(ConsumerGroupTopicConfig.class);
@@ -25,7 +25,7 @@ public class ConsumerGroupTopicConfig {
      * Key: IDC
      * Value: list of URls
      */
-    private Map<String, List<String>> idcUrls = Maps.newConcurrentMap();
+    private Map<String, List<String>> idcUrls = new ConcurrentHashMap<>();
 
     public ConsumerGroupTopicConfig(String consumerGroup, String topic, SubscriptionMode subscriptionMode) {
         this.consumerGroup = consumerGroup;

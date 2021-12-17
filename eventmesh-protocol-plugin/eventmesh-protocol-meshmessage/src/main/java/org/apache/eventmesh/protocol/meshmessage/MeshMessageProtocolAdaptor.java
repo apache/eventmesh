@@ -105,7 +105,8 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
         String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
 
-        if (StringUtils.equals("http", protocolDesc)) {
+        // both http and grpc consumers are using HTTP webhook to send send message to target URL
+        if (StringUtils.equals("http", protocolDesc) || StringUtils.equals("grpc", protocolDesc)) {
             HttpCommand httpCommand = new HttpCommand();
             Body body = new Body() {
                 final Map<String, Object> map = new HashMap<>();

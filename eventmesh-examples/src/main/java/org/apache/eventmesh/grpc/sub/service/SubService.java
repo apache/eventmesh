@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.eventmesh.grpc.sub;
+package org.apache.eventmesh.grpc.sub.service;
 
 import org.apache.eventmesh.client.grpc.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
@@ -27,7 +27,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.Subscriptio
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionType;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.apache.eventmesh.http.demo.pub.eventmeshmessage.AsyncPublishInstance;
+import org.apache.eventmesh.grpc.pub.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +83,7 @@ public class SubService implements InitializingBean {
             .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
+        eventMeshGrpcConsumer.init();
         eventMeshGrpcConsumer.subscribe(subscription);
 
         // Wait for all messaged to be consumed
