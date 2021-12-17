@@ -74,7 +74,7 @@ public class EventMeshConsumer {
         topicConfig.addUrl(idc, url);
     }
 
-    public Set<String> buildTopicConfig() {
+    public synchronized Set<String> buildTopicConfig() {
         Set<String> topicConfigs = new HashSet<>();
         for (ConsumerGroupTopicConfig topicConfig : consumerGroupTopicConfig.values()) {
             topicConfigs.add(topicConfig.getTopic() + topicConfig.getSubscriptionMode().name());
