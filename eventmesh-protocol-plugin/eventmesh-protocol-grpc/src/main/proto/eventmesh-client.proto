@@ -61,18 +61,33 @@ message Subscription {
    string consumerGroup = 2;
 
    message SubscriptionItem {
+      enum SubscriptionMode {
+         CLUSTERING = 0;
+         BROADCASTING = 1;
+      }
+
+      enum SubscriptionType {
+         ASYNC = 0;
+         SYNC = 1;
+      }
+
       string topic = 1;
-      string mode = 2;
-      string type = 3;
-      string url = 4;
+      SubscriptionMode mode = 2;
+      SubscriptionType type = 3;
    }
 
    repeated SubscriptionItem subscriptionItems = 3;
+   string url = 4;
 }
 
 message Heartbeat {
+  enum ClientType {
+     PUB = 0;
+     SUB = 1;
+  }
+
   RequestHeader header = 1;
-  string clientType = 2;
+  ClientType clientType = 2;
   string producerGroup = 3;
   string consumerGroup = 4;
 

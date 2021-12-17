@@ -36,7 +36,7 @@ public class EventMeshGrpcConfiguration extends CommonConfiguration {
 
     public int eventMeshServerReplyMsgThreadNum = 8;
 
-    public int eventMeshServerClientManageThreadNum = 4;
+    public int eventMeshServerSubscribeMsgThreadNum = 4;
 
     public int eventMeshServerRegistryThreadNum = 10;
 
@@ -56,7 +56,7 @@ public class EventMeshGrpcConfiguration extends CommonConfiguration {
 
     public int eventMeshServerPushMsgBlockQSize = 1000;
 
-    public int eventMeshServerClientManageBlockQSize = 1000;
+    public int eventMeshServerSubscribeMsgBlockQSize = 1000;
 
     public int eventMeshServerBusyCheckInterval = 1000;
 
@@ -121,7 +121,7 @@ public class EventMeshGrpcConfiguration extends CommonConfiguration {
 
             String eventMeshServerClientManageThreadNumStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_CLIENTMANAGE_THREAD_NUM);
             if (StringUtils.isNotEmpty(eventMeshServerClientManageThreadNumStr) && StringUtils.isNumeric(eventMeshServerClientManageThreadNumStr)) {
-                eventMeshServerClientManageThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerClientManageThreadNumStr));
+                eventMeshServerSubscribeMsgThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerClientManageThreadNumStr));
             }
 
             String eventMeshServerPullRegistryIntervalStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULL_REGISTRY_INTERVAL);
@@ -156,7 +156,7 @@ public class EventMeshGrpcConfiguration extends CommonConfiguration {
 
             String eventMeshServerClientManageBlockQSizeStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_CLIENTM_BLOCKQ_SIZE);
             if (StringUtils.isNotEmpty(eventMeshServerClientManageBlockQSizeStr) && StringUtils.isNumeric(eventMeshServerClientManageBlockQSizeStr)) {
-                eventMeshServerClientManageBlockQSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerClientManageBlockQSizeStr));
+                eventMeshServerSubscribeMsgBlockQSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerClientManageBlockQSizeStr));
             }
 
             String eventMeshServerBusyCheckIntervalStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_BUSY_CHECK_INTERVAL);
