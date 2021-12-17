@@ -45,7 +45,7 @@ public class ConsumerManager {
         logger.info("Grpc ConsumerManager shutdown......");
     }
 
-    public void registerClient(ConsumerGroupClient newClient) {
+    public synchronized void registerClient(ConsumerGroupClient newClient) {
         String consumerGroup = newClient.getConsumerGroup();
         String topic = newClient.getTopic();
         String url = newClient.getUrl();
@@ -100,6 +100,7 @@ public class ConsumerManager {
         // determine if restart eventMeshConsumer required
         Set<String> newTopicConfigs = eventMeshConsumer.buildTopicConfig();
         if (!oldTopicConfigs.equals(newTopicConfigs)) {
+            logger.info("Consumergroup {} topic info changed, restart EventMeshConsumer.", consumerGroup);
             if (ServiceState.RUNNING.equals(eventMeshConsumer.getStatus())) {
                 eventMeshConsumer.shutdown();
             }
