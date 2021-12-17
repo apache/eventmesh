@@ -15,25 +15,33 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.grpc;
+package org.apache.eventmesh.grpc.pub;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
+import org.apache.eventmesh.util.Utils;
+
+import java.util.Properties;
 
 @Slf4j
 public class AsyncPublishInstance {
 
     public static void main(String[] args) throws Exception {
 
+        Properties properties = Utils.readPropertiesFile("application.properties");
+        final String eventMeshIp = properties.getProperty("eventmesh.ip");
+        final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
+
         final String topic = "FT0-e-80010001-01-1";
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-            .serverAddr("127.0.0.1")
-            .serverPort(10205)
+            .serverAddr(eventMeshIp)
+            .serverPort(Integer.parseInt(eventMeshGrpcPort))
             .producerGroup("EventMeshTest-producerGroup")
             .env("env")
             .idc("idc")
