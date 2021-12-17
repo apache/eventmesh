@@ -37,6 +37,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.push.AbstractHTTPPushRequest;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -202,6 +203,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         httpRetryer.init();
 
         registerHTTPRequestProcessor();
+
+        super.openTelemetryTraceFactory = new OpenTelemetryTraceFactory(eventMeshHttpConfiguration);
+        super.tracer = openTelemetryTraceFactory.getTracer(this.getClass().toString());
+        super.textMapPropagator = openTelemetryTraceFactory.getTextMapPropagator();
 
         logger.info("--------------------------EventMeshHTTPServer inited");
     }

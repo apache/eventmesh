@@ -78,8 +78,8 @@ jobs:
           java -jar ./checkstyle.jar -c ./style/checkStyle.xml -f xml ./eventmesh-* \
                | ./reviewdog -f=checkstyle -reporter=github-pr-check -filter-mode=added -fail-on-error
 
-  license-header-check:
-    name: License header Check
+  license-check:
+    name: License Check
     runs-on: ubuntu-latest
 
     steps:
@@ -91,5 +91,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check third party license
-        run: ./gradlew clean jar dist && ./gradlew installPlugin && ./gradlew tar && sh tools/third-party-dependencies/check-LICENSE.sh && echo "Thirty party license check success"
+      - name: Check third party dependencies
+        run: ./gradlew clean jar dist && ./gradlew installPlugin && ./gradlew tar && sh tools/third-party-dependencies/check-dependencies.sh && echo "Thirty party dependencies check success"

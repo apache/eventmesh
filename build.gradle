@@ -248,6 +248,7 @@ subprojects {
             new File("${projectDir}/dist/apps").mkdirs()
             new File("${projectDir}/dist/conf").mkdirs()
             new File("${projectDir}/dist/lib").mkdirs()
+            new File("${projectDir}/dist/licenses").mkdirs()
         }
         Set<String> rootProject = ["eventmesh-admin",
                                    "eventmesh-common",
@@ -298,6 +299,10 @@ subprojects {
                     into "${rootDir}/dist/conf"
                     from "${projectDir}/dist/conf"
                 }
+            }
+            copy {
+                into "${rootDir}/dist/licenses"
+                from "${rootDir}/tools/third-party-licenses/licenses"
             }
         }
     }
@@ -409,9 +414,9 @@ subprojects {
             dependency "com.google.guava:guava:29.0-jre"
             
             dependency "org.slf4j:slf4j-api:1.7.30"
-            dependency "org.apache.logging.log4j:log4j-api:2.13.3"
-            dependency "org.apache.logging.log4j:log4j-core:2.13.3"
-            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
+            dependency "org.apache.logging.log4j:log4j-api:2.16.0"
+            dependency "org.apache.logging.log4j:log4j-core:2.16.0"
+            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.16.0"
 
             dependency "com.lmax:disruptor:3.4.2"
 
@@ -434,6 +439,8 @@ subprojects {
             dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.3.0-alpha'
             dependency 'io.prometheus:simpleclient:0.8.1'
             dependency 'io.prometheus:simpleclient_httpserver:0.8.1'
+            dependency 'io.opentelemetry:opentelemetry-exporter-zipkin:1.3.0'
+            dependency 'io.opentelemetry:opentelemetry-semconv:1.3.0-alpha'
 
             dependency "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 

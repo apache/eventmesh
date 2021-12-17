@@ -178,7 +178,7 @@
    APPENDIX: How to apply the Apache License to your work.
 
       To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
+      boilerplate notice, with the fields enclosed by brackets "{}"
       replaced with your own identifying information. (Don't include
       the brackets!)  The text should be enclosed in the appropriate
       comment syntax for the file format. We also recommend that a
@@ -186,7 +186,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright [yyyy] [name of copyright owner]
+   Copyright {yyyy} {name of copyright owner}
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -200,59 +200,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
-=======================================================================
-Apache EventMesh (incubating) Subcomponents:
+This product contains a modified part of Gson, distributed by Google:
 
-The Apache EventMesh (incubating) project contains subcomponents with separate copyright
-notices and license terms. Your use of the source code for the these
-subcomponents is subject to the terms and conditions of the following
-licenses.
+  * License: Apache License v2.0
+  * Homepage: https://github.com/google/gson
 
-========================================================================
-Apache 2.0 licenses
-========================================================================
+This product contains a modified part of Guava, distributed by Google:
 
-The following components are provided under the Apache License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
+  * License: Apache License v2.0
+  * Homepage: https://github.com/google/guava
 
+This product contains a modified part of Okio, distributed by Square:
 
-
-========================================================================
-BSD licenses
-========================================================================
-
-The following components are provided under a BSD license. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
-
-========================================================================
-CDDL licenses
-========================================================================
-
-The following components are provided under the CDDL License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
-
-========================================================================
-CPL licenses
-========================================================================
-
-The following components are provided under the CPL License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
-
-========================================================================
-EPL licenses
-========================================================================
-
-The following components are provided under the EPL License. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
-
-========================================================================
-MIT licenses
-========================================================================
-
-The following components are provided under the MIT license. See project link for details.
-The text of each license is also included at licenses/LICENSE-[project].txt.
-
+  * License: Apache License v2.0
+  * Homepage: https://github.com/square/okio
