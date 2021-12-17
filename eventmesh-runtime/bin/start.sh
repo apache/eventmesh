@@ -134,6 +134,7 @@ JAVA_OPT="${JAVA_OPT} -Deventmesh.log.home=${EVENTMESH_LOG_HOME}"
 JAVA_OPT="${JAVA_OPT} -DconfPath=${EVENTMESH_HOME}/conf"
 JAVA_OPT="${JAVA_OPT} -Dlog4j2.AsyncQueueFullPolicy=Discard"
 JAVA_OPT="${JAVA_OPT} -Drocketmq.client.logUseSlf4j=true"
+JAVA_OPT="${JAVA_OPT} -DeventMeshPluginDir=${EVENTMESH_HOME}/plugin"
 
 #if [ -f "pid.file" ]; then
 #        pid=`cat pid.file`
