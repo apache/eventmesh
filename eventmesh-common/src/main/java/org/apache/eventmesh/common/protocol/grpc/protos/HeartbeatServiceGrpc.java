@@ -27,30 +27,30 @@ public final class HeartbeatServiceGrpc {
   public static final String SERVICE_NAME = "eventmesh.common.protocol.grpc.HeartbeatService";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat,
-      org.apache.eventmesh.common.protocol.grpc.protos.Response> getHeartbeatMethod;
+  private static volatile io.grpc.MethodDescriptor<Heartbeat,
+      Response> getHeartbeatMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "heartbeat",
-      requestType = org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat.class,
-      responseType = org.apache.eventmesh.common.protocol.grpc.protos.Response.class,
+      requestType = Heartbeat.class,
+      responseType = Response.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat,
-      org.apache.eventmesh.common.protocol.grpc.protos.Response> getHeartbeatMethod() {
-    io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat, org.apache.eventmesh.common.protocol.grpc.protos.Response> getHeartbeatMethod;
+  public static io.grpc.MethodDescriptor<Heartbeat,
+      Response> getHeartbeatMethod() {
+    io.grpc.MethodDescriptor<Heartbeat, Response> getHeartbeatMethod;
     if ((getHeartbeatMethod = HeartbeatServiceGrpc.getHeartbeatMethod) == null) {
       synchronized (HeartbeatServiceGrpc.class) {
         if ((getHeartbeatMethod = HeartbeatServiceGrpc.getHeartbeatMethod) == null) {
           HeartbeatServiceGrpc.getHeartbeatMethod = getHeartbeatMethod = 
-              io.grpc.MethodDescriptor.<org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat, org.apache.eventmesh.common.protocol.grpc.protos.Response>newBuilder()
+              io.grpc.MethodDescriptor.<Heartbeat, Response>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(
                   "eventmesh.common.protocol.grpc.HeartbeatService", "heartbeat"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat.getDefaultInstance()))
+                  Heartbeat.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  org.apache.eventmesh.common.protocol.grpc.protos.Response.getDefaultInstance()))
+                  Response.getDefaultInstance()))
                   .setSchemaDescriptor(new HeartbeatServiceMethodDescriptorSupplier("heartbeat"))
                   .build();
           }
@@ -88,8 +88,8 @@ public final class HeartbeatServiceGrpc {
 
     /**
      */
-    public void heartbeat(org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat request,
-        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
+    public void heartbeat(Heartbeat request,
+                          io.grpc.stub.StreamObserver<Response> responseObserver) {
       asyncUnimplementedUnaryCall(getHeartbeatMethod(), responseObserver);
     }
 
@@ -99,8 +99,8 @@ public final class HeartbeatServiceGrpc {
             getHeartbeatMethod(),
             asyncUnaryCall(
               new MethodHandlers<
-                org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat,
-                org.apache.eventmesh.common.protocol.grpc.protos.Response>(
+                Heartbeat,
+                Response>(
                   this, METHODID_HEARTBEAT)))
           .build();
     }
@@ -126,8 +126,8 @@ public final class HeartbeatServiceGrpc {
 
     /**
      */
-    public void heartbeat(org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat request,
-        io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response> responseObserver) {
+    public void heartbeat(Heartbeat request,
+                          io.grpc.stub.StreamObserver<Response> responseObserver) {
       asyncUnaryCall(
           getChannel().newCall(getHeartbeatMethod(), getCallOptions()), request, responseObserver);
     }
@@ -153,7 +153,7 @@ public final class HeartbeatServiceGrpc {
 
     /**
      */
-    public org.apache.eventmesh.common.protocol.grpc.protos.Response heartbeat(org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat request) {
+    public Response heartbeat(Heartbeat request) {
       return blockingUnaryCall(
           getChannel(), getHeartbeatMethod(), getCallOptions(), request);
     }
@@ -179,8 +179,8 @@ public final class HeartbeatServiceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<org.apache.eventmesh.common.protocol.grpc.protos.Response> heartbeat(
-        org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat request) {
+    public com.google.common.util.concurrent.ListenableFuture<Response> heartbeat(
+        Heartbeat request) {
       return futureUnaryCall(
           getChannel().newCall(getHeartbeatMethod(), getCallOptions()), request);
     }
@@ -206,8 +206,8 @@ public final class HeartbeatServiceGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_HEARTBEAT:
-          serviceImpl.heartbeat((org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat) request,
-              (io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.Response>) responseObserver);
+          serviceImpl.heartbeat((Heartbeat) request,
+              (io.grpc.stub.StreamObserver<Response>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -231,7 +231,7 @@ public final class HeartbeatServiceGrpc {
 
     @Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return org.apache.eventmesh.common.protocol.grpc.protos.EventmeshGrpc.getDescriptor();
+      return EventmeshGrpc.getDescriptor();
     }
 
     @Override

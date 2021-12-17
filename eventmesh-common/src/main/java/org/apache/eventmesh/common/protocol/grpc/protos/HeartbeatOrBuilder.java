@@ -21,14 +21,13 @@ public interface HeartbeatOrBuilder extends
   RequestHeaderOrBuilder getHeaderOrBuilder();
 
   /**
-   * <code>string clientType = 2;</code>
+   * <code>.eventmesh.common.protocol.grpc.Heartbeat.ClientType clientType = 2;</code>
    */
-  String getClientType();
+  int getClientTypeValue();
   /**
-   * <code>string clientType = 2;</code>
+   * <code>.eventmesh.common.protocol.grpc.Heartbeat.ClientType clientType = 2;</code>
    */
-  com.google.protobuf.ByteString
-      getClientTypeBytes();
+  Heartbeat.ClientType getClientType();
 
   /**
    * <code>string producerGroup = 3;</code>

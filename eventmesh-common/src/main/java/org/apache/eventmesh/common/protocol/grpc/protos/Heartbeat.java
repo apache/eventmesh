@@ -16,7 +16,7 @@ private static final long serialVersionUID = 0L;
     super(builder);
   }
   private Heartbeat() {
-    clientType_ = "";
+    clientType_ = 0;
     producerGroup_ = "";
     consumerGroup_ = "";
     heartbeatItems_ = java.util.Collections.emptyList();
@@ -66,10 +66,10 @@ private static final long serialVersionUID = 0L;
 
             break;
           }
-          case 18: {
-            String s = input.readStringRequireUtf8();
+          case 16: {
+            int rawValue = input.readEnum();
 
-            clientType_ = s;
+            clientType_ = rawValue;
             break;
           }
           case 26: {
@@ -118,6 +118,104 @@ private static final long serialVersionUID = 0L;
     return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_Heartbeat_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
             Heartbeat.class, Builder.class);
+  }
+
+  /**
+   * Protobuf enum {@code eventmesh.common.protocol.grpc.Heartbeat.ClientType}
+   */
+  public enum ClientType
+      implements com.google.protobuf.ProtocolMessageEnum {
+    /**
+     * <code>PUB = 0;</code>
+     */
+    PUB(0),
+    /**
+     * <code>SUB = 1;</code>
+     */
+    SUB(1),
+    UNRECOGNIZED(-1),
+    ;
+
+    /**
+     * <code>PUB = 0;</code>
+     */
+    public static final int PUB_VALUE = 0;
+    /**
+     * <code>SUB = 1;</code>
+     */
+    public static final int SUB_VALUE = 1;
+
+
+    public final int getNumber() {
+      if (this == UNRECOGNIZED) {
+        throw new IllegalArgumentException(
+            "Can't get the number of an unknown enum value.");
+      }
+      return value;
+    }
+
+    /**
+     * @deprecated Use {@link #forNumber(int)} instead.
+     */
+    @Deprecated
+    public static ClientType valueOf(int value) {
+      return forNumber(value);
+    }
+
+    public static ClientType forNumber(int value) {
+      switch (value) {
+        case 0: return PUB;
+        case 1: return SUB;
+        default: return null;
+      }
+    }
+
+    public static com.google.protobuf.Internal.EnumLiteMap<ClientType>
+        internalGetValueMap() {
+      return internalValueMap;
+    }
+    private static final com.google.protobuf.Internal.EnumLiteMap<
+        ClientType> internalValueMap =
+          new com.google.protobuf.Internal.EnumLiteMap<ClientType>() {
+            public ClientType findValueByNumber(int number) {
+              return ClientType.forNumber(number);
+            }
+          };
+
+    public final com.google.protobuf.Descriptors.EnumValueDescriptor
+        getValueDescriptor() {
+      return getDescriptor().getValues().get(ordinal());
+    }
+    public final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptorForType() {
+      return getDescriptor();
+    }
+    public static final com.google.protobuf.Descriptors.EnumDescriptor
+        getDescriptor() {
+      return Heartbeat.getDescriptor().getEnumTypes().get(0);
+    }
+
+    private static final ClientType[] VALUES = values();
+
+    public static ClientType valueOf(
+        com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+      if (desc.getType() != getDescriptor()) {
+        throw new IllegalArgumentException(
+          "EnumValueDescriptor is not for this type.");
+      }
+      if (desc.getIndex() == -1) {
+        return UNRECOGNIZED;
+      }
+      return VALUES[desc.getIndex()];
+    }
+
+    private final int value;
+
+    private ClientType(int value) {
+      this.value = value;
+    }
+
+    // @@protoc_insertion_point(enum_scope:eventmesh.common.protocol.grpc.Heartbeat.ClientType)
   }
 
   public interface HeartbeatItemOrBuilder extends
@@ -805,37 +903,19 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int CLIENTTYPE_FIELD_NUMBER = 2;
-  private volatile Object clientType_;
+  private int clientType_;
   /**
-   * <code>string clientType = 2;</code>
+   * <code>.eventmesh.common.protocol.grpc.Heartbeat.ClientType clientType = 2;</code>
    */
-  public String getClientType() {
-    Object ref = clientType_;
-    if (ref instanceof String) {
-      return (String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      String s = bs.toStringUtf8();
-      clientType_ = s;
-      return s;
-    }
+  public int getClientTypeValue() {
+    return clientType_;
   }
   /**
-   * <code>string clientType = 2;</code>
+   * <code>.eventmesh.common.protocol.grpc.Heartbeat.ClientType clientType = 2;</code>
    */
-  public com.google.protobuf.ByteString
-      getClientTypeBytes() {
-    Object ref = clientType_;
-    if (ref instanceof String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (String) ref);
-      clientType_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
+  public ClientType getClientType() {
+    ClientType result = ClientType.valueOf(clientType_);
+    return result == null ? ClientType.UNRECOGNIZED : result;
   }
 
   public static final int PRODUCERGROUP_FIELD_NUMBER = 3;
@@ -956,8 +1036,8 @@ private static final long serialVersionUID = 0L;
     if (header_ != null) {
       output.writeMessage(1, getHeader());
     }
-    if (!getClientTypeBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 2, clientType_);
+    if (clientType_ != ClientType.PUB.getNumber()) {
+      output.writeEnum(2, clientType_);
     }
     if (!getProducerGroupBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, producerGroup_);
@@ -980,8 +1060,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(1, getHeader());
     }
-    if (!getClientTypeBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, clientType_);
+    if (clientType_ != ClientType.PUB.getNumber()) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeEnumSize(2, clientType_);
     }
     if (!getProducerGroupBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, producerGroup_);
@@ -1014,8 +1095,7 @@ private static final long serialVersionUID = 0L;
       result = result && getHeader()
           .equals(other.getHeader());
     }
-    result = result && getClientType()
-        .equals(other.getClientType());
+    result = result && clientType_ == other.clientType_;
     result = result && getProducerGroup()
         .equals(other.getProducerGroup());
     result = result && getConsumerGroup()
@@ -1038,7 +1118,7 @@ private static final long serialVersionUID = 0L;
       hash = (53 * hash) + getHeader().hashCode();
     }
     hash = (37 * hash) + CLIENTTYPE_FIELD_NUMBER;
-    hash = (53 * hash) + getClientType().hashCode();
+    hash = (53 * hash) + clientType_;
     hash = (37 * hash) + PRODUCERGROUP_FIELD_NUMBER;
     hash = (53 * hash) + getProducerGroup().hashCode();
     hash = (37 * hash) + CONSUMERGROUP_FIELD_NUMBER;
@@ -1183,7 +1263,7 @@ private static final long serialVersionUID = 0L;
         header_ = null;
         headerBuilder_ = null;
       }
-      clientType_ = "";
+      clientType_ = 0;
 
       producerGroup_ = "";
 
@@ -1281,9 +1361,8 @@ private static final long serialVersionUID = 0L;
       if (other.hasHeader()) {
         mergeHeader(other.getHeader());
       }
-      if (!other.getClientType().isEmpty()) {
-        clientType_ = other.clientType_;
-        onChanged();
+      if (other.clientType_ != 0) {
+        setClientTypeValue(other.getClientTypeValue());
       }
       if (!other.getProducerGroup().isEmpty()) {
         producerGroup_ = other.producerGroup_;
@@ -1464,71 +1543,46 @@ private static final long serialVersionUID = 0L;
       return headerBuilder_;
     }
 
-    private Object clientType_ = "";
+    private int clientType_ = 0;
     /**
-     * <code>string clientType = 2;</code>
+     * <code>.eventmesh.common.protocol.grpc.Heartbeat.ClientType clientType = 2;</code>
      */
-    public String getClientType() {
-      Object ref = clientType_;
-      if (!(ref instanceof String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        clientType_ = s;
-        return s;
-      } else {
-        return (String) ref;
-      }
+    public int getClientTypeValue() {
+      return clientType_;
     }
     /**
-     * <code>string clientType = 2;</code>
+     * <code>.eventmesh.common.protocol.grpc.Heartbeat.ClientType clientType = 2;</code>
      */
-    public com.google.protobuf.ByteString
-        getClientTypeBytes() {
-      Object ref = clientType_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
-        clientType_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string clientType = 2;</code>
-     */
-    public Builder setClientType(
-        String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
+    public Builder setClientTypeValue(int value) {
       clientType_ = value;
       onChanged();
       return this;
     }
     /**
-     * <code>string clientType = 2;</code>
+     * <code>.eventmesh.common.protocol.grpc.Heartbeat.ClientType clientType = 2;</code>
+     */
+    public ClientType getClientType() {
+      ClientType result = ClientType.valueOf(clientType_);
+      return result == null ? ClientType.UNRECOGNIZED : result;
+    }
+    /**
+     * <code>.eventmesh.common.protocol.grpc.Heartbeat.ClientType clientType = 2;</code>
+     */
+    public Builder setClientType(ClientType value) {
+      if (value == null) {
+        throw new NullPointerException();
+      }
+      
+      clientType_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>.eventmesh.common.protocol.grpc.Heartbeat.ClientType clientType = 2;</code>
      */
     public Builder clearClientType() {
       
-      clientType_ = getDefaultInstance().getClientType();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string clientType = 2;</code>
-     */
-    public Builder setClientTypeBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      clientType_ = value;
+      clientType_ = 0;
       onChanged();
       return this;
     }

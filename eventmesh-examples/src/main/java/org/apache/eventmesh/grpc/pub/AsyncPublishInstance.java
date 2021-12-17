@@ -15,25 +15,39 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.grpc;
+package org.apache.eventmesh.grpc.pub;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
+import org.apache.eventmesh.util.Utils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 @Slf4j
 public class AsyncPublishInstance {
 
+    // This messageSize is also used in SubService.java (Subscriber)
+    public static int messageSize = 5;
+
     public static void main(String[] args) throws Exception {
 
-        final String topic = "FT0-e-80010001-01-1";
+        Properties properties = Utils.readPropertiesFile("application.properties");
+        final String eventMeshIp = properties.getProperty("eventmesh.ip");
+        final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
+
+        final String topic = "TEST-TOPIC-HTTP-ASYNC";
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-            .serverAddr("127.0.0.1")
-            .serverPort(10205)
+            .serverAddr(eventMeshIp)
+            .serverPort(Integer.parseInt(eventMeshGrpcPort))
             .producerGroup("EventMeshTest-producerGroup")
             .env("env")
             .idc("idc")
@@ -45,9 +59,12 @@ public class AsyncPublishInstance {
 
         eventMeshGrpcProducer.init();
 
-        for (int i = 0; i < 1; i++) {
+        Map<String, String> content = new HashMap<>();
+        content.put("content", "testAsyncMessage");
+
+        for (int i = 0; i < messageSize; i++) {
             EventMeshMessage message = EventMeshMessage.newBuilder()
-                .setContent("testPublishMessage")
+                .setContent(JsonUtils.serialize(content))
                 .setTopic(topic)
                 .setUniqueId(RandomStringUtils.generateNum(30))
                 .setSeqNum(RandomStringUtils.generateNum(30))

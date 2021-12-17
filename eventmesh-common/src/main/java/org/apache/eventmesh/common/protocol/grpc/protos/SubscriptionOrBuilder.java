@@ -53,4 +53,14 @@ public interface SubscriptionOrBuilder extends
    */
   Subscription.SubscriptionItemOrBuilder getSubscriptionItemsOrBuilder(
       int index);
+
+  /**
+   * <code>string url = 4;</code>
+   */
+  String getUrl();
+  /**
+   * <code>string url = 4;</code>
+   */
+  com.google.protobuf.ByteString
+      getUrlBytes();
 }
