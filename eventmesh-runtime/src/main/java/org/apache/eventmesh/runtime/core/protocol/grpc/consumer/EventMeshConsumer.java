@@ -1,12 +1,14 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
-import com.google.common.collect.Maps;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
+import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
@@ -16,6 +18,8 @@ import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupTopicConfig;
+import org.apache.eventmesh.runtime.core.protocol.grpc.producer.EventMeshProducer;
+import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.push.HTTPMessageHandler;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
@@ -26,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EventMeshConsumer {
 
@@ -49,7 +54,7 @@ public class EventMeshConsumer {
      * Key: topic
      * Value: ConsumerGroupTopicConfig
      **/
-    private Map<String, ConsumerGroupTopicConfig> consumerGroupTopicConfig = Maps.newConcurrentMap();
+    private final Map<String, ConsumerGroupTopicConfig> consumerGroupTopicConfig = new ConcurrentHashMap<>();
 
     public EventMeshConsumer(EventMeshGrpcServer eventMeshGrpcServer, String consumerGroup) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
@@ -182,14 +187,49 @@ public class EventMeshConsumer {
 
             ConsumerGroupTopicConfig topicConfig = consumerGroupTopicConfig.get(topic);
             if (topicConfig != null) {
-
                 HandleMsgContext handleMsgContext = new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(), consumerGroup,
                     this,
                     topic, event, subscriptionMode, eventMeshAsyncConsumeContext.getAbstractContext(), eventMeshGrpcServer, strBizSeqNo, strUniqueId,
                     topicConfig);
-                httpMessageHandler.handle(handleMsgContext);
+
+                if (httpMessageHandler.handle(handleMsgContext)) {
+                    eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
+                    return;
+                } else {
+                    // can not handle the message due to the capacity limit is reached
+                    // wait for sometime and send this message back to mq and consume again
+                    try {
+                        Thread.sleep(5000);
+                        sendMessageBack(consumerGroup, event, strUniqueId, strBizSeqNo);
+                    } catch (Exception ignored) {
+                        // ignore exception
+                    }
+                }
             }
             eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
         };
+    }
+
+    public void sendMessageBack(String consumerGroup, final CloudEvent event, final String uniqueId, String bizSeqNo) throws Exception {
+        EventMeshProducer producer
+            = eventMeshGrpcServer.getProducerManager().getEventMeshProducer(consumerGroup);
+
+        if (producer == null) {
+            logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup, bizSeqNo, uniqueId);
+            return;
+        }
+
+        final SendMessageContext sendMessageBackContext = new SendMessageContext(bizSeqNo, event, producer, eventMeshGrpcServer);
+
+        producer.send(sendMessageBackContext, new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+            }
+
+            @Override
+            public void onException(OnExceptionContext context) {
+                logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup, bizSeqNo, uniqueId);
+            }
+        });
     }
 }

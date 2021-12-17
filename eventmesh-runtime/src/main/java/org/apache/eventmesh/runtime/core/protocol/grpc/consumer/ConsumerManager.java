@@ -1,8 +1,6 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
@@ -11,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,39 +39,13 @@ public class ConsumerManager {
     }
 
     public void shutdown() throws Exception {
-        for (EventMeshConsumer consumer: consumerTable.values()) {
+        for (EventMeshConsumer consumer : consumerTable.values()) {
             consumer.shutdown();
         }
         logger.info("Grpc ConsumerManager shutdown......");
     }
 
-    public void handleSubscription(Subscription subscription) throws Exception {
-        RequestHeader header = subscription.getHeader();
-        String consumerGroup = subscription.getConsumerGroup();
-        String url = subscription.getUrl();
-        List<Subscription.SubscriptionItem> subscriptionItems = subscription.getSubscriptionItemsList();
-
-        for (Subscription.SubscriptionItem item : subscriptionItems) {
-            ConsumerGroupClient newClient = ConsumerGroupClient.builder()
-                .env(header.getEnv())
-                .idc(header.getIdc())
-                .sys(header.getSys())
-                .ip(header.getIp())
-                .pid(header.getPid())
-                .consumerGroup(consumerGroup)
-                .topic(item.getTopic())
-                .subscriptionMode(item.getMode())
-                .url(url)
-                .lastUpTime(new Date())
-                .build();
-
-            registerClient(newClient);
-        }
-
-        restartEventMeshConsumer(consumerGroup);
-    }
-
-    private void registerClient(ConsumerGroupClient newClient) {
+    public void registerClient(ConsumerGroupClient newClient) {
         String consumerGroup = newClient.getConsumerGroup();
         String topic = newClient.getTopic();
         String url = newClient.getUrl();
@@ -82,9 +53,9 @@ public class ConsumerManager {
         List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
 
         if (localClients == null) {
-            List<ConsumerGroupClient> newClients = new ArrayList<>();
-            newClients.add(newClient);
-            clientTable.put(consumerGroup, newClients);
+            localClients = new ArrayList<>();
+            localClients.add(newClient);
+            clientTable.put(consumerGroup, localClients);
         } else {
             boolean isContains = false;
             for (ConsumerGroupClient localClient : localClients) {
@@ -101,7 +72,7 @@ public class ConsumerManager {
         }
     }
 
-    private void restartEventMeshConsumer(String consumerGroup) throws Exception {
+    public void restartEventMeshConsumer(String consumerGroup) throws Exception {
         EventMeshConsumer eventMeshConsumer = consumerTable.get(consumerGroup);
 
         if (eventMeshConsumer == null) {
