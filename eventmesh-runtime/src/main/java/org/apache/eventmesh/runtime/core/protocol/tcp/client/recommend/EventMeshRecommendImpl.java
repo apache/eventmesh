@@ -90,8 +90,11 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
     }
 
     @Override
-    public List<String> calculateRedirectRecommendEventMesh(Map<String, String> eventMeshMap, Map<String, Integer> clientDistributeMap, String group, int recommendProxyNum) throws Exception {
-        logger.info("eventMeshMap:{},clientDistributionMap:{},group:{},recommendNum:{}", eventMeshMap,clientDistributeMap,group,recommendProxyNum);
+    public List<String> calculateRedirectRecommendEventMesh(Map<String, String> eventMeshMap, Map<String, Integer> clientDistributeMap, String group, int recommendProxyNum, String eventMeshName) throws Exception {
+        if(recommendProxyNum < 1){
+            return null;
+        }
+        logger.info("eventMeshMap:{},clientDistributionMap:{},group:{},recommendNum:{},currEventMeshName:{}", eventMeshMap,clientDistributeMap,group,recommendProxyNum, eventMeshName);
         List<String> recommendProxyList = null;
 
         //find eventmesh with least client
@@ -106,10 +109,10 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         recommendProxyList = new ArrayList<>(recommendProxyNum);
         while(recommendProxyList.size() < recommendProxyNum){
             Map.Entry<String, Integer> minProxyItem = list.get(0);
-            int currProxyNum = clientDistributeMap.get(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshName);
+            int currProxyNum = clientDistributeMap.get(eventMeshName);
             recommendProxyList.add(eventMeshMap.get(minProxyItem.getKey()));
             clientDistributeMap.put(minProxyItem.getKey(),minProxyItem.getValue() + 1);
-            clientDistributeMap.put(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshName,currProxyNum - 1);
+            clientDistributeMap.put(eventMeshName,currProxyNum - 1);
             Collections.sort(list, vc);
             logger.info("clientDistributionMap after sort:{}", list);
         }

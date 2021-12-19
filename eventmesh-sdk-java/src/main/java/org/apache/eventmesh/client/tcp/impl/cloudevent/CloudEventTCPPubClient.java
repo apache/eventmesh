@@ -33,14 +33,14 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.base.Preconditions;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
-
-import com.google.common.base.Preconditions;
 
 /**
  * A CloudEvent TCP publish client implementation.
@@ -147,7 +147,8 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
         @Override
         public void callback(CloudEvent cloudEvent, ChannelHandlerContext ctx) {
             if (callback != null) {
-                callback.handle(cloudEvent, ctx);
+                callback.handle(cloudEvent)
+                    .ifPresent(responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER)));
             }
         }
 

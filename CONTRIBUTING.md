@@ -37,15 +37,15 @@ Here are the workflow for contributors:
 
 1. Fork to your own
 2. Clone fork to local repository
-```shell
+```git
 git clone git@github.com:yourgithub/incubator-eventmesh.git
 ```
 3. Create a new branch and work on it
-```shell
+```git
 git checkout -b fix_patch_xx
 ```  
 4. Keep your branch in sync
-```shell
+```git
 git remote add upstream git@github.com:apache/incubator-eventmesh.git
 git fetch upstream develop:upstream_develop
 git rebase upstream_develop
@@ -65,18 +65,20 @@ EventMesh repository, and the related Issue will be closed.
 We use [GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
 and [Pull Requests](https://github.com/apache/incubator-eventmesh/pulls) for trackers.
 
-If you find a typo in a document, find a bug in code, or want new features, or want to give suggestions, you
+If you find a bug in code, or want new features, or want to give suggestions, you
 can [open an issue on GitHub](https://github.com/apache/incubator-eventmesh/issues/new) to report it. Please follow the
 guideline message in the issue template.
 
-If you want to contribute, please follow the [contribution workflow](#github-workflow) and create a new pull request. If
-your PR contains large changes, e.g. component refactor or new components, please write detailed documents about its
+If you want to contribute, please follow the [contribution workflow](#github-workflow) and create a new pull request. Your PR title should start with [ISSUE #xx].
+If your PR contains large changes, e.g. component refactor or new components, please write detailed documents about its
 design and usage.
 
-Note that a single pull request should not be too large. If heavy changes are required, it's better to separate the
+If your change is about a typo or small optimize, you needn't create an Issue, just submit a PR and title with [MINOR].
+
+[Note]: A single pull request should not be too large. If heavy changes are required, it's better to separate the
 changes to a few individual PRs.
 
-### Code review
+### PR review
 
 All code should be well reviewed by one or more committers. Some principles:
 
@@ -88,10 +90,17 @@ All code should be well reviewed by one or more committers. Some principles:
 
 EventMesh follows [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) policy. All source files should 
 have the Apache License header added to the file header. EventMesh uses the [apache/skywalking-eyes](https://github.com/apache/skywalking-eyes) to check 
-the source file header, and EventMesh uses [Gradle-License-Report](https://github.com/jk1/Gradle-License-Report) plugin to check for third-part dependencies. 
-When you need to add a three-part dependency, you need to register the newly added dependency in tool/license/allowed-licenses.txt, you can execute `./gradlew clean checkLicense` to judge
-whether there exist dependencies have been added, and the newly added three-part libraries need to meet [ASF 3RD PARTY LICENSE POLICY](https://apache.org/legal/resolved.html). 
+the source file header.
+
+EventMesh uses [check-dependencies.sh](tools/third-party-dependencies/check-dependencies.sh) script to check for third-part dependencies. 
+When you need to add a three-part dependency, you need to register the newly added dependency in tool/license/known-dependencies.txt. The newly added three-part libraries need to meet [ASF 3RD PARTY LICENSE POLICY](https://apache.org/legal/resolved.html). 
 It is highly recommended communicating with EventMesh community before you need to add a three-part library.
+
+### PR merge
+
+After a PR is approved by at least one committer, it can be merged. Before the merge, the committer can make changes to the commits message, requiring the commits
+message to be clear without duplication, and use Squash and Merge to make sure one PR should only contain one commits. 
+For large multi-person PR, use Merge to merge, and fix the commits by rebase before merging. 
 
 ## Community
 

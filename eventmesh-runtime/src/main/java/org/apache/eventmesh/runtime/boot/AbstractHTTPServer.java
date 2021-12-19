@@ -30,6 +30,9 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.trace.AttributeKeys;
+import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
+import org.apache.eventmesh.runtime.trace.SpanKey;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import org.apache.commons.collections4.MapUtils;
@@ -84,6 +87,15 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
@@ -98,6 +110,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     private AtomicBoolean started = new AtomicBoolean(false);
 
     private boolean useTLS;
+
+    private Boolean useTrace = true; //Determine whether trace is enabled
+
+    public TextMapPropagator textMapPropagator;
+
+    public OpenTelemetryTraceFactory openTelemetryTraceFactory;
+
+    public Tracer tracer;
 
     public ThreadPoolExecutor asyncContextCompleteHandler =
         ThreadPoolFactory.createThreadPoolExecutor(10, 10, "EventMesh-http-asyncContext-");
@@ -122,12 +142,26 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         );
         responseHeaders.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         responseHeaders.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-        // todo server span end with error, record status, we should get channel here to get span in channel's context in async call..
+        if (useTrace) {
+            Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
+            Span span = context.get(SpanKey.SERVER_KEY);
+            try (Scope ignored = context.makeCurrent()) {
+                span.setStatus(StatusCode.ERROR); //set this span's status to ERROR
+                span.end(); // closing the scope does not end the span, this has to be done manually
+            }
+        }
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     public void sendResponse(ChannelHandlerContext ctx, DefaultFullHttpResponse response) {
-        // todo end server span, we should get channel here to get span in channel's context in async call.
+        if (useTrace) {
+            Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
+            Span span = context.get(SpanKey.SERVER_KEY);
+            try (Scope ignored = context.makeCurrent()) {
+                span.end();
+            }
+        }
+
         ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture f) {
@@ -161,6 +195,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 } catch (Exception e1) {
                     httpServerLogger.error("HTTPServer shutdown Err!", e);
                 }
+                return;
             }
         };
 
@@ -188,14 +223,119 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         this.processorTable.put(requestCode.toString(), pair);
     }
 
+    private Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
+        Map<String, Object> headerParam = new HashMap<>();
+        for (String key : fullReq.headers().names()) {
+            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
+                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
+                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
+                continue;
+            }
+            headerParam.put(key, fullReq.headers().get(key));
+        }
+        return headerParam;
+    }
+
+    /**
+     * Validate request, return error status.
+     *
+     * @param httpRequest
+     * @return if request is validated return null else return error status
+     */
+    private HttpResponseStatus validateHttpRequest(HttpRequest httpRequest) {
+        if (!started.get()) {
+            return HttpResponseStatus.SERVICE_UNAVAILABLE;
+        }
+        if (!httpRequest.decoderResult().isSuccess()) {
+            return HttpResponseStatus.BAD_REQUEST;
+        }
+        if (!HttpMethod.GET.equals(httpRequest.method()) && !HttpMethod.POST.equals(httpRequest.method())) {
+            return HttpResponseStatus.METHOD_NOT_ALLOWED;
+        }
+        final String protocolVersion = httpRequest.headers().get(ProtocolKey.VERSION);
+        if (!ProtocolVersion.contains(protocolVersion)) {
+            return HttpResponseStatus.BAD_REQUEST;
+        }
+        return null;
+    }
+
+    /**
+     * Inject ip and protocol version, if the protocol version is empty, set default to {@link ProtocolVersion#V1}.
+     *
+     * @param ctx
+     * @param httpRequest
+     */
+    private void preProcessHttpRequestHeader(ChannelHandlerContext ctx, HttpRequest httpRequest) {
+        HttpHeaders requestHeaders = httpRequest.headers();
+        requestHeaders.set(ProtocolKey.ClientInstanceKey.IP,
+            RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+
+        String protocolVersion = httpRequest.headers().get(ProtocolKey.VERSION);
+        if (StringUtils.isBlank(protocolVersion)) {
+            requestHeaders.set(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
+        }
+    }
+
+    /**
+     * Parse request body to map
+     *
+     * @param httpRequest
+     * @return
+     */
+    private Map<String, Object> parseHttpRequestBody(HttpRequest httpRequest) throws IOException {
+        final long bodyDecodeStart = System.currentTimeMillis();
+        Map<String, Object> httpRequestBody = new HashMap<>();
+
+        if (HttpMethod.GET.equals(httpRequest.method())) {
+            QueryStringDecoder getDecoder = new QueryStringDecoder(httpRequest.uri());
+            getDecoder.parameters().forEach((key, value) -> httpRequestBody.put(key, value.get(0)));
+        } else if (HttpMethod.POST.equals(httpRequest.method())) {
+            HttpPostRequestDecoder decoder =
+                new HttpPostRequestDecoder(defaultHttpDataFactory, httpRequest);
+            for (InterfaceHttpData parm : decoder.getBodyHttpDatas()) {
+                if (parm.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
+                    Attribute data = (Attribute) parm;
+                    httpRequestBody.put(data.getName(), data.getValue());
+                }
+            }
+            decoder.destroy();
+        }
+        metrics.summaryMetrics.recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
+        return httpRequestBody;
+    }
+
     class HTTPHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) {
-            // todo start server span, we should get channel here to put span in channel's context in async call.
+            Context context = null;
+            Span span = null;
+            if (useTrace) {
+                //if the client injected span context,this will extract the context from httpRequest or it will be null
+                context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>() {
+                    @Override
+                    public Iterable<String> keys(HttpRequest carrier) {
+                        return carrier.headers().names();
+                    }
+
+                    @Override
+                    public String get(HttpRequest carrier, String key) {
+                        return carrier.headers().get(key);
+                    }
+                });
+                span = tracer.spanBuilder("HTTP " + httpRequest.method())
+                    .setParent(context)
+                    .setSpanKind(SpanKind.SERVER)
+                    .startSpan();
+                //attach the span to the server context
+                context = context.with(SpanKey.SERVER_KEY, span);
+                //put the context in channel
+                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
+            }
+
             try {
-                preProcessHTTPRequestHeader(ctx, httpRequest);
-                final HttpResponseStatus errorStatus = validateHTTPRequest(httpRequest);
+                preProcessHttpRequestHeader(ctx, httpRequest);
+                final HttpResponseStatus errorStatus = validateHttpRequest(httpRequest);
                 if (errorStatus != null) {
                     sendError(ctx, errorStatus);
                     return;
@@ -203,11 +343,9 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 metrics.summaryMetrics.recordHTTPRequest();
 
                 final HttpCommand requestCommand = new HttpCommand();
-                // todo record command opaque in span.
 
                 final Map<String, Object> bodyMap = parseHttpRequestBody(httpRequest);
 
-                // todo: split get and post, use different submethod to process
                 String requestCode =
                     (httpRequest.method() == HttpMethod.POST)
                         ? httpRequest.headers().get(ProtocolKey.REQUEST_CODE)
@@ -216,7 +354,12 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 requestCommand.setHttpMethod(httpRequest.method().name());
                 requestCommand.setHttpVersion(httpRequest.protocolVersion().protocolName());
                 requestCommand.setRequestCode(requestCode);
-                // todo record command method, version and requestCode in span.
+
+                if (useTrace) {
+                    span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
+                    span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
+                    span.setAttribute(String.valueOf(SemanticAttributes.HTTP_STATUS_CODE), requestCode);
+                }
 
                 HttpCommand responseCommand = null;
 
@@ -230,7 +373,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 }
 
                 try {
-                    requestCommand.setHeader(Header.buildHeader(requestCode, parseHTTPHeader(httpRequest)));
+                    requestCommand.setHeader(Header.buildHeader(requestCode, parseHttpHeader(httpRequest)));
                     requestCommand.setBody(Body.buildBody(requestCode, bodyMap));
                 } catch (Exception e) {
                     responseCommand = requestCommand.createHttpCommandResponse(EventMeshRetCode.EVENTMESH_RUNTIME_ERR);
@@ -246,8 +389,14 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     new AsyncContext<>(requestCommand, responseCommand, asyncContextCompleteHandler);
                 processEventMeshRequest(ctx, asyncContext);
             } catch (Exception ex) {
-                httpServerLogger.error("AbstractHTTPServer.HTTPHandler.channelRead0 err", ex);
-                // todo span end with exception.
+                httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
+
+                if (useTrace) {
+                    span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage());
+                    span.setStatus(StatusCode.ERROR, ex.getMessage()); //set this span's status to ERROR
+                    span.recordException(ex); //record this exception
+                    span.end(); // closing the scope does not end the span, this has to be done manually
+                }
             }
         }
 
@@ -393,87 +542,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 new HttpObjectAggregator(Integer.MAX_VALUE),
                 new HTTPHandler());
         }
-    }
-
-    private Map<String, Object> parseHTTPHeader(HttpRequest fullReq) {
-        Map<String, Object> headerParam = new HashMap<>();
-        for (String key : fullReq.headers().names()) {
-            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
-                continue;
-            }
-            headerParam.put(key, fullReq.headers().get(key));
-        }
-        return headerParam;
-    }
-
-    /**
-     * Validate request, return error status.
-     *
-     * @param httpRequest
-     * @return if request is validated return null else return error status
-     */
-    private HttpResponseStatus validateHTTPRequest(HttpRequest httpRequest) {
-        if (!started.get()) {
-            return HttpResponseStatus.SERVICE_UNAVAILABLE;
-        }
-        if (!httpRequest.decoderResult().isSuccess()) {
-            return HttpResponseStatus.BAD_REQUEST;
-        }
-        if (!HttpMethod.GET.equals(httpRequest.method()) && !HttpMethod.POST.equals(httpRequest.method())) {
-            return HttpResponseStatus.METHOD_NOT_ALLOWED;
-        }
-        final String protocolVersion = httpRequest.headers().get(ProtocolKey.VERSION);
-        if (!ProtocolVersion.contains(protocolVersion)) {
-            return HttpResponseStatus.BAD_REQUEST;
-        }
-        return null;
-    }
-
-    /**
-     * Inject ip and protocol version, if the protocol version is empty, set default to {@link ProtocolVersion#V1}.
-     *
-     * @param ctx
-     * @param httpRequest
-     */
-    private void preProcessHTTPRequestHeader(ChannelHandlerContext ctx, HttpRequest httpRequest) {
-        HttpHeaders requestHeaders = httpRequest.headers();
-        requestHeaders.set(ProtocolKey.ClientInstanceKey.IP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
-
-        String protocolVersion = httpRequest.headers().get(ProtocolKey.VERSION);
-        if (StringUtils.isBlank(protocolVersion)) {
-            requestHeaders.set(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
-        }
-    }
-
-    /**
-     * Parse request body to map
-     *
-     * @param httpRequest
-     * @return
-     */
-    private Map<String, Object> parseHttpRequestBody(HttpRequest httpRequest) throws IOException {
-        final long bodyDecodeStart = System.currentTimeMillis();
-        Map<String, Object> httpRequestBody = new HashMap<>();
-
-        if (HttpMethod.GET.equals(httpRequest.method())) {
-            QueryStringDecoder getDecoder = new QueryStringDecoder(httpRequest.uri());
-            getDecoder.parameters().forEach((key, value) -> httpRequestBody.put(key, value.get(0)));
-        } else if (HttpMethod.POST.equals(httpRequest.method())) {
-            HttpPostRequestDecoder decoder =
-                new HttpPostRequestDecoder(defaultHttpDataFactory, httpRequest);
-            for (InterfaceHttpData parm : decoder.getBodyHttpDatas()) {
-                if (parm.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
-                    Attribute data = (Attribute) parm;
-                    httpRequestBody.put(data.getName(), data.getValue());
-                }
-            }
-            decoder.destroy();
-        }
-        metrics.summaryMetrics.recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
-        return httpRequestBody;
     }
 
 }
