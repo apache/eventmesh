@@ -68,10 +68,6 @@ allprojects {
         delete 'out'
     }
 
-    if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot") as boolean))) {
-        version = version + "-SNAPSHOT"
-    }
-
     checkstyle {
         toolVersion = '9.0'
         ignoreFailures = false
