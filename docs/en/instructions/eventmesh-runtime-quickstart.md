@@ -23,14 +23,14 @@ cd /*YOUR DEPLOY PATH*/EventMesh-master
 gradle clean dist
 ```
 
-You will get **EventMesh_1.3.0-SNAPSHOT.tar.gz** in directory /* YOUR DEPLOY PATH */EventMesh-master/build
+You will get **EventMesh_1.3.0-release.tar.gz** in directory /* YOUR DEPLOY PATH */EventMesh-master/build
 
 ### 1.4 Deployment
 
 - deploy eventmesh-runtime
 
 ```shell
-tar -zxvf Eventmesh_1.3.0-SNAPSHOT.tar.gz
+tar -zxvf Eventmesh_1.3.0-release.tar.gz
 cd conf
 config your eventMesh.properties
 cd ../bin
