@@ -382,7 +382,7 @@ subprojects {
         }
         repositories {
             maven {
-                def releasesRepoUrl = 'https://repository.apache.org/content/repositories/releases/'
+                def releasesRepoUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
                 def snapshotsRepoUrl = 'https://repository.apache.org/content/repositories/snapshots/'
                 url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
                 credentials {
