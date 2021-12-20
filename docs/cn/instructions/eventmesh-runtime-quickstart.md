@@ -111,7 +111,7 @@ eventMesh.connector.plugin.type=rocketmq
 
 ### 3.1 拉取镜像
 
-执行 `docker pull eventmesh/eventmesh-rocketmq:v1.2.0` , 你将会获取到EventMesh的镜像，如下图所示：
+执行 `docker pull eventmesh/eventmesh-rocketmq:v1.3.0` , 你将会获取到EventMesh的镜像，如下图所示：
 
 ![image-20210309155255510](../../images/docker/docker-image.png)
 
@@ -157,7 +157,7 @@ vi rocketmq-client.properties
 执行下面的命令来运行容器
 
 ```shell
-docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.2.0
+docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.3.0
 ```
 
 > -p : 将容器内端口与宿主机端口绑定，容器的端口应与配置文件中的端口一致
@@ -207,7 +207,7 @@ Windows
 
 Linux
 
-- **获取 eventmesh-test_1.2.0-SNAPSHOT.tar.gz**
+- **获取 eventmesh-test_1.3.0-release.tar.gz**
 
   你可以从我们的 **releases** 获取或者**通过源码的方式进行构建**
 
@@ -218,15 +218,15 @@ Linux
   gradle clean testdist testtar -x test`
   ```
 
-  可以在 `/eventmesh-test/build` 目录下获得 **eventmesh-test_1.2.0-SNAPSHOT.tar.gz**
+  可以在 `/eventmesh-test/build` 目录下获得 **eventmesh-test_1.3.0-release.tar.gz**
 
 - **修改配置文件**
 
   ```shell
   #上传
-  upload eventmesh-test_1.2.0-SNAPSHOT.tar.gz
+  upload eventmesh-test_1.3.0-release.tar.gz
   #解压
-  tar -zxvf eventmesh-test_1.2.0-SNAPSHOT.tar.gz
+  tar -zxvf eventmesh-test_1.3.0-release.tar.gz
   #配置
   cd conf
   config your application.properties
