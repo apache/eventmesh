@@ -15,8 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
+package org.apache.eventmesh.grpc.sub.app;
 
-public interface MessageHandler {
-    boolean handle(HandleMsgContext handleMsgContext);
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+public class SpringBootDemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(SpringBootDemoApplication.class, args);
+    }
 }

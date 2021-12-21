@@ -18,7 +18,7 @@ public class MetricsInterceptor implements ServerInterceptor {
     public <ReqT, RespT> ServerCall.Listener<ReqT> interceptCall(
             ServerCall<ReqT, RespT> call, Metadata headers, ServerCallHandler<ReqT, RespT> next) {
         logger.info("cmd={}|{}|client2eventMesh|from={}|to={}", call.getMethodDescriptor().getFullMethodName(),
-            EventMeshConstants.PROTOCOL_GRPC, call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR),IPUtils.getLocalAddress());
+            EventMeshConstants.PROTOCOL_GRPC, call.getAttributes().get(Grpc.TRANSPORT_ATTR_REMOTE_ADDR), IPUtils.getLocalAddress());
         return next.startCall(call, headers);
     }
 }

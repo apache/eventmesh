@@ -43,17 +43,14 @@ public class AsyncPublishInstance {
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
 
-        final String topic = "TEST-TOPIC-HTTP-ASYNC";
+        final String topic = "TEST-TOPIC-GRPC-ASYNC";
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
             .producerGroup("EventMeshTest-producerGroup")
-            .env("env")
-            .idc("idc")
-            .ip(IPUtils.getLocalAddress())
-            .sys("1234")
-            .pid(String.valueOf(ThreadUtils.getPID())).build();
+            .env("env").idc("idc")
+            .sys("1234").build();
 
         EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(eventMeshClientConfig);
 

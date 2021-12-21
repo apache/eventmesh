@@ -43,12 +43,6 @@ public class EventMeshGrpcClientConfig {
     private String idc = "";
 
     @Builder.Default
-    private String ip = "127.0.0.1";
-
-    @Builder.Default
-    private String pid ="0";
-
-    @Builder.Default
     private String sys = "sys123";
 
     @Builder.Default
@@ -73,8 +67,6 @@ public class EventMeshGrpcClientConfig {
                 .append("idc=").append(idc).append(",")
                 .append("producerGroup=").append(producerGroup).append(",")
                 .append("consumerGroup=").append(consumerGroup).append(",")
-                .append("ip=").append(ip).append(",")
-                .append("pid=").append(pid).append(",")
                 .append("sys=").append(sys).append(",")
                 .append("userName=").append(userName).append(",")
                 .append("password=").append("***").append(",")

@@ -5,7 +5,6 @@ import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.SendAsyncMessageProcessor;
 import org.slf4j.Logger;
@@ -33,7 +32,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
             try {
                 sendAsyncMessageProcessor.process(request, responseObserver);
             } catch (Exception e) {
-                logger.error("Error code {}, error message {}", EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode(),
+                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode(),
                     StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg(), e);
                 ServiceUtils.sendResp(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR, e.getMessage(),
                     responseObserver);

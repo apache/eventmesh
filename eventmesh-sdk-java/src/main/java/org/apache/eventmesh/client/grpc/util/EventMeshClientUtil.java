@@ -3,6 +3,8 @@ package org.apache.eventmesh.client.grpc.util;
 import io.cloudevents.SpecVersion;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 
 public class EventMeshClientUtil {
 
@@ -13,8 +15,8 @@ public class EventMeshClientUtil {
         RequestHeader header = RequestHeader.newBuilder()
             .setEnv(clientConfig.getEnv())
             .setIdc(clientConfig.getIdc())
-            .setIp(clientConfig.getIp())
-            .setPid(clientConfig.getPid())
+            .setIp(IPUtils.getLocalAddress())
+            .setPid(Long.toString(ThreadUtils.getPID()))
             .setSys(clientConfig.getSys())
             .setLanguage(clientConfig.getLanguage())
             .setUsername(clientConfig.getUserName())

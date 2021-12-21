@@ -21,8 +21,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.MessageHandler;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.HandleMsgContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +31,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class HTTPMessageHandler implements MessageHandler {
+public class MessageHandler {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -43,26 +41,25 @@ public class HTTPMessageHandler implements MessageHandler {
 
     private final Integer CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD = 10000;
 
-    private static Map<String, Set<AbstractHttpPushRequest>> waitingRequests = Maps.newConcurrentMap();
+    private static Map<String, Set<AbstractPushRequest>> waitingRequests = Maps.newConcurrentMap();
 
-    public HTTPMessageHandler(String consumerGroup, ThreadPoolExecutor pushMsgExecutor) {
+    public MessageHandler(String consumerGroup, ThreadPoolExecutor pushMsgExecutor) {
         this.pushExecutor = pushMsgExecutor;
         waitingRequests.put(consumerGroup, Sets.newConcurrentHashSet());
         SCHEDULER.scheduleAtFixedRate(this::checkTimeout, 0, 1000, TimeUnit.MILLISECONDS);
     }
 
     private void checkTimeout() {
-        waitingRequests.entrySet().stream().forEach(entry -> {
-            for (AbstractHttpPushRequest request : entry.getValue()) {
+        waitingRequests.forEach((key, value) -> {
+            for (AbstractPushRequest request : value) {
                 request.timeout();
-                waitingRequests.get(request.handleMsgContext.getConsumerGroup()).remove(request);
+                waitingRequests.get(request.getHandleMsgContext().getConsumerGroup()).remove(request);
             }
         });
     }
 
-    @Override
-    public boolean handle(final HandleMsgContext handleMsgContext) {
-        Set waitingRequests4Group = MapUtils.getObject(waitingRequests,
+    public boolean handle(String protocol, final HandleMsgContext handleMsgContext) {
+        Set<AbstractPushRequest> waitingRequests4Group = MapUtils.getObject(waitingRequests,
                 handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet());
         if (waitingRequests4Group.size() > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD) {
             logger.warn("waitingRequests is too many, so reject, this message will be send back to MQ, consumerGroup:{}, threshold:{}",
@@ -72,8 +69,10 @@ public class HTTPMessageHandler implements MessageHandler {
 
         try {
             pushExecutor.submit(() -> {
-                AsyncHTTPPushRequest asyncPushRequest = new AsyncHTTPPushRequest(handleMsgContext, waitingRequests);
-                asyncPushRequest.tryHttpRequest();
+                AbstractPushRequest pushRequest = createHttpPushRequest(protocol, handleMsgContext);
+                if (pushRequest != null) {
+                    pushRequest.tryPushRequest();
+                }
             });
             return true;
         } catch (RejectedExecutionException e) {
@@ -81,5 +80,14 @@ public class HTTPMessageHandler implements MessageHandler {
                 //handleMsgContext.getEventMeshHTTPServer().getPushMsgExecutor().getQueue().size(), e);
             return false;
         }
+    }
+
+    private AbstractPushRequest createHttpPushRequest(String protocol, HandleMsgContext handleMsgContext) {
+        if ("grpc".equals(protocol)) {
+            return new HttpPushRequest(handleMsgContext, waitingRequests);
+        } else if ("grpc_stream".equals(protocol)) {
+            return new StreamPushRequest(handleMsgContext, waitingRequests);
+        }
+        return null;
     }
 }
