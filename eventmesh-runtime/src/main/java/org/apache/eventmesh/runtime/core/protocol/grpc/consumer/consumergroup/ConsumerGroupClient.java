@@ -16,13 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
-import lombok.Builder;
-import lombok.Data;
+import io.grpc.stub.StreamObserver;
+import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 
 import java.util.Date;
+
+import lombok.Builder;
+import lombok.Data;
 
 @Builder
 @Data
@@ -36,7 +40,11 @@ public class ConsumerGroupClient {
 
     private String topic;
 
+    private String protocolDesc;
+
     private String url;
+
+    private StreamObserver<EventMeshMessage> eventEmitter;
 
     private SubscriptionMode subscriptionMode;
 
@@ -54,19 +62,18 @@ public class ConsumerGroupClient {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("endPoint={env=").append(env)
-            .append(",idc=").append(idc)
-            .append(",consumerGroup=").append(consumerGroup)
-            .append(",topic=").append(topic)
-            .append(",url=").append(url)
-            .append(",sys=").append(sys)
-            .append(",ip=").append(ip)
-            .append(",pid=").append(pid)
-            .append(",hostname=").append(hostname)
-            .append(",apiVersion=").append(apiVersion)
-            .append(",registerTime=").append("}");
-        return sb.toString();
+        return "endPoint={env=" + env +
+            ",idc=" + idc +
+            ",consumerGroup=" + consumerGroup +
+            ",topic=" + topic +
+            ",protocolDesc=" + protocolDesc +
+            ",url=" + url +
+            ",sys=" + sys +
+            ",ip=" + ip +
+            ",pid=" + pid +
+            ",hostname=" + hostname +
+            ",apiVersion=" + apiVersion +
+            ",registerTime=" + "}";
     }
 }
 

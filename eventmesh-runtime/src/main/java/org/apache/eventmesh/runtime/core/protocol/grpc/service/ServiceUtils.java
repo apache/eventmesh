@@ -26,7 +26,13 @@ public class ServiceUtils {
             && (!StringUtils.isBlank(message.getTtl()));
     }
 
-    public static boolean validateSubscription(Subscription subscription) {
+    public static boolean validateSubscription(String protocol, Subscription subscription) {
+        if (!"grpc".equals(protocol) && !"grpc_stream".equals(protocol)) {
+            return false;
+        }
+        if ("grpc".equals(protocol) && StringUtils.isBlank(subscription.getUrl())) {
+            return false;
+        }
         if (CollectionUtils.isEmpty(subscription.getSubscriptionItemsList())
             || StringUtils.isBlank(subscription.getConsumerGroup())) {
             return false;
@@ -56,4 +62,5 @@ public class ServiceUtils {
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
+
 }

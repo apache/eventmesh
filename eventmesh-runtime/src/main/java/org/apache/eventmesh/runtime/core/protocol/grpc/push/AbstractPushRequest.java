@@ -20,53 +20,33 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.RetryContext;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.RandomUtils;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class AbstractHttpPushRequest extends RetryContext {
+public abstract class AbstractPushRequest extends RetryContext {
 
-    protected static HTTPClientPool httpClientPool = new HTTPClientPool(10);
     protected EventMeshGrpcServer eventMeshGrpcServer;
     protected long createTime = System.currentTimeMillis();
     protected long lastPushTime = System.currentTimeMillis();
 
-    /** <idc, url_list>**/
-    protected Map<String, List<String>> urls;
-
-    protected volatile int startIdx;
     protected EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
     protected GrpcRetryer retryer;
     protected int ttl;
     protected HandleMsgContext handleMsgContext;
     private AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
 
-    private List<String> totalUrls;
-
-    public AbstractHttpPushRequest(HandleMsgContext handleMsgContext) {
+    public AbstractPushRequest(HandleMsgContext handleMsgContext) {
         this.eventMeshGrpcServer = handleMsgContext.getEventMeshGrpcServer();
         this.handleMsgContext = handleMsgContext;
-        this.urls = handleMsgContext.getConsumeTopicConfig().getIdcUrls();
+
         this.eventMeshGrpcConfiguration = handleMsgContext.getEventMeshGrpcServer().getEventMeshGrpcConfiguration();
         this.retryer = handleMsgContext.getEventMeshGrpcServer().getGrpcRetryer();
         this.ttl = handleMsgContext.getTtl();
-
-        this.totalUrls = buildTotalUrls();
-        this.startIdx = RandomUtils.nextInt(0, totalUrls.size());
     }
 
-    public abstract void tryHttpRequest();
+    public abstract void tryPushRequest();
 
     public void delayRetry() {
         if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
@@ -76,28 +56,6 @@ public abstract class AbstractHttpPushRequest extends RetryContext {
         } else {
             complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
         }
-    }
-
-    public String getUrl() {
-        List<String> localIdcUrl = MapUtils.getObject(urls,
-            eventMeshGrpcConfiguration.eventMeshIDC, null);
-        if (CollectionUtils.isNotEmpty(localIdcUrl)) {
-            return localIdcUrl.get((startIdx + retryTimes) % localIdcUrl.size());
-        }
-
-        if (CollectionUtils.isNotEmpty(totalUrls)) {
-            return totalUrls.get((startIdx + retryTimes) % totalUrls.size());
-        }
-
-        return null;
-    }
-
-    private List<String> buildTotalUrls() {
-        Set<String> totalUrls = new HashSet<>();
-        for (List<String> idcUrls : urls.values()) {
-            totalUrls.addAll(idcUrls);
-        }
-        return new ArrayList<>(totalUrls);
     }
 
     public boolean isComplete() {
@@ -112,5 +70,9 @@ public abstract class AbstractHttpPushRequest extends RetryContext {
         if (!isComplete() && System.currentTimeMillis() - lastPushTime >= ttl) {
             delayRetry();
         }
+    }
+
+    public HandleMsgContext getHandleMsgContext() {
+        return handleMsgContext;
     }
 }

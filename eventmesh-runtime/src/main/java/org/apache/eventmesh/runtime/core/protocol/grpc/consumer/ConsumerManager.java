@@ -48,7 +48,10 @@ public class ConsumerManager {
     public synchronized void registerClient(ConsumerGroupClient newClient) {
         String consumerGroup = newClient.getConsumerGroup();
         String topic = newClient.getTopic();
+        String protocol = newClient.getProtocolDesc();
         String url = newClient.getUrl();
+        String ip = newClient.getIp();
+        String pid = newClient.getPid();
         SubscriptionMode subscriptionMode = newClient.getSubscriptionMode();
         List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
 
@@ -59,7 +62,14 @@ public class ConsumerManager {
         } else {
             boolean isContains = false;
             for (ConsumerGroupClient localClient : localClients) {
-                if (StringUtils.equals(localClient.getTopic(), topic) && StringUtils.equals(localClient.getUrl(), url)
+                if ("grpc".equals(protocol) && StringUtils.equals(localClient.getTopic(), topic)
+                    && StringUtils.equals(localClient.getUrl(), url)
+                    && localClient.getSubscriptionMode().equals(subscriptionMode)) {
+                    isContains = true;
+                    localClient.setLastUpTime(newClient.getLastUpTime());
+                    break;
+                } else if ("grpc_stream".equals(protocol) && StringUtils.equals(localClient.getTopic(), topic)
+                    && StringUtils.equals(localClient.getIp(), ip) && StringUtils.equals(localClient.getPid(), pid)
                     && localClient.getSubscriptionMode().equals(subscriptionMode)) {
                     isContains = true;
                     localClient.setLastUpTime(newClient.getLastUpTime());
@@ -84,11 +94,18 @@ public class ConsumerManager {
         Set<String> oldTopicConfigs = eventMeshConsumer.buildTopicConfig();
         List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
         for (ConsumerGroupClient client : localClients) {
+            String protocolDesc = client.getProtocolDesc();
             String topic = client.getTopic();
             String idc = client.getIdc();
             String url = client.getUrl();
+            String ip = client.getIp();
+            String pid = client.getPid();
             SubscriptionMode subscriptionMode = client.getSubscriptionMode();
-            eventMeshConsumer.addTopicConfig(topic, subscriptionMode, idc, url);
+            if ("grpc".equals(protocolDesc)) {
+                eventMeshConsumer.addTopicConfig(topic, subscriptionMode, protocolDesc, idc, url);
+            } else if ("grpc_stream".equals(protocolDesc)) {
+                eventMeshConsumer.addTopicConfig(topic, subscriptionMode, protocolDesc, idc, ip, pid, client.getEventEmitter());
+            }
         }
 
         // start up eventMeshConsumer the first time

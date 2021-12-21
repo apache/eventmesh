@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.eventmesh.grpc.sub.service;
+package org.apache.eventmesh.grpc.sub.app.service;
 
 import org.apache.eventmesh.client.grpc.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
@@ -26,7 +26,6 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.Subscriptio
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionType;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.grpc.pub.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
@@ -47,7 +46,7 @@ public class SubService implements InitializingBean {
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
     final SubscriptionItem subscriptionItem = SubscriptionItem.newBuilder()
-        .setTopic("TEST-TOPIC-HTTP-ASYNC")
+        .setTopic("TEST-TOPIC-GRPC-ASYNC")
         .setMode(SubscriptionMode.CLUSTERING)
         .setType(SubscriptionType.ASYNC)
         .build();
@@ -76,11 +75,8 @@ public class SubService implements InitializingBean {
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
             .consumerGroup("EventMeshTest-consumerGroup")
-            .env(env)
-            .idc(idc)
-            .ip(IPUtils.getLocalAddress())
-            .sys(subsys)
-            .pid(String.valueOf(ThreadUtils.getPID())).build();
+            .env(env).idc(idc)
+            .sys(subsys).build();
 
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();

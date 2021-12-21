@@ -15,16 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.grpc.sub;
+package org.apache.eventmesh.client.grpc;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import java.util.Optional;
 
-@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
-public class SpringBootDemoApplication {
+@FunctionalInterface
+public interface ReceiveMsgHook<EventMeshMessage> {
 
-    public static void main(String[] args) {
-        SpringApplication.run(SpringBootDemoApplication.class, args);
-    }
+    /**
+     * Handle the received message, return the response message.
+     *
+     * @param msg
+     * @return
+     */
+    Optional<EventMeshMessage> handle(EventMeshMessage msg);
+
 }

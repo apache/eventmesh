@@ -2,6 +2,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
@@ -10,9 +11,15 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ConsumerService;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ProducerService;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -37,6 +44,8 @@ public class EventMeshGrpcServer {
 
     private ThreadPoolExecutor pushMsgExecutor;
 
+    private List<CloseableHttpClient> httpClientPool;
+
     public EventMeshGrpcServer(EventMeshGrpcConfiguration eventMeshGrpcConfiguration) {
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
     }
@@ -46,7 +55,7 @@ public class EventMeshGrpcServer {
 
         initThreadPool();
 
-        int serverPort = eventMeshGrpcConfiguration.grpcServerPort;
+        initHttpClientPool();
 
         producerManager = new ProducerManager(this);
         producerManager.init();
@@ -56,6 +65,8 @@ public class EventMeshGrpcServer {
 
         grpcRetryer = new GrpcRetryer(this);
         grpcRetryer.init();
+
+        int serverPort = eventMeshGrpcConfiguration.grpcServerPort;
 
         server = ServerBuilder.forPort(serverPort)
             .intercept(new MetricsInterceptor())
@@ -86,6 +97,7 @@ public class EventMeshGrpcServer {
         grpcRetryer.shutdown();
 
         shutdownThreadPools();
+        shutdownHttpClientPool();
 
         server.shutdown();
 
@@ -120,6 +132,11 @@ public class EventMeshGrpcServer {
         return pushMsgExecutor;
     }
 
+    public CloseableHttpClient getHttpClient() {
+        int size = httpClientPool.size();
+        return httpClientPool.get(RandomUtils.nextInt(size, 2 * size) % size);
+    }
+
     private void initThreadPool() {
         BlockingQueue<Runnable> sendMsgThreadPoolQueue =
             new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.eventMeshServerSendMsgBlockQSize);
@@ -142,9 +159,30 @@ public class EventMeshGrpcServer {
                 "eventMesh-grpc-pushMsg-", true);
     }
 
+    private void initHttpClientPool() {
+        httpClientPool = new LinkedList<>();
+        for (int i = 0; i < 8; i++) {
+            CloseableHttpClient client = HttpClients.createDefault();
+            httpClientPool.add(client);
+        }
+    }
+
     private void shutdownThreadPools() {
         sendMsgExecutor.shutdown();
         subscribeMsgExecutor.shutdown();
         pushMsgExecutor.shutdown();
+    }
+
+    private void shutdownHttpClientPool() {
+        Iterator<CloseableHttpClient> itr = httpClientPool.iterator();
+        while (itr.hasNext()) {
+            CloseableHttpClient client = itr.next();
+            try {
+                client.close();
+            } catch (Exception e) {
+                // ignored
+            }
+            itr.remove();
+        }
     }
 }

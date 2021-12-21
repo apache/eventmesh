@@ -21,12 +21,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Sets;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.JsonException;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
@@ -38,7 +42,6 @@ import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -55,29 +58,46 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-public class AsyncHTTPPushRequest extends AbstractHttpPushRequest {
+public class HttpPushRequest extends AbstractPushRequest {
 
-    public Logger messageLogger = LoggerFactory.getLogger("message");
+    private Logger messageLogger = LoggerFactory.getLogger("message");
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    private Logger cmdLogger = LoggerFactory.getLogger("cmd");
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-    public String currPushUrl;
-    private Map<String, Set<AbstractHttpPushRequest>> waitingRequests;
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public AsyncHTTPPushRequest(HandleMsgContext handleMsgContext,
-                                Map<String, Set<AbstractHttpPushRequest>> waitingRequests) {
+    /**
+     *  Key: idc
+     *  Value: list of URLs
+     **/
+    private final Map<String, List<String>> urls;
+
+    private List<String> totalUrls;
+
+    private volatile int startIdx;
+
+    private String currPushUrl;
+
+    private Map<String, Set<AbstractPushRequest>> waitingRequests;
+
+    public HttpPushRequest(HandleMsgContext handleMsgContext,
+                           Map<String, Set<AbstractPushRequest>> waitingRequests) {
         super(handleMsgContext);
         this.waitingRequests = waitingRequests;
+
+        this.urls = handleMsgContext.getConsumeTopicConfig().getIdcUrls();
+        this.totalUrls = buildTotalUrls();
+        this.startIdx = RandomUtils.nextInt(0, totalUrls.size());
     }
 
     @Override
-    public void tryHttpRequest() {
+    public void tryPushRequest() {
 
         currPushUrl = getUrl();
 
@@ -115,7 +135,9 @@ public class AsyncHTTPPushRequest extends AbstractHttpPushRequest {
 
             ProtocolTransportObject protocolTransportObject =
                 protocolAdaptor.fromCloudEvent(handleMsgContext.getEvent());
-            content = ((HttpCommand) protocolTransportObject).getBody().toMap().get("content").toString();
+
+            EventMeshMessage eventMeshMessage = ((EventMeshMessageWrapper) protocolTransportObject).getMessage();
+            content = eventMeshMessage.getContent();
         } catch (Exception ex) {
             return;
         }
@@ -156,10 +178,10 @@ public class AsyncHTTPPushRequest extends AbstractHttpPushRequest {
             IPUtils.getLocalAddress(), currPushUrl);
 
         try {
-            httpClientPool.getClient().execute(builder, new ResponseHandler<Object>() {
+            eventMeshGrpcServer.getHttpClient().execute(builder, new ResponseHandler<Object>() {
                 @Override
                 public Object handleResponse(HttpResponse response) {
-                    removeWaitingMap(AsyncHTTPPushRequest.this);
+                    removeWaitingMap(HttpPushRequest.this);
                     long cost = System.currentTimeMillis() - lastPushTime;
                     //eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPPushTimeCost(cost);
                     if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
@@ -251,7 +273,7 @@ public class AsyncHTTPPushRequest extends AbstractHttpPushRequest {
         return sb.toString();
     }
 
-    ClientRetCode processResponseContent(String content) {
+    private ClientRetCode processResponseContent(String content) {
         if (StringUtils.isBlank(content)) {
             return ClientRetCode.FAIL;
         }
@@ -281,7 +303,7 @@ public class AsyncHTTPPushRequest extends AbstractHttpPushRequest {
         }
     }
 
-    private void addToWaitingMap(AsyncHTTPPushRequest request) {
+    private void addToWaitingMap(HttpPushRequest request) {
         if (waitingRequests.containsKey(request.handleMsgContext.getConsumerGroup())) {
             waitingRequests.get(request.handleMsgContext.getConsumerGroup()).add(request);
             return;
@@ -291,7 +313,7 @@ public class AsyncHTTPPushRequest extends AbstractHttpPushRequest {
         waitingRequests.get(request.handleMsgContext.getConsumerGroup()).add(request);
     }
 
-    private void removeWaitingMap(AsyncHTTPPushRequest request) {
+    private void removeWaitingMap(HttpPushRequest request) {
         if (waitingRequests.containsKey(request.handleMsgContext.getConsumerGroup())) {
             waitingRequests.get(request.handleMsgContext.getConsumerGroup()).remove(request);
         }
@@ -299,7 +321,29 @@ public class AsyncHTTPPushRequest extends AbstractHttpPushRequest {
 
     @Override
     public boolean retry() {
-        tryHttpRequest();
+        tryPushRequest();
         return true;
+    }
+
+    private String getUrl() {
+        List<String> localIdcUrl = MapUtils.getObject(urls,
+            eventMeshGrpcConfiguration.eventMeshIDC, null);
+        if (CollectionUtils.isNotEmpty(localIdcUrl)) {
+            return localIdcUrl.get((startIdx + retryTimes) % localIdcUrl.size());
+        }
+
+        if (CollectionUtils.isNotEmpty(totalUrls)) {
+            return totalUrls.get((startIdx + retryTimes) % totalUrls.size());
+        }
+
+        return null;
+    }
+
+    private List<String> buildTotalUrls() {
+        Set<String> totalUrls = new HashSet<>();
+        for (List<String> idcUrls : urls.values()) {
+            totalUrls.addAll(idcUrls);
+        }
+        return new ArrayList<>(totalUrls);
     }
 }
