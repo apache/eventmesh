@@ -5,6 +5,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
+import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat.ClientType;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
@@ -13,32 +15,51 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.Gr
 public class ServiceUtils {
 
     public static boolean validateHeader(RequestHeader header) {
-        return !StringUtils.isBlank(header.getIdc())
-            && !StringUtils.isBlank(header.getPid())
+        return StringUtils.isNotEmpty(header.getIdc())
+            && StringUtils.isNotEmpty(header.getEnv())
+            && StringUtils.isNotEmpty(header.getIp())
+            && StringUtils.isNotEmpty(header.getPid())
             && StringUtils.isNumeric(header.getPid())
-            && !StringUtils.isBlank(header.getSys());
+            && StringUtils.isNotEmpty(header.getSys());
     }
 
     public static boolean validateMessage(EventMeshMessage message) {
-        return !StringUtils.isBlank(message.getUniqueId())
-            && !StringUtils.isBlank(message.getProducerGroup())
-            && !StringUtils.isBlank(message.getTopic())
-            && !StringUtils.isBlank(message.getContent())
-            && (!StringUtils.isBlank(message.getTtl()));
+        return StringUtils.isNotEmpty(message.getUniqueId())
+            && StringUtils.isNotEmpty(message.getProducerGroup())
+            && StringUtils.isNotEmpty(message.getTopic())
+            && StringUtils.isNotEmpty(message.getContent())
+            && StringUtils.isNotEmpty(message.getTtl());
     }
 
     public static boolean validateSubscription(GrpcType grpcType, Subscription subscription) {
-        if (GrpcType.WEBHOOK.equals(grpcType) && StringUtils.isBlank(subscription.getUrl())) {
+        if (GrpcType.WEBHOOK.equals(grpcType) && StringUtils.isEmpty(subscription.getUrl())) {
             return false;
         }
         if (CollectionUtils.isEmpty(subscription.getSubscriptionItemsList())
-            || StringUtils.isBlank(subscription.getConsumerGroup())) {
+            || StringUtils.isEmpty(subscription.getConsumerGroup())) {
             return false;
         }
         for (Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
-            if (StringUtils.isBlank(item.getTopic())
+            if (StringUtils.isEmpty(item.getTopic())
                 || item.getMode() == Subscription.SubscriptionItem.SubscriptionMode.UNRECOGNIZED
                 || item.getType() == Subscription.SubscriptionItem.SubscriptionType.UNRECOGNIZED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean validateHeartBeat(Heartbeat heartbeat) {
+        if (ClientType.SUB.equals(heartbeat.getClientType())
+            && StringUtils.isEmpty(heartbeat.getConsumerGroup())) {
+            return false;
+        }
+        if (ClientType.PUB.equals(heartbeat.getClientType())
+            && StringUtils.isEmpty(heartbeat.getProducerGroup())) {
+            return false;
+        }
+        for (Heartbeat.HeartbeatItem item : heartbeat.getHeartbeatItemsList()) {
+            if (StringUtils.isEmpty(item.getTopic())) {
                 return false;
             }
         }
