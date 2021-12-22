@@ -50,6 +50,12 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
         eventMeshGrpcConsumer.subscribeStream(subscription);
 
+        try {
+            Thread.sleep(12000);
+        } catch (Exception e) {
+
+        }
+        eventMeshGrpcConsumer.unsubscribe(subscription);
     }
 
     @Override

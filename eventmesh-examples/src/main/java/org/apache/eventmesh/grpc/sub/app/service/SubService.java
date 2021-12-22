@@ -74,7 +74,7 @@ public class SubService implements InitializingBean {
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup("EventMeshTest-consumerGroup")
+            .consumerGroup("EventMeshTest-consumerGroup2")
             .env(env).idc(idc)
             .sys(subsys).build();
 
@@ -99,11 +99,7 @@ public class SubService implements InitializingBean {
     public void cleanup() {
         logger.info("start destory ....");
         try {
-           /* List<String> unSubList = new ArrayList<>();
-            for (SubscriptionItem item : topicList) {
-                unSubList.add(item.getTopic());
-            }*/
-           // eventMeshHttpConsumer.unsubscribe(unSubList, url);
+            eventMeshGrpcConsumer.unsubscribe(subscription);
         } catch (Exception e) {
             e.printStackTrace();
         }

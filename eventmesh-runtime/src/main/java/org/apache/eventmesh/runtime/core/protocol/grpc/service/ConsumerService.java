@@ -11,6 +11,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.SubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.SubscribeStreamProcessor;
+import org.apache.eventmesh.runtime.core.protocol.grpc.processor.UnsubscribeProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,5 +73,16 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     }
 
     public void unsubscribe(Subscription request, StreamObserver<Response> responseObserver) {
+        threadPoolExecutor.submit(() -> {
+            UnsubscribeProcessor unsubscribeProcessor = new UnsubscribeProcessor(eventMeshGrpcServer);
+            try {
+                unsubscribeProcessor.process(request, responseObserver);
+            } catch (Exception e) {
+                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_UNSUBSCRIBE_ERR.getRetCode(),
+                    StatusCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg(), e);
+                ServiceUtils.sendResp(StatusCode.EVENTMESH_UNSUBSCRIBE_ERR, e.getMessage(),
+                    responseObserver);
+            }
+        });
     }
 }
