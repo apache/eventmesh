@@ -10,6 +10,7 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.interceptor.MetricsInterc
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ConsumerService;
+import org.apache.eventmesh.runtime.core.protocol.grpc.service.HeartbeatService;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ProducerService;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -71,6 +72,7 @@ public class EventMeshGrpcServer {
             .intercept(new MetricsInterceptor())
             .addService(new ProducerService(this, sendMsgExecutor))
             .addService(new ConsumerService(this, clientMgmtExecutor))
+            .addService(new HeartbeatService(this, clientMgmtExecutor))
             .build();
 
         logger.info("GRPCServer[port={}] started", serverPort);
