@@ -33,6 +33,10 @@ public abstract class ConsumerGroupTopicConfig {
 
     public abstract void registerClient(ConsumerGroupClient client);
 
+    public abstract void deregisterClient(ConsumerGroupClient client);
+
+    public abstract int getSize();
+
     public String getConsumerGroup() {
         return consumerGroup;
     }

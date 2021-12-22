@@ -72,7 +72,13 @@ public class EventMeshConsumer {
         this.broadcastMqConsumer = new MQConsumerWrapper(eventMeshGrpcConfiguration.eventMeshConnectorPluginType);
     }
 
-    public synchronized void registerClient(ConsumerGroupClient client) {
+    /**
+     * Register client's topic information and return true if this EventMeshConsumer required restart because of the topic changes
+     * @param client ConsumerGroupClient
+     * @return true if the underlining EventMeshConsumer needs to restart later; false otherwise
+     */
+    public synchronized boolean registerClient(ConsumerGroupClient client) {
+        boolean requireRestart = false;
         GrpcType grpcType = client.getGrpcType();
         String topic = client.getTopic();
         SubscriptionMode subscriptionMode = client.getSubscriptionMode();
@@ -81,16 +87,29 @@ public class EventMeshConsumer {
         if (topicConfig == null) {
             topicConfig = ConsumerGroupTopicConfig.buildTopicConfig(consumerGroup, topic, subscriptionMode, grpcType);
             consumerGroupTopicConfig.put(topic, topicConfig);
+            requireRestart = true;
         }
         topicConfig.registerClient(client);
+        return requireRestart;
     }
 
-    public synchronized Set<String> buildTopicConfig() {
-        Set<String> topicConfigs = new HashSet<>();
-        for (ConsumerGroupTopicConfig topicConfig : consumerGroupTopicConfig.values()) {
-            topicConfigs.add(topicConfig.getTopic() + topicConfig.getSubscriptionMode().name());
+    /**
+     * Deregister client's topic information and return true if this EventMeshConsumer required restart because of the topic changes
+     * @param client ConsumerGroupClient
+     * @return true if the underlining EventMeshConsumer needs to restart later; false otherwise
+     */
+    public synchronized boolean deregisterClient(ConsumerGroupClient client) {
+        boolean requireRestart = false;
+        String topic = client.getTopic();
+        ConsumerGroupTopicConfig topicConfig = consumerGroupTopicConfig.get(topic);
+        if (topicConfig != null) {
+            topicConfig.deregisterClient(client);
+            if (topicConfig.getSize() == 0) {
+                consumerGroupTopicConfig.remove(topic);
+                requireRestart = true;
+            }
         }
-        return topicConfigs;
+        return requireRestart;
     }
 
     public synchronized void init() throws Exception {
@@ -115,6 +134,11 @@ public class EventMeshConsumer {
     }
 
     public synchronized void start() throws Exception {
+        if (consumerGroupTopicConfig.size() == 0) {
+            // no topics, don't start the consumer
+            return;
+        }
+
         for (Map.Entry<String, ConsumerGroupTopicConfig> entry : consumerGroupTopicConfig.entrySet()) {
             subscribe(entry.getKey(), entry.getValue().getSubscriptionMode());
         }

@@ -39,14 +39,33 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         String clientIp = client.getIp();
         String clientPid = client.getPid();
         StreamObserver<EventMeshMessage> emitter = client.getEventEmitter();
+        Map<String, StreamObserver<EventMeshMessage>> emitters = idcEmitters.computeIfAbsent(idc, k -> new HashMap<>());
+        emitters.put(clientIp + ":" + clientPid, emitter);
+    }
+
+    @Override
+    public void deregisterClient(ConsumerGroupClient client) {
+        String idc = client.getIdc();
+        String clientIp = client.getIp();
+        String clientPid = client.getPid();
+
         Map<String, StreamObserver<EventMeshMessage>> emitters = idcEmitters.get(idc);
         if (emitters == null) {
-            emitters = new HashMap<>();
-            emitters.put(clientIp + clientPid, emitter);
-            idcEmitters.put(idc, emitters);
-        } else if (!emitters.containsKey(clientIp + ":" + clientPid)) {
-            emitters.put(clientIp + clientPid, emitter);
+            return;
         }
+        emitters.remove(clientIp + ":" + clientPid);
+        if (emitters.size() == 0) {
+            idcEmitters.remove(idc);
+        }
+    }
+
+    @Override
+    public int getSize() {
+        int total = 0;
+        for (Map<String, StreamObserver<EventMeshMessage>> emitters : idcEmitters.values()) {
+            total += emitters.size();
+        }
+        return total;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
+import io.grpc.stub.StreamObserver;
+import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,14 +35,34 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
         }
         String idc = client.getIdc();
         String url = client.getUrl();
-        List<String> urls = idcUrls.get(idc);
-        if (urls == null) {
-            urls = new LinkedList<>();
-            urls.add(url);
-            idcUrls.put(idc, urls);
-        } else if (!urls.contains(url)) {
+        List<String> urls = idcUrls.computeIfAbsent(idc, k -> new LinkedList<>());
+        if (!urls.contains(url)) {
             urls.add(url);
         }
+    }
+
+    @Override
+    public void deregisterClient(ConsumerGroupClient client) {
+        String idc = client.getIdc();
+        String url = client.getUrl();
+
+        List<String> urls = idcUrls.get(idc);
+        if (urls == null) {
+            return;
+        }
+        urls.remove(url);
+        if (urls.size() == 0) {
+            idcUrls.remove(idc);
+        }
+    }
+
+    @Override
+    public int getSize() {
+        int total = 0;
+        for (List<String> urls : idcUrls.values()) {
+            total += urls.size();
+        }
+        return total;
     }
 
     @Override

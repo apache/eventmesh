@@ -38,7 +38,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     public Response subscribe(Subscription subscription) {
-        logger.info("Subscribe topic " + subscription.toString());
+        logger.info("Create subscription: " + subscription.toString());
         ConsumerServiceGrpc.ConsumerServiceBlockingStub consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
 
         Subscription enhancedSubscription = Subscription.newBuilder(subscription)
@@ -51,7 +51,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     public void subscribeStream(Subscription subscription) {
-        logger.info("Subscribe streaming topic " + subscription.toString());
+        logger.info("Create streaming subscription: " + subscription.toString());
         ConsumerServiceGrpc.ConsumerServiceBlockingStub consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
 
         Subscription enhancedSubscription = Subscription.newBuilder(subscription)
@@ -63,6 +63,19 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         ListenerThread listenerThread = new ListenerThread(msgIterator, listener);
         listenerThreads.add(listenerThread);
         listenerThread.start();
+    }
+
+    public Response unsubscribe(Subscription subscription) {
+        logger.info("Removing subscription: " + subscription.toString());
+        ConsumerServiceGrpc.ConsumerServiceBlockingStub consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
+        Subscription enhancedSubscription = Subscription.newBuilder(subscription)
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig))
+            .setConsumerGroup(clientConfig.getConsumerGroup())
+            .build();
+
+        Response response = consumerClient.unsubscribe(enhancedSubscription);
+        logger.info("Received response " + response.toString());
+        return response;
     }
 
     public void registerListener(ReceiveMsgHook<EventMeshMessage> listener) {

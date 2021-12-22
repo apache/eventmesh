@@ -6,6 +6,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
@@ -19,15 +20,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class SubscribeProcessor {
+public class UnsubscribeProcessor {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     private EventMeshGrpcServer eventMeshGrpcServer;
 
-    private GrpcType grpcType = GrpcType.WEBHOOK;
-
-    public SubscribeProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
+    public UnsubscribeProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
@@ -40,7 +39,7 @@ public class SubscribeProcessor {
             return;
         }
 
-        if (!ServiceUtils.validateSubscription(grpcType, subscription)) {
+        if (!ServiceUtils.validateSubscription(null, subscription)) {
             ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, responseObserver);
             return;
         }
@@ -51,8 +50,8 @@ public class SubscribeProcessor {
         String url = subscription.getUrl();
         List<Subscription.SubscriptionItem> subscriptionItems = subscription.getSubscriptionItemsList();
 
-        // Collect new clients in the subscription
-        List<ConsumerGroupClient> newClients = new LinkedList<>();
+        // Collect clients to remove in the unsubscribe
+        List<ConsumerGroupClient> removeClients = new LinkedList<>();
         for (Subscription.SubscriptionItem item : subscriptionItems) {
             ConsumerGroupClient newClient = ConsumerGroupClient.builder()
                 .env(header.getEnv())
@@ -62,25 +61,25 @@ public class SubscribeProcessor {
                 .pid(header.getPid())
                 .consumerGroup(consumerGroup)
                 .topic(item.getTopic())
-                .grpcType(grpcType)
                 .subscriptionMode(item.getMode())
                 .url(url)
                 .lastUpTime(new Date())
                 .build();
-            newClients.add(newClient);
+            removeClients.add(newClient);
+            consumerManager.deregisterClient(newClient);
         }
 
-        // register new clients into ConsumerManager
-        for (ConsumerGroupClient newClient : newClients) {
-            consumerManager.registerClient(newClient);
+        // deregister clients from ConsumerManager
+        for (ConsumerGroupClient client : removeClients) {
+            consumerManager.deregisterClient(client);
         }
 
-        // register new clients into EventMeshConsumer
+        // deregister clients from EventMeshConsumer
         EventMeshConsumer eventMeshConsumer = consumerManager.getEventMeshConsumer(consumerGroup);
 
         boolean requireRestart = false;
-        for (ConsumerGroupClient newClient : newClients) {
-            if (eventMeshConsumer.registerClient(newClient)) {
+        for (ConsumerGroupClient client : removeClients) {
+            if (eventMeshConsumer.deregisterClient(client)) {
                 requireRestart = true;
             }
         }
@@ -93,6 +92,6 @@ public class SubscribeProcessor {
             logger.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
 
-        ServiceUtils.sendResp(StatusCode.SUCCESS, "subscribe success", responseObserver);
+        ServiceUtils.sendResp(StatusCode.SUCCESS, "unsubscribe success", responseObserver);
     }
 }

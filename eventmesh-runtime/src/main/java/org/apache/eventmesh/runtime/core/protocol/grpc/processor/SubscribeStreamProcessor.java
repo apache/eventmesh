@@ -8,6 +8,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
@@ -16,8 +17,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SubscribeStreamProcessor {
 
@@ -50,6 +53,8 @@ public class SubscribeStreamProcessor {
         String consumerGroup = subscription.getConsumerGroup();
         List<Subscription.SubscriptionItem> subscriptionItems = subscription.getSubscriptionItemsList();
 
+        // Collect new clients in subscription
+        List<ConsumerGroupClient> newClients = new LinkedList<>();
         for (Subscription.SubscriptionItem item : subscriptionItems) {
             ConsumerGroupClient newClient = ConsumerGroupClient.builder()
                 .env(header.getEnv())
@@ -64,14 +69,42 @@ public class SubscribeStreamProcessor {
                 .eventEmitter(responseObserver)
                 .lastUpTime(new Date())
                 .build();
+            newClients.add(newClient);
+        }
 
+        // register new clients into ConsumerManager
+        for (ConsumerGroupClient newClient : newClients) {
             consumerManager.registerClient(newClient);
         }
 
-        boolean restart = consumerManager.restartEventMeshConsumer(consumerGroup);
-        if (!restart) {
+        // register new clients into EventMeshConsumer
+        EventMeshConsumer eventMeshConsumer = consumerManager.getEventMeshConsumer(consumerGroup);
+
+        boolean requireRestart = false;
+        for (ConsumerGroupClient newClient : newClients) {
+            if (eventMeshConsumer.registerClient(newClient)) {
+                requireRestart = true;
+            }
+        }
+
+        // restart consumer group if required
+        if (requireRestart) {
+            logger.info("ConsumerGroup {} topic info changed, restart EventMesh Consumer", consumerGroup);
+            consumerManager.restartEventMeshConsumer(consumerGroup);
+        } else {
             logger.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
+
+        // send back subscribe success response
+        Map<String, String> resp = new HashMap<>();
+        resp.put("respCode", StatusCode.SUCCESS.getRetCode());
+        resp.put("respMsg", "subscribe success");
+
+        EventMeshMessage eventMeshMessage = EventMeshMessage.newBuilder()
+            .setHeader(header)
+            .setContent(JsonUtils.serialize(resp))
+            .build();
+        responseObserver.onNext(eventMeshMessage);
     }
 
     private void sendResp(Subscription subscription, StatusCode code, StreamObserver<EventMeshMessage> responseObserver) {

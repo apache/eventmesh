@@ -1,5 +1,6 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
@@ -9,7 +10,9 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.Gr
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Event;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +47,15 @@ public class ConsumerManager {
             consumer.shutdown();
         }
         logger.info("Grpc ConsumerManager shutdown......");
+    }
+
+    public EventMeshConsumer getEventMeshConsumer(String consumerGroup) {
+        EventMeshConsumer consumer = consumerTable.get(consumerGroup);
+        if (consumer == null) {
+            consumer = new EventMeshConsumer(eventMeshGrpcServer, consumerGroup);
+            consumerTable.put(consumerGroup, consumer);
+        }
+        return consumer;
     }
 
     public synchronized void registerClient(ConsumerGroupClient newClient) {
@@ -83,37 +95,48 @@ public class ConsumerManager {
         }
     }
 
-    public synchronized boolean restartEventMeshConsumer(String consumerGroup) throws Exception {
+    public synchronized void deregisterClient(ConsumerGroupClient client) {
+        String consumerGroup = client.getConsumerGroup();
+        List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
+        if (CollectionUtils.isEmpty(localClients)) {
+            return;
+        }
+
+        Iterator<ConsumerGroupClient> iterator = localClients.iterator();
+        while (iterator.hasNext()) {
+            ConsumerGroupClient localClient = iterator.next();
+            if (StringUtils.equals(localClient.getTopic(), client.getTopic())
+                && localClient.getSubscriptionMode().equals(client.getSubscriptionMode())) {
+
+                // close the GRPC client stream before removing it
+                closeEventStream(localClient);
+                iterator.remove();
+            }
+        }
+
+        if (localClients.size() == 0) {
+            clientTable.remove(consumerGroup);
+        }
+    }
+
+    private void closeEventStream(ConsumerGroupClient client) {
+        if (client.getEventEmitter() != null) {
+            client.getEventEmitter().onCompleted();
+        }
+    }
+
+    public synchronized void restartEventMeshConsumer(String consumerGroup) throws Exception {
         EventMeshConsumer eventMeshConsumer = consumerTable.get(consumerGroup);
 
         if (eventMeshConsumer == null) {
-            eventMeshConsumer = new EventMeshConsumer(eventMeshGrpcServer, consumerGroup);
-            consumerTable.put(consumerGroup, eventMeshConsumer);
+            return;
+        }
+
+        if (eventMeshConsumer.getStatus() == null) {
             eventMeshConsumer.init();
+        } else if (ServiceState.RUNNING.equals(eventMeshConsumer.getStatus())) {
+            eventMeshConsumer.shutdown();
         }
-
-        Set<String> oldTopicConfigs = eventMeshConsumer.buildTopicConfig();
-        List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
-        for (ConsumerGroupClient client : localClients) {
-            eventMeshConsumer.registerClient(client);
-        }
-
-        // start up eventMeshConsumer the first time
-        if (ServiceState.INITED.equals(eventMeshConsumer.getStatus())) {
-            eventMeshConsumer.start();
-            return true;
-        }
-
-        // determine if restart eventMeshConsumer required
-        Set<String> newTopicConfigs = eventMeshConsumer.buildTopicConfig();
-        if (!oldTopicConfigs.equals(newTopicConfigs)) {
-            logger.info("Consumergroup {} topic info changed, restart EventMeshConsumer.", consumerGroup);
-            if (ServiceState.RUNNING.equals(eventMeshConsumer.getStatus())) {
-                eventMeshConsumer.shutdown();
-            }
-            eventMeshConsumer.start();
-            return true;
-        }
-        return false;
+        eventMeshConsumer.start();
     }
 }
