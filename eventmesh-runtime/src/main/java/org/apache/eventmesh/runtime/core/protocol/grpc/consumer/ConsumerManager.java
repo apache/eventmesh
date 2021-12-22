@@ -5,6 +5,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.Subscriptio
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,7 @@ public class ConsumerManager {
     public synchronized void registerClient(ConsumerGroupClient newClient) {
         String consumerGroup = newClient.getConsumerGroup();
         String topic = newClient.getTopic();
-        String protocol = newClient.getProtocolDesc();
+        GrpcType grpcType = newClient.getGrpcType();
         String url = newClient.getUrl();
         String ip = newClient.getIp();
         String pid = newClient.getPid();
@@ -62,13 +63,13 @@ public class ConsumerManager {
         } else {
             boolean isContains = false;
             for (ConsumerGroupClient localClient : localClients) {
-                if ("grpc".equals(protocol) && StringUtils.equals(localClient.getTopic(), topic)
+                if (GrpcType.WEBHOOK.equals(grpcType) && StringUtils.equals(localClient.getTopic(), topic)
                     && StringUtils.equals(localClient.getUrl(), url)
                     && localClient.getSubscriptionMode().equals(subscriptionMode)) {
                     isContains = true;
                     localClient.setLastUpTime(newClient.getLastUpTime());
                     break;
-                } else if ("grpc_stream".equals(protocol) && StringUtils.equals(localClient.getTopic(), topic)
+                } else if (GrpcType.STREAM.equals(grpcType) && StringUtils.equals(localClient.getTopic(), topic)
                     && StringUtils.equals(localClient.getIp(), ip) && StringUtils.equals(localClient.getPid(), pid)
                     && localClient.getSubscriptionMode().equals(subscriptionMode)) {
                     isContains = true;
@@ -82,7 +83,7 @@ public class ConsumerManager {
         }
     }
 
-    public void restartEventMeshConsumer(String consumerGroup) throws Exception {
+    public synchronized boolean restartEventMeshConsumer(String consumerGroup) throws Exception {
         EventMeshConsumer eventMeshConsumer = consumerTable.get(consumerGroup);
 
         if (eventMeshConsumer == null) {
@@ -94,24 +95,13 @@ public class ConsumerManager {
         Set<String> oldTopicConfigs = eventMeshConsumer.buildTopicConfig();
         List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
         for (ConsumerGroupClient client : localClients) {
-            String protocolDesc = client.getProtocolDesc();
-            String topic = client.getTopic();
-            String idc = client.getIdc();
-            String url = client.getUrl();
-            String ip = client.getIp();
-            String pid = client.getPid();
-            SubscriptionMode subscriptionMode = client.getSubscriptionMode();
-            if ("grpc".equals(protocolDesc)) {
-                eventMeshConsumer.addTopicConfig(topic, subscriptionMode, protocolDesc, idc, url);
-            } else if ("grpc_stream".equals(protocolDesc)) {
-                eventMeshConsumer.addTopicConfig(topic, subscriptionMode, protocolDesc, idc, ip, pid, client.getEventEmitter());
-            }
+            eventMeshConsumer.registerClient(client);
         }
 
         // start up eventMeshConsumer the first time
         if (ServiceState.INITED.equals(eventMeshConsumer.getStatus())) {
             eventMeshConsumer.start();
-            return;
+            return true;
         }
 
         // determine if restart eventMeshConsumer required
@@ -122,6 +112,8 @@ public class ConsumerManager {
                 eventMeshConsumer.shutdown();
             }
             eventMeshConsumer.start();
+            return true;
         }
+        return false;
     }
 }

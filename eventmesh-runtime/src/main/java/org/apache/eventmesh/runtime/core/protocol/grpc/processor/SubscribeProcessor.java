@@ -8,6 +8,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,8 @@ public class SubscribeProcessor {
 
     private EventMeshGrpcServer eventMeshGrpcServer;
 
+    private GrpcType grpcType = GrpcType.WEBHOOK;
+
     public SubscribeProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
@@ -28,14 +31,13 @@ public class SubscribeProcessor {
     public void process(Subscription subscription, StreamObserver<Response> responseObserver) throws Exception {
 
         RequestHeader header = subscription.getHeader();
-        String protocolDesc = header.getProtocolDesc();
 
         if (!ServiceUtils.validateHeader(header)) {
             ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseObserver);
             return;
         }
 
-        if (!ServiceUtils.validateSubscription(protocolDesc, subscription)) {
+        if (!ServiceUtils.validateSubscription(grpcType, subscription)) {
             ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, responseObserver);
             return;
         }
@@ -55,7 +57,7 @@ public class SubscribeProcessor {
                 .pid(header.getPid())
                 .consumerGroup(consumerGroup)
                 .topic(item.getTopic())
-                .protocolDesc(protocolDesc)
+                .grpcType(grpcType)
                 .subscriptionMode(item.getMode())
                 .url(url)
                 .lastUpTime(new Date())
@@ -64,7 +66,10 @@ public class SubscribeProcessor {
             consumerManager.registerClient(newClient);
         }
 
-        consumerManager.restartEventMeshConsumer(consumerGroup);
+        boolean restartResult = consumerManager.restartEventMeshConsumer(consumerGroup);
+        if (!restartResult) {
+            logger.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
+        }
 
         ServiceUtils.sendResp(StatusCode.SUCCESS, "subscribe success", responseObserver);
     }

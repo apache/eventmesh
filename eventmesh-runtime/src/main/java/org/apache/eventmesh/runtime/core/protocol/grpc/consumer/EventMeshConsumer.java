@@ -19,7 +19,11 @@ import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupTopicConfig;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.StreamTopicConfig;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.WebhookTopicConfig;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.push.HandleMsgContext;
@@ -68,23 +72,17 @@ public class EventMeshConsumer {
         this.broadcastMqConsumer = new MQConsumerWrapper(eventMeshGrpcConfiguration.eventMeshConnectorPluginType);
     }
 
-    public synchronized void addTopicConfig(String topic, SubscriptionMode subscriptionMode, String protocolDesc, String idc,
-                                            String clientIp, String clientPid, StreamObserver<EventMeshMessage> eventEmitter) {
-        ConsumerGroupTopicConfig topicConfig = consumerGroupTopicConfig.get(topic);
-        if (topicConfig == null) {
-            topicConfig = new ConsumerGroupTopicConfig(consumerGroup, topic, subscriptionMode, protocolDesc);
-            consumerGroupTopicConfig.put(topic, topicConfig);
-        }
-        topicConfig.addEmitter(idc, clientIp, clientPid, eventEmitter);
-    }
+    public synchronized void registerClient(ConsumerGroupClient client) {
+        GrpcType grpcType = client.getGrpcType();
+        String topic = client.getTopic();
+        SubscriptionMode subscriptionMode = client.getSubscriptionMode();
 
-    public synchronized void addTopicConfig(String topic, SubscriptionMode subscriptionMode, String protocolDesc, String idc, String url) {
         ConsumerGroupTopicConfig topicConfig = consumerGroupTopicConfig.get(topic);
         if (topicConfig == null) {
-            topicConfig = new ConsumerGroupTopicConfig(consumerGroup, topic, subscriptionMode, protocolDesc);
+            topicConfig = ConsumerGroupTopicConfig.buildTopicConfig(consumerGroup, topic, subscriptionMode, grpcType);
             consumerGroupTopicConfig.put(topic, topicConfig);
         }
-        topicConfig.addUrl(idc, url);
+        topicConfig.registerClient(client);
     }
 
     public synchronized Set<String> buildTopicConfig() {
@@ -199,13 +197,13 @@ public class EventMeshConsumer {
             EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
 
             ConsumerGroupTopicConfig topicConfig = consumerGroupTopicConfig.get(topic);
-            if (topicConfig != null) {
-                HandleMsgContext handleMsgContext = new HandleMsgContext(EventMeshUtil.buildPushMsgSeqNo(), consumerGroup,
-                    this,
-                    topic, event, subscriptionMode, eventMeshAsyncConsumeContext.getAbstractContext(), eventMeshGrpcServer, strBizSeqNo, strUniqueId,
-                    topicConfig);
 
-                if (messageHandler.handle(topicConfig.getProtocolDesc(), handleMsgContext)) {
+            if (topicConfig != null) {
+                GrpcType grpcType = topicConfig.getGrpcType();
+                HandleMsgContext handleMsgContext = new HandleMsgContext(consumerGroup, event, subscriptionMode, grpcType,
+                    eventMeshAsyncConsumeContext.getAbstractContext(), eventMeshGrpcServer, this, topicConfig);
+
+                if (messageHandler.handle(handleMsgContext)) {
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
                     return;
                 } else {
