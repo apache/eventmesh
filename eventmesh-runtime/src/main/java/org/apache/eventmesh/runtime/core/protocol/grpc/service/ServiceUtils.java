@@ -8,6 +8,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 
 public class ServiceUtils {
 
@@ -26,11 +27,8 @@ public class ServiceUtils {
             && (!StringUtils.isBlank(message.getTtl()));
     }
 
-    public static boolean validateSubscription(String protocol, Subscription subscription) {
-        if (!"grpc".equals(protocol) && !"grpc_stream".equals(protocol)) {
-            return false;
-        }
-        if ("grpc".equals(protocol) && StringUtils.isBlank(subscription.getUrl())) {
+    public static boolean validateSubscription(GrpcType grpcType, Subscription subscription) {
+        if (GrpcType.WEBHOOK.equals(grpcType) && StringUtils.isBlank(subscription.getUrl())) {
             return false;
         }
         if (CollectionUtils.isEmpty(subscription.getSubscriptionItemsList())

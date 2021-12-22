@@ -18,18 +18,12 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.Sets;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.exception.JsonException;
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
@@ -38,10 +32,8 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
-import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
-import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.WebhookTopicConfig;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -61,37 +53,31 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
-public class HttpPushRequest extends AbstractPushRequest {
+public class WebhookPushRequest extends AbstractPushRequest {
 
-    private Logger messageLogger = LoggerFactory.getLogger("message");
+    private final Logger messageLogger = LoggerFactory.getLogger("message");
 
-    private Logger cmdLogger = LoggerFactory.getLogger("cmd");
-
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger cmdLogger = LoggerFactory.getLogger("cmd");
 
     /**
-     *  Key: idc
-     *  Value: list of URLs
+     * Key: idc
+     * Value: list of URLs
      **/
     private final Map<String, List<String>> urls;
 
-    private List<String> totalUrls;
+    private final List<String> totalUrls;
 
-    private volatile int startIdx;
+    private final int startIdx;
 
     private String currPushUrl;
 
-    private Map<String, Set<AbstractPushRequest>> waitingRequests;
+    public WebhookPushRequest(HandleMsgContext handleMsgContext,
+                              Map<String, Set<AbstractPushRequest>> waitingRequests) {
+        super(handleMsgContext, waitingRequests);
 
-    public HttpPushRequest(HandleMsgContext handleMsgContext,
-                           Map<String, Set<AbstractPushRequest>> waitingRequests) {
-        super(handleMsgContext);
-        this.waitingRequests = waitingRequests;
-
-        this.urls = handleMsgContext.getConsumeTopicConfig().getIdcUrls();
+        this.urls = ((WebhookTopicConfig) handleMsgContext.getConsumeTopicConfig()).getIdcUrls();
         this.totalUrls = buildTotalUrls();
         this.startIdx = RandomUtils.nextInt(0, totalUrls.size());
     }
@@ -121,50 +107,23 @@ public class HttpPushRequest extends AbstractPushRequest {
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
             handleMsgContext.getEventMeshGrpcServer().getEventMeshGrpcConfiguration().eventMeshIDC);
 
-        CloudEvent event = CloudEventBuilder.from(handleMsgContext.getEvent())
-            .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-                String.valueOf(System.currentTimeMillis()))
-            .build();
-        handleMsgContext.setEvent(event);
-
         String content = "";
-        try {
-            String protocolType = Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_TYPE)).toString();
-
-            ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
-
-            ProtocolTransportObject protocolTransportObject =
-                protocolAdaptor.fromCloudEvent(handleMsgContext.getEvent());
-
-            EventMeshMessage eventMeshMessage = ((EventMeshMessageWrapper) protocolTransportObject).getMessage();
-            content = eventMeshMessage.getContent();
-        } catch (Exception ex) {
+        EventMeshMessage eventMeshMessage = getEventMeshMessage(event);
+        if (eventMeshMessage == null) {
             return;
+        } else {
+            content = eventMeshMessage.getContent();
         }
 
         List<NameValuePair> body = new ArrayList<>();
         body.add(new BasicNameValuePair(PushMessageRequestBody.CONTENT, content));
-        if (StringUtils.isBlank(handleMsgContext.getBizSeqNo())) {
-            body.add(new BasicNameValuePair(PushMessageRequestBody.BIZSEQNO,
-                RandomStringUtils.generateNum(20)));
-        } else {
-            body.add(new BasicNameValuePair(PushMessageRequestBody.BIZSEQNO,
-                handleMsgContext.getBizSeqNo()));
-        }
-        if (StringUtils.isBlank(handleMsgContext.getUniqueId())) {
-            body.add(new BasicNameValuePair(PushMessageRequestBody.UNIQUEID,
-                RandomStringUtils.generateNum(20)));
-        } else {
-            body.add(new BasicNameValuePair(PushMessageRequestBody.UNIQUEID,
-                handleMsgContext.getUniqueId()));
-        }
-
+        body.add(new BasicNameValuePair(PushMessageRequestBody.BIZSEQNO, bizSeqNum));
+        body.add(new BasicNameValuePair(PushMessageRequestBody.UNIQUEID, uniqueId));
         body.add(new BasicNameValuePair(PushMessageRequestBody.RANDOMNO,
             handleMsgContext.getMsgRandomNo()));
-        body.add(new BasicNameValuePair(PushMessageRequestBody.TOPIC, handleMsgContext.getTopic()));
-
+        body.add(new BasicNameValuePair(PushMessageRequestBody.TOPIC, topic));
         body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
-            JsonUtils.serialize(EventMeshUtil.getEventProp(handleMsgContext.getEvent()))));
+            JsonUtils.serialize(EventMeshUtil.getEventProp(event))));
 
         builder.setEntity(new UrlEncodedFormEntity(body, StandardCharsets.UTF_8));
 
@@ -181,19 +140,18 @@ public class HttpPushRequest extends AbstractPushRequest {
             eventMeshGrpcServer.getHttpClient().execute(builder, new ResponseHandler<Object>() {
                 @Override
                 public Object handleResponse(HttpResponse response) {
-                    removeWaitingMap(HttpPushRequest.this);
+                    removeWaitingMap(WebhookPushRequest.this);
                     long cost = System.currentTimeMillis() - lastPushTime;
                     //eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPPushTimeCost(cost);
                     if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                         //eventMeshHTTPServer.metrics.summaryMetrics.recordHttpPushMsgFailed();
                         messageLogger.info(
                             "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                                + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
-                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                                + "|uniqueId={}|cost={}", currPushUrl, topic, bizSeqNum, uniqueId, cost);
 
                         delayRetry();
                         if (isComplete()) {
-                            handleMsgContext.finish();
+                            finish();
                         }
                     } else {
                         String res = "";
@@ -201,34 +159,21 @@ public class HttpPushRequest extends AbstractPushRequest {
                             res = EntityUtils.toString(response.getEntity(),
                                 Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
                         } catch (IOException e) {
-                            handleMsgContext.finish();
+                            finish();
                             return new Object();
                         }
                         ClientRetCode result = processResponseContent(res);
                         messageLogger.info(
                             "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
                                 + "|uniqueId={}|cost={}",
-                            result, currPushUrl, handleMsgContext.getTopic(),
-                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
-                        if (result == ClientRetCode.OK) {
+                            result, currPushUrl, topic, bizSeqNum, uniqueId, cost);
+                        if (result == ClientRetCode.OK || result == ClientRetCode.FAIL) {
                             complete();
-                            if (isComplete()) {
-                                handleMsgContext.finish();
-                            }
-                        } else if (result == ClientRetCode.RETRY) {
+                            finish();
+                        } else if (result == ClientRetCode.RETRY || result == ClientRetCode.NOLISTEN) {
                             delayRetry();
                             if (isComplete()) {
-                                handleMsgContext.finish();
-                            }
-                        } else if (result == ClientRetCode.NOLISTEN) {
-                            delayRetry();
-                            if (isComplete()) {
-                                handleMsgContext.finish();
-                            }
-                        } else if (result == ClientRetCode.FAIL) {
-                            complete();
-                            if (isComplete()) {
-                                handleMsgContext.finish();
+                                finish();
                             }
                         }
                     }
@@ -238,39 +183,35 @@ public class HttpPushRequest extends AbstractPushRequest {
 
             if (messageLogger.isDebugEnabled()) {
                 messageLogger.debug("message|eventMesh2client|url={}|topic={}|event={}", currPushUrl,
-                    handleMsgContext.getTopic(),
-                    handleMsgContext.getEvent());
+                    topic, event);
             } else {
                 messageLogger
                     .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
-                        currPushUrl, handleMsgContext.getTopic(),
-                        handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId());
+                        currPushUrl, topic, bizSeqNum, uniqueId);
             }
         } catch (IOException e) {
             messageLogger.error("push2client err", e);
             removeWaitingMap(this);
             delayRetry();
             if (isComplete()) {
-                handleMsgContext.finish();
+                finish();
             }
         }
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("asyncPushRequest={")
-            .append("bizSeqNo=").append(handleMsgContext.getBizSeqNo())
-            .append(",startIdx=").append(startIdx)
-            .append(",retryTimes=").append(retryTimes)
-            .append(",uniqueId=").append(handleMsgContext.getUniqueId())
-            .append(",executeTime=")
-            .append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT))
-            .append(",lastPushTime=")
-            .append(DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT))
-            .append(",createTime=")
-            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
-        return sb.toString();
+        return "asyncPushRequest={"
+            + "bizSeqNo=" + bizSeqNum
+            + ",startIdx=" + startIdx
+            + ",retryTimes=" + retryTimes
+            + ",uniqueId=" + uniqueId
+            + ",executeTime="
+            + DateFormatUtils.format(executeTime, Constants.DATE_FORMAT)
+            + ",lastPushTime="
+            + DateFormatUtils.format(lastPushTime, Constants.DATE_FORMAT)
+            + ",createTime="
+            + DateFormatUtils.format(createTime, Constants.DATE_FORMAT) + "}";
     }
 
     private ClientRetCode processResponseContent(String content) {
@@ -286,43 +227,12 @@ public class HttpPushRequest extends AbstractPushRequest {
             if (retCode != null && ClientRetCode.contains(retCode)) {
                 return ClientRetCode.get(retCode);
             }
-
             return ClientRetCode.FAIL;
-        } catch (NumberFormatException e) {
-            messageLogger.warn("url:{}, bizSeqno:{}, uniqueId:{}, httpResponse:{}", currPushUrl,
-                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
-            return ClientRetCode.FAIL;
-        } catch (JsonException e) {
+        } catch (Exception e) {
             messageLogger.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
-                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
-            return ClientRetCode.FAIL;
-        } catch (Throwable t) {
-            messageLogger.warn("url:{}, bizSeqno:{}, uniqueId:{},  httpResponse:{}", currPushUrl,
-                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), content);
+                bizSeqNum, uniqueId, content);
             return ClientRetCode.FAIL;
         }
-    }
-
-    private void addToWaitingMap(HttpPushRequest request) {
-        if (waitingRequests.containsKey(request.handleMsgContext.getConsumerGroup())) {
-            waitingRequests.get(request.handleMsgContext.getConsumerGroup()).add(request);
-            return;
-        }
-        waitingRequests
-            .put(request.handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet());
-        waitingRequests.get(request.handleMsgContext.getConsumerGroup()).add(request);
-    }
-
-    private void removeWaitingMap(HttpPushRequest request) {
-        if (waitingRequests.containsKey(request.handleMsgContext.getConsumerGroup())) {
-            waitingRequests.get(request.handleMsgContext.getConsumerGroup()).remove(request);
-        }
-    }
-
-    @Override
-    public boolean retry() {
-        tryPushRequest();
-        return true;
     }
 
     private String getUrl() {

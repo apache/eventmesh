@@ -1,51 +1,34 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
-import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
-import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupTopicConfig;
-
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.StreamTopicConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 public class StreamPushRequest extends AbstractPushRequest {
 
-    private HandleMsgContext handleMsgContext;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private Map<String, Set<AbstractPushRequest>> waitingRequests;
+    private final Map<String, List<StreamObserver<EventMeshMessage>>> idcEmitters;
 
-    private EventMeshGrpcConfiguration grpcConfiguration;
+    private final List<StreamObserver<EventMeshMessage>> totalEmitters;
 
-    private ConsumerGroupTopicConfig topicConfig;
-
-    private Map<String, List<StreamObserver<EventMeshMessage>>> idcEmitters;
-
-    private List<StreamObserver<EventMeshMessage>> totalEmitters;
-
-    private volatile int startIdx;
+    private final int startIdx;
 
     public StreamPushRequest(HandleMsgContext handleMsgContext, Map<String, Set<AbstractPushRequest>> waitingRequests) {
-        super(handleMsgContext);
-        this.handleMsgContext = handleMsgContext;
-        this.waitingRequests = waitingRequests;
-        this.grpcConfiguration = handleMsgContext.getEventMeshGrpcServer().getEventMeshGrpcConfiguration();
-        this.topicConfig = handleMsgContext.getConsumeTopicConfig();
-        this.idcEmitters = buildIdcEmitter(this.topicConfig.getIdcEmitters());
+        super(handleMsgContext, waitingRequests);
+
+        StreamTopicConfig topicConfig = (StreamTopicConfig) handleMsgContext.getConsumeTopicConfig();
+        this.idcEmitters = buildIdcEmitter(topicConfig.getIdcEmitters());
         this.totalEmitters = buildTotalEmitter();
         this.startIdx = RandomUtils.nextInt(0, totalEmitters.size());
     }
@@ -54,41 +37,18 @@ public class StreamPushRequest extends AbstractPushRequest {
     public void tryPushRequest() {
         StreamObserver<EventMeshMessage> eventEmitter = selectEmitter();
 
-        CloudEvent event = CloudEventBuilder.from(handleMsgContext.getEvent())
-            .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-                String.valueOf(System.currentTimeMillis()))
-            .build();
-        handleMsgContext.setEvent(event);
-
-        try {
-            String protocolType = Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_TYPE)).toString();
-
-            ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
-
-            ProtocolTransportObject protocolTransportObject =
-                protocolAdaptor.fromCloudEvent(handleMsgContext.getEvent());
-
-            EventMeshMessage eventMeshMessage = ((EventMeshMessageWrapper) protocolTransportObject).getMessage();
-            if (eventMeshMessage != null) {
-                eventEmitter.onNext(eventMeshMessage);
-            }
-        } catch (Exception e) {
-                e.printStackTrace();
+        EventMeshMessage eventMeshMessage = getEventMeshMessage(event);
+        if (eventMeshMessage == null) {
+            return;
         }
-
+        eventEmitter.onNext(eventMeshMessage);
         complete();
-        if (isComplete()) {
-            handleMsgContext.finish();
-        }
-    }
-
-    @Override
-    public boolean retry() throws Exception {
-        return false;
+        finish();
     }
 
     private StreamObserver<EventMeshMessage> selectEmitter() {
-        List<StreamObserver<EventMeshMessage>> emitterList = MapUtils.getObject(idcEmitters, grpcConfiguration.eventMeshIDC, null);
+        List<StreamObserver<EventMeshMessage>> emitterList = MapUtils.getObject(idcEmitters,
+            eventMeshGrpcConfiguration.eventMeshIDC, null);
         if (CollectionUtils.isNotEmpty(emitterList)) {
             return emitterList.get((startIdx + retryTimes) % emitterList.size());
         }

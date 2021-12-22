@@ -54,12 +54,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         logger.info("Subscribe streaming topic " + subscription.toString());
         ConsumerServiceGrpc.ConsumerServiceBlockingStub consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
 
-        RequestHeader header = EventMeshClientUtil.buildHeader(clientConfig);
-        header = RequestHeader.newBuilder(header)
-            .setProtocolDesc("grpc_stream")
-            .build();
         Subscription enhancedSubscription = Subscription.newBuilder(subscription)
-            .setHeader(header)
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig))
             .setConsumerGroup(clientConfig.getConsumerGroup())
             .build();
         Iterator<EventMeshMessage> msgIterator = consumerClient.subscribeStream(enhancedSubscription);

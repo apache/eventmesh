@@ -27,7 +27,7 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .producerGroup("EventMeshTest-consumerGroup")
+            .consumerGroup("EventMeshTest-consumerGroup")
             .env("env").idc("idc")
             .sys("1234").build();
 

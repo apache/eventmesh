@@ -21,6 +21,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +59,7 @@ public class MessageHandler {
         });
     }
 
-    public boolean handle(String protocol, final HandleMsgContext handleMsgContext) {
+    public boolean handle(HandleMsgContext handleMsgContext) {
         Set<AbstractPushRequest> waitingRequests4Group = MapUtils.getObject(waitingRequests,
                 handleMsgContext.getConsumerGroup(), Sets.newConcurrentHashSet());
         if (waitingRequests4Group.size() > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD) {
@@ -69,25 +70,21 @@ public class MessageHandler {
 
         try {
             pushExecutor.submit(() -> {
-                AbstractPushRequest pushRequest = createHttpPushRequest(protocol, handleMsgContext);
-                if (pushRequest != null) {
-                    pushRequest.tryPushRequest();
-                }
+                AbstractPushRequest pushRequest = createHttpPushRequest(handleMsgContext);
+                pushRequest.tryPushRequest();
             });
             return true;
         } catch (RejectedExecutionException e) {
-            //logger.warn("pushMsgThreadPoolQueue is full, so reject, current task size {}",
-                //handleMsgContext.getEventMeshHTTPServer().getPushMsgExecutor().getQueue().size(), e);
             return false;
         }
     }
 
-    private AbstractPushRequest createHttpPushRequest(String protocol, HandleMsgContext handleMsgContext) {
-        if ("grpc".equals(protocol)) {
-            return new HttpPushRequest(handleMsgContext, waitingRequests);
-        } else if ("grpc_stream".equals(protocol)) {
+    private AbstractPushRequest createHttpPushRequest(HandleMsgContext handleMsgContext) {
+        GrpcType grpcType = handleMsgContext.getGrpcType();
+        if (GrpcType.WEBHOOK.equals(grpcType)) {
+            return new WebhookPushRequest(handleMsgContext, waitingRequests);
+        } else {
             return new StreamPushRequest(handleMsgContext, waitingRequests);
         }
-        return null;
     }
 }

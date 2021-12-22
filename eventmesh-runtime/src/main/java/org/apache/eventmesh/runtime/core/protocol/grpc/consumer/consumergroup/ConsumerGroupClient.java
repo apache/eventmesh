@@ -20,60 +20,62 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
 import io.grpc.stub.StreamObserver;
+import lombok.Getter;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
-
 import java.util.Date;
-
 import lombok.Builder;
-import lombok.Data;
 
 @Builder
-@Data
+@Getter
 public class ConsumerGroupClient {
 
-    private String env;
+    private final String env;
 
-    private String idc;
+    private final String idc;
 
-    private String consumerGroup;
+    private final String consumerGroup;
 
-    private String topic;
+    private final String topic;
 
-    private String protocolDesc;
+    private final GrpcType grpcType;
 
-    private String url;
+    private final String url;
 
-    private StreamObserver<EventMeshMessage> eventEmitter;
+    private final StreamObserver<EventMeshMessage> eventEmitter;
 
-    private SubscriptionMode subscriptionMode;
+    private final SubscriptionMode subscriptionMode;
 
-    private String sys;
+    private final String sys;
 
-    private String ip;
+    private final String ip;
 
-    private String pid;
+    private final String pid;
 
-    private String hostname;
+    private final String hostname;
 
-    private String apiVersion;
+    private final String apiVersion;
 
     private Date lastUpTime;
 
+    public void setLastUpTime(Date lastUpTime) {
+        this.lastUpTime = lastUpTime;
+    }
+
     @Override
     public String toString() {
-        return "endPoint={env=" + env +
-            ",idc=" + idc +
-            ",consumerGroup=" + consumerGroup +
-            ",topic=" + topic +
-            ",protocolDesc=" + protocolDesc +
-            ",url=" + url +
-            ",sys=" + sys +
-            ",ip=" + ip +
-            ",pid=" + pid +
-            ",hostname=" + hostname +
-            ",apiVersion=" + apiVersion +
-            ",registerTime=" + "}";
+        return "endPoint={env=" + env
+            + ",idc=" + idc
+            + ",consumerGroup=" + consumerGroup
+            + ",topic=" + topic
+            + ",grpcType=" + grpcType
+            + ",url=" + url
+            + ",sys=" + sys
+            + ",ip=" + ip
+            + ",pid=" + pid
+            + ",hostname=" + hostname
+            + ",apiVersion=" + apiVersion
+            + ",lastUpTime=" + lastUpTime + "}";
     }
 }
 
