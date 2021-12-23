@@ -7,19 +7,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc;
+import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
 import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc;
+import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc.HeartbeatServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
-import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,13 +35,16 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     private ManagedChannel channel;
 
+    private ConsumerServiceBlockingStub consumerClient;
+    private HeartbeatServiceBlockingStub heartbeatClient;
+
     private ReceiveMsgHook<EventMeshMessage> listener;
 
     private final List<ListenerThread> listenerThreads = new LinkedList<>();
 
     private final Map<String, String> subscriptionMap = new ConcurrentHashMap<>();
 
-    private static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
+    private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
         Runtime.getRuntime().availableProcessors(),
         new ThreadFactoryBuilder().setNameFormat("GRPCClientScheduler").setDaemon(true).build());
 
@@ -54,6 +56,9 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort())
             .usePlaintext().build();
 
+        consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
+        heartbeatClient = HeartbeatServiceGrpc.newBlockingStub(channel);
+
         heartBeat();
     }
 
@@ -62,15 +67,18 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         addSubscription(subscription);
 
-        ConsumerServiceGrpc.ConsumerServiceBlockingStub consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
-
         Subscription enhancedSubscription = Subscription.newBuilder(subscription)
             .setHeader(EventMeshClientUtil.buildHeader(clientConfig))
             .setConsumerGroup(clientConfig.getConsumerGroup())
             .build();
-        Response response = consumerClient.subscribe(enhancedSubscription);
-        logger.info("Received response " + response.toString());
-        return response;
+        try {
+            Response response = consumerClient.subscribe(enhancedSubscription);
+            logger.info("Received response " + response.toString());
+            return response;
+        } catch (Exception e) {
+            logger.error("Error in subscribe. error {}", e.getMessage());
+            return null;
+        }
     }
 
     public void subscribeStream(Subscription subscription) {
@@ -78,13 +86,17 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         addSubscription(subscription);
 
-        ConsumerServiceGrpc.ConsumerServiceBlockingStub consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
-
         Subscription enhancedSubscription = Subscription.newBuilder(subscription)
             .setHeader(EventMeshClientUtil.buildHeader(clientConfig))
             .setConsumerGroup(clientConfig.getConsumerGroup())
             .build();
-        Iterator<EventMeshMessage> msgIterator = consumerClient.subscribeStream(enhancedSubscription);
+        Iterator<EventMeshMessage> msgIterator;
+        try {
+            msgIterator = consumerClient.subscribeStream(enhancedSubscription);
+        } catch (Exception e) {
+            logger.error("Error in subscribe. error {}", e.getMessage());
+            return;
+        }
 
         ListenerThread listenerThread = new ListenerThread(msgIterator, listener);
         listenerThreads.add(listenerThread);
@@ -109,15 +121,19 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         removeSubscription(subscription);
 
-        ConsumerServiceGrpc.ConsumerServiceBlockingStub consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
         Subscription enhancedSubscription = Subscription.newBuilder(subscription)
             .setHeader(EventMeshClientUtil.buildHeader(clientConfig))
             .setConsumerGroup(clientConfig.getConsumerGroup())
             .build();
 
-        Response response = consumerClient.unsubscribe(enhancedSubscription);
-        logger.info("Received response " + response.toString());
-        return response;
+        try {
+            Response response = consumerClient.unsubscribe(enhancedSubscription);
+            logger.info("Received response " + response.toString());
+            return response;
+        } catch (Exception e) {
+            logger.error("Error in unsubscribe. error {}", e.getMessage());
+            return null;
+        }
     }
 
     public void registerListener(ReceiveMsgHook<EventMeshMessage> listener) {
@@ -127,12 +143,14 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     private void heartBeat() {
-        HeartbeatServiceGrpc.HeartbeatServiceBlockingStub heartbeatClient = HeartbeatServiceGrpc.newBlockingStub(channel);
         RequestHeader header = EventMeshClientUtil.buildHeader(clientConfig);
         scheduler.scheduleAtFixedRate(() -> {
-
+            if (subscriptionMap.isEmpty()) {
+                return;
+            }
             Heartbeat.Builder heartbeatBuilder = Heartbeat.newBuilder()
                 .setHeader(header)
+                .setConsumerGroup(clientConfig.getConsumerGroup())
                 .setClientType(Heartbeat.ClientType.SUB);
 
             for (Map.Entry<String, String> entry : subscriptionMap.entrySet()) {
@@ -144,9 +162,13 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             }
             Heartbeat heartbeat = heartbeatBuilder.build();
 
-            Response response = heartbeatClient.heartbeat(heartbeat);
-            if (logger.isDebugEnabled()) {
-                logger.debug("Grpc Consumer Heartbeat response: {}", response);
+            try {
+                Response response = heartbeatClient.heartbeat(heartbeat);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Grpc Consumer Heartbeat response: {}", response);
+                }
+            } catch (Exception e) {
+                logger.error("Error in sending out heartbeat. error {}", e.getMessage());
             }
         }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
 
@@ -159,6 +181,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             thread.stop();
         }
         channel.shutdown();
+        scheduler.shutdown();
     }
 
     static class ListenerThread extends Thread {
@@ -173,9 +196,13 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         public void run() {
             logger.info("start receiving...");
-            while (msgIterator.hasNext()) {
-                logger.info("sdk received message ");
-                listener.handle(msgIterator.next());
+            try {
+                while (msgIterator.hasNext()) {
+                    logger.info("sdk received message ");
+                    listener.handle(msgIterator.next());
+                }
+            } catch (Throwable t) {
+                logger.warn("Error in handling message. {}", t.getMessage());
             }
         }
     }

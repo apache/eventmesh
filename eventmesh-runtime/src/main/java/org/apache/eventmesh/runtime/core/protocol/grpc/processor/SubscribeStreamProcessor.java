@@ -1,6 +1,5 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
-import io.grpc.stub.StreamObserver;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
@@ -11,6 +10,7 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
+import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,31 +20,30 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class SubscribeStreamProcessor {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-    private EventMeshGrpcServer eventMeshGrpcServer;
+    private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    private GrpcType grpcType = GrpcType.STREAM;
+    private final GrpcType grpcType = GrpcType.STREAM;
 
     public SubscribeStreamProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
-    public void process(Subscription subscription, StreamObserver<EventMeshMessage> responseObserver) throws Exception {
+    public void process(Subscription subscription, EventEmitter<EventMeshMessage> emitter) throws Exception {
 
         RequestHeader header = subscription.getHeader();
 
         if (!ServiceUtils.validateHeader(header)) {
-            sendResp(subscription, StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseObserver);
+            sendResp(subscription, StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateSubscription(grpcType, subscription)) {
-            sendResp(subscription, StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, responseObserver);
+            sendResp(subscription, StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -66,7 +65,7 @@ public class SubscribeStreamProcessor {
                 .topic(item.getTopic())
                 .subscriptionMode(item.getMode())
                 .grpcType(grpcType)
-                .eventEmitter(responseObserver)
+                .eventEmitter(emitter)
                 .lastUpTime(new Date())
                 .build();
             newClients.add(newClient);
@@ -104,10 +103,10 @@ public class SubscribeStreamProcessor {
             .setHeader(header)
             .setContent(JsonUtils.serialize(resp))
             .build();
-        responseObserver.onNext(eventMeshMessage);
+        emitter.onNext(eventMeshMessage);
     }
 
-    private void sendResp(Subscription subscription, StatusCode code, StreamObserver<EventMeshMessage> responseObserver) {
+    private void sendResp(Subscription subscription, StatusCode code, EventEmitter<EventMeshMessage> emitter) {
         Map<String, String> resp = new HashMap<>();
         resp.put("respCode", code.getRetCode());
         resp.put("respMsg", code.getErrMsg());
@@ -118,7 +117,7 @@ public class SubscribeStreamProcessor {
             .setContent(JsonUtils.serialize(resp))
             .build();
 
-        responseObserver.onNext(eventMeshMessage);
-        responseObserver.onCompleted();
+        emitter.onNext(eventMeshMessage);
+        emitter.onCompleted();
     }
 }
