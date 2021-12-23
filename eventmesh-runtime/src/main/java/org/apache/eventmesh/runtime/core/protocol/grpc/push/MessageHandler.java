@@ -34,15 +34,15 @@ import java.util.concurrent.TimeUnit;
 
 public class MessageHandler {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final ScheduledExecutorService SCHEDULER = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout-");
 
-    private ThreadPoolExecutor pushExecutor;
+    private final ThreadPoolExecutor pushExecutor;
 
-    private final Integer CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD = 10000;
+    private static final Integer CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD = 10000;
 
-    private static Map<String, Set<AbstractPushRequest>> waitingRequests = Maps.newConcurrentMap();
+    private static final Map<String, Set<AbstractPushRequest>> waitingRequests = Maps.newConcurrentMap();
 
     public MessageHandler(String consumerGroup, ThreadPoolExecutor pushMsgExecutor) {
         this.pushExecutor = pushMsgExecutor;

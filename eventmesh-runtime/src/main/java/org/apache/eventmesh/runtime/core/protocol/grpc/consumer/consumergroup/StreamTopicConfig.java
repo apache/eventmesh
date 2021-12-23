@@ -1,8 +1,8 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
-import io.grpc.stub.StreamObserver;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,19 +10,24 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StreamTopicConfig extends ConsumerGroupTopicConfig {
     private final Logger logger = LoggerFactory.getLogger(StreamTopicConfig.class);
 
     /**
-     * Event streaming emitter
-     * <br/>
+     * Key: IDC
+     * Value: list of emitters with Client_IP:port
+     */
+    private final Map<String, Map<String, EventEmitter<EventMeshMessage>>> idcEmitterMap = new ConcurrentHashMap<>();
+
+    /**
      * Key: IDC
      * Value: list of emitters
      */
-    private final Map<String, Map<String, StreamObserver<EventMeshMessage>>> idcEmitters = new ConcurrentHashMap<>();
+    private Map<String, List<EventEmitter<EventMeshMessage>>> idcEmitters = new ConcurrentHashMap<>();
+
+    private List<EventEmitter<EventMeshMessage>> totalEmitters = new LinkedList<>();
 
     public StreamTopicConfig(String consumerGroup, String topic, SubscriptionMode subscriptionMode) {
         super(consumerGroup, topic, subscriptionMode, GrpcType.STREAM);
@@ -38,9 +43,12 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         String idc = client.getIdc();
         String clientIp = client.getIp();
         String clientPid = client.getPid();
-        StreamObserver<EventMeshMessage> emitter = client.getEventEmitter();
-        Map<String, StreamObserver<EventMeshMessage>> emitters = idcEmitters.computeIfAbsent(idc, k -> new HashMap<>());
+        EventEmitter<EventMeshMessage> emitter = client.getEventEmitter();
+        Map<String, EventEmitter<EventMeshMessage>> emitters = idcEmitterMap.computeIfAbsent(idc, k -> new HashMap<>());
         emitters.put(clientIp + ":" + clientPid, emitter);
+
+        idcEmitters = buildIdcEmitter();
+        totalEmitters = buildTotalEmitter();
     }
 
     @Override
@@ -49,23 +57,21 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         String clientIp = client.getIp();
         String clientPid = client.getPid();
 
-        Map<String, StreamObserver<EventMeshMessage>> emitters = idcEmitters.get(idc);
+        Map<String, EventEmitter<EventMeshMessage>> emitters = idcEmitterMap.get(idc);
         if (emitters == null) {
             return;
         }
         emitters.remove(clientIp + ":" + clientPid);
         if (emitters.size() == 0) {
-            idcEmitters.remove(idc);
+            idcEmitterMap.remove(idc);
         }
+        idcEmitters = buildIdcEmitter();
+        totalEmitters = buildTotalEmitter();
     }
 
     @Override
     public int getSize() {
-        int total = 0;
-        for (Map<String, StreamObserver<EventMeshMessage>> emitters : idcEmitters.values()) {
-            total += emitters.size();
-        }
-        return total;
+        return totalEmitters.size();
     }
 
     @Override
@@ -91,7 +97,28 @@ public class StreamTopicConfig extends ConsumerGroupTopicConfig {
         return grpcType;
     }
 
-    public Map<String, Map<String, StreamObserver<EventMeshMessage>>> getIdcEmitters() {
+    public Map<String, List<EventEmitter<EventMeshMessage>>> getIdcEmitters() {
         return idcEmitters;
+    }
+
+    public List<EventEmitter<EventMeshMessage>> getTotalEmitters() {
+        return totalEmitters;
+    }
+
+    private Map<String, List<EventEmitter<EventMeshMessage>>> buildIdcEmitter() {
+        Map<String, List<EventEmitter<EventMeshMessage>>> result = new HashMap<>();
+        for (Map.Entry<String, Map<String, EventEmitter<EventMeshMessage>>> entry : idcEmitterMap.entrySet()) {
+            List<EventEmitter<EventMeshMessage>> emitterList = new LinkedList<>(entry.getValue().values());
+            result.put(entry.getKey(), emitterList);
+        }
+        return result;
+    }
+
+    private List<EventEmitter<EventMeshMessage>> buildTotalEmitter() {
+        List<EventEmitter<EventMeshMessage>> emitterList = new LinkedList<>();
+        for (List<EventEmitter<EventMeshMessage>> emitters : idcEmitters.values()) {
+            emitterList.addAll(emitters);
+        }
+        return emitterList;
     }
 }

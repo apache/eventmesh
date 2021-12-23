@@ -66,20 +66,24 @@ public class ServiceUtils {
         return true;
     }
 
-    public static void sendResp(StatusCode code, StreamObserver<Response> responseObserver) {
+    public static void sendResp(StatusCode code, EventEmitter<Response> emitter) {
         Response response = Response.newBuilder()
             .setRespCode(code.getRetCode())
-            .setRespMsg(code.getErrMsg()).build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+            .setRespMsg(code.getErrMsg())
+            .setRespTime(String.valueOf(System.currentTimeMillis()))
+            .build();
+        emitter.onNext(response);
+        emitter.onCompleted();
     }
 
-    public static void sendResp(StatusCode code, String message, StreamObserver<Response> responseObserver) {
+    public static void sendResp(StatusCode code, String message, EventEmitter<Response> emitter) {
         Response response = Response.newBuilder()
             .setRespCode(code.getRetCode())
-            .setRespMsg(code.getErrMsg() + " " + message).build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+            .setRespMsg(code.getErrMsg() + " " + message)
+            .setRespTime(String.valueOf(System.currentTimeMillis()))
+            .build();
+        emitter.onNext(response);
+        emitter.onCompleted();
     }
 
 }

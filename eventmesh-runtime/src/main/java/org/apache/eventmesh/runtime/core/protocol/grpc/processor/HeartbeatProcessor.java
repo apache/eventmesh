@@ -1,45 +1,45 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
-import io.grpc.stub.StreamObserver;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat.ClientType;
-import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat.HeartbeatItem;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
+import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Date;
 
 public class HeartbeatProcessor {
-    private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-    private EventMeshGrpcServer eventMeshGrpcServer;
+    private final EventMeshGrpcServer eventMeshGrpcServer;
 
     public HeartbeatProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
-    public void process(Heartbeat heartbeat, StreamObserver<Response> responseObserver) throws Exception {
+    public void process(Heartbeat heartbeat, EventEmitter<Response> emitter) throws Exception {
         RequestHeader header = heartbeat.getHeader();
 
         if (!ServiceUtils.validateHeader(header)) {
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseObserver);
+            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateHeartBeat(heartbeat)) {
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, responseObserver);
+            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
         // only handle heartbeat for consumers
         ClientType clientType = heartbeat.getClientType();
         if (!ClientType.SUB.equals(clientType)) {
+            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -62,6 +62,6 @@ public class HeartbeatProcessor {
             consumerManager.updateClientTime(hbClient);
         }
 
-        ServiceUtils.sendResp(StatusCode.SUCCESS, "heartbeat success", responseObserver);
+        ServiceUtils.sendResp(StatusCode.SUCCESS, "heartbeat success", emitter);
     }
 }

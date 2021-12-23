@@ -19,7 +19,6 @@ private static final long serialVersionUID = 0L;
     respCode_ = "";
     respMsg_ = "";
     respTime_ = "";
-    seqNum_ = "";
   }
 
   @Override
@@ -69,12 +68,6 @@ private static final long serialVersionUID = 0L;
             String s = input.readStringRequireUtf8();
 
             respTime_ = s;
-            break;
-          }
-          case 34: {
-            String s = input.readStringRequireUtf8();
-
-            seqNum_ = s;
             break;
           }
         }
@@ -203,40 +196,6 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int SEQNUM_FIELD_NUMBER = 4;
-  private volatile Object seqNum_;
-  /**
-   * <code>string seqNum = 4;</code>
-   */
-  public String getSeqNum() {
-    Object ref = seqNum_;
-    if (ref instanceof String) {
-      return (String) ref;
-    } else {
-      com.google.protobuf.ByteString bs = 
-          (com.google.protobuf.ByteString) ref;
-      String s = bs.toStringUtf8();
-      seqNum_ = s;
-      return s;
-    }
-  }
-  /**
-   * <code>string seqNum = 4;</code>
-   */
-  public com.google.protobuf.ByteString
-      getSeqNumBytes() {
-    Object ref = seqNum_;
-    if (ref instanceof String) {
-      com.google.protobuf.ByteString b = 
-          com.google.protobuf.ByteString.copyFromUtf8(
-              (String) ref);
-      seqNum_ = b;
-      return b;
-    } else {
-      return (com.google.protobuf.ByteString) ref;
-    }
-  }
-
   private byte memoizedIsInitialized = -1;
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
@@ -258,9 +217,6 @@ private static final long serialVersionUID = 0L;
     if (!getRespTimeBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, respTime_);
     }
-    if (!getSeqNumBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, seqNum_);
-    }
     unknownFields.writeTo(output);
   }
 
@@ -277,9 +233,6 @@ private static final long serialVersionUID = 0L;
     }
     if (!getRespTimeBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, respTime_);
-    }
-    if (!getSeqNumBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, seqNum_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -303,8 +256,6 @@ private static final long serialVersionUID = 0L;
         .equals(other.getRespMsg());
     result = result && getRespTime()
         .equals(other.getRespTime());
-    result = result && getSeqNum()
-        .equals(other.getSeqNum());
     result = result && unknownFields.equals(other.unknownFields);
     return result;
   }
@@ -322,8 +273,6 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getRespMsg().hashCode();
     hash = (37 * hash) + RESPTIME_FIELD_NUMBER;
     hash = (53 * hash) + getRespTime().hashCode();
-    hash = (37 * hash) + SEQNUM_FIELD_NUMBER;
-    hash = (53 * hash) + getSeqNum().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -459,8 +408,6 @@ private static final long serialVersionUID = 0L;
 
       respTime_ = "";
 
-      seqNum_ = "";
-
       return this;
     }
 
@@ -486,7 +433,6 @@ private static final long serialVersionUID = 0L;
       result.respCode_ = respCode_;
       result.respMsg_ = respMsg_;
       result.respTime_ = respTime_;
-      result.seqNum_ = seqNum_;
       onBuilt();
       return result;
     }
@@ -538,10 +484,6 @@ private static final long serialVersionUID = 0L;
       }
       if (!other.getRespTime().isEmpty()) {
         respTime_ = other.respTime_;
-        onChanged();
-      }
-      if (!other.getSeqNum().isEmpty()) {
-        seqNum_ = other.seqNum_;
         onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
@@ -774,75 +716,6 @@ private static final long serialVersionUID = 0L;
   checkByteStringIsUtf8(value);
       
       respTime_ = value;
-      onChanged();
-      return this;
-    }
-
-    private Object seqNum_ = "";
-    /**
-     * <code>string seqNum = 4;</code>
-     */
-    public String getSeqNum() {
-      Object ref = seqNum_;
-      if (!(ref instanceof String)) {
-        com.google.protobuf.ByteString bs =
-            (com.google.protobuf.ByteString) ref;
-        String s = bs.toStringUtf8();
-        seqNum_ = s;
-        return s;
-      } else {
-        return (String) ref;
-      }
-    }
-    /**
-     * <code>string seqNum = 4;</code>
-     */
-    public com.google.protobuf.ByteString
-        getSeqNumBytes() {
-      Object ref = seqNum_;
-      if (ref instanceof String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (String) ref);
-        seqNum_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
-    }
-    /**
-     * <code>string seqNum = 4;</code>
-     */
-    public Builder setSeqNum(
-        String value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  
-      seqNum_ = value;
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string seqNum = 4;</code>
-     */
-    public Builder clearSeqNum() {
-      
-      seqNum_ = getDefaultInstance().getSeqNum();
-      onChanged();
-      return this;
-    }
-    /**
-     * <code>string seqNum = 4;</code>
-     */
-    public Builder setSeqNumBytes(
-        com.google.protobuf.ByteString value) {
-      if (value == null) {
-    throw new NullPointerException();
-  }
-  checkByteStringIsUtf8(value);
-      
-      seqNum_ = value;
       onChanged();
       return this;
     }

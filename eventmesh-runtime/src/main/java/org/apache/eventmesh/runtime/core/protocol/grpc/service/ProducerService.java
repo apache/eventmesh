@@ -27,15 +27,15 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
     }
 
     public void publish(EventMeshMessage request, StreamObserver<Response> responseObserver) {
+        EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
             SendAsyncMessageProcessor sendAsyncMessageProcessor = new SendAsyncMessageProcessor(eventMeshGrpcServer);
             try {
-                sendAsyncMessageProcessor.process(request, responseObserver);
+                sendAsyncMessageProcessor.process(request, emitter);
             } catch (Exception e) {
                 logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode(),
                     StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg(), e);
-                ServiceUtils.sendResp(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR, e.getMessage(),
-                    responseObserver);
+                ServiceUtils.sendResp(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR, e.getMessage(), emitter);
             }
         });
     }

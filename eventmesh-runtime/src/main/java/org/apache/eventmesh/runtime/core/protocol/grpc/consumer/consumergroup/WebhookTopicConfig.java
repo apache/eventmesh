@@ -5,10 +5,14 @@ import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.awt.image.ImageWatched;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
@@ -21,6 +25,8 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
      * Value: list of URls
      */
     private final Map<String, List<String>> idcUrls = new ConcurrentHashMap<>();
+
+    private List<String> totalUrls = new LinkedList<>();
 
     public WebhookTopicConfig(String consumerGroup, String topic, SubscriptionMode subscriptionMode) {
         super(consumerGroup, topic, subscriptionMode, GrpcType.WEBHOOK);
@@ -39,6 +45,7 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
         if (!urls.contains(url)) {
             urls.add(url);
         }
+        totalUrls = buildTotalUrls();
     }
 
     @Override
@@ -54,15 +61,12 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
         if (urls.size() == 0) {
             idcUrls.remove(idc);
         }
+        totalUrls = buildTotalUrls();
     }
 
     @Override
     public int getSize() {
-        int total = 0;
-        for (List<String> urls : idcUrls.values()) {
-            total += urls.size();
-        }
-        return total;
+       return totalUrls.size();
     }
 
     @Override
@@ -91,5 +95,17 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
 
     public Map<String, List<String>> getIdcUrls() {
         return idcUrls;
+    }
+
+    private List<String> buildTotalUrls() {
+        Set<String> totalUrls = new HashSet<>();
+        for (List<String> idcUrls : idcUrls.values()) {
+            totalUrls.addAll(idcUrls);
+        }
+        return new ArrayList<>(totalUrls);
+    }
+
+    public List<String> getTotalUrls() {
+        return totalUrls;
     }
 }

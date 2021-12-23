@@ -77,8 +77,9 @@ public class WebhookPushRequest extends AbstractPushRequest {
                               Map<String, Set<AbstractPushRequest>> waitingRequests) {
         super(handleMsgContext, waitingRequests);
 
-        this.urls = ((WebhookTopicConfig) handleMsgContext.getConsumeTopicConfig()).getIdcUrls();
-        this.totalUrls = buildTotalUrls();
+        WebhookTopicConfig topicConfig =  (WebhookTopicConfig) handleMsgContext.getConsumeTopicConfig();
+        this.urls = topicConfig.getIdcUrls();
+        this.totalUrls = topicConfig.getTotalUrls();
         this.startIdx = RandomUtils.nextInt(0, totalUrls.size());
     }
 
@@ -245,15 +246,6 @@ public class WebhookPushRequest extends AbstractPushRequest {
         if (CollectionUtils.isNotEmpty(totalUrls)) {
             return totalUrls.get((startIdx + retryTimes) % totalUrls.size());
         }
-
         return null;
-    }
-
-    private List<String> buildTotalUrls() {
-        Set<String> totalUrls = new HashSet<>();
-        for (List<String> idcUrls : urls.values()) {
-            totalUrls.addAll(idcUrls);
-        }
-        return new ArrayList<>(totalUrls);
     }
 }

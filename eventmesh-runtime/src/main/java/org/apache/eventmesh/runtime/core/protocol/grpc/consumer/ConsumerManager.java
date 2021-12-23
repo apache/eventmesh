@@ -32,7 +32,7 @@ public class ConsumerManager {
 
     private static final int DEFAULT_UPDATE_TIME = 3 * 30 * 1000;
 
-    private ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     // key: ConsumerGroup
     private final Map<String, List<ConsumerGroupClient>> clientTable = new ConcurrentHashMap<>();
@@ -91,12 +91,14 @@ public class ConsumerManager {
                     && StringUtils.equals(localClient.getUrl(), url)
                     && localClient.getSubscriptionMode().equals(subscriptionMode)) {
                     isContains = true;
+                    localClient.setUrl(newClient.getUrl());
                     localClient.setLastUpTime(newClient.getLastUpTime());
                     break;
                 } else if (GrpcType.STREAM.equals(grpcType) && StringUtils.equals(localClient.getTopic(), topic)
                     && StringUtils.equals(localClient.getIp(), ip) && StringUtils.equals(localClient.getPid(), pid)
                     && localClient.getSubscriptionMode().equals(subscriptionMode)) {
                     isContains = true;
+                    localClient.setEventEmitter(newClient.getEventEmitter());
                     localClient.setLastUpTime(newClient.getLastUpTime());
                     break;
                 }
@@ -150,7 +152,11 @@ public class ConsumerManager {
 
     private void closeEventStream(ConsumerGroupClient client) {
         if (client.getEventEmitter() != null) {
-            client.getEventEmitter().onCompleted();
+            try {
+                client.getEventEmitter().onCompleted();
+            } catch (Exception e) {
+                logger.warn("GRPC client {} already closed.", client.toString());
+            }
         }
     }
 
@@ -184,6 +190,9 @@ public class ConsumerManager {
                 logger.debug("total number of ConsumerGroupClients: {}", clientList.size());
             }
 
+            if (clientList.isEmpty()) {
+                return;
+            }
             Set<String> consumerGroupRestart = new HashSet<>();
             for (ConsumerGroupClient client : clientList) {
                 if (System.currentTimeMillis() - client.getLastUpTime().getTime() > DEFAULT_UPDATE_TIME) {

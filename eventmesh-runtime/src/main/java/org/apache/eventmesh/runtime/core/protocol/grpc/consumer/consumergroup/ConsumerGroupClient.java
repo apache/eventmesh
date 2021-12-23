@@ -19,12 +19,12 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
-import io.grpc.stub.StreamObserver;
 import lombok.Getter;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import java.util.Date;
 import lombok.Builder;
+import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 
 @Builder
 @Getter
@@ -40,9 +40,9 @@ public class ConsumerGroupClient {
 
     private final GrpcType grpcType;
 
-    private final String url;
+    private String url;
 
-    private final StreamObserver<EventMeshMessage> eventEmitter;
+    private EventEmitter<EventMeshMessage> eventEmitter;
 
     private final SubscriptionMode subscriptionMode;
 
@@ -57,6 +57,13 @@ public class ConsumerGroupClient {
     private final String apiVersion;
 
     private Date lastUpTime;
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+    public void setEventEmitter(EventEmitter<EventMeshMessage> emitter) {
+        this.eventEmitter = emitter;
+    }
 
     public void setLastUpTime(Date lastUpTime) {
         this.lastUpTime = lastUpTime;

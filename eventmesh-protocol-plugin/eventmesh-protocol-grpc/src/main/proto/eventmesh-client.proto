@@ -53,7 +53,6 @@ message Response {
    string respCode = 1;
    string respMsg = 2;
    string respTime = 3;
-   string seqNum = 4;
 }
 
 message Subscription {

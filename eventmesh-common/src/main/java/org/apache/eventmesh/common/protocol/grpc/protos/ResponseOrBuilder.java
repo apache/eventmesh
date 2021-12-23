@@ -36,14 +36,4 @@ public interface ResponseOrBuilder extends
    */
   com.google.protobuf.ByteString
       getRespTimeBytes();
-
-  /**
-   * <code>string seqNum = 4;</code>
-   */
-  String getSeqNum();
-  /**
-   * <code>string seqNum = 4;</code>
-   */
-  com.google.protobuf.ByteString
-      getSeqNumBytes();
 }

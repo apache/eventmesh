@@ -26,15 +26,15 @@ public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplB
     }
 
     public void heartbeat(Heartbeat request, StreamObserver<Response> responseObserver) {
+        EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
             HeartbeatProcessor heartbeatProcessor = new HeartbeatProcessor(eventMeshGrpcServer);
             try {
-                heartbeatProcessor.process(request, responseObserver);
+                heartbeatProcessor.process(request, emitter);
             } catch (Exception e) {
                 logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_HEARTBEAT_ERR.getRetCode(),
                     StatusCode.EVENTMESH_HEARTBEAT_ERR.getErrMsg(), e);
-                ServiceUtils.sendResp(StatusCode.EVENTMESH_HEARTBEAT_ERR, e.getMessage(),
-                    responseObserver);
+                ServiceUtils.sendResp(StatusCode.EVENTMESH_HEARTBEAT_ERR, e.getMessage(), emitter);
             }
         });
     }
