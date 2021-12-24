@@ -240,6 +240,10 @@ public class EventMeshConsumer {
                         // ignore exception
                     }
                 }
+            } else {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("no active consumer for topic={}|msg={}", topic, event);
+                }
             }
             eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
         };

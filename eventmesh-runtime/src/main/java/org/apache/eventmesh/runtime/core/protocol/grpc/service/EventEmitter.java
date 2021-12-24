@@ -36,4 +36,8 @@ public class EventEmitter<T> {
             logger.warn("StreamObserver Error onError. {}", t1.getMessage());
         }
     }
+
+    public StreamObserver<T> getEmitter() {
+        return emitter;
+    }
 }

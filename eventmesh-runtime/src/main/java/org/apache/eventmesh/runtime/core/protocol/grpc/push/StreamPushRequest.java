@@ -15,7 +15,7 @@ import java.util.Set;
 
 public class StreamPushRequest extends AbstractPushRequest {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger messageLogger = LoggerFactory.getLogger("message");
 
     private final Map<String, List<EventEmitter<EventMeshMessage>>> idcEmitters;
 
@@ -34,15 +34,34 @@ public class StreamPushRequest extends AbstractPushRequest {
 
     @Override
     public void tryPushRequest() {
-        EventEmitter<EventMeshMessage> eventEmitter = selectEmitter();
-
-        EventMeshMessage eventMeshMessage = getEventMeshMessage(event);
         if (eventMeshMessage == null) {
             return;
         }
-        eventEmitter.onNext(eventMeshMessage);
-        complete();
-        finish();
+
+        EventEmitter<EventMeshMessage> eventEmitter = selectEmitter();
+
+        if (eventEmitter == null) {
+            return;
+        }
+        this.lastPushTime = System.currentTimeMillis();
+
+        try {
+            long cost = System.currentTimeMillis() - lastPushTime;
+            eventEmitter.getEmitter().onNext(eventMeshMessage);
+            messageLogger.info(
+                "message|eventMesh2client|emitter|topic={}|bizSeqNo={}"
+                    + "|uniqueId={}|cost={}", eventMeshMessage.getTopic(),
+                eventMeshMessage.getSeqNum(), eventMeshMessage.getUniqueId(), cost);
+            complete();
+        } catch (Throwable t) {
+            long cost = System.currentTimeMillis() - lastPushTime;
+            messageLogger.info(
+                "message|eventMesh2client|exception|emitter|topic={}|bizSeqNo={}"
+                    + "|uniqueId={}|cost={}", eventMeshMessage.getTopic(),
+                eventMeshMessage.getSeqNum(), eventMeshMessage.getUniqueId(), cost);
+
+            delayRetry();
+        }
     }
 
     private EventEmitter<EventMeshMessage> selectEmitter() {

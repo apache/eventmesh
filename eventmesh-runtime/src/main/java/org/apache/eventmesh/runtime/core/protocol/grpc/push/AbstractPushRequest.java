@@ -62,10 +62,7 @@ public abstract class AbstractPushRequest extends RetryContext {
 
     protected HandleMsgContext handleMsgContext;
     protected CloudEvent event;
-    protected String topic;
-    protected String bizSeqNum;
-    protected String uniqueId;
-    protected int ttl;
+    protected EventMeshMessage eventMeshMessage;
 
     private final AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
 
@@ -82,21 +79,12 @@ public abstract class AbstractPushRequest extends RetryContext {
                 String.valueOf(System.currentTimeMillis()))
             .build();
 
-        this.topic = event.getSubject();
-
-        Object objBizSeqNo = event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
-        this.bizSeqNum = objBizSeqNo == null ? RandomStringUtils.generateNum(20) : objBizSeqNo.toString();
-
-        Object objUniqueId = event.getExtension(Constants.RMB_UNIQ_ID);
-        this.uniqueId = objUniqueId == null ? RandomStringUtils.generateNum(20) : objUniqueId.toString();
-
-        String ttlStr = (String) event.getExtension(Constants.PROPERTY_MESSAGE_TIMEOUT);
-        this.ttl = StringUtils.isNumeric(ttlStr) ? Integer.parseInt(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
+        this.eventMeshMessage = getEventMeshMessage(event);
     }
 
     public abstract void tryPushRequest();
 
-    protected EventMeshMessage getEventMeshMessage(CloudEvent cloudEvent) {
+    private EventMeshMessage getEventMeshMessage(CloudEvent cloudEvent) {
         try {
             String protocolType = Objects.requireNonNull(cloudEvent.getExtension(Constants.PROTOCOL_TYPE)).toString();
             ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
@@ -120,7 +108,7 @@ public abstract class AbstractPushRequest extends RetryContext {
             delay((long) retryTimes * EventMeshConstants.DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS);
             grpcRetryer.pushRetry(this);
         } else {
-            complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
+            complete();
         }
     }
 
@@ -128,7 +116,7 @@ public abstract class AbstractPushRequest extends RetryContext {
         return complete.get();
     }
 
-    protected void finish() {
+    private void finish() {
         AbstractContext context = handleMsgContext.getContext();
         CloudEvent event = handleMsgContext.getEvent();
         SubscriptionMode subscriptionMode = handleMsgContext.getSubscriptionMode();
@@ -143,10 +131,11 @@ public abstract class AbstractPushRequest extends RetryContext {
 
     protected void complete() {
         complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
+        finish();
     }
 
     protected void timeout() {
-        if (!isComplete() && System.currentTimeMillis() - lastPushTime >= ttl) {
+        if (!isComplete() && System.currentTimeMillis() - lastPushTime >= Long.parseLong(eventMeshMessage.getTtl())) {
             delayRetry();
         }
     }
