@@ -62,6 +62,10 @@ public class GrpcMessageProtocolResolver {
                     .withExtension(ProtocolKey.UNIQUE_ID, message.getUniqueId())
                     .withExtension(ProtocolKey.PRODUCERGROUP, message.getProducerGroup())
                     .withExtension(ProtocolKey.TTL, message.getTtl());
+
+                for (Map.Entry<String, String> entry : message.getPropertiesMap().entrySet()) {
+                    cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
+                }
                 if (StringUtils.isNotEmpty(message.getTag())) {
                     cloudEventBuilder = cloudEventBuilder.withExtension(ProtocolKey.TAG, message.getTag());
                 }
@@ -88,6 +92,10 @@ public class GrpcMessageProtocolResolver {
                     .withExtension(ProtocolKey.UNIQUE_ID, message.getUniqueId())
                     .withExtension(ProtocolKey.PRODUCERGROUP, message.getProducerGroup())
                     .withExtension(ProtocolKey.TTL, message.getTtl());
+
+                for (Map.Entry<String, String> entry : message.getPropertiesMap().entrySet()) {
+                    cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
+                }
                 if (StringUtils.isNotEmpty(message.getTag())) {
                     cloudEventBuilder = cloudEventBuilder.withExtension(ProtocolKey.TAG, message.getTag());
                 }
@@ -128,15 +136,20 @@ public class GrpcMessageProtocolResolver {
             .setProtocolDesc(protocolDesc).setProtocolVersion(protocolVersion)
             .build();
 
-        EventMeshMessage eventMeshMessage = EventMeshMessage.newBuilder()
+        EventMeshMessage.Builder messageBuilder = EventMeshMessage.newBuilder()
             .setHeader(header)
             .setContent(new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8))
             .setProducerGroup(producerGroup)
             .setSeqNum(seqNum)
             .setUniqueId(uniqueId)
             .setTopic(cloudEvent.getSubject())
-            .setTtl(ttl)
-            .build();
+            .setTtl(ttl);
+
+        for (String key : cloudEvent.getExtensionNames()) {
+            messageBuilder.putProperties(key, cloudEvent.getExtension(key).toString());
+        }
+
+        EventMeshMessage eventMeshMessage = messageBuilder.build();
 
         return new EventMeshMessageWrapper(eventMeshMessage);
     }

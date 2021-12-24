@@ -6,6 +6,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
 import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.HeartbeatProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,10 @@ public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplB
     }
 
     public void heartbeat(Heartbeat request, StreamObserver<Response> responseObserver) {
+        logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+            "heartbeat", EventMeshConstants.PROTOCOL_GRPC,
+            request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
             HeartbeatProcessor heartbeatProcessor = new HeartbeatProcessor(eventMeshGrpcServer);

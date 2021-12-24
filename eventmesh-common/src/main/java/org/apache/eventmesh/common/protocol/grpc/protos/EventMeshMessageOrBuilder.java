@@ -89,4 +89,38 @@ public interface EventMeshMessageOrBuilder extends
    */
   com.google.protobuf.ByteString
       getTagBytes();
+
+  /**
+   * <code>map&lt;string, string&gt; properties = 9;</code>
+   */
+  int getPropertiesCount();
+  /**
+   * <code>map&lt;string, string&gt; properties = 9;</code>
+   */
+  boolean containsProperties(
+      String key);
+  /**
+   * Use {@link #getPropertiesMap()} instead.
+   */
+  @Deprecated
+  java.util.Map<String, String>
+  getProperties();
+  /**
+   * <code>map&lt;string, string&gt; properties = 9;</code>
+   */
+  java.util.Map<String, String>
+  getPropertiesMap();
+  /**
+   * <code>map&lt;string, string&gt; properties = 9;</code>
+   */
+
+  String getPropertiesOrDefault(
+      String key,
+      String defaultValue);
+  /**
+   * <code>map&lt;string, string&gt; properties = 9;</code>
+   */
+
+  String getPropertiesOrThrow(
+      String key);
 }

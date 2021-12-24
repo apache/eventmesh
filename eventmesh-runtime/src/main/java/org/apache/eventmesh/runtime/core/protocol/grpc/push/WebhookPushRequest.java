@@ -33,7 +33,6 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.WebhookTopicConfig;
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ResponseHandler;
@@ -91,6 +90,8 @@ public class WebhookPushRequest extends AbstractPushRequest {
             return;
         }
 
+        this.lastPushTime = System.currentTimeMillis();
+
         HttpPost builder = new HttpPost(selectedPushUrl);
 
         String requestCode = String.valueOf(RequestCode.HTTP_PUSH_CLIENT_ASYNC.getRequestCode());
@@ -98,7 +99,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
         builder.addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
         builder.addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshGrpcConfiguration.eventMeshCluster);
-        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshGrpcConfiguration.eventMeshIP);
+        builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshGrpcConfiguration.eventMeshIp);
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshGrpcConfiguration.eventMeshEnv);
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshGrpcConfiguration.eventMeshIDC);
 
@@ -109,15 +110,14 @@ public class WebhookPushRequest extends AbstractPushRequest {
         body.add(new BasicNameValuePair(PushMessageRequestBody.RANDOMNO, handleMsgContext.getMsgRandomNo()));
         body.add(new BasicNameValuePair(PushMessageRequestBody.TOPIC, eventMeshMessage.getTopic()));
         body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
-            JsonUtils.serialize(EventMeshUtil.getEventProp(event))));
+            JsonUtils.serialize(eventMeshMessage.getPropertiesMap())));
 
-        //TODO update event time here
+        eventMeshMessage.getPropertiesMap().put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
+            String.valueOf(lastPushTime));
 
         builder.setEntity(new UrlEncodedFormEntity(body, StandardCharsets.UTF_8));
 
         //eventMeshHTTPServer.metrics.summaryMetrics.recordPushMsg();
-
-        this.lastPushTime = System.currentTimeMillis();
 
         addToWaitingMap(this);
 
@@ -126,16 +126,10 @@ public class WebhookPushRequest extends AbstractPushRequest {
 
         try {
             eventMeshGrpcServer.getHttpClient().execute(builder, handleResponse());
-
-            if (messageLogger.isDebugEnabled()) {
-                messageLogger.debug("message|eventMesh2client|url={}|topic={}|event={}", selectedPushUrl,
-                    eventMeshMessage.getTopic(), event);
-            } else {
-                messageLogger
-                    .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
-                        selectedPushUrl, eventMeshMessage.getTopic(), eventMeshMessage.getSeqNum(),
-                        eventMeshMessage.getUniqueId());
-            }
+            messageLogger
+                .info("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
+                    selectedPushUrl, eventMeshMessage.getTopic(), eventMeshMessage.getSeqNum(),
+                    eventMeshMessage.getUniqueId());
         } catch (IOException e) {
             messageLogger.error("push2client err", e);
             removeWaitingMap(this);

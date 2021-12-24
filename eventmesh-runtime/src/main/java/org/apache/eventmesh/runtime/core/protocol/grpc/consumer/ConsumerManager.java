@@ -30,8 +30,6 @@ public class ConsumerManager {
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    private static final int DEFAULT_UPDATE_TIME = 3 * 30 * 1000;
-
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
 
     // key: ConsumerGroup
@@ -180,42 +178,45 @@ public class ConsumerManager {
     }
 
     private void startClientCheck() {
-        scheduledExecutorService.scheduleAtFixedRate(() -> {
-            logger.info("grpc client info check");
-            List<ConsumerGroupClient> clientList = new LinkedList<>();
-            for (List<ConsumerGroupClient> clients : clientTable.values()) {
-                clientList.addAll(clients);
-            }
-            if (logger.isDebugEnabled()) {
-                logger.debug("total number of ConsumerGroupClients: {}", clientList.size());
-            }
+        int clientTimeout = eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshSessionExpiredInMills;
+        if (clientTimeout > 0) {
+            scheduledExecutorService.scheduleAtFixedRate(() -> {
+                logger.info("grpc client info check");
+                List<ConsumerGroupClient> clientList = new LinkedList<>();
+                for (List<ConsumerGroupClient> clients : clientTable.values()) {
+                    clientList.addAll(clients);
+                }
+                if (logger.isDebugEnabled()) {
+                    logger.debug("total number of ConsumerGroupClients: {}", clientList.size());
+                }
 
-            if (clientList.isEmpty()) {
-                return;
-            }
-            Set<String> consumerGroupRestart = new HashSet<>();
-            for (ConsumerGroupClient client : clientList) {
-                if (System.currentTimeMillis() - client.getLastUpTime().getTime() > DEFAULT_UPDATE_TIME) {
-                    logger.warn("client {} lastUpdate time {} over three heartbeat cycles. Removing it",
-                        JsonUtils.serialize(client), client.getLastUpTime());
-                    String consumerGroup = client.getConsumerGroup();
-                    EventMeshConsumer consumer = getEventMeshConsumer(consumerGroup);
+                if (clientList.isEmpty()) {
+                    return;
+                }
+                Set<String> consumerGroupRestart = new HashSet<>();
+                for (ConsumerGroupClient client : clientList) {
+                    if (System.currentTimeMillis() - client.getLastUpTime().getTime() > clientTimeout) {
+                        logger.warn("client {} lastUpdate time {} over three heartbeat cycles. Removing it",
+                            JsonUtils.serialize(client), client.getLastUpTime());
+                        String consumerGroup = client.getConsumerGroup();
+                        EventMeshConsumer consumer = getEventMeshConsumer(consumerGroup);
 
-                    deregisterClient(client);
-                    if (consumer.deregisterClient(client)) {
-                        consumerGroupRestart.add(consumerGroup);
+                        deregisterClient(client);
+                        if (consumer.deregisterClient(client)) {
+                            consumerGroupRestart.add(consumerGroup);
+                        }
                     }
                 }
-            }
 
-            // restart EventMeshConsumer for the group
-            for (String consumerGroup : consumerGroupRestart) {
-                try {
-                    restartEventMeshConsumer(consumerGroup);
-                } catch (Exception e) {
-                    logger.error("Error in restarting EventMeshConsumer [{}]", consumerGroup, e);
+                // restart EventMeshConsumer for the group
+                for (String consumerGroup : consumerGroupRestart) {
+                    try {
+                        restartEventMeshConsumer(consumerGroup);
+                    } catch (Exception e) {
+                        logger.error("Error in restarting EventMeshConsumer [{}]", consumerGroup, e);
+                    }
                 }
-            }
-        }, 10000, 10000, TimeUnit.MILLISECONDS);
+            }, 10000, 10000, TimeUnit.MILLISECONDS);
+        }
     }
 }

@@ -1,12 +1,12 @@
 package org.apache.eventmesh.runtime.boot;
 
+import com.google.common.util.concurrent.RateLimiter;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
-import org.apache.eventmesh.runtime.core.protocol.grpc.interceptor.MetricsInterceptor;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ConsumerService;
@@ -46,6 +46,8 @@ public class EventMeshGrpcServer {
 
     private List<CloseableHttpClient> httpClientPool;
 
+    private RateLimiter msgRateLimiter;
+
     public EventMeshGrpcServer(EventMeshGrpcConfiguration eventMeshGrpcConfiguration) {
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
     }
@@ -56,6 +58,8 @@ public class EventMeshGrpcServer {
         initThreadPool();
 
         initHttpClientPool();
+
+        msgRateLimiter = RateLimiter.create(eventMeshGrpcConfiguration.eventMeshMsgReqNumPerSecond);
 
         producerManager = new ProducerManager(this);
         producerManager.init();
@@ -69,7 +73,6 @@ public class EventMeshGrpcServer {
         int serverPort = eventMeshGrpcConfiguration.grpcServerPort;
 
         server = ServerBuilder.forPort(serverPort)
-            .intercept(new MetricsInterceptor())
             .addService(new ProducerService(this, sendMsgExecutor))
             .addService(new ConsumerService(this, clientMgmtExecutor))
             .addService(new HeartbeatService(this, clientMgmtExecutor))
@@ -133,6 +136,10 @@ public class EventMeshGrpcServer {
         return pushMsgExecutor;
     }
 
+    public RateLimiter getMsgRateLimiter() {
+        return msgRateLimiter;
+    }
+
     public CloseableHttpClient getHttpClient() {
         int size = httpClientPool.size();
         return httpClientPool.get(RandomUtils.nextInt(size, 2 * size) % size);
@@ -140,21 +147,21 @@ public class EventMeshGrpcServer {
 
     private void initThreadPool() {
         BlockingQueue<Runnable> sendMsgThreadPoolQueue =
-            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.eventMeshServerSendMsgBlockQSize);
+            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.eventMeshServerSendMsgBlockQueueSize);
 
         sendMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(eventMeshGrpcConfiguration.eventMeshServerSendMsgThreadNum,
             eventMeshGrpcConfiguration.eventMeshServerSendMsgThreadNum, sendMsgThreadPoolQueue,
             "eventMesh-grpc-sendMsg-%d", true);
 
         BlockingQueue<Runnable> subscribeMsgThreadPoolQueue =
-            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.eventMeshServerSubscribeMsgBlockQSize);
+            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.eventMeshServerSubscribeMsgBlockQueueSize);
 
         clientMgmtExecutor = ThreadPoolFactory.createThreadPoolExecutor(eventMeshGrpcConfiguration.eventMeshServerSubscribeMsgThreadNum,
             eventMeshGrpcConfiguration.eventMeshServerSubscribeMsgThreadNum, subscribeMsgThreadPoolQueue,
             "eventMesh-grpc-clientMgmt-%d", true);
 
         BlockingQueue<Runnable> pushMsgThreadPoolQueue =
-            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.eventMeshServerPushMsgBlockQSize);
+            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.eventMeshServerPushMsgBlockQueueSize);
 
         pushMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(eventMeshGrpcConfiguration.eventMeshServerPushMsgThreadNum,
                 eventMeshGrpcConfiguration.eventMeshServerPushMsgThreadNum, pushMsgThreadPoolQueue,

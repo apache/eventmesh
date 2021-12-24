@@ -170,7 +170,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             } catch (Exception e) {
                 logger.error("Error in sending out heartbeat. error {}", e.getMessage());
             }
-        }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
+        }, 10000, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
 
         logger.info("Grpc Consumer Heartbeat started.");
     }

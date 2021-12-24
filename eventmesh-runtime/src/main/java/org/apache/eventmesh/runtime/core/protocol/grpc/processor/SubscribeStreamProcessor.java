@@ -1,10 +1,13 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
+import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
@@ -25,6 +28,8 @@ public class SubscribeStreamProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
+    private final Logger aclLogger = LoggerFactory.getLogger("acl");
+
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
     private final GrpcType grpcType = GrpcType.STREAM;
@@ -44,6 +49,14 @@ public class SubscribeStreamProcessor {
 
         if (!ServiceUtils.validateSubscription(grpcType, subscription)) {
             sendResp(subscription, StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            return;
+        }
+
+        try {
+            doAclCheck(subscription);
+        } catch (AclException e) {
+            aclLogger.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
+            sendResp(subscription, StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
@@ -94,16 +107,7 @@ public class SubscribeStreamProcessor {
             logger.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
 
-        // send back subscribe success response
-        Map<String, String> resp = new HashMap<>();
-        resp.put("respCode", StatusCode.SUCCESS.getRetCode());
-        resp.put("respMsg", "subscribe success");
-
-        EventMeshMessage eventMeshMessage = EventMeshMessage.newBuilder()
-            .setHeader(header)
-            .setContent(JsonUtils.serialize(resp))
-            .build();
-        emitter.onNext(eventMeshMessage);
+        sendResp(subscription, StatusCode.SUCCESS, "subscribe success", emitter);
     }
 
     private void sendResp(Subscription subscription, StatusCode code, EventEmitter<EventMeshMessage> emitter) {
@@ -119,5 +123,34 @@ public class SubscribeStreamProcessor {
 
         emitter.onNext(eventMeshMessage);
         emitter.onCompleted();
+    }
+
+    private void sendResp(Subscription subscription, StatusCode code, String message, EventEmitter<EventMeshMessage> emitter) {
+        Map<String, String> resp = new HashMap<>();
+        resp.put("respCode", code.getRetCode());
+        resp.put("respMsg", code.getErrMsg() + " " + message);
+
+        RequestHeader header = subscription.getHeader();
+        EventMeshMessage eventMeshMessage = EventMeshMessage.newBuilder()
+            .setHeader(header)
+            .setContent(JsonUtils.serialize(resp))
+            .build();
+
+        emitter.onNext(eventMeshMessage);
+        emitter.onCompleted();
+    }
+
+    private void doAclCheck(Subscription subscription) throws AclException {
+        RequestHeader header = subscription.getHeader();
+        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
+            String remoteAdd = header.getIp();
+            String user = header.getUsername();
+            String pass = header.getPassword();
+            String subsystem = header.getSys();
+            for (Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
+                Acl.doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(),
+                    RequestCode.SUBSCRIBE.getRequestCode());
+            }
+        }
     }
 }

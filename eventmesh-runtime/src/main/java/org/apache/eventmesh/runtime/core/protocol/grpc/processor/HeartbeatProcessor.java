@@ -1,21 +1,29 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
+import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat.ClientType;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
+import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Date;
 
 public class HeartbeatProcessor {
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+    private final Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -33,6 +41,14 @@ public class HeartbeatProcessor {
 
         if (!ServiceUtils.validateHeartBeat(heartbeat)) {
             ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            return;
+        }
+
+        try {
+            doAclCheck(heartbeat);
+        } catch (AclException e) {
+            aclLogger.warn("CLIENT HAS NO PERMISSION, HeartbeatProcessor failed", e);
+            ServiceUtils.sendResp(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
@@ -63,5 +79,19 @@ public class HeartbeatProcessor {
         }
 
         ServiceUtils.sendResp(StatusCode.SUCCESS, "heartbeat success", emitter);
+    }
+
+    private void doAclCheck(Heartbeat heartbeat) throws AclException {
+        RequestHeader header = heartbeat.getHeader();
+        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
+            String remoteAdd = header.getIp();
+            String user = header.getUsername();
+            String pass = header.getPassword();
+            String sys = header.getSys();
+            int requestCode = Integer.valueOf(RequestCode.HEARTBEAT.getRequestCode());
+            for (Heartbeat.HeartbeatItem item : heartbeat.getHeartbeatItemsList()) {
+                Acl.doAclCheckInHttpHeartbeat(remoteAdd, user, pass, sys, item.getTopic(), requestCode);
+            }
+        }
     }
 }
