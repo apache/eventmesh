@@ -48,7 +48,7 @@ public class GrpcRetryer {
     private Thread dispatcher;
 
     public void pushRetry(DelayRetryable delayRetryable) {
-        if (failed.size() >= grpcConfiguration.eventMeshServerRetryBlockQSize) {
+        if (failed.size() >= grpcConfiguration.eventMeshServerRetryBlockQueueSize) {
             retryLogger.error("[RETRY-QUEUE] is full!");
             return;
         }
@@ -60,7 +60,7 @@ public class GrpcRetryer {
                 grpcConfiguration.eventMeshServerRetryThreadNum,
                 60000,
                 TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<>(grpcConfiguration.eventMeshServerRetryBlockQSize),
+            new ArrayBlockingQueue<>(grpcConfiguration.eventMeshServerRetryBlockQueueSize),
                 new ThreadFactory() {
                     private AtomicInteger count = new AtomicInteger();
 

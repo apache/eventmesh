@@ -73,12 +73,7 @@ public abstract class AbstractPushRequest extends RetryContext {
 
         this.eventMeshGrpcConfiguration = handleMsgContext.getEventMeshGrpcServer().getEventMeshGrpcConfiguration();
         this.grpcRetryer = handleMsgContext.getEventMeshGrpcServer().getGrpcRetryer();
-
-        this.event = CloudEventBuilder.from(handleMsgContext.getEvent())
-            .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-                String.valueOf(System.currentTimeMillis()))
-            .build();
-
+        this.event = handleMsgContext.getEvent();
         this.eventMeshMessage = getEventMeshMessage(event);
     }
 
@@ -118,7 +113,6 @@ public abstract class AbstractPushRequest extends RetryContext {
 
     private void finish() {
         AbstractContext context = handleMsgContext.getContext();
-        CloudEvent event = handleMsgContext.getEvent();
         SubscriptionMode subscriptionMode = handleMsgContext.getSubscriptionMode();
         if (eventMeshConsumer != null && context != null && event != null) {
             try {

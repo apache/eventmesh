@@ -111,6 +111,19 @@ private static final long serialVersionUID = 0L;
             tag_ = s;
             break;
           }
+          case 74: {
+            if (!((mutable_bitField0_ & 0x00000100) == 0x00000100)) {
+              properties_ = com.google.protobuf.MapField.newMapField(
+                  PropertiesDefaultEntryHolder.defaultEntry);
+              mutable_bitField0_ |= 0x00000100;
+            }
+            com.google.protobuf.MapEntry<String, String>
+            properties__ = input.readMessage(
+                PropertiesDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+            properties_.getMutableMap().put(
+                properties__.getKey(), properties__.getValue());
+            break;
+          }
         }
       }
     } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -128,6 +141,17 @@ private static final long serialVersionUID = 0L;
     return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_descriptor;
   }
 
+  @SuppressWarnings({"rawtypes"})
+  protected com.google.protobuf.MapField internalGetMapField(
+      int number) {
+    switch (number) {
+      case 9:
+        return internalGetProperties();
+      default:
+        throw new RuntimeException(
+            "Invalid map field number: " + number);
+    }
+  }
   protected FieldAccessorTable
       internalGetFieldAccessorTable() {
     return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_fieldAccessorTable
@@ -135,6 +159,7 @@ private static final long serialVersionUID = 0L;
             EventMeshMessage.class, Builder.class);
   }
 
+  private int bitField0_;
   public static final int HEADER_FIELD_NUMBER = 1;
   private RequestHeader header_;
   /**
@@ -394,6 +419,82 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int PROPERTIES_FIELD_NUMBER = 9;
+  private static final class PropertiesDefaultEntryHolder {
+    static final com.google.protobuf.MapEntry<
+        String, String> defaultEntry =
+            com.google.protobuf.MapEntry
+            .<String, String>newDefaultInstance(
+                EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_PropertiesEntry_descriptor,
+                com.google.protobuf.WireFormat.FieldType.STRING,
+                "",
+                com.google.protobuf.WireFormat.FieldType.STRING,
+                "");
+  }
+  private com.google.protobuf.MapField<
+      String, String> properties_;
+  private com.google.protobuf.MapField<String, String>
+  internalGetProperties() {
+    if (properties_ == null) {
+      return com.google.protobuf.MapField.emptyMapField(
+          PropertiesDefaultEntryHolder.defaultEntry);
+    }
+    return properties_;
+  }
+
+  public int getPropertiesCount() {
+    return internalGetProperties().getMap().size();
+  }
+  /**
+   * <code>map&lt;string, string&gt; properties = 9;</code>
+   */
+
+  public boolean containsProperties(
+      String key) {
+    if (key == null) { throw new NullPointerException(); }
+    return internalGetProperties().getMap().containsKey(key);
+  }
+  /**
+   * Use {@link #getPropertiesMap()} instead.
+   */
+  @Deprecated
+  public java.util.Map<String, String> getProperties() {
+    return getPropertiesMap();
+  }
+  /**
+   * <code>map&lt;string, string&gt; properties = 9;</code>
+   */
+
+  public java.util.Map<String, String> getPropertiesMap() {
+    return internalGetProperties().getMap();
+  }
+  /**
+   * <code>map&lt;string, string&gt; properties = 9;</code>
+   */
+
+  public String getPropertiesOrDefault(
+      String key,
+      String defaultValue) {
+    if (key == null) { throw new NullPointerException(); }
+    java.util.Map<String, String> map =
+        internalGetProperties().getMap();
+    return map.containsKey(key) ? map.get(key) : defaultValue;
+  }
+  /**
+   * <code>map&lt;string, string&gt; properties = 9;</code>
+   */
+
+  public String getPropertiesOrThrow(
+      String key) {
+    if (key == null) { throw new NullPointerException(); }
+    java.util.Map<String, String> map =
+        internalGetProperties().getMap();
+    if (!map.containsKey(key)) {
+      throw new IllegalArgumentException();
+    }
+    return map.get(key);
+  }
+
   private byte memoizedIsInitialized = -1;
   public final boolean isInitialized() {
     byte isInitialized = memoizedIsInitialized;
@@ -430,6 +531,12 @@ private static final long serialVersionUID = 0L;
     if (!getTagBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 8, tag_);
     }
+    com.google.protobuf.GeneratedMessageV3
+      .serializeStringMapTo(
+        output,
+        internalGetProperties(),
+        PropertiesDefaultEntryHolder.defaultEntry,
+        9);
     unknownFields.writeTo(output);
   }
 
@@ -462,6 +569,16 @@ private static final long serialVersionUID = 0L;
     }
     if (!getTagBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, tag_);
+    }
+    for (java.util.Map.Entry<String, String> entry
+         : internalGetProperties().getMap().entrySet()) {
+      com.google.protobuf.MapEntry<String, String>
+      properties__ = PropertiesDefaultEntryHolder.defaultEntry.newBuilderForType()
+          .setKey(entry.getKey())
+          .setValue(entry.getValue())
+          .build();
+      size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(9, properties__);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -498,6 +615,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getSeqNum());
     result = result && getTag()
         .equals(other.getTag());
+    result = result && internalGetProperties().equals(
+        other.internalGetProperties());
     result = result && unknownFields.equals(other.unknownFields);
     return result;
   }
@@ -527,6 +646,10 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getSeqNum().hashCode();
     hash = (37 * hash) + TAG_FIELD_NUMBER;
     hash = (53 * hash) + getTag().hashCode();
+    if (!internalGetProperties().getMap().isEmpty()) {
+      hash = (37 * hash) + PROPERTIES_FIELD_NUMBER;
+      hash = (53 * hash) + internalGetProperties().hashCode();
+    }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -632,6 +755,28 @@ private static final long serialVersionUID = 0L;
       return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_descriptor;
     }
 
+    @SuppressWarnings({"rawtypes"})
+    protected com.google.protobuf.MapField internalGetMapField(
+        int number) {
+      switch (number) {
+        case 9:
+          return internalGetProperties();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
+    @SuppressWarnings({"rawtypes"})
+    protected com.google.protobuf.MapField internalGetMutableMapField(
+        int number) {
+      switch (number) {
+        case 9:
+          return internalGetMutableProperties();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_fieldAccessorTable
@@ -676,6 +821,7 @@ private static final long serialVersionUID = 0L;
 
       tag_ = "";
 
+      internalGetMutableProperties().clear();
       return this;
     }
 
@@ -698,6 +844,8 @@ private static final long serialVersionUID = 0L;
 
     public EventMeshMessage buildPartial() {
       EventMeshMessage result = new EventMeshMessage(this);
+      int from_bitField0_ = bitField0_;
+      int to_bitField0_ = 0;
       if (headerBuilder_ == null) {
         result.header_ = header_;
       } else {
@@ -710,6 +858,9 @@ private static final long serialVersionUID = 0L;
       result.uniqueId_ = uniqueId_;
       result.seqNum_ = seqNum_;
       result.tag_ = tag_;
+      result.properties_ = internalGetProperties();
+      result.properties_.makeImmutable();
+      result.bitField0_ = to_bitField0_;
       onBuilt();
       return result;
     }
@@ -782,6 +933,8 @@ private static final long serialVersionUID = 0L;
         tag_ = other.tag_;
         onChanged();
       }
+      internalGetMutableProperties().mergeFrom(
+          other.internalGetProperties());
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
       return this;
@@ -808,6 +961,7 @@ private static final long serialVersionUID = 0L;
       }
       return this;
     }
+    private int bitField0_;
 
     private RequestHeader header_ = null;
     private com.google.protobuf.SingleFieldBuilderV3<
@@ -1406,6 +1560,129 @@ private static final long serialVersionUID = 0L;
       
       tag_ = value;
       onChanged();
+      return this;
+    }
+
+    private com.google.protobuf.MapField<
+        String, String> properties_;
+    private com.google.protobuf.MapField<String, String>
+    internalGetProperties() {
+      if (properties_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            PropertiesDefaultEntryHolder.defaultEntry);
+      }
+      return properties_;
+    }
+    private com.google.protobuf.MapField<String, String>
+    internalGetMutableProperties() {
+      onChanged();;
+      if (properties_ == null) {
+        properties_ = com.google.protobuf.MapField.newMapField(
+            PropertiesDefaultEntryHolder.defaultEntry);
+      }
+      if (!properties_.isMutable()) {
+        properties_ = properties_.copy();
+      }
+      return properties_;
+    }
+
+    public int getPropertiesCount() {
+      return internalGetProperties().getMap().size();
+    }
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+
+    public boolean containsProperties(
+        String key) {
+      if (key == null) { throw new NullPointerException(); }
+      return internalGetProperties().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getPropertiesMap()} instead.
+     */
+    @Deprecated
+    public java.util.Map<String, String> getProperties() {
+      return getPropertiesMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+
+    public java.util.Map<String, String> getPropertiesMap() {
+      return internalGetProperties().getMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+
+    public String getPropertiesOrDefault(
+        String key,
+        String defaultValue) {
+      if (key == null) { throw new NullPointerException(); }
+      java.util.Map<String, String> map =
+          internalGetProperties().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+
+    public String getPropertiesOrThrow(
+        String key) {
+      if (key == null) { throw new NullPointerException(); }
+      java.util.Map<String, String> map =
+          internalGetProperties().getMap();
+      if (!map.containsKey(key)) {
+        throw new IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
+    public Builder clearProperties() {
+      internalGetMutableProperties().getMutableMap()
+          .clear();
+      return this;
+    }
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+
+    public Builder removeProperties(
+        String key) {
+      if (key == null) { throw new NullPointerException(); }
+      internalGetMutableProperties().getMutableMap()
+          .remove(key);
+      return this;
+    }
+    /**
+     * Use alternate mutation accessors instead.
+     */
+    @Deprecated
+    public java.util.Map<String, String>
+    getMutableProperties() {
+      return internalGetMutableProperties().getMutableMap();
+    }
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+    public Builder putProperties(
+        String key,
+        String value) {
+      if (key == null) { throw new NullPointerException(); }
+      if (value == null) { throw new NullPointerException(); }
+      internalGetMutableProperties().getMutableMap()
+          .put(key, value);
+      return this;
+    }
+    /**
+     * <code>map&lt;string, string&gt; properties = 9;</code>
+     */
+
+    public Builder putAllProperties(
+        java.util.Map<String, String> values) {
+      internalGetMutableProperties().getMutableMap()
+          .putAll(values);
       return this;
     }
     public final Builder setUnknownFields(

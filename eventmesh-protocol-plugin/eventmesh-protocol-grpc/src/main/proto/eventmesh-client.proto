@@ -47,6 +47,7 @@ message EventMeshMessage {
    string uniqueId = 6;
    string seqNum = 7;
    string tag = 8;
+   map<string, string> properties = 9;
 }
 
 message Response {

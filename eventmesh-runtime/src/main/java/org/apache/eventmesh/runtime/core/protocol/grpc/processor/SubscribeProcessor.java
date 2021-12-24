@@ -1,9 +1,12 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
+import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsumer;
@@ -21,6 +24,8 @@ import java.util.List;
 public class SubscribeProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+    private final Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -40,6 +45,14 @@ public class SubscribeProcessor {
 
         if (!ServiceUtils.validateSubscription(grpcType, subscription)) {
             ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            return;
+        }
+
+        try {
+            doAclCheck(subscription);
+        } catch (AclException e) {
+            aclLogger.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
+            ServiceUtils.sendResp(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
@@ -92,5 +105,19 @@ public class SubscribeProcessor {
         }
 
         ServiceUtils.sendResp(StatusCode.SUCCESS, "subscribe success", emitter);
+    }
+
+    private void doAclCheck(Subscription subscription) throws AclException {
+        RequestHeader header = subscription.getHeader();
+        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
+            String remoteAdd = header.getIp();
+            String user = header.getUsername();
+            String pass = header.getPassword();
+            String subsystem = header.getSys();
+            for (Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
+                Acl.doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(),
+                        RequestCode.SUBSCRIBE.getRequestCode());
+            }
+        }
     }
 }

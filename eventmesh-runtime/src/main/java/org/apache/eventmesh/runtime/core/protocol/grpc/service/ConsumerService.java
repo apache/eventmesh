@@ -7,11 +7,15 @@ import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.SubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.SubscribeStreamProcessor;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.UnsubscribeProcessor;
+import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +38,10 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     }
 
     public void subscribe(Subscription request, StreamObserver<Response> responseObserver) {
+        logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+            "subscribe", EventMeshConstants.PROTOCOL_GRPC,
+            request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
             SubscribeProcessor subscribeProcessor = new SubscribeProcessor(eventMeshGrpcServer);
@@ -48,6 +56,10 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     }
 
     public void subscribeStream(Subscription request, StreamObserver<EventMeshMessage> responseObserver) {
+        logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+            "subscribeStream", EventMeshConstants.PROTOCOL_GRPC,
+            request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+
         EventEmitter<EventMeshMessage> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
             SubscribeStreamProcessor streamProcessor = new SubscribeStreamProcessor(eventMeshGrpcServer);
@@ -74,6 +86,10 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
     }
 
     public void unsubscribe(Subscription request, StreamObserver<Response> responseObserver) {
+        logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
+            "unsubscribe", EventMeshConstants.PROTOCOL_GRPC,
+            request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
             UnsubscribeProcessor unsubscribeProcessor = new UnsubscribeProcessor(eventMeshGrpcServer);

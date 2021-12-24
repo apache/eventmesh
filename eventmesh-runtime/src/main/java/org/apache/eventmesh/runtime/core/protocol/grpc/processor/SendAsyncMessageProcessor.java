@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
@@ -27,9 +28,16 @@ import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
+import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageContext;
@@ -37,12 +45,17 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
+import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 public class SendAsyncMessageProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
+
+    private final Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
@@ -63,14 +76,30 @@ public class SendAsyncMessageProcessor {
             return;
         }
 
-        String protocolType = requestHeader.getProtocolType();
-        ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
-        CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new EventMeshMessageWrapper(message));
-
         String seqNum = message.getSeqNum();
         String uniqueId = message.getUniqueId();
         String topic = message.getTopic();
         String producerGroup = message.getProducerGroup();
+
+        try {
+            doAclCheck(message);
+        } catch (Exception e) {
+            aclLogger.warn("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);
+            ServiceUtils.sendResp(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
+            return;
+        }
+
+        // control flow rate limit
+        if (!eventMeshGrpcServer.getMsgRateLimiter()
+            .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
+            logger.error("Send message speed over limit.");
+            ServiceUtils.sendResp(StatusCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, emitter);
+            return;
+        }
+
+        String protocolType = requestHeader.getProtocolType();
+        ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+        CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new EventMeshMessageWrapper(message));
 
         ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
         EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
@@ -96,6 +125,17 @@ public class SendAsyncMessageProcessor {
                     endTime - startTime, topic, seqNum, uniqueId, context.getException());
             }
         });
+    }
 
+    private void doAclCheck(EventMeshMessage message) throws AclException {
+        RequestHeader requestHeader = message.getHeader();
+        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
+            String remoteAdd = requestHeader.getIp();
+            String user = requestHeader.getUsername();
+            String pass = requestHeader.getPassword();
+            String subsystem = requestHeader.getSys();
+            String topic = message.getTopic();
+            Acl.doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.MSG_SEND_ASYNC.getRequestCode());
+        }
     }
 }
