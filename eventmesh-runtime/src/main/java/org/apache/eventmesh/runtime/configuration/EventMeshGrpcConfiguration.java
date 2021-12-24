@@ -21,6 +21,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.utils.IPUtils;
 
 public class EventMeshGrpcConfiguration extends CommonConfiguration {
 
@@ -65,6 +66,8 @@ public class EventMeshGrpcConfiguration extends CommonConfiguration {
     public boolean eventMeshServerUseTls = false;
 
     public int eventMeshBatchMsgRequestNumPerSecond = 20000;
+
+    public String eventMeshIP = IPUtils.getLocalAddress();
 
     public EventMeshGrpcConfiguration(ConfigurationWrapper configurationWrapper) {
         super(configurationWrapper);

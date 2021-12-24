@@ -35,12 +35,9 @@ public class GrpcRetryer {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private EventMeshGrpcServer eventMeshGrpcServer;
-
     private EventMeshGrpcConfiguration grpcConfiguration;
 
     public GrpcRetryer(EventMeshGrpcServer eventMeshGrpcServer) {
-        this.eventMeshGrpcServer = eventMeshGrpcServer;
         this.grpcConfiguration = eventMeshGrpcServer.getEventMeshGrpcConfiguration();
     }
 
@@ -51,8 +48,7 @@ public class GrpcRetryer {
     private Thread dispatcher;
 
     public void pushRetry(DelayRetryable delayRetryable) {
-        if (failed.size() >= eventMeshGrpcServer.getEventMeshGrpcConfiguration()
-                .eventMeshServerRetryBlockQSize) {
+        if (failed.size() >= grpcConfiguration.eventMeshServerRetryBlockQSize) {
             retryLogger.error("[RETRY-QUEUE] is full!");
             return;
         }
@@ -64,7 +60,7 @@ public class GrpcRetryer {
                 grpcConfiguration.eventMeshServerRetryThreadNum,
                 60000,
                 TimeUnit.MILLISECONDS,
-                new ArrayBlockingQueue<Runnable>(grpcConfiguration.eventMeshServerRetryBlockQSize),
+            new ArrayBlockingQueue<>(grpcConfiguration.eventMeshServerRetryBlockQSize),
                 new ThreadFactory() {
                     private AtomicInteger count = new AtomicInteger();
 
@@ -77,28 +73,25 @@ public class GrpcRetryer {
                     }
                 }, new ThreadPoolExecutor.AbortPolicy());
 
-        dispatcher = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    DelayRetryable retryObj = null;
-                    while (!Thread.currentThread().isInterrupted()
-                            && (retryObj = failed.take()) != null) {
-                        final DelayRetryable delayRetryable = retryObj;
-                        pool.execute(() -> {
-                            try {
-                                delayRetryable.retry();
-                                if (retryLogger.isDebugEnabled()) {
-                                    retryLogger.debug("retryObj : {}", delayRetryable);
-                                }
-                            } catch (Exception e) {
-                                retryLogger.error("grpc-retry-dispatcher error!", e);
+        dispatcher = new Thread(() -> {
+            try {
+                DelayRetryable retryObj = null;
+                while (!Thread.currentThread().isInterrupted()
+                        && (retryObj = failed.take()) != null) {
+                    final DelayRetryable delayRetryable = retryObj;
+                    pool.execute(() -> {
+                        try {
+                            delayRetryable.retry();
+                            if (retryLogger.isDebugEnabled()) {
+                                retryLogger.debug("retryObj : {}", delayRetryable);
                             }
-                        });
-                    }
-                } catch (Exception e) {
-                    retryLogger.error("grpc-retry-dispatcher error!", e);
+                        } catch (Exception e) {
+                            retryLogger.error("grpc-retry-dispatcher error!", e);
+                        }
+                    });
                 }
+            } catch (Exception e) {
+                retryLogger.error("grpc-retry-dispatcher error!", e);
             }
         }, "grpc-retry-dispatcher");
         dispatcher.setDaemon(true);
