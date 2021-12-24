@@ -19,25 +19,19 @@ package org.apache.rocketmq.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.eventmesh.api.EventListener;
+import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
+import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
+
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import org.apache.rocketmq.common.message.MessageExt;
+
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Properties;
 
-import io.openmessaging.api.AsyncConsumeContext;
-import io.openmessaging.api.AsyncMessageListener;
-import io.openmessaging.api.Consumer;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.MessagingAccessPoint;
-import io.openmessaging.api.OMS;
-import io.openmessaging.api.OMSBuiltinKeys;
-
-import org.apache.eventmesh.api.EventMeshAction;
-import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
-import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
-import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
-import org.apache.rocketmq.common.message.MessageExt;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,9 +40,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import io.cloudevents.CloudEvent;
+
 @RunWith(MockitoJUnitRunner.class)
 public class PushConsumerImplTest {
-    private Consumer consumer;
+    private PushConsumerImpl consumer;
 
     @Mock
     private DefaultMQPushConsumer rocketmqPushConsumer;
@@ -56,15 +52,16 @@ public class PushConsumerImplTest {
     @Before
     public void before() throws Exception {
         Properties consumerProp = new Properties();
-        consumerProp.setProperty(OMSBuiltinKeys.DRIVER_IMPL, "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
+//        consumerProp.setProperty(OMSBuiltinKeys.DRIVER_IMPL,
+//            "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
         consumerProp.setProperty("access_points", "IP1:9876,IP2:9876");
-        final MessagingAccessPoint messagingAccessPoint = OMS.builder().build(consumerProp);//.endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build(config);
+        //final MessagingAccessPoint messagingAccessPoint = OMS.builder().build(consumerProp);//.endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build(config);
 
         consumerProp.setProperty("message.model", "CLUSTERING");
 
         //Properties consumerProp = new Properties();
         consumerProp.put("CONSUMER_ID", "TestGroup");
-        consumer = messagingAccessPoint.createConsumer(consumerProp);
+        consumer = new PushConsumerImpl(consumerProp);
 
 
         Field field = PushConsumerImpl.class.getDeclaredField("rocketmqPushConsumer");
@@ -84,23 +81,24 @@ public class PushConsumerImplTest {
 
     @Test
     public void testConsumeMessage() {
-        final byte[] testBody = new byte[]{'a', 'b'};
+        final byte[] testBody = new byte[] {'a', 'b'};
 
         MessageExt consumedMsg = new MessageExt();
         consumedMsg.setMsgId("NewMsgId");
         consumedMsg.setBody(testBody);
         consumedMsg.putUserProperty(NonStandardKeys.MESSAGE_DESTINATION, "TOPIC");
         consumedMsg.setTopic("HELLO_QUEUE");
-        consumer.subscribe("HELLO_QUEUE", "*", new AsyncMessageListener() {
+        consumer.subscribe("HELLO_QUEUE", "*", new EventListener() {
+
             @Override
-            public void consume(Message message, AsyncConsumeContext context) {
-                assertThat(message.getSystemProperties("MESSAGE_ID")).isEqualTo("NewMsgId");
-                assertThat(message.getBody()).isEqualTo(testBody);
-                ((EventMeshAsyncConsumeContext)context).commit(EventMeshAction.CommitMessage);
+            public void consume(CloudEvent cloudEvent, org.apache.eventmesh.api.AsyncConsumeContext context) {
+                assertThat(cloudEvent.getExtension("MESSAGE_ID")).isEqualTo("NewMsgId");
+                assertThat(cloudEvent.getData()).isEqualTo(testBody);
+                context.commit(EventMeshAction.CommitMessage);
             }
         });
         ((MessageListenerConcurrently) rocketmqPushConsumer
-                .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
+            .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
 
 
     }

@@ -69,8 +69,7 @@ There are two ways to install the plugin:
 - Install from files: By installing the plugin into the plugin directory, EventMesh will automatically load the plugins in the plugin directory
  according to the conditions when EventMesh running, you can install the plugins by executing the following command.
 ```shell
-./gradlew clean jar dist
-./gradlew installPlugin
+./gradlew clean jar dist && ./gradlew installPlugin
 ```
 
 ***2.3.1.2 Use Plugin***

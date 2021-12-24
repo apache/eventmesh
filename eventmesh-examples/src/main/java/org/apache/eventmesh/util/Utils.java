@@ -17,16 +17,15 @@
 
 package org.apache.eventmesh.util;
 
+import org.apache.commons.lang3.SystemUtils;
+
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Properties;
-
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 public class Utils {
 
@@ -49,13 +48,7 @@ public class Utils {
      * @return
      */
     public static boolean isWindowsOS() {
-        boolean isWindowsOS = false;
-        // JRE (runtime)system,not OS
-        String osName = System.getProperty("os.name");
-        if (osName.toLowerCase().contains("windows")) {
-            isWindowsOS = true;
-        }
-        return isWindowsOS;
+        return SystemUtils.IS_OS_WINDOWS;
     }
 
     /**
@@ -71,12 +64,13 @@ public class Utils {
                 NetworkInterface intf = en.nextElement();
                 String name = intf.getName();
                 if (!name.contains("docker") && !name.contains("lo")) {
-                    for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
+                    for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses();
+                         enumIpAddr.hasMoreElements(); ) {
                         InetAddress inetAddress = enumIpAddr.nextElement();
                         if (!inetAddress.isLoopbackAddress()) {
                             String ipaddress = inetAddress.getHostAddress().toString();
                             if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
-                                    && !ipaddress.contains("fe80")) {
+                                && !ipaddress.contains("fe80")) {
                                 ip = ipaddress;
                             }
                         }
@@ -92,17 +86,16 @@ public class Utils {
 
     /**
      * @param fileName
-     * @return
+     * @return Properties
      */
     public static Properties readPropertiesFile(String fileName) {
-        try {
-            Resource resource = new ClassPathResource(fileName);
-            Properties props = PropertiesLoaderUtils.loadProperties(resource);
-            return props;
+        try (final InputStream inputStream = Utils.class.getClassLoader().getResourceAsStream(fileName)) {
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            return properties;
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalArgumentException(String.format("File: %s is not exist", fileName));
         }
-        return null;
     }
 
 }

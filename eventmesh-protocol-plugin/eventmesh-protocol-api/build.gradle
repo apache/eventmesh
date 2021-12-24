@@ -16,8 +16,8 @@
  */
 
 dependencies {
-    implementation project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
+    api project(":eventmesh-spi")
+    api project(":eventmesh-common")
 
     implementation "io.cloudevents:cloudevents-core"
 
@@ -26,4 +26,10 @@ dependencies {
 
     testImplementation "io.cloudevents:cloudevents-core"
     testImplementation "junit:junit"
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }

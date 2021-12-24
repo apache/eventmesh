@@ -79,8 +79,7 @@ sh start.sh
 ```
 - 文件加载：通过将插件安装到插件目录，EventMesh在运行时会根据条件自动加载插件目录下的插件，可以通过执行以下命令安装插件
 ```shell
-./gradlew clean jar dist
-./gradlew installPlugin
+./gradlew clean jar dist && ./gradlew installPlugin
 ```
 
 ***2.3.2.2 使用插件***

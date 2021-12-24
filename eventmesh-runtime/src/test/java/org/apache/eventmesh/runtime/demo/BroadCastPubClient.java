@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.runtime.demo;
 
-import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
@@ -30,7 +30,7 @@ public class BroadCastPubClient {
         pubClient.init();
         pubClient.heartbeat();
         for (int i = 0; i < 10000; i++) {
-            ThreadUtil.randomSleep(0, 500);
+            ThreadUtils.randomSleep(0, 500);
             pubClient.broadcast(MessageUtils.broadcastMessage(ClientConstants.BROADCAST_TOPIC, i), 5000);
         }
     }

@@ -16,47 +16,47 @@
  */
 
 dependencies {
-    api "org.apache.commons:commons-lang3"
-    api "org.apache.commons:commons-collections4"
     api "com.google.guava:guava"
     api "org.slf4j:slf4j-api"
     api "junit:junit"
     api "org.assertj:assertj-core"
-
-    implementation "commons-io:commons-io"
-    implementation "org.apache.commons:commons-text"
+    api "org.apache.commons:commons-collections4"
+    api "org.apache.commons:commons-text"
+    api "org.apache.commons:commons-lang3"
 
     implementation "org.apache.logging.log4j:log4j-api"
     implementation "org.apache.logging.log4j:log4j-core"
-    implementation "org.apache.logging.log4j:log4j-core"
     implementation "org.apache.logging.log4j:log4j-slf4j-impl"
-    implementation "org.apache.logging.log4j:log4j-web"
 
     implementation "com.lmax:disruptor"
 
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
+    api "com.fasterxml.jackson.core:jackson-databind"
+    api "com.fasterxml.jackson.core:jackson-core"
+    api "com.fasterxml.jackson.core:jackson-annotations"
 
     implementation "org.apache.httpcomponents:httpclient"
 
     implementation "io.netty:netty-all"
 
+    implementation "io.grpc:grpc-protobuf:1.15.0"
+    implementation "io.grpc:grpc-stub:1.15.0"
+
     implementation "com.github.stefanbirkner:system-rules"
 
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+
     testImplementation "org.apache.commons:commons-lang3"
-    testImplementation "org.apache.commons:commons-collections4"
-    testImplementation "commons-io:commons-io"
-    testImplementation "org.apache.commons:commons-text"
 
     testImplementation "com.google.guava:guava"
 
     testImplementation "org.slf4j:slf4j-api"
     testImplementation "org.apache.logging.log4j:log4j-api"
     testImplementation "org.apache.logging.log4j:log4j-core"
-    testImplementation "org.apache.logging.log4j:log4j-core"
     testImplementation "org.apache.logging.log4j:log4j-slf4j-impl"
-    testImplementation "org.apache.logging.log4j:log4j-web"
 
     testImplementation "com.lmax:disruptor"
 
@@ -69,7 +69,6 @@ dependencies {
     testImplementation "io.netty:netty-all"
 
     testImplementation "junit:junit"
-    testImplementation "com.github.stefanbirkner:system-rules"
     testImplementation "org.assertj:assertj-core"
 
     testImplementation "org.mockito:mockito-core"

@@ -21,16 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.failBecauseExceptionWasNotThrown;
 import static org.mockito.ArgumentMatchers.any;
 
-import java.lang.reflect.Field;
-import java.util.Properties;
+import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.connector.rocketmq.producer.AbstractProducer;
+import org.apache.eventmesh.connector.rocketmq.producer.ProducerImpl;
 
-import io.openmessaging.api.MessagingAccessPoint;
-import io.openmessaging.api.OMS;
-import io.openmessaging.api.OMSBuiltinKeys;
-import io.openmessaging.api.Producer;
-import io.openmessaging.api.exception.OMSRuntimeException;
-
-import org.apache.eventmesh.connector.rocketmq.producer.AbstractOMSProducer;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl;
@@ -41,6 +35,11 @@ import org.apache.rocketmq.common.ServiceState;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.remoting.exception.RemotingException;
+
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,9 +48,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+
 @RunWith(MockitoJUnitRunner.class)
 public class ProducerImplTest {
-    private Producer producer;
+    private ProducerImpl producer;
 
     @Mock
     private DefaultMQProducer rocketmqProducer;
@@ -59,26 +61,20 @@ public class ProducerImplTest {
     @Before
     public void before() throws NoSuchFieldException, IllegalAccessException {
         Properties config = new Properties();
-        config.setProperty(OMSBuiltinKeys.DRIVER_IMPL, "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
         config.setProperty("access_points", "IP1:9876,IP2:9876");
-        final MessagingAccessPoint messagingAccessPoint = OMS.builder().build(config);//.endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build(config);
-        producer = messagingAccessPoint.createProducer(config);
+        producer = new ProducerImpl(config);
 
-        Field field = AbstractOMSProducer.class.getDeclaredField("rocketmqProducer");
+        Field field = AbstractProducer.class.getDeclaredField("rocketmqProducer");
         field.setAccessible(true);
         field.set(producer, rocketmqProducer);
 
-//        messagingAccessPoint.startup();
         producer.start();
 
     }
 
-
     @After
-    public void after() throws NoSuchFieldException, IllegalAccessException {
-
+    public void after() {
         producer.shutdown();
-
     }
 
     @Test
@@ -97,38 +93,21 @@ public class ProducerImplTest {
         Mockito.when(rocketmqProducer.getDefaultMQProducerImpl()).thenReturn(defaultMQProducerImpl);
 
 
-        io.openmessaging.api.Message message = new io.openmessaging.api.Message("HELLO_TOPIC", "", new byte[]{'a'});
-        io.openmessaging.api.SendResult omsResult =
-                producer.send(message);
+        CloudEvent cloudEvent = CloudEventBuilder.v1()
+            .withId("id1")
+            .withSource(URI.create("https://github.com/cloudevents/*****"))
+            .withType("producer.example")
+            .withSubject("HELLO_TOPIC")
+            .withData("hello world".getBytes())
+            .build();
+        org.apache.eventmesh.api.SendResult result =
+                producer.send(cloudEvent);
 
-        assertThat(omsResult.getMessageId()).isEqualTo("TestMsgID");
+        assertThat(result.getMessageId()).isEqualTo("TestMsgID");
         Mockito.verify(rocketmqProducer).getDefaultMQProducerImpl();
         Mockito.verify(rocketmqProducer).send(any(Message.class));
 
     }
-
-//    @Test
-//    public void testSend_Not_OK() throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-//        SendResult sendResult = new SendResult();
-//        sendResult.setSendStatus(SendStatus.FLUSH_DISK_TIMEOUT);
-//        MessageQueue messageQueue = new  MessageQueue("HELLO_TOPIC", "testBroker", 0);
-//        sendResult.setMessageQueue(messageQueue);
-//
-//        when(rocketmqProducer.send(any(Message.class))).thenReturn(sendResult);
-//
-//        DefaultMQProducer defaultMQProducer =new DefaultMQProducer("testGroup");
-//        DefaultMQProducerImpl defaultMQProducerImpl = new DefaultMQProducerImpl(defaultMQProducer);
-//        defaultMQProducerImpl.setServiceState(ServiceState.RUNNING);
-//        when(rocketmqProducer.getDefaultMQProducerImpl()).thenReturn(defaultMQProducerImpl);
-//
-//        try {
-//            io.openmessaging.api.Message message = new io.openmessaging.api.Message("HELLO_TOPIC", "", new byte[] {'a'});
-//            producer.send(message);
-//            failBecauseExceptionWasNotThrown(OMSRuntimeException.class);
-//        } catch (Exception e) {
-//            assertThat(e).hasMessageContaining("Send message to RocketMQ broker failed.");
-//        }
-//    }
 
     @Test
     public void testSend_WithException() throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
@@ -140,9 +119,15 @@ public class ProducerImplTest {
         Mockito.when(rocketmqProducer.send(any(Message.class))).thenThrow(exception);
 
         try {
-            io.openmessaging.api.Message message = new io.openmessaging.api.Message("HELLO_TOPIC", "", new byte[]{'a'});
-            producer.send(message);
-            failBecauseExceptionWasNotThrown(OMSRuntimeException.class);
+            CloudEvent cloudEvent = CloudEventBuilder.v1()
+                .withId("id1")
+                .withSource(URI.create("https://github.com/cloudevents/*****"))
+                .withType("producer.example")
+                .withSubject("HELLO_TOPIC")
+                .withData(new byte[]{'a'})
+                .build();
+            producer.send(cloudEvent);
+            failBecauseExceptionWasNotThrown(ConnectorRuntimeException.class);
         } catch (Exception e) {
             assertThat(e).hasMessageContaining("Send message to RocketMQ broker failed.");
         }

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 dependencies {
-    compileOnly project(":eventmesh-common")
+    implementation project(":eventmesh-common")
+    implementation "org.apache.commons:commons-collections4"
     testImplementation project(":eventmesh-common")
 }
