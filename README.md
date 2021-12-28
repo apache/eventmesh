@@ -16,32 +16,127 @@ EventMesh(incubating) is a dynamic event-driven application runtime used to deco
 **Multi-runtime:**
 ![architecture1](docs/images/eventmesh-arch3.png)
 
+<<<<<<< HEAD
 **Orchestration:**
 ![architecture1](docs/images/eventmesh-orchestration.png)
 
 **Federation:**
 ![architecture1](docs/images/eventmesh-federation.png)
+=======
+**EventMesh Architecture:**
+
+![architecture1](docs/images/eventmesh-runtime2.png)
+>>>>>>> 38446b3f (Merge pull request #667 from xwm1992/master)
 
 **Components:**
 
 * **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
 * **eventmesh-sdk-java** : currently supports HTTP and TCP protocols.
+<<<<<<< HEAD
 * **eventmesh-connector-plugin** : plugins for connect a middleware such as RocketMQ/Kafka/Redis/Pulsar etc.
 * **eventmesh-registry-plugin** : plugins for registry adapter, such as Nacos/Etcd.
 * **eventmesh-security-plugin** : plugins for security adpater, such as ACL/Authentication/Authorization.
 * **eventmesh-protocol-plugin** : plugins for protocol adapter, such as CloudEvents/MQTT.
 * **eventmesh-admin** : clients,topics,subscriptions and other management.
+=======
+* **eventmesh-connector-api** : an api layer based on OpenMessaging api and SPI pluggin, which can be implemented by popular EventStores such as IMDG, Messaging Engine and OSS etc.
+* **eventmesh-connector-plugin** : plugins for connector.
+* **eventmesh-connector-standalone** : an implementation of eventmesh-connector-api, pub event to or sub event from InMemory as EventStore.
+* **eventmesh-connector-rocketmq** : an implementation of eventmesh-connector-api, pub event to or sub event from RocketMQ as EventStore.
+* **eventmesh-connector-kafka(WIP)** : an implementation of eventmesh-connector-api, pub event to or sub event from Kafka as EventStore.
+* **eventmesh-connector-redis(WIP)** : an implementation of eventmesh-connector-api, pub event to or sub event from Redis as EventStore.
+* **eventmesh-connector-defibus(WIP)** : an implementation of eventmesh-connector-api, pub event to or sub event from [DeFiBus](https://github.com/webankfintech/defibus) as EventStore
+* **eventmesh-admin** : clients,topics,subscriptions and other management.
+* **eventmesh-registry-plugin** : plugins for registry adapter.
+* **eventmesh-security-plugin** : plugins for security adpater.
+* **eventmesh-protocol-plugin** : plugins for protocol adapter.
+
+**Protocol:**
+
+The protocol of eventmesh is easier and more convenient, you can read more [here](docs/en/instructions/eventmesh-runtime-protocol.md)
+
+## Feature
+
+Event & Service
+- [x] Pub/Sub
+- [x] Request/Reply
+- [ ] Event Streaming
+- [ ] Event transaction
+- [ ] At-least-once/at-most-once delivery guarantees
+
+Store Connector
+- [x] RocketMQ
+- [x] InMemory
+- [ ] Federated
+- [ ] Kafka
+- [ ] Redis
+- [ ] Pulsar
+- [ ] RabbitMQ 
+- [ ] DeFiBus
+- [ ] Cold storage (S3, Minio, SQL, key/value, etc...)
+
+Protocol
+- [x] TCP
+- [x] Http
+- [ ] gRPC
+- [ ] CloudEvents
+- [ ] MQTT
+- [ ] WebSocket
+- [ ] AMQP
+- [ ] AsyncAPI
+
+SDK
+- [x] Java
+- [ ] C
+- [ ] Go
+- [ ] Python
+
+Deploy
+- [x] Sidecar
+- [x] Gateway
+- [x] Docker
+
+Metrics
+- [x] OpenTelemetry
+- [x] Promethus exporter
+
+Tracing
+- [x] OpenTelemetry
+- [x] Zipkin exporter
+- [ ] Skywalking
+
+Governance
+- [x] Client management
+- [ ] Topic management
+- [ ] Metadata registry
+- [ ] Schema registry
+- [ ] Dynamic config
+
+Choreography
+- [ ] Servelss workflow
+- [ ] Event function,triggers and bindings
+
+Security
+- [ ] Auth
+- [ ] ACL
+
+Runtime
+- [ ] WebAssembly runtime
+>>>>>>> 38446b3f (Merge pull request #667 from xwm1992/master)
 
 ## Quick Start
 1. [Store quickstart](docs/en/instructions/eventmesh-store-quickstart.md)
 2. [Runtime quickstart](docs/en/instructions/eventmesh-runtime-quickstart.md) or [Runtime quickstart with docker](docs/en/instructions/eventmesh-runtime-quickstart-with-docker.md).
 3. [Java SDK examples](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
+<<<<<<< HEAD
 
 ## Documentation
 See EventMesh [Documentation](docs/en/intro.md) for all documents.
 
 ## Roadmap
 See EventMesh [Roadmap](docs/en/roadmap.md) for details.
+=======
+>>>>>>> 38446b3f (Merge pull request #667 from xwm1992/master)
 
 ## Contributing
 Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.
