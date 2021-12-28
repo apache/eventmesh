@@ -19,32 +19,40 @@ package org.apache.eventmesh.common.protocol.http.common;
 
 public class ProtocolKey {
 
-    public static final String REQUEST_CODE = "Code";
-    public static final String LANGUAGE = "Language";
-    public static final String VERSION = "Version";
+    public static final String REQUEST_CODE = "code";
+    public static final String LANGUAGE = "language";
+    public static final String VERSION = "version";
+
+    public static final String PROTOCOL_TYPE = "protocoltype";
+
+    public static final String PROTOCOL_VERSION = "protocolversion";
+
+    public static final String PROTOCOL_DESC = "protocoldesc";
 
     public static class ClientInstanceKey {
-        ////////////////////////////////////协议层请求方描述///////////
-        public static final String ENV = "Env";
-        public static final String IDC = "Idc";
-        public static final String SYS = "Sys";
-        public static final String PID = "Pid";
-        public static final String IP = "Ip";
-        public static final String USERNAME = "Username";
-        public static final String PASSWD = "Passwd";
+        ////////////////////////////////////Protocol layer requester description///////////
+        public static final String ENV = "env";
+        public static final String IDC = "idc";
+        public static final String SYS = "sys";
+        public static final String PID = "pid";
+        public static final String IP = "ip";
+        public static final String USERNAME = "username";
+        public static final String PASSWD = "passwd";
+        public static final String BIZSEQNO = "bizseqno";
+        public static final String UNIQUEID = "uniqueid";
     }
 
 
     public static class EventMeshInstanceKey {
-        ///////////////////////////////////////////////协议层EventMesh描述
-        public static final String EVENTMESHCLUSTER = "EventMeshCluster";
-        public static final String EVENTMESHIP = "EventMeshIp";
-        public static final String EVENTMESHENV = "EventMeshEnv";
-        public static final String EVENTMESHIDC = "EventMeshIdc";
+        ///////////////////////////////////////////////Protocol layer EventMesh description
+        public static final String EVENTMESHCLUSTER = "eventmeshcluster";
+        public static final String EVENTMESHIP = "eventmeship";
+        public static final String EVENTMESHENV = "eventmeshenv";
+        public static final String EVENTMESHIDC = "eventmeshidc";
     }
 
 
-    //CLIENT <-> EventMesh 的 返回
+    //return of CLIENT <-> EventMesh
     public static final String RETCODE = "retCode";
     public static final String RETMSG = "retMsg";
     public static final String RESTIME = "resTime";

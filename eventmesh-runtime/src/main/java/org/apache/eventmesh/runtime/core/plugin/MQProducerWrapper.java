@@ -18,43 +18,37 @@
 package org.apache.eventmesh.runtime.core.plugin;
 
 import java.util.Properties;
-import java.util.ServiceLoader;
 
-import io.openmessaging.api.Message;
-import io.openmessaging.api.SendCallback;
-
-import org.apache.eventmesh.api.RRCallback;
-import org.apache.eventmesh.api.producer.MeshMQProducer;
+import org.apache.eventmesh.api.RequestReplyCallback;
+import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.producer.Producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
 
 public class MQProducerWrapper extends MQWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected MeshMQProducer meshMQProducer;
+    protected Producer meshMQProducer;
+
+    public MQProducerWrapper(String connectorPluginType) {
+        this.meshMQProducer = ConnectorPluginFactory.getMeshMQProducer(connectorPluginType);
+        if (meshMQProducer == null) {
+            logger.error("can't load the meshMQProducer plugin, please check.");
+            throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
+        }
+    }
 
     public synchronized void init(Properties keyValue) throws Exception {
         if (inited.get()) {
             return;
         }
 
-        meshMQProducer = getSpiMeshMQProducer();
-        if (meshMQProducer == null) {
-            logger.error("can't load the meshMQProducer plugin, please check.");
-            throw new RuntimeException("doesn't load the meshMQProducer plugin, please check.");
-        }
         meshMQProducer.init(keyValue);
-
         inited.compareAndSet(false, true);
-    }
-
-    private MeshMQProducer getSpiMeshMQProducer() {
-        ServiceLoader<MeshMQProducer> meshMQProducerServiceLoader = ServiceLoader.load(MeshMQProducer.class);
-        if (meshMQProducerServiceLoader.iterator().hasNext()) {
-            return meshMQProducerServiceLoader.iterator().next();
-        }
-        return null;
     }
 
     public synchronized void start() throws Exception {
@@ -82,38 +76,21 @@ public class MQProducerWrapper extends MQWrapper {
         started.compareAndSet(true, false);
     }
 
-    public void send(Message message, SendCallback sendCallback) throws Exception {
-        meshMQProducer.send(message, sendCallback);
+    public void send(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
+        meshMQProducer.publish(cloudEvent, sendCallback);
     }
 
-    public void request(Message message, SendCallback sendCallback, RRCallback rrCallback, long timeout)
+    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout)
             throws Exception {
-        meshMQProducer.request(message, sendCallback, rrCallback, timeout);
+        meshMQProducer.request(cloudEvent, rrCallback, timeout);
     }
 
-    public Message request(Message message, long timeout) throws Exception {
-        return meshMQProducer.request(message, timeout);
+    public boolean reply(final CloudEvent cloudEvent, final SendCallback sendCallback) throws Exception {
+        return meshMQProducer.reply(cloudEvent, sendCallback);
     }
 
-    public boolean reply(final Message message, final SendCallback sendCallback) throws Exception {
-        return meshMQProducer.reply(message, sendCallback);
-    }
-
-    public MeshMQProducer getMeshMQProducer() {
+    public Producer getMeshMQProducer() {
         return meshMQProducer;
     }
 
-//    public MeshMQProducer getDefaultMQProducer() {
-//        return meshMQProducer.getDefaultMQProducer();
-//    }
-
-//    public static void main(String[] args) throws Exception {
-//
-//        MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
-//        CommonConfiguration commonConfiguration = new CommonConfiguration(new ConfigurationWraper(EventMeshConstants.EVENTMESH_CONF_HOME
-//                + File.separator
-//                + EventMeshConstants.EVENTMESH_CONF_FILE, false));
-//        commonConfiguration.init();
-//        mqProducerWrapper.init(commonConfiguration, "TEST");
-//    }
 }

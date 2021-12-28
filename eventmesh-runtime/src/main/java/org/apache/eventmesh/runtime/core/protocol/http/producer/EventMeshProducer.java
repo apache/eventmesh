@@ -20,10 +20,8 @@ package org.apache.eventmesh.runtime.core.protocol.http.producer;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.openmessaging.api.Message;
-import io.openmessaging.api.SendCallback;
-
-import org.apache.eventmesh.api.RRCallback;
+import org.apache.eventmesh.api.RequestReplyCallback;
+import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
@@ -52,24 +50,20 @@ public class EventMeshProducer {
     protected EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
     public void send(SendMessageContext sendMsgContext, SendCallback sendCallback) throws Exception {
-        mqProducerWrapper.send(sendMsgContext.getMsg(), sendCallback);
+        mqProducerWrapper.send(sendMsgContext.getEvent(), sendCallback);
     }
 
-    public void request(SendMessageContext sendMsgContext, SendCallback sendCallback, RRCallback rrCallback, long timeout)
+    public void request(SendMessageContext sendMsgContext, RequestReplyCallback rrCallback, long timeout)
             throws Exception {
-        mqProducerWrapper.request(sendMsgContext.getMsg(), sendCallback, rrCallback, timeout);
-    }
-
-    public Message request(SendMessageContext sendMessageContext, long timeout) throws Exception {
-        return mqProducerWrapper.request(sendMessageContext.getMsg(), timeout);
+        mqProducerWrapper.request(sendMsgContext.getEvent(), rrCallback, timeout);
     }
 
     public boolean reply(final SendMessageContext sendMsgContext, final SendCallback sendCallback) throws Exception {
-        mqProducerWrapper.reply(sendMsgContext.getMsg(), sendCallback);
+        mqProducerWrapper.reply(sendMsgContext.getEvent(), sendCallback);
         return true;
     }
 
-    protected MQProducerWrapper mqProducerWrapper = new MQProducerWrapper();
+    protected MQProducerWrapper mqProducerWrapper;
 
     public MQProducerWrapper getMqProducerWrapper() {
         return mqProducerWrapper;
@@ -85,7 +79,7 @@ public class EventMeshProducer {
 
         //TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.eventMeshIDC);
-
+        mqProducerWrapper = new MQProducerWrapper(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
         mqProducerWrapper.init(keyValue);
         inited.compareAndSet(false, true);
         logger.info("EventMeshProducer [{}] inited.............", producerGroupConfig.getGroupName());

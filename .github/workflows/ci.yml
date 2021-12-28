@@ -23,37 +23,26 @@ on:
   push:
     branches:
       - develop
+      - '[0-9]+.[0-9]+.[0-9]+**'
   pull_request:
     branches:
       - develop
+      - '[0-9]+.[0-9]+.[0-9]+**'
   workflow_dispatch:
 
 jobs:
   build:
     name: Build
-
-    runs-on: ubuntu-latest
-
     strategy:
       fail-fast: false
       matrix:
-        language:
-          - 'java'
-        java:
-          - 8
+        os: [ubuntu-latest, macOS-latest]
+        java: [8, 11]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          # If you wish to specify custom queries, you can do so here or in a config file.
-          # By default, queries listed here will override any specified in a config file.
-          # Prefix the list here with "+" to use these queries and those in the config file.
-          # queries: ./path/to/local/query, your-org/your-repo/queries@main
-          languages: ${{ matrix.language }}
 
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v1
@@ -61,17 +50,36 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build
-        run: ./gradlew clean build jacocoTestReport
+        # We use -x check to skip check code style here, since this task will check all files.
+        # We use Checkstyle task to check the added file
+        run: ./gradlew clean build jar dist jacocoTestReport -x check
 
-      - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v1
+      - name: Install plugin
+        run: ./gradlew installPlugin
 
-      - name: Upload coverage report to codecov.io
-        run: bash <(curl -s https://codecov.io/bash) || echo 'Failed to upload coverage report!'
+  checkstyle:
+    name: Checkstyle
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Download checkstyle exectable
+        run: wget -O - -q https://github.com/checkstyle/checkstyle/releases/download/checkstyle-8.44/checkstyle-8.44-all.jar > ./checkstyle.jar
+
+      - name: Download reviewdog exectable
+        run: wget -O - -q https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b . v0.12.0
+
+      - name: Check code style
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          java -jar ./checkstyle.jar -c ./style/checkStyle.xml -f xml ./eventmesh-* \
+               | ./reviewdog -f=checkstyle -reporter=github-pr-check -filter-mode=added -fail-on-error
 
   license-check:
     name: License Check
-
     runs-on: ubuntu-latest
 
     steps:
@@ -79,6 +87,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Check license header
-        uses: apache/skywalking-eyes@9bd5feb86b5817aa6072b008f9866a2c3bbc8587
+        uses: apache/skywalking-eyes@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check third party dependencies
+        run: ./gradlew clean jar dist && ./gradlew installPlugin && ./gradlew tar && sh tools/third-party-dependencies/check-dependencies.sh && echo "Thirty party dependencies check success"

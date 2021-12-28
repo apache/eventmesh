@@ -17,11 +17,8 @@
 
 package org.apache.eventmesh.runtime.admin.controller;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-
-import com.sun.net.httpserver.HttpServer;
-
+import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
+import org.apache.eventmesh.runtime.admin.handler.QueryRecommendEventMeshHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientByIpPortHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientByPathHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientBySubSystemHandler;
@@ -32,14 +29,22 @@ import org.apache.eventmesh.runtime.admin.handler.ShowClientBySystemHandler;
 import org.apache.eventmesh.runtime.admin.handler.ShowClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.ShowListenClientByTopicHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sun.net.httpserver.HttpServer;
 
 public class ClientManageController {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientManageController.class);
 
     private EventMeshTCPServer eventMeshTCPServer;
+    
+    private AdminController adminController;
 
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
@@ -57,7 +62,11 @@ public class ClientManageController {
         server.createContext("/clientManage/redirectClientByPath", new RedirectClientByPathHandler(eventMeshTCPServer));
         server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler(eventMeshTCPServer));
         server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler(eventMeshTCPServer));
-
+        server.createContext("/eventMesh/recommend", new QueryRecommendEventMeshHandler(eventMeshTCPServer));
+        
+        adminController = new AdminController();
+        adminController.run(server);
+        
         server.start();
         logger.info("ClientManageController start success, port:{}", port);
     }

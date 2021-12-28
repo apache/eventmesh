@@ -17,84 +17,92 @@
 
 package org.apache.eventmesh.client.http.producer;
 
+import org.apache.eventmesh.client.http.EventMeshRetObj;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
+import org.apache.eventmesh.common.utils.JsonUtils;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.util.EntityUtils;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 
+import com.google.common.base.Preconditions;
 
-import com.alibaba.fastjson.JSON;
+import io.cloudevents.CloudEvent;
+import io.openmessaging.api.Message;
+import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.eventmesh.client.http.EventMeshRetObj;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.EventMeshException;
-import org.apache.eventmesh.common.LiteMessage;
-import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
-import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+/**
+ * RRCallbackResponseHandlerAdapter.
+ */
+@Slf4j
+public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements ResponseHandler<String> {
 
-public class RRCallbackResponseHandlerAdapter implements ResponseHandler<String> {
+    private final long createTime;
 
-    public Logger logger = LoggerFactory.getLogger(RRCallbackResponseHandlerAdapter.class);
+    private final ProtocolMessage protocolMessage;
 
-    private long createTime;
+    private final RRCallback<ProtocolMessage> rrCallback;
 
-    private LiteMessage liteMessage;
+    private final long timeout;
 
-    private RRCallback rrCallback;
-
-    private long timeout;
-
-    public RRCallbackResponseHandlerAdapter(LiteMessage liteMessage, RRCallback rrCallback, long timeout) {
-        this.liteMessage = liteMessage;
+    public RRCallbackResponseHandlerAdapter(ProtocolMessage protocolMessage, RRCallback<ProtocolMessage> rrCallback,
+                                            long timeout) {
+        Preconditions.checkNotNull(rrCallback, "rrCallback invalid");
+        Preconditions.checkNotNull(protocolMessage, "message invalid");
+        if (!(protocolMessage instanceof EventMeshMessage) && !(protocolMessage instanceof CloudEvent)
+            && !(protocolMessage instanceof Message)) {
+            throw new IllegalArgumentException(String.format("ProtocolMessage: %s is not supported", protocolMessage));
+        }
+        this.protocolMessage = protocolMessage;
         this.rrCallback = rrCallback;
         this.timeout = timeout;
         this.createTime = System.currentTimeMillis();
     }
 
     @Override
-    public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+    public String handleResponse(HttpResponse response) throws IOException {
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
             rrCallback.onException(new EventMeshException(response.toString()));
             return response.toString();
         }
 
         if (System.currentTimeMillis() - createTime > timeout) {
-            String err = String.format("response too late, bizSeqNo=%s, uniqueId=%s, createTime=%s, ttl=%s, cost=%sms",
-                    liteMessage.getBizSeqNo(),
-                    liteMessage.getUniqueId(),
-                    DateFormatUtils.format(createTime, Constants.DATE_FORMAT),
-                    timeout,
-                    System.currentTimeMillis() - createTime);
-            logger.warn(err);
+            String err = String.format("response too late, message: %s", protocolMessage);
             rrCallback.onException(new EventMeshException(err));
             return err;
         }
 
         String res = EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
-        EventMeshRetObj ret = JSON.parseObject(res, EventMeshRetObj.class);
+        EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
         if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
             rrCallback.onException(new EventMeshException(ret.getRetCode(), ret.getRetMsg()));
             return res;
         }
 
-        LiteMessage liteMessage = new LiteMessage();
-        try {
-            SendMessageResponseBody.ReplyMessage replyMessage =
-                    JSON.parseObject(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
-            liteMessage.setContent(replyMessage.body).setProp(replyMessage.properties)
-                    .setTopic(replyMessage.topic);
-            rrCallback.onSuccess(liteMessage);
-        } catch (Exception ex) {
-            rrCallback.onException(new EventMeshException(ex));
-            return ex.toString();
-        }
+        // todo: constructor protocol message
+        ProtocolMessage protocolMessage = transformToProtocolMessage(ret);
+        rrCallback.onSuccess(protocolMessage);
 
-        return liteMessage.toString();
+        return protocolMessage.toString();
+    }
+
+    private ProtocolMessage transformToProtocolMessage(EventMeshRetObj ret) {
+        // todo: constructor other protocol message, can judge by protocol type in properties
+        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(ret.getRetMsg(),
+            SendMessageResponseBody.ReplyMessage.class);
+        EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
+            .content(replyMessage.body)
+            .prop(replyMessage.properties)
+            .topic(replyMessage.topic)
+            .build();
+        return (ProtocolMessage) eventMeshMessage;
     }
 }

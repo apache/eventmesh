@@ -20,53 +20,48 @@ package org.apache.eventmesh.client.tcp.common;
 import static org.apache.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_SyncSubscribeTest;
 import static org.apache.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientBroadCast;
 import static org.apache.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast;
-
-import java.util.concurrent.ThreadLocalRandom;
+import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
-import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
-
-
-
+import java.util.concurrent.ThreadLocalRandom;
 
 public class EventMeshTestUtils {
     private static final int seqLength = 10;
 
     public static UserAgent generateClient1() {
-        UserAgent user = new UserAgent();
-        user.setHost("127.0.0.1");
-        user.setPassword(generateRandomString(8));
-        user.setUsername("PU4283");
-        user.setConsumerGroup("EventmeshTest-ConsumerGroup");
-        user.setProducerGroup("EventmeshTest-ProducerGroup");
-        user.setPath("/data/app/umg_proxy");
-        user.setPort(8362);
-        user.setSubsystem("5023");
-        user.setPid(32893);
-        user.setVersion("2.0.11");
-        user.setIdc("FT");
-        return user;
+        return UserAgent.builder()
+            .host("127.0.0.1")
+            .password(generateRandomString(8))
+            .username("PU4283")
+            .consumerGroup("EventmeshTest-ConsumerGroup")
+            .producerGroup("EventmeshTest-ProducerGroup")
+            .path("/data/app/umg_proxy")
+            .port(8362)
+            .subsystem("5023")
+            .pid(32893)
+            .version("2.0.11")
+            .idc("FT")
+            .build();
     }
 
     public static UserAgent generateClient2() {
-        UserAgent user = new UserAgent();
-        user.setHost("127.0.0.1");
-        user.setPassword(generateRandomString(8));
-        user.setUsername("PU4283");
-        user.setConsumerGroup("EventmeshTest-ConsumerGroup");
-        user.setProducerGroup("EventmeshTest-ProducerGroup");
-        user.setPath("/data/app/umg_proxy");
-        user.setPort(9362);
-        user.setSubsystem("5017");
-        user.setPid(42893);
-        user.setVersion("2.0.11");
-        user.setIdc("FT");
-        return user;
+        return UserAgent.builder()
+            .host("127.0.0.1")
+            .password(generateRandomString(8))
+            .username("PU4283")
+            .consumerGroup("EventmeshTest-ConsumerGroup")
+            .producerGroup("EventmeshTest-ProducerGroup")
+            .path("/data/app/umg_proxy")
+            .port(9362)
+            .subsystem("5017")
+            .pid(42893)
+            .version("2.0.11")
+            .idc("FT").build();
     }
 
     public static Package syncRR() {
@@ -104,10 +99,10 @@ public class EventMeshTestUtils {
         return msg;
     }
 
-    private static EventMeshMessage generateSyncRRMqMsg() {
+    public static EventMeshMessage generateSyncRRMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
-        mqMsg.getProperties().put("msgType", "persistent");
+        mqMsg.getProperties().put("msgtype", "persistent");
         mqMsg.getProperties().put("TTL", "300000");
         mqMsg.getProperties().put("KEYS", generateRandomString(16));
         mqMsg.setBody("testSyncRR");
@@ -135,7 +130,7 @@ public class EventMeshTestUtils {
         return mqMsg;
     }
 
-    private static EventMeshMessage generateBroadcastMqMsg() {
+    public static EventMeshMessage generateBroadcastMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(TOPIC_PRX_WQ2ClientBroadCast);
         mqMsg.getProperties().put("REPLY_TO", "10.36.0.109@ProducerGroup-producerPool-9-access#V1_4_0#CI");

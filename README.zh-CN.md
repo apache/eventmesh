@@ -36,7 +36,7 @@ EventMesh是一个动态的云原生事件驱动架构基础设施，用于分�
 
 **通信协议：**
 
-eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里](docs/cn/instructions/eventmesh-runtime-protocol.zh-CN.md)
+eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里](docs/cn/instructions/eventmesh-runtime-protocol.md)
 
 ## RoadMap
 | version | feature |
@@ -44,31 +44,43 @@ eventmesh的通信协议更加简洁方便，详细内容，阅读更多[这里]
 | v1.0.0  |Support java-sdk , tcp pub/sub, http pub|
 | v1.1.0  |Support RocketMQ as eventstore|
 | v1.1.1  |Support https|
-| v1.2.0  |Support EventMesh store layer pluggable by OpenMessaging Pub/Sub API, http sub, docker|
-| V1.3.0  |Support CloudEvents, Event Streaming|
-|         |Support Event function,triggers and bindings|
-|         |Support Event orchestration, Servelss workflow|
-|         |Support Event transaction|
-|         |Support Event schema|
-|         |Support Event governance, dashboard|
-|         |Support Event security|
-|         |Support multi language SDK(c\go\python\wasm)|
-|         |Support Promethus as metrics|
-|         |Support Skywalking as tracing|
-|         |Support streaming event store|
-|         |Support gRPC protocol|
-|         |Support MQTT protocol|
+| v1.2.0  |Support pluggable event store by OpenMessaging Pub/Sub API, http sub, docker|
+| V1.3.0  |Support CloudEvents, event streaming|
+|   WIP   |Support more pluggable event storage (Kafka, Pulsar, Redis, etc...)|
+|   WIP   |Support Event schema|
+|   WIP   |Support Event governance|
+|   WIP   |Support Event function,triggers and bindings|
+|   WIP   |Support Event orchestration, Servelss workflow|
+|   WIP   |Support in-memory event store|
+|   WIP   |Support Event transaction|
+|   WIP   |Support Event security|
+|   WIP   |Support multi language SDK(c\go\python\wasm)|
+|   WIP   |Support metrics exporter|
+|   WIP   |Support tracing exporter|
+|   WIP   |Support at-least-once/at-most-once delivery guarantees|
+|   WIP   |Support cold event storage (S3, Minio, SQL, key/value, etc...)|
+|   WIP   |Support gRPC protocol|
+|   WIP   |Support MQTT protocol|
+|   WIP   |Support AsyncAPI|
 
 ## 快速开始
-1. 构建并部署event-store(RocketMQ), 请参见[说明](https://rocketmq.apache.org/docs/quick-start/)
-2. 构建并部署eventmesh-runtime，请参见说明['eventmesh-runtime quickstart.zh-CN'](docs/cn/instructions/eventmesh-runtime-quickstart.zh-CN.md)
-3. 运行eventmesh-sdk-java演示，请参见说明['eventmesh-sdk-java quickstart.zh-CN'](docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
+1. [event-store](https://rocketmq.apache.org/docs/quick-start/) (RocketMQ, ignore this step if use standalone).
+2. [runtime quickstart](docs/en/instructions/eventmesh-runtime-quickstart.md) or [runtime quickstart with docker](docs/en/instructions/eventmesh-runtime-quickstart-with-docker.md).
+3. [java examples ](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
 
 ## 贡献
 永远欢迎参与共建, 请参阅[贡献](CONTRIBUTING.zh-CN.md)了解详细指南
 
 您可以从问题开始.
 [GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
+
+## Landscape
+<p align="center">
+<br/><br/>
+<img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>&nbsp;&nbsp;<img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
+<br/><br/>
+EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apache-license-2-0">CNCF CLOUD NATIVE Landscape.</a>
+</p>
 
 ## License
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation

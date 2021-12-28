@@ -1,3 +1,5 @@
+# HTTPS
+
 1.config in eventmesh-runtime
 
 ```
@@ -7,7 +9,7 @@ eventMesh.server.useTls.enabled=true   //default value is false
 
 config env varible
 -Dssl.server.protocol=TLSv1.1   //default value is TLSv1.1
--Dssl.server.cer=sChat2.jks     //put the file in confPath which is configured in start.sh 
+-Dssl.server.cer=sChat2.jks     //put the file in confPath which is configured in start.sh
 -Dssl.server.pass=sNetty
 
 ```
@@ -16,11 +18,11 @@ config env varible
 
 ```
 // create producer
-LiteClientConfig liteClientConfig = new liteClientConfig();
+LiteClientConfig eventMeshHttpClientConfig = new eventMeshHttpClientConfig();
 ...
 // enable TLS
-liteClientConfig.setUseTls(true);
-LiteProducer producer = new LiteProducer(liteClientConfig);
+eventMeshHttpClientConfig.setUseTls(true);
+LiteProducer producer = new LiteProducer(eventMeshHttpClientConfig);
 
 
 config env varible

@@ -14,3 +14,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+dependencies {
+    api "com.google.guava:guava"
+    api "org.slf4j:slf4j-api"
+    api "junit:junit"
+    api "org.assertj:assertj-core"
+    api "org.apache.commons:commons-collections4"
+    api "org.apache.commons:commons-text"
+    api "org.apache.commons:commons-lang3"
+
+    implementation "org.apache.logging.log4j:log4j-api"
+    implementation "org.apache.logging.log4j:log4j-core"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl"
+
+    implementation "com.lmax:disruptor"
+
+    api "com.fasterxml.jackson.core:jackson-databind"
+    api "com.fasterxml.jackson.core:jackson-core"
+    api "com.fasterxml.jackson.core:jackson-annotations"
+
+    implementation "org.apache.httpcomponents:httpclient"
+
+    implementation "io.netty:netty-all"
+
+    implementation "com.github.stefanbirkner:system-rules"
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testImplementation "org.apache.commons:commons-lang3"
+
+    testImplementation "com.google.guava:guava"
+
+    testImplementation "org.slf4j:slf4j-api"
+    testImplementation "org.apache.logging.log4j:log4j-api"
+    testImplementation "org.apache.logging.log4j:log4j-core"
+    testImplementation "org.apache.logging.log4j:log4j-slf4j-impl"
+
+    testImplementation "com.lmax:disruptor"
+
+    testImplementation "com.fasterxml.jackson.core:jackson-databind"
+    testImplementation "com.fasterxml.jackson.core:jackson-core"
+    testImplementation "com.fasterxml.jackson.core:jackson-annotations"
+
+    testImplementation "org.apache.httpcomponents:httpclient"
+
+    testImplementation "io.netty:netty-all"
+
+    testImplementation "junit:junit"
+    testImplementation "org.assertj:assertj-core"
+
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.powermock:powermock-module-junit4"
+    testImplementation "org.powermock:powermock-api-mockito2"
+}

@@ -17,25 +17,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
-
-# Copyright (C) @2017 Webank Group Holding Limited
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-# in compliance with the License. You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software distributed under the License
-# is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-# or implied. See the License for the specific language governing permissions and limitations under
-# the License.
-#
-
 #===========================================================================================
 # Java Environment Setting
 #===========================================================================================
 set -e
-#服务器配置可能不一致,增加这些配置避免乱码问题
+#Server configuration may be inconsistent, add these configurations to avoid garbled code problems
 export LANG=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
@@ -69,13 +55,13 @@ function get_pid {
 		ppid=$(cat ${EVENTMESH_HOME}/bin/pid.file)
 	else
 		if [[ $OS =~ Msys ]]; then
-			# 在Msys上存在可能无法kill识别出的进程的BUG
+			# There is a Bug on Msys that may not be able to kill the identified process
 			ppid=`jps -v | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
 		elif [[ $OS =~ Darwin ]]; then
-			# 已知问题：grep java 可能无法精确识别java进程
+			# Known problem: grep Java may not be able to accurately identify Java processes
 			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
-			#在Linux服务器上要求尽可能精确识别进程
+			# It is required to identify the process as accurately as possible on Linux
 			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.runtime.boot.EventMeshStartup" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		fi
 	fi
@@ -148,6 +134,7 @@ JAVA_OPT="${JAVA_OPT} -Deventmesh.log.home=${EVENTMESH_LOG_HOME}"
 JAVA_OPT="${JAVA_OPT} -DconfPath=${EVENTMESH_HOME}/conf"
 JAVA_OPT="${JAVA_OPT} -Dlog4j2.AsyncQueueFullPolicy=Discard"
 JAVA_OPT="${JAVA_OPT} -Drocketmq.client.logUseSlf4j=true"
+JAVA_OPT="${JAVA_OPT} -DeventMeshPluginDir=${EVENTMESH_HOME}/plugin"
 
 #if [ -f "pid.file" ]; then
 #        pid=`cat pid.file`

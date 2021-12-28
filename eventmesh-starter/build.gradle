@@ -16,7 +16,5 @@
  */
 
 dependencies {
-    implementation project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
-    testImplementation project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
-    //testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation project(":eventmesh-runtime")
 }

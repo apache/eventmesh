@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 
-import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +67,7 @@ public abstract class AbstractRemotingServer {
         return ioGroup;
     }
 
-    private EventLoopGroup initWokerGroup(String threadPrefix) {
+    private EventLoopGroup initWorkerGroup(String threadPrefix) {
         workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new ThreadFactory() {
             AtomicInteger count = new AtomicInteger(0);
 
@@ -83,7 +83,7 @@ public abstract class AbstractRemotingServer {
     public void init(String threadPrefix) throws Exception {
         initBossGroup(threadPrefix);
         initIOGroup(threadPrefix);
-        initWokerGroup(threadPrefix);
+        initWorkerGroup(threadPrefix);
     }
 
     public void shutdown() throws Exception {
@@ -92,7 +92,7 @@ public abstract class AbstractRemotingServer {
             logger.info("shutdown bossGroup");
         }
 
-        ThreadUtil.randomSleep(30);
+        ThreadUtils.randomSleep(30);
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();

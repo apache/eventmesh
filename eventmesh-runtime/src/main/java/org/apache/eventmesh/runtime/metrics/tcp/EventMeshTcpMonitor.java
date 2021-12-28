@@ -32,12 +32,17 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcpConnectionHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.metrics.MonitorMetricConstants;
+import org.apache.eventmesh.runtime.metrics.opentelemetry.OpenTelemetryTCPMetricsExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EventMeshTcpMonitor {
 
     private EventMeshTCPServer eventMeshTCPServer;
+
+    public EventMeshTCPServer getEventMeshTCPServer() {
+        return eventMeshTCPServer;
+    }
 
     private final Logger tcpLogger = LoggerFactory.getLogger("tcpMonitor");
 
@@ -63,6 +68,8 @@ public class EventMeshTcpMonitor {
     private int allTPS;
     private int subTopicNum;
 
+    private OpenTelemetryTCPMetricsExporter metricsExporter;
+
     public ScheduledFuture<?> monitorTpsTask;
 
     public ScheduledFuture<?> monitorThreadPoolTask;
@@ -76,10 +83,12 @@ public class EventMeshTcpMonitor {
         this.eventMesh2mqMsgNum = new AtomicInteger(0);
         this.mq2eventMeshMsgNum = new AtomicInteger(0);
         this.eventMesh2clientMsgNum = new AtomicInteger(0);
+        this.metricsExporter = new OpenTelemetryTCPMetricsExporter(this,eventMeshTCPServer.getEventMeshTCPConfiguration());
         logger.info("EventMeshTcpMonitor inited......");
     }
 
     public void start() throws Exception {
+        metricsExporter.start();
         monitorTpsTask = eventMeshTCPServer.getScheduler().scheduleAtFixedRate((new Runnable() {
             @Override
             public void run() {
@@ -135,6 +144,7 @@ public class EventMeshTcpMonitor {
             @Override
             public void run() {
 //                ThreadPoolHelper.printThreadPoolState();
+                eventMeshTCPServer.getEventMeshRebalanceService().printRebalanceThreadPoolState();
                 eventMeshTCPServer.getEventMeshTcpRetryer().printRetryThreadPoolState();
 
                 //monitor retry queue size
@@ -148,6 +158,7 @@ public class EventMeshTcpMonitor {
     public void shutdown() throws Exception {
         monitorTpsTask.cancel(true);
         monitorThreadPoolTask.cancel(true);
+        metricsExporter.shutdown();
         logger.info("EventMeshTcpMonitor shutdown......");
     }
 
@@ -165,5 +176,29 @@ public class EventMeshTcpMonitor {
 
     public AtomicInteger getEventMesh2clientMsgNum() {
         return eventMesh2clientMsgNum;
+    }
+
+    public int getClient2eventMeshTPS() {
+        return client2eventMeshTPS;
+    }
+
+    public int getEventMesh2clientTPS() {
+        return eventMesh2clientTPS;
+    }
+
+    public int getEventMesh2mqTPS() {
+        return eventMesh2mqTPS;
+    }
+
+    public int getMq2eventMeshTPS() {
+        return mq2eventMeshTPS;
+    }
+
+    public int getAllTPS() {
+        return allTPS;
+    }
+
+    public int getSubTopicNum() {
+        return subTopicNum;
     }
 }

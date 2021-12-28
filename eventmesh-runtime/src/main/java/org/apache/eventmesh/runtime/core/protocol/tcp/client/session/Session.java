@@ -24,13 +24,13 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.openmessaging.api.Message;
-import io.openmessaging.api.SendCallback;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.tcp.*;
@@ -185,10 +185,10 @@ public class Session {
         }
     }
 
-    public EventMeshTcpSendResult upstreamMsg(Header header, Message msg, SendCallback sendCallback, long startTime, long taskExecuteTime) {
-        String topic = msg.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
+    public EventMeshTcpSendResult upstreamMsg(Header header, CloudEvent event, SendCallback sendCallback, long startTime, long taskExecuteTime) {
+        String topic = event.getSubject();
         sessionContext.sendTopics.putIfAbsent(topic, topic);
-        return sender.send(header, msg, sendCallback, startTime, taskExecuteTime);
+        return sender.send(header, event, sendCallback, startTime, taskExecuteTime);
     }
 
     public void downstreamMsg(DownStreamMsgContext downStreamMsgContext) {
@@ -295,7 +295,7 @@ public class Session {
                     Package msg = new Package();
                     msg.setHeader(header);
 
-                    //TODO startTime 修改了
+                    // TODO: if startTime is modified
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, context, this);
                     listenRspSend = true;
                 }

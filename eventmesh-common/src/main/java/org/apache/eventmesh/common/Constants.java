@@ -29,6 +29,12 @@ public class Constants {
 
     public static final String HTTPS_PROTOCOL_PREFIX = "https://";
 
+    public static final String PROTOCOL_TYPE = "protocoltype";
+
+    public static final String PROTOCOL_VERSION = "protocolversion";
+
+    public static final String PROTOCOL_DESC = "protocoldesc";
+
     public static final int DEFAULT_HTTP_TIME_OUT = 3000;
 
     public static final String EVENTMESH_MESSAGE_CONST_TTL = "ttl";
@@ -51,28 +57,30 @@ public class Constants {
 
     public static final String KEY_CONSTANTS_INSTANCE_DESC_PID = "pid";
 
-    public static final String RMB_UNIQ_ID = "RMB_UNIQ_ID";
+    public static final String RMB_UNIQ_ID = "rmbuniqid";
 
     public static final String IDC_SEPERATER = "-";
 
-    public static final String PROPERTY_MESSAGE_TIMEOUT = "TIMEOUT";
+    public static final String PROPERTY_MESSAGE_TIMEOUT = "timeout";
 
-    public static final String PROPERTY_MESSAGE_SEARCH_KEYS = "SEARCH_KEYS";
+    public static final String PROPERTY_MESSAGE_SEARCH_KEYS = "searchkeys";
 
-    public static final String PROPERTY_MESSAGE_QUEUE_ID = "QUEUE_ID";
+    public static final String PROPERTY_MESSAGE_QUEUE_ID = "queueid";
 
-    public static final String PROPERTY_MESSAGE_QUEUE_OFFSET = "QUEUE_OFFSET";
+    public static final String PROPERTY_MESSAGE_QUEUE_OFFSET = "queueoffset";
 
-    public static final String PROPERTY_MESSAGE_DESTINATION = "DESTINATION";
+    public static final String PROPERTY_MESSAGE_DESTINATION = "destination";
 
-    public static final String PROPERTY_MESSAGE_MESSAGE_ID = "MESSAGE_ID";
+    public static final String PROPERTY_MESSAGE_MESSAGE_ID = "messageid";
 
-    public static final String PROPERTY_MESSAGE_BORN_HOST = "BORN_HOST";
+    public static final String PROPERTY_MESSAGE_BORN_HOST = "bornhost";
 
-    public static final String PROPERTY_MESSAGE_BORN_TIMESTAMP = "BORN_TIMESTAMP";
+    public static final String PROPERTY_MESSAGE_BORN_TIMESTAMP = "borntimestamp";
 
-    public static final String PROPERTY_MESSAGE_STORE_HOST = "STORE_HOST";
+    public static final String PROPERTY_MESSAGE_STORE_HOST = "storehost";
 
-    public static final String PROPERTY_MESSAGE_STORE_TIMESTAMP = "STORE_TIMESTAMP";
+    public static final String PROPERTY_MESSAGE_STORE_TIMESTAMP = "storetimestamp";
+
+    public static final String MESSAGE_PROP_SEPARATOR = "99";
 
 }
