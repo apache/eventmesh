@@ -40,3 +40,6 @@ github:
     merge:   true
     squash:  true
     rebase:  false
+  protected_branches:
+    master:
+        foo: bar
