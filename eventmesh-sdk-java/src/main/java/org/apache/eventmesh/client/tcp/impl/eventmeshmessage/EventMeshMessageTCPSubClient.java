@@ -17,6 +17,17 @@
 
 package org.apache.eventmesh.client.tcp.impl.eventmeshmessage;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.collections4.CollectionUtils;
+
+import io.netty.channel.ChannelHandlerContext;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
@@ -34,21 +45,11 @@ import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
-import org.apache.commons.collections4.CollectionUtils;
-
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
-import io.netty.channel.ChannelHandlerContext;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubClient<EventMeshMessage> {
 
-    private final List<SubscriptionItem>           subscriptionItems = Collections.synchronizedList(new LinkedList<>());
-    private       ReceiveMsgHook<EventMeshMessage> callback;
+    private final List<SubscriptionItem> subscriptionItems = Collections.synchronizedList(new LinkedList<>());
+    private ReceiveMsgHook<EventMeshMessage> callback;
 
     public EventMeshMessageTCPSubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
@@ -85,7 +86,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
 
     @Override
     public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-        throws EventMeshException {
+            throws EventMeshException {
         try {
             subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
             Package request = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
@@ -143,7 +144,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
         public void callback(EventMeshMessage eventMeshMessage, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(eventMeshMessage).ifPresent(
-                    responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
+                        responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
                 );
             }
         }

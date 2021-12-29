@@ -19,17 +19,19 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import com.sun.net.httpserver.HttpExchange;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
+import com.sun.net.httpserver.HttpExchange;
+
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 
 public class RedirectClientByIpPortHandlerTest {
 

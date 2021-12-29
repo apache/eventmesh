@@ -29,7 +29,7 @@ import io.cloudevents.rw.CloudEventWriter;
 
 
 public final class RocketMQMessageWriter<R>
-    implements MessageWriter<CloudEventWriter<Message>, Message>, CloudEventWriter<Message> {
+        implements MessageWriter<CloudEventWriter<Message>, Message>, CloudEventWriter<Message> {
 
     private Message message;
 
@@ -66,7 +66,7 @@ public final class RocketMQMessageWriter<R>
 
     @Override
     public CloudEventContextWriter withContextAttribute(String name, String value)
-        throws CloudEventRWException {
+            throws CloudEventRWException {
 
         //String propName = RocketMQHeaders.ATTRIBUTES_TO_HEADERS.get(name);
         //if (propName == null) {
@@ -85,7 +85,7 @@ public final class RocketMQMessageWriter<R>
 
     @Override
     public Message setEvent(final EventFormat format, final byte[] value)
-        throws CloudEventRWException {
+            throws CloudEventRWException {
         message.putUserProperty(RocketMQHeaders.CONTENT_TYPE, format.serializedContentType());
         message.setBody(value);
         return message;

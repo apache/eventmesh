@@ -19,19 +19,13 @@ package org.apache.rocketmq.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.eventmesh.api.EventListener;
-import org.apache.eventmesh.api.EventMeshAction;
-import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
-import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
-
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
-import org.apache.rocketmq.common.message.MessageExt;
-
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Properties;
 
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,6 +35,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import io.cloudevents.CloudEvent;
+
+import org.apache.eventmesh.api.EventListener;
+import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
+import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PushConsumerImplTest {
@@ -52,10 +51,11 @@ public class PushConsumerImplTest {
     @Before
     public void before() throws Exception {
         Properties consumerProp = new Properties();
-//        consumerProp.setProperty(OMSBuiltinKeys.DRIVER_IMPL,
-//            "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
+        //consumerProp.setProperty(OMSBuiltinKeys.DRIVER_IMPL,
+        //    "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
         consumerProp.setProperty("access_points", "IP1:9876,IP2:9876");
-        //final MessagingAccessPoint messagingAccessPoint = OMS.builder().build(consumerProp);//.endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build(config);
+        //final MessagingAccessPoint messagingAccessPoint = OMS.builder().build(consumerProp);
+        // .endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build(config);
 
         consumerProp.setProperty("message.model", "CLUSTERING");
 
@@ -81,7 +81,7 @@ public class PushConsumerImplTest {
 
     @Test
     public void testConsumeMessage() {
-        final byte[] testBody = new byte[] {'a', 'b'};
+        final byte[] testBody = new byte[]{'a', 'b'};
 
         MessageExt consumedMsg = new MessageExt();
         consumedMsg.setMsgId("NewMsgId");
@@ -98,7 +98,7 @@ public class PushConsumerImplTest {
             }
         });
         ((MessageListenerConcurrently) rocketmqPushConsumer
-            .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
+                .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
 
 
     }

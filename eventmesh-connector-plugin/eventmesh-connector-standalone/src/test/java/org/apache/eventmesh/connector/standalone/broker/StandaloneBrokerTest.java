@@ -17,13 +17,15 @@
 
 package org.apache.eventmesh.connector.standalone.broker;
 
-import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
+import java.net.URI;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+
+import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 
 public class StandaloneBrokerTest {
 
@@ -35,14 +37,24 @@ public class StandaloneBrokerTest {
     @Test
     public void putMessage() throws InterruptedException {
         StandaloneBroker instance = StandaloneBroker.getInstance();
-        MessageEntity messageEntity = instance.putMessage("test-topic", CloudEventBuilder.v1().build());
+        CloudEvent cloudEvent = CloudEventBuilder.v1()
+                .withId("test")
+                .withSource(URI.create("testsource"))
+                .withType("testType")
+                .build();
+        MessageEntity messageEntity = instance.putMessage("test-topic", cloudEvent);
         Assert.assertNotNull(messageEntity);
     }
 
     @Test
     public void takeMessage() throws InterruptedException {
         StandaloneBroker instance = StandaloneBroker.getInstance();
-        instance.putMessage("test-topic", CloudEventBuilder.v1().build());
+        CloudEvent cloudEvent = CloudEventBuilder.v1()
+                .withId("test")
+                .withSource(URI.create("testsource"))
+                .withType("testType")
+                .build();
+        instance.putMessage("test-topic", cloudEvent);
         CloudEvent message = instance.takeMessage("test-topic");
         Assert.assertNotNull(message);
     }

@@ -17,18 +17,19 @@
 
 package org.apache.eventmesh.client.tcp.impl;
 
+import java.util.concurrent.ConcurrentHashMap;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+
+import com.google.common.base.Preconditions;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.google.common.base.Preconditions;
-
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class AbstractEventMeshTCPSubHandler<ProtocolMessage> extends SimpleChannelInboundHandler<Package> {
@@ -64,7 +65,7 @@ public abstract class AbstractEventMeshTCPSubHandler<ProtocolMessage> extends Si
             default:
                 log.error("msg ignored|{}|{}", cmd, msg);
         }
-        RequestContext context = contexts.get(RequestContext._key(msg));
+        RequestContext context = contexts.get(RequestContext.key(msg));
         if (context != null) {
             contexts.remove(context.getKey());
             context.finish(msg);

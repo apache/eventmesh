@@ -17,15 +17,16 @@
 
 package org.apache.eventmesh.client.tcp.impl.openmessage;
 
+import io.openmessaging.api.Message;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-
-import io.openmessaging.api.Message;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class OpenMessageTCPSubClient implements EventMeshTCPSubClient<Message> {
@@ -48,7 +49,7 @@ class OpenMessageTCPSubClient implements EventMeshTCPSubClient<Message> {
 
     @Override
     public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-        throws EventMeshException {
+            throws EventMeshException {
 
     }
 

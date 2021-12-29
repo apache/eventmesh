@@ -17,20 +17,20 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import org.apache.eventmesh.common.utils.IPUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.netty.channel.ChannelHandlerContext;
+
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.netty.channel.ChannelHandlerContext;
 
 public class AdminShutdownProcessor implements HttpRequestProcessor {
 
@@ -47,9 +47,9 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
 
         HttpCommand responseEventMeshCommand;
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-            RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
-            EventMeshConstants.PROTOCOL_HTTP,
-            RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
+                RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+                EventMeshConstants.PROTOCOL_HTTP,
+                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         eventMeshServer.shutdown();
 

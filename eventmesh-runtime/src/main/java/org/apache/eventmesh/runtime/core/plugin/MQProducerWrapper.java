@@ -19,14 +19,15 @@ package org.apache.eventmesh.runtime.core.plugin;
 
 import java.util.Properties;
 
-import org.apache.eventmesh.api.RequestReplyCallback;
-import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
-import org.apache.eventmesh.api.producer.Producer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
+
+import org.apache.eventmesh.api.RequestReplyCallback;
+import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+import org.apache.eventmesh.api.producer.Producer;
 
 public class MQProducerWrapper extends MQWrapper {
 

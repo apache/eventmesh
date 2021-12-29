@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -24,8 +27,6 @@ import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class EventMeshTcpExceptionHandler extends ChannelDuplexHandler {
 
@@ -49,9 +50,11 @@ public class EventMeshTcpExceptionHandler extends ChannelDuplexHandler {
         }
 
         if (session != null) {
-            EventMeshTcp2Client.goodBye2Client(eventMeshTCPServer, session, errMsg, OPStatus.FAIL.getCode(), eventMeshTCPServer.getClientSessionGroupMapping());
+            EventMeshTcp2Client.goodBye2Client(eventMeshTCPServer, session, errMsg, OPStatus.FAIL.getCode(),
+                    eventMeshTCPServer.getClientSessionGroupMapping());
         } else {
-            EventMeshTcp2Client.goodBye2Client(ctx, errMsg, eventMeshTCPServer.getClientSessionGroupMapping(), eventMeshTCPServer.getEventMeshTcpMonitor());
+            EventMeshTcp2Client.goodBye2Client(ctx, errMsg, eventMeshTCPServer.getClientSessionGroupMapping(),
+                    eventMeshTCPServer.getEventMeshTcpMonitor());
         }
     }
 

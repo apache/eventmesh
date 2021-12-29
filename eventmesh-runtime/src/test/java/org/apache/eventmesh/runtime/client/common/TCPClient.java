@@ -28,6 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.AdaptiveRecvByteBufAllocator;
@@ -44,13 +47,13 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
  * one Client connects one ACCESS
- * Provides the most basic connection, send capability, and cannot provide disconnected reconnection capability, The service is request-dependent. If the disconnection and reconnection capability is provided, it will cause business insensitivity, that is, it will not follow the business reconnection logic.
+ * Provides the most basic connection, send capability, and cannot provide disconnected reconnection capability,
+ * The service is request-dependent. If the disconnection and reconnection capability is provided,
+ * it will cause business insensitivity, that is, it will not follow the business reconnection logic.
  */
 public abstract class TCPClient implements Closeable {
 
@@ -117,17 +120,19 @@ public abstract class TCPClient implements Closeable {
             send(msg);
             return null;
         } else {
-            Object key = RequestContext._key(msg);
+            Object key = RequestContext.key(msg);
             CountDownLatch latch = new CountDownLatch(1);
-            RequestContext c = RequestContext._context(key, msg, latch);
+            RequestContext c = RequestContext.context(key, msg, latch);
             if (!contexts.contains(c)) {
                 contexts.put(key, c);
             } else {
                 logger.info("duplicate key : {}", key);
             }
             send(msg);
-            if (!c.getLatch().await(timeout, TimeUnit.MILLISECONDS))
+            if (!c.getLatch().await(timeout, TimeUnit.MILLISECONDS)) {
                 throw new TimeoutException("operation timeout, context.key=" + c.getKey());
+            }
+
             return c.getResponse();
         }
     }

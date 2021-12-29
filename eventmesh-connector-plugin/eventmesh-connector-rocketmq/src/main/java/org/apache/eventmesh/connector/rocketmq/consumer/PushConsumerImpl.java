@@ -17,6 +17,26 @@
 
 package org.apache.eventmesh.connector.rocketmq.consumer;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
+import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
+import org.apache.rocketmq.common.message.MessageConst;
+import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
+import org.apache.rocketmq.remoting.protocol.LanguageCode;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.AsyncConsumeContext;
 import org.apache.eventmesh.api.EventListener;
@@ -32,29 +52,8 @@ import org.apache.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentl
 import org.apache.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyStatus;
 import org.apache.eventmesh.connector.rocketmq.patch.EventMeshMessageListenerConcurrently;
 import org.apache.eventmesh.connector.rocketmq.utils.BeanUtils;
-import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
 import org.apache.eventmesh.connector.rocketmq.utils.CloudEventUtils;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageConcurrentlyService;
-import org.apache.rocketmq.client.impl.consumer.ConsumeMessageService;
-import org.apache.rocketmq.client.utils.MessageUtil;
-import org.apache.rocketmq.common.message.MessageConst;
-import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
-import org.apache.rocketmq.remoting.protocol.LanguageCode;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
+import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
 
 public class PushConsumerImpl {
     private final DefaultMQPushConsumer rocketmqPushConsumer;
@@ -76,7 +75,7 @@ public class PushConsumerImpl {
         String consumerGroup = clientConfig.getConsumerId();
         if (null == consumerGroup || consumerGroup.isEmpty()) {
             throw new ConnectorRuntimeException(
-                "Consumer Group is necessary for RocketMQ, please set it.");
+                    "Consumer Group is necessary for RocketMQ, please set it.");
         }
         this.rocketmqPushConsumer.setConsumerGroup(consumerGroup);
         this.rocketmqPushConsumer.setMaxReconsumeTimes(clientConfig.getRmqMaxRedeliveryTimes());
@@ -84,7 +83,7 @@ public class PushConsumerImpl {
         this.rocketmqPushConsumer.setConsumeThreadMax(clientConfig.getRmqMaxConsumeThreadNums());
         this.rocketmqPushConsumer.setConsumeThreadMin(clientConfig.getRmqMinConsumeThreadNums());
         this.rocketmqPushConsumer.setMessageModel(
-            MessageModel.valueOf(clientConfig.getMessageModel()));
+                MessageModel.valueOf(clientConfig.getMessageModel()));
 
         String consumerId = OMSUtil.buildInstanceName();
         //this.rocketmqPushConsumer.setInstanceName(consumerId);
@@ -157,14 +156,14 @@ public class PushConsumerImpl {
 
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
         ConsumeMessageService consumeMessageService = rocketmqPushConsumer
-            .getDefaultMQPushConsumerImpl().getConsumeMessageService();
+                .getDefaultMQPushConsumerImpl().getConsumeMessageService();
         List<MessageExt> msgExtList = new ArrayList<>(cloudEvents.size());
         for (CloudEvent msg : cloudEvents) {
             msgExtList.add(CloudEventUtils.msgConvertExt(
-                RocketMQMessageFactory.createWriter(msg.getSubject()).writeBinary(msg)));
+                    RocketMQMessageFactory.createWriter(msg.getSubject()).writeBinary(msg)));
         }
         ((ConsumeMessageConcurrentlyService) consumeMessageService)
-            .updateOffset(msgExtList, (EventMeshConsumeConcurrentlyContext) context);
+                .updateOffset(msgExtList, (EventMeshConsumeConcurrentlyContext) context);
     }
 
 
@@ -178,13 +177,13 @@ public class PushConsumerImpl {
             }
 
             msg.putUserProperty(Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP,
-                String.valueOf(msg.getBornTimestamp()));
+                    String.valueOf(msg.getBornTimestamp()));
             msg.putUserProperty(Constants.PROPERTY_MESSAGE_STORE_TIMESTAMP,
-                String.valueOf(msg.getStoreTimestamp()));
+                    String.valueOf(msg.getStoreTimestamp()));
 
             //for rr request/reply
             CloudEvent cloudEvent =
-                RocketMQMessageFactory.createReader(CloudEventUtils.msgConvert(msg)).toEvent();
+                    RocketMQMessageFactory.createReader(CloudEventUtils.msgConvert(msg)).toEvent();
 
             CloudEventBuilder cloudEventBuilder = null;
             for (String sysPropKey : MessageConst.STRING_HASH_SET) {
@@ -207,22 +206,22 @@ public class PushConsumerImpl {
 
             final Properties contextProperties = new Properties();
             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+                    EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
             AsyncConsumeContext asyncConsumeContext = new AsyncConsumeContext() {
                 @Override
                 public void commit(EventMeshAction action) {
                     switch (action) {
                         case CommitMessage:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                                    EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
                             break;
                         case ReconsumeLater:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+                                    EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
                             break;
                         case ManualAck:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                                    EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
                             break;
                         default:
                             break;
@@ -233,7 +232,7 @@ public class PushConsumerImpl {
             listener.consume(cloudEvent, asyncConsumeContext);
 
             return EventMeshConsumeConcurrentlyStatus.valueOf(
-                contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
+                    contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
         }
 
 
@@ -249,12 +248,12 @@ public class PushConsumerImpl {
             }
 
             msg.putUserProperty(Constants.PROPERTY_MESSAGE_BORN_TIMESTAMP,
-                String.valueOf(msg.getBornTimestamp()));
+                    String.valueOf(msg.getBornTimestamp()));
             msg.putUserProperty(EventMeshConstants.STORE_TIMESTAMP,
-                String.valueOf(msg.getStoreTimestamp()));
+                    String.valueOf(msg.getStoreTimestamp()));
 
             CloudEvent cloudEvent =
-                RocketMQMessageFactory.createReader(CloudEventUtils.msgConvert(msg)).toEvent();
+                    RocketMQMessageFactory.createReader(CloudEventUtils.msgConvert(msg)).toEvent();
 
             CloudEventBuilder cloudEventBuilder = null;
 
@@ -279,7 +278,7 @@ public class PushConsumerImpl {
             final Properties contextProperties = new Properties();
 
             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+                    EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
 
             EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
                 @Override
@@ -287,15 +286,15 @@ public class PushConsumerImpl {
                     switch (action) {
                         case CommitMessage:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                                    EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
                             break;
                         case ReconsumeLater:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+                                    EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
                             break;
                         case ManualAck:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                                    EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
                             break;
                         default:
                             break;
@@ -308,7 +307,7 @@ public class PushConsumerImpl {
             listener.consume(cloudEvent, eventMeshAsyncConsumeContext);
 
             return EventMeshConsumeConcurrentlyStatus.valueOf(
-                contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
+                    contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
         }
     }
 

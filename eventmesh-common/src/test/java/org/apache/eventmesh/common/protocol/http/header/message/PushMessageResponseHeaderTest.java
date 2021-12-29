@@ -17,13 +17,14 @@
 
 package org.apache.eventmesh.common.protocol.http.header.message;
 
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
+import static org.hamcrest.CoreMatchers.is;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 
 public class PushMessageResponseHeaderTest {
 

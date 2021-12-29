@@ -18,6 +18,7 @@
 package org.apache.eventmesh.protocol.meshmessage.resolver.http;
 
 import io.cloudevents.CloudEvent;
+
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 

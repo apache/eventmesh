@@ -22,6 +22,9 @@ import java.util.Set;
 
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
+/**
+ * DownstreamDispatchStrategy
+ */
 public interface DownstreamDispatchStrategy {
     /**
      * select a SESSION

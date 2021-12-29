@@ -17,7 +17,9 @@
 
 package org.apache.eventmesh.runtime.client.common;
 
-
+/**
+ * ClientConstants
+ */
 public interface ClientConstants {
 
     /**

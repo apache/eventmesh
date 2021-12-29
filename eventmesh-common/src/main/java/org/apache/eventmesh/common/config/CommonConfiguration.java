@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.common.config;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.common.base.Preconditions;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.utils.IPUtils;
 
 public class CommonConfiguration {

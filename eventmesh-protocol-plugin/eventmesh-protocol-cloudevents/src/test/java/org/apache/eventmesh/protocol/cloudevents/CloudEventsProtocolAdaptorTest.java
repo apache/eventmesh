@@ -17,23 +17,23 @@
 
 package org.apache.eventmesh.protocol.cloudevents;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class CloudEventsProtocolAdaptorTest {
 
     @Test
     public void loadPlugin() {
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
-            ProtocolPluginFactory.getProtocolAdaptor(CloudEventsProtocolConstant.PROTOCOL_NAME);
+                ProtocolPluginFactory.getProtocolAdaptor(CloudEventsProtocolConstant.PROTOCOL_NAME);
 
         Assert.assertNotNull(protocolAdaptor);
         Assert.assertEquals(
-            CloudEventsProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
+                CloudEventsProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
         Assert.assertEquals(CloudEventsProtocolAdaptor.class, protocolAdaptor.getClass());
     }
 }

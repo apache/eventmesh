@@ -24,9 +24,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 
 public class HttpRetryer {
 
@@ -58,7 +59,8 @@ public class HttpRetryer {
         pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
                 60000,
-                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize),
+                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize),
                 new ThreadFactory() {
                     private AtomicInteger count = new AtomicInteger();
 
@@ -69,7 +71,8 @@ public class HttpRetryer {
                         thread.setDaemon(true);
                         return thread;
                     }
-                }, new ThreadPoolExecutor.AbortPolicy());
+                },
+                new ThreadPoolExecutor.AbortPolicy());
 
         dispatcher = new Thread(new Runnable() {
             @Override

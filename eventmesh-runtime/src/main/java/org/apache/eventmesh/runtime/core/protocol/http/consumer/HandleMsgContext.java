@@ -21,9 +21,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.cloudevents.CloudEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
+
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
@@ -31,8 +35,6 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class HandleMsgContext {
 
@@ -86,7 +88,7 @@ public class HandleMsgContext {
         this.consumeTopicConfig = consumeTopicConfig;
 
         String ttlStr = (String) event.getExtension(Constants.PROPERTY_MESSAGE_TIMEOUT);
-        this.ttl = StringUtils.isNumeric(ttlStr)? Integer.parseInt(ttlStr): EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
+        this.ttl = StringUtils.isNumeric(ttlStr) ? Integer.parseInt(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
     }
 
     public void addProp(String key, String val) {
@@ -195,10 +197,10 @@ public class HandleMsgContext {
     public void finish() {
         if (eventMeshConsumer != null && context != null && event != null) {
             if (messageLogger.isDebugEnabled()) {
-//                messageLogger.debug("messageAcked|topic={}|msgId={}|cluster={}|broker={}|queueId={}|queueOffset={}", topic,
-//                        msg.getMsgId(), msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER),
-//                        msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
-//                        msg.getQueueId(), msg.getQueueOffset());
+                //messageLogger.debug("messageAcked|topic={}|msgId={}|cluster={}|broker={}|queueId={}|queueOffset={}", topic,
+                //        msg.getMsgId(), msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER),
+                //        msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
+                //        msg.getQueueId(), msg.getQueueOffset());
             }
             eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Arrays.asList(event), context);
         }

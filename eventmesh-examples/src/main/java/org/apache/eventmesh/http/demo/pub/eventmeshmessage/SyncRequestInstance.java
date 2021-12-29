@@ -17,17 +17,16 @@
 
 package org.apache.eventmesh.http.demo.pub.eventmeshmessage;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SyncRequestInstance {
 
@@ -52,27 +51,27 @@ public class SyncRequestInstance {
             }
 
             EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-                .liteEventMeshAddr(eventMeshIPPort)
-                .producerGroup("EventMeshTest-producerGroup")
-                .env("env")
-                .idc("idc")
-                .ip(IPUtils.getLocalAddress())
-                .sys("1234")
-                .pid(String.valueOf(ThreadUtils.getPID())).build();
+                    .liteEventMeshAddr(eventMeshIPPort)
+                    .producerGroup("EventMeshTest-producerGroup")
+                    .env("env")
+                    .idc("idc")
+                    .ip(IPUtils.getLocalAddress())
+                    .sys("1234")
+                    .pid(String.valueOf(ThreadUtils.getPID())).build();
 
             eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
 
             long startTime = System.currentTimeMillis();
             EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                .bizSeqNo(RandomStringUtils.generateNum(30))
-                .content("contentStr with special protocal")
-                .topic(topic)
-                .uniqueId(RandomStringUtils.generateNum(30)).build();
+                    .bizSeqNo(RandomStringUtils.generateNum(30))
+                    .content("contentStr with special protocal")
+                    .topic(topic)
+                    .uniqueId(RandomStringUtils.generateNum(30)).build();
 
             EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10000);
             if (logger.isDebugEnabled()) {
                 logger.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), rsp.getContent(),
-                    System.currentTimeMillis() - startTime);
+                        System.currentTimeMillis() - startTime);
             }
         } catch (Exception e) {
             logger.warn("send msg failed", e);

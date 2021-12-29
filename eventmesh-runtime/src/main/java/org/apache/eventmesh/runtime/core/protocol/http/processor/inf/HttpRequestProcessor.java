@@ -22,6 +22,9 @@ import io.netty.channel.ChannelHandlerContext;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 
+/**
+ * HttpRequestProcessor
+ */
 public interface HttpRequestProcessor {
 
     void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpCommand> asyncContext)

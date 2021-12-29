@@ -49,7 +49,9 @@ public class ThreadUtilsTest {
             try {
                 ThreadUtils.randomSleep(50);
             } catch (Exception ignore) {
+                //ignore
             }
+
             sleepTime = System.currentTimeMillis() - startTime;
         }
     }

@@ -14,21 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import io.netty.channel.ChannelHandlerContext;
+import static org.apache.eventmesh.common.protocol.tcp.Command.RECOMMEND_RESPONSE;
+import static org.apache.eventmesh.runtime.util.Utils.writeAndFlush;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.protocol.tcp.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.netty.channel.ChannelHandlerContext;
+
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static org.apache.eventmesh.common.protocol.tcp.Command.RECOMMEND_RESPONSE;
-import static org.apache.eventmesh.runtime.util.Utils.writeAndFlush;
 
 public class RecommendTask extends AbstractTask {
 
@@ -43,12 +48,12 @@ public class RecommendTask extends AbstractTask {
         long taskExecuteTime = System.currentTimeMillis();
         Package res = new Package();
         try {
-            if(!eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerRegistryEnable) {
+            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerRegistryEnable) {
                 throw new Exception("registry enable config is false, not support");
             }
             UserAgent user = (UserAgent) pkg.getBody();
             validateUserAgent(user);
-            String  group = getGroupOfClient(user);
+            String group = getGroupOfClient(user);
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
             String eventMeshRecommendResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, user.getPurpose());
             res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq()));
@@ -81,20 +86,21 @@ public class RecommendTask extends AbstractTask {
             throw new Exception("client wemqPasswd cannot be null");
         }
 
-        if (!(StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
+        if (!(StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(
+                EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
             throw new Exception("client purpose config is error");
         }
     }
 
-    private String getGroupOfClient(UserAgent userAgent){
-        if(userAgent == null){
+    private String getGroupOfClient(UserAgent userAgent) {
+        if (userAgent == null) {
             return null;
         }
-        if(EventMeshConstants.PURPOSE_PUB.equals(userAgent.getPurpose())){
+        if (EventMeshConstants.PURPOSE_PUB.equals(userAgent.getPurpose())) {
             return userAgent.getProducerGroup();
-        }else if(EventMeshConstants.PURPOSE_SUB.equals(userAgent.getPurpose())){
+        } else if (EventMeshConstants.PURPOSE_SUB.equals(userAgent.getPurpose())) {
             return userAgent.getConsumerGroup();
-        }else{
+        } else {
             return null;
         }
     }

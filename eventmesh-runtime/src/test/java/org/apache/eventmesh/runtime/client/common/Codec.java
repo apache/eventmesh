@@ -21,6 +21,9 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -34,14 +37,12 @@ import org.apache.eventmesh.common.protocol.tcp.RedirectInfo;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Codec {
 
-    private final static Logger logger = LoggerFactory.getLogger(Codec.class);
+    private static final Logger logger = LoggerFactory.getLogger(Codec.class);
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
-    private static Charset UTF8 = Charset.forName(EventMeshConstants.DEFAULT_CHARSET);
+    private static final Charset UTF8 = Charset.forName(EventMeshConstants.DEFAULT_CHARSET);
     private static final byte[] CONSTANT_MAGIC_FLAG = "EventMesh".getBytes(UTF8);
     private static final byte[] VERSION = "0000".getBytes(UTF8);
 
@@ -72,10 +73,12 @@ public class Codec {
             out.writeBytes(VERSION);
             out.writeInt(length);
             out.writeInt(headerLength);
-            if (headerData != null)
+            if (headerData != null) {
                 out.writeBytes(headerData);
-            if (bodyData != null)
+            }
+            if (bodyData != null) {
                 out.writeBytes(bodyData);
+            }
         }
     }
 
@@ -90,8 +93,9 @@ public class Codec {
             int bodyLength = 0;
 
             try {
-                if (null == in)
+                if (null == in) {
                     return;
+                }
 
                 byte[] flagBytes = new byte[CONSTANT_MAGIC_FLAG.length];
                 byte[] versionBytes = new byte[VERSION.length];
@@ -99,9 +103,10 @@ public class Codec {
                 in.readBytes(flagBytes);
                 in.readBytes(versionBytes);
                 if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
-                    String errorMsg = String.format("invalid magic flag or " +
-                            "version|flag=%s|version=%s|remoteAddress=%s", new String(flagBytes, UTF8), new String
-                            (versionBytes, UTF8), ctx.channel().remoteAddress());
+                    String errorMsg = String.format("invalid magic flag or "
+                            +
+                            "version|flag=%s|version=%s|remoteAddress=%s", new String(flagBytes, UTF8),
+                            new String(versionBytes, UTF8), ctx.channel().remoteAddress());
                     throw new Exception(errorMsg);
                 }
 
@@ -136,16 +141,23 @@ public class Codec {
     private static Object parseFromJson(Command cmd, String data) throws Exception {
         if (cmd == Command.HELLO_REQUEST || cmd == Command.RECOMMEND_REQUEST) {
             return ClientGlobal.jsonMapper.readValue(data, UserAgent.class);
-        } else if (cmd == Command.SUBSCRIBE_REQUEST ||
-                cmd == Command.UNSUBSCRIBE_REQUEST) {
+        } else if (cmd == Command.SUBSCRIBE_REQUEST
+                || cmd == Command.UNSUBSCRIBE_REQUEST) {
             return ClientGlobal.jsonMapper.readValue(data, Subscription.class);
-        } else if (cmd == Command.REQUEST_TO_SERVER || cmd == Command.REQUEST_TO_CLIENT || cmd == Command.RESPONSE_TO_SERVER || cmd ==
-                Command.RESPONSE_TO_CLIENT || cmd == Command.ASYNC_MESSAGE_TO_SERVER || cmd == Command.ASYNC_MESSAGE_TO_CLIENT || cmd ==
-                Command.BROADCAST_MESSAGE_TO_SERVER || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT || cmd ==
-                Command.BROADCAST_MESSAGE_TO_CLIENT_ACK || cmd == Command.ASYNC_MESSAGE_TO_CLIENT_ACK || cmd == Command.REQUEST_TO_CLIENT_ACK
+        } else if (cmd == Command.REQUEST_TO_SERVER
+                || cmd == Command.REQUEST_TO_CLIENT
+                || cmd == Command.RESPONSE_TO_SERVER
+                || cmd == Command.RESPONSE_TO_CLIENT
+                || cmd == Command.ASYNC_MESSAGE_TO_SERVER
+                || cmd == Command.ASYNC_MESSAGE_TO_CLIENT
+                || cmd == Command.BROADCAST_MESSAGE_TO_SERVER
+                || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT
+                || cmd == Command.BROADCAST_MESSAGE_TO_CLIENT_ACK
+                || cmd == Command.ASYNC_MESSAGE_TO_CLIENT_ACK
+                || cmd == Command.REQUEST_TO_CLIENT_ACK
                 || cmd == Command.RESPONSE_TO_CLIENT_ACK) {
             return ClientGlobal.jsonMapper.readValue(data, EventMeshMessage.class);
-        } else if (cmd == (Command.REDIRECT_TO_CLIENT)) {
+        } else if (cmd == Command.REDIRECT_TO_CLIENT) {
             return ClientGlobal.jsonMapper.readValue(data, RedirectInfo.class);
         } else {
             return null;

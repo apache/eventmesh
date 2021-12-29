@@ -17,6 +17,21 @@
 
 package org.apache.eventmesh.client.http.producer;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.util.EntityUtils;
+
+import io.cloudevents.CloudEvent;
+import io.openmessaging.api.Message;
+
+import com.google.common.base.Preconditions;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
@@ -24,20 +39,6 @@ import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.util.EntityUtils;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-
-import com.google.common.base.Preconditions;
-
-import io.cloudevents.CloudEvent;
-import io.openmessaging.api.Message;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * RRCallbackResponseHandlerAdapter.
@@ -58,7 +59,7 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
         Preconditions.checkNotNull(rrCallback, "rrCallback invalid");
         Preconditions.checkNotNull(protocolMessage, "message invalid");
         if (!(protocolMessage instanceof EventMeshMessage) && !(protocolMessage instanceof CloudEvent)
-            && !(protocolMessage instanceof Message)) {
+                && !(protocolMessage instanceof Message)) {
             throw new IllegalArgumentException(String.format("ProtocolMessage: %s is not supported", protocolMessage));
         }
         this.protocolMessage = protocolMessage;
@@ -97,12 +98,12 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
     private ProtocolMessage transformToProtocolMessage(EventMeshRetObj ret) {
         // todo: constructor other protocol message, can judge by protocol type in properties
         SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(ret.getRetMsg(),
-            SendMessageResponseBody.ReplyMessage.class);
+                SendMessageResponseBody.ReplyMessage.class);
         EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-            .content(replyMessage.body)
-            .prop(replyMessage.properties)
-            .topic(replyMessage.topic)
-            .build();
+                .content(replyMessage.body)
+                .prop(replyMessage.properties)
+                .topic(replyMessage.topic)
+                .build();
         return (ProtocolMessage) eventMeshMessage;
     }
 }

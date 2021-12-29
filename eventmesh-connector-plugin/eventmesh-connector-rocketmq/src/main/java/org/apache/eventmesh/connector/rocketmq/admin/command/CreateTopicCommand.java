@@ -17,12 +17,11 @@
 
 package org.apache.eventmesh.connector.rocketmq.admin.command;
 
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.tools.command.CommandUtil;
-
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +42,7 @@ public class CreateTopicCommand extends Command {
             init();
             adminExt.start();
             Set<String> brokersAddr = CommandUtil.fetchMasterAddrByClusterName(
-                adminExt, clusterName);
+                    adminExt, clusterName);
             for (String masterAddr : brokersAddr) {
                 TopicConfig topicConfig = new TopicConfig();
                 topicConfig.setTopicName(topicName);

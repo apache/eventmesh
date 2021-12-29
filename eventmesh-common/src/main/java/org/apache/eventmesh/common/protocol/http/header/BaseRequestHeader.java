@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.collections4.MapUtils;
+
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
 public class BaseRequestHeader extends Header {

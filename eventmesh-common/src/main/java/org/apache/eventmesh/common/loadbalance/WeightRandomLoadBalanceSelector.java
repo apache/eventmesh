@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.common.loadbalance;
 
+import java.util.List;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.eventmesh.common.exception.EventMeshException;
 
-import java.util.List;
+import org.apache.eventmesh.common.exception.EventMeshException;
 
 /**
  * This selector use the weighted random strategy to select from list.

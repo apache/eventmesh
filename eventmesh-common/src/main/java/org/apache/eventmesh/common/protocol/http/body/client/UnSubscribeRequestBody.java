@@ -17,16 +17,16 @@
 
 package org.apache.eventmesh.common.protocol.http.body.client;
 
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.utils.JsonUtils;
-
-import org.apache.commons.collections4.MapUtils;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.MapUtils;
+
 import com.fasterxml.jackson.core.type.TypeReference;
+
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 public class UnSubscribeRequestBody extends Body {
 
@@ -70,8 +70,8 @@ public class UnSubscribeRequestBody extends Body {
         UnSubscribeRequestBody body = new UnSubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
         body.setTopics(JsonUtils
-            .deserialize(MapUtils.getString(bodyParam, TOPIC), new TypeReference<List<String>>() {
-            }));
+                .deserialize(MapUtils.getString(bodyParam, TOPIC), new TypeReference<List<String>>() {
+                }));
         body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         return body;
     }
@@ -88,9 +88,9 @@ public class UnSubscribeRequestBody extends Body {
     @Override
     public String toString() {
         return "unSubscribeRequestBody{"
-            + "consumerGroup='" + consumerGroup + '\''
-            + ", url='" + url + '\''
-            + ", topics=" + topics
-            + '}';
+                + "consumerGroup='" + consumerGroup + '\''
+                + ", url='" + url + '\''
+                + ", topics=" + topics
+                + '}';
     }
 }

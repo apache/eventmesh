@@ -17,14 +17,16 @@
 
 package org.apache.eventmesh.connector.standalone.broker;
 
-import io.cloudevents.CloudEvent;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.commons.lang3.tuple.Pair;
+
+import io.cloudevents.CloudEvent;
+
 import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
 import org.apache.eventmesh.connector.standalone.broker.task.HistoryMessageClearTask;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * This broker used to store event, it just support standalone mode, you shouldn't use this module in production environment

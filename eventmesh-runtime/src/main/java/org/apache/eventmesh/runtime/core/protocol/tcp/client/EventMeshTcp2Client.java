@@ -20,6 +20,16 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client;
 import static org.apache.eventmesh.common.protocol.tcp.Command.REDIRECT_TO_CLIENT;
 import static org.apache.eventmesh.common.protocol.tcp.Command.SERVER_GOODBYE_REQUEST;
 
+import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -32,16 +42,6 @@ import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
 
-import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-
 public class EventMeshTcp2Client {
 
     private static final Logger logger = LoggerFactory.getLogger(EventMeshTcp2Client.class);
@@ -53,8 +53,8 @@ public class EventMeshTcp2Client {
             long startTime = System.currentTimeMillis();
             Package msg = new Package();
             msg.setHeader(
-                new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(), "graceful normal quit from eventmesh",
-                    null));
+                    new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(), "graceful normal quit from eventmesh",
+                            null));
 
             eventMeshTCPServer.getScheduler().submit(new Runnable() {
                 @Override
@@ -108,24 +108,24 @@ public class EventMeshTcp2Client {
         eventMeshTcpMonitor.getEventMesh2clientMsgNum().incrementAndGet();
         logger.info("goodBye2Client client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
         ctx.writeAndFlush(pkg).addListener(
-            new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    Utils.logSucceedMessageFlow(pkg, null, startTime, startTime);
-                    try {
-                        mapping.closeSession(ctx);
-                    } catch (Exception e) {
-                        logger.warn("close session failed!", e);
+                new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        Utils.logSucceedMessageFlow(pkg, null, startTime, startTime);
+                        try {
+                            mapping.closeSession(ctx);
+                        } catch (Exception e) {
+                            logger.warn("close session failed!", e);
+                        }
                     }
                 }
-            }
         );
     }
 
     public static String redirectClient2NewEventMesh(EventMeshTCPServer eventMeshTCPServer, String newEventMeshIp,
                                                      int port, Session session, ClientSessionGroupMapping mapping) {
         logger.info("begin to gracefully redirect Client {}, newIPPort[{}]", session.getClient(),
-            newEventMeshIp + ":" + port);
+                newEventMeshIp + ":" + port);
         try {
             long startTime = System.currentTimeMillis();
 

@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.common.utils;
 
-import org.apache.eventmesh.common.exception.JsonException;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+
+import org.apache.eventmesh.common.exception.JsonException;
 
 /**
  * Json serialize or deserialize utils.

@@ -17,22 +17,22 @@
 
 package org.apache.eventmesh.connector.rocketmq.consumer;
 
+import java.util.List;
+import java.util.Properties;
+
+import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.connector.rocketmq.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
-
-import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
-
-import java.util.List;
-import java.util.Properties;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.cloudevents.CloudEvent;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RocketMQConsumerImpl implements Consumer {
@@ -46,14 +46,14 @@ public class RocketMQConsumerImpl implements Consumer {
         final ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.init();
         boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast"));
-        String consumerGroup = keyValue.getProperty("consumerGroup");
-        String instanceName = keyValue.getProperty("instanceName");
 
+        String consumerGroup = keyValue.getProperty("consumerGroup");
         if (isBroadcast) {
             consumerGroup = Constants.BROADCAST_PREFIX + consumerGroup;
         }
 
         String namesrvAddr = clientConfiguration.namesrvAddr;
+        String instanceName = keyValue.getProperty("instanceName");
         Properties properties = new Properties();
         properties.put("ACCESS_POINTS", namesrvAddr);
         properties.put("REGION", "namespace");

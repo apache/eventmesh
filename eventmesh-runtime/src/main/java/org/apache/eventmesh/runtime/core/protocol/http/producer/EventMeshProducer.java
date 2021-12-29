@@ -20,14 +20,15 @@ package org.apache.eventmesh.runtime.core.protocol.http.producer;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class EventMeshProducer {
 
@@ -69,13 +70,15 @@ public class EventMeshProducer {
         return mqProducerWrapper;
     }
 
-    public synchronized void init(EventMeshHTTPConfiguration eventMeshHttpConfiguration, ProducerGroupConf producerGroupConfig) throws Exception {
+    public synchronized void init(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
+                                  ProducerGroupConf producerGroupConfig) throws Exception {
         this.producerGroupConfig = producerGroupConfig;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
 
         Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
-        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(), eventMeshHttpConfiguration.eventMeshCluster));
+        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(producerGroupConfig.getGroupName(),
+                eventMeshHttpConfiguration.eventMeshCluster));
 
         //TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshHttpConfiguration.eventMeshIDC);

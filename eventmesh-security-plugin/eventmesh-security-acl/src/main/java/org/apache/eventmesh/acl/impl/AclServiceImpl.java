@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.acl.impl;
 
+import java.util.Properties;
+
 import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
-
-import java.util.Properties;
 
 public class AclServiceImpl implements AclService {
     @Override

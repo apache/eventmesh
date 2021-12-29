@@ -36,18 +36,18 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 public class IOTinyUtils {
 
-    static public String toString(InputStream input, String encoding) throws IOException {
-        return (null == encoding) ? toString(new InputStreamReader(input, EventMeshConstants.DEFAULT_CHARSET)) : toString(new InputStreamReader(
-                input, encoding));
+    public static String toString(InputStream input, String encoding) throws IOException {
+        return (null == encoding) ? toString(new InputStreamReader(input, EventMeshConstants.DEFAULT_CHARSET))
+                : toString(new InputStreamReader(input, encoding));
     }
 
-    static public String toString(Reader reader) throws IOException {
+    public static String toString(Reader reader) throws IOException {
         CharArrayWriter sw = new CharArrayWriter();
         copy(reader, sw);
         return sw.toString();
     }
 
-    static public long copy(Reader input, Writer output) throws IOException {
+    public static long copy(Reader input, Writer output) throws IOException {
         char[] buffer = new char[1 << 12];
         long count = 0;
         for (int n = 0; (n = input.read(buffer)) >= 0; ) {
@@ -57,7 +57,7 @@ public class IOTinyUtils {
         return count;
     }
 
-    static public List<String> readLines(Reader input) throws IOException {
+    public static List<String> readLines(Reader input) throws IOException {
         BufferedReader reader = toBufferedReader(input);
         List<String> list = new ArrayList<String>();
         String line;
@@ -72,11 +72,11 @@ public class IOTinyUtils {
         return list;
     }
 
-    static private BufferedReader toBufferedReader(Reader reader) {
+    private static BufferedReader toBufferedReader(Reader reader) {
         return reader instanceof BufferedReader ? (BufferedReader) reader : new BufferedReader(reader);
     }
 
-    static public void copyFile(String source, String target) throws IOException {
+    public static void copyFile(String source, String target) throws IOException {
         File sf = new File(source);
         if (!sf.exists()) {
             throw new IllegalArgumentException("source file does not exist.");

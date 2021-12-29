@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.common.utils;
 
-import org.apache.logging.log4j.util.ProcessIdUtil;
-
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.apache.logging.log4j.util.ProcessIdUtil;
 
 public class ThreadUtils {
 

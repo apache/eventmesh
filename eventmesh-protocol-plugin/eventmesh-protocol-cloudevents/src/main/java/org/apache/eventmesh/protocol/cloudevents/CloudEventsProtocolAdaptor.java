@@ -17,6 +17,20 @@
 
 package org.apache.eventmesh.protocol.cloudevents;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.format.EventFormat;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
+
+import com.google.common.base.Preconditions;
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
@@ -31,27 +45,13 @@ import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchV
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageRequestProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.tcp.TcpMessageProtocolResolver;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.google.common.base.Preconditions;
-
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.format.EventFormat;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
-
 /**
  * CloudEvents protocol adaptor, used to transform CloudEvents message to CloudEvents message.
  *
  * @since 1.3.0
  */
 public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
-    implements ProtocolAdaptor<ProtocolTransportObject> {
+        implements ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
     public CloudEvent toCloudEvent(ProtocolTransportObject cloudEvent) throws ProtocolHandleException {
@@ -98,7 +98,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
 
     @Override
     public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol)
-        throws ProtocolHandleException {
+            throws ProtocolHandleException {
         return null;
     }
 
@@ -113,7 +113,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
                 @Override
                 public Map<String, Object> toMap() {
                     byte[] eventByte =
-                        EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(cloudEvent);
+                            EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(cloudEvent);
                     map.put("content", new String(eventByte, StandardCharsets.UTF_8));
                     return map;
                 }
@@ -127,7 +127,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
             Preconditions.checkNotNull(dataContentType, "DateContentType cannot be null");
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(dataContentType);
             Preconditions.checkNotNull(eventFormat,
-                String.format("DateContentType:%s is not supported", dataContentType));
+                    String.format("DateContentType:%s is not supported", dataContentType));
             pkg.setBody(eventFormat.serialize(cloudEvent));
             return pkg;
         } else {

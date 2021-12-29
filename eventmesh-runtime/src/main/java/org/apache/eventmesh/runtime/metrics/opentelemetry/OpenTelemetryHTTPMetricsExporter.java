@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.metrics.opentelemetry;
 import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
+
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.metrics.http.SummaryMetrics;
@@ -43,7 +44,7 @@ public class OpenTelemetryHTTPMetricsExporter {
                 .doubleValueObserverBuilder("eventmesh.http.request.tps.max")
                 .setDescription("max TPS of HTTP.")
                 .setUnit("HTTP")
-                .setUpdater(result -> result.observe(summaryMetrics.maxHTTPTPS(),Labels.empty()))
+                .setUpdater(result -> result.observe(summaryMetrics.maxHTTPTPS(), Labels.empty()))
                 .build();
 
         //avgHTTPTPS
@@ -51,7 +52,7 @@ public class OpenTelemetryHTTPMetricsExporter {
                 .doubleValueObserverBuilder("eventmesh.http.request.tps.avg")
                 .setDescription("avg TPS of HTTP.")
                 .setUnit("HTTP")
-                .setUpdater(result -> result.observe(summaryMetrics.avgHTTPTPS(),Labels.empty()))
+                .setUpdater(result -> result.observe(summaryMetrics.avgHTTPTPS(), Labels.empty()))
                 .build();
 
         //maxHTTPCost
@@ -303,7 +304,7 @@ public class OpenTelemetryHTTPMetricsExporter {
                 .build();
     }
 
-    public void shutdown(){
+    public void shutdown() {
         OpenTelemetryPrometheusExporter.shutdown();
     }
 }

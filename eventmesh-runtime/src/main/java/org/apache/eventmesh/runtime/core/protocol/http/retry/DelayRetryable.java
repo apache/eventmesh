@@ -19,6 +19,9 @@ package org.apache.eventmesh.runtime.core.protocol.http.retry;
 
 import java.util.concurrent.Delayed;
 
+/**
+ * DelayRetryable
+ */
 public interface DelayRetryable extends Delayed {
     boolean retry() throws Exception;
 }

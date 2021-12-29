@@ -29,7 +29,7 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 public class HttpTinyClient {
 
-    static public HttpResult httpGet(String url, List<String> headers, List<String> paramValues,
+    public static HttpResult httpGet(String url, List<String> headers, List<String> paramValues,
                                      String encoding, long readTimeoutMs) throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
         url += (null == encodedContent) ? "" : ("?" + encodedContent);
@@ -59,7 +59,7 @@ public class HttpTinyClient {
         }
     }
 
-    static private String encodingParams(List<String> paramValues, String encoding)
+    private static String encodingParams(List<String> paramValues, String encoding)
             throws UnsupportedEncodingException {
         StringBuilder sb = new StringBuilder();
         if (null == paramValues) {
@@ -76,13 +76,13 @@ public class HttpTinyClient {
         return sb.toString();
     }
 
-    static private void setHeaders(HttpURLConnection conn, List<String> headers, String encoding) {
+    private static void setHeaders(HttpURLConnection conn, List<String> headers, String encoding) {
         if (null != headers) {
             for (Iterator<String> iter = headers.iterator(); iter.hasNext(); ) {
                 conn.addRequestProperty(iter.next(), iter.next());
             }
         }
-//        conn.addRequestProperty("Client-Version", MQVersion.getVersionDesc(MQVersion.CURRENT_VERSION));
+        //conn.addRequestProperty("Client-Version", MQVersion.getVersionDesc(MQVersion.CURRENT_VERSION));
         conn.addRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=" + encoding);
 
         String ts = String.valueOf(System.currentTimeMillis());
@@ -92,7 +92,7 @@ public class HttpTinyClient {
     /**
      * @return the http response of given http post request
      */
-    static public HttpResult httpPost(String url, List<String> headers, List<String> paramValues,
+    public static HttpResult httpPost(String url, List<String> headers, List<String> paramValues,
                                       String encoding, long readTimeoutMs) throws IOException {
         String encodedContent = encodingParams(paramValues, encoding);
 
@@ -124,13 +124,21 @@ public class HttpTinyClient {
         }
     }
 
-    static public class HttpResult {
-        final public int code;
-        final public String content;
+    public static class HttpResult {
+        private final int code;
+        private final String content;
 
         public HttpResult(int code, String content) {
             this.code = code;
             this.content = content;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getContent() {
+            return content;
         }
     }
 }

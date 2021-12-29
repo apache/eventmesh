@@ -17,6 +17,12 @@
 
 package org.apache.eventmesh.http.demo.pub.eventmeshmessage;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
@@ -28,12 +34,6 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.util.Utils;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 @Slf4j
 public class AsyncPublishInstance {
@@ -57,16 +57,16 @@ public class AsyncPublishInstance {
         final String topic = "TEST-TOPIC-HTTP-ASYNC";
 
         EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-            .liteEventMeshAddr(eventMeshIPPort)
-            .producerGroup("EventMeshTest-producerGroup")
-            .env("env")
-            .idc("idc")
-            .ip(IPUtils.getLocalAddress())
-            .sys("1234")
-            .pid(String.valueOf(ThreadUtils.getPID()))
-            .userName("eventmesh")
-            .password("pass")
-            .build();
+                .liteEventMeshAddr(eventMeshIPPort)
+                .producerGroup("EventMeshTest-producerGroup")
+                .env("env")
+                .idc("idc")
+                .ip(IPUtils.getLocalAddress())
+                .sys("1234")
+                .pid(String.valueOf(ThreadUtils.getPID()))
+                .userName("eventmesh")
+                .password("pass")
+                .build();
 
         try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);) {
             for (int i = 0; i < messageSize; i++) {
@@ -74,12 +74,12 @@ public class AsyncPublishInstance {
                 content.put("content", "testPublishMessage");
 
                 EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                    .bizSeqNo(RandomStringUtils.generateNum(30))
-                    .content(JsonUtils.serialize(content))
-                    .topic(topic)
-                    .uniqueId(RandomStringUtils.generateNum(30))
-                    .build()
-                    .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
+                        .bizSeqNo(RandomStringUtils.generateNum(30))
+                        .content(JsonUtils.serialize(content))
+                        .topic(topic)
+                        .uniqueId(RandomStringUtils.generateNum(30))
+                        .build()
+                        .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
                 eventMeshHttpProducer.publish(eventMeshMessage);
             }
             Thread.sleep(30000);

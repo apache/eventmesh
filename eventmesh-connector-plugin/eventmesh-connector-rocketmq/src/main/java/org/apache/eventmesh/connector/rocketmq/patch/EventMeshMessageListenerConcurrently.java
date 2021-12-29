@@ -53,6 +53,8 @@ public abstract class EventMeshMessageListenerConcurrently implements MessageLis
                     case CONSUME_FINISH:
                         eventMeshConsumeConcurrentlyContext.setManualAck(true);
                         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                    default:
+                        return status;
                 }
             } catch (Throwable e) {
                 LOG.info("handleMessage fail", e);
@@ -62,7 +64,7 @@ public abstract class EventMeshMessageListenerConcurrently implements MessageLis
             LOG.info("handleMessage fail", e);
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         }
-        return status;
+        //return status;
     }
 
     public abstract EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg, EventMeshConsumeConcurrentlyContext context);

@@ -17,6 +17,15 @@
 
 package org.apache.eventmesh.protocol.meshmessage;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+
+import io.cloudevents.CloudEvent;
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
@@ -32,15 +41,6 @@ import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchP
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchV2ProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageRequestProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.tcp.TcpMessageProtocolResolver;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import io.cloudevents.CloudEvent;
 
 public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTransportObject> {
 
@@ -99,9 +99,10 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             HttpCommand httpCommand = new HttpCommand();
             Body body = new Body() {
                 final Map<String, Object> map = new HashMap<>();
+
                 @Override
                 public Map<String, Object> toMap() {
-                    map.put("content",  new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
+                    map.put("content", new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
                     return map;
                 }
             };
