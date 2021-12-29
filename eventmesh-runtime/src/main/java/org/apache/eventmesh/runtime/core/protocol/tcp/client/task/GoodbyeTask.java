@@ -19,6 +19,8 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.CLIENT_GOODBYE_RESPONSE;
 
+import io.netty.channel.ChannelHandlerContext;
+
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
@@ -26,8 +28,6 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.util.Utils;
-
-import io.netty.channel.ChannelHandlerContext;
 
 public class GoodbyeTask extends AbstractTask {
 
@@ -44,13 +44,13 @@ public class GoodbyeTask extends AbstractTask {
                 logger.info("client|address={}| has reject ", session.getContext().channel().remoteAddress());
             } else {
                 msg.setHeader(
-                    new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
-                        pkg.getHeader().getSeq()));
+                        new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
+                                pkg.getHeader().getSeq()));
             }
         } catch (Exception e) {
             logger.error("GoodbyeTask failed|user={}|errMsg={}", session.getClient(), e);
             msg.setHeader(new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.FAIL.getCode(), e.getStackTrace().toString(), pkg
-                .getHeader().getSeq()));
+                    .getHeader().getSeq()));
         } finally {
             this.eventMeshTCPServer.getScheduler().submit(new Runnable() {
                 @Override
@@ -61,6 +61,6 @@ public class GoodbyeTask extends AbstractTask {
             //session.write2Client(msg);
         }
         EventMeshTcp2Client
-            .closeSessionIfTimeout(this.eventMeshTCPServer, session, eventMeshTCPServer.getClientSessionGroupMapping());
+                .closeSessionIfTimeout(this.eventMeshTCPServer, session, eventMeshTCPServer.getClientSessionGroupMapping());
     }
 }

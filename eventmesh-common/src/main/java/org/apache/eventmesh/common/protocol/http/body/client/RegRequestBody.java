@@ -17,17 +17,17 @@
 
 package org.apache.eventmesh.common.protocol.http.body.client;
 
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.utils.JsonUtils;
-
-import org.apache.commons.collections4.MapUtils;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.MapUtils;
+
 import com.fasterxml.jackson.core.type.TypeReference;
+
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.utils.JsonUtils;
 
 public class RegRequestBody extends Body {
 
@@ -72,8 +72,8 @@ public class RegRequestBody extends Body {
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
         body.setEndPoint(MapUtils.getString(bodyParam, ENDPOINT));
         body.setTopics(JsonUtils.deserialize(MapUtils.getString(bodyParam, TOPICS),
-            new TypeReference<List<SubscriptionItem>>() {
-            }));
+                new TypeReference<List<SubscriptionItem>>() {
+                }));
         return body;
     }
 
@@ -89,9 +89,9 @@ public class RegRequestBody extends Body {
     @Override
     public String toString() {
         return "regRequestBody{"
-            + "clientType='" + clientType + '\''
-            + ", endPoint='" + endPoint + '\''
-            + ", topics=" + topics
-            + '}';
+                + "clientType='" + clientType + '\''
+                + ", endPoint='" + endPoint + '\''
+                + ", topics=" + topics
+                + '}';
     }
 }

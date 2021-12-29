@@ -17,12 +17,6 @@
 
 package org.apache.eventmesh.client.http.ssl;
 
-import org.apache.commons.lang3.StringUtils;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -30,6 +24,13 @@ import java.nio.file.StandardOpenOption;
 import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class MyX509TrustManager implements X509TrustManager {
     X509TrustManager myTrustManager;
@@ -47,7 +48,7 @@ public class MyX509TrustManager implements X509TrustManager {
                 + fileName), StandardOpenOption.READ), filePass);
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(keyStore);
-        TrustManager trustManagers[] = trustManagerFactory.getTrustManagers();
+        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
         for (TrustManager trustManager : trustManagers) {
             if (trustManager instanceof X509TrustManager) {
                 myTrustManager = (X509TrustManager) trustManager;

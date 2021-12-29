@@ -17,26 +17,26 @@
 
 package org.apache.eventmesh.client.http;
 
-import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
-import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
-import org.apache.eventmesh.client.http.util.HttpLoadBalanceUtils;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
-
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-
 import java.io.IOException;
 import java.security.SecureRandom;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+
 import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.http.ssl.MyX509TrustManager;
+import org.apache.eventmesh.client.http.util.HttpLoadBalanceUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.exception.EventMeshException;
+import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
 
 @Slf4j
 public abstract class AbstractHttpClient implements AutoCloseable {
@@ -53,7 +53,7 @@ public abstract class AbstractHttpClient implements AutoCloseable {
 
         this.eventMeshHttpClientConfig = eventMeshHttpClientConfig;
         this.eventMeshServerSelector = HttpLoadBalanceUtils.createEventMeshServerLoadBalanceSelector(
-            eventMeshHttpClientConfig);
+                eventMeshHttpClientConfig);
         this.httpClient = setHttpClient();
     }
 
@@ -73,14 +73,14 @@ public abstract class AbstractHttpClient implements AutoCloseable {
         try {
             // todo: config in properties file?
             String protocol = System.getProperty("ssl.client.protocol", "TLSv1.2");
-            TrustManager[] tm = new TrustManager[] {new MyX509TrustManager()};
+            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
             sslContext = SSLContext.getInstance(protocol);
             sslContext.init(null, tm, new SecureRandom());
             // todo: custom client pool
             return HttpClients.custom()
-                .setSSLContext(sslContext)
-                .setSSLHostnameVerifier(new DefaultHostnameVerifier())
-                .build();
+                    .setSSLContext(sslContext)
+                    .setSSLHostnameVerifier(new DefaultHostnameVerifier())
+                    .build();
         } catch (Exception e) {
             log.error("Error in creating HttpClient.", e);
             throw new EventMeshException(e);

@@ -17,20 +17,21 @@
 
 package org.apache.eventmesh.client.http.util;
 
-import com.google.common.base.Splitter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import org.apache.commons.collections4.CollectionUtils;
+
+import com.google.common.base.Splitter;
 
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.RandomLoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.Weight;
-import org.apache.eventmesh.common.loadbalance.WeightRoundRobinLoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.WeightRandomLoadBalanceSelector;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
+import org.apache.eventmesh.common.loadbalance.WeightRoundRobinLoadBalanceSelector;
 
 public class HttpLoadBalanceUtils {
 
@@ -38,21 +39,21 @@ public class HttpLoadBalanceUtils {
     private static final Pattern IP_PORT_WEIGHT_PATTERN = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}:\\d{1,6}");
 
     public static LoadBalanceSelector<String> createEventMeshServerLoadBalanceSelector(
-        EventMeshHttpClientConfig eventMeshHttpClientConfig)
+            EventMeshHttpClientConfig eventMeshHttpClientConfig)
             throws EventMeshException {
         LoadBalanceSelector<String> eventMeshServerSelector = null;
         switch (eventMeshHttpClientConfig.getLoadBalanceType()) {
             case RANDOM:
                 eventMeshServerSelector = new RandomLoadBalanceSelector<>(buildClusterGroupFromConfig(
-                    eventMeshHttpClientConfig));
+                        eventMeshHttpClientConfig));
                 break;
             case WEIGHT_RANDOM:
                 eventMeshServerSelector = new WeightRandomLoadBalanceSelector<>(buildWeightedClusterGroupFromConfig(
-                    eventMeshHttpClientConfig));
+                        eventMeshHttpClientConfig));
                 break;
             case WEIGHT_ROUND_ROBIN:
                 eventMeshServerSelector = new WeightRoundRobinLoadBalanceSelector<>(buildWeightedClusterGroupFromConfig(
-                    eventMeshHttpClientConfig));
+                        eventMeshHttpClientConfig));
                 break;
             default:
                 // ignore
@@ -64,7 +65,7 @@ public class HttpLoadBalanceUtils {
     }
 
     private static List<Weight<String>> buildWeightedClusterGroupFromConfig(
-        EventMeshHttpClientConfig eventMeshHttpClientConfig)
+            EventMeshHttpClientConfig eventMeshHttpClientConfig)
             throws EventMeshException {
         List<String> eventMeshAddrs = Splitter.on(";").trimResults().splitToList(eventMeshHttpClientConfig.getLiteEventMeshAddr());
         if (CollectionUtils.isEmpty(eventMeshAddrs)) {

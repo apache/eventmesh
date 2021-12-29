@@ -17,6 +17,15 @@
 
 package org.apache.eventmesh.client.http.producer;
 
+import java.io.IOException;
+
+import io.netty.handler.codec.http.HttpMethod;
+import io.openmessaging.api.Message;
+
+import com.google.common.base.Preconditions;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.client.http.AbstractHttpClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
@@ -28,17 +37,8 @@ import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequest
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
-
-import java.io.IOException;
-
-import com.google.common.base.Preconditions;
-
-import io.netty.handler.codec.http.HttpMethod;
-import io.openmessaging.api.Message;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class OpenMessageProducer extends AbstractHttpClient implements EventMeshProtocolProducer<Message> {
@@ -48,7 +48,7 @@ class OpenMessageProducer extends AbstractHttpClient implements EventMeshProtoco
     private static final String PROTOCOL_DESC = "http";
 
     public OpenMessageProducer(EventMeshHttpClientConfig eventMeshHttpClientConfig)
-        throws EventMeshException {
+            throws EventMeshException {
         super(eventMeshHttpClientConfig);
     }
 
@@ -56,7 +56,7 @@ class OpenMessageProducer extends AbstractHttpClient implements EventMeshProtoco
     public void publish(Message openMessage) throws EventMeshException {
         validateOpenMessage(openMessage);
         RequestParam requestParam = buildCommonPostParam(openMessage)
-            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
+                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_ASYNC.getRequestCode());
         String target = selectEventMesh();
         try {
             String response = HttpUtils.post(httpClient, target, requestParam);
@@ -74,8 +74,8 @@ class OpenMessageProducer extends AbstractHttpClient implements EventMeshProtoco
     public Message request(Message message, long timeout) throws EventMeshException {
         validateOpenMessage(message);
         RequestParam requestParam = buildCommonPostParam(message)
-            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
-            .setTimeout(timeout);
+                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
+                .setTimeout(timeout);
         String target = selectEventMesh();
 
         try {
@@ -94,11 +94,11 @@ class OpenMessageProducer extends AbstractHttpClient implements EventMeshProtoco
     public void request(Message message, RRCallback<Message> rrCallback, long timeout) throws EventMeshException {
         validateOpenMessage(message);
         RequestParam requestParam = buildCommonPostParam(message)
-            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
-            .setTimeout(timeout);
+                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.MSG_SEND_SYNC.getRequestCode())
+                .setTimeout(timeout);
         String target = selectEventMesh();
         RRCallbackResponseHandlerAdapter<Message> adapter =
-            new RRCallbackResponseHandlerAdapter<>(message, rrCallback, timeout);
+                new RRCallbackResponseHandlerAdapter<>(message, rrCallback, timeout);
         try {
             HttpUtils.post(httpClient, null, target, requestParam, adapter);
         } catch (IOException e) {
@@ -113,20 +113,20 @@ class OpenMessageProducer extends AbstractHttpClient implements EventMeshProtoco
     private RequestParam buildCommonPostParam(Message openMessage) {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
         requestParam
-            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
-            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
-            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-            .addHeader(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
-            .addHeader(ProtocolKey.PROTOCOL_DESC, PROTOCOL_DESC)
-            // todo: add producerGroup to header, set protocol type, protocol version
-            .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
-            .addBody(SendMessageRequestBody.CONTENT, JsonUtils.serialize(openMessage));
+                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
+                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
+                .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+                .addHeader(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
+                .addHeader(ProtocolKey.PROTOCOL_DESC, PROTOCOL_DESC)
+                // todo: add producerGroup to header, set protocol type, protocol version
+                .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
+                .addBody(SendMessageRequestBody.CONTENT, JsonUtils.serialize(openMessage));
         return requestParam;
     }
 
     private Message transformMessage(EventMeshRetObj retObj) {
         SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(retObj.getRetMsg(),
-            SendMessageResponseBody.ReplyMessage.class);
+                SendMessageResponseBody.ReplyMessage.class);
         // todo: deserialize message
         return null;
     }

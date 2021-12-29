@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.spi.loader;
 
-import org.apache.eventmesh.spi.EventMeshSPI;
-import org.apache.eventmesh.spi.ExtensionException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +38,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
+import org.apache.eventmesh.spi.EventMeshSPI;
+import org.apache.eventmesh.spi.ExtensionException;
+
 /**
  * Load extension from '${eventMeshPluginDir}', the default loading directory is './plugin'
  */
@@ -49,11 +49,11 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
     private static final Logger logger = LoggerFactory.getLogger(JarExtensionClassLoader.class);
 
     private static final ConcurrentHashMap<Class<?>, Map<String, Class<?>>> EXTENSION_CLASS_CACHE =
-        new ConcurrentHashMap<>(16);
+            new ConcurrentHashMap<>(16);
 
     private static final String EVENTMESH_EXTENSION_PLUGIN_DIR =
-        System.getProperty("eventMeshPluginDir",
-            Joiner.on(File.separator).join(Lists.newArrayList(".", "plugin")));
+            System.getProperty("eventMeshPluginDir",
+                    Joiner.on(File.separator).join(Lists.newArrayList(".", "plugin")));
 
     // META-INF/eventmesh
     private static final String EVENTMESH_EXTENSION_META_DIR = "META-INF/eventmesh/";
@@ -62,7 +62,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
     public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType,
                                                         String extensionInstanceName) {
         return EXTENSION_CLASS_CACHE
-            .computeIfAbsent(extensionType, t -> doLoadExtensionClass(t, extensionInstanceName));
+                .computeIfAbsent(extensionType, t -> doLoadExtensionClass(t, extensionInstanceName));
     }
 
     private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType,
@@ -71,13 +71,13 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
         EventMeshSPI eventMeshSpiAnnotation = extensionType.getAnnotation(EventMeshSPI.class);
 
         String pluginDir = Paths.get(
-            EVENTMESH_EXTENSION_PLUGIN_DIR,
-            eventMeshSpiAnnotation.eventMeshExtensionType().getExtensionTypeName(),
-            extensionInstanceName
+                EVENTMESH_EXTENSION_PLUGIN_DIR,
+                eventMeshSpiAnnotation.eventMeshExtensionType().getExtensionTypeName(),
+                extensionInstanceName
         ).toString();
 
         String extensionFileName =
-            EVENTMESH_EXTENSION_META_DIR + extensionType.getName();
+                EVENTMESH_EXTENSION_META_DIR + extensionType.getName();
         EventMeshUrlClassLoader urlClassLoader = EventMeshUrlClassLoader.getInstance();
         urlClassLoader.addUrls(loadJarPathFromResource(pluginDir));
         try {
@@ -122,7 +122,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
 
     private static <T> Map<String, Class<?>> loadResources(URLClassLoader urlClassLoader, URL url,
                                                            Class<T> extensionType)
-        throws IOException {
+            throws IOException {
         Map<String, Class<?>> extensionMap = new HashMap<>();
         try (InputStream inputStream = url.openStream()) {
             Properties properties = new Properties();
@@ -133,12 +133,12 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
                 try {
                     Class<?> targetClass = urlClassLoader.loadClass(extensionClassStr);
                     logger
-                        .info("load extension class success, extensionType: {}, extensionClass: {}",
-                            extensionType, targetClass);
+                            .info("load extension class success, extensionType: {}, extensionClass: {}",
+                                    extensionType, targetClass);
                     if (!extensionType.isAssignableFrom(targetClass)) {
                         throw new ExtensionException(
-                            String.format("class: %s is not subClass of %s", targetClass,
-                                extensionType));
+                                String.format("class: %s is not subClass of %s", targetClass,
+                                        extensionType));
                     }
                     extensionMap.put(extensionNameStr, targetClass);
                 } catch (ClassNotFoundException e) {

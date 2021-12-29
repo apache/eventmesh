@@ -21,9 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.failBecauseExceptionWasNotThrown;
 import static org.mockito.ArgumentMatchers.any;
 
-import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
-import org.apache.eventmesh.connector.rocketmq.producer.AbstractProducer;
-import org.apache.eventmesh.connector.rocketmq.producer.ProducerImpl;
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.Properties;
 
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -35,11 +35,6 @@ import org.apache.rocketmq.common.ServiceState;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.remoting.exception.RemotingException;
-
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.Properties;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +45,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+
+import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.connector.rocketmq.producer.AbstractProducer;
+import org.apache.eventmesh.connector.rocketmq.producer.ProducerImpl;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProducerImplTest {
@@ -94,12 +93,12 @@ public class ProducerImplTest {
 
 
         CloudEvent cloudEvent = CloudEventBuilder.v1()
-            .withId("id1")
-            .withSource(URI.create("https://github.com/cloudevents/*****"))
-            .withType("producer.example")
-            .withSubject("HELLO_TOPIC")
-            .withData("hello world".getBytes())
-            .build();
+                .withId("id1")
+                .withSource(URI.create("https://github.com/cloudevents/*****"))
+                .withType("producer.example")
+                .withSubject("HELLO_TOPIC")
+                .withData("hello world".getBytes())
+                .build();
         org.apache.eventmesh.api.SendResult result =
                 producer.send(cloudEvent);
 
@@ -120,12 +119,12 @@ public class ProducerImplTest {
 
         try {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
-                .withId("id1")
-                .withSource(URI.create("https://github.com/cloudevents/*****"))
-                .withType("producer.example")
-                .withSubject("HELLO_TOPIC")
-                .withData(new byte[]{'a'})
-                .build();
+                    .withId("id1")
+                    .withSource(URI.create("https://github.com/cloudevents/*****"))
+                    .withType("producer.example")
+                    .withSubject("HELLO_TOPIC")
+                    .withData(new byte[]{'a'})
+                    .build();
             producer.send(cloudEvent);
             failBecauseExceptionWasNotThrown(ConnectorRuntimeException.class);
         } catch (Exception e) {

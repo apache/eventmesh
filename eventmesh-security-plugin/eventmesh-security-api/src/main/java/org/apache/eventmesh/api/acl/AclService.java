@@ -14,14 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.api.acl;
+
+import java.util.Properties;
 
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
-import java.util.Properties;
-
+/**
+ * AclService
+ */
 @EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.SECURITY)
 public interface AclService {
     void init() throws AclException;

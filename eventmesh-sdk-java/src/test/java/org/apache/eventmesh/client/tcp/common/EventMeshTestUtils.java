@@ -22,46 +22,46 @@ import static org.apache.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.T
 import static org.apache.eventmesh.client.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast;
 import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 public class EventMeshTestUtils {
     private static final int seqLength = 10;
 
     public static UserAgent generateClient1() {
         return UserAgent.builder()
-            .host("127.0.0.1")
-            .password(generateRandomString(8))
-            .username("PU4283")
-            .consumerGroup("EventmeshTest-ConsumerGroup")
-            .producerGroup("EventmeshTest-ProducerGroup")
-            .path("/data/app/umg_proxy")
-            .port(8362)
-            .subsystem("5023")
-            .pid(32893)
-            .version("2.0.11")
-            .idc("FT")
-            .build();
+                .host("127.0.0.1")
+                .password(generateRandomString(8))
+                .username("PU4283")
+                .consumerGroup("EventmeshTest-ConsumerGroup")
+                .producerGroup("EventmeshTest-ProducerGroup")
+                .path("/data/app/umg_proxy")
+                .port(8362)
+                .subsystem("5023")
+                .pid(32893)
+                .version("2.0.11")
+                .idc("FT")
+                .build();
     }
 
     public static UserAgent generateClient2() {
         return UserAgent.builder()
-            .host("127.0.0.1")
-            .password(generateRandomString(8))
-            .username("PU4283")
-            .consumerGroup("EventmeshTest-ConsumerGroup")
-            .producerGroup("EventmeshTest-ProducerGroup")
-            .path("/data/app/umg_proxy")
-            .port(9362)
-            .subsystem("5017")
-            .pid(42893)
-            .version("2.0.11")
-            .idc("FT").build();
+                .host("127.0.0.1")
+                .password(generateRandomString(8))
+                .username("PU4283")
+                .consumerGroup("EventmeshTest-ConsumerGroup")
+                .producerGroup("EventmeshTest-ProducerGroup")
+                .path("/data/app/umg_proxy")
+                .port(9362)
+                .subsystem("5017")
+                .pid(42893)
+                .version("2.0.11")
+                .idc("FT").build();
     }
 
     public static Package syncRR() {

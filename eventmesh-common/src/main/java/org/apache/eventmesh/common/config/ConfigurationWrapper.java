@@ -17,12 +17,6 @@
 
 package org.apache.eventmesh.common.config;
 
-import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -30,6 +24,14 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+
+import org.apache.eventmesh.common.ThreadPoolFactory;
 
 public class ConfigurationWrapper {
 
@@ -64,8 +66,7 @@ public class ConfigurationWrapper {
     private void load() {
         try {
             logger.info("loading config: {}", file);
-            properties.load(new BufferedReader(new FileReader(
-                    new File(file))));
+            properties.load(new BufferedReader(new FileReader(new File(file))));
         } catch (IOException e) {
             logger.error("loading properties [{}] error", file, e);
         }

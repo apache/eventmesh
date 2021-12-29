@@ -17,17 +17,18 @@
 
 package org.apache.eventmesh.spi;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.spi.loader.ExtensionClassLoader;
-import org.apache.eventmesh.spi.loader.JarExtensionClassLoader;
-import org.apache.eventmesh.spi.loader.MetaInfExtensionClassLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.apache.eventmesh.spi.loader.ExtensionClassLoader;
+import org.apache.eventmesh.spi.loader.JarExtensionClassLoader;
+import org.apache.eventmesh.spi.loader.MetaInfExtensionClassLoader;
 
 /**
  * The extension fetching factory, all extension plugins should be fetched by this factory.

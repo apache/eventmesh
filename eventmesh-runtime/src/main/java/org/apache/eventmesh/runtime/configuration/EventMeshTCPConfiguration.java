@@ -88,48 +88,72 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
         super.init();
         eventMeshTcpServerPort = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_PORT, eventMeshTcpServerPort);
 
-        eventMeshTcpIdleReadSeconds = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_READER_IDLE_SECONDS, eventMeshTcpIdleReadSeconds);
+        eventMeshTcpIdleReadSeconds = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_READER_IDLE_SECONDS,
+                eventMeshTcpIdleReadSeconds);
 
-        eventMeshTcpIdleWriteSeconds = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_WRITER_IDLE_SECONDS, eventMeshTcpIdleWriteSeconds);
+        eventMeshTcpIdleWriteSeconds = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_WRITER_IDLE_SECONDS,
+                eventMeshTcpIdleWriteSeconds);
 
-        eventMeshTcpIdleAllSeconds = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_ALL_IDLE_SECONDS, eventMeshTcpIdleAllSeconds);
+        eventMeshTcpIdleAllSeconds = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_ALL_IDLE_SECONDS,
+                eventMeshTcpIdleAllSeconds);
 
-        eventMeshTcpMsgReqnumPerSecond = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECONDS, eventMeshTcpMsgReqnumPerSecond);
+        eventMeshTcpMsgReqnumPerSecond = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECONDS,
+                eventMeshTcpMsgReqnumPerSecond);
 
-        eventMeshTcpClientMaxNum = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLIENT_MAX_NUM, eventMeshTcpClientMaxNum);
+        eventMeshTcpClientMaxNum = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLIENT_MAX_NUM,
+                eventMeshTcpClientMaxNum);
 
-        eventMeshTcpServerEnabled = configurationWrapper.getBoolProp(ConfKeys.KEYS_EVENTMESH_TCP_SERVER_ENABLED, eventMeshTcpServerEnabled);
+        eventMeshTcpServerEnabled = configurationWrapper.getBoolProp(ConfKeys.KEYS_EVENTMESH_TCP_SERVER_ENABLED,
+                eventMeshTcpServerEnabled);
 
-        eventMeshTcpGlobalScheduler = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_GLOBAL_SCHEDULER, eventMeshTcpGlobalScheduler);
+        eventMeshTcpGlobalScheduler = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_GLOBAL_SCHEDULER,
+                eventMeshTcpGlobalScheduler);
 
-        eventMeshTcpTaskHandleExecutorPoolSize = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_TASK_HANDLE_POOL_SIZE, eventMeshTcpTaskHandleExecutorPoolSize);
+        eventMeshTcpTaskHandleExecutorPoolSize = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_TCP_TASK_HANDLE_POOL_SIZE, eventMeshTcpTaskHandleExecutorPoolSize);
 
-        eventMeshTcpMsgDownStreamExecutorPoolSize = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_MSG_DOWNSTREAM_POOL_SIZE, eventMeshTcpMsgDownStreamExecutorPoolSize);
+        eventMeshTcpMsgDownStreamExecutorPoolSize = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_TCP_MSG_DOWNSTREAM_POOL_SIZE, eventMeshTcpMsgDownStreamExecutorPoolSize);
 
-        eventMeshTcpSessionExpiredInMills = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_SESSION_EXPIRED_TIME, eventMeshTcpSessionExpiredInMills);
+        eventMeshTcpSessionExpiredInMills = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_SESSION_EXPIRED_TIME, eventMeshTcpSessionExpiredInMills);
 
-        eventMeshTcpSessionUpstreamBufferSize = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_SESSION_UPSTREAM_BUFFER_SIZE, eventMeshTcpSessionUpstreamBufferSize);
+        eventMeshTcpSessionUpstreamBufferSize = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_SESSION_UPSTREAM_BUFFER_SIZE, eventMeshTcpSessionUpstreamBufferSize);
 
         //========================================eventMesh retry config=============================================//
-        eventMeshTcpMsgAsyncRetryTimes = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_ASYNC_PUSH_RETRY_TIMES, eventMeshTcpMsgAsyncRetryTimes);
-        eventMeshTcpMsgSyncRetryTimes = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_SYNC_PUSH_RETRY_TIMES, eventMeshTcpMsgSyncRetryTimes);
+        eventMeshTcpMsgAsyncRetryTimes = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_ASYNC_PUSH_RETRY_TIMES, eventMeshTcpMsgAsyncRetryTimes);
 
-        eventMeshTcpMsgRetryAsyncDelayInMills = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_ASYNC_PUSH_RETRY_DELAY, eventMeshTcpMsgRetryAsyncDelayInMills);
-        eventMeshTcpMsgRetrySyncDelayInMills = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_SYNC_PUSH_RETRY_DELAY, eventMeshTcpMsgRetrySyncDelayInMills);
+        eventMeshTcpMsgSyncRetryTimes = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_SYNC_PUSH_RETRY_TIMES, eventMeshTcpMsgSyncRetryTimes);
 
-        eventMeshTcpMsgRetryQueueSize = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_QUEUE_SIZE, eventMeshTcpMsgRetryQueueSize);
+        eventMeshTcpMsgRetryAsyncDelayInMills = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_ASYNC_PUSH_RETRY_DELAY, eventMeshTcpMsgRetryAsyncDelayInMills);
 
-        eventMeshTcpRebalanceIntervalInMills = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_TCP_REBALANCE_INTERVAL, eventMeshTcpRebalanceIntervalInMills);
+        eventMeshTcpMsgRetrySyncDelayInMills = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_SYNC_PUSH_RETRY_DELAY, eventMeshTcpMsgRetrySyncDelayInMills);
 
-        eventMeshServerAdminPort = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_ADMIN_HTTP_PORT, eventMeshServerAdminPort);
+        eventMeshTcpMsgRetryQueueSize = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_QUEUE_SIZE, eventMeshTcpMsgRetryQueueSize);
 
-        eventMeshTcpSendBackEnabled = configurationWrapper.getBoolProp(ConfKeys.KEYS_EVENTMESH_TCP_SEND_BACK_ENABLED, eventMeshTcpSendBackEnabled);
+        eventMeshTcpRebalanceIntervalInMills = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_TCP_REBALANCE_INTERVAL, eventMeshTcpRebalanceIntervalInMills);
 
-        eventMeshTcpPushFailIsolateTimeInMills = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME, eventMeshTcpPushFailIsolateTimeInMills);
+        eventMeshServerAdminPort = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_ADMIN_HTTP_PORT, eventMeshServerAdminPort);
 
-        gracefulShutdownSleepIntervalInMills = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_GRACEFUL_SHUTDOWN_SLEEP_TIME, gracefulShutdownSleepIntervalInMills);
+        eventMeshTcpSendBackEnabled = configurationWrapper.getBoolProp(
+                ConfKeys.KEYS_EVENTMESH_TCP_SEND_BACK_ENABLED, eventMeshTcpSendBackEnabled);
 
-        sleepIntervalInRebalanceRedirectMills = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_REBALANCE_REDIRECT_SLEEP_TIME, sleepIntervalInRebalanceRedirectMills);
+        eventMeshTcpPushFailIsolateTimeInMills = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME, eventMeshTcpPushFailIsolateTimeInMills);
+
+        gracefulShutdownSleepIntervalInMills = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_GRACEFUL_SHUTDOWN_SLEEP_TIME, gracefulShutdownSleepIntervalInMills);
+
+        sleepIntervalInRebalanceRedirectMills = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_REBALANCE_REDIRECT_SLEEP_TIME, sleepIntervalInRebalanceRedirectMills);
 
     }
 
@@ -220,11 +244,16 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
 
         @Override
         public String toString() {
-            return "TrafficShapingConfig{" +
-                    "writeLimit=" + writeLimit +
-                    ", readLimit=" + readLimit +
-                    ", checkInterval=" + checkInterval +
-                    ", maxTime=" + maxTime +
+            return "TrafficShapingConfig{"
+                    +
+                    "writeLimit=" + writeLimit
+                    +
+                    ", readLimit=" + readLimit
+                    +
+                    ", checkInterval=" + checkInterval
+                    +
+                    ", maxTime=" + maxTime
+                    +
                     '}';
         }
     }

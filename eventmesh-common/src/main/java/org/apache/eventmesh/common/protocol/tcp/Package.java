@@ -17,11 +17,13 @@
 
 package org.apache.eventmesh.common.protocol.tcp;
 
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+
 
 @Data
 @NoArgsConstructor

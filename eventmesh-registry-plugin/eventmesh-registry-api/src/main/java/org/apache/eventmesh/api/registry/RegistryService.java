@@ -14,7 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.api.registry;
+
+import java.util.List;
+import java.util.Map;
 
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
@@ -23,9 +27,9 @@ import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
-import java.util.List;
-import java.util.Map;
-
+/**
+ * RegistryService
+ */
 @EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.REGISTRY)
 public interface RegistryService {
     void init() throws RegistryException;
@@ -36,7 +40,8 @@ public interface RegistryService {
 
     List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws RegistryException;
 
-    Map<String/*eventMeshName*/, Map<String/*purpose*/, Integer/*num*/>> findEventMeshClientDistributionData(String clusterName, String group, String purpose) throws RegistryException;
+    Map<String/*eventMeshName*/, Map<String/*purpose*/, Integer/*num*/>> findEventMeshClientDistributionData(
+            String clusterName, String group, String purpose) throws RegistryException;
 
     boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws RegistryException;
 

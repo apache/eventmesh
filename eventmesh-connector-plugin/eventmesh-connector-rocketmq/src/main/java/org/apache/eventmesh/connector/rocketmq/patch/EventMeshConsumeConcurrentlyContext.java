@@ -17,10 +17,11 @@
 
 package org.apache.eventmesh.connector.rocketmq.patch;
 
-import org.apache.eventmesh.api.AbstractContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.impl.consumer.ProcessQueue;
 import org.apache.rocketmq.common.message.MessageQueue;
+
+import org.apache.eventmesh.api.AbstractContext;
 
 public class EventMeshConsumeConcurrentlyContext extends ConsumeConcurrentlyContext implements AbstractContext {
     private final ProcessQueue processQueue;

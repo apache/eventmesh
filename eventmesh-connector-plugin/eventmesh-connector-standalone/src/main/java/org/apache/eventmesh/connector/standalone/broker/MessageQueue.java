@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.connector.standalone.broker;
 
-import com.google.common.base.Preconditions;
-import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
-
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+
+import com.google.common.base.Preconditions;
+
+import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 
 /**
  * This is a block queue, can get entity by offset.

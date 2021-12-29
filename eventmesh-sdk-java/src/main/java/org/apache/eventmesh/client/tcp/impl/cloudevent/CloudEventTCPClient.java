@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.client.tcp.impl.cloudevent;
 
+import io.cloudevents.CloudEvent;
+
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
@@ -27,8 +29,6 @@ import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-
-import io.cloudevents.CloudEvent;
 
 public class CloudEventTCPClient implements EventMeshTCPClient<CloudEvent> {
 
@@ -74,7 +74,7 @@ public class CloudEventTCPClient implements EventMeshTCPClient<CloudEvent> {
 
     @Override
     public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-        throws EventMeshException {
+            throws EventMeshException {
         cloudEventTCPSubClient.subscribe(topic, subscriptionMode, subscriptionType);
     }
 

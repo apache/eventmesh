@@ -74,9 +74,9 @@
     </module>
     <module name="AvoidStarImport"/>
     <module name="ImportOrder">
-      <property name="staticGroups" value="org.apache.eventmesh,org.apache,java,javax,org,com"/>
+      <property name="staticGroups" value="java,javax,org,io,net,junit,com,cn,lombok,org.apache.eventmesh"/>
       <property name="separatedStaticGroups" value="true"/>
-      <property name="groups" value="org.apache.eventmesh,org.apache,java,javax,org,com"/>
+      <property name="groups" value="java,javax,org,io,net,junit,com,lombok,org.apache.eventmesh"/>
       <property name="ordered" value="true"/>
       <property name="separated" value="true"/>
       <property name="option" value="top"/>
@@ -183,7 +183,7 @@
       <property name="option" value="nl"/>
     </module>
     <module name="PackageName">
-      <property name="format" value="^(org)\.apache.eventmesh(\.[a-zA-Z][a-zA-Z0-9]*)+$"/>
+      <property name="format" value="^(org)\.apache.(eventmesh|rocketmq)(\.[a-zA-Z][a-zA-Z0-9]*)+$"/>
       <message key="name.invalidPattern"
                value="Package name ''{0}'' must match pattern ''{1}''."/>
 
@@ -225,7 +225,8 @@
                value="Pattern variable name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="ClassTypeParameterName">
-      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
+      <!-- <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>-->
+      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*$)"/>
       <message key="name.invalidPattern"
                value="Class type name ''{0}'' must match pattern ''{1}''."/>
     </module>
@@ -235,17 +236,20 @@
                value="Record component name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="RecordTypeParameterName">
-      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
+<!--      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>-->
+      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*$)"/>
       <message key="name.invalidPattern"
                value="Record type name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="MethodTypeParameterName">
-      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
+<!--      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>-->
+      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*$)"/>
       <message key="name.invalidPattern"
                value="Method type name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="InterfaceTypeParameterName">
-      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
+<!--      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>-->
+      <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*$)"/>
       <message key="name.invalidPattern"
                value="Interface type name ''{0}'' must match pattern ''{1}''."/>
     </module>
@@ -269,7 +273,7 @@
     </module>
     <module name="AbbreviationAsWordInName">
       <property name="ignoreFinal" value="false"/>
-      <property name="allowedAbbreviationLength" value="0"/>
+      <property name="allowedAbbreviationLength" value="6"/>
       <property name="tokens"
                 value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, ANNOTATION_DEF, ANNOTATION_FIELD_DEF,
                     PARAMETER_DEF, VARIABLE_DEF, METHOD_DEF, PATTERN_VARIABLE_DEF, RECORD_DEF,

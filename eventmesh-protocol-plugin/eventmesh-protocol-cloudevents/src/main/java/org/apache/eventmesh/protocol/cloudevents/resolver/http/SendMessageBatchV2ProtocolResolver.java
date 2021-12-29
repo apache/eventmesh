@@ -17,27 +17,23 @@
 
 package org.apache.eventmesh.protocol.cloudevents.resolver.http;
 
+import java.nio.charset.StandardCharsets;
+
+import org.apache.commons.lang3.StringUtils;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.core.v03.CloudEventV03;
-import io.cloudevents.core.v1.CloudEventV1;
 import io.cloudevents.jackson.JsonFormat;
-
-import org.apache.commons.lang3.StringUtils;
 
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
-import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
-
-import java.nio.charset.StandardCharsets;
 
 public class SendMessageBatchV2ProtocolResolver {
     public static CloudEvent buildEvent(Header header, Body body) throws ProtocolHandleException {
@@ -66,42 +62,42 @@ public class SendMessageBatchV2ProtocolResolver {
             CloudEvent event = null;
             if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
                 event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                    .deserialize(content.getBytes(StandardCharsets.UTF_8));
+                        .deserialize(content.getBytes(StandardCharsets.UTF_8));
                 event = CloudEventBuilder.from(event)
-                    .withExtension(ProtocolKey.REQUEST_CODE, code)
-                    .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
-                    .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
-                    .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
-                    .withExtension(ProtocolKey.VERSION, version.getVersion())
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, producerGroup)
-                    .build();
+                        .withExtension(ProtocolKey.REQUEST_CODE, code)
+                        .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
+                        .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
+                        .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
+                        .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
+                        .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
+                        .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
+                        .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
+                        .withExtension(ProtocolKey.VERSION, version.getVersion())
+                        .withExtension(ProtocolKey.LANGUAGE, language)
+                        .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                        .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                        .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                        .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, producerGroup)
+                        .build();
             } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
                 event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                    .deserialize(content.getBytes(StandardCharsets.UTF_8));
+                        .deserialize(content.getBytes(StandardCharsets.UTF_8));
                 event = CloudEventBuilder.from(event)
-                    .withExtension(ProtocolKey.REQUEST_CODE, code)
-                    .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
-                    .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
-                    .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
-                    .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
-                    .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
-                    .withExtension(ProtocolKey.VERSION, version.getVersion())
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, producerGroup)
-                    .build();
+                        .withExtension(ProtocolKey.REQUEST_CODE, code)
+                        .withExtension(ProtocolKey.ClientInstanceKey.ENV, env)
+                        .withExtension(ProtocolKey.ClientInstanceKey.IDC, idc)
+                        .withExtension(ProtocolKey.ClientInstanceKey.IP, ip)
+                        .withExtension(ProtocolKey.ClientInstanceKey.PID, pid)
+                        .withExtension(ProtocolKey.ClientInstanceKey.SYS, sys)
+                        .withExtension(ProtocolKey.ClientInstanceKey.USERNAME, username)
+                        .withExtension(ProtocolKey.ClientInstanceKey.PASSWD, passwd)
+                        .withExtension(ProtocolKey.VERSION, version.getVersion())
+                        .withExtension(ProtocolKey.LANGUAGE, language)
+                        .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                        .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                        .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                        .withExtension(SendMessageBatchV2RequestBody.PRODUCERGROUP, producerGroup)
+                        .build();
             }
             return event;
         } catch (Exception e) {

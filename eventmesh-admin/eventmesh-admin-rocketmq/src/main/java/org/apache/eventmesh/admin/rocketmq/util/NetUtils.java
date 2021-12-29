@@ -17,11 +17,10 @@
 
 package org.apache.eventmesh.admin.rocketmq.util;
 
-import org.apache.http.Consts;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import org.apache.http.Consts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,14 +29,14 @@ import com.sun.net.httpserver.HttpExchange;
 public class NetUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
-    
+
     public static String parsePostBody(HttpExchange exchange)
             throws IOException {
         StringBuilder body = new StringBuilder();
         if ("post".equalsIgnoreCase(exchange.getRequestMethod())
-            || "put".equalsIgnoreCase(exchange.getRequestMethod())) {
-            try (InputStreamReader reader = 
-                new InputStreamReader(exchange.getRequestBody(), Consts.UTF_8)) {
+                || "put".equalsIgnoreCase(exchange.getRequestMethod())) {
+            try (InputStreamReader reader =
+                         new InputStreamReader(exchange.getRequestBody(), Consts.UTF_8)) {
                 char[] buffer = new char[256];
                 int read;
                 while ((read = reader.read(buffer)) != -1) {

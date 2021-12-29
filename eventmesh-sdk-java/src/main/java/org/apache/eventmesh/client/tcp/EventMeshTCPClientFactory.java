@@ -17,17 +17,18 @@
 
 package org.apache.eventmesh.client.tcp;
 
+import io.cloudevents.CloudEvent;
+import io.openmessaging.api.Message;
+
+import com.google.common.base.Preconditions;
+
+import lombok.experimental.UtilityClass;
+
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.client.tcp.impl.cloudevent.CloudEventTCPClient;
 import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPClient;
 import org.apache.eventmesh.client.tcp.impl.openmessage.OpenMessageTCPClient;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-
-import com.google.common.base.Preconditions;
-
-import io.cloudevents.CloudEvent;
-import io.openmessaging.api.Message;
-import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class EventMeshTCPClientFactory {
@@ -42,7 +43,7 @@ public class EventMeshTCPClientFactory {
      */
     @SuppressWarnings("unchecked")
     public static <ProtocolMessage> EventMeshTCPClient<ProtocolMessage> createEventMeshTCPClient(
-        EventMeshTCPClientConfig eventMeshTcpClientConfig, Class<ProtocolMessage> protocolMessageClass) {
+            EventMeshTCPClientConfig eventMeshTcpClientConfig, Class<ProtocolMessage> protocolMessageClass) {
         Preconditions.checkNotNull(protocolMessageClass, "ProtocolMessage type cannot be null");
         Preconditions.checkNotNull(eventMeshTcpClientConfig, "EventMeshTcpClientConfig cannot be null");
 
@@ -56,6 +57,6 @@ public class EventMeshTCPClientFactory {
             return (EventMeshTCPClient<ProtocolMessage>) new OpenMessageTCPClient(eventMeshTcpClientConfig);
         }
         throw new IllegalArgumentException(
-            String.format("ProtocolMessageClass: %s is not supported", protocolMessageClass));
+                String.format("ProtocolMessageClass: %s is not supported", protocolMessageClass));
     }
 }

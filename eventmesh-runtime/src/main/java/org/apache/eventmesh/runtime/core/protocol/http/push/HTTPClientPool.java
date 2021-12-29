@@ -20,12 +20,12 @@ package org.apache.eventmesh.runtime.core.protocol.http.push;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+
+import com.google.common.collect.Lists;
 
 public class HTTPClientPool {
 

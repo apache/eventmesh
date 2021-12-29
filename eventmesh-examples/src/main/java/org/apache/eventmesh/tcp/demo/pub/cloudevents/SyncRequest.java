@@ -17,23 +17,23 @@
 
 package org.apache.eventmesh.tcp.demo.pub.cloudevents;
 
-import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
-import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
-import org.apache.eventmesh.util.Utils;
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
+
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
+import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
+import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
+import org.apache.eventmesh.util.Utils;
 
 @Slf4j
 public class SyncRequest {
@@ -46,20 +46,20 @@ public class SyncRequest {
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
         UserAgent userAgent = EventMeshTestUtils.generateClient1();
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-            .host(eventMeshIp)
-            .port(eventMeshTcpPort)
-            .userAgent(userAgent)
-            .build();
+                .host(eventMeshIp)
+                .port(eventMeshTcpPort)
+                .userAgent(userAgent)
+                .build();
         try {
             client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-                eventMeshTcpClientConfig, CloudEvent.class);
+                    eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
             CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
             log.info("begin send rr msg=================={}", event);
             Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             CloudEvent replyEvent = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
-                .deserialize(response.getBody().toString().getBytes(StandardCharsets.UTF_8));
+                    .deserialize(response.getBody().toString().getBytes(StandardCharsets.UTF_8));
             String content = new String(replyEvent.getData().toBytes(), StandardCharsets.UTF_8);
             log.info("receive rr reply==================={}|{}", response, content);
 

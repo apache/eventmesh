@@ -17,15 +17,15 @@
 
 package org.apache.eventmesh.client.tcp.conf;
 
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-
 import lombok.Builder;
 import lombok.Data;
+
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 @Data
 @Builder
 public class EventMeshTCPClientConfig {
-    private String    host;
-    private int       port;
+    private String host;
+    private int port;
     private UserAgent userAgent;
 }

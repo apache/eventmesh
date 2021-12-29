@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.common.protocol;
 
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
-
 import java.io.Serializable;
+
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 
 /**
  * <ul>

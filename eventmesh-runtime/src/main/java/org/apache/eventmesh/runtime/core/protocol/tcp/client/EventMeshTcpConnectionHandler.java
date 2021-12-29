@@ -19,6 +19,9 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
@@ -26,8 +29,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
 
@@ -60,7 +61,8 @@ public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
 
         int c = connections.incrementAndGet();
         if (c > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpClientMaxNum) {
-            logger.warn("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client connect " +
+            logger.warn("client|tcp|channelActive|remoteAddress={}|msg={}", remoteAddress, "too many client connect "
+                    +
                     "this eventMesh server");
             ctx.close();
             return;

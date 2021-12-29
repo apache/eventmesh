@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.util;
 
-import org.apache.commons.lang3.SystemUtils;
-
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -26,6 +24,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Properties;
+
+import org.apache.commons.lang3.SystemUtils;
 
 public class Utils {
 
@@ -70,7 +70,7 @@ public class Utils {
                         if (!inetAddress.isLoopbackAddress()) {
                             String ipaddress = inetAddress.getHostAddress().toString();
                             if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
-                                && !ipaddress.contains("fe80")) {
+                                    && !ipaddress.contains("fe80")) {
                                 ip = ipaddress;
                             }
                         }

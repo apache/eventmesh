@@ -24,9 +24,10 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy {
 
@@ -48,7 +49,8 @@ public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy 
             }
             if (session.isIsolated()) {
                 isolatedSessions.add(session);
-                logger.info("session is not available because session is isolated,isolateTime:{},client:{}",session.getIsolateTime(), session.getClient());
+                logger.info("session is not available because session is isolated,isolateTime:{},client:{}",
+                        session.getIsolateTime(), session.getClient());
                 continue;
             }
             filtered.add(session);

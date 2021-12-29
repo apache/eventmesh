@@ -20,11 +20,14 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_REQUEST;
 import static org.apache.eventmesh.common.protocol.tcp.Command.HELLO_RESPONSE;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -36,8 +39,6 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class HelloTask extends AbstractTask {
 
@@ -99,15 +100,17 @@ public class HelloTask extends AbstractTask {
             throw new Exception("client version cannot be null");
         }
 
-//        if (user.getUsername() == null) {
-//            throw new Exception("client EventMeshUser cannot be null");
-//        }
-//
-//        if (user.getPassword() == null) {
-//            throw new Exception("client EventMeshPasswd cannot be null");
-//        }
+        //if (user.getUsername() == null) {
+        //    throw new Exception("client EventMeshUser cannot be null");
+        //}
+        //
+        //if (user.getPassword() == null) {
+        //    throw new Exception("client EventMeshPasswd cannot be null");
+        //}
 
-        if (!(StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
+        if (!(StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(
+                EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
+
             throw new Exception("client purpose config is error");
         }
 

@@ -17,17 +17,6 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.Subscription;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -38,6 +27,17 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.openmessaging.api.Message;
+
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.Subscription;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 
 public class MessageUtils {
     private static final int seqLength = 10;
@@ -98,7 +98,7 @@ public class MessageUtils {
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString());
             msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
             byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
-                .serialize((CloudEvent) message);
+                    .serialize((CloudEvent) message);
             msg.setBody(bodyByte);
         } else if (message instanceof EventMeshMessage) {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
@@ -140,38 +140,38 @@ public class MessageUtils {
 
     public static UserAgent generateSubClient(UserAgent agent) {
         return UserAgent.builder()
-            .env(agent.getEnv())
-            .host(agent.getHost())
-            .password(agent.getPassword())
-            .username(agent.getUsername())
-            .path(agent.getPath())
-            .port(agent.getPort())
-            .subsystem(agent.getSubsystem())
-            .pid(agent.getPid())
-            .version(agent.getVersion())
-            .idc(agent.getIdc())
-            .consumerGroup(agent.getConsumerGroup())
-            .producerGroup(agent.getProducerGroup())
-            .purpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB)
-            .build();
+                .env(agent.getEnv())
+                .host(agent.getHost())
+                .password(agent.getPassword())
+                .username(agent.getUsername())
+                .path(agent.getPath())
+                .port(agent.getPort())
+                .subsystem(agent.getSubsystem())
+                .pid(agent.getPid())
+                .version(agent.getVersion())
+                .idc(agent.getIdc())
+                .consumerGroup(agent.getConsumerGroup())
+                .producerGroup(agent.getProducerGroup())
+                .purpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB)
+                .build();
     }
 
     public static UserAgent generatePubClient(UserAgent agent) {
         return UserAgent.builder()
-            .env(agent.getEnv())
-            .host(agent.getHost())
-            .password(agent.getPassword())
-            .username(agent.getUsername())
-            .path(agent.getPath())
-            .port(agent.getPort())
-            .subsystem(agent.getSubsystem())
-            .pid(agent.getPid())
-            .version(agent.getVersion())
-            .idc(agent.getIdc())
-            .consumerGroup(agent.getConsumerGroup())
-            .producerGroup(agent.getProducerGroup())
-            .purpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB)
-            .build();
+                .env(agent.getEnv())
+                .host(agent.getHost())
+                .password(agent.getPassword())
+                .username(agent.getUsername())
+                .path(agent.getPath())
+                .port(agent.getPort())
+                .subsystem(agent.getSubsystem())
+                .pid(agent.getPid())
+                .version(agent.getVersion())
+                .idc(agent.getIdc())
+                .consumerGroup(agent.getConsumerGroup())
+                .producerGroup(agent.getProducerGroup())
+                .purpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB)
+                .build();
     }
 
     private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode,

@@ -17,13 +17,16 @@
 
 package org.apache.eventmesh.runtime.metrics.opentelemetry;
 
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.prometheus.client.exporter.HTTPServer;
+
 import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.io.IOException;
 
 public class OpenTelemetryPrometheusExporter {
 
@@ -36,8 +39,8 @@ public class OpenTelemetryPrometheusExporter {
      *
      * @param configuration configuration.
      */
-    public synchronized static void initialize(CommonConfiguration configuration) {
-        if (server != null){
+    public static synchronized void initialize(CommonConfiguration configuration) {
+        if (server != null) {
             return;
         }
         PrometheusCollector.builder().setMetricProducer(
@@ -45,7 +48,7 @@ public class OpenTelemetryPrometheusExporter {
         int port = configuration.eventMeshPrometheusPort;
         try {
             //Use the daemon thread to start an HTTP server to serve the default Prometheus registry.
-            server = new HTTPServer(port,true);
+            server = new HTTPServer(port, true);
         } catch (IOException e) {
             logger.error("failed to start prometheus server, port: {} due to {}", port, e.getMessage());
         }

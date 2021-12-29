@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.client.http.conf;
 
-import org.apache.eventmesh.common.loadbalance.LoadBalanceType;
-
 import lombok.Builder;
 import lombok.Data;
+
+import org.apache.eventmesh.common.loadbalance.LoadBalanceType;
 
 @Data
 @Builder

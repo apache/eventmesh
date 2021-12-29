@@ -17,15 +17,14 @@
 
 package org.apache.eventmesh.connector.rocketmq.cloudevent;
 
-import org.apache.rocketmq.common.message.Message;
-
 import java.util.Map;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.apache.rocketmq.common.message.Message;
+
 import io.cloudevents.core.message.MessageReader;
 import io.cloudevents.core.message.MessageWriter;
-import io.cloudevents.core.message.impl.GenericStructuredMessageReader;
 import io.cloudevents.core.message.impl.MessageUtils;
 import io.cloudevents.lang.Nullable;
 import io.cloudevents.rw.CloudEventRWException;
@@ -50,13 +49,13 @@ public final class RocketMQMessageFactory {
 
     public static MessageReader createReader(final Map<String, String> props,
                                              @Nullable final byte[] body)
-        throws CloudEventRWException {
+            throws CloudEventRWException {
 
         return MessageUtils.parseStructuredOrBinaryMessage(
-            () -> null,
-            format -> null,
-            () -> props.get(RocketMQHeaders.SPEC_VERSION),
-            sv -> new RocketMQBinaryMessageReader(sv, props, body)
+                () -> null,
+                format -> null,
+                () -> props.get(RocketMQHeaders.SPEC_VERSION),
+                sv -> new RocketMQBinaryMessageReader(sv, props, body)
         );
     }
 

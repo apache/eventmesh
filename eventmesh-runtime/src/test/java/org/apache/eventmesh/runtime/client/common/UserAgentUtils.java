@@ -42,8 +42,8 @@ public class UserAgentUtils {
     public static UserAgent createUserAgent() {
         UserAgent userAgent = new UserAgent();
         userAgent.setSubsystem("5123");
-//        userAgent.setPid(UtilAll.getPid());
-//        userAgent.setHost(RemotingUtil.getLocalAddress());
+        //userAgent.setPid(UtilAll.getPid());
+        //userAgent.setHost(RemotingUtil.getLocalAddress());
         userAgent.setVersion("2.0.8");
         userAgent.setUsername("username");
         userAgent.setPassword("1234");
@@ -53,8 +53,8 @@ public class UserAgentUtils {
     public static UserAgent createSubUserAgent() {
         UserAgent userAgent = new UserAgent();
         userAgent.setSubsystem("5243");
-//        userAgent.setPid(UtilAll.getPid());
-//        userAgent.setHost(RemotingUtil.getLocalAddress());
+        //userAgent.setPid(UtilAll.getPid());
+        //userAgent.setHost(RemotingUtil.getLocalAddress());
         userAgent.setPort(8888);
         userAgent.setVersion("2.0.8");
         userAgent.setUsername("username");

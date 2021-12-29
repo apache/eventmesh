@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.runtime.exporter;
 
-import org.apache.eventmesh.common.config.CommonConfiguration;
-
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+
+import org.apache.eventmesh.common.config.CommonConfiguration;
 
 /**
  * different exporters should implement this interface.

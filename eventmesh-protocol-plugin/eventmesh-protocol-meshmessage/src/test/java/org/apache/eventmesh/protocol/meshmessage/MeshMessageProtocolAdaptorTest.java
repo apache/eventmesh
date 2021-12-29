@@ -17,23 +17,23 @@
 
 package org.apache.eventmesh.protocol.meshmessage;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class MeshMessageProtocolAdaptorTest {
 
     @Test
     public void loadPlugin() {
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
-            ProtocolPluginFactory.getProtocolAdaptor(MeshMessageProtocolConstant.PROTOCOL_NAME);
+                ProtocolPluginFactory.getProtocolAdaptor(MeshMessageProtocolConstant.PROTOCOL_NAME);
         Assert.assertNotNull(protocolAdaptor);
 
         Assert.assertEquals(
-            MeshMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType()
+                MeshMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType()
         );
     }
 

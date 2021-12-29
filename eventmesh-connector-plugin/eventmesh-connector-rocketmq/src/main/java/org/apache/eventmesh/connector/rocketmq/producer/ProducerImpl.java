@@ -17,14 +17,7 @@
 
 package org.apache.eventmesh.connector.rocketmq.producer;
 
-import org.apache.eventmesh.api.RequestReplyCallback;
-import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.SendResult;
-import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
-import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.connector.rocketmq.cloudevent.RocketMQMessageFactory;
-import org.apache.eventmesh.connector.rocketmq.utils.CloudEventUtils;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQBrokerException;
@@ -37,10 +30,18 @@ import org.apache.rocketmq.common.message.MessageClientIDSetter;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 
-import java.util.Properties;
-
 import io.cloudevents.CloudEvent;
+
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.eventmesh.api.RequestReplyCallback;
+import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.connector.rocketmq.cloudevent.RocketMQMessageFactory;
+import org.apache.eventmesh.connector.rocketmq.utils.CloudEventUtils;
 
 @Slf4j
 @SuppressWarnings("deprecation")
@@ -62,7 +63,7 @@ public class ProducerImpl extends AbstractProducer {
         super.getRocketmqProducer().setPollNameServerInterval(60000);
 
         super.getRocketmqProducer().getDefaultMQProducerImpl().getmQClientFactory().getNettyClientConfig()
-            .setClientAsyncSemaphoreValue(eventMeshServerAsyncAccumulationThreshold);
+                .setClientAsyncSemaphoreValue(eventMeshServerAsyncAccumulationThreshold);
         super.getRocketmqProducer().setCompressMsgBodyOverHowmuch(10);
     }
 
@@ -70,7 +71,7 @@ public class ProducerImpl extends AbstractProducer {
     public SendResult send(CloudEvent cloudEvent) {
         this.checkProducerServiceState(rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
-            RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
+                RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
         msg = supplySysProp(msg, cloudEvent);
         String messageId = null;
         try {
@@ -90,7 +91,7 @@ public class ProducerImpl extends AbstractProducer {
     public void sendOneway(CloudEvent cloudEvent) {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
-            RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
+                RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
         msg = supplySysProp(msg, cloudEvent);
         try {
             this.rocketmqProducer.sendOneway(msg);
@@ -104,7 +105,7 @@ public class ProducerImpl extends AbstractProducer {
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
-            RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
+                RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
         msg = supplySysProp(msg, cloudEvent);
         try {
             this.rocketmqProducer.send(msg, this.sendCallbackConvert(msg, sendCallback));
@@ -115,11 +116,11 @@ public class ProducerImpl extends AbstractProducer {
     }
 
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout)
-        throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
 
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
-            RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
+                RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
 
         msg = supplySysProp(msg, cloudEvent);
 
@@ -129,7 +130,7 @@ public class ProducerImpl extends AbstractProducer {
     public boolean reply(final CloudEvent cloudEvent, final SendCallback sendCallback) {
         this.checkProducerServiceState(this.rocketmqProducer.getDefaultMQProducerImpl());
         org.apache.rocketmq.common.message.Message msg =
-            RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
+                RocketMQMessageFactory.createWriter(cloudEvent.getSubject()).writeBinary(cloudEvent);
         MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
         msg = supplySysProp(msg, cloudEvent);
 
@@ -187,22 +188,22 @@ public class ProducerImpl extends AbstractProducer {
     private org.apache.rocketmq.client.producer.SendCallback sendCallbackConvert(final Message message,
                                                                                  final SendCallback sendCallback) {
         org.apache.rocketmq.client.producer.SendCallback rmqSendCallback =
-            new org.apache.rocketmq.client.producer.SendCallback() {
-                @Override
-                public void onSuccess(org.apache.rocketmq.client.producer.SendResult sendResult) {
-                    sendCallback.onSuccess(CloudEventUtils.convertSendResult(sendResult));
-                }
+                new org.apache.rocketmq.client.producer.SendCallback() {
+                    @Override
+                    public void onSuccess(org.apache.rocketmq.client.producer.SendResult sendResult) {
+                        sendCallback.onSuccess(CloudEventUtils.convertSendResult(sendResult));
+                    }
 
-                @Override
-                public void onException(Throwable e) {
-                    String topic = message.getTopic();
-                    ConnectorRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, null, e);
-                    OnExceptionContext context = new OnExceptionContext();
-                    context.setTopic(topic);
-                    context.setException(onsEx);
-                    sendCallback.onException(context);
-                }
-            };
+                    @Override
+                    public void onException(Throwable e) {
+                        String topic = message.getTopic();
+                        ConnectorRuntimeException onsEx = ProducerImpl.this.checkProducerException(topic, null, e);
+                        OnExceptionContext context = new OnExceptionContext();
+                        context.setTopic(topic);
+                        context.setException(onsEx);
+                        sendCallback.onException(context);
+                    }
+                };
         return rmqSendCallback;
     }
 

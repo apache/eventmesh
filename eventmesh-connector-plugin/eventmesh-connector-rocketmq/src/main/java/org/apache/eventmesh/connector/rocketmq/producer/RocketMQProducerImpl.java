@@ -17,21 +17,22 @@
 
 package org.apache.eventmesh.connector.rocketmq.producer;
 
+import java.util.Properties;
+
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.remoting.exception.RemotingException;
+
+import io.cloudevents.CloudEvent;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
-
-import org.apache.rocketmq.client.exception.MQBrokerException;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.remoting.exception.RemotingException;
-
-import java.util.Properties;
-
-import io.cloudevents.CloudEvent;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @SuppressWarnings("deprecation")
@@ -83,8 +84,13 @@ public class RocketMQProducerImpl implements Producer {
     }
 
     @Override
+    public SendResult publish(CloudEvent message) {
+        return producer.send(message);
+    }
+
+    @Override
     public void request(CloudEvent message, RequestReplyCallback rrCallback, long timeout)
-        throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         producer.request(message, rrCallback, timeout);
     }
 
@@ -97,7 +103,7 @@ public class RocketMQProducerImpl implements Producer {
     @Override
     public void checkTopicExist(String topic) throws Exception {
         this.producer.getRocketmqProducer().getDefaultMQProducerImpl().getmQClientFactory().getMQClientAPIImpl()
-            .getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+                .getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
     @Override
@@ -105,10 +111,6 @@ public class RocketMQProducerImpl implements Producer {
         producer.setExtFields();
     }
 
-    @Override
-    public SendResult publish(CloudEvent message) {
-        return producer.send(message);
-    }
 
     @Override
     public void sendOneway(CloudEvent message) {

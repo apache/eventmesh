@@ -17,20 +17,21 @@
 
 package org.apache.eventmesh.client.http.producer;
 
+import io.cloudevents.CloudEvent;
+import io.openmessaging.api.Message;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.exception.EventMeshException;
-
-import io.cloudevents.CloudEvent;
-import io.openmessaging.api.Message;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EventMeshHttpProducer implements AutoCloseable {
 
     private final EventMeshMessageProducer eventMeshMessageProducer;
-    private final CloudEventProducer       cloudEventProducer;
-    private final OpenMessageProducer      openMessageProducer;
+    private final CloudEventProducer cloudEventProducer;
+    private final OpenMessageProducer openMessageProducer;
 
     public EventMeshHttpProducer(final EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
         this.cloudEventProducer = new CloudEventProducer(eventMeshHttpClientConfig);
@@ -63,26 +64,26 @@ public class EventMeshHttpProducer implements AutoCloseable {
     }
 
     public void request(final EventMeshMessage message, final RRCallback rrCallback, final long timeout)
-        throws EventMeshException {
+            throws EventMeshException {
         eventMeshMessageProducer.request(message, rrCallback, timeout);
     }
 
     public void request(final CloudEvent cloudEvent, final RRCallback rrCallback, final long timeout)
-        throws EventMeshException {
+            throws EventMeshException {
         cloudEventProducer.request(cloudEvent, rrCallback, timeout);
     }
 
     public void request(final Message openMessage, final RRCallback rrCallback, final long timeout)
-        throws EventMeshException {
+            throws EventMeshException {
         openMessageProducer.request(openMessage, rrCallback, timeout);
     }
 
     @Override
     public void close() throws EventMeshException {
         try (
-            final EventMeshMessageProducer ignored = eventMeshMessageProducer;
-            final OpenMessageProducer ignored1 = openMessageProducer;
-            final CloudEventProducer ignored2 = cloudEventProducer) {
+                final EventMeshMessageProducer ignored = eventMeshMessageProducer;
+                final OpenMessageProducer ignored1 = openMessageProducer;
+                final CloudEventProducer ignored2 = cloudEventProducer) {
             log.info("Close producer");
         }
     }

@@ -17,19 +17,6 @@
 
 package org.apache.eventmesh.http.demo.pub.cloudevents;
 
-import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
-import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
-import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.EventMeshMessage;
-import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
-import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.apache.eventmesh.util.Utils;
-
-import org.apache.commons.lang3.StringUtils;
-
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -37,10 +24,21 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+
 import lombok.extern.slf4j.Slf4j;
-import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast;
+
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
+import org.apache.eventmesh.util.Utils;
 
 @Slf4j
 public class AsyncPublishInstance {
@@ -64,16 +62,16 @@ public class AsyncPublishInstance {
         final String topic = "TEST-TOPIC-HTTP-ASYNC";
 
         EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-            .liteEventMeshAddr(eventMeshIPPort)
-            .producerGroup("EventMeshTest-producerGroup")
-            .env("env")
-            .idc("idc")
-            .ip(IPUtils.getLocalAddress())
-            .sys("1234")
-            .pid(String.valueOf(ThreadUtils.getPID()))
-            .userName("eventmesh")
-            .password("pass")
-            .build();
+                .liteEventMeshAddr(eventMeshIPPort)
+                .producerGroup("EventMeshTest-producerGroup")
+                .env("env")
+                .idc("idc")
+                .ip(IPUtils.getLocalAddress())
+                .sys("1234")
+                .pid(String.valueOf(ThreadUtils.getPID()))
+                .userName("eventmesh")
+                .password("pass")
+                .build();
 
         try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig)) {
             for (int i = 0; i < messageSize; i++) {
@@ -81,14 +79,14 @@ public class AsyncPublishInstance {
                 content.put("content", "testAsyncMessage");
 
                 CloudEvent event = CloudEventBuilder.v1()
-                    .withId(UUID.randomUUID().toString())
-                    .withSubject(topic)
-                    .withSource(URI.create("/"))
-                    .withDataContentType("application/cloudevents+json")
-                    .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-                    .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
-                    .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
-                    .build();
+                        .withId(UUID.randomUUID().toString())
+                        .withSubject(topic)
+                        .withSource(URI.create("/"))
+                        .withDataContentType("application/cloudevents+json")
+                        .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+                        .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
+                        .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
+                        .build();
                 eventMeshHttpProducer.publish(event);
             }
             Thread.sleep(30000);

@@ -19,9 +19,10 @@ package org.apache.eventmesh.runtime.client.common;
 
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.eventmesh.common.protocol.tcp.Package;
 
 public class RequestContext {
 
@@ -75,13 +76,13 @@ public class RequestContext {
         latch.countDown();
     }
 
-    public static RequestContext _context(Object key, Package request, CountDownLatch latch) throws Exception {
+    public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
         RequestContext c = new RequestContext(key, request, latch);
         logger.info("_RequestContext|create|key=" + key);
         return c;
     }
 
-    public static Object _key(Package request) {
+    public static Object key(Package request) {
         return request.getHeader().getSeq();
     }
 }

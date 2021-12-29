@@ -22,20 +22,22 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.tcp.*;
-import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
+
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.client.api.SubClient;
 import org.apache.eventmesh.runtime.client.common.ClientConstants;
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
@@ -103,6 +105,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     logger.debug("SubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
                     SubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
                 } catch (Exception e) {
+                    //ignore
                 }
             }
         }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
@@ -129,19 +132,19 @@ public class SubClientImpl extends TCPClient implements SubClient {
         return this.dispatcher(request, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
-//    @Override
-//    public void traceLog() throws Exception {
-//        Package msg = MessageUtils.traceLog();
-//        this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-//    }
+    //@Override
+    //public void traceLog() throws Exception {
+    //    Package msg = MessageUtils.traceLog();
+    //    this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+    //}
 
-//    public void sysLog() throws Exception {
-//        Package msg = MessageUtils.sysLog();
-//        this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-//    }
+    //public void sysLog() throws Exception {
+    //    Package msg = MessageUtils.sysLog();
+    //    this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+    //}
 
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
-        SubscriptionType subscriptionType) throws Exception {
+                                   SubscriptionType subscriptionType) throws Exception {
         subscriptionItems.remove(topic);
         Package msg = MessageUtils.unsubscribe(topic, subscriptionMode, subscriptionType);
         return this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
@@ -202,8 +205,8 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 try {
                     Package ackMsg = MessageUtils.requestToClientAck(msg);
                     send(ackMsg);
-                    Package aPackage = MessageUtils.rrResponse(msg);
-                    send(aPackage);
+                    Package responsePKG = MessageUtils.rrResponse(msg);
+                    send(responsePKG);
                 } catch (Exception e) {
                     logger.info("send rr request to client ack failed");
                 }
@@ -226,7 +229,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                 close();
             } else {
                 //control instruction set
-                RequestContext context = contexts.get(RequestContext._key(msg));
+                RequestContext context = contexts.get(RequestContext.key(msg));
                 if (context != null) {
                     contexts.remove(context.getKey());
                     context.finish(msg);
