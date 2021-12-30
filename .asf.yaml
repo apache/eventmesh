@@ -41,5 +41,5 @@ github:
     squash:  true
     rebase:  false
   protected_branches:
-    master:
+    test:
         foo: bar
