@@ -25,7 +25,7 @@ EventMesh是一个动态的云原生事件驱动架构基础设施，用于分�
 * **eventmesh-connector-plugin** : 连接中间件的插件，如RocketMQ/Kafka/Redis/Pulsar等。
 * **eventmesh-registry-plugin** : 注册表适配器插件，如Nacos/Etcd。
 * **eventmesh-security-plugin** : 安全适配器插件，如ACL/认证/授权。
-* **eventmesh-protocol-plugin** : 协议适配器的插件，如clouddevents /MQTT。
+* **eventmesh-protocol-plugin** : 协议适配器的插件，如CloudEvents/MQTT。
 * **eventmesh-admin** : 客户端管理、主题管理、订阅管理和其他管理。
 
 ## 快速开始
