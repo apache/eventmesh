@@ -89,7 +89,7 @@ public class CommonConfiguration {
                     configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT);
             if (StringUtils.isNotEmpty(eventMeshPrometheusPortStr)) {
                 eventMeshPrometheusPort =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshPrometheusPortStr));
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshPrometheusPortStr));
             }
 
             eventMeshServerIp =
@@ -107,7 +107,7 @@ public class CommonConfiguration {
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED);
             if (StringUtils.isNotBlank(eventMeshServerAclEnableStr)) {
                 eventMeshServerSecurityEnable =
-                        Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
+                        Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
             }
 
             eventMeshSecurityPluginType =
@@ -119,7 +119,7 @@ public class CommonConfiguration {
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED);
             if (StringUtils.isNotBlank(eventMeshServerRegistryEnableStr)) {
                 eventMeshServerRegistryEnable =
-                        Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
+                        Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
             }
 
             eventMeshRegistryPluginType =
@@ -138,28 +138,28 @@ public class CommonConfiguration {
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORTER_MAX_EXPORT_SIZE);
             if (StringUtils.isNotEmpty(eventMeshTraceExporterMaxExportSizeStr)) {
                 eventMeshTraceExporterMaxExportSize =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExporterMaxExportSizeStr));
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceExporterMaxExportSizeStr));
             }
 
             String eventMeshTraceExporterMaxQueueSizeStr =
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORTER_MAX_QUEUE_SIZE);
             if (StringUtils.isNotEmpty(eventMeshTraceExporterMaxQueueSizeStr)) {
                 eventMeshTraceExporterMaxQueueSize =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExporterMaxQueueSizeStr));
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceExporterMaxQueueSizeStr));
             }
 
             String eventMeshTraceExporterExportTimeoutStr =
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORTER_EXPORT_TIMEOUT);
             if (StringUtils.isNotEmpty(eventMeshTraceExporterExportTimeoutStr)) {
                 eventMeshTraceExporterExportTimeout =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExporterExportTimeoutStr));
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceExporterExportTimeoutStr));
             }
 
             String eventMeshTraceExporterExportIntervalStr =
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORTER_EXPORT_INTERVAL);
             if (StringUtils.isNotEmpty(eventMeshTraceExporterExportIntervalStr)) {
                 eventMeshTraceExporterExportInterval =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExporterExportIntervalStr));
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceExporterExportIntervalStr));
             }
 
             String eventMeshTraceExportZipkinIpStr =
@@ -172,7 +172,7 @@ public class CommonConfiguration {
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORT_ZIPKIN_PORT);
             if (StringUtils.isNotEmpty(eventMeshTraceExportZipkinPortStr)) {
                 eventMeshTraceExportZipkinPort =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExportZipkinPortStr));
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceExportZipkinPortStr));
             }
         }
     }
