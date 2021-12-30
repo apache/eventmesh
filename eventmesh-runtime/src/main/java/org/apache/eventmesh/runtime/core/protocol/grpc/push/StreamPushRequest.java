@@ -46,10 +46,12 @@ public class StreamPushRequest extends AbstractPushRequest {
         }
         this.lastPushTime = System.currentTimeMillis();
 
-        eventMeshMessage.getPropertiesMap().put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-            String.valueOf(lastPushTime));
+        eventMeshMessage = EventMeshMessage.newBuilder(eventMeshMessage)
+            .putProperties(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(lastPushTime))
+            .build();
         try {
             long cost = System.currentTimeMillis() - lastPushTime;
+            // catch the error and retry, don't use eventEmitter.onNext() to hide the error
             eventEmitter.getEmitter().onNext(eventMeshMessage);
             messageLogger.info(
                 "message|eventMesh2client|emitter|topic={}|bizSeqNo={}"
@@ -58,10 +60,10 @@ public class StreamPushRequest extends AbstractPushRequest {
             complete();
         } catch (Throwable t) {
             long cost = System.currentTimeMillis() - lastPushTime;
-            messageLogger.info(
-                "message|eventMesh2client|exception|emitter|topic={}|bizSeqNo={}"
-                    + "|uniqueId={}|cost={}", eventMeshMessage.getTopic(),
-                eventMeshMessage.getSeqNum(), eventMeshMessage.getUniqueId(), cost);
+            messageLogger.error(
+                "message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}"
+                    + "|uniqueId={}|cost={}", t.getMessage(), eventMeshMessage.getTopic(),
+                eventMeshMessage.getSeqNum(), eventMeshMessage.getUniqueId(), cost, t);
 
             delayRetry();
         }

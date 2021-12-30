@@ -61,7 +61,7 @@ public abstract class AbstractPushRequest extends RetryContext {
     protected Map<String, Set<AbstractPushRequest>> waitingRequests;
 
     protected HandleMsgContext handleMsgContext;
-    protected CloudEvent event;
+  //  protected CloudEvent event;
     protected EventMeshMessage eventMeshMessage;
 
     private final AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
@@ -73,7 +73,7 @@ public abstract class AbstractPushRequest extends RetryContext {
 
         this.eventMeshGrpcConfiguration = handleMsgContext.getEventMeshGrpcServer().getEventMeshGrpcConfiguration();
         this.grpcRetryer = handleMsgContext.getEventMeshGrpcServer().getGrpcRetryer();
-        this.event = handleMsgContext.getEvent();
+        CloudEvent event = handleMsgContext.getEvent();
         this.eventMeshMessage = getEventMeshMessage(event);
     }
 
@@ -87,6 +87,17 @@ public abstract class AbstractPushRequest extends RetryContext {
             return ((EventMeshMessageWrapper) protocolTransportObject).getMessage();
         } catch (Exception e) {
             logger.error("Error in getting EventMeshMessage from CloudEvent", e);
+            return null;
+        }
+    }
+
+    private CloudEvent getCloudEvent(EventMeshMessage eventMeshMessage) {
+        try {
+            String protocolType = Objects.requireNonNull(eventMeshMessage.getHeader().getProtocolType());
+            ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+            return protocolAdaptor.toCloudEvent(new EventMeshMessageWrapper(eventMeshMessage));
+        } catch (Exception e) {
+            logger.error("Error in getting CloudEvent from EventMeshMessage", e);
             return null;
         }
     }
@@ -114,6 +125,7 @@ public abstract class AbstractPushRequest extends RetryContext {
     private void finish() {
         AbstractContext context = handleMsgContext.getContext();
         SubscriptionMode subscriptionMode = handleMsgContext.getSubscriptionMode();
+        CloudEvent event = getCloudEvent(eventMeshMessage);
         if (eventMeshConsumer != null && context != null && event != null) {
             try {
                 eventMeshConsumer.updateOffset(subscriptionMode, Collections.singletonList(event), context);
