@@ -24,6 +24,7 @@ import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
@@ -112,8 +113,9 @@ public class WebhookPushRequest extends AbstractPushRequest {
         body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
             JsonUtils.serialize(eventMeshMessage.getPropertiesMap())));
 
-        eventMeshMessage.getPropertiesMap().put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-            String.valueOf(lastPushTime));
+        eventMeshMessage = EventMeshMessage.newBuilder(eventMeshMessage)
+            .putProperties(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(lastPushTime))
+            .build();
 
         builder.setEntity(new UrlEncodedFormEntity(body, StandardCharsets.UTF_8));
 
@@ -131,7 +133,11 @@ public class WebhookPushRequest extends AbstractPushRequest {
                     selectedPushUrl, eventMeshMessage.getTopic(), eventMeshMessage.getSeqNum(),
                     eventMeshMessage.getUniqueId());
         } catch (IOException e) {
-            messageLogger.error("push2client err", e);
+            long cost = System.currentTimeMillis() - lastPushTime;
+            messageLogger.error(
+                "message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}"
+                    + "|uniqueId={}|cost={}", e.getMessage(), eventMeshMessage.getTopic(),
+                eventMeshMessage.getSeqNum(), eventMeshMessage.getUniqueId(), cost, e);
             removeWaitingMap(this);
             delayRetry();
         }

@@ -43,12 +43,12 @@ public class SubscribeStreamProcessor {
         RequestHeader header = subscription.getHeader();
 
         if (!ServiceUtils.validateHeader(header)) {
-            sendResp(subscription, StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+            sendRespAndComplete(subscription, StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateSubscription(grpcType, subscription)) {
-            sendResp(subscription, StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            sendRespAndComplete(subscription, StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -56,7 +56,7 @@ public class SubscribeStreamProcessor {
             doAclCheck(subscription);
         } catch (AclException e) {
             aclLogger.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
-            sendResp(subscription, StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
+            sendRespAndComplete(subscription, StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
@@ -110,7 +110,7 @@ public class SubscribeStreamProcessor {
         sendResp(subscription, StatusCode.SUCCESS, "subscribe success", emitter);
     }
 
-    private void sendResp(Subscription subscription, StatusCode code, EventEmitter<EventMeshMessage> emitter) {
+    private void sendRespAndComplete(Subscription subscription, StatusCode code, EventEmitter<EventMeshMessage> emitter) {
         Map<String, String> resp = new HashMap<>();
         resp.put("respCode", code.getRetCode());
         resp.put("respMsg", code.getErrMsg());
@@ -122,6 +122,11 @@ public class SubscribeStreamProcessor {
             .build();
 
         emitter.onNext(eventMeshMessage);
+        emitter.onCompleted();
+    }
+
+    private void sendRespAndComplete(Subscription subscription, StatusCode code, String message, EventEmitter<EventMeshMessage> emitter) {
+        sendResp(subscription, code, message, emitter);
         emitter.onCompleted();
     }
 
@@ -137,7 +142,6 @@ public class SubscribeStreamProcessor {
             .build();
 
         emitter.onNext(eventMeshMessage);
-        emitter.onCompleted();
     }
 
     private void doAclCheck(Subscription subscription) throws AclException {
