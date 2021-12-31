@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 
@@ -28,6 +29,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SyncRequestInstance {
 
@@ -62,10 +66,13 @@ public class SyncRequestInstance {
 
             eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
 
+            Map<String, String> content = new HashMap<>();
+            content.put("content", "testPublishMessage");
+
             long startTime = System.currentTimeMillis();
             EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                 .bizSeqNo(RandomStringUtils.generateNum(30))
-                .content("contentStr with special protocal")
+                .content(JsonUtils.serialize(content))
                 .topic(topic)
                 .uniqueId(RandomStringUtils.generateNum(30)).build();
 

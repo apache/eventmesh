@@ -25,13 +25,13 @@ import lombok.Data;
 public class EventMeshGrpcClientConfig {
 
     @Builder.Default
-    private String serverAddr = "";
+    private String serverAddr = "127.0.0.1";
 
     @Builder.Default
     private int serverPort = 10205;
 
     @Builder.Default
-    private String env = "";
+    private String env = "env";
 
     @Builder.Default
     private String consumerGroup = "DefaultConsumerGroup";
@@ -40,16 +40,16 @@ public class EventMeshGrpcClientConfig {
     private String producerGroup = "DefaultProducerGroup";
 
     @Builder.Default
-    private String idc = "";
+    private String idc = "default";
 
     @Builder.Default
     private String sys = "sys123";
 
     @Builder.Default
-    private String userName = "";
+    private String userName = "username";
 
     @Builder.Default
-    private String password = "";
+    private String password = "passwd";
 
     @Builder.Default
     private String language = "JAVA";

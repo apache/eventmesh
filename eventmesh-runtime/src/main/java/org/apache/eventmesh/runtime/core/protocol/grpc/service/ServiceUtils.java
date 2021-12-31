@@ -20,7 +20,10 @@ public class ServiceUtils {
             && StringUtils.isNotEmpty(header.getIp())
             && StringUtils.isNotEmpty(header.getPid())
             && StringUtils.isNumeric(header.getPid())
-            && StringUtils.isNotEmpty(header.getSys());
+            && StringUtils.isNotEmpty(header.getSys())
+            && StringUtils.isNotEmpty(header.getUsername())
+            && StringUtils.isNotEmpty(header.getPassword())
+            && StringUtils.isNotEmpty(header.getLanguage());
     }
 
     public static boolean validateMessage(EventMeshMessage message) {
