@@ -34,7 +34,7 @@ import lombok.experimental.UtilityClass;
 public class ProtocolPluginFactory {
 
     private static final Map<String, ProtocolAdaptor<ProtocolTransportObject>> PROTOCOL_ADAPTOR_MAP =
-        new ConcurrentHashMap<>(16);
+            new ConcurrentHashMap<>(16);
 
     /**
      * Get protocol adaptor by name.
@@ -46,12 +46,12 @@ public class ProtocolPluginFactory {
     @SuppressWarnings("unchecked")
     public static ProtocolAdaptor<ProtocolTransportObject> getProtocolAdaptor(String protocolType) {
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = PROTOCOL_ADAPTOR_MAP.computeIfAbsent(
-            protocolType,
-            (type) -> EventMeshExtensionFactory.getExtension(ProtocolAdaptor.class, type)
+                protocolType,
+                (type) -> EventMeshExtensionFactory.getExtension(ProtocolAdaptor.class, type)
         );
         if (protocolAdaptor == null) {
             throw new IllegalArgumentException(
-                String.format("Cannot find the Protocol adaptor: %s", protocolType)
+                    String.format("Cannot find the Protocol adaptor: %s", protocolType)
             );
         }
         return protocolAdaptor;

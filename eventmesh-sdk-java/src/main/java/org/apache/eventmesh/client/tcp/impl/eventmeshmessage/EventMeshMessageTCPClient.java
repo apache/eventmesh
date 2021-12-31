@@ -52,7 +52,7 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
 
     @Override
     public void asyncRR(EventMeshMessage eventMeshMessage, AsyncRRCallback callback, long timeout)
-        throws EventMeshException {
+            throws EventMeshException {
         eventMeshMessageTCPPubClient.asyncRR(eventMeshMessage, callback, timeout);
     }
 
@@ -73,7 +73,7 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
 
     @Override
     public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-        throws EventMeshException {
+            throws EventMeshException {
         eventMeshMessageTCPSubClient.subscribe(topic, subscriptionMode, subscriptionType);
     }
 

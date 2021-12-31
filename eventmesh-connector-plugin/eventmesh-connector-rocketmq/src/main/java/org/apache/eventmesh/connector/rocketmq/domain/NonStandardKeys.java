@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.connector.rocketmq.domain;
 
+/**
+ * NonStandardKeys
+ */
 public interface NonStandardKeys {
     String CONSUMER_GROUP = "rmq.consumer.group";
     String PRODUCER_GROUP = "rmq.producer.group";

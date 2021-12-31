@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 
 import io.openmessaging.api.Message;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -48,7 +49,7 @@ class OpenMessageTCPSubClient implements EventMeshTCPSubClient<Message> {
 
     @Override
     public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-        throws EventMeshException {
+            throws EventMeshException {
 
     }
 

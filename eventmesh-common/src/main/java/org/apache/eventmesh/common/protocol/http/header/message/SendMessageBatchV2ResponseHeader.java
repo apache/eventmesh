@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.common.protocol.http.header.message;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.header.Header;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SendMessageBatchV2ResponseHeader extends Header {
 

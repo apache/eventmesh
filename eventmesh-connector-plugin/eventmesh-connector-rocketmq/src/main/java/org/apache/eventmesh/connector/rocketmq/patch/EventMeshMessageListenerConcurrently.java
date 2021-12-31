@@ -17,13 +17,14 @@
 
 package org.apache.eventmesh.connector.rocketmq.patch;
 
-import java.util.List;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
+
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,8 @@ public abstract class EventMeshMessageListenerConcurrently implements MessageLis
                     case CONSUME_FINISH:
                         eventMeshConsumeConcurrentlyContext.setManualAck(true);
                         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                    default:
+                        return status;
                 }
             } catch (Throwable e) {
                 LOG.info("handleMessage fail", e);
@@ -62,7 +65,7 @@ public abstract class EventMeshMessageListenerConcurrently implements MessageLis
             LOG.info("handleMessage fail", e);
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         }
-        return status;
+        //return status;
     }
 
     public abstract EventMeshConsumeConcurrentlyStatus handleMessage(MessageExt msg, EventMeshConsumeConcurrentlyContext context);
