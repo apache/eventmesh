@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
+import org.apache.eventmesh.common.protocol.tcp.Package;
+
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,19 +76,19 @@ public class RequestContext {
         latch.countDown();
     }
 
-    public static RequestContext _context(Object key, Package request, CountDownLatch latch) throws Exception {
+    public static RequestContext context(Object key, Package request, CountDownLatch latch) throws Exception {
         RequestContext c = new RequestContext(key, request, latch);
         logger.info("_RequestContext|create|key=" + key);
         return c;
     }
 
 
-    public static Object _key(Package request) {
-//        MessageType type = request.getHeader().getType();
-//        if(MessageType.SyncRequest == type || MessageType.SyncResponse == type
-//                || MessageType.AsyncRequest == type || MessageType.AsyncResponse == type) {
-//            return request.getBody().getSysHeader().getUniqueId() ;
-//        }
+    public static Object key(Package request) {
+        //MessageType type = request.getHeader().getType();
+        //if(MessageType.SyncRequest == type || MessageType.SyncResponse == type
+        //        || MessageType.AsyncRequest == type || MessageType.AsyncResponse == type) {
+        //    return request.getBody().getSysHeader().getUniqueId() ;
+        //}
         return request.getHeader().getSeq();
     }
 }

@@ -16,12 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.eventmesh.runtime.core.plugin;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class MQWrapper {
 
@@ -31,7 +33,8 @@ public abstract class MQWrapper {
 
     public static String CURRENT_EVENT_STORE = EVENT_STORE_DEFIBUS;
 
-    public static final String EVENT_STORE_CONF = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
+    public static final String EVENT_STORE_CONF = System.getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES,
+            System.getenv(EventMeshConstants.EVENT_STORE_ENV));
 
     static {
         if (StringUtils.isNotBlank(EVENT_STORE_CONF)) {

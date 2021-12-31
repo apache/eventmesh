@@ -76,28 +76,28 @@ public class UpStreamMsgContext extends RetryContext {
     @Override
     public String toString() {
         return "UpStreamMsgContext{seq=" + seq
-            + ",topic=" + event.getSubject()
-            + ",client=" + session.getClient()
-            + ",retryTimes=" + retryTimes
-            + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}"
-            + ",executeTime=" + DateFormatUtils.format(executeTime, EventMeshConstants.DATE_FORMAT);
+                + ",topic=" + event.getSubject()
+                + ",client=" + session.getClient()
+                + ",retryTimes=" + retryTimes
+                + ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + "}"
+                + ",executeTime=" + DateFormatUtils.format(executeTime, EventMeshConstants.DATE_FORMAT);
     }
 
     @Override
     public void retry() {
         logger.info("retry upStream msg start,seq:{},retryTimes:{},bizSeq:{}", this.seq, this.retryTimes,
-            EventMeshUtil.getMessageBizSeq(this.event));
+                EventMeshUtil.getMessageBizSeq(this.event));
 
         try {
             Command replyCmd = getReplyCmd(header.getCmd());
             long sendTime = System.currentTimeMillis();
 
             EventMeshTcpSendResult sendStatus = session.upstreamMsg(header, event,
-                createSendCallback(replyCmd, taskExecuteTime, event), startTime, taskExecuteTime);
+                    createSendCallback(replyCmd, taskExecuteTime, event), startTime, taskExecuteTime);
 
             if (StringUtils.equals(EventMeshTcpSendStatus.SUCCESS.name(), sendStatus.getSendStatus().name())) {
                 logger.info("pkg|eventMesh2mq|cmd={}|event={}|user={}|wait={}ms|cost={}ms", header.getCmd(), event,
-                    session.getClient(), taskExecuteTime - startTime, sendTime - startTime);
+                        session.getClient(), taskExecuteTime - startTime, sendTime - startTime);
             } else {
                 throw new Exception(sendStatus.getDetail());
             }
@@ -115,9 +115,9 @@ public class UpStreamMsgContext extends RetryContext {
             public void onSuccess(SendResult sendResult) {
                 session.getSender().getUpstreamBuff().release();
                 logger.info("upstreamMsg message success|user={}|callback cost={}", session.getClient(),
-                    String.valueOf(System.currentTimeMillis() - createTime));
+                        String.valueOf(System.currentTimeMillis() - createTime));
                 if (replyCmd.equals(Command.BROADCAST_MESSAGE_TO_SERVER_ACK) || replyCmd.equals(Command
-                    .ASYNC_MESSAGE_TO_SERVER_ACK)) {
+                        .ASYNC_MESSAGE_TO_SERVER_ACK)) {
                     msg.setHeader(new Header(replyCmd, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), seq));
                     msg.setBody(event);
                     Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
@@ -130,14 +130,13 @@ public class UpStreamMsgContext extends RetryContext {
 
                 // retry
                 UpStreamMsgContext upStreamMsgContext = new UpStreamMsgContext(
-                    session, event, header, startTime, taskExecuteTime);
+                        session, event, header, startTime, taskExecuteTime);
                 upStreamMsgContext.delay(10000);
                 session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(upStreamMsgContext);
 
                 session.getSender().failMsgCount.incrementAndGet();
                 logger.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(),
-                    String.valueOf
-                        (System.currentTimeMillis() - createTime), new Exception(context.getException()));
+                        String.valueOf(System.currentTimeMillis() - createTime), new Exception(context.getException()));
                 msg.setHeader(new Header(replyCmd, OPStatus.FAIL.getCode(), context.getException().toString(), seq));
                 msg.setBody(event);
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);

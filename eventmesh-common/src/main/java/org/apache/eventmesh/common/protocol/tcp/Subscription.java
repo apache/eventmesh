@@ -43,8 +43,8 @@ public class Subscription {
 
     @Override
     public String toString() {
-        return "Subscription{" +
-                "topicList=" + topicList +
-                '}';
+        return "Subscription{"
+                + "topicList=" + topicList
+                + '}';
     }
 }

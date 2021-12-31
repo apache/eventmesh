@@ -18,8 +18,6 @@
 package org.apache.eventmesh.common.protocol.http.body;
 
 
-import java.util.Map;
-
 import org.apache.eventmesh.common.protocol.http.body.client.HeartbeatRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.RegRequestBody;
 import org.apache.eventmesh.common.protocol.http.body.client.SubscribeRequestBody;
@@ -31,6 +29,8 @@ import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchRe
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+
+import java.util.Map;
 
 public abstract class Body {
 

@@ -40,8 +40,8 @@ public class RegisterInfo {
 
     @Override
     public String toString() {
-        return "RegisterInfo{" +
-                "topicList=" + topicList +
-                '}';
+        return "RegisterInfo{"
+                + "topicList=" + topicList
+                + '}';
     }
 }
