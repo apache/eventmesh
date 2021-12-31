@@ -17,24 +17,12 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import java.util.concurrent.*;
-
-import com.google.common.util.concurrent.RateLimiter;
-
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.handler.traffic.ChannelTrafficShapingHandler;
-import io.netty.handler.traffic.GlobalTrafficShapingHandler;
-
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
-import org.apache.eventmesh.common.exception.EventMeshException;
-import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -48,6 +36,26 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.Event
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.AdaptiveRecvByteBufAllocator;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
+
+import com.google.common.util.concurrent.RateLimiter;
 
 public class EventMeshTCPServer extends AbstractRemotingServer {
 
@@ -130,6 +138,27 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     private void startServer() throws Exception {
         Runnable r = () -> {
             ServerBootstrap bootstrap = new ServerBootstrap();
+            ChannelInitializer channelInitializer = new ChannelInitializer() {
+                @Override
+                public void initChannel(Channel ch) throws Exception {
+                    ch.pipeline()
+                            .addLast(new Codec.Encoder())
+                            .addLast(new Codec.Decoder())
+                            .addLast("global-traffic-shaping", globalTrafficShapingHandler)
+                            .addLast("channel-traffic-shaping", newCTSHandler())
+                            .addLast(new EventMeshTcpConnectionHandler(EventMeshTCPServer.this))
+                            .addLast(
+                                    workerGroup,
+                                    new IdleStateHandler(
+                                            eventMeshTCPConfiguration.eventMeshTcpIdleReadSeconds,
+                                            eventMeshTCPConfiguration.eventMeshTcpIdleWriteSeconds,
+                                            eventMeshTCPConfiguration.eventMeshTcpIdleAllSeconds),
+                                    new EventMeshTcpMessageDispatcher(EventMeshTCPServer.this),
+                                    new EventMeshTcpExceptionHandler(EventMeshTCPServer.this)
+                            );
+                }
+            };
+
             bootstrap.group(bossGroup, ioGroup)
                     .channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, 128)
@@ -144,22 +173,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                     .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(2048, 4096, 65536))
                     .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                    .childHandler(new ChannelInitializer() {
-                        @Override
-                        public void initChannel(Channel ch) throws Exception {
-                            ch.pipeline().addLast(new Codec.Encoder())
-                                    .addLast(new Codec.Decoder())
-                                    .addLast("global-traffic-shaping", globalTrafficShapingHandler)
-                                    .addLast("channel-traffic-shaping", newCTSHandler())
-                                    .addLast(new EventMeshTcpConnectionHandler(EventMeshTCPServer.this))
-                                    .addLast(workerGroup, new IdleStateHandler(eventMeshTCPConfiguration.eventMeshTcpIdleReadSeconds,
-                                                    eventMeshTCPConfiguration.eventMeshTcpIdleWriteSeconds,
-                                                    eventMeshTCPConfiguration.eventMeshTcpIdleAllSeconds),
-                                            new EventMeshTcpMessageDispatcher(EventMeshTCPServer.this),
-                                            new EventMeshTcpExceptionHandler(EventMeshTCPServer.this)
-                                    );
-                        }
-                    });
+                    .childHandler(channelInitializer);
             try {
                 int port = eventMeshTCPConfiguration.eventMeshTcpServerPort;
                 ChannelFuture f = bootstrap.bind(port).sync();
@@ -199,8 +213,9 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         eventMeshTcpMonitor = new EventMeshTcpMonitor(this);
         eventMeshTcpMonitor.init();
 
-        if(eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
-            eventMeshRebalanceService = new EventMeshRebalanceService(this, new EventmeshRebalanceImpl(this));
+        if (eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+            eventMeshRebalanceService = new EventMeshRebalanceService(this,
+                    new EventmeshRebalanceImpl(this));
             eventMeshRebalanceService.init();
         }
         logger.info("--------------------------EventMeshTCPServer Inited");
@@ -216,7 +231,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
         eventMeshTcpMonitor.start();
 
-        if(eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             eventMeshRebalanceService.start();
             selfRegisterToRegistry();
         }
@@ -233,7 +248,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             logger.info("shutdown bossGroup, no client is allowed to connect access server");
         }
 
-        if(eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             eventMeshRebalanceService.shutdown();
 
             selfUnRegisterToRegistry();
@@ -272,21 +287,25 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             throw new EventMeshException("eventMesh fail to register");
         }
 
-        tcpRegisterTask = scheduler.scheduleAtFixedRate(() -> {
-            try {
-                boolean heartbeatResult = registerToRegistry();
-                if (!heartbeatResult) {
-                    logger.error("selfRegisterToRegistry fail");
-                }
-            } catch (Exception ex) {
-                logger.error("selfRegisterToRegistry fail", ex);
-            }
-        }, eventMeshTCPConfiguration.eventMeshRegisterIntervalInMills, eventMeshTCPConfiguration.eventMeshRegisterIntervalInMills, TimeUnit.MILLISECONDS);
+        tcpRegisterTask = scheduler.scheduleAtFixedRate(
+                () -> {
+                    try {
+                        boolean heartbeatResult = registerToRegistry();
+                        if (!heartbeatResult) {
+                            logger.error("selfRegisterToRegistry fail");
+                        }
+                    } catch (Exception ex) {
+                        logger.error("selfRegisterToRegistry fail", ex);
+                    }
+                },
+                eventMeshTCPConfiguration.eventMeshRegisterIntervalInMills,
+                eventMeshTCPConfiguration.eventMeshRegisterIntervalInMills,
+                TimeUnit.MILLISECONDS);
     }
 
     public boolean registerToRegistry() {
         boolean registerResult = false;
-        try{
+        try {
             String endPoints = IPUtils.getLocalAddress()
                     + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshTCPConfiguration.eventMeshTcpServerPort;
             EventMeshRegisterInfo self = new EventMeshRegisterInfo();
@@ -295,7 +314,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             self.setEndPoint(endPoints);
             self.setEventMeshInstanceNumMap(clientSessionGroupMapping.prepareProxyClientDistributionData());
             registerResult = registry.register(self);
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.warn("eventMesh register to registry failed", e);
         }
 
@@ -318,11 +337,20 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     private void initThreadPool() throws Exception {
         super.init("eventMesh-tcp");
 
-        scheduler = ThreadPoolFactory.createScheduledExecutor(eventMeshTCPConfiguration.eventMeshTcpGlobalScheduler, new EventMeshThreadFactoryImpl("eventMesh-tcp-scheduler", true));
+        scheduler = ThreadPoolFactory.createScheduledExecutor(eventMeshTCPConfiguration.eventMeshTcpGlobalScheduler,
+                new EventMeshThreadFactoryImpl("eventMesh-tcp-scheduler", true));
 
-        taskHandleExecutorService = ThreadPoolFactory.createThreadPoolExecutor(eventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize, eventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize, new LinkedBlockingQueue<Runnable>(10000), new EventMeshThreadFactoryImpl("eventMesh-tcp-task-handle", true));
+        taskHandleExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
+                eventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize,
+                eventMeshTCPConfiguration.eventMeshTcpTaskHandleExecutorPoolSize,
+                new LinkedBlockingQueue<Runnable>(10000),
+                new EventMeshThreadFactoryImpl("eventMesh-tcp-task-handle", true));
 
-        broadcastMsgDownstreamExecutorService = ThreadPoolFactory.createThreadPoolExecutor(eventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize, eventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize, new LinkedBlockingQueue<Runnable>(10000), new EventMeshThreadFactoryImpl("eventMesh-tcp-msg-downstream", true));
+        broadcastMsgDownstreamExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
+                eventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize,
+                eventMeshTCPConfiguration.eventMeshTcpMsgDownStreamExecutorPoolSize,
+                new LinkedBlockingQueue<Runnable>(10000),
+                new EventMeshThreadFactoryImpl("eventMesh-tcp-msg-downstream", true));
     }
 
     private void shutdownThreadPool() {
@@ -331,7 +359,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     }
 
     private GlobalTrafficShapingHandler newGTSHandler() {
-        GlobalTrafficShapingHandler handler = new GlobalTrafficShapingHandler(scheduler, 0, eventMeshTCPConfiguration.getGtc().getReadLimit()) {
+        GlobalTrafficShapingHandler handler = new GlobalTrafficShapingHandler(scheduler, 0,
+                eventMeshTCPConfiguration.getGtc().getReadLimit()) {
             @Override
             protected long calculateSize(Object msg) {
                 return 1;
@@ -342,7 +371,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     }
 
     private ChannelTrafficShapingHandler newCTSHandler() {
-        ChannelTrafficShapingHandler handler = new ChannelTrafficShapingHandler(0, eventMeshTCPConfiguration.getCtc().getReadLimit()) {
+        ChannelTrafficShapingHandler handler = new ChannelTrafficShapingHandler(0,
+                eventMeshTCPConfiguration.getCtc().getReadLimit()) {
             @Override
             protected long calculateSize(Object msg) {
                 return 1;

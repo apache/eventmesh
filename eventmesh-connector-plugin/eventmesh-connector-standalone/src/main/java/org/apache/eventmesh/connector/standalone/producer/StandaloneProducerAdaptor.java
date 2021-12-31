@@ -83,10 +83,10 @@ public class StandaloneProducerAdaptor implements Producer {
         standaloneProducer.sendAsync(cloudEvent, sendCallback);
     }
 
-//    @Override
-//    public void request(CloudEvent cloudEvent, RRCallback rrCallback, long timeout) throws Exception {
-//        standaloneProducer.request(cloudEvent, rrCallback, timeout);
-//    }
+    //@Override
+    //public void request(CloudEvent cloudEvent, RRCallback rrCallback, long timeout) throws Exception {
+    //    standaloneProducer.request(cloudEvent, rrCallback, timeout);
+    //}
 
     @Override
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {

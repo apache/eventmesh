@@ -18,6 +18,7 @@
 package org.apache.rocketmq.client.impl.consumer;
 
 import org.apache.eventmesh.connector.rocketmq.patch.EventMeshConsumeConcurrentlyContext;
+
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -37,8 +38,19 @@ import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class ConsumeMessageConcurrentlyService implements ConsumeMessageService {
     private static final InternalLogger log = ClientLogger.getLog();
@@ -101,12 +113,12 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
     }
 
-//    @Override
-//    public void shutdown(long awaitTerminateMillis) {
-//        this.scheduledExecutorService.shutdown();
-//        this.consumeExecutor.shutdown();
-//        this.cleanExpireMsgExecutors.shutdown();
-//    }
+    //@Override
+    //public void shutdown(long awaitTerminateMillis) {
+    //    this.scheduledExecutorService.shutdown();
+    //    this.consumeExecutor.shutdown();
+    //    this.cleanExpireMsgExecutors.shutdown();
+    //}
 
     public void shutdown() {
         this.scheduledExecutorService.shutdown();
@@ -171,7 +183,7 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
         List<MessageExt> msgs = new ArrayList<MessageExt>();
         msgs.add(msg);
         MessageQueue mq = new MessageQueue();
-//        mq.setBrokerName(brokerName);
+        //mq.setBrokerName(brokerName);
         mq.setTopic(msg.getTopic());
         mq.setQueueId(msg.getQueueId());
 
@@ -280,12 +292,12 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
     public void processConsumeResult(
             final ConsumeConcurrentlyStatus status,
             final EventMeshConsumeConcurrentlyContext context,
-            final ConsumeRequest consumeRequest
-    ) {
+            final ConsumeRequest consumeRequest) {
         int ackIndex = context.getAckIndex();
 
-        if (consumeRequest.getMsgs().isEmpty())
+        if (consumeRequest.getMsgs().isEmpty()) {
             return;
+        }
 
         switch (status) {
             case CONSUME_SUCCESS:
@@ -386,7 +398,8 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
 
     private void submitConsumeRequestLater(final ConsumeRequest consumeRequest) {
         final int times = defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getMaxReconsumeTimes();
-        log.warn("rejected by thread pool, try resubmit {} times, consumerGroup:{}", times, defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getConsumerGroup());
+        log.warn("rejected by thread pool, try resubmit {} times, consumerGroup:{}", times,
+                defaultMQPushConsumerImpl.getDefaultMQPushConsumer().getConsumerGroup());
         this.scheduledExecutorService.schedule(new Runnable() {
 
             @Override
@@ -397,12 +410,13 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
+                            //ignore
                         }
                         ConsumeMessageConcurrentlyService.this.consumeExecutor.submit(consumeRequest);
                         success = true;
                         break;
                     } catch (RejectedExecutionException e) {
-
+                        //ignore
                     }
                 }
                 if (!success) {
@@ -437,7 +451,8 @@ public class ConsumeMessageConcurrentlyService implements ConsumeMessageService 
         @Override
         public void run() {
             if (this.processQueue.isDropped()) {
-                log.info("the message queue not be able to consume, because it's dropped. group={} {}", ConsumeMessageConcurrentlyService.this.consumerGroup, this.messageQueue);
+                log.info("the message queue not be able to consume, because it's dropped. group={} {}",
+                        ConsumeMessageConcurrentlyService.this.consumerGroup, this.messageQueue);
                 return;
             }
 

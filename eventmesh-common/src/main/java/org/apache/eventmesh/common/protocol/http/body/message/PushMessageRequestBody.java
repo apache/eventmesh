@@ -30,11 +30,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 public class PushMessageRequestBody extends Body {
 
-    public static final String RANDOMNO  = "randomNo";
-    public static final String TOPIC     = "topic";
-    public static final String BIZSEQNO  = "bizseqno";
-    public static final String UNIQUEID  = "uniqueId";
-    public static final String CONTENT   = "content";
+    public static final String RANDOMNO = "randomNo";
+    public static final String TOPIC = "topic";
+    public static final String BIZSEQNO = "bizseqno";
+    public static final String UNIQUEID = "uniqueId";
+    public static final String CONTENT = "content";
     public static final String EXTFIELDS = "extFields";
 
     private String randomNo;
@@ -108,8 +108,8 @@ public class PushMessageRequestBody extends Body {
 
         if (StringUtils.isNotBlank(extFields)) {
             pushMessageRequestBody.setExtFields(
-                JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
-                }));
+                    JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
+                    }));
         }
         return pushMessageRequestBody;
     }
@@ -131,12 +131,12 @@ public class PushMessageRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("pushMessageRequestBody={")
-            .append("randomNo=").append(randomNo).append(",")
-            .append("topic=").append(topic).append(",")
-            .append("bizSeqNo=").append(bizSeqNo).append(",")
-            .append("uniqueId=").append(uniqueId).append(",")
-            .append("content=").append(content).append(",")
-            .append("extFields=").append(extFields).append("}");
+                .append("randomNo=").append(randomNo).append(",")
+                .append("topic=").append(topic).append(",")
+                .append("bizSeqNo=").append(bizSeqNo).append(",")
+                .append("uniqueId=").append(uniqueId).append(",")
+                .append("content=").append(content).append(",")
+                .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }
 }

@@ -40,8 +40,12 @@ public class ProducerGroupConf {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ProducerGroupConf that = (ProducerGroupConf) o;
         return groupName == that.groupName;
     }

@@ -19,10 +19,10 @@ package org.apache.eventmesh.runtime.demo;
 
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

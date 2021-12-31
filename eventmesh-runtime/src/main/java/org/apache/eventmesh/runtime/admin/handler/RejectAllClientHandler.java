@@ -66,7 +66,7 @@ public class RejectAllClientHandler implements HttpHandler {
                 if (!sessionMap.isEmpty()) {
                     for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                         InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
-                            eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
+                                eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
                         if (addr != null) {
                             successRemoteAddrs.add(addr);
                         }
