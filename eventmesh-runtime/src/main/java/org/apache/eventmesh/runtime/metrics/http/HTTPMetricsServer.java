@@ -67,31 +67,25 @@ public class HTTPMetricsServer {
 
     public void start() throws Exception {
         openTelemetryHTTPMetricsExporter.start();
-        metricsSchedule.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    summaryMetrics.snapshotHTTPTPS();
-                    summaryMetrics.snapshotSendBatchMsgTPS();
-                    summaryMetrics.snapshotSendMsgTPS();
-                    summaryMetrics.snapshotPushMsgTPS();
-                } catch (Exception ex) {
-                    logger.warn("eventMesh snapshot tps metrics err", ex);
-                }
+        metricsSchedule.scheduleAtFixedRate(() -> {
+            try {
+                summaryMetrics.snapshotHTTPTPS();
+                summaryMetrics.snapshotSendBatchMsgTPS();
+                summaryMetrics.snapshotSendMsgTPS();
+                summaryMetrics.snapshotPushMsgTPS();
+            } catch (Exception ex) {
+                logger.warn("eventMesh snapshot tps metrics err", ex);
             }
         }, 0, 1000, TimeUnit.MILLISECONDS);
-
-        metricsSchedule.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    logPrintServerMetrics();
-                } catch (Exception ex) {
-                    logger.warn("eventMesh print metrics err", ex);
-                }
+    
+        metricsSchedule.scheduleAtFixedRate(() -> {
+            try {
+                logPrintServerMetrics();
+            } catch (Exception ex) {
+                logger.warn("eventMesh print metrics err", ex);
             }
         }, 1000, SummaryMetrics.STATIC_PERIOD, TimeUnit.MILLISECONDS);
-
+    
         logger.info("HTTPMetricsServer started......");
     }
 

@@ -162,14 +162,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             }
         }
 
-        ctx.writeAndFlush(response).addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture f) {
-                if (!f.isSuccess()) {
-                    httpLogger.warn("send response to [{}] fail, will close this channel",
-                        RemotingHelper.parseChannelRemoteAddr(f.channel()));
-                    f.channel().close();
-                }
+        ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
+            if (!f.isSuccess()) {
+                httpLogger.warn("send response to [{}] fail, will close this channel",
+                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                f.channel().close();
             }
         });
     }
@@ -195,7 +192,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 } catch (Exception e1) {
                     httpServerLogger.error("HTTPServer shutdown Err!", e);
                 }
-                return;
             }
         };
 

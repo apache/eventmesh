@@ -127,7 +127,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         this.registry = registry;
     }
 
-    private void startServer() throws Exception {
+    private void startServer() {
         Runnable r = () -> {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, ioGroup)
@@ -146,7 +146,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                     .childHandler(new ChannelInitializer() {
                         @Override
-                        public void initChannel(Channel ch) throws Exception {
+                        public void initChannel(Channel ch) {
                             ch.pipeline().addLast(new Codec.Encoder())
                                     .addLast(new Codec.Decoder())
                                     .addLast("global-traffic-shaping", globalTrafficShapingHandler)
@@ -172,7 +172,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                 } catch (Exception e1) {
                     logger.error("EventMeshTCPServer RemotingServer shutdown Err!", e);
                 }
-                return;
             }
         };
 
