@@ -46,7 +46,7 @@ public class SSLContextFactory {
 
 
     public static SSLContext getSslContext() {
-        SSLContext sslContext = null;
+        SSLContext sslContext;
         try {
             protocol = System.getProperty("ssl.server.protocol", "TLSv1.1");
 
