@@ -59,8 +59,8 @@ public class HttpRetryer {
         pool = new ThreadPoolExecutor(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryThreadNum,
                 60000,
-                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize),
+                TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRetryBlockQSize),
                 new ThreadFactory() {
                     private AtomicInteger count = new AtomicInteger();
 
@@ -74,27 +74,24 @@ public class HttpRetryer {
                 },
                 new ThreadPoolExecutor.AbortPolicy());
 
-        dispatcher = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    DelayRetryable retryObj = null;
-                    while (!Thread.currentThread().isInterrupted() && (retryObj = failed.take()) != null) {
-                        final DelayRetryable delayRetryable = retryObj;
-                        pool.execute(() -> {
-                            try {
-                                delayRetryable.retry();
-                                if (retryLogger.isDebugEnabled()) {
-                                    retryLogger.debug("retryObj : {}", delayRetryable);
-                                }
-                            } catch (Exception e) {
-                                retryLogger.error("http-retry-dispatcher error!", e);
+        dispatcher = new Thread(() -> {
+            try {
+                DelayRetryable retryObj;
+                while (!Thread.currentThread().isInterrupted() && (retryObj = failed.take()) != null) {
+                    final DelayRetryable delayRetryable = retryObj;
+                    pool.execute(() -> {
+                        try {
+                            delayRetryable.retry();
+                            if (retryLogger.isDebugEnabled()) {
+                                retryLogger.debug("retryObj : {}", delayRetryable);
                             }
-                        });
-                    }
-                } catch (Exception e) {
-                    retryLogger.error("http-retry-dispatcher error!", e);
+                        } catch (Exception e) {
+                            retryLogger.error("http-retry-dispatcher error!", e);
+                        }
+                    });
                 }
+            } catch (Exception e) {
+                retryLogger.error("http-retry-dispatcher error!", e);
             }
         }, "http-retry-dispatcher");
         dispatcher.setDaemon(true);
