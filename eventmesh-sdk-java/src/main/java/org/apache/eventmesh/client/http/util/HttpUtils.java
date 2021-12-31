@@ -42,9 +42,10 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import io.netty.handler.codec.http.HttpMethod;
+
 import com.google.common.base.Preconditions;
 
-import io.netty.handler.codec.http.HttpMethod;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,7 +61,7 @@ public class HttpUtils {
             @Override
             public String handleResponse(HttpResponse response) throws IOException {
                 responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+                        EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
                 countDownLatch.countDown();
                 if (log.isDebugEnabled()) {
                     log.debug("{}", responseHolder);
@@ -72,6 +73,7 @@ public class HttpUtils {
         try {
             countDownLatch.await(requestParam.getTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException ie) {
+            //ignore
         }
 
         return responseHolder.response;
@@ -87,7 +89,7 @@ public class HttpUtils {
             @Override
             public String handleResponse(HttpResponse response) throws IOException {
                 responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+                        EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
                 countDownLatch.countDown();
                 if (log.isDebugEnabled()) {
                     log.debug("{}", responseHolder);
@@ -137,8 +139,8 @@ public class HttpUtils {
         //ttl
         RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-            .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-            .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
+                .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
+                .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
 
         if (forwardAgent != null) {
             configBuilder.setProxy(forwardAgent);
@@ -180,8 +182,8 @@ public class HttpUtils {
         //ttl
         RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-            .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
-            .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
+                .setConnectTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())))
+                .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(requestParam.getTimeout())));
 
         if (forwardAgent != null) {
             configBuilder.setProxy(forwardAgent);
@@ -205,7 +207,7 @@ public class HttpUtils {
             @Override
             public String handleResponse(HttpResponse response) throws IOException {
                 responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+                        EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
                 countDownLatch.countDown();
                 if (log.isDebugEnabled()) {
                     log.debug("{}", responseHolder);
@@ -217,6 +219,7 @@ public class HttpUtils {
         try {
             countDownLatch.await(requestParam.getTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException ie) {
+            //ignore
         }
 
         return responseHolder.response;
@@ -232,7 +235,7 @@ public class HttpUtils {
             @Override
             public String handleResponse(HttpResponse response) throws IOException {
                 responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+                        EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
                 countDownLatch.countDown();
                 if (log.isDebugEnabled()) {
                     log.debug("{}", responseHolder);
@@ -244,6 +247,7 @@ public class HttpUtils {
         try {
             countDownLatch.await(requestParam.getTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException ie) {
+            //ignore
         }
 
         return responseHolder.response;

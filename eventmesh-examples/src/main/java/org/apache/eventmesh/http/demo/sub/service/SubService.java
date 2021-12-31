@@ -52,17 +52,17 @@ public class SubService implements InitializingBean {
 
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
-    final List<SubscriptionItem> topicList         = Lists.newArrayList(
-        new SubscriptionItem("TEST-TOPIC-HTTP-ASYNC", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
+    final List<SubscriptionItem> topicList = Lists.newArrayList(
+            new SubscriptionItem("TEST-TOPIC-HTTP-ASYNC", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
     );
-    final String                 localIp           = IPUtils.getLocalAddress();
-    final String                 localPort         = properties.getProperty("server.port");
-    final String                 eventMeshIp       = properties.getProperty("eventmesh.ip");
-    final String                 eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
-    final String                 url               = "http://" + localIp + ":" + localPort + "/sub/test";
-    final String                 env               = "P";
-    final String                 idc               = "FT";
-    final String                 subsys            = "1234";
+    final String localIp = IPUtils.getLocalAddress();
+    final String localPort = properties.getProperty("server.port");
+    final String eventMeshIp = properties.getProperty("eventmesh.ip");
+    final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
+    final String url = "http://" + localIp + ":" + localPort + "/sub/test";
+    final String env = "P";
+    final String idc = "FT";
+    final String subsys = "1234";
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
@@ -72,13 +72,13 @@ public class SubService implements InitializingBean {
 
         final String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
         EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-            .liteEventMeshAddr(eventMeshIPPort)
-            .consumerGroup("EventMeshTest-consumerGroup")
-            .env(env)
-            .idc(idc)
-            .ip(IPUtils.getLocalAddress())
-            .sys(subsys)
-            .pid(String.valueOf(ThreadUtils.getPID())).build();
+                .liteEventMeshAddr(eventMeshIPPort)
+                .consumerGroup("EventMeshTest-consumerGroup")
+                .env(env)
+                .idc(idc)
+                .ip(IPUtils.getLocalAddress())
+                .sys(subsys)
+                .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
         eventMeshHttpConsumer.heartBeat(topicList, url);

@@ -36,8 +36,9 @@ public class IPUtils {
         // if the progress works under docker environment
         // return the host ip about this docker located from environment value
         String dockerHostIp = System.getenv("docker_host_ip");
-        if (dockerHostIp != null && !"".equals(dockerHostIp))
+        if (dockerHostIp != null && !"".equals(dockerHostIp)) {
             return dockerHostIp;
+        }
 
         //priority of networkInterface when generating client ip
         String priority = System.getProperty("networkInterface.priority", "eth0<eth1<bond1");
@@ -56,10 +57,7 @@ public class IPUtils {
                     continue;
                 } else if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
-                }
-
-                //get the networkInterface that has higher priority
-                else if (preferList.indexOf(networkInterface.getName())
+                } else if (preferList.indexOf(networkInterface.getName()) //get the networkInterface that has higher priority
                         > preferList.indexOf(preferNetworkInterface.getName())) {
                     preferNetworkInterface = networkInterface;
                 }

@@ -17,12 +17,10 @@
 
 package org.apache.eventmesh.tcp.demo.pub.cloudevents;
 
-import io.cloudevents.CloudEvent;
-
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
+import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
-import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
@@ -31,6 +29,8 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
 
 public class AsyncPublish {
 
@@ -47,12 +47,12 @@ public class AsyncPublish {
         try {
             UserAgent userAgent = EventMeshTestUtils.generateClient1();
             EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-                .host(eventMeshIp)
-                .port(eventMeshTcpPort)
-                .userAgent(userAgent)
-                .build();
+                    .host(eventMeshIp)
+                    .port(eventMeshTcpPort)
+                    .userAgent(userAgent)
+                    .build();
             client =
-                EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
+                    EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
             for (int i = 0; i < 5; i++) {

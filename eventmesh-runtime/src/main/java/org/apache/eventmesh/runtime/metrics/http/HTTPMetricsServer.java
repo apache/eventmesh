@@ -17,18 +17,19 @@
 
 package org.apache.eventmesh.runtime.metrics.http;
 
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.metrics.opentelemetry.OpenTelemetryHTTPMetricsExporter;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.codahale.metrics.MetricRegistry;
-
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.apache.eventmesh.runtime.metrics.opentelemetry.OpenTelemetryHTTPMetricsExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.MetricRegistry;
 
 public class HTTPMetricsServer {
 
@@ -60,7 +61,7 @@ public class HTTPMetricsServer {
         groupMetrics = new GroupMetrics(this.eventMeshHTTPServer, this.metricRegistry);
         healthMetrics = new HealthMetrics(this.eventMeshHTTPServer, this.metricRegistry);
 
-        openTelemetryHTTPMetricsExporter = new OpenTelemetryHTTPMetricsExporter(this,this.eventMeshHTTPServer.getEventMeshHttpConfiguration());
+        openTelemetryHTTPMetricsExporter = new OpenTelemetryHTTPMetricsExporter(this, this.eventMeshHTTPServer.getEventMeshHttpConfiguration());
 
         logger.info("HTTPMetricsServer inited......");
     }
@@ -164,19 +165,19 @@ public class HTTPMetricsServer {
         summaryMetrics.send2MQStatInfoClear();
     }
 
-    public int getBatchMsgQ(){
+    public int getBatchMsgQ() {
         return eventMeshHTTPServer.getBatchMsgExecutor().getQueue().size();
     }
 
-    public int getSendMsgQ(){
+    public int getSendMsgQ() {
         return eventMeshHTTPServer.getSendMsgExecutor().getQueue().size();
     }
 
-    public int getPushMsgQ(){
+    public int getPushMsgQ() {
         return eventMeshHTTPServer.getPushMsgExecutor().getQueue().size();
     }
 
-    public int getHttpRetryQ(){
+    public int getHttpRetryQ() {
         return eventMeshHTTPServer.getHttpRetryer().size();
     }
 

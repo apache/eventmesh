@@ -36,8 +36,8 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 
 public class Utils {
-    private final static Logger logger        = LoggerFactory.getLogger(Utils.class);
-    private final static Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
+    private static final Logger messageLogger = LoggerFactory.getLogger("message");
 
     /**
      * used to send messages to the client
@@ -49,30 +49,30 @@ public class Utils {
      */
     public static void writeAndFlush(final Package pkg, long startTime, long taskExecuteTime, ChannelHandlerContext ctx,
                                      Session
-                                         session) {
+                                             session) {
         try {
             UserAgent user = session == null ? null : session.getClient();
             if (session != null && session.getSessionState().equals(SessionState.CLOSED)) {
                 logFailedMessageFlow(pkg, user, startTime, taskExecuteTime,
-                    new Exception("the session has been closed"));
+                        new Exception("the session has been closed"));
                 return;
             }
             ctx.writeAndFlush(pkg).addListener(
-                new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        if (!future.isSuccess()) {
-                            logFailedMessageFlow(future, pkg, user, startTime, taskExecuteTime);
-                        } else {
-                            logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
+                    new ChannelFutureListener() {
+                        @Override
+                        public void operationComplete(ChannelFuture future) throws Exception {
+                            if (!future.isSuccess()) {
+                                logFailedMessageFlow(future, pkg, user, startTime, taskExecuteTime);
+                            } else {
+                                logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
 
-                            if (session != null) {
-                                session.getClientGroupWrapper().get().getEventMeshTcpMonitor()
-                                    .getEventMesh2clientMsgNum().incrementAndGet();
+                                if (session != null) {
+                                    session.getClientGroupWrapper().get().getEventMeshTcpMonitor()
+                                            .getEventMesh2clientMsgNum().incrementAndGet();
+                                }
                             }
                         }
                     }
-                }
             );
         } catch (Exception e) {
             logger.error("exception while sending message to client", e);
@@ -96,13 +96,13 @@ public class Utils {
                                              Throwable e) {
         if (pkg.getBody() instanceof EventMeshMessage) {
             messageLogger.error("pkg|eventMesh2c|failed|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
-                pkg.getHeader().getCmd(),
-                printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
-                System.currentTimeMillis() - startTime, e);
+                    pkg.getHeader().getCmd(),
+                    printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
+                    System.currentTimeMillis() - startTime, e);
         } else {
             messageLogger.error("pkg|eventMesh2c|failed|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms|errMsg={}",
-                pkg.getHeader().getCmd(),
-                pkg, user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime, e);
+                    pkg.getHeader().getCmd(),
+                    pkg, user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime, e);
         }
     }
 
@@ -116,12 +116,12 @@ public class Utils {
     public static void logSucceedMessageFlow(Package pkg, UserAgent user, long startTime, long taskExecuteTime) {
         if (pkg.getBody() instanceof EventMeshMessage) {
             messageLogger.info("pkg|eventMesh2c|cmd={}|mqMsg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(),
-                printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
-                System.currentTimeMillis() - startTime);
+                    printMqMessage((EventMeshMessage) pkg.getBody()), user, taskExecuteTime - startTime,
+                    System.currentTimeMillis() - startTime);
         } else {
             messageLogger
-                .info("pkg|eventMesh2c|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(), pkg,
-                    user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
+                    .info("pkg|eventMesh2c|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(), pkg,
+                            user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
         }
     }
 
@@ -140,8 +140,8 @@ public class Utils {
         }
 
         String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage
-                .getTopic(), properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID),
-            bizSeqNo);
+                        .getTopic(), properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID),
+                bizSeqNo);
         return result;
     }
 
@@ -151,13 +151,13 @@ public class Utils {
      * @param message
      * @return
      */
-//    public static String printMqMessage(org.apache.rocketmq.common.message.Message message) {
-//        Map<String, String> properties = message.getProperties();
-//        String bizSeqNo = message.getKeys();
-//        String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", message.getTopic()
-//                , properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), bizSeqNo);
-//        return result;
-//    }
+    //public static String printMqMessage(org.apache.rocketmq.common.message.Message message) {
+    //    Map<String, String> properties = message.getProperties();
+    //    String bizSeqNo = message.getKeys();
+    //    String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", message.getTopic()
+    //            , properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), bizSeqNo);
+    //    return result;
+    //}
 
     /**
      * get serviceId according to topic

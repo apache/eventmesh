@@ -14,8 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.api.exception;
 
+/**
+ * AclException
+ */
 public class AclException extends RuntimeException {
 
     public AclException(String message) {
