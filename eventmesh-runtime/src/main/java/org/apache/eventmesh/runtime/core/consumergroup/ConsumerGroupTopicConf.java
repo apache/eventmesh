@@ -17,17 +17,18 @@
 
 package org.apache.eventmesh.runtime.core.consumergroup;
 
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public class ConsumerGroupTopicConf {
 
@@ -44,8 +45,9 @@ public class ConsumerGroupTopicConf {
 
     /**
      * PUSH URL
+     * Map key:IDC value:URL list in IDC
      */
-    private Map<String /** IDC */, List<String> /** URL list in IDC */> idcUrls = Maps.newConcurrentMap();
+    private Map<String, List<String>> idcUrls = Maps.newConcurrentMap();
 
     /**
      * ALL IDC URLs
@@ -54,12 +56,19 @@ public class ConsumerGroupTopicConf {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ConsumerGroupTopicConf that = (ConsumerGroupTopicConf) o;
-        return consumerGroup.equals(that.consumerGroup) &&
-                Objects.equals(topic, that.topic) &&
-                Objects.equals(subscriptionItem, that.subscriptionItem) &&
+        return consumerGroup.equals(that.consumerGroup)
+                &&
+                Objects.equals(topic, that.topic)
+                &&
+                Objects.equals(subscriptionItem, that.subscriptionItem)
+                &&
                 Objects.equals(idcUrls, that.idcUrls);
     }
 

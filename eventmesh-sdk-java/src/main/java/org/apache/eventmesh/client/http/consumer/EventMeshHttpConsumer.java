@@ -46,10 +46,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import io.netty.handler.codec.http.HttpMethod;
+
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import io.netty.handler.codec.http.HttpMethod;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -66,15 +67,15 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
     }
 
     public EventMeshHttpConsumer(EventMeshHttpClientConfig eventMeshHttpClientConfig, ThreadPoolExecutor customExecutor)
-        throws EventMeshException {
+            throws EventMeshException {
         super(eventMeshHttpClientConfig);
         this.consumeExecutor = Optional.ofNullable(customExecutor).orElseGet(
-            () -> ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpClientConfig.getConsumeThreadCore(),
-                eventMeshHttpClientConfig.getConsumeThreadMax(), "EventMesh-client-consume-")
+                () -> ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpClientConfig.getConsumeThreadCore(),
+                        eventMeshHttpClientConfig.getConsumeThreadMax(), "EventMesh-client-consume-")
         );
         this.scheduler = new ScheduledThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors(),
-            new ThreadFactoryBuilder().setNameFormat("HTTPClientScheduler").setDaemon(true).build()
+                Runtime.getRuntime().availableProcessors(),
+                new ThreadFactoryBuilder().setNameFormat("HTTPClientScheduler").setDaemon(true).build()
         );
     }
 
@@ -89,10 +90,10 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         Preconditions.checkNotNull(topicList, "Subscribe item cannot be null");
         Preconditions.checkNotNull(subscribeUrl, "SubscribeUrl cannot be null");
         RequestParam subscribeParam = buildCommonRequestParam()
-            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.SUBSCRIBE.getRequestCode())
-            .addBody(SubscribeRequestBody.TOPIC, JsonUtils.serialize(topicList))
-            .addBody(SubscribeRequestBody.CONSUMERGROUP, eventMeshHttpClientConfig.getConsumerGroup())
-            .addBody(SubscribeRequestBody.URL, subscribeUrl);
+                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.SUBSCRIBE.getRequestCode())
+                .addBody(SubscribeRequestBody.TOPIC, JsonUtils.serialize(topicList))
+                .addBody(SubscribeRequestBody.CONSUMERGROUP, eventMeshHttpClientConfig.getConsumerGroup())
+                .addBody(SubscribeRequestBody.URL, subscribeUrl);
 
         String target = selectEventMesh();
         try {
@@ -114,16 +115,16 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 List<HeartbeatRequestBody.HeartbeatEntity> heartbeatEntities = topicList.stream().map(subscriptionItem
-                    -> {
+                        -> {
                     HeartbeatRequestBody.HeartbeatEntity heartbeatEntity = new HeartbeatRequestBody.HeartbeatEntity();
                     heartbeatEntity.topic = subscriptionItem.getTopic();
                     heartbeatEntity.url = subscribeUrl;
                     return heartbeatEntity;
                 }).collect(Collectors.toList());
                 RequestParam requestParam = buildCommonRequestParam()
-                    .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.HEARTBEAT.getRequestCode())
-                    .addBody(HeartbeatRequestBody.CLIENTTYPE, ClientType.SUB.name())
-                    .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JsonUtils.serialize(heartbeatEntities));
+                        .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.HEARTBEAT.getRequestCode())
+                        .addBody(HeartbeatRequestBody.CLIENTTYPE, ClientType.SUB.name())
+                        .addBody(HeartbeatRequestBody.HEARTBEATENTITIES, JsonUtils.serialize(heartbeatEntities));
                 String target = selectEventMesh();
                 String res = HttpUtils.post(httpClient, target, requestParam);
                 EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
@@ -145,9 +146,9 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
         Preconditions.checkNotNull(topicList, "Topics cannot be null");
         Preconditions.checkNotNull(unSubscribeUrl, "unSubscribeUrl cannot be null");
         RequestParam unSubscribeParam = buildCommonRequestParam()
-            .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.UNSUBSCRIBE.getRequestCode())
-            .addBody(UnSubscribeRequestBody.TOPIC, JsonUtils.serialize(topicList))
-            .addBody(UnSubscribeRequestBody.URL, unSubscribeUrl);
+                .addHeader(ProtocolKey.REQUEST_CODE, RequestCode.UNSUBSCRIBE.getRequestCode())
+                .addBody(UnSubscribeRequestBody.TOPIC, JsonUtils.serialize(topicList))
+                .addBody(UnSubscribeRequestBody.URL, unSubscribeUrl);
         String target = selectEventMesh();
         try {
             String unSubRes = HttpUtils.post(httpClient, target, unSubscribeParam);
@@ -176,17 +177,17 @@ public class EventMeshHttpConsumer extends AbstractHttpClient implements AutoClo
 
     private RequestParam buildCommonRequestParam() {
         return new RequestParam(HttpMethod.POST)
-            .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpClientConfig.getEnv())
-            .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpClientConfig.getIdc())
-            .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshHttpClientConfig.getIp())
-            .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshHttpClientConfig.getPid())
-            .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshHttpClientConfig.getSys())
-            .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
-            .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
-            // add protocol version?
-            .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
-            .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-            .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
-            .addBody(HeartbeatRequestBody.CONSUMERGROUP, eventMeshHttpClientConfig.getConsumerGroup());
+                .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpClientConfig.getEnv())
+                .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpClientConfig.getIdc())
+                .addHeader(ProtocolKey.ClientInstanceKey.IP, eventMeshHttpClientConfig.getIp())
+                .addHeader(ProtocolKey.ClientInstanceKey.PID, eventMeshHttpClientConfig.getPid())
+                .addHeader(ProtocolKey.ClientInstanceKey.SYS, eventMeshHttpClientConfig.getSys())
+                .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
+                .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
+                // add protocol version?
+                .addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion())
+                .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
+                .setTimeout(Constants.DEFAULT_HTTP_TIME_OUT)
+                .addBody(HeartbeatRequestBody.CONSUMERGROUP, eventMeshHttpClientConfig.getConsumerGroup());
     }
 }

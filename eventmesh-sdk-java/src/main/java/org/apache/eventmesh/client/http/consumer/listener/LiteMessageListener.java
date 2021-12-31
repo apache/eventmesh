@@ -22,6 +22,9 @@ import org.apache.eventmesh.client.http.consumer.HandleResult;
 import org.apache.eventmesh.client.http.consumer.context.LiteConsumeContext;
 import org.apache.eventmesh.common.EventMeshMessage;
 
+/**
+ * LiteMessageListener
+ */
 public interface LiteMessageListener {
 
     HandleResult handle(EventMeshMessage eventMeshMessage, LiteConsumeContext liteConsumeContext);

@@ -14,11 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.api.connector;
 
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
+/**
+ * ConnectorResourceService
+ */
 @EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
 public interface ConnectorResourceService {
 
@@ -30,7 +34,7 @@ public interface ConnectorResourceService {
     void init() throws Exception;
 
     /**
-     *Resource release in connector,such as,some public threadpool if exist
+     * Resource release in connector,such as,some public threadpool if exist
      *
      * @throws Exception
      */

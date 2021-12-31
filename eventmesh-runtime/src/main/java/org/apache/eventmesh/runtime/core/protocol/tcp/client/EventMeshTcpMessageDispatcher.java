@@ -17,17 +17,29 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-
-import org.apache.eventmesh.common.protocol.tcp.*;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.*;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.GoodbyeTask;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.HeartBeatTask;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.HelloTask;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.ListenTask;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.MessageAckTask;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.MessageTransferTask;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.RecommendTask;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.SubscribeTask;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.UnSubscribeTask;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 
 public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<Package> {
 
@@ -79,18 +91,18 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
         }
     }
 
-    private void writeToClient(Command cmd, Package pkg, ChannelHandlerContext ctx, Exception e){
-        try{
+    private void writeToClient(Command cmd, Package pkg, ChannelHandlerContext ctx, Exception e) {
+        try {
             Package res = new Package();
             res.setHeader(new Header(getReplyCommand(cmd), OPStatus.FAIL.getCode(), e.toString(), pkg.getHeader()
                     .getSeq()));
             ctx.writeAndFlush(res);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             logger.warn("writeToClient failed", ex);
         }
     }
 
-    private Command getReplyCommand(Command cmd){
+    private Command getReplyCommand(Command cmd) {
         switch (cmd) {
             case HELLO_REQUEST:
                 return Command.HELLO_RESPONSE;
@@ -122,7 +134,8 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
             messageLogger.info("pkg|c2eventMesh|cmd={}|Msg={}|user={}", cmd, EventMeshUtil.printMqMessage((EventMeshMessage) pkg
                     .getBody()), eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx).getClient());
         } else {
-            messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}|user={}", cmd, pkg, eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx).getClient());
+            messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}|user={}", cmd, pkg,
+                    eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx).getClient());
         }
     }
 
