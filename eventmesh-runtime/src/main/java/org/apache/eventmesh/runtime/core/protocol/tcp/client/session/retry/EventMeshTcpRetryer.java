@@ -88,20 +88,14 @@ public class EventMeshTcpRetryer {
     }
 
     public void init() {
-        dispatcher = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    RetryContext retryContext = null;
-                    while ((retryContext = retrys.take()) != null) {
-                        final RetryContext finalRetryContext = retryContext;
-                        pool.execute(() -> {
-                            finalRetryContext.retry();
-                        });
-                    }
-                } catch (Exception e) {
-                    logger.error("retry-dispatcher error!", e);
+        dispatcher = new Thread(() -> {
+            try {
+                RetryContext retryContext;
+                while ((retryContext = retrys.take()) != null) {
+                    pool.execute(retryContext::retry);
                 }
+            } catch (Exception e) {
+                logger.error("retry-dispatcher error!", e);
             }
         }, "retry-dispatcher");
         dispatcher.setDaemon(true);
