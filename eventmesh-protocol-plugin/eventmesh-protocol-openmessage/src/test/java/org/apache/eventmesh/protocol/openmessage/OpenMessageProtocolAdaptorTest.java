@@ -29,11 +29,11 @@ public class OpenMessageProtocolAdaptorTest {
     @Test
     public void loadPlugin() {
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
-            ProtocolPluginFactory.getProtocolAdaptor(OpenMessageProtocolConstant.PROTOCOL_NAME);
+                ProtocolPluginFactory.getProtocolAdaptor(OpenMessageProtocolConstant.PROTOCOL_NAME);
 
         Assert.assertNotNull(protocolAdaptor);
         Assert.assertEquals(
-            OpenMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType()
+                OpenMessageProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType()
         );
         Assert.assertEquals(OpenMessageProtocolAdaptor.class, protocolAdaptor.getClass());
     }

@@ -17,16 +17,17 @@
 
 package org.apache.eventmesh.runtime.metrics.http;
 
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.codahale.metrics.MetricRegistry;
-
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.codahale.metrics.MetricRegistry;
 
 public class SummaryMetrics {
 
@@ -58,9 +59,10 @@ public class SummaryMetrics {
         return sum / linkedList.size();
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_HTTP = "{\"maxHTTPTPS\":\"%.1f\",\"avgHTTPTPS\":\"%.1f\"," +  //EVENTMESH tps related to accepting external http requests
-            "\"maxHTTPCOST\":\"%s\",\"avgHTTPCOST\":\"%.1f\",\"avgHTTPBodyDecodeCost\":\"%.1f\", \"httpDiscard\":\"%s\"}";
+    public static final String EVENTMESH_MONITOR_FORMAT_HTTP = "{\"maxHTTPTPS\":\"%.1f\",\"avgHTTPTPS\":\"%.1f\","
+            //EVENTMESH tps related to accepting external http requests
+            + "\"maxHTTPCOST\":\"%s\",\"avgHTTPCOST\":\"%.1f\",\"avgHTTPBodyDecodeCost\":\"%.1f\", "
+            + "\"httpDiscard\":\"%s\"}";
 
     private float wholeCost = 0f;
 
@@ -76,7 +78,7 @@ public class SummaryMetrics {
     private LinkedList<Integer> httpRequestTPSSnapshots = new LinkedList<Integer>();
 
     public float avgHTTPCost() {
-        float cost = (wholeRequestNum.longValue() == 0l) ? 0f : wholeCost / wholeRequestNum.longValue();
+        float cost = (wholeRequestNum.longValue() == 0L) ? 0f : wholeCost / wholeRequestNum.longValue();
         return cost;
     }
 
@@ -125,10 +127,10 @@ public class SummaryMetrics {
     }
 
     public void httpStatInfoClear() {
-        wholeRequestNum.set(0l);
+        wholeRequestNum.set(0L);
         wholeCost = 0f;
-        maxCost.set(0l);
-        httpDecodeNum.set(0l);
+        maxCost.set(0L);
+        httpDecodeNum.set(0L);
         httpDecodeTimeCost = 0f;
     }
 
@@ -142,14 +144,14 @@ public class SummaryMetrics {
     }
 
     public float avgHTTPBodyDecodeCost() {
-        float cost = (httpDecodeNum.longValue() == 0l) ? 0f : httpDecodeTimeCost / httpDecodeNum.longValue();
+        float cost = (httpDecodeNum.longValue() == 0L) ? 0f : httpDecodeTimeCost / httpDecodeNum.longValue();
         return cost;
     }
 
 
     //////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_BATCHSENDMSG = "{\"maxBatchSendMsgTPS\":\"%.1f\",\"avgBatchSendMsgTPS\":\"%.1f\"," +
-            " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"discard\":\"%s\"}";
+    public static final String EVENTMESH_MONITOR_FORMAT_BATCHSENDMSG = "{\"maxBatchSendMsgTPS\":\"%.1f\",\"avgBatchSendMsgTPS\":\"%.1f\","
+            + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"discard\":\"%s\"}";
 
     private AtomicLong sendBatchMsgNumPerSecond = new AtomicLong(0);
 
@@ -203,12 +205,12 @@ public class SummaryMetrics {
     }
 
     public float getSendBatchMsgFailRate() {
-        return (sendBatchMsgNumSum.longValue() == 0l) ? 0f : sendBatchMsgFailNumSum.floatValue() / sendBatchMsgNumSum.longValue();
+        return (sendBatchMsgNumSum.longValue() == 0L) ? 0f : sendBatchMsgFailNumSum.floatValue() / sendBatchMsgNumSum.longValue();
     }
 
     public void cleanSendBatchStat() {
-        sendBatchMsgNumSum.set(0l);
-        sendBatchMsgFailNumSum.set(0l);
+        sendBatchMsgNumSum.set(0L);
+        sendBatchMsgFailNumSum.set(0L);
     }
 
     public long getSendBatchMsgDiscardNumSum() {
@@ -216,8 +218,8 @@ public class SummaryMetrics {
     }
 
     //////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_SENDMSG = "{\"maxSendMsgTPS\":\"%.1f\",\"avgSendMsgTPS\":\"%.1f\"," +
-            " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"replyMsg\":\"%s\", \"replyFail\":\"%s\"}";
+    public static final String EVENTMESH_MONITOR_FORMAT_SENDMSG = "{\"maxSendMsgTPS\":\"%.1f\",\"avgSendMsgTPS\":\"%.1f\","
+            + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"replyMsg\":\"%s\", \"replyFail\":\"%s\"}";
 
     private AtomicLong sendMsgNumSum = new AtomicLong(0);
 
@@ -280,7 +282,7 @@ public class SummaryMetrics {
     }
 
     public float getSendMsgFailRate() {
-        return (sendMsgNumSum.longValue() == 0l) ? 0f : sendMsgFailNumSum.floatValue() / sendMsgNumSum.longValue();
+        return (sendMsgNumSum.longValue() == 0L) ? 0f : sendMsgFailNumSum.floatValue() / sendMsgNumSum.longValue();
     }
 
     public void recordSendMsgFailed() {
@@ -288,15 +290,15 @@ public class SummaryMetrics {
     }
 
     public void cleanSendMsgStat() {
-        sendMsgNumSum.set(0l);
-        replyMsgNumSum.set(0l);
-        sendMsgFailNumSum.set(0l);
-        replyMsgFailNumSum.set(0l);
+        sendMsgNumSum.set(0L);
+        replyMsgNumSum.set(0L);
+        sendMsgFailNumSum.set(0L);
+        replyMsgFailNumSum.set(0L);
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_PUSHMSG = "{\"maxPushMsgTPS\":\"%.1f\",\"avgPushMsgTPS\":\"%.1f\"," +
-            " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.1f\", \"maxClientLatency\":\"%.1f\", \"avgClientLatency\":\"%.1f\"}";
+    public static final String EVENTMESH_MONITOR_FORMAT_PUSHMSG = "{\"maxPushMsgTPS\":\"%.1f\",\"avgPushMsgTPS\":\"%.1f\","
+            + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.1f\", \"maxClientLatency\":\"%.1f\", \"avgClientLatency\":\"%.1f\"}";
 
     private float wholePushCost = 0f;
 
@@ -330,7 +332,7 @@ public class SummaryMetrics {
     }
 
     public float avgHTTPPushLatency() {
-        return (wholePushRequestNum.longValue() == 0l) ? 0f : wholePushCost / wholePushRequestNum.longValue();
+        return (wholePushRequestNum.longValue() == 0L) ? 0f : wholePushCost / wholePushRequestNum.longValue();
     }
 
     public float maxHTTPPushLatency() {
@@ -361,7 +363,7 @@ public class SummaryMetrics {
     }
 
     public float getHttpPushMsgFailRate() {
-        return (httpPushMsgNumSum.longValue() == 0l) ? 0f : httpPushFailNumSum.floatValue() / httpPushMsgNumSum.longValue();
+        return (httpPushMsgNumSum.longValue() == 0L) ? 0f : httpPushFailNumSum.floatValue() / httpPushMsgNumSum.longValue();
     }
 
     public void recordHttpPushMsgFailed() {
@@ -369,19 +371,20 @@ public class SummaryMetrics {
     }
 
     public void cleanHttpPushMsgStat() {
-        httpPushFailNumSum.set(0l);
-        httpPushMsgNumSum.set(0l);
-        wholeRequestNum.set(0l);
+        httpPushFailNumSum.set(0L);
+        httpPushMsgNumSum.set(0L);
+        wholeRequestNum.set(0L);
         wholeCost = 0f;
-        maxCost.set(0l);
+        maxCost.set(0L);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_BLOCKQ = "{\"batchMsgQ\":\"%s\",\"sendMsgQ\":\"%s\"," +
-            "\"pushMsgQ\":\"%s\",\"httpRetryQ\":\"%s\"}";
+    public static final String EVENTMESH_MONITOR_FORMAT_BLOCKQ = "{\"batchMsgQ\":\"%s\",\"sendMsgQ\":\"%s\","
+            + "\"pushMsgQ\":\"%s\",\"httpRetryQ\":\"%s\"}";
 
     ///////////////////////////////////////////////////////////////////////////
-    public static final String EVENTMESH_MONITOR_FORMAT_MQ_CLIENT = "{\"batchAvgSend2MQCost\":\"%.1f\", \"avgSend2MQCost\":\"%.1f\", \"avgReply2MQCost\":\"%.1f\"}";
+    public static final String EVENTMESH_MONITOR_FORMAT_MQ_CLIENT = "{\"batchAvgSend2MQCost\":\"%.1f\", "
+            + "\"avgSend2MQCost\":\"%.1f\", \"avgReply2MQCost\":\"%.1f\"}";
 
     private float batchSend2MQWholeCost = 0f;
 
@@ -427,10 +430,10 @@ public class SummaryMetrics {
 
     public void send2MQStatInfoClear() {
         batchSend2MQWholeCost = 0f;
-        batchSend2MQNum.set(0l);
+        batchSend2MQNum.set(0L);
         send2MQWholeCost = 0f;
-        send2MQNum.set(0l);
+        send2MQNum.set(0L);
         reply2MQWholeCost = 0f;
-        reply2MQNum.set(0l);
+        reply2MQNum.set(0L);
     }
 }

@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.connector.rocketmq.domain;
 
+/**
+ * RocketMQConstants
+ */
 public interface RocketMQConstants {
 
     /**

@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.common.protocol.tcp;
 
+import java.util.Objects;
+
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.Objects;
 
 @Data
 @Builder
@@ -29,9 +29,9 @@ public class UserAgent {
     private String env;
     private String subsystem;
     private String path;
-    private int    pid;
+    private int pid;
     private String host;
-    private int    port;
+    private int port;
     private String version;
     private String username;
     private String password;
@@ -40,7 +40,7 @@ public class UserAgent {
     private String consumerGroup;
     private String purpose;
     @Builder.Default
-    private int    unack = 0;
+    private int unack = 0;
 
     public UserAgent() {
     }
@@ -67,28 +67,67 @@ public class UserAgent {
     @Override
     public String toString() {
         return String.format(
-            "UserAgent{env='%s', subsystem='%s', path='%s', pid=%d, host='%s', port=%d, version='%s', idc='%s', purpose='%s', unack='%d'}",
-            env, subsystem, path, pid, host, port, version, idc, purpose, unack);
+                "UserAgent{env='%s', subsystem='%s', path='%s', pid=%d, host='%s', port=%d, version='%s', idc='%s', purpose='%s', unack='%d'}",
+                env, subsystem, path, pid, host, port, version, idc, purpose, unack);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         UserAgent userAgent = (UserAgent) o;
 
-        if (pid != userAgent.pid) return false;
-        if (port != userAgent.port) return false;
-        if (unack != userAgent.unack) return false;
-        if (!Objects.equals(subsystem, userAgent.subsystem)) return false;
-        if (!Objects.equals(path, userAgent.path)) return false;
-        if (!Objects.equals(host, userAgent.host)) return false;
-        if (!Objects.equals(purpose, userAgent.purpose)) return false;
-        if (!Objects.equals(version, userAgent.version)) return false;
-        if (!Objects.equals(username, userAgent.username)) return false;
-        if (!Objects.equals(password, userAgent.password)) return false;
-        if (!Objects.equals(env, userAgent.env)) return false;
+        if (pid != userAgent.pid) {
+            return false;
+        }
+
+        if (port != userAgent.port) {
+            return false;
+        }
+
+        if (unack != userAgent.unack) {
+            return false;
+        }
+
+        if (!Objects.equals(subsystem, userAgent.subsystem)) {
+            return false;
+        }
+
+
+        if (!Objects.equals(path, userAgent.path)) {
+            return false;
+        }
+
+        if (!Objects.equals(host, userAgent.host)) {
+            return false;
+        }
+
+        if (!Objects.equals(purpose, userAgent.purpose)) {
+            return false;
+        }
+
+        if (!Objects.equals(version, userAgent.version)) {
+            return false;
+        }
+
+        if (!Objects.equals(username, userAgent.username)) {
+            return false;
+        }
+
+        if (!Objects.equals(password, userAgent.password)) {
+            return false;
+        }
+
+        if (!Objects.equals(env, userAgent.env)) {
+            return false;
+        }
+
         return Objects.equals(idc, userAgent.idc);
     }
 

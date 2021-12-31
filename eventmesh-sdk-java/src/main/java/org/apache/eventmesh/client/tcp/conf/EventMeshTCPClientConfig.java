@@ -25,7 +25,7 @@ import lombok.Data;
 @Data
 @Builder
 public class EventMeshTCPClientConfig {
-    private String    host;
-    private int       port;
+    private String host;
+    private int port;
     private UserAgent userAgent;
 }
