@@ -48,6 +48,24 @@ public class EventMeshGrpcProducer implements AutoCloseable {
         }
     }
 
+    public Response requestReply(EventMeshMessage message, int timeout) {
+        logger.info("RequestReply message " + message.toString());
+
+        EventMeshMessage enhancedMessage = EventMeshMessage.newBuilder(message)
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig))
+            .setProducerGroup(clientConfig.getProducerGroup())
+            .setTtl(String.valueOf(timeout))
+            .build();
+        try {
+            Response response = publisherClient.requestReply(enhancedMessage);
+            logger.info("Received response " + response.toString());
+            return response;
+        } catch (Exception e) {
+            logger.error("Error in RequestReply message {}, error {}", message, e.getMessage());
+            return null;
+        }
+    }
+
     public void close() {
         channel.shutdown();
     }

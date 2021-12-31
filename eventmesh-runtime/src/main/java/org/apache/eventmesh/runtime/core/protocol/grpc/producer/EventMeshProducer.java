@@ -35,8 +35,6 @@ public class EventMeshProducer {
 
     private ProducerGroupConf producerGroupConfig;
 
-    private EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
-
     private MQProducerWrapper mqProducerWrapper;
 
     private ServiceState serviceState;
@@ -51,12 +49,6 @@ public class EventMeshProducer {
         mqProducerWrapper.request(sendMsgContext.getEvent(), rrCallback, timeout);
     }
 
-    public boolean reply(SendMessageContext sendMsgContext, SendCallback sendCallback)
-        throws Exception {
-        mqProducerWrapper.reply(sendMsgContext.getEvent(), sendCallback);
-        return true;
-    }
-
     public MQProducerWrapper getMqProducerWrapper() {
         return mqProducerWrapper;
     }
@@ -64,7 +56,6 @@ public class EventMeshProducer {
     public synchronized void init(EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
                                   ProducerGroupConf producerGroupConfig) throws Exception {
         this.producerGroupConfig = producerGroupConfig;
-        this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
 
         Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroupConfig.getGroupName());
