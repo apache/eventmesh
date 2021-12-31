@@ -145,7 +145,7 @@ public class ConsumerManager {
                                     try {
                                         notifyConsumerManager(consumerGroup, consumerGroupConf);
                                     } catch (Exception e) {
-                                        e.printStackTrace();
+                                        logger.error("notifyConsumerManager error",e);
                                     }
                                 }
 
@@ -156,7 +156,7 @@ public class ConsumerManager {
                                 try {
                                     notifyConsumerManager(consumerGroup, null);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    logger.error("notifyConsumerManager error",e);
                                 }
 
                                 eventMeshHTTPServer.localConsumerGroupMapping.keySet()
