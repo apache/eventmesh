@@ -26,14 +26,14 @@ import io.cloudevents.core.data.BytesCloudEventData;
 import io.cloudevents.core.message.impl.BaseGenericBinaryMessageReaderImpl;
 
 public class RocketMQBinaryMessageReader
-    extends BaseGenericBinaryMessageReaderImpl<String, String> {
+        extends BaseGenericBinaryMessageReaderImpl<String, String> {
 
     private final Map<String, String> headers;
 
     public RocketMQBinaryMessageReader(SpecVersion version, Map<String, String> headers,
                                        byte[] payload) {
         super(version,
-            payload != null && payload.length > 0 ? BytesCloudEventData.wrap(payload) : null);
+                payload != null && payload.length > 0 ? BytesCloudEventData.wrap(payload) : null);
 
         Objects.requireNonNull(headers);
         this.headers = headers;

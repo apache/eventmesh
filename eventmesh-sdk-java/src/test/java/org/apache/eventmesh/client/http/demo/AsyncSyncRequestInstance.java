@@ -39,9 +39,9 @@ public class AsyncSyncRequestInstance {
 
         EventMeshHttpProducer eventMeshHttpProducer = null;
         try {
-//            String eventMeshIPPort = args[0];
+            //String eventMeshIPPort = args[0];
             String eventMeshIPPort = "";
-//            final String topic = args[1];
+            //final String topic = args[1];
             final String topic = "TEST-TOPIC-HTTP-ASYNC";
             if (StringUtils.isBlank(eventMeshIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
@@ -49,28 +49,28 @@ public class AsyncSyncRequestInstance {
             }
 
             EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-                .liteEventMeshAddr(eventMeshIPPort)
-                .producerGroup("EventMeshTest-producerGroup")
-                .env("env")
-                .idc("idc")
-                .ip(IPUtils.getLocalAddress())
-                .sys("1234")
-                .pid(String.valueOf(ThreadUtils.getPID())).build();
+                    .liteEventMeshAddr(eventMeshIPPort)
+                    .producerGroup("EventMeshTest-producerGroup")
+                    .env("env")
+                    .idc("idc")
+                    .ip(IPUtils.getLocalAddress())
+                    .sys("1234")
+                    .pid(String.valueOf(ThreadUtils.getPID())).build();
 
             eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
 
             final long startTime = System.currentTimeMillis();
             final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                .bizSeqNo(RandomStringUtils.generateNum(30))
-                .content("testAsyncMessage")
-                .topic(topic)
-                .uniqueId(RandomStringUtils.generateNum(30)).build();
+                    .bizSeqNo(RandomStringUtils.generateNum(30))
+                    .content("testAsyncMessage")
+                    .topic(topic)
+                    .uniqueId(RandomStringUtils.generateNum(30)).build();
 
             eventMeshHttpProducer.request(eventMeshMessage, new RRCallback<EventMeshMessage>() {
                 @Override
                 public void onSuccess(EventMeshMessage o) {
                     logger.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), o.getContent(),
-                        System.currentTimeMillis() - startTime);
+                            System.currentTimeMillis() - startTime);
                 }
 
                 @Override

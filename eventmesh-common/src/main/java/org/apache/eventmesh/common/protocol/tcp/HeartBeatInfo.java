@@ -60,10 +60,12 @@ public class HeartBeatInfo {
 
     @Override
     public String toString() {
-        return "HeartBeatInfo{" +
-                "serviceId='" + serviceId + '\'' +
-                ", instanceId='" + instanceId + '\'' +
-                ", topicList=" + topicList +
-                '}';
+        return "HeartBeatInfo{"
+                + "serviceId='" + serviceId
+                + '\''
+                + ", instanceId='" + instanceId
+                + '\''
+                + ", topicList=" + topicList
+                + '}';
     }
 }

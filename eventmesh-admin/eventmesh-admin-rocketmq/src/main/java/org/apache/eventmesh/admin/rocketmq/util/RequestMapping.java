@@ -19,10 +19,10 @@ package org.apache.eventmesh.admin.rocketmq.util;
 
 import com.sun.net.httpserver.HttpExchange;
 
-public class RequestMapping {      
+public class RequestMapping {
 
-    public static boolean postMapping(String value, HttpExchange httpExchange)  {
-        if ("post".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+    public static boolean postMapping(String value, HttpExchange httpExchange) {
+        if ("post".equalsIgnoreCase(httpExchange.getRequestMethod())) {
             String requestUri = httpExchange.getRequestURI().getPath();
             UrlMappingPattern matcher = new UrlMappingPattern(value);
             return matcher.matches(requestUri);
@@ -30,8 +30,8 @@ public class RequestMapping {
         return false;
     }
 
-    public static boolean getMapping(String value, HttpExchange httpExchange)  {
-        if ("get".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+    public static boolean getMapping(String value, HttpExchange httpExchange) {
+        if ("get".equalsIgnoreCase(httpExchange.getRequestMethod())) {
             String requestUri = httpExchange.getRequestURI().getPath();
             UrlMappingPattern matcher = new UrlMappingPattern(value);
             return matcher.matches(requestUri);
@@ -39,8 +39,8 @@ public class RequestMapping {
         return false;
     }
 
-    public static boolean putMapping(String value, HttpExchange httpExchange)  {
-        if ("put".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+    public static boolean putMapping(String value, HttpExchange httpExchange) {
+        if ("put".equalsIgnoreCase(httpExchange.getRequestMethod())) {
             String requestUri = httpExchange.getRequestURI().getPath();
             UrlMappingPattern matcher = new UrlMappingPattern(value);
             return matcher.matches(requestUri);
@@ -48,8 +48,8 @@ public class RequestMapping {
         return false;
     }
 
-    public static boolean deleteMapping(String value, HttpExchange httpExchange)  {
-        if ("delete".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+    public static boolean deleteMapping(String value, HttpExchange httpExchange) {
+        if ("delete".equalsIgnoreCase(httpExchange.getRequestMethod())) {
             String requestUri = httpExchange.getRequestURI().getPath();
             UrlMappingPattern matcher = new UrlMappingPattern(value);
             return matcher.matches(requestUri);

@@ -17,26 +17,23 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendStrategy;
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.NetUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 
 /**
  * query recommend eventmesh
@@ -55,12 +52,12 @@ public class QueryRecommendEventMeshHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
         OutputStream out = httpExchange.getResponseBody();
-        try{
-            if(!eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerRegistryEnable) {
+        try {
+            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerRegistryEnable) {
                 throw new Exception("registry enable config is false, not support");
             }
-            String queryString =  httpExchange.getRequestURI().getQuery();
-            Map<String,String> queryStringInfo = NetUtils.formData2Dic(queryString);
+            String queryString = httpExchange.getRequestURI().getQuery();
+            Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String group = queryStringInfo.get(EventMeshConstants.MANAGE_GROUP);
             String purpose = queryStringInfo.get(EventMeshConstants.MANAGE_PURPOSE);
             if (StringUtils.isBlank(group) || StringUtils.isBlank(purpose)) {
@@ -73,16 +70,16 @@ public class QueryRecommendEventMeshHandler implements HttpHandler {
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
             String recommendEventMeshResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, purpose);
             result = (recommendEventMeshResult == null) ? "null" : recommendEventMeshResult;
-            logger.info("recommend eventmesh:{},group:{},purpose:{}",result, group, purpose);
+            logger.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);
             httpExchange.sendResponseHeaders(200, 0);
             out.write(result.getBytes());
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error("QueryRecommendEventMeshHandler fail...", e);
-        }finally {
-            if(out != null){
+        } finally {
+            if (out != null) {
                 try {
                     out.close();
-                }catch (IOException e){
+                } catch (IOException e) {
                     logger.warn("out close failed...", e);
                 }
             }

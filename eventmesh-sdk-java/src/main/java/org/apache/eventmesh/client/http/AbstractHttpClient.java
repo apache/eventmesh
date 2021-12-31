@@ -53,7 +53,7 @@ public abstract class AbstractHttpClient implements AutoCloseable {
 
         this.eventMeshHttpClientConfig = eventMeshHttpClientConfig;
         this.eventMeshServerSelector = HttpLoadBalanceUtils.createEventMeshServerLoadBalanceSelector(
-            eventMeshHttpClientConfig);
+                eventMeshHttpClientConfig);
         this.httpClient = setHttpClient();
     }
 
@@ -73,14 +73,14 @@ public abstract class AbstractHttpClient implements AutoCloseable {
         try {
             // todo: config in properties file?
             String protocol = System.getProperty("ssl.client.protocol", "TLSv1.2");
-            TrustManager[] tm = new TrustManager[] {new MyX509TrustManager()};
+            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
             sslContext = SSLContext.getInstance(protocol);
             sslContext.init(null, tm, new SecureRandom());
             // todo: custom client pool
             return HttpClients.custom()
-                .setSSLContext(sslContext)
-                .setSSLHostnameVerifier(new DefaultHostnameVerifier())
-                .build();
+                    .setSSLContext(sslContext)
+                    .setSSLHostnameVerifier(new DefaultHostnameVerifier())
+                    .build();
         } catch (Exception e) {
             log.error("Error in creating HttpClient.", e);
             throw new EventMeshException(e);
