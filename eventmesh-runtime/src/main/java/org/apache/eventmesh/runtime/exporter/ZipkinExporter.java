@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.runtime.exporter;
 
-import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
-
 import org.apache.eventmesh.common.config.CommonConfiguration;
+
+import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 
 /**
  * an exporter to export traced data to zipkin.

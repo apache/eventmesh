@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.common.protocol.tcp.codec;
 
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+
 import java.util.ArrayList;
 
 import org.junit.Assert;
@@ -24,10 +28,6 @@ import org.junit.Test;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
-
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.common.protocol.tcp.Package;
 
 public class CodecTest {
 

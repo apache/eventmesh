@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.client.http.demo;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.Constants;
@@ -26,6 +24,8 @@ import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AsyncPublishInstance {

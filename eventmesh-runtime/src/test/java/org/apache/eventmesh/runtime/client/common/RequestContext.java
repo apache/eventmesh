@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.runtime.client.common;
 
+import org.apache.eventmesh.common.protocol.tcp.Package;
+
 import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.eventmesh.common.protocol.tcp.Package;
 
 public class RequestContext {
 

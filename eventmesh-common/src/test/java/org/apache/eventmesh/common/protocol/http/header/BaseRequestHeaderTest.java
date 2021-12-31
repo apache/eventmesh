@@ -20,13 +20,13 @@ package org.apache.eventmesh.common.protocol.http.header;
 
 import static org.hamcrest.CoreMatchers.is;
 
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
 public class BaseRequestHeaderTest {
 

@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.metrics.http;
 
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -26,8 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
-
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 
 public class TcpSummaryMetrics {
 

@@ -17,11 +17,6 @@
 
 package org.apache.eventmesh.tcp.demo.sub.eventmeshmessage;
 
-import java.util.Optional;
-import java.util.Properties;
-
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
@@ -32,6 +27,11 @@ import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
+
+import java.util.Optional;
+import java.util.Properties;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage> {

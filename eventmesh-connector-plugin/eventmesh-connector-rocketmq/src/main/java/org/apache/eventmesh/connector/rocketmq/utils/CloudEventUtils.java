@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.rocketmq.utils;
 
-import java.util.Map;
-import java.util.Set;
+import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.common.Constants;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.message.Message;
@@ -26,8 +26,8 @@ import org.apache.rocketmq.common.message.MessageAccessor;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.common.message.MessageExt;
 
-import org.apache.eventmesh.api.SendResult;
-import org.apache.eventmesh.common.Constants;
+import java.util.Map;
+import java.util.Set;
 
 public class CloudEventUtils {
 

@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.client.tcp.impl;
 
+import org.apache.eventmesh.client.tcp.common.MessageUtils;
+import org.apache.eventmesh.client.tcp.common.RequestContext;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -25,11 +30,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.eventmesh.client.tcp.common.MessageUtils;
-import org.apache.eventmesh.client.tcp.common.RequestContext;
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.Package;
 
 @Slf4j
 public abstract class AbstractEventMeshTCPSubHandler<ProtocolMessage> extends SimpleChannelInboundHandler<Package> {

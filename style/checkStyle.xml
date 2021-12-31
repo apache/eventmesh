@@ -74,9 +74,9 @@
     </module>
     <module name="AvoidStarImport"/>
     <module name="ImportOrder">
-      <property name="staticGroups" value="java,javax,org,io,net,junit,com,cn,lombok,org.apache.eventmesh"/>
+      <property name="staticGroups" value="org.apache.eventmesh,org.apache,java,javax,org,io,net,junit,com,lombok"/>
       <property name="separatedStaticGroups" value="true"/>
-      <property name="groups" value="java,javax,org,io,net,junit,com,lombok,org.apache.eventmesh"/>
+      <property name="groups" value="org.apache.eventmesh,org.apache,java,javax,org,io,net,junit,com,lombok"/>
       <property name="ordered" value="true"/>
       <property name="separated" value="true"/>
       <property name="option" value="top"/>

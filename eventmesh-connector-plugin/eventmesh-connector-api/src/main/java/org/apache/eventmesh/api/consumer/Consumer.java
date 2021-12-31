@@ -17,16 +17,16 @@
 
 package org.apache.eventmesh.api.consumer;
 
-import java.util.List;
-import java.util.Properties;
-
-import io.cloudevents.CloudEvent;
-
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.LifeCycle;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
+
+import java.util.List;
+import java.util.Properties;
+
+import io.cloudevents.CloudEvent;
 
 /**
  * Consumer Interface.

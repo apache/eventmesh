@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.spi.loader;
 
+import org.apache.eventmesh.spi.EventMeshSPI;
+import org.apache.eventmesh.spi.ExtensionException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,9 +40,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-
-import org.apache.eventmesh.spi.EventMeshSPI;
-import org.apache.eventmesh.spi.ExtensionException;
 
 /**
  * Load extension from '${eventMeshPluginDir}', the default loading directory is './plugin'

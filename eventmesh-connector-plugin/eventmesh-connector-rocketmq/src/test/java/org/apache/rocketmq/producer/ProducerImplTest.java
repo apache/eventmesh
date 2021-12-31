@@ -21,9 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Fail.failBecauseExceptionWasNotThrown;
 import static org.mockito.ArgumentMatchers.any;
 
-import java.lang.reflect.Field;
-import java.net.URI;
-import java.util.Properties;
+import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.connector.rocketmq.producer.AbstractProducer;
+import org.apache.eventmesh.connector.rocketmq.producer.ProducerImpl;
 
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -35,6 +35,11 @@ import org.apache.rocketmq.common.ServiceState;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.remoting.exception.RemotingException;
+
+import java.lang.reflect.Field;
+import java.net.URI;
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,10 +50,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
-import org.apache.eventmesh.connector.rocketmq.producer.AbstractProducer;
-import org.apache.eventmesh.connector.rocketmq.producer.ProducerImpl;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ProducerImplTest {

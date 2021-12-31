@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.client.http.model;
 
+import org.apache.eventmesh.common.Constants;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -26,8 +28,6 @@ import java.util.Map;
 import io.netty.handler.codec.http.HttpMethod;
 
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.eventmesh.common.Constants;
 
 @Slf4j
 public class RequestParam {

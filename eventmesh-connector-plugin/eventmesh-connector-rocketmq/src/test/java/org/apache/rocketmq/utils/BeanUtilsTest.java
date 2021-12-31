@@ -17,15 +17,15 @@
 
 package org.apache.rocketmq.utils;
 
+import org.apache.eventmesh.connector.rocketmq.config.ClientConfig;
+import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
+import org.apache.eventmesh.connector.rocketmq.utils.BeanUtils;
+
 import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.apache.eventmesh.connector.rocketmq.config.ClientConfig;
-import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
-import org.apache.eventmesh.connector.rocketmq.utils.BeanUtils;
 
 public class BeanUtilsTest {
     private Properties properties = new Properties();

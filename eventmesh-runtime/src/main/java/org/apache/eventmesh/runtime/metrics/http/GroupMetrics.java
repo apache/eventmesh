@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.runtime.metrics.http;
 
-import com.codahale.metrics.MetricRegistry;
-
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+
+import com.codahale.metrics.MetricRegistry;
 
 public class GroupMetrics {
 

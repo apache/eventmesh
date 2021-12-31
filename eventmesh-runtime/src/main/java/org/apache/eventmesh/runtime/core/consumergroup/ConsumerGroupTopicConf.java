@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.consumergroup;
 
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,8 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
 
 public class ConsumerGroupTopicConf {
 

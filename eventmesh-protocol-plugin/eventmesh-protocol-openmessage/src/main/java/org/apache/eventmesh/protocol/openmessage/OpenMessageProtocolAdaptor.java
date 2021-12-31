@@ -17,14 +17,14 @@
 
 package org.apache.eventmesh.protocol.openmessage;
 
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+
 import java.util.List;
 
 import io.cloudevents.CloudEvent;
 import io.openmessaging.api.Message;
-
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
-import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
 /**
  * OpenMessage protocol adaptor, used to transform protocol between

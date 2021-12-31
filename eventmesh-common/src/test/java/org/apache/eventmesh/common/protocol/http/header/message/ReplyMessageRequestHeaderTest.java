@@ -19,16 +19,16 @@ package org.apache.eventmesh.common.protocol.http.header.message;
 
 import static org.hamcrest.CoreMatchers.is;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 
 public class ReplyMessageRequestHeaderTest {
 

@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.retry;
 
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadFactory;
@@ -26,8 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 
 public class HttpRetryer {
 

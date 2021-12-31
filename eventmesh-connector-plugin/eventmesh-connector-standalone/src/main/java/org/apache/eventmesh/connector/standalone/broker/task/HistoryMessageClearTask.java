@@ -17,15 +17,15 @@
 
 package org.apache.eventmesh.connector.standalone.broker.task;
 
+import org.apache.eventmesh.connector.standalone.broker.MessageQueue;
+import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
+import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.eventmesh.connector.standalone.broker.MessageQueue;
-import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
-import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
 
 /**
  * This task used to clear the history message, the element in message queue can only be cleaned by this task.

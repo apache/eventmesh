@@ -19,6 +19,8 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,8 +32,6 @@ import org.junit.Test;
 import org.powermock.api.mockito.PowerMockito;
 
 import com.sun.net.httpserver.HttpExchange;
-
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 
 public class RedirectClientByIpPortHandlerTest {
 

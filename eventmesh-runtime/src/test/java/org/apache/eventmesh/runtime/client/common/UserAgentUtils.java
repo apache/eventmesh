@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.client.common;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 public class UserAgentUtils {
     public static UserAgent createPubUserAgent() {

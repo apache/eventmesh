@@ -17,14 +17,6 @@
 
 package org.apache.eventmesh.client.http.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
-
-import org.apache.commons.collections4.CollectionUtils;
-
-import com.google.common.base.Splitter;
-
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
@@ -32,6 +24,14 @@ import org.apache.eventmesh.common.loadbalance.RandomLoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.Weight;
 import org.apache.eventmesh.common.loadbalance.WeightRandomLoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.WeightRoundRobinLoadBalanceSelector;
+
+import org.apache.commons.collections4.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import com.google.common.base.Splitter;
 
 public class HttpLoadBalanceUtils {
 

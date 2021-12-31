@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.runtime.connector;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.eventmesh.api.connector.ConnectorResourceService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConnectorResource {
 

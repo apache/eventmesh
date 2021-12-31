@@ -17,10 +17,6 @@
 
 package org.apache.eventmesh.client.tcp.impl.openmessage;
 
-import io.openmessaging.api.Message;
-
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
@@ -31,6 +27,10 @@ import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+
+import io.openmessaging.api.Message;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class OpenMessageTCPClient implements EventMeshTCPClient<Message> {

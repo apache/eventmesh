@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.spi.loader;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
-
-import org.apache.commons.collections4.CollectionUtils;
 
 public class EventMeshUrlClassLoader extends URLClassLoader {
 

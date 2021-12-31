@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.client.http.util;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceType;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class HttpLoadBalanceUtilsTest {
 

@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.plugin;
 
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.api.EventListener;
+import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -24,11 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
-
-import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.api.EventListener;
-import org.apache.eventmesh.api.consumer.Consumer;
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 
 public class MQConsumerWrapper extends MQWrapper {
 

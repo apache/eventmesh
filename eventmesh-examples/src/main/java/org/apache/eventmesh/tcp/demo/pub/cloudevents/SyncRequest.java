@@ -17,15 +17,6 @@
 
 package org.apache.eventmesh.tcp.demo.pub.cloudevents;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
-
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
-
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
@@ -34,6 +25,15 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SyncRequest {

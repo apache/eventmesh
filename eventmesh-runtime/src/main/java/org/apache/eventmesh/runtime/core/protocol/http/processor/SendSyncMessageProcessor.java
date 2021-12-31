@@ -17,17 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import io.netty.channel.ChannelHandlerContext;
-
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
@@ -51,6 +40,18 @@ import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProduce
 import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+import io.netty.channel.ChannelHandlerContext;
 
 public class SendSyncMessageProcessor implements HttpRequestProcessor {
 

@@ -19,10 +19,10 @@ package org.apache.eventmesh.common.protocol.http.header.message;
 
 import static org.hamcrest.CoreMatchers.is;
 
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
 public class ReplyMessageResponseHeaderTest {
 

@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.client.common;
 
+import org.apache.eventmesh.common.protocol.tcp.Package;
+
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.util.Random;
@@ -45,8 +47,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-
-import org.apache.eventmesh.common.protocol.tcp.Package;
 
 
 /**

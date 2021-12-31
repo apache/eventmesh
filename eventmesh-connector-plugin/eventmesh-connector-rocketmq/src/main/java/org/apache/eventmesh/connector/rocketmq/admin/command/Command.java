@@ -17,14 +17,14 @@
 
 package org.apache.eventmesh.connector.rocketmq.admin.command;
 
-import java.util.UUID;
+import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 
-import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
+import java.util.UUID;
 
 public abstract class Command {
     protected DefaultMQAdminExt adminExt;

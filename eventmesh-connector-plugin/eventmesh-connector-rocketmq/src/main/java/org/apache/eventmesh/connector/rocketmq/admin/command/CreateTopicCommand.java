@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.connector.rocketmq.admin.command;
 
-import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.tools.command.CommandUtil;
+
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -17,17 +17,18 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch;
 
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 public class FreePriorityDispatchStrategy implements DownstreamDispatchStrategy {
 

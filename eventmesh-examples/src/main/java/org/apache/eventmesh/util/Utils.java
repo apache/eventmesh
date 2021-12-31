@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.util;
 
+import org.apache.commons.lang3.SystemUtils;
+
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -24,8 +26,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Properties;
-
-import org.apache.commons.lang3.SystemUtils;
 
 public class Utils {
 

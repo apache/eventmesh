@@ -17,6 +17,10 @@
 
 package org.apache.eventmesh.connector.rocketmq.config;
 
+import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -24,12 +28,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 
 @Slf4j
 @UtilityClass

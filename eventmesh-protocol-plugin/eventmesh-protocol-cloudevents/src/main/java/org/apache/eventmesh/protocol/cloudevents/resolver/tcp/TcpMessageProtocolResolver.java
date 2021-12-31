@@ -17,9 +17,14 @@
 
 package org.apache.eventmesh.protocol.cloudevents.resolver.tcp;
 
-import java.nio.charset.StandardCharsets;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant;
 
 import org.apache.commons.lang3.StringUtils;
+
+import java.nio.charset.StandardCharsets;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -29,11 +34,6 @@ import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 
 import com.google.common.base.Preconditions;
-
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.tcp.Header;
-import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
-import org.apache.eventmesh.protocol.cloudevents.CloudEventsProtocolConstant;
 
 public class TcpMessageProtocolResolver {
 

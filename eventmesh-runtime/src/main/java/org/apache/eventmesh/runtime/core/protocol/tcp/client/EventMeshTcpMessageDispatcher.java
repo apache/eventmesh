@@ -17,12 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -40,6 +34,12 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.RecommendTask;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.SubscribeTask;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.UnSubscribeTask;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 
 public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<Package> {
 

@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.standalone.broker;
 
+import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
+
 import java.net.URI;
 
 import org.junit.Assert;
@@ -24,8 +26,6 @@ import org.junit.Test;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 
 public class StandaloneBrokerTest {
 

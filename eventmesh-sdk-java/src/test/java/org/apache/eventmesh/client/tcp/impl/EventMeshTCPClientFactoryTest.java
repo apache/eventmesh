@@ -17,12 +17,6 @@
 
 package org.apache.eventmesh.client.tcp.impl;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import io.cloudevents.CloudEvent;
-import io.openmessaging.api.Message;
-
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
@@ -30,6 +24,12 @@ import org.apache.eventmesh.client.tcp.impl.cloudevent.CloudEventTCPClient;
 import org.apache.eventmesh.client.tcp.impl.eventmeshmessage.EventMeshMessageTCPClient;
 import org.apache.eventmesh.client.tcp.impl.openmessage.OpenMessageTCPClient;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import io.cloudevents.CloudEvent;
+import io.openmessaging.api.Message;
 
 public class EventMeshTCPClientFactoryTest {
 
@@ -39,8 +39,6 @@ public class EventMeshTCPClientFactoryTest {
                 .host("localhost")
                 .port(1234)
                 .build();
-
-
 
 
         EventMeshTCPClient<EventMeshMessage> eventMeshMessageTCPClient =

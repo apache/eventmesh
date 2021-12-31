@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 
-import io.netty.channel.ChannelHandlerContext;
-
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
+
+import io.netty.channel.ChannelHandlerContext;
 
 /**
  * HttpRequestProcessor

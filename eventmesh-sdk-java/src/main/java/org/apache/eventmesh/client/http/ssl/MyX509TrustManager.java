@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.client.http.ssl;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,8 +31,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class MyX509TrustManager implements X509TrustManager {
     X509TrustManager myTrustManager;

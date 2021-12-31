@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client;
 
+import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.util.RemotingHelper;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -26,9 +29,6 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
 

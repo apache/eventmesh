@@ -17,15 +17,6 @@
 
 package org.apache.eventmesh.protocol.meshmessage.resolver.http;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-
-import org.apache.commons.lang3.StringUtils;
-
-import io.cloudevents.CloudEvent;
-import io.cloudevents.SpecVersion;
-import io.cloudevents.core.builder.CloudEventBuilder;
-
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageBatchV2RequestBody;
 import org.apache.eventmesh.common.protocol.http.body.message.SendMessageRequestBody;
@@ -34,6 +25,15 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class SendMessageBatchV2ProtocolResolver {
     public static CloudEvent buildEvent(Header header, Body body) throws ProtocolHandleException {

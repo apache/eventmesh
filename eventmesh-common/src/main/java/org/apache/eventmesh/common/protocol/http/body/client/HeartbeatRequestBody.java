@@ -17,16 +17,16 @@
 
 package org.apache.eventmesh.common.protocol.http.body.client;
 
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.utils.JsonUtils;
+
+import org.apache.commons.collections4.MapUtils;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections4.MapUtils;
-
 import com.fasterxml.jackson.core.type.TypeReference;
-
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.utils.JsonUtils;
 
 public class HeartbeatRequestBody extends Body {
 

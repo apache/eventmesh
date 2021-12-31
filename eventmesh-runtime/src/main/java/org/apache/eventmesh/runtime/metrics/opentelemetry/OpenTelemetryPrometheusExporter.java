@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.metrics.opentelemetry;
 
+import org.apache.eventmesh.common.config.CommonConfiguration;
+
 import java.io.IOException;
 
 import org.slf4j.Logger;
@@ -25,8 +27,6 @@ import org.slf4j.LoggerFactory;
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.prometheus.client.exporter.HTTPServer;
-
-import org.apache.eventmesh.common.config.CommonConfiguration;
 
 public class OpenTelemetryPrometheusExporter {
 

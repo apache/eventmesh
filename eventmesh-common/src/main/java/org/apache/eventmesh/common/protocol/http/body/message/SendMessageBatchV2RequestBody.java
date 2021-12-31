@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 
 import org.apache.commons.collections4.MapUtils;
 
-import org.apache.eventmesh.common.protocol.http.body.Body;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SendMessageBatchV2RequestBody extends Body {
 

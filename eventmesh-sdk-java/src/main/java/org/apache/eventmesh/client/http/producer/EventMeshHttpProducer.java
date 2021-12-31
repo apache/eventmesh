@@ -17,14 +17,14 @@
 
 package org.apache.eventmesh.client.http.producer;
 
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.exception.EventMeshException;
+
 import io.cloudevents.CloudEvent;
 import io.openmessaging.api.Message;
 
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
-import org.apache.eventmesh.common.EventMeshMessage;
-import org.apache.eventmesh.common.exception.EventMeshException;
 
 @Slf4j
 public class EventMeshHttpProducer implements AutoCloseable {

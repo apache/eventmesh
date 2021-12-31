@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.protocol.openmessage;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class OpenMessageProtocolAdaptorTest {
 

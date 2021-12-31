@@ -17,18 +17,6 @@
 
 package org.apache.eventmesh.client.http.producer;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.netty.handler.codec.http.HttpMethod;
-
-import com.google.common.base.Preconditions;
-
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.eventmesh.client.http.AbstractHttpClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
@@ -43,6 +31,18 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.netty.handler.codec.http.HttpMethod;
+
+import com.google.common.base.Preconditions;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocolProducer<CloudEvent> {

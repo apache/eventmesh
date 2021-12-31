@@ -17,18 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -36,6 +24,19 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
 
@@ -257,7 +258,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
                 if (!eventMeshMap.keySet().contains(eventMeshName)) {
                     logger.warn(
                             "doRebalance failed,exist eventMesh not register but exist in "
-                            + "distributionMap,cluster:{},grpup:{},purpose:{},eventMeshName:{}",
+                                    + "distributionMap,cluster:{},grpup:{},purpose:{},eventMeshName:{}",
                             cluster, group, purpose, eventMeshName);
                     return null;
                 }

@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.runtime.configuration;
 
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.config.ConfigurationWrapper;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Preconditions;
-
-import org.apache.eventmesh.common.config.CommonConfiguration;
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
 
 public class EventMeshHTTPConfiguration extends CommonConfiguration {
 

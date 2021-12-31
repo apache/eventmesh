@@ -19,6 +19,9 @@ package org.apache.eventmesh.common.protocol.http;
 
 import static org.mockito.Mockito.when;
 
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.header.Header;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,9 +34,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
-
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.protocol.http.header.Header;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HttpCommandTest {

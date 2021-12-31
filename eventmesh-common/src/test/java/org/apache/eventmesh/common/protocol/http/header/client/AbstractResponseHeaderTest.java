@@ -19,10 +19,10 @@ package org.apache.eventmesh.common.protocol.http.header.client;
 
 import static org.hamcrest.CoreMatchers.is;
 
-import org.junit.Assert;
-
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.header.Header;
+
+import org.junit.Assert;
 
 public class AbstractResponseHeaderTest {
 

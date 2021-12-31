@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -24,8 +26,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 public class HttpTinyClient {
 

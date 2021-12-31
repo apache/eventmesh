@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.protocol.api;
 
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import lombok.experimental.UtilityClass;
-
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 /**
  * A factory to get Protocol plugin instance.

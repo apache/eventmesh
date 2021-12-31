@@ -19,13 +19,19 @@ package org.apache.rocketmq.consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.Properties;
+import org.apache.eventmesh.api.EventListener;
+import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
+import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.common.message.MessageExt;
+
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,11 +41,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import io.cloudevents.CloudEvent;
-
-import org.apache.eventmesh.api.EventListener;
-import org.apache.eventmesh.api.EventMeshAction;
-import org.apache.eventmesh.connector.rocketmq.consumer.PushConsumerImpl;
-import org.apache.eventmesh.connector.rocketmq.domain.NonStandardKeys;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PushConsumerImplTest {

@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
+import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
+
 import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.util.Random;
@@ -47,11 +52,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
-import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 
 @Slf4j
 public abstract class TcpClient implements Closeable {

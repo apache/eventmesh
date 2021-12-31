@@ -17,8 +17,12 @@
 
 package org.apache.eventmesh.connector.rocketmq.producer;
 
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.connector.rocketmq.config.ClientConfig;
+import org.apache.eventmesh.connector.rocketmq.exception.RMQMessageFormatException;
+import org.apache.eventmesh.connector.rocketmq.exception.RMQTimeoutException;
+import org.apache.eventmesh.connector.rocketmq.utils.BeanUtils;
+import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
 
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -31,12 +35,8 @@ import org.apache.rocketmq.remoting.exception.RemotingConnectException;
 import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
-import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
-import org.apache.eventmesh.connector.rocketmq.config.ClientConfig;
-import org.apache.eventmesh.connector.rocketmq.exception.RMQMessageFormatException;
-import org.apache.eventmesh.connector.rocketmq.exception.RMQTimeoutException;
-import org.apache.eventmesh.connector.rocketmq.utils.BeanUtils;
-import org.apache.eventmesh.connector.rocketmq.utils.OMSUtil;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractProducer {
 

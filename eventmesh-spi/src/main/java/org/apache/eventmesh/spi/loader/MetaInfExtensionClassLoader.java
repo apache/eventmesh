@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.spi.loader;
 
+import org.apache.eventmesh.spi.ExtensionException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -28,8 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.eventmesh.spi.ExtensionException;
 
 /**
  * Load extension from classpath

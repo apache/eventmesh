@@ -17,11 +17,15 @@
 
 package org.apache.eventmesh.connector.rocketmq.cloudevent;
 
+import org.apache.eventmesh.connector.rocketmq.cloudevent.impl.RocketMQBinaryMessageReader;
+import org.apache.eventmesh.connector.rocketmq.cloudevent.impl.RocketMQHeaders;
+import org.apache.eventmesh.connector.rocketmq.cloudevent.impl.RocketMQMessageWriter;
+
+import org.apache.rocketmq.common.message.Message;
+
 import java.util.Map;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-
-import org.apache.rocketmq.common.message.Message;
 
 import io.cloudevents.core.message.MessageReader;
 import io.cloudevents.core.message.MessageWriter;
@@ -29,10 +33,6 @@ import io.cloudevents.core.message.impl.MessageUtils;
 import io.cloudevents.lang.Nullable;
 import io.cloudevents.rw.CloudEventRWException;
 import io.cloudevents.rw.CloudEventWriter;
-
-import org.apache.eventmesh.connector.rocketmq.cloudevent.impl.RocketMQBinaryMessageReader;
-import org.apache.eventmesh.connector.rocketmq.cloudevent.impl.RocketMQHeaders;
-import org.apache.eventmesh.connector.rocketmq.cloudevent.impl.RocketMQMessageWriter;
 
 
 @ParametersAreNonnullByDefault
