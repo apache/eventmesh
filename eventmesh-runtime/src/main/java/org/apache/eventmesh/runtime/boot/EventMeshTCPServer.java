@@ -135,7 +135,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         this.registry = registry;
     }
 
-    private void startServer() throws Exception {
+    private void startServer() {
         Runnable r = () -> {
             ServerBootstrap bootstrap = new ServerBootstrap();
             ChannelInitializer channelInitializer = new ChannelInitializer() {
@@ -174,6 +174,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                     .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                     .childHandler(channelInitializer);
+
             try {
                 int port = eventMeshTCPConfiguration.eventMeshTcpServerPort;
                 ChannelFuture f = bootstrap.bind(port).sync();
@@ -186,7 +187,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                 } catch (Exception e1) {
                     logger.error("EventMeshTCPServer RemotingServer shutdown Err!", e);
                 }
-                return;
             }
         };
 
