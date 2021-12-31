@@ -98,7 +98,7 @@ public class MessageUtils {
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString());
             msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
             byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
-                .serialize((CloudEvent) message);
+                    .serialize((CloudEvent) message);
             msg.setBody(bodyByte);
         } else if (message instanceof EventMeshMessage) {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
@@ -140,38 +140,38 @@ public class MessageUtils {
 
     public static UserAgent generateSubClient(UserAgent agent) {
         return UserAgent.builder()
-            .env(agent.getEnv())
-            .host(agent.getHost())
-            .password(agent.getPassword())
-            .username(agent.getUsername())
-            .path(agent.getPath())
-            .port(agent.getPort())
-            .subsystem(agent.getSubsystem())
-            .pid(agent.getPid())
-            .version(agent.getVersion())
-            .idc(agent.getIdc())
-            .consumerGroup(agent.getConsumerGroup())
-            .producerGroup(agent.getProducerGroup())
-            .purpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB)
-            .build();
+                .env(agent.getEnv())
+                .host(agent.getHost())
+                .password(agent.getPassword())
+                .username(agent.getUsername())
+                .path(agent.getPath())
+                .port(agent.getPort())
+                .subsystem(agent.getSubsystem())
+                .pid(agent.getPid())
+                .version(agent.getVersion())
+                .idc(agent.getIdc())
+                .consumerGroup(agent.getConsumerGroup())
+                .producerGroup(agent.getProducerGroup())
+                .purpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB)
+                .build();
     }
 
     public static UserAgent generatePubClient(UserAgent agent) {
         return UserAgent.builder()
-            .env(agent.getEnv())
-            .host(agent.getHost())
-            .password(agent.getPassword())
-            .username(agent.getUsername())
-            .path(agent.getPath())
-            .port(agent.getPort())
-            .subsystem(agent.getSubsystem())
-            .pid(agent.getPid())
-            .version(agent.getVersion())
-            .idc(agent.getIdc())
-            .consumerGroup(agent.getConsumerGroup())
-            .producerGroup(agent.getProducerGroup())
-            .purpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB)
-            .build();
+                .env(agent.getEnv())
+                .host(agent.getHost())
+                .password(agent.getPassword())
+                .username(agent.getUsername())
+                .path(agent.getPath())
+                .port(agent.getPort())
+                .subsystem(agent.getSubsystem())
+                .pid(agent.getPid())
+                .version(agent.getVersion())
+                .idc(agent.getIdc())
+                .consumerGroup(agent.getConsumerGroup())
+                .producerGroup(agent.getProducerGroup())
+                .purpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB)
+                .build();
     }
 
     private static Subscription generateSubscription(String topic, SubscriptionMode subscriptionMode,

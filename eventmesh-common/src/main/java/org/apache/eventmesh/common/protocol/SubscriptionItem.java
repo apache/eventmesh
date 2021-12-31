@@ -60,11 +60,11 @@ public class SubscriptionItem {
 
     @Override
     public String toString() {
-        return "SubscriptionItem{" +
-                "topic=" + topic +
-                ", mode=" + mode +
-                ", type=" + type +
-                '}';
+        return "SubscriptionItem{"
+                + "topic=" + topic
+                + ", mode=" + mode
+                + ", type=" + type
+                + '}';
     }
 }
 

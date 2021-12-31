@@ -17,10 +17,11 @@
 
 package org.apache.eventmesh.common.config;
 
-import com.google.common.base.Preconditions;
+import org.apache.eventmesh.common.utils.IPUtils;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.utils.IPUtils;
+
+import com.google.common.base.Preconditions;
 
 public class CommonConfiguration {
     public String eventMeshEnv = "P";

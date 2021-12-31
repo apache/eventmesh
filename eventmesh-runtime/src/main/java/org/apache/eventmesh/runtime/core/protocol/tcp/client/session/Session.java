@@ -19,22 +19,12 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.LISTEN_RESPONSE;
 
-import java.lang.ref.WeakReference;
-import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
-
-import io.cloudevents.CloudEvent;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.tcp.*;
+import org.apache.eventmesh.common.protocol.tcp.Header;
+import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
@@ -44,8 +34,21 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventM
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.SessionSender;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
+
+import org.apache.commons.lang3.time.DateFormatUtils;
+
+import java.lang.ref.WeakReference;
+import java.net.InetSocketAddress;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
 
 public class Session {
 
@@ -227,15 +230,24 @@ public class Session {
 
     @Override
     public String toString() {
-        return "Session{" +
-                "sysId=" + clientGroupWrapper.get().getSysId() +
-                ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress) +
-                ",client=" + client +
-                ",sessionState=" + sessionState +
-                ",sessionContext=" + sessionContext +
-                ",pusher=" + pusher +
-                ",sender=" + sender +
-                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) +
+        return "Session{"
+                +
+                "sysId=" + clientGroupWrapper.get().getSysId()
+                +
+                ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
+                +
+                ",client=" + client
+                +
+                ",sessionState=" + sessionState
+                +
+                ",sessionContext=" + sessionContext
+                +
+                ",pusher=" + pusher
+                +
+                ",sender=" + sender
+                +
+                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
+                +
                 ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
@@ -319,17 +331,17 @@ public class Session {
         }
 
         if (!sessionContext.subscribeTopics.containsKey(topic)) {
-            logger.warn("session is not available because session has not subscribe topic:{},client:{}", topic,client);
+            logger.warn("session is not available because session has not subscribe topic:{},client:{}", topic, client);
             return false;
         }
 
         return true;
     }
 
-//    @Override
-//    public int hashCode() {
-//        int code = 37 + (client != null ? client.hashCode() : 0) + (context != null ? context.hashCode() : 0)
-//                + (sessionState != null ? sessionState.hashCode() : 0);
-//        return code;
-//    }
+    //@Override
+    //public int hashCode() {
+    //    int code = 37 + (client != null ? client.hashCode() : 0) + (context != null ? context.hashCode() : 0)
+    //            + (sessionState != null ? sessionState.hashCode() : 0);
+    //    return code;
+    //}
 }

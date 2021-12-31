@@ -38,6 +38,7 @@ public @interface EventMeshSPI {
 
     /**
      * {@link EventMeshExtensionType}
+     *
      * @return extension type
      */
     EventMeshExtensionType eventMeshExtensionType();

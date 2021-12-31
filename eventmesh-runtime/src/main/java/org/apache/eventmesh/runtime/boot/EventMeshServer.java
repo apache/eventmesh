@@ -62,7 +62,9 @@ public class EventMeshServer {
             acl.init(eventMeshHttpConfiguration.eventMeshSecurityPluginType);
         }
 
-        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshTCPConfiguration != null
+                && eventMeshTCPConfiguration.eventMeshTcpServerEnabled
+                && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             registry.init(eventMeshTCPConfiguration.eventMeshRegistryPluginType);
         }
 
@@ -76,7 +78,7 @@ public class EventMeshServer {
         }
 
         String eventStore = System
-            .getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
+                .getProperty(EventMeshConstants.EVENT_STORE_PROPERTIES, System.getenv(EventMeshConstants.EVENT_STORE_ENV));
         logger.info("eventStore : {}", eventStore);
 
         serviceState = ServiceState.INITED;
@@ -88,8 +90,9 @@ public class EventMeshServer {
             acl.start();
         }
 
-        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled &&
-            eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshTCPConfiguration != null
+                && eventMeshTCPConfiguration.eventMeshTcpServerEnabled
+                && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             registry.start();
         }
 

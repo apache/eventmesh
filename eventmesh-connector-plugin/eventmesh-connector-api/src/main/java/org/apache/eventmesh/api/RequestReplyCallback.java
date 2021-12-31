@@ -19,6 +19,9 @@ package org.apache.eventmesh.api;
 
 import io.cloudevents.CloudEvent;
 
+/**
+ * RequestReplyCallback
+ */
 public interface RequestReplyCallback {
 
     void onSuccess(CloudEvent event);
