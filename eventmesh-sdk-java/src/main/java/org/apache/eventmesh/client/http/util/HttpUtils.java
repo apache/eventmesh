@@ -23,7 +23,6 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
@@ -57,17 +56,14 @@ public class HttpUtils {
                               RequestParam requestParam) throws Exception {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        post(client, null, uri, requestParam, new ResponseHandler<String>() {
-            @Override
-            public String handleResponse(HttpResponse response) throws IOException {
-                responseHolder.response =
-                        EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
-                countDownLatch.countDown();
-                if (log.isDebugEnabled()) {
-                    log.debug("{}", responseHolder);
-                }
-                return responseHolder.response;
+        post(client, null, uri, requestParam, response -> {
+            responseHolder.response =
+                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+            countDownLatch.countDown();
+            if (log.isDebugEnabled()) {
+                log.debug("{}", responseHolder);
             }
+            return responseHolder.response;
         });
 
         try {
@@ -85,17 +81,14 @@ public class HttpUtils {
                               RequestParam requestParam) throws Exception {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        post(client, forwardAgent, uri, requestParam, new ResponseHandler<String>() {
-            @Override
-            public String handleResponse(HttpResponse response) throws IOException {
-                responseHolder.response =
-                        EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
-                countDownLatch.countDown();
-                if (log.isDebugEnabled()) {
-                    log.debug("{}", responseHolder);
-                }
-                return responseHolder.response;
+        post(client, forwardAgent, uri, requestParam, response -> {
+            responseHolder.response =
+                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+            countDownLatch.countDown();
+            if (log.isDebugEnabled()) {
+                log.debug("{}", responseHolder);
             }
+            return responseHolder.response;
         });
 
         try {
@@ -203,17 +196,14 @@ public class HttpUtils {
                              RequestParam requestParam) throws Exception {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        get(client, null, url, requestParam, new ResponseHandler<String>() {
-            @Override
-            public String handleResponse(HttpResponse response) throws IOException {
-                responseHolder.response =
-                        EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
-                countDownLatch.countDown();
-                if (log.isDebugEnabled()) {
-                    log.debug("{}", responseHolder);
-                }
-                return responseHolder.response;
+        get(client, null, url, requestParam, response -> {
+            responseHolder.response =
+                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+            countDownLatch.countDown();
+            if (log.isDebugEnabled()) {
+                log.debug("{}", responseHolder);
             }
+            return responseHolder.response;
         });
 
         try {
@@ -231,17 +221,14 @@ public class HttpUtils {
                              RequestParam requestParam) throws Exception {
         final ResponseHolder responseHolder = new ResponseHolder();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        get(client, forwardAgent, url, requestParam, new ResponseHandler<String>() {
-            @Override
-            public String handleResponse(HttpResponse response) throws IOException {
-                responseHolder.response =
-                        EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
-                countDownLatch.countDown();
-                if (log.isDebugEnabled()) {
-                    log.debug("{}", responseHolder);
-                }
-                return responseHolder.response;
+        get(client, forwardAgent, url, requestParam, response -> {
+            responseHolder.response =
+                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+            countDownLatch.countDown();
+            if (log.isDebugEnabled()) {
+                log.debug("{}", responseHolder);
             }
+            return responseHolder.response;
         });
 
         try {
