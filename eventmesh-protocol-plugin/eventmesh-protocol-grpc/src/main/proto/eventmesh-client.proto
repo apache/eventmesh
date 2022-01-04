@@ -50,6 +50,23 @@ message EventMeshMessage {
    map<string, string> properties = 9;
 }
 
+message BatchMessage {
+   RequestHeader header = 1;
+   string producerGroup = 2;
+   string topic = 3;
+
+   message MessageItem {
+      string content = 1;
+      string ttl = 2;
+      string uniqueId = 3;
+      string seqNum = 4;
+      string tag = 5;
+      map<string, string> properties = 6;
+   }
+
+   repeated MessageItem messageItem = 4;
+}
+
 message Response {
    string respCode = 1;
    string respMsg = 2;
@@ -103,6 +120,8 @@ service PublisherService {
    rpc publish(EventMeshMessage) returns (Response);
 
    rpc requestReply(EventMeshMessage) returns (Response);
+
+   rpc batchPublish(BatchMessage) returns (Response);
 
    rpc broadcast(EventMeshMessage) returns (Response);
 }

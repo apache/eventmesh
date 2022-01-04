@@ -28,7 +28,7 @@ public enum StatusCode {
     EVENTMESH_PROTOCOL_BODY_ERR("7", "eventMesh protocol[body] err, "),
     EVENTMESH_STOP("8", "eventMesh will stop or had stopped, "),
     EVENTMESH_REJECT_BY_PROCESSOR_ERROR("9", "eventMesh reject by processor error, "),
-    EVENTMESH_BATCH_PRODUCER_STOPED_ERR("10", "eventMesh batch msg producer stopped, "),
+    EVENTMESH_BATCH_PUBLISH_ERR("10", "eventMesh batch publish messages error, "),
     EVENTMESH_SEND_BATCHLOG_MSG_ERR("17", "eventMesh send batchlog msg err, "),
     EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR("11", "eventMesh batch msg speed over the limit, "),
     EVENTMESH_PACKAGE_MSG_ERR("12", "eventMesh package msg err, "),

@@ -83,6 +83,38 @@ public final class PublisherServiceGrpc {
      return getRequestReplyMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage,
+      Response> getBatchPublishMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "batchPublish",
+      requestType = org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage.class,
+      responseType = Response.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage,
+      Response> getBatchPublishMethod() {
+    io.grpc.MethodDescriptor<org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage, Response> getBatchPublishMethod;
+    if ((getBatchPublishMethod = PublisherServiceGrpc.getBatchPublishMethod) == null) {
+      synchronized (PublisherServiceGrpc.class) {
+        if ((getBatchPublishMethod = PublisherServiceGrpc.getBatchPublishMethod) == null) {
+          PublisherServiceGrpc.getBatchPublishMethod = getBatchPublishMethod = 
+              io.grpc.MethodDescriptor.<org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage, Response>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(
+                  "eventmesh.common.protocol.grpc.PublisherService", "batchPublish"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  Response.getDefaultInstance()))
+                  .setSchemaDescriptor(new PublisherServiceMethodDescriptorSupplier("batchPublish"))
+                  .build();
+          }
+        }
+     }
+     return getBatchPublishMethod;
+  }
+
   private static volatile io.grpc.MethodDescriptor<EventMeshMessage,
       Response> getBroadcastMethod;
 
@@ -158,6 +190,13 @@ public final class PublisherServiceGrpc {
 
     /**
      */
+    public void batchPublish(org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage request,
+        io.grpc.stub.StreamObserver<Response> responseObserver) {
+      asyncUnimplementedUnaryCall(getBatchPublishMethod(), responseObserver);
+    }
+
+    /**
+     */
     public void broadcast(EventMeshMessage request,
                           io.grpc.stub.StreamObserver<Response> responseObserver) {
       asyncUnimplementedUnaryCall(getBroadcastMethod(), responseObserver);
@@ -179,6 +218,13 @@ public final class PublisherServiceGrpc {
                 EventMeshMessage,
                 Response>(
                   this, METHODID_REQUEST_REPLY)))
+          .addMethod(
+            getBatchPublishMethod(),
+            asyncUnaryCall(
+              new MethodHandlers<
+                org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage,
+                Response>(
+                  this, METHODID_BATCH_PUBLISH)))
           .addMethod(
             getBroadcastMethod(),
             asyncUnaryCall(
@@ -226,6 +272,14 @@ public final class PublisherServiceGrpc {
 
     /**
      */
+    public void batchPublish(org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage request,
+        io.grpc.stub.StreamObserver<Response> responseObserver) {
+      asyncUnaryCall(
+          getChannel().newCall(getBatchPublishMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     */
     public void broadcast(EventMeshMessage request,
                           io.grpc.stub.StreamObserver<Response> responseObserver) {
       asyncUnaryCall(
@@ -263,6 +317,13 @@ public final class PublisherServiceGrpc {
     public Response requestReply(EventMeshMessage request) {
       return blockingUnaryCall(
           getChannel(), getRequestReplyMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public Response batchPublish(org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage request) {
+      return blockingUnaryCall(
+          getChannel(), getBatchPublishMethod(), getCallOptions(), request);
     }
 
     /**
@@ -309,6 +370,14 @@ public final class PublisherServiceGrpc {
 
     /**
      */
+    public com.google.common.util.concurrent.ListenableFuture<Response> batchPublish(
+        org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage request) {
+      return futureUnaryCall(
+          getChannel().newCall(getBatchPublishMethod(), getCallOptions()), request);
+    }
+
+    /**
+     */
     public com.google.common.util.concurrent.ListenableFuture<Response> broadcast(
         EventMeshMessage request) {
       return futureUnaryCall(
@@ -318,7 +387,8 @@ public final class PublisherServiceGrpc {
 
   private static final int METHODID_PUBLISH = 0;
   private static final int METHODID_REQUEST_REPLY = 1;
-  private static final int METHODID_BROADCAST = 2;
+  private static final int METHODID_BATCH_PUBLISH = 2;
+  private static final int METHODID_BROADCAST = 3;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -343,6 +413,10 @@ public final class PublisherServiceGrpc {
           break;
         case METHODID_REQUEST_REPLY:
           serviceImpl.requestReply((EventMeshMessage) request,
+              (io.grpc.stub.StreamObserver<Response>) responseObserver);
+          break;
+        case METHODID_BATCH_PUBLISH:
+          serviceImpl.batchPublish((org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage) request,
               (io.grpc.stub.StreamObserver<Response>) responseObserver);
           break;
         case METHODID_BROADCAST:
@@ -412,6 +486,7 @@ public final class PublisherServiceGrpc {
               .setSchemaDescriptor(new PublisherServiceFileDescriptorSupplier())
               .addMethod(getPublishMethod())
               .addMethod(getRequestReplyMethod())
+              .addMethod(getBatchPublishMethod())
               .addMethod(getBroadcastMethod())
               .build();
         }
