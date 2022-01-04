@@ -20,13 +20,13 @@ EventMesh是一个动态的云原生事件驱动架构基础设施，用于分�
 ![architecture1](docs/images/eventmesh-federation.png)
 
 **组件:**
-* **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
-* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols.
-* **eventmesh-connector-plugin** : plugins for connect a middleware such as RocketMQ/Kafka/Redis/Pulsar etc.
-* **eventmesh-registry-plugin** : plugins for registry adapter, such as Nacos/Etcd.
-* **eventmesh-security-plugin** : plugins for security adpater, such as ACL/Authentication/Authorization.
-* **eventmesh-protocol-plugin** : plugins for protocol adapter, such as CloudEvents/MQTT.
-* **eventmesh-admin** : clients,topics,subscriptions and other management.
+* **eventmesh-runtime** : 一种中间件，用于在事件产生者和使用者之间传输事件，支持云原生应用程序和微服务。
+* **eventmesh-sdk-java** : 当前支持HTTP和TCP协议，未来会支持gRPC等。
+* **eventmesh-connector-plugin** : 连接中间件的插件，如RocketMQ/Kafka/Redis/Pulsar等。
+* **eventmesh-registry-plugin** : 注册表适配器插件，如Nacos/Etcd。
+* **eventmesh-security-plugin** : 安全适配器插件，如ACL/认证/授权。
+* **eventmesh-protocol-plugin** : 协议适配器的插件，如CloudEvents/MQTT。
+* **eventmesh-admin** : 客户端管理、主题管理、订阅管理和其他管理。
 
 ## 快速开始
 1. [Store quickstart](docs/en/instructions/eventmesh-store-quickstart.md)
