@@ -19,7 +19,9 @@ package org.apache.eventmesh.protocol.meshmessage;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.grpc.common.BatchMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
@@ -98,7 +100,12 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
 
     @Override
     public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol) throws ProtocolHandleException {
-        return null;
+        if (protocol instanceof BatchMessageWrapper) {
+            BatchMessage batchMessage = ((BatchMessageWrapper) protocol).getMessage();
+            return GrpcMessageProtocolResolver.buildBatchEvents(batchMessage);
+        } else {
+            throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));
+        }
     }
 
     @Override

@@ -4,6 +4,7 @@ import io.grpc.stub.StreamObserver;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
+import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat.ClientType;
@@ -32,6 +33,20 @@ public class ServiceUtils {
             && StringUtils.isNotEmpty(message.getTopic())
             && StringUtils.isNotEmpty(message.getContent())
             && StringUtils.isNotEmpty(message.getTtl());
+    }
+
+    public static boolean validateBatchMessage(BatchMessage batchMessage) {
+         if (StringUtils.isEmpty(batchMessage.getTopic())
+             || StringUtils.isEmpty(batchMessage.getProducerGroup())) {
+             return false;
+         }
+         for (BatchMessage.MessageItem item : batchMessage.getMessageItemList()) {
+             if (StringUtils.isEmpty(item.getContent()) || StringUtils.isEmpty(item.getSeqNum())
+                 || StringUtils.isEmpty(item.getTtl()) || StringUtils.isEmpty(item.getUniqueId())) {
+                 return false;
+             }
+         }
+         return true;
     }
 
     public static boolean validateSubscription(GrpcType grpcType, Subscription subscription) {

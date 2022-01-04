@@ -30,6 +30,21 @@ public final class EventmeshGrpc {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_PropertiesEntry_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_eventmesh_common_protocol_grpc_BatchMessage_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_eventmesh_common_protocol_grpc_BatchMessage_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_PropertiesEntry_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_PropertiesEntry_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_eventmesh_common_protocol_grpc_Response_descriptor;
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -78,52 +93,66 @@ public final class EventmeshGrpc {
       "properties\030\t \003(\0132@.eventmesh.common.prot" +
       "ocol.grpc.EventMeshMessage.PropertiesEnt" +
       "ry\0321\n\017PropertiesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005va" +
-      "lue\030\002 \001(\t:\0028\001\"?\n\010Response\022\020\n\010respCode\030\001 " +
-      "\001(\t\022\017\n\007respMsg\030\002 \001(\t\022\020\n\010respTime\030\003 \001(\t\"\212" +
-      "\004\n\014Subscription\022=\n\006header\030\001 \001(\0132-.eventm" +
-      "esh.common.protocol.grpc.RequestHeader\022\025" +
-      "\n\rconsumerGroup\030\002 \001(\t\022X\n\021subscriptionIte" +
-      "ms\030\003 \003(\0132=.eventmesh.common.protocol.grp" +
-      "c.Subscription.SubscriptionItem\022\013\n\003url\030\004" +
-      " \001(\t\032\274\002\n\020SubscriptionItem\022\r\n\005topic\030\001 \001(\t" +
-      "\022\\\n\004mode\030\002 \001(\0162N.eventmesh.common.protoc" +
-      "ol.grpc.Subscription.SubscriptionItem.Su" +
-      "bscriptionMode\022\\\n\004type\030\003 \001(\0162N.eventmesh" +
-      ".common.protocol.grpc.Subscription.Subsc" +
-      "riptionItem.SubscriptionType\"4\n\020Subscrip" +
-      "tionMode\022\016\n\nCLUSTERING\020\000\022\020\n\014BROADCASTING" +
-      "\020\001\"\'\n\020SubscriptionType\022\t\n\005ASYNC\020\000\022\010\n\004SYN" +
-      "C\020\001\"\340\002\n\tHeartbeat\022=\n\006header\030\001 \001(\0132-.even" +
-      "tmesh.common.protocol.grpc.RequestHeader" +
-      "\022H\n\nclientType\030\002 \001(\01624.eventmesh.common." +
-      "protocol.grpc.Heartbeat.ClientType\022\025\n\rpr" +
-      "oducerGroup\030\003 \001(\t\022\025\n\rconsumerGroup\030\004 \001(\t" +
-      "\022O\n\016heartbeatItems\030\005 \003(\01327.eventmesh.com" +
-      "mon.protocol.grpc.Heartbeat.HeartbeatIte" +
-      "m\032+\n\rHeartbeatItem\022\r\n\005topic\030\001 \001(\t\022\013\n\003url" +
-      "\030\002 \001(\t\"\036\n\nClientType\022\007\n\003PUB\020\000\022\007\n\003SUB\020\0012\316" +
-      "\002\n\020PublisherService\022e\n\007publish\0220.eventme" +
-      "sh.common.protocol.grpc.EventMeshMessage" +
-      "\032(.eventmesh.common.protocol.grpc.Respon" +
-      "se\022j\n\014requestReply\0220.eventmesh.common.pr" +
-      "otocol.grpc.EventMeshMessage\032(.eventmesh" +
-      ".common.protocol.grpc.Response\022g\n\tbroadc" +
-      "ast\0220.eventmesh.common.protocol.grpc.Eve" +
-      "ntMeshMessage\032(.eventmesh.common.protoco" +
-      "l.grpc.Response2\322\002\n\017ConsumerService\022c\n\ts" +
-      "ubscribe\022,.eventmesh.common.protocol.grp" +
-      "c.Subscription\032(.eventmesh.common.protoc" +
-      "ol.grpc.Response\022s\n\017subscribeStream\022,.ev" +
-      "entmesh.common.protocol.grpc.Subscriptio" +
-      "n\0320.eventmesh.common.protocol.grpc.Event" +
-      "MeshMessage0\001\022e\n\013unsubscribe\022,.eventmesh" +
-      ".common.protocol.grpc.Subscription\032(.eve" +
-      "ntmesh.common.protocol.grpc.Response2t\n\020" +
-      "HeartbeatService\022`\n\theartbeat\022).eventmes" +
-      "h.common.protocol.grpc.Heartbeat\032(.event" +
-      "mesh.common.protocol.grpc.ResponseBC\n0or" +
-      "g.apache.eventmesh.common.protocol.grpc." +
-      "protosB\rEventmeshGrpcP\001b\006proto3"
+      "lue\030\002 \001(\t:\0028\001\"\260\003\n\014BatchMessage\022=\n\006header" +
+      "\030\001 \001(\0132-.eventmesh.common.protocol.grpc." +
+      "RequestHeader\022\025\n\rproducerGroup\030\002 \001(\t\022\r\n\005" +
+      "topic\030\003 \001(\t\022M\n\013messageItem\030\004 \003(\01328.event" +
+      "mesh.common.protocol.grpc.BatchMessage.M" +
+      "essageItem\032\353\001\n\013MessageItem\022\017\n\007content\030\001 " +
+      "\001(\t\022\013\n\003ttl\030\002 \001(\t\022\020\n\010uniqueId\030\003 \001(\t\022\016\n\006se" +
+      "qNum\030\004 \001(\t\022\013\n\003tag\030\005 \001(\t\022\\\n\nproperties\030\006 " +
+      "\003(\0132H.eventmesh.common.protocol.grpc.Bat" +
+      "chMessage.MessageItem.PropertiesEntry\0321\n" +
+      "\017PropertiesEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002" +
+      " \001(\t:\0028\001\"?\n\010Response\022\020\n\010respCode\030\001 \001(\t\022\017" +
+      "\n\007respMsg\030\002 \001(\t\022\020\n\010respTime\030\003 \001(\t\"\212\004\n\014Su" +
+      "bscription\022=\n\006header\030\001 \001(\0132-.eventmesh.c" +
+      "ommon.protocol.grpc.RequestHeader\022\025\n\rcon" +
+      "sumerGroup\030\002 \001(\t\022X\n\021subscriptionItems\030\003 " +
+      "\003(\0132=.eventmesh.common.protocol.grpc.Sub" +
+      "scription.SubscriptionItem\022\013\n\003url\030\004 \001(\t\032" +
+      "\274\002\n\020SubscriptionItem\022\r\n\005topic\030\001 \001(\t\022\\\n\004m" +
+      "ode\030\002 \001(\0162N.eventmesh.common.protocol.gr" +
+      "pc.Subscription.SubscriptionItem.Subscri" +
+      "ptionMode\022\\\n\004type\030\003 \001(\0162N.eventmesh.comm" +
+      "on.protocol.grpc.Subscription.Subscripti" +
+      "onItem.SubscriptionType\"4\n\020SubscriptionM" +
+      "ode\022\016\n\nCLUSTERING\020\000\022\020\n\014BROADCASTING\020\001\"\'\n" +
+      "\020SubscriptionType\022\t\n\005ASYNC\020\000\022\010\n\004SYNC\020\001\"\340" +
+      "\002\n\tHeartbeat\022=\n\006header\030\001 \001(\0132-.eventmesh" +
+      ".common.protocol.grpc.RequestHeader\022H\n\nc" +
+      "lientType\030\002 \001(\01624.eventmesh.common.proto" +
+      "col.grpc.Heartbeat.ClientType\022\025\n\rproduce" +
+      "rGroup\030\003 \001(\t\022\025\n\rconsumerGroup\030\004 \001(\t\022O\n\016h" +
+      "eartbeatItems\030\005 \003(\01327.eventmesh.common.p" +
+      "rotocol.grpc.Heartbeat.HeartbeatItem\032+\n\r" +
+      "HeartbeatItem\022\r\n\005topic\030\001 \001(\t\022\013\n\003url\030\002 \001(" +
+      "\t\"\036\n\nClientType\022\007\n\003PUB\020\000\022\007\n\003SUB\020\0012\266\003\n\020Pu" +
+      "blisherService\022e\n\007publish\0220.eventmesh.co" +
+      "mmon.protocol.grpc.EventMeshMessage\032(.ev" +
+      "entmesh.common.protocol.grpc.Response\022j\n" +
+      "\014requestReply\0220.eventmesh.common.protoco" +
+      "l.grpc.EventMeshMessage\032(.eventmesh.comm" +
+      "on.protocol.grpc.Response\022f\n\014batchPublis" +
+      "h\022,.eventmesh.common.protocol.grpc.Batch" +
+      "Message\032(.eventmesh.common.protocol.grpc" +
+      ".Response\022g\n\tbroadcast\0220.eventmesh.commo" +
+      "n.protocol.grpc.EventMeshMessage\032(.event" +
+      "mesh.common.protocol.grpc.Response2\322\002\n\017C" +
+      "onsumerService\022c\n\tsubscribe\022,.eventmesh." +
+      "common.protocol.grpc.Subscription\032(.even" +
+      "tmesh.common.protocol.grpc.Response\022s\n\017s" +
+      "ubscribeStream\022,.eventmesh.common.protoc" +
+      "ol.grpc.Subscription\0320.eventmesh.common." +
+      "protocol.grpc.EventMeshMessage0\001\022e\n\013unsu" +
+      "bscribe\022,.eventmesh.common.protocol.grpc" +
+      ".Subscription\032(.eventmesh.common.protoco" +
+      "l.grpc.Response2t\n\020HeartbeatService\022`\n\th" +
+      "eartbeat\022).eventmesh.common.protocol.grp" +
+      "c.Heartbeat\032(.eventmesh.common.protocol." +
+      "grpc.ResponseBC\n0org.apache.eventmesh.co" +
+      "mmon.protocol.grpc.protosB\rEventmeshGrpc" +
+      "P\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -155,14 +184,32 @@ public final class EventmeshGrpc {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_PropertiesEntry_descriptor,
         new String[] { "Key", "Value", });
-    internal_static_eventmesh_common_protocol_grpc_Response_descriptor =
+    internal_static_eventmesh_common_protocol_grpc_BatchMessage_descriptor =
       getDescriptor().getMessageTypes().get(2);
+    internal_static_eventmesh_common_protocol_grpc_BatchMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_eventmesh_common_protocol_grpc_BatchMessage_descriptor,
+        new String[] { "Header", "ProducerGroup", "Topic", "MessageItem", });
+    internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_descriptor =
+      internal_static_eventmesh_common_protocol_grpc_BatchMessage_descriptor.getNestedTypes().get(0);
+    internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_descriptor,
+        new String[] { "Content", "Ttl", "UniqueId", "SeqNum", "Tag", "Properties", });
+    internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_PropertiesEntry_descriptor =
+      internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_descriptor.getNestedTypes().get(0);
+    internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_PropertiesEntry_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_eventmesh_common_protocol_grpc_BatchMessage_MessageItem_PropertiesEntry_descriptor,
+        new String[] { "Key", "Value", });
+    internal_static_eventmesh_common_protocol_grpc_Response_descriptor =
+      getDescriptor().getMessageTypes().get(3);
     internal_static_eventmesh_common_protocol_grpc_Response_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_eventmesh_common_protocol_grpc_Response_descriptor,
         new String[] { "RespCode", "RespMsg", "RespTime", });
     internal_static_eventmesh_common_protocol_grpc_Subscription_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_eventmesh_common_protocol_grpc_Subscription_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_eventmesh_common_protocol_grpc_Subscription_descriptor,
@@ -174,7 +221,7 @@ public final class EventmeshGrpc {
         internal_static_eventmesh_common_protocol_grpc_Subscription_SubscriptionItem_descriptor,
         new String[] { "Topic", "Mode", "Type", });
     internal_static_eventmesh_common_protocol_grpc_Heartbeat_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(5);
     internal_static_eventmesh_common_protocol_grpc_Heartbeat_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_eventmesh_common_protocol_grpc_Heartbeat_descriptor,
