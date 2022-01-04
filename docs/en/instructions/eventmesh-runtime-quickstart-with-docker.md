@@ -4,7 +4,7 @@
 
 ### 3.1 Pull
 
-execute `docker pull eventmesh/eventmesh-rocketmq:v1.2.0` , you will get EventMesh image like below
+execute `docker pull eventmesh/eventmesh-rocketmq:v1.3.0` , you will get EventMesh image like below
 
 ![image-20210309155255510](../../images/docker/docker-image.png)
 
@@ -52,7 +52,7 @@ and [rocketmq-client.properties](https://github.com/WeBankFinTech/EventMesh/blob
 execute command below to run container
 
 ```
-docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.2.0
+docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.3.0
 ```
 
 > -p : binding the container port with host machine port
