@@ -122,8 +122,6 @@ service PublisherService {
    rpc requestReply(EventMeshMessage) returns (Response);
 
    rpc batchPublish(BatchMessage) returns (Response);
-
-   rpc broadcast(EventMeshMessage) returns (Response);
 }
 
 service ConsumerService {
