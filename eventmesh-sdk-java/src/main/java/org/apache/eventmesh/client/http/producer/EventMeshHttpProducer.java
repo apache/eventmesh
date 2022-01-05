@@ -63,17 +63,17 @@ public class EventMeshHttpProducer implements AutoCloseable {
         return openMessageProducer.request(openMessage, timeout);
     }
 
-    public void request(final EventMeshMessage message, final RRCallback rrCallback, final long timeout)
+    public void request(final EventMeshMessage message, final RRCallback<EventMeshMessage> rrCallback, final long timeout)
             throws EventMeshException {
         eventMeshMessageProducer.request(message, rrCallback, timeout);
     }
 
-    public void request(final CloudEvent cloudEvent, final RRCallback rrCallback, final long timeout)
+    public void request(final CloudEvent cloudEvent, final RRCallback<CloudEvent> rrCallback, final long timeout)
             throws EventMeshException {
         cloudEventProducer.request(cloudEvent, rrCallback, timeout);
     }
 
-    public void request(final Message openMessage, final RRCallback rrCallback, final long timeout)
+    public void request(final Message openMessage, final RRCallback<Message> rrCallback, final long timeout)
             throws EventMeshException {
         openMessageProducer.request(openMessage, rrCallback, timeout);
     }

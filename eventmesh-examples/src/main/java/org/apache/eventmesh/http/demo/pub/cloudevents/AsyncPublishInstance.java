@@ -100,7 +100,7 @@ public class AsyncPublishInstance {
                         .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
                         .build();
                 eventMeshHttpProducer.publish(event);
-                log.info("publish event success content:{}",content);
+                log.info("publish event success content:{}", content);
             }
             Thread.sleep(30000);
         }
