@@ -37,8 +37,8 @@ github:
     - microservice
     - state-management
   enabled_merge_buttons:
-    merge:   true
     squash:  true
+    merge:   true
     rebase:  false
   protected_branches:
     master:
