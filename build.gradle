@@ -80,7 +80,7 @@ allprojects {
 task tar(type: Tar) {
     extension = 'tar.gz'
     compression = Compression.GZIP
-    archiveFileName = project.name + '_' + project.version + '.' + extension
+    archiveFileName = project.name + '-' + project.version + '.' + extension
     destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
@@ -89,7 +89,7 @@ task tar(type: Tar) {
 
 task zip(type: Zip) {
     extension = 'zip'
-    archiveFileName = project.name + '.' + project.version + '.' + extension
+    archiveFileName = project.name + '-' + project.version + '.' + extension
     destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
