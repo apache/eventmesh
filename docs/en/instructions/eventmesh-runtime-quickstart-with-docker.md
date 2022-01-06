@@ -61,7 +61,7 @@ sudo touch eventmesh.properties
 sudo touch rocketmq-client.properties
 ```
 
-###eventMesh.properties
+### eventMesh.properties
 
 It contains properties of  EventMesh runtime env and integrated plugins.
 
