@@ -8,7 +8,7 @@
 1. 建议使用64位的 linux 系统。
 2. 请预先安装 Docker Engine。 Docker 的安装过程可以参考 [docker 官方文档](https://docs.docker.com/engine/install/).
 3. 建议掌握基础的 docker 概念和命令行，例如注册中心、挂载等等。不过这不是必须的，因为所有使用到的命令行都列出来了。
-4. [RocketMQ成功的在运行](https://rocketmq.apache.org/docs/quick-start/) 并且可以使用 ip 地址访问到。
+4. [RocketMQ 成功的在运行](https://rocketmq.apache.org/docs/quick-start/) 并且可以使用 ip 地址访问到。
 
 ## 获取 EventMesh 镜像
 首先，你可以打开一个命令行，并且使用下面的 ```pull``` 命令从 [Docker Hub](https://registry.hub.docker.com/r/eventmesh/eventmesh/tags) 中下载[最新发布的 EventMesh](https://eventmesh.apache.org/events/release-notes/v1.3.0/) 。
@@ -62,7 +62,7 @@ sudo touch eventmesh.properties
 sudo touch rocketmq-client.properties
 ```
 
-### 配置eventMesh.properties
+### 配置 eventMesh.properties
 
 这个配置文件中包含 EventMesh 运行时环境和集成进来的其他插件所需的参数。
 
@@ -81,7 +81,7 @@ sudo vi eventmesh.properties
 
 
 
-### 配置rocketmq-client.properties
+### 配置 rocketmq-client.properties
 
 这个配置文件中包含 RocketMQ nameserver 的一些信息。
 
@@ -148,6 +148,6 @@ sudo docker rm -f [your container id or name]
 ```
 
 ## 探索更多
-既然 EventMesh 已经通过容器运行了，现在你可以参考 [```eventmesh-examples模块```](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) 编写并测试自己的代码了。
+既然 EventMesh 已经通过容器运行了，现在你可以参考 [```eventmesh-examples``` 模块](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) 编写并测试自己的代码了。
 
 希望你享受这个过程并获得更多收获！
