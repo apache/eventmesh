@@ -20,6 +20,7 @@ dependencies {
     implementation "io.cloudevents:cloudevents-core"
     implementation "com.google.guava:guava"
     implementation "io.cloudevents:cloudevents-json-jackson"
+    implementation "io.grpc:grpc-protobuf:1.15.0"
 
     testImplementation "junit:junit"
 }

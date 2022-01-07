@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
@@ -103,6 +104,13 @@ public class WebhookPushRequest extends AbstractPushRequest {
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshGrpcConfiguration.eventMeshIp);
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshGrpcConfiguration.eventMeshEnv);
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshGrpcConfiguration.eventMeshIDC);
+
+        RequestHeader requestHeader = eventMeshMessage.getHeader();
+        builder.addHeader(ProtocolKey.PROTOCOL_TYPE, requestHeader.getProtocolType());
+        builder.addHeader(ProtocolKey.PROTOCOL_DESC, requestHeader.getProtocolDesc());
+        builder.addHeader(ProtocolKey.PROTOCOL_VERSION, requestHeader.getProtocolVersion());
+        builder.addHeader(ProtocolKey.CONTENT_TYPE, eventMeshMessage.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE,
+            "application/cloudevents+json"));
 
         List<NameValuePair> body = new ArrayList<>();
         body.add(new BasicNameValuePair(PushMessageRequestBody.CONTENT, eventMeshMessage.getContent()));

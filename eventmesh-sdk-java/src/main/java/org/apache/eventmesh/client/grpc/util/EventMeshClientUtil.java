@@ -8,10 +8,9 @@ import org.apache.eventmesh.common.utils.ThreadUtils;
 
 public class EventMeshClientUtil {
 
-    private final static String PROTOCOL_TYPE = "eventmeshmessage";
     private final static String PROTOCOL_DESC = "grpc";
 
-    public static RequestHeader buildHeader(EventMeshGrpcClientConfig clientConfig) {
+    public static RequestHeader buildHeader(EventMeshGrpcClientConfig clientConfig, String protocolType) {
         RequestHeader header = RequestHeader.newBuilder()
             .setEnv(clientConfig.getEnv())
             .setIdc(clientConfig.getIdc())
@@ -21,7 +20,7 @@ public class EventMeshClientUtil {
             .setLanguage(clientConfig.getLanguage())
             .setUsername(clientConfig.getUserName())
             .setPassword(clientConfig.getPassword())
-            .setProtocolType(PROTOCOL_TYPE)
+            .setProtocolType(protocolType)
             .setProtocolDesc(PROTOCOL_DESC)
             // default CloudEvents version is V1
             .setProtocolVersion(SpecVersion.V1.toString())

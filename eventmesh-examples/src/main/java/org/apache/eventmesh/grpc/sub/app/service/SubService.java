@@ -26,7 +26,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.Subscriptio
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionType;
 import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.grpc.pub.AsyncPublishInstance;
+import org.apache.eventmesh.grpc.pub.eventmeshmessage.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

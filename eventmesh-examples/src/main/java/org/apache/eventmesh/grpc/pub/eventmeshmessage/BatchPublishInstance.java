@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.grpc.pub;
+package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
