@@ -42,7 +42,7 @@ public class ThreadPoolFactory {
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue,
                                                               final String threadName, final boolean isDaemon) {
         return new ThreadPoolExecutor(core, max, 10 * 1000, TimeUnit.MILLISECONDS, blockingQueue,
-            new ThreadFactoryBuilder().setNameFormat(threadName).setDaemon(isDaemon).build()
+                new ThreadFactoryBuilder().setNameFormat(threadName).setDaemon(isDaemon).build()
         );
     }
 

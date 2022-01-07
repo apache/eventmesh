@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.tcp.common;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import io.cloudevents.core.v1.CloudEventV1;
 import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
 import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_SyncSubscribeTest;
 import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientBroadCast;
@@ -41,44 +38,47 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+
 public class EventMeshTestUtils {
     private static final int seqLength = 10;
 
     // generate pub-client
     public static UserAgent generateClient1() {
         UserAgent agent = UserAgent.builder()
-            .env("test")
-            .host("127.0.0.1")
-            .password(generateRandomString(8))
-            .username("PU4283")
-            .producerGroup("EventmeshTest-ProducerGroup")
-            .consumerGroup("EventmeshTest-ConsumerGroup")
-            .path("/data/app/umg_proxy")
-            .port(8362)
-            .subsystem("5023")
-            .pid(32893)
-            .version("2.0.11")
-            .idc("FT")
-            .build();
+                .env("test")
+                .host("127.0.0.1")
+                .password(generateRandomString(8))
+                .username("PU4283")
+                .producerGroup("EventmeshTest-ProducerGroup")
+                .consumerGroup("EventmeshTest-ConsumerGroup")
+                .path("/data/app/umg_proxy")
+                .port(8362)
+                .subsystem("5023")
+                .pid(32893)
+                .version("2.0.11")
+                .idc("FT")
+                .build();
         return MessageUtils.generatePubClient(agent);
     }
 
     // generate sub-client
     public static UserAgent generateClient2() {
         UserAgent agent = UserAgent.builder()
-            .env("test")
-            .host("127.0.0.1")
-            .password(generateRandomString(8))
-            .username("PU4283")
-            .producerGroup("EventmeshTest-ProducerGroup")
-            .consumerGroup("EventmeshTest-ConsumerGroup")
-            .path("/data/app/umg_proxy")
-            .port(9362)
-            .subsystem("5017")
-            .pid(42893)
-            .version("2.0.11")
-            .idc("FT")
-            .build();
+                .env("test")
+                .host("127.0.0.1")
+                .password(generateRandomString(8))
+                .username("PU4283")
+                .producerGroup("EventmeshTest-ProducerGroup")
+                .consumerGroup("EventmeshTest-ConsumerGroup")
+                .path("/data/app/umg_proxy")
+                .port(9362)
+                .subsystem("5017")
+                .pid(42893)
+                .version("2.0.11")
+                .idc("FT")
+                .build();
         return MessageUtils.generateSubClient(agent);
     }
 
@@ -171,14 +171,14 @@ public class EventMeshTestUtils {
         content.put("content", "testAsyncMessage");
 
         CloudEvent event = CloudEventBuilder.v1()
-            .withId(UUID.randomUUID().toString())
-            .withSubject(TOPIC_PRX_WQ2ClientUniCast)
-            .withSource(URI.create("/"))
-            .withDataContentType("application/cloudevents+json")
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-            .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
-            .withExtension("ttl", "30000")
-            .build();
+                .withId(UUID.randomUUID().toString())
+                .withSubject(TOPIC_PRX_WQ2ClientUniCast)
+                .withSource(URI.create("/"))
+                .withDataContentType("application/cloudevents+json")
+                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+                .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
+                .withExtension("ttl", "30000")
+                .build();
         return event;
     }
 
@@ -187,16 +187,16 @@ public class EventMeshTestUtils {
         content.put("content", "testSyncRR");
 
         CloudEvent event = CloudEventBuilder.v1()
-            .withId(UUID.randomUUID().toString())
-            .withSubject(TOPIC_PRX_SyncSubscribeTest)
-            .withSource(URI.create("/"))
-            .withDataContentType("application/cloudevents+json")
-            .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
-            .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
-            .withExtension("ttl", "30000")
-            .withExtension("msgtype", "persistent")
-            .withExtension("keys", generateRandomString(16))
-            .build();
+                .withId(UUID.randomUUID().toString())
+                .withSubject(TOPIC_PRX_SyncSubscribeTest)
+                .withSource(URI.create("/"))
+                .withDataContentType("application/cloudevents+json")
+                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+                .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
+                .withExtension("ttl", "30000")
+                .withExtension("msgtype", "persistent")
+                .withExtension("keys", generateRandomString(16))
+                .build();
         return event;
     }
 }

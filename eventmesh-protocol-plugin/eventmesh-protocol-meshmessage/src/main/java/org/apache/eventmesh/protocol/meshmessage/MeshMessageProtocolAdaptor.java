@@ -116,9 +116,10 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             HttpCommand httpCommand = new HttpCommand();
             Body body = new Body() {
                 final Map<String, Object> map = new HashMap<>();
+
                 @Override
                 public Map<String, Object> toMap() {
-                    map.put("content",  new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
+                    map.put("content", new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
                     return map;
                 }
             };

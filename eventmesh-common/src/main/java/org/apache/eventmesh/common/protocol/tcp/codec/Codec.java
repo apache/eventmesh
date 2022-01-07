@@ -34,6 +34,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.ReplayingDecoder;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -41,24 +46,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Preconditions;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToByteEncoder;
-import io.netty.handler.codec.ReplayingDecoder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Codec {
 
-    private static final int     FRAME_MAX_LENGTH = 1024 * 1024 * 4;
-    private static final Charset DEFAULT_CHARSET  = Charset.forName(Constants.DEFAULT_CHARSET);
+    private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
+    private static final Charset DEFAULT_CHARSET = Charset.forName(Constants.DEFAULT_CHARSET);
 
     private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
-    private static final byte[] VERSION             = serializeBytes("0000");
+    private static final byte[] VERSION = serializeBytes("0000");
 
     // todo: move to constants
     public static String CLOUD_EVENTS_PROTOCOL_NAME = "cloudevents";
-    public static String EM_MESSAGE_PROTOCOL_NAME   = "eventmeshmessage";
+    public static String EM_MESSAGE_PROTOCOL_NAME = "eventmeshmessage";
     public static String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
 
     // todo: use json util
@@ -178,8 +179,8 @@ public class Codec {
         private void validateFlag(byte[] flagBytes, byte[] versionBytes, ChannelHandlerContext ctx) {
             if (!Arrays.equals(flagBytes, CONSTANT_MAGIC_FLAG) || !Arrays.equals(versionBytes, VERSION)) {
                 String errorMsg = String.format(
-                    "invalid magic flag or version|flag=%s|version=%s|remoteAddress=%s",
-                    deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
+                        "invalid magic flag or version|flag=%s|version=%s|remoteAddress=%s",
+                        deserializeBytes(flagBytes), deserializeBytes(versionBytes), ctx.channel().remoteAddress());
                 throw new IllegalArgumentException(errorMsg);
             }
         }

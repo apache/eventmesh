@@ -17,12 +17,14 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import org.apache.eventmesh.api.*;
+import org.apache.eventmesh.api.AsyncConsumeContext;
 import org.apache.eventmesh.api.EventListener;
+import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
+import org.apache.eventmesh.api.RequestReplyCallback;
+import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -43,7 +45,13 @@ import org.apache.eventmesh.runtime.util.HttpTinyClient;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -51,6 +59,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 
 public class ClientGroupWrapper {
@@ -93,7 +104,7 @@ public class ClientGroupWrapper {
     private MQConsumerWrapper broadCastMsgConsumer;
 
     private ConcurrentHashMap<String, Set<Session>> topic2sessionInGroupMapping =
-        new ConcurrentHashMap<String, Set<Session>>();
+            new ConcurrentHashMap<String, Set<Session>>();
 
     public AtomicBoolean producerStarted = new AtomicBoolean(Boolean.FALSE);
 
@@ -111,11 +122,11 @@ public class ClientGroupWrapper {
         this.eventMeshTcpMonitor = eventMeshTCPServer.getEventMeshTcpMonitor();
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
         this.persistentMsgConsumer = new MQConsumerWrapper(
-            eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
+                eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
         this.broadCastMsgConsumer = new MQConsumerWrapper(
-            eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
+                eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
         this.mqProducerWrapper = new MQProducerWrapper(
-            eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
+                eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType);
     }
 
     public ConcurrentHashMap<String, Set<Session>> getTopic2sessionInGroupMapping() {
@@ -137,13 +148,13 @@ public class ClientGroupWrapper {
     }
 
     public boolean send(UpStreamMsgContext upStreamMsgContext, SendCallback sendCallback)
-        throws Exception {
+            throws Exception {
         mqProducerWrapper.send(upStreamMsgContext.getEvent(), sendCallback);
         return true;
     }
 
     public void request(UpStreamMsgContext upStreamMsgContext, RequestReplyCallback rrCallback, long timeout)
-        throws Exception {
+            throws Exception {
         mqProducerWrapper.request(upStreamMsgContext.getEvent(), rrCallback, timeout);
     }
 
@@ -158,8 +169,8 @@ public class ClientGroupWrapper {
             public void onException(OnExceptionContext context) {
                 String bizSeqNo = (String) upStreamMsgContext.getEvent().getExtension(EventMeshConstants.PROPERTY_MESSAGE_KEYS);
                 logger.error("reply err! topic:{}, bizSeqNo:{}, client:{}",
-                    upStreamMsgContext.getEvent().getSubject(), bizSeqNo,
-                    upStreamMsgContext.getSession().getClient(), context.getException());
+                        upStreamMsgContext.getEvent().getSubject(), bizSeqNo,
+                        upStreamMsgContext.getSession().getClient(), context.getException());
             }
         });
         return true;
@@ -171,7 +182,7 @@ public class ClientGroupWrapper {
 
     public boolean addSubscription(String topic, Session session) throws Exception {
         if (session == null || !StringUtils.equalsIgnoreCase(consumerGroup,
-            EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
+                EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
             logger.error("addSubscription param error,topic:{},session:{}", topic, session);
             return false;
         }
@@ -186,15 +197,15 @@ public class ClientGroupWrapper {
             r = topic2sessionInGroupMapping.get(topic).add(session);
             if (r) {
                 logger.info("addSubscription success, group:{} topic:{} client:{}", consumerGroup,
-                    topic, session.getClient());
+                        topic, session.getClient());
             } else {
                 logger
-                    .warn("addSubscription fail, group:{} topic:{} client:{}", consumerGroup, topic,
-                        session.getClient());
+                        .warn("addSubscription fail, group:{} topic:{} client:{}", consumerGroup, topic,
+                                session.getClient());
             }
         } catch (Exception e) {
             logger
-                .error("addSubscription error! topic:{} client:{}", topic, session.getClient(), e);
+                    .error("addSubscription error! topic:{} client:{}", topic, session.getClient(), e);
             throw new Exception("addSubscription fail");
         } finally {
             this.groupLock.writeLock().unlock();
@@ -204,8 +215,8 @@ public class ClientGroupWrapper {
 
     public boolean removeSubscription(String topic, Session session) {
         if (session == null
-            || !StringUtils.equalsIgnoreCase(consumerGroup,
-            EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
+                || !StringUtils.equalsIgnoreCase(consumerGroup,
+                EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
             logger.error("removeSubscription param error,topic:{},session:{}", topic, session);
             return false;
         }
@@ -217,22 +228,22 @@ public class ClientGroupWrapper {
                 r = topic2sessionInGroupMapping.get(topic).remove(session);
                 if (r) {
                     logger.info(
-                        "removeSubscription remove session success, group:{} topic:{} client:{}",
-                        consumerGroup, topic, session.getClient());
+                            "removeSubscription remove session success, group:{} topic:{} client:{}",
+                            consumerGroup, topic, session.getClient());
                 } else {
                     logger.warn(
-                        "removeSubscription remove session failed, group:{} topic:{} client:{}",
-                        consumerGroup, topic, session.getClient());
+                            "removeSubscription remove session failed, group:{} topic:{} client:{}",
+                            consumerGroup, topic, session.getClient());
                 }
             }
             if (CollectionUtils.size(topic2sessionInGroupMapping.get(topic)) == 0) {
                 topic2sessionInGroupMapping.remove(topic);
                 logger.info("removeSubscription remove topic success, group:{} topic:{}",
-                    consumerGroup, topic);
+                        consumerGroup, topic);
             }
         } catch (Exception e) {
             logger.error("removeSubscription error! topic:{} client:{}", topic, session.getClient(),
-                e);
+                    e);
         } finally {
             this.groupLock.writeLock().unlock();
         }
@@ -247,7 +258,7 @@ public class ClientGroupWrapper {
         Properties keyValue = new Properties();
         keyValue.put("producerGroup", producerGroup);
         keyValue.put("instanceName", EventMeshUtil
-            .buildMeshTcpClientID(sysId, "PUB", eventMeshTCPConfiguration.eventMeshCluster));
+                .buildMeshTcpClientID(sysId, "PUB", eventMeshTCPConfiguration.eventMeshCluster));
 
         //TODO for defibus
         keyValue.put("eventMeshIDC", eventMeshTCPConfiguration.eventMeshIDC);
@@ -285,8 +296,8 @@ public class ClientGroupWrapper {
 
     public boolean addGroupConsumerSession(Session session) {
         if (session == null
-            || !StringUtils.equalsIgnoreCase(consumerGroup,
-            EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
+                || !StringUtils.equalsIgnoreCase(consumerGroup,
+                EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
             logger.error("addGroupConsumerSession param error,session:{}", session);
             return false;
         }
@@ -297,11 +308,11 @@ public class ClientGroupWrapper {
             r = groupConsumerSessions.add(session);
             if (r) {
                 logger.info("addGroupConsumerSession success, group:{} client:{}", consumerGroup,
-                    session.getClient());
+                        session.getClient());
             }
         } catch (Exception e) {
             logger.error("addGroupConsumerSession error! group:{} client:{}", consumerGroup,
-                session.getClient(), e);
+                    session.getClient(), e);
         } finally {
             this.groupLock.writeLock().unlock();
         }
@@ -310,8 +321,8 @@ public class ClientGroupWrapper {
 
     public boolean addGroupProducerSession(Session session) {
         if (session == null
-            || !StringUtils.equalsIgnoreCase(producerGroup,
-            EventMeshUtil.buildClientGroup(session.getClient().getProducerGroup()))) {
+                || !StringUtils.equalsIgnoreCase(producerGroup,
+                EventMeshUtil.buildClientGroup(session.getClient().getProducerGroup()))) {
             logger.error("addGroupProducerSession param error,session:{}", session);
             return false;
         }
@@ -322,11 +333,11 @@ public class ClientGroupWrapper {
             r = groupProducerSessions.add(session);
             if (r) {
                 logger.info("addGroupProducerSession success, group:{} client:{}", producerGroup,
-                    session.getClient());
+                        session.getClient());
             }
         } catch (Exception e) {
             logger.error("addGroupProducerSession error! group:{} client:{}", producerGroup,
-                session.getClient(), e);
+                    session.getClient(), e);
         } finally {
             this.groupLock.writeLock().unlock();
         }
@@ -335,8 +346,8 @@ public class ClientGroupWrapper {
 
     public boolean removeGroupConsumerSession(Session session) {
         if (session == null
-            || !StringUtils.equalsIgnoreCase(consumerGroup,
-            EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
+                || !StringUtils.equalsIgnoreCase(consumerGroup,
+                EventMeshUtil.buildClientGroup(session.getClient().getConsumerGroup()))) {
             logger.error("removeGroupConsumerSession param error,session:{}", session);
             return false;
         }
@@ -347,11 +358,11 @@ public class ClientGroupWrapper {
             r = groupConsumerSessions.remove(session);
             if (r) {
                 logger.info("removeGroupConsumerSession success, group:{} client:{}", consumerGroup,
-                    session.getClient());
+                        session.getClient());
             }
         } catch (Exception e) {
             logger.error("removeGroupConsumerSession error! group:{} client:{}", consumerGroup,
-                session.getClient(), e);
+                    session.getClient(), e);
         } finally {
             this.groupLock.writeLock().unlock();
         }
@@ -360,8 +371,8 @@ public class ClientGroupWrapper {
 
     public boolean removeGroupProducerSession(Session session) {
         if (session == null
-            || !StringUtils.equalsIgnoreCase(producerGroup,
-            EventMeshUtil.buildClientGroup(session.getClient().getProducerGroup()))) {
+                || !StringUtils.equalsIgnoreCase(producerGroup,
+                EventMeshUtil.buildClientGroup(session.getClient().getProducerGroup()))) {
             logger.error("removeGroupProducerSession param error,session:{}", session);
             return false;
         }
@@ -372,11 +383,11 @@ public class ClientGroupWrapper {
             r = groupProducerSessions.remove(session);
             if (r) {
                 logger.info("removeGroupProducerSession success, group:{} client:{}", producerGroup,
-                    session.getClient());
+                        session.getClient());
             }
         } catch (Exception e) {
             logger.error("removeGroupProducerSession error! group:{} client:{}", producerGroup,
-                session.getClient(), e);
+                    session.getClient(), e);
         } finally {
             this.groupLock.writeLock().unlock();
         }
@@ -394,7 +405,7 @@ public class ClientGroupWrapper {
         keyValue.put("consumerGroup", consumerGroup);
         keyValue.put("eventMeshIDC", eventMeshTCPConfiguration.eventMeshIDC);
         keyValue.put("instanceName", EventMeshUtil
-            .buildMeshTcpClientID(sysId, "SUB", eventMeshTCPConfiguration.eventMeshCluster));
+                .buildMeshTcpClientID(sysId, "SUB", eventMeshTCPConfiguration.eventMeshCluster));
 
         persistentMsgConsumer.init(keyValue);
 
@@ -421,7 +432,7 @@ public class ClientGroupWrapper {
         keyValue.put("consumerGroup", consumerGroup);
         keyValue.put("eventMeshIDC", eventMeshTCPConfiguration.eventMeshIDC);
         keyValue.put("instanceName", EventMeshUtil
-            .buildMeshTcpClientID(sysId, "SUB", eventMeshTCPConfiguration.eventMeshCluster));
+                .buildMeshTcpClientID(sysId, "SUB", eventMeshTCPConfiguration.eventMeshCluster));
         broadCastMsgConsumer.init(keyValue);
 
         inited4Broadcast.compareAndSet(false, true);
@@ -447,18 +458,18 @@ public class ClientGroupWrapper {
                     eventMeshTcpMonitor.getMq2EventMeshMsgNum().incrementAndGet();
                     event = CloudEventBuilder.from(event)
                             .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
-                            String.valueOf(System.currentTimeMillis()))
+                                    String.valueOf(System.currentTimeMillis()))
                             .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
                                     eventMeshTCPConfiguration.eventMeshServerIp).build();
                     String topic = event.getSubject();
-//                        message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
-//                    message.getSystemProperties().put(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
-//                        String.valueOf(System.currentTimeMillis()));
-//                    message.getSystemProperties().put(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
-//                        eventMeshTCPConfiguration.eventMeshServerIp);
+                    //    message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
+                    //message.getSystemProperties().put(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
+                    //    String.valueOf(System.currentTimeMillis()));
+                    //message.getSystemProperties().put(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
+                    //    eventMeshTCPConfiguration.eventMeshServerIp);
 
                     EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
-                        (EventMeshAsyncConsumeContext) context;
+                            (EventMeshAsyncConsumeContext) context;
                     if (CollectionUtils.isEmpty(groupConsumerSessions)) {
                         logger.warn("found no session to downstream broadcast msg");
                         eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
@@ -468,17 +479,17 @@ public class ClientGroupWrapper {
                     Iterator<Session> sessionsItr = groupConsumerSessions.iterator();
 
                     DownStreamMsgContext downStreamMsgContext =
-                        new DownStreamMsgContext(event, null, broadCastMsgConsumer,
-                            eventMeshAsyncConsumeContext.getAbstractContext(), false,
-                            subscriptionItem);
+                            new DownStreamMsgContext(event, null, broadCastMsgConsumer,
+                                    eventMeshAsyncConsumeContext.getAbstractContext(), false,
+                                    subscriptionItem);
 
                     while (sessionsItr.hasNext()) {
                         Session session = sessionsItr.next();
 
                         if (!session.isAvailable(topic)) {
                             logger
-                                .warn("downstream broadcast msg,session is not available,client:{}",
-                                    session.getClient());
+                                    .warn("downstream broadcast msg,session is not available,client:{}",
+                                            session.getClient());
                             continue;
                         }
 
@@ -486,15 +497,15 @@ public class ClientGroupWrapper {
 
                         //downstream broadcast msg asynchronously
                         eventMeshTCPServer.getBroadcastMsgDownstreamExecutorService()
-                            .submit(new Runnable() {
-                                @Override
-                                public void run() {
-                                    //msg put in eventmesh,waiting client ack
-                                    session.getPusher()
-                                        .unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
-                                    session.downstreamMsg(downStreamMsgContext);
-                                }
-                            });
+                                .submit(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //msg put in eventmesh,waiting client ack
+                                        session.getPusher()
+                                                .unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
+                                        session.downstreamMsg(downStreamMsgContext);
+                                    }
+                                });
                     }
 
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
@@ -514,9 +525,9 @@ public class ClientGroupWrapper {
                     String topic = event.getSubject();
 
                     EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
-                        (EventMeshAsyncConsumeContext) context;
+                            (EventMeshAsyncConsumeContext) context;
                     Session session = downstreamDispatchStrategy
-                        .select(consumerGroup, topic, groupConsumerSessions);
+                            .select(consumerGroup, topic, groupConsumerSessions);
                     String bizSeqNo = EventMeshUtil.getMessageBizSeq(event);
                     if (session == null) {
                         try {
@@ -532,19 +543,19 @@ public class ClientGroupWrapper {
                             }
 
                             logger.error(
-                                "found no session to downstream msg,groupName:{}, topic:{}, "
-                                    + "bizSeqNo:{}, sendBackTimes:{}, sendBackFromEventMeshIp:{}",
-                                consumerGroup, topic, bizSeqNo, sendBackTimes,
-                                sendBackFromEventMeshIp);
+                                    "found no session to downstream msg,groupName:{}, topic:{}, "
+                                            + "bizSeqNo:{}, sendBackTimes:{}, sendBackFromEventMeshIp:{}",
+                                    consumerGroup, topic, bizSeqNo, sendBackTimes,
+                                    sendBackFromEventMeshIp);
 
                             if (sendBackTimes >= eventMeshTCPServer
-                                .getEventMeshTCPConfiguration().eventMeshTcpSendBackMaxTimes) {
+                                    .getEventMeshTCPConfiguration().eventMeshTcpSendBackMaxTimes) {
                                 logger.error(
-                                    "sendBack to broker over max times:{}, groupName:{}, topic:{}, "
-                                        + "bizSeqNo:{}", eventMeshTCPServer
-                                        .getEventMeshTCPConfiguration()
-                                        .eventMeshTcpSendBackMaxTimes,
-                                    consumerGroup, topic, bizSeqNo);
+                                        "sendBack to broker over max times:{}, groupName:{}, topic:{}, "
+                                                + "bizSeqNo:{}", eventMeshTCPServer
+                                                .getEventMeshTCPConfiguration()
+                                                .eventMeshTcpSendBackMaxTimes,
+                                        consumerGroup, topic, bizSeqNo);
                             } else {
                                 sendBackTimes++;
                                 event = CloudEventBuilder.from(event)
@@ -563,9 +574,9 @@ public class ClientGroupWrapper {
                     }
 
                     DownStreamMsgContext downStreamMsgContext =
-                        new DownStreamMsgContext(event, session, persistentMsgConsumer,
-                            eventMeshAsyncConsumeContext.getAbstractContext(), false,
-                            subscriptionItem);
+                            new DownStreamMsgContext(event, session, persistentMsgConsumer,
+                                    eventMeshAsyncConsumeContext.getAbstractContext(), false,
+                                    subscriptionItem);
                     //msg put in eventmesh,waiting client ack
                     session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
                     session.downstreamMsg(downStreamMsgContext);
@@ -642,7 +653,7 @@ public class ClientGroupWrapper {
     }
 
     public void setDownstreamDispatchStrategy(
-        DownstreamDispatchStrategy downstreamDispatchStrategy) {
+            DownstreamDispatchStrategy downstreamDispatchStrategy) {
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
     }
 
@@ -653,12 +664,12 @@ public class ClientGroupWrapper {
     private String pushMsgToEventMesh(CloudEvent msg, String ip, int port) throws Exception {
         StringBuilder targetUrl = new StringBuilder();
         targetUrl.append("http://").append(ip).append(":").append(port)
-            .append("/eventMesh/msg/push");
+                .append("/eventMesh/msg/push");
         HttpTinyClient.HttpResult result = null;
 
         try {
             logger.info("pushMsgToEventMesh,targetUrl:{},msg:{}", targetUrl.toString(),
-                msg);
+                    msg);
             List<String> paramValues = new ArrayList<String>();
             paramValues.add("msg");
             paramValues.add(JsonUtils.serialize(msg));
@@ -666,23 +677,23 @@ public class ClientGroupWrapper {
             paramValues.add(consumerGroup);
 
             result = HttpTinyClient.httpPost(
-                targetUrl.toString(),
-                null,
-                paramValues,
-                "UTF-8",
-                3000);
+                    targetUrl.toString(),
+                    null,
+                    paramValues,
+                    "UTF-8",
+                    3000);
         } catch (Exception e) {
             logger.error("httpPost " + targetUrl + " is fail,", e);
             //throw new RuntimeException("httpPost " + targetUrl + " is fail," , e);
             throw e;
         }
 
-        if (200 == result.code && result.content != null) {
-            return result.content;
+        if (200 == result.getCode() && result.getContent() != null) {
+            return result.getContent();
 
         } else {
             throw new Exception("httpPost targetUrl[" + targetUrl
-                + "] is not OK when getContentThroughHttp, httpResult: " + result + ".");
+                    + "] is not OK when getContentThroughHttp, httpResult: " + result + ".");
         }
     }
 
@@ -698,22 +709,22 @@ public class ClientGroupWrapper {
             long startTime = System.currentTimeMillis();
             long taskExcuteTime = startTime;
             send(new UpStreamMsgContext(null, event, null, startTime, taskExcuteTime),
-                new SendCallback() {
-                    @Override
-                    public void onSuccess(SendResult sendResult) {
-                        logger.info(
-                            "consumerGroup:{} consume fail, sendMessageBack success, bizSeqno:{}, "
-                                + "topic:{}", consumerGroup, bizSeqNo, topic);
-                    }
+                    new SendCallback() {
+                        @Override
+                        public void onSuccess(SendResult sendResult) {
+                            logger.info(
+                                    "consumerGroup:{} consume fail, sendMessageBack success, bizSeqno:{}, "
+                                            + "topic:{}", consumerGroup, bizSeqNo, topic);
+                        }
 
-                    @Override
-                    public void onException(OnExceptionContext context) {
-                        logger.warn(
-                            "consumerGroup:{} consume fail, sendMessageBack fail, bizSeqno:{},"
-                                + " topic:{}", consumerGroup, bizSeqNo, topic);
-                    }
+                        @Override
+                        public void onException(OnExceptionContext context) {
+                            logger.warn(
+                                    "consumerGroup:{} consume fail, sendMessageBack fail, bizSeqno:{},"
+                                            + " topic:{}", consumerGroup, bizSeqNo, topic);
+                        }
 
-                });
+                    });
             eventMeshTcpMonitor.getEventMesh2mqMsgNum().incrementAndGet();
         } catch (Exception e) {
             logger.warn("try send msg back to broker failed");

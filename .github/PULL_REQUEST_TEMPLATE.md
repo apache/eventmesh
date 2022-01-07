@@ -20,10 +20,10 @@
 -->
 
 <!--
-(If this PR fixes a GitHub issue, please add `Fixes ISSUE#<XXX>`.)
+(If this PR fixes a GitHub issue, please add `Fixes ISSUE #<XXX>`.)
 -->
 
-Fixes ISSUE#<XXXX>.
+Fixes ISSUE #<XXXX>.
 
 ### Motivation
 

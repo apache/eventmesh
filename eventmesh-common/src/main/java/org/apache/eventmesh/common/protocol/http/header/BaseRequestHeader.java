@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.common.protocol.http.header;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
 import org.apache.commons.collections4.MapUtils;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class BaseRequestHeader extends Header {
     private String code;

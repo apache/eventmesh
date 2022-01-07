@@ -17,29 +17,33 @@
 
 package org.apache.eventmesh.common.config;
 
-import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+
 public class ConfigurationWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
-
+    
+    private static final long TIME_INTERVAL = 30 * 1000L;
+    
     private String file;
 
     private Properties properties = new Properties();
 
-    private boolean reload = true;
+    private boolean reload;
 
     private ScheduledExecutorService configLoader = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-configLoader-");
 
@@ -52,20 +56,18 @@ public class ConfigurationWrapper {
     private void init() {
         load();
         if (this.reload) {
-            configLoader.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    load();
-                }
-            }, 30 * 1000, 30 * 1000, TimeUnit.MILLISECONDS);
+            configLoader.scheduleAtFixedRate(this::load, TIME_INTERVAL, TIME_INTERVAL, TimeUnit.MILLISECONDS);
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                logger.info("Configuration reload task closed");
+                configLoader.shutdownNow();
+            }));
         }
     }
 
     private void load() {
         try {
             logger.info("loading config: {}", file);
-            properties.load(new BufferedReader(new FileReader(
-                    new File(file))));
+            properties.load(new BufferedReader(new FileReader(file)));
         } catch (IOException e) {
             logger.error("loading properties [{}] error", file, e);
         }

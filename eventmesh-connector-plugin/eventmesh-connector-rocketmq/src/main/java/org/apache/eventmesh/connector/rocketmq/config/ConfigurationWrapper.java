@@ -44,7 +44,7 @@ public class ConfigurationWrapper {
             properties.load(new BufferedReader(new FileReader(configFile)));
         } catch (IOException e) {
             throw new IllegalArgumentException(
-                String.format("Cannot load RocketMQ configuration file from :%s", configFile));
+                    String.format("Cannot load RocketMQ configuration file from :%s", configFile));
         }
     }
 

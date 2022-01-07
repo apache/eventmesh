@@ -22,13 +22,14 @@ import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownStreamMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventMeshTcpRetryer {
 
@@ -87,20 +88,14 @@ public class EventMeshTcpRetryer {
     }
 
     public void init() {
-        dispatcher = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    RetryContext retryContext = null;
-                    while ((retryContext = retrys.take()) != null) {
-                        final RetryContext finalRetryContext = retryContext;
-                        pool.execute(() -> {
-                            finalRetryContext.retry();
-                        });
-                    }
-                } catch (Exception e) {
-                    logger.error("retry-dispatcher error!", e);
+        dispatcher = new Thread(() -> {
+            try {
+                RetryContext retryContext;
+                while ((retryContext = retrys.take()) != null) {
+                    pool.execute(retryContext::retry);
                 }
+            } catch (Exception e) {
+                logger.error("retry-dispatcher error!", e);
             }
         }, "retry-dispatcher");
         dispatcher.setDaemon(true);
@@ -122,6 +117,6 @@ public class EventMeshTcpRetryer {
     }
 
     public void printRetryThreadPoolState() {
-//        ThreadPoolHelper.printState(pool);
+        //ThreadPoolHelper.printState(pool);
     }
 }

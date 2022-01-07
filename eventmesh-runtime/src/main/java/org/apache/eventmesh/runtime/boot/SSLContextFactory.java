@@ -16,18 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.eventmesh.runtime.boot;
+
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.KeyStore;
+
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +46,7 @@ public class SSLContextFactory {
 
 
     public static SSLContext getSslContext() {
-        SSLContext sslContext = null;
+        SSLContext sslContext;
         try {
             protocol = System.getProperty("ssl.server.protocol", "TLSv1.1");
 

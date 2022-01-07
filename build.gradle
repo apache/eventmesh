@@ -29,7 +29,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.1"
+        classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.3"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
         classpath "com.github.jk1:gradle-license-report:1.17"
     }
@@ -68,10 +68,6 @@ allprojects {
         delete 'out'
     }
 
-    if ((project.findProperty("snapshot") instanceof String) && (Boolean.valueOf(project.property("snapshot") as boolean))) {
-        version = version + "-SNAPSHOT"
-    }
-
     checkstyle {
         toolVersion = '9.0'
         ignoreFailures = false
@@ -86,7 +82,7 @@ allprojects {
 task tar(type: Tar) {
     extension = 'tar.gz'
     compression = Compression.GZIP
-    archiveFileName = project.name + '_' + project.version + '.' + extension
+    archiveFileName = project.name + '-' + project.version + '.' + extension
     destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
@@ -95,7 +91,7 @@ task tar(type: Tar) {
 
 task zip(type: Zip) {
     extension = 'zip'
-    archiveFileName = project.name + '.' + project.version + '.' + extension
+    archiveFileName = project.name + '-' + project.version + '.' + extension
     destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
@@ -388,7 +384,7 @@ subprojects {
         }
         repositories {
             maven {
-                def releasesRepoUrl = 'https://repository.apache.org/content/repositories/releases/'
+                def releasesRepoUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
                 def snapshotsRepoUrl = 'https://repository.apache.org/content/repositories/snapshots/'
                 url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
                 credentials {
@@ -414,9 +410,9 @@ subprojects {
             dependency "com.google.guava:guava:29.0-jre"
             
             dependency "org.slf4j:slf4j-api:1.7.30"
-            dependency "org.apache.logging.log4j:log4j-api:2.16.0"
-            dependency "org.apache.logging.log4j:log4j-core:2.16.0"
-            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.16.0"
+            dependency "org.apache.logging.log4j:log4j-api:2.17.0"
+            dependency "org.apache.logging.log4j:log4j-core:2.17.0"
+            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.17.0"
 
             dependency "com.lmax:disruptor:3.4.2"
 

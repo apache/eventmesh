@@ -23,7 +23,7 @@ MAINTAINER mikexue mike_xwm@126.com
 
 WORKDIR /data
 RUN mkdir /data/app
-ADD EventMesh_1.3.0-SNAPSHOT.tar.gz  /data/app/eventmesh
+ADD EventMesh_1.3.0-release.tar.gz  /data/app/eventmesh
 WORKDIR /data/app/eventmesh/bin
 
 EXPOSE 10000

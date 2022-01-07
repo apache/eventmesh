@@ -18,21 +18,14 @@
 package org.apache.eventmesh.producer;
 
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.apache.eventmesh.api.producer.MeshMQProducer;
-import org.apache.eventmesh.connector.rocketmq.producer.RocketMQProducerImpl;
-
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
-
-import io.openmessaging.api.exception.OMSRuntimeException;
 
 public class DefaultProducerImplTest {
 
     @Before
-    public void before() {}
+    public void before() {
+    }
 
 
     @After
@@ -40,24 +33,24 @@ public class DefaultProducerImplTest {
         //TBD:Remove topic
     }
 
-    @Test
-    public void testCreate_EmptyTopic() {
-        MeshMQProducer meshPub = new RocketMQProducerImpl();
-        try {
-            meshPub.createTopic(" ");
-        } catch (OMSRuntimeException e) {           
-            assertThat(e.getMessage()).isEqualToIgnoringWhitespace("RocketMQ can not create topic");
-        }
-    }
-
-    @Test
-    public void testCreate_NullTopic() {
-        MeshMQProducer meshPub = new RocketMQProducerImpl();
-        try {
-            meshPub.createTopic(null);
-        } catch (OMSRuntimeException e) {
-            String errorMessage = e.getMessage();
-            assertThat(errorMessage).isEqualTo("RocketMQ can not create topic null");
-        }
-    }
+    //@Test
+    //public void testCreate_EmptyTopic() {
+    //    MeshMQProducer meshPub = new RocketMQProducerImpl();
+    //    try {
+    //        meshPub.createTopic(" ");
+    //    } catch (OMSRuntimeException e) {
+    //        assertThat(e.getMessage()).isEqualToIgnoringWhitespace("RocketMQ can not create topic");
+    //    }
+    //}
+    //
+    //@Test
+    //public void testCreate_NullTopic() {
+    //    MeshMQProducer meshPub = new RocketMQProducerImpl();
+    //    try {
+    //        meshPub.createTopic(null);
+    //    } catch (OMSRuntimeException e) {
+    //        String errorMessage = e.getMessage();
+    //        assertThat(errorMessage).isEqualTo("RocketMQ can not create topic null");
+    //    }
+    //}
 }

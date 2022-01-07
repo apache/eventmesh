@@ -60,23 +60,23 @@ public class TopicsHandler implements HttpHandler {
         try {
             String params = NetUtils.parsePostBody(httpExchange);
             TopicCreateRequest topicCreateRequest =
-                JsonUtils.toObject(params, TopicCreateRequest.class);
+                    JsonUtils.toObject(params, TopicCreateRequest.class);
             String topic = topicCreateRequest.getName();
-  
+
             if (StringUtils.isBlank(topic)) {
                 result = "Create topic failed. Parameter topic not found.";
                 logger.error(result);
                 out.write(result.getBytes());
                 return;
             }
- 
+
             //TBD: A new rocketmq service will be implemented for creating topics
             TopicResponse topicResponse = null;
             if (topicResponse != null) {
-                logger.info("create a new topic: {}", topic);                      
+                logger.info("create a new topic: {}", topic);
                 httpExchange.getResponseHeaders().add("Content-Type", "appication/json");
                 httpExchange.sendResponseHeaders(200, 0);
-                result = JsonUtils.toJson(topicResponse);                
+                result = JsonUtils.toJson(topicResponse);
                 logger.info(result);
                 out.write(result.getBytes());
                 return;
@@ -89,7 +89,7 @@ public class TopicsHandler implements HttpHandler {
             }
         } catch (Exception e) {
             httpExchange.getResponseHeaders().add("Content-Type", "appication/json");
-            httpExchange.sendResponseHeaders(500, 0);                            
+            httpExchange.sendResponseHeaders(500, 0);
             result = String.format("create topic failed! Server side error");
             logger.error(result);
             out.write(result.getBytes());

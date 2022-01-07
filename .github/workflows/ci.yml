@@ -23,10 +23,12 @@ on:
   push:
     branches:
       - develop
+      - master
       - '[0-9]+.[0-9]+.[0-9]+**'
   pull_request:
     branches:
       - develop
+      - master
       - '[0-9]+.[0-9]+.[0-9]+**'
   workflow_dispatch:
 
@@ -50,33 +52,10 @@ jobs:
           java-version: ${{ matrix.java }}
 
       - name: Build
-        # We use -x check to skip check code style here, since this task will check all files.
-        # We use Checkstyle task to check the added file
-        run: ./gradlew clean build jar dist jacocoTestReport -x check
+        run: ./gradlew clean build jar dist jacocoTestReport
 
       - name: Install plugin
         run: ./gradlew installPlugin
-
-  checkstyle:
-    name: Checkstyle
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Download checkstyle exectable
-        run: wget -O - -q https://github.com/checkstyle/checkstyle/releases/download/checkstyle-8.44/checkstyle-8.44-all.jar > ./checkstyle.jar
-
-      - name: Download reviewdog exectable
-        run: wget -O - -q https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b . v0.12.0
-
-      - name: Check code style
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          java -jar ./checkstyle.jar -c ./style/checkStyle.xml -f xml ./eventmesh-* \
-               | ./reviewdog -f=checkstyle -reporter=github-pr-check -filter-mode=added -fail-on-error
 
   license-check:
     name: License Check

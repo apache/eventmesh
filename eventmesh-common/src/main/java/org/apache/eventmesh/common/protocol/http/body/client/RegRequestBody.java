@@ -72,8 +72,8 @@ public class RegRequestBody extends Body {
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
         body.setEndPoint(MapUtils.getString(bodyParam, ENDPOINT));
         body.setTopics(JsonUtils.deserialize(MapUtils.getString(bodyParam, TOPICS),
-            new TypeReference<List<SubscriptionItem>>() {
-            }));
+                new TypeReference<List<SubscriptionItem>>() {
+                }));
         return body;
     }
 
@@ -89,9 +89,9 @@ public class RegRequestBody extends Body {
     @Override
     public String toString() {
         return "regRequestBody{"
-            + "clientType='" + clientType + '\''
-            + ", endPoint='" + endPoint + '\''
-            + ", topics=" + topics
-            + '}';
+                + "clientType='" + clientType + '\''
+                + ", endPoint='" + endPoint + '\''
+                + ", topics=" + topics
+                + '}';
     }
 }

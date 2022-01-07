@@ -32,9 +32,8 @@ public class Utils {
     /**
      * Get local IP address
      *
-     * @throws SocketException
      */
-    public static String getLocalIP() throws UnknownHostException, SocketException {
+    public static String getLocalIP() throws UnknownHostException {
         if (isWindowsOS()) {
             return InetAddress.getLocalHost().getHostAddress();
         } else {
@@ -55,9 +54,8 @@ public class Utils {
      * Get local IP address under Linux system
      *
      * @return IP address
-     * @throws SocketException
      */
-    private static String getLinuxLocalIp() throws SocketException {
+    private static String getLinuxLocalIp() {
         String ip = "";
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
@@ -70,7 +68,7 @@ public class Utils {
                         if (!inetAddress.isLoopbackAddress()) {
                             String ipaddress = inetAddress.getHostAddress().toString();
                             if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
-                                && !ipaddress.contains("fe80")) {
+                                    && !ipaddress.contains("fe80")) {
                                 ip = ipaddress;
                             }
                         }
