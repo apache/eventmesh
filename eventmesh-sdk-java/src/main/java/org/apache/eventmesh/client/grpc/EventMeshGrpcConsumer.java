@@ -1,6 +1,9 @@
 package org.apache.eventmesh.client.grpc;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -16,9 +19,12 @@ import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc.Hea
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Event;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +44,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     private ConsumerServiceBlockingStub consumerClient;
     private HeartbeatServiceBlockingStub heartbeatClient;
 
-    private ReceiveMsgHook<EventMeshMessage> listener;
+    private ReceiveMsgHook<?> listener;
 
     private final List<ListenerThread> listenerThreads = new LinkedList<>();
 
@@ -68,7 +74,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         addSubscription(subscription);
 
         Subscription enhancedSubscription = Subscription.newBuilder(subscription)
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig))
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME))
             .setConsumerGroup(clientConfig.getConsumerGroup())
             .build();
         try {
@@ -87,7 +93,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         addSubscription(subscription);
 
         Subscription enhancedSubscription = Subscription.newBuilder(subscription)
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig))
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME))
             .setConsumerGroup(clientConfig.getConsumerGroup())
             .build();
         Iterator<EventMeshMessage> msgIterator;
@@ -98,7 +104,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             return;
         }
 
-        ListenerThread listenerThread = new ListenerThread(msgIterator, listener);
+        ListenerThread listenerThread = new ListenerThread(msgIterator, listener, listener.getProtocolType());
         listenerThreads.add(listenerThread);
         listenerThread.start();
     }
@@ -122,7 +128,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         removeSubscription(subscription);
 
         Subscription enhancedSubscription = Subscription.newBuilder(subscription)
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig))
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME))
             .setConsumerGroup(clientConfig.getConsumerGroup())
             .build();
 
@@ -136,14 +142,14 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         }
     }
 
-    public void registerListener(ReceiveMsgHook<EventMeshMessage> listener) {
+    public void registerListener(ReceiveMsgHook<?> listener) {
         if (this.listener == null) {
             this.listener = listener;
         }
     }
 
     private void heartBeat() {
-        RequestHeader header = EventMeshClientUtil.buildHeader(clientConfig);
+        RequestHeader header = EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
         scheduler.scheduleAtFixedRate(() -> {
             if (subscriptionMap.isEmpty()) {
                 return;
@@ -184,14 +190,17 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         scheduler.shutdown();
     }
 
-    static class ListenerThread extends Thread {
+    static class ListenerThread<T> extends Thread {
         private final Iterator<EventMeshMessage> msgIterator;
 
-        private final ReceiveMsgHook<EventMeshMessage> listener;
+        private final ReceiveMsgHook<T> listener;
 
-        ListenerThread(Iterator<EventMeshMessage> msgIterator, ReceiveMsgHook<EventMeshMessage> listener) {
+        private String protocolType;
+
+        ListenerThread(Iterator<EventMeshMessage> msgIterator, ReceiveMsgHook<T> listener, String protocolType) {
             this.msgIterator = msgIterator;
             this.listener = listener;
+            this.protocolType = protocolType;
         }
 
         public void run() {
@@ -199,10 +208,29 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             try {
                 while (msgIterator.hasNext()) {
                     logger.info("sdk received message ");
-                    listener.handle(msgIterator.next());
+
+                    EventMeshMessage eventMeshMessage = msgIterator.next();
+                    T msg = buildMessage(eventMeshMessage);
+                    if (msg != null) {
+                        listener.handle(msg);
+                    }
                 }
             } catch (Throwable t) {
                 logger.warn("Error in handling message. {}", t.getMessage());
+            }
+        }
+
+        private T buildMessage(EventMeshMessage eventMeshMessage) {
+            try {
+                if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
+                    String contentType = eventMeshMessage.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE, JsonFormat.CONTENT_TYPE);
+                    return (T) EventFormatProvider.getInstance().resolveFormat(contentType)
+                        .deserialize(eventMeshMessage.getContent().getBytes(StandardCharsets.UTF_8));
+                }
+                return (T) eventMeshMessage;
+            } catch (Throwable t) {
+                logger.warn("Error in building message. {}", t.getMessage());
+                return null;
             }
         }
     }

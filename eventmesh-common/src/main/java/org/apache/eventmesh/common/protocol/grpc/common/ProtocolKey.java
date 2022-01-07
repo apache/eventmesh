@@ -37,4 +37,6 @@ public class ProtocolKey {
     public static final String TTL = "ttl";
     public static final String PRODUCERGROUP = "producergroup";
     public static final String TAG = "tag";
+
+    public static final String CONTENT_TYPE = "contenttype";
 }

@@ -19,8 +19,7 @@ package org.apache.eventmesh.client.grpc;
 
 import java.util.Optional;
 
-@FunctionalInterface
-public interface ReceiveMsgHook<EventMeshMessage> {
+public interface ReceiveMsgHook<T> {
 
     /**
      * Handle the received message, return the response message.
@@ -28,6 +27,8 @@ public interface ReceiveMsgHook<EventMeshMessage> {
      * @param msg
      * @return
      */
-    Optional<EventMeshMessage> handle(EventMeshMessage msg);
+    Optional<T> handle(T msg);
+
+    String getProtocolType();
 
 }

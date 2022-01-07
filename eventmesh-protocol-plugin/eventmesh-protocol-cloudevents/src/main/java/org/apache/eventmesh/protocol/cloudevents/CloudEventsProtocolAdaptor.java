@@ -18,7 +18,11 @@
 package org.apache.eventmesh.protocol.cloudevents;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.grpc.common.BatchMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
@@ -26,6 +30,7 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.cloudevents.resolver.grpc.GrpcMessageProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchV2ProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageRequestProtocolResolver;
@@ -69,6 +74,10 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
             String requestCode = ((HttpCommand) cloudEvent).getRequestCode();
 
             return deserializeHttpProtocol(requestCode, header, body);
+        } else if (cloudEvent instanceof EventMeshMessageWrapper) {
+            org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage eventMeshMessage
+                = ((EventMeshMessageWrapper) cloudEvent).getMessage();
+            return GrpcMessageProtocolResolver.buildEvent(eventMeshMessage);
         } else {
             throw new ProtocolHandleException(String.format("protocol class: %s", cloudEvent.getClass()));
         }
@@ -98,8 +107,13 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
 
     @Override
     public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol)
-            throws ProtocolHandleException {
-        return null;
+        throws ProtocolHandleException {
+        if (protocol instanceof BatchMessageWrapper) {
+            BatchMessage batchMessage = ((BatchMessageWrapper) protocol).getMessage();
+            return GrpcMessageProtocolResolver.buildBatchEvents(batchMessage);
+        } else {
+            throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));
+        }
     }
 
     @Override
@@ -130,6 +144,8 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
                     String.format("DateContentType:%s is not supported", dataContentType));
             pkg.setBody(eventFormat.serialize(cloudEvent));
             return pkg;
+        } else if (StringUtils.equals("grpc", protocolDesc)){
+             return GrpcMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));
         }

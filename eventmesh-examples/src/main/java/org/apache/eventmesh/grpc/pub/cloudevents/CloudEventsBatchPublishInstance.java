@@ -15,25 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.grpc.pub;
+package org.apache.eventmesh.grpc.pub.cloudevents;
 
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.util.Utils;
 
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 
 @Slf4j
-public class RequestReplyInstance {
-
-    // This messageSize is also used in SubService.java (Subscriber)
-    public static int messageSize = 5;
+public class CloudEventsBatchPublishInstance {
 
     public static void main(String[] args) throws Exception {
 
@@ -57,19 +63,23 @@ public class RequestReplyInstance {
         Map<String, String> content = new HashMap<>();
         content.put("content", "testRequestReplyMessage");
 
-        for (int i = 0; i < messageSize; i++) {
-            EventMeshMessage message = EventMeshMessage.newBuilder()
-                .setContent(JsonUtils.serialize(content))
-                .setTopic(topic)
-                .setUniqueId(RandomStringUtils.generateNum(30))
-                .setSeqNum(RandomStringUtils.generateNum(30))
-                .setTtl(String.valueOf(4 * 1000))
+        List<CloudEvent> cloudEventList = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            CloudEvent event = CloudEventBuilder.v1()
+                .withId(UUID.randomUUID().toString())
+                .withSubject(topic)
+                .withSource(URI.create("/"))
+                .withDataContentType("application/cloudevents+json")
+                .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+                .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
+                .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
                 .build();
 
-            eventMeshGrpcProducer.requestReply(message, 10000);
-            Thread.sleep(1000);
+            cloudEventList.add(event);
         }
-        Thread.sleep(30000);
+
+        eventMeshGrpcProducer.publish(cloudEventList);
+        Thread.sleep(10000);
         try (EventMeshGrpcProducer ignore = eventMeshGrpcProducer) {
             // ignore
         }

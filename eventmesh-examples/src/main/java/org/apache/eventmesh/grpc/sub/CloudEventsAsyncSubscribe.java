@@ -1,10 +1,11 @@
 package org.apache.eventmesh.grpc.sub;
 
+import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.client.grpc.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.ReceiveMsgHook;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem;
 import org.apache.eventmesh.util.Utils;
@@ -13,9 +14,9 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Slf4j
-public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
+public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
 
-    public static AsyncSubscribe handler = new AsyncSubscribe();
+    public static CloudEventsAsyncSubscribe handler = new CloudEventsAsyncSubscribe();
 
     public static void main(String[] args) {
         Properties properties = Utils.readPropertiesFile("application.properties");
@@ -33,8 +34,8 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
         SubscriptionItem subscriptionItem = SubscriptionItem.newBuilder()
             .setTopic(topic)
-            .setMode(Subscription.SubscriptionItem.SubscriptionMode.CLUSTERING)
-            .setType(Subscription.SubscriptionItem.SubscriptionType.ASYNC)
+            .setMode(SubscriptionItem.SubscriptionMode.CLUSTERING)
+            .setType(SubscriptionItem.SubscriptionType.ASYNC)
             .build();
 
         Subscription subscription = Subscription.newBuilder()
@@ -55,8 +56,13 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
     }
 
     @Override
-    public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
+    public Optional<CloudEvent> handle(CloudEvent msg) {
         log.info("receive async msg====================={}", msg);
         return Optional.empty();
+    }
+
+    @Override
+    public String getProtocolType() {
+        return EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME;
     }
 }
