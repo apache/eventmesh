@@ -41,7 +41,7 @@ public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
     private static EventMeshTCPClient<EventMeshMessage> client;
 
-    public static void main(String[] agrs) throws Exception {
+    public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile("application.properties");
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));

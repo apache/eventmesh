@@ -35,7 +35,7 @@ public class AsyncPublishBroadcast {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncPublishBroadcast.class);
 
-    public static void main(String[] agrs) throws Exception {
+    public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile("application.properties");
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
