@@ -36,4 +36,7 @@ include 'eventmesh-protocol-plugin:eventmesh-protocol-openmessage'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-cloudevents'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-meshmessage'
 include 'eventmesh-admin:eventmesh-admin-rocketmq'
+include 'eventmesh-metrics-plugin'
+include 'eventmesh-metrics-plugin:eventmesh-metrics-api'
+include 'eventmesh-metrics-plugin:eventmesh-metrics-opentelemetry'
 
