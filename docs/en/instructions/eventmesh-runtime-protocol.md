@@ -287,25 +287,45 @@ message RequestHeader {
     string sys = 6;
     string username = 7;
     string password = 8;
-    string version = 9;
-    string language = 10;
-    string seqNum = 11;
+    string language = 9;
+    string protocolType = 10;
+    string protocolVersion = 11;
+    string protocolDesc = 12;
 }
 
-message Message {
+message EventMeshMessage {
    RequestHeader header = 1;
-   string productionGroup = 2;
+   string producerGroup = 2;
    string topic = 3;
    string content = 4;
    string ttl = 5;
    string uniqueId = 6;
+   string seqNum = 7;
+   string tag = 8;
+   map<string, string> properties = 9;
+}
+
+message BatchMessage {
+   RequestHeader header = 1;
+   string producerGroup = 2;
+   string topic = 3;
+
+   message MessageItem {
+      string content = 1;
+      string ttl = 2;
+      string uniqueId = 3;
+      string seqNum = 4;
+      string tag = 5;
+      map<string, string> properties = 6;
+   }
+
+   repeated MessageItem messageItem = 4;
 }
 
 message Response {
    string respCode = 1;
    string respMsg = 2;
    string respTime = 3;
-   string seqNum = 4;
 }
 ```
 
@@ -319,13 +339,23 @@ message Subscription {
    string consumerGroup = 2;
 
    message SubscriptionItem {
+      enum SubscriptionMode {
+         CLUSTERING = 0;
+         BROADCASTING = 1;
+      }
+
+      enum SubscriptionType {
+         ASYNC = 0;
+         SYNC = 1;
+      }
+
       string topic = 1;
-      string mode = 2;
-      string type = 3;
-      string url = 4;
+      SubscriptionMode mode = 2;
+      SubscriptionType type = 3;
    }
 
    repeated SubscriptionItem subscriptionItems = 3;
+   string url = 4;
 }
 ```
 
@@ -335,8 +365,13 @@ The following data model is used by `heartbeat()` API.
 
 ```
 message Heartbeat {
+  enum ClientType {
+     PUB = 0;
+     SUB = 1;
+  }
+
   RequestHeader header = 1;
-  string clientType = 2;
+  ClientType clientType = 2;
   string producerGroup = 3;
   string consumerGroup = 4;
 
@@ -354,30 +389,36 @@ message Heartbeat {
 - event publisher service APIs
 
 ```
+service PublisherService {
    # Async event publish
-   rpc publish(Message) returns (Response);
+   rpc publish(EventMeshMessage) returns (Response);
 
    # Sync event publish
-   rpc requestReply(Message) returns (Response);
+   rpc requestReply(EventMeshMessage) returns (Response);
 
-   # event broadcast
-   rpc broadcast(Message) returns (Response);
+   # Batch event publish
+   rpc batchPublish(BatchMessage) returns (Response);
+}
 ```
 
 - event consumer service APIs
 
 ```
+service ConsumerService {
    # The subscribed event will be delivered by invoking the webhook url in the Subscription
    rpc subscribe(Subscription) returns (Response);
 
    # The subscribed event will be delivered through stream of Message
-   rpc subscribeStream(Subscription) returns (stream Message);
+   rpc subscribeStream(Subscription) returns (stream EventMeshMessage);
 
    rpc unsubscribe(Subscription) returns (Response);
+}
 ```
 
 - client heartbeat service API
 
 ```
+service HeartbeatService {
    rpc heartbeat(Heartbeat) returns (Response);
+}
 ```
