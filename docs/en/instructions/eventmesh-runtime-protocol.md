@@ -259,3 +259,166 @@ same with RequestHeader of Heartbeat Msg
 | Scene                | Server Send | Client Reply | Remark                  |
 | ------------------ | ---------------------------- | -------------------------- | ---------------------- |
 | Push async msg to client | HTTP_PUSH_CLIENT_ASYNC(105)  | retCode              | retCode=0,send success |
+
+## gRPC Protocol Document In Eventmesh-Runtime
+
+#### 1. protobuf
+
+The `eventmesh-protocol-gprc` module contains the protobuf file of the evenmesh client. the protobuf file
+is located as `/src/main/proto/eventmesh-client.proto`.
+
+Run the gradle build to generate the gRPC codes. The generated codes are located at `/build/generated/source/proto/main`.
+
+These generated grpc codes will be used in `eventmesh-sdk-java` module.
+
+#### 2. data models
+
+- message
+
+The following is the message data model, used by `publish()`, `requestReply()` and `broadcast()` APIs.
+
+```
+message RequestHeader {
+    string env = 1;
+    string region = 2;
+    string idc = 3;
+    string ip = 4;
+    string pid = 5;
+    string sys = 6;
+    string username = 7;
+    string password = 8;
+    string language = 9;
+    string protocolType = 10;
+    string protocolVersion = 11;
+    string protocolDesc = 12;
+}
+
+message EventMeshMessage {
+   RequestHeader header = 1;
+   string producerGroup = 2;
+   string topic = 3;
+   string content = 4;
+   string ttl = 5;
+   string uniqueId = 6;
+   string seqNum = 7;
+   string tag = 8;
+   map<string, string> properties = 9;
+}
+
+message BatchMessage {
+   RequestHeader header = 1;
+   string producerGroup = 2;
+   string topic = 3;
+
+   message MessageItem {
+      string content = 1;
+      string ttl = 2;
+      string uniqueId = 3;
+      string seqNum = 4;
+      string tag = 5;
+      map<string, string> properties = 6;
+   }
+
+   repeated MessageItem messageItem = 4;
+}
+
+message Response {
+   string respCode = 1;
+   string respMsg = 2;
+   string respTime = 3;
+}
+```
+
+- subscription
+
+The following data model is used by `subscribe()` and `unsubscribe()` APIs.
+
+```
+message Subscription {
+   RequestHeader header = 1;
+   string consumerGroup = 2;
+
+   message SubscriptionItem {
+      enum SubscriptionMode {
+         CLUSTERING = 0;
+         BROADCASTING = 1;
+      }
+
+      enum SubscriptionType {
+         ASYNC = 0;
+         SYNC = 1;
+      }
+
+      string topic = 1;
+      SubscriptionMode mode = 2;
+      SubscriptionType type = 3;
+   }
+
+   repeated SubscriptionItem subscriptionItems = 3;
+   string url = 4;
+}
+```
+
+- heartbeat
+
+The following data model is used by `heartbeat()` API.
+
+```
+message Heartbeat {
+  enum ClientType {
+     PUB = 0;
+     SUB = 1;
+  }
+
+  RequestHeader header = 1;
+  ClientType clientType = 2;
+  string producerGroup = 3;
+  string consumerGroup = 4;
+
+  message HeartbeatItem {
+     string topic = 1;
+     string url = 2;
+  }
+
+  repeated HeartbeatItem heartbeatItems = 5;
+}
+```
+
+#### 3. service operations
+
+- event publisher service APIs
+
+```
+service PublisherService {
+   # Async event publish
+   rpc publish(EventMeshMessage) returns (Response);
+
+   # Sync event publish
+   rpc requestReply(EventMeshMessage) returns (Response);
+
+   # Batch event publish
+   rpc batchPublish(BatchMessage) returns (Response);
+}
+```
+
+- event consumer service APIs
+
+```
+service ConsumerService {
+   # The subscribed event will be delivered by invoking the webhook url in the Subscription
+   rpc subscribe(Subscription) returns (Response);
+
+   # The subscribed event will be delivered through stream of Message
+   rpc subscribeStream(Subscription) returns (stream EventMeshMessage);
+
+   rpc unsubscribe(Subscription) returns (Response);
+}
+```
+
+- client heartbeat service API
+
+```
+service HeartbeatService {
+   rpc heartbeat(Heartbeat) returns (Response);
+}
+```
