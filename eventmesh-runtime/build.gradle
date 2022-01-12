@@ -20,9 +20,6 @@ dependencies {
 
     implementation 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
-    implementation 'io.opentelemetry:opentelemetry-sdk-metrics'
-    implementation 'io.prometheus:simpleclient'
-    implementation 'io.prometheus:simpleclient_httpserver'
     implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
     implementation 'io.opentelemetry:opentelemetry-semconv'
 
