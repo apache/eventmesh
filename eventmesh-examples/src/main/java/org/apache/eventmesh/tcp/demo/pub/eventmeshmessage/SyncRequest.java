@@ -33,7 +33,7 @@ public class SyncRequest {
 
     private static EventMeshTCPClient<EventMeshMessage> client;
 
-    public static void main(String[] agrs) throws Exception {
+    public static void main(String[] args) throws Exception {
         UserAgent userAgent = EventMeshTestUtils.generateClient1();
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
                 .host("127.0.0.1")
