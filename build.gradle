@@ -76,6 +76,8 @@ allprojects {
         configFile = new File("${rootDir}/style/checkStyle.xml")
     }
 
+    checkstyleMain.exclude '**/org/apache/eventmesh/client/grpc/protos**'
+
     dependencies {
         testImplementation "junit:junit"
     }
@@ -463,6 +465,11 @@ subprojects {
 
             dependency "io.cloudevents:cloudevents-core:2.2.0"
             dependency "io.cloudevents:cloudevents-json-jackson:2.2.0"
+
+            dependency "io.grpc:grpc-protobuf:1.15.0"
+            dependency "io.grpc:grpc-stub:1.15.0"
+            dependency "io.grpc:grpc-netty:1.15.0"
+            dependency "io.grpc:grpc-netty-shaded:1.15.0"
 
             dependency "com.github.seancfoley:ipaddress:5.3.3"
         }
