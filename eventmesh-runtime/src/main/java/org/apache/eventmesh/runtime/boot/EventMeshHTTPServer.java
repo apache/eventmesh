@@ -202,6 +202,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
                 metricsPlugins -> metricsPlugins.forEach(
                     pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
 
+        httpRetryer = new HttpRetryer(this);
+        httpRetryer.init();
+
         metrics = new HTTPMetricsServer(this, metricsRegistries);
         metrics.init();
 
@@ -210,9 +213,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         producerManager = new ProducerManager(this);
         producerManager.init();
-
-        httpRetryer = new HttpRetryer(this);
-        httpRetryer.init();
 
         registerHTTPRequestProcessor();
 

@@ -23,6 +23,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Properties;
 
@@ -37,7 +39,6 @@ public class OpenTelemetryConfiguration {
     private static final Properties properties  = new Properties();
 
     private int eventMeshPrometheusPort = 19090;
-
 
     static {
         loadProperties();
@@ -55,28 +56,26 @@ public class OpenTelemetryConfiguration {
         }
     }
 
-    private Properties loadProperties() {
-        String configFile = getConfigFilePath();
-        log.info("loading config: {}", configFile);
-        try {
-            Properties properties = new Properties();
-            properties.load(new BufferedReader(new FileReader(configFile)));
-            return properties;
-        } catch (IOException e) {
-            throw new IllegalArgumentException(
-                String.format("Cannot load opentelemetry configuration file from :%s", configFile));
-        }
-    }
-
-
-    private static String getConfigFilePath() {
-        // get from classpath
+    private void loadProperties() {
         URL resource = OpenTelemetryConfiguration.class.getClassLoader().getResource(CONFIG_FILE);
-        if (resource != null && new File(resource.getPath()).exists()) {
-            return resource.getPath();
+        if (resource != null) {
+            try (InputStream inputStream = resource.openStream()) {
+                if (inputStream.available() > 0) {
+                    properties.load(new BufferedReader(new InputStreamReader(inputStream)));
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Load opentelemetry.properties file from classpath error");
+            }
         }
         // get from config home
-        return System.getProperty("confPath", System.getenv("confPath")) + File.separator + CONFIG_FILE;
+        try {
+            String configPath = System.getProperty("confPath", System.getenv("confPath")) + File.separator + CONFIG_FILE;
+            if (new File(configPath).exists()) {
+                properties.load(new BufferedReader(new FileReader(configPath)));
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Cannot load opentelemetry.properties file from conf");
+        }
     }
 
 }
