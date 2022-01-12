@@ -1,11 +1,11 @@
-# Apache EventMesh (incubating) 
+# Apache EventMesh (incubating)
 [![CI status](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml)
 [![CodeCov](https://codecov.io/gh/apache/incubator-eventmesh/branch/develop/graph/badge.svg)](https://codecov.io/gh/apache/incubator-eventmesh)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/context:java)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/alerts/)
 [![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/apache/incubator-eventmesh/releases)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-[![Slack Status](https://img.shields.io/badge/slack-join_chat-white.svg?logo=slack&style=social)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-yx3n2ak7-HcVG98CDqb~7PwgoDzgfMA)
+[![Slack Status](https://img.shields.io/badge/slack-join_chat-white.svg?logo=slack&style=social)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-11974dndy-cn3Aq638eleKwKPWP9tkLg)
 
 [点我查看中文版](README.zh-CN.md)
 
@@ -16,11 +16,13 @@ EventMesh(incubating) is a dynamic event-driven application runtime used to deco
 **Multi-runtime:**
 ![architecture1](docs/images/eventmesh-arch3.png)
 
+
 **Orchestration:**
 ![architecture1](docs/images/eventmesh-orchestration.png)
 
 **Federation:**
 ![architecture1](docs/images/eventmesh-federation.png)
+
 
 **Components:**
 
@@ -63,7 +65,7 @@ EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apa
 ## Community
 |              WeChat Assistant                           |                WeChat public account                   | Slack                                                  |
 | :----------------------------------------------------:  | :----------------------------------------------------: | :----------------------------------------------------: |
-| ![wechat_qr](docs/images/mesh-helper.jpg) | ![wechat_official_qr](docs/images/wechat-official.png) |[Join slack chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-yx3n2ak7-HcVG98CDqb~7PwgoDzgfMA) |
+| ![wechat_qr](docs/images/mesh-helper.jpg) | ![wechat_official_qr](docs/images/wechat-official.png) |[Join slack chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-11974dndy-cn3Aq638eleKwKPWP9tkLg) |
 
 Mailing Lists:
 

@@ -53,14 +53,14 @@ public class ConsumerManager {
      * consumerGroup to ConsumerGroupManager.
      */
     private ConcurrentHashMap<String, ConsumerGroupManager> consumerTable =
-        new ConcurrentHashMap<>();
+            new ConcurrentHashMap<>();
 
     private static final int DEFAULT_UPDATE_TIME = 3 * 30 * 1000;
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ScheduledExecutorService scheduledExecutorService =
-        Executors.newSingleThreadScheduledExecutor();
+            Executors.newSingleThreadScheduledExecutor();
 
     public ConsumerManager(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -73,100 +73,99 @@ public class ConsumerManager {
 
     public void start() throws Exception {
         logger.info("consumerManager started......");
-        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                logger.info("clientInfo check start.....");
-                synchronized (eventMeshHTTPServer.localClientInfoMapping) {
-                    Map<String, List<Client>> clientInfoMap =
-                        eventMeshHTTPServer.localClientInfoMapping;
-                    if (clientInfoMap.size() > 0) {
-                        for (String key : clientInfoMap.keySet()) {
-                            String consumerGroup = key.split("@")[0];
-                            String topic = key.split("@")[1];
-                            List<Client> clientList = clientInfoMap.get(key);
-                            Iterator<Client> clientIterator = clientList.iterator();
-                            boolean isChange = false;
-                            while (clientIterator.hasNext()) {
-                                Client client = clientIterator.next();
-                                //The time difference is greater than 3 heartbeat cycles
-                                if (System.currentTimeMillis() - client.lastUpTime.getTime()
-                                    > DEFAULT_UPDATE_TIME) {
-                                    logger.warn(
-                                        "client {} lastUpdate time {} over three heartbeat cycles",
-                                        JsonUtils.serialize(client), client.lastUpTime);
-                                    clientIterator.remove();
-                                    isChange = true;
-                                }
+
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            logger.info("clientInfo check start.....");
+            synchronized (eventMeshHTTPServer.localClientInfoMapping) {
+                Map<String, List<Client>> clientInfoMap =
+                    eventMeshHTTPServer.localClientInfoMapping;
+                if (clientInfoMap.size() > 0) {
+                    for (String key : clientInfoMap.keySet()) {
+                        String consumerGroup = key.split("@")[0];
+                        String topic = key.split("@")[1];
+                        List<Client> clientList = clientInfoMap.get(key);
+                        Iterator<Client> clientIterator = clientList.iterator();
+                        boolean isChange = false;
+                        while (clientIterator.hasNext()) {
+                            Client client = clientIterator.next();
+                            //The time difference is greater than 3 heartbeat cycles
+                            if (System.currentTimeMillis() - client.lastUpTime.getTime()
+                                > DEFAULT_UPDATE_TIME) {
+                                logger.warn(
+                                    "client {} lastUpdate time {} over three heartbeat cycles",
+                                    JsonUtils.serialize(client), client.lastUpTime);
+                                clientIterator.remove();
+                                isChange = true;
                             }
-                            if (isChange) {
-                                if (clientList.size() > 0) {
-                                    //change url
-                                    logger.info("consumerGroup {} client info changing",
-                                        consumerGroup);
-                                    Map<String, List<String>> idcUrls = new HashMap<>();
-                                    Set<String> clientUrls = new HashSet<>();
-                                    for (Client client : clientList) {
-                                        clientUrls.add(client.url);
-                                        if (idcUrls.containsKey(client.idc)) {
-                                            idcUrls.get(client.idc)
-                                                .add(StringUtils.deleteWhitespace(client.url));
-                                        } else {
-                                            List<String> urls = new ArrayList<>();
-                                            urls.add(client.url);
-                                            idcUrls.put(client.idc, urls);
-                                        }
-                                    }
-                                    synchronized (eventMeshHTTPServer.localConsumerGroupMapping) {
-                                        ConsumerGroupConf consumerGroupConf =
-                                            eventMeshHTTPServer.localConsumerGroupMapping
-                                                .get(consumerGroup);
-                                        Map<String, ConsumerGroupTopicConf> map =
-                                            consumerGroupConf.getConsumerGroupTopicConf();
-                                        for (String topicKey : map.keySet()) {
-                                            if (StringUtils.equals(topic, topicKey)) {
-                                                ConsumerGroupTopicConf latestTopicConf =
-                                                    new ConsumerGroupTopicConf();
-                                                latestTopicConf.setConsumerGroup(consumerGroup);
-                                                latestTopicConf.setTopic(topic);
-                                                latestTopicConf.setSubscriptionItem(
-                                                    map.get(topicKey).getSubscriptionItem());
-                                                latestTopicConf.setUrls(clientUrls);
-
-                                                latestTopicConf.setIdcUrls(idcUrls);
-
-                                                map.put(topic, latestTopicConf);
-                                            }
-                                        }
-                                        eventMeshHTTPServer.localConsumerGroupMapping
-                                            .put(consumerGroup, consumerGroupConf);
-                                        logger.info(
-                                            "consumerGroup {} client info changed, "
-                                                + "consumerGroupConf {}", consumerGroup,
-                                            JsonUtils.serialize(consumerGroupConf));
-                                        try {
-                                            notifyConsumerManager(consumerGroup, consumerGroupConf);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-
-                                } else {
-                                    logger.info("consumerGroup {} client info removed",
-                                        consumerGroup);
-                                    //remove
-                                    try {
-                                        notifyConsumerManager(consumerGroup, null);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    eventMeshHTTPServer.localConsumerGroupMapping.keySet()
-                                        .removeIf(s -> StringUtils.equals(consumerGroup, s));
-                                }
-                            }
-
                         }
+                        if (isChange) {
+                            if (clientList.size() > 0) {
+                                //change url
+                                logger.info("consumerGroup {} client info changing",
+                                    consumerGroup);
+                                Map<String, List<String>> idcUrls = new HashMap<>();
+                                Set<String> clientUrls = new HashSet<>();
+                                for (Client client : clientList) {
+                                    clientUrls.add(client.url);
+                                    if (idcUrls.containsKey(client.idc)) {
+                                        idcUrls.get(client.idc)
+                                            .add(StringUtils.deleteWhitespace(client.url));
+                                    } else {
+                                        List<String> urls = new ArrayList<>();
+                                        urls.add(client.url);
+                                        idcUrls.put(client.idc, urls);
+                                    }
+                                }
+                                synchronized (eventMeshHTTPServer.localConsumerGroupMapping) {
+                                    ConsumerGroupConf consumerGroupConf =
+                                        eventMeshHTTPServer.localConsumerGroupMapping
+                                            .get(consumerGroup);
+                                    Map<String, ConsumerGroupTopicConf> map =
+                                        consumerGroupConf.getConsumerGroupTopicConf();
+                                    for (String topicKey : map.keySet()) {
+                                        if (StringUtils.equals(topic, topicKey)) {
+                                            ConsumerGroupTopicConf latestTopicConf =
+                                                new ConsumerGroupTopicConf();
+                                            latestTopicConf.setConsumerGroup(consumerGroup);
+                                            latestTopicConf.setTopic(topic);
+                                            latestTopicConf.setSubscriptionItem(
+                                                map.get(topicKey).getSubscriptionItem());
+                                            latestTopicConf.setUrls(clientUrls);
+
+                                            latestTopicConf.setIdcUrls(idcUrls);
+
+                                            map.put(topic, latestTopicConf);
+                                        }
+                                    }
+                                    eventMeshHTTPServer.localConsumerGroupMapping
+                                        .put(consumerGroup, consumerGroupConf);
+                                    logger.info(
+                                        "consumerGroup {} client info changed, "
+                                            + "consumerGroupConf {}", consumerGroup,
+                                        JsonUtils.serialize(consumerGroupConf));
+
+                                    try {
+                                        notifyConsumerManager(consumerGroup, consumerGroupConf);
+                                    } catch (Exception e) {
+                                        logger.error("notifyConsumerManager error", e);
+                                    }
+                                }
+
+                            } else {
+                                logger.info("consumerGroup {} client info removed",
+                                    consumerGroup);
+                                //remove
+                                try {
+                                    notifyConsumerManager(consumerGroup, null);
+                                } catch (Exception e) {
+                                    logger.error("notifyConsumerManager error", e);
+                                }
+
+                                eventMeshHTTPServer.localConsumerGroupMapping.keySet()
+                                    .removeIf(s -> StringUtils.equals(consumerGroup, s));
+                            }
+                        }
+
                     }
                 }
             }
@@ -178,9 +177,9 @@ public class ConsumerManager {
      */
     public void notifyConsumerManager(String consumerGroup,
                                       ConsumerGroupConf latestConsumerGroupConfig)
-        throws Exception {
+            throws Exception {
         ConsumerGroupManager cgm =
-            eventMeshHTTPServer.getConsumerManager().getConsumer(consumerGroup);
+                eventMeshHTTPServer.getConsumerManager().getConsumer(consumerGroup);
         if (latestConsumerGroupConfig == null) {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
             notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.DELETE;
@@ -234,7 +233,7 @@ public class ConsumerManager {
     public synchronized void addConsumer(String consumerGroup,
                                          ConsumerGroupConf consumerGroupConfig) throws Exception {
         ConsumerGroupManager cgm =
-            new ConsumerGroupManager(eventMeshHTTPServer, consumerGroupConfig);
+                new ConsumerGroupManager(eventMeshHTTPServer, consumerGroupConfig);
         cgm.init();
         cgm.start();
         consumerTable.put(consumerGroup, cgm);
@@ -245,7 +244,7 @@ public class ConsumerManager {
      */
     public synchronized void restartConsumer(String consumerGroup,
                                              ConsumerGroupConf consumerGroupConfig)
-        throws Exception {
+            throws Exception {
         if (consumerTable.containsKey(consumerGroup)) {
             ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
             cgm.refresh(consumerGroupConfig);
@@ -270,7 +269,7 @@ public class ConsumerManager {
         if (consumerTable.containsKey(consumerGroup)) {
             ConsumerGroupManager cgm = consumerTable.remove(consumerGroup);
             logger.info("start unsubscribe topic with consumer group manager {}",
-                JsonUtils.serialize(cgm));
+                    JsonUtils.serialize(cgm));
             cgm.unsubscribe(consumerGroup);
             cgm.shutdown();
         }
@@ -282,29 +281,29 @@ public class ConsumerManager {
         try {
             logger.info("onChange event:{}", event);
             if (event.action
-                == ConsumerGroupTopicConfChangeEvent.ConsumerGroupTopicConfChangeAction.NEW) {
+                    == ConsumerGroupTopicConfChangeEvent.ConsumerGroupTopicConfChangeAction.NEW) {
                 ConsumerGroupManager manager = getConsumer(event.consumerGroup);
                 if (Objects.isNull(manager)) {
                     return;
                 }
                 manager.getConsumerGroupConfig().getConsumerGroupTopicConf()
-                    .put(event.topic, event.newTopicConf);
+                        .put(event.topic, event.newTopicConf);
                 return;
             }
 
             if (event.action
-                == ConsumerGroupTopicConfChangeEvent.ConsumerGroupTopicConfChangeAction.CHANGE) {
+                    == ConsumerGroupTopicConfChangeEvent.ConsumerGroupTopicConfChangeAction.CHANGE) {
                 ConsumerGroupManager manager = getConsumer(event.consumerGroup);
                 if (Objects.isNull(manager)) {
                     return;
                 }
                 manager.getConsumerGroupConfig().getConsumerGroupTopicConf()
-                    .replace(event.topic, event.newTopicConf);
+                        .replace(event.topic, event.newTopicConf);
                 return;
             }
 
             if (event.action
-                == ConsumerGroupTopicConfChangeEvent.ConsumerGroupTopicConfChangeAction.DELETE) {
+                    == ConsumerGroupTopicConfChangeEvent.ConsumerGroupTopicConfChangeAction.DELETE) {
                 ConsumerGroupManager manager = getConsumer(event.consumerGroup);
                 if (Objects.isNull(manager)) {
                     return;

@@ -29,7 +29,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "gradle.plugin.com.github.spotbugs.snom:spotbugs-gradle-plugin:4.7.1"
+        classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.3"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
         classpath "com.github.jk1:gradle-license-report:1.17"
     }
@@ -80,7 +80,7 @@ allprojects {
 task tar(type: Tar) {
     extension = 'tar.gz'
     compression = Compression.GZIP
-    archiveFileName = project.name + '_' + project.version + '.' + extension
+    archiveFileName = project.name + '-' + project.version + '.' + extension
     destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
@@ -89,7 +89,7 @@ task tar(type: Tar) {
 
 task zip(type: Zip) {
     extension = 'zip'
-    archiveFileName = project.name + '.' + project.version + '.' + extension
+    archiveFileName = project.name + '-' + project.version + '.' + extension
     destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'

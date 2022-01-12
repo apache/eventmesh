@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceType;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,8 +30,8 @@ public class HttpLoadBalanceUtilsTest {
     @Test
     public void testCreateRandomSelector() throws EventMeshException {
         EventMeshHttpClientConfig eventMeshHttpClientConfig = EventMeshHttpClientConfig.builder()
-            .liteEventMeshAddr("127.0.0.1:1001;127.0.0.2:1002")
-            .build();
+                .liteEventMeshAddr("127.0.0.1:1001;127.0.0.2:1002")
+                .build();
         LoadBalanceSelector<String> randomSelector = HttpLoadBalanceUtils
                 .createEventMeshServerLoadBalanceSelector(eventMeshHttpClientConfig);
         Assert.assertEquals(LoadBalanceType.RANDOM, randomSelector.getType());
