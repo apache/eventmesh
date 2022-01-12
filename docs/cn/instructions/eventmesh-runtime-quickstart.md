@@ -129,6 +129,7 @@ eventMesh.connector.plugin.type=rocketmq
 | ---------------------- | ------ | ----------------------- |
 | eventMesh.server.http.port | 10105  | EventMesh http 服务端口 |
 | eventMesh.server.tcp.port  | 10000  | EventMesh tcp 服务端口  |
+| eventMesh.server.grpc.port  | 10205  | EventMesh grpc 服务端口  |
 
 **rocketmq-client.properties**
 

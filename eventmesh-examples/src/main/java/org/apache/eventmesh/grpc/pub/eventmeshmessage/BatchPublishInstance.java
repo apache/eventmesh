@@ -39,7 +39,7 @@ public class BatchPublishInstance {
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
 
-        final String topic = "TEST-TOPIC-GRPC-RR";
+        final String topic = "TEST-TOPIC-GRPC-ASYNC";
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
