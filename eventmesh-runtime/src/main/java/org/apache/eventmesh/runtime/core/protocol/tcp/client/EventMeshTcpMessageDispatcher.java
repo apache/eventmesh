@@ -55,7 +55,7 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
     protected void channelRead0(ChannelHandlerContext ctx, Package pkg) throws Exception {
         long startTime = System.currentTimeMillis();
         validateMsg(pkg);
-        eventMeshTCPServer.getEventMeshTcpMonitor().getClient2EventMeshMsgNum().incrementAndGet();
+        eventMeshTCPServer.getEventMeshTcpMonitor().getTcpSummaryMetrics().getClient2eventMeshMsgNum().incrementAndGet();
         Command cmd = null;
         try {
             Runnable task;

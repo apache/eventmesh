@@ -19,6 +19,8 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
+import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
@@ -40,10 +42,13 @@ import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import org.assertj.core.util.Lists;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.RateLimiter;
@@ -190,7 +195,17 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         msgRateLimiter = RateLimiter.create(eventMeshHttpConfiguration.eventMeshHttpMsgReqNumPerSecond);
         batchRateLimiter = RateLimiter.create(eventMeshHttpConfiguration.eventMeshBatchMsgRequestNumPerSecond);
 
-        metrics = new HTTPMetricsServer(this);
+        // The MetricsRegistry is singleton, so we can use factory method to get.
+        final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
+        Optional.ofNullable(eventMeshHttpConfiguration.eventMeshMetricsPluginType)
+            .ifPresent(
+                metricsPlugins -> metricsPlugins.forEach(
+                    pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
+
+        httpRetryer = new HttpRetryer(this);
+        httpRetryer.init();
+
+        metrics = new HTTPMetricsServer(this, metricsRegistries);
         metrics.init();
 
         consumerManager = new ConsumerManager(this);
@@ -198,9 +213,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         producerManager = new ProducerManager(this);
         producerManager.init();
-
-        httpRetryer = new HttpRetryer(this);
-        httpRetryer.init();
 
         registerHTTPRequestProcessor();
 
