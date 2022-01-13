@@ -18,16 +18,12 @@
 def grpcVersion = '1.15.0'
 
 dependencies {
+    implementation 'io.cloudevents:cloudevents-core'
+
     implementation 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
-    implementation 'io.opentelemetry:opentelemetry-sdk-metrics'
-    implementation 'io.opentelemetry:opentelemetry-exporter-prometheus'
-    implementation 'io.prometheus:simpleclient'
-    implementation 'io.prometheus:simpleclient_httpserver'
-    implementation 'io.cloudevents:cloudevents-core'
     implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
     implementation 'io.opentelemetry:opentelemetry-semconv'
-
 
     implementation "org.apache.httpcomponents:httpclient"
     implementation 'io.netty:netty-all'
@@ -56,19 +52,8 @@ dependencies {
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
 
-    testImplementation project(":eventmesh-common")
-    testImplementation project(":eventmesh-spi")
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
-    testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
-    testImplementation project(":eventmesh-security-plugin:eventmesh-security-acl")
-    testImplementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    testImplementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
-
-    testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-
-    testImplementation "org.apache.httpcomponents:httpclient"
-    testImplementation "io.netty:netty-all"
+    implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-api")
+    implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-opentelemetry")
 
     testImplementation "org.mockito:mockito-core"
     testImplementation "org.powermock:powermock-module-junit4"

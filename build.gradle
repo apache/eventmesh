@@ -249,6 +249,7 @@ subprojects {
         Set<String> rootProject = ["eventmesh-admin",
                                    "eventmesh-common",
                                    "eventmesh-connector-api",
+                                   "eventmesh-metrics-api",
                                    "eventmesh-registry-api",
                                    "eventmesh-runtime",
                                    "eventmesh-security-api",
