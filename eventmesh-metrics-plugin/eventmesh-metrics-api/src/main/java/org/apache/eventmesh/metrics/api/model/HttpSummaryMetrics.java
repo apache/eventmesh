@@ -15,54 +15,36 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.metrics.http;
-
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+package org.apache.eventmesh.metrics.api.model;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.concurrent.DelayQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
-import com.codahale.metrics.MetricRegistry;
+// todo: split this class
+@Slf4j
+public class HttpSummaryMetrics implements Metric {
 
-public class SummaryMetrics {
+    private static final int STATIC_PERIOD = 30 * 1000;
 
-    public Logger logger = LoggerFactory.getLogger("httpMonitor");
-
-    private EventMeshHTTPServer eventMeshHTTPServer;
-
-    private MetricRegistry metricRegistry;
-
-    public SummaryMetrics(EventMeshHTTPServer eventMeshHTTPServer, MetricRegistry metricRegistry) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
-        this.metricRegistry = metricRegistry;
-    }
-
-    public static final int STATIC_PERIOD = 30 * 1000;
-
-    private float avg(LinkedList<Integer> linkedList) {
-        float sum = 0.0f;
-        if (linkedList.isEmpty()) {
-            return sum;
-        }
-
-        Iterator<Integer> it = linkedList.iterator();
-        while (it.hasNext()) {
-            float tps = (float) it.next();
-            sum += tps;
-        }
-
-        return sum / linkedList.size();
+    public HttpSummaryMetrics(final ThreadPoolExecutor batchMsgExecutor,
+                              final ThreadPoolExecutor sendMsgExecutor,
+                              final ThreadPoolExecutor pushMsgExecutor,
+                              final DelayQueue<?> httpFailedQueue) {
+        this.batchMsgExecutor = batchMsgExecutor;
+        this.sendMsgExecutor = sendMsgExecutor;
+        this.pushMsgExecutor = pushMsgExecutor;
+        this.httpFailedQueue = httpFailedQueue;
     }
 
     public static final String EVENTMESH_MONITOR_FORMAT_HTTP = "{\"maxHTTPTPS\":\"%.1f\",\"avgHTTPTPS\":\"%.1f\","
-            //EVENTMESH tps related to accepting external http requests
-            + "\"maxHTTPCOST\":\"%s\",\"avgHTTPCOST\":\"%.1f\",\"avgHTTPBodyDecodeCost\":\"%.1f\", "
-            + "\"httpDiscard\":\"%s\"}";
+        //EVENTMESH tps related to accepting external http requests
+        + "\"maxHTTPCOST\":\"%s\",\"avgHTTPCOST\":\"%.1f\",\"avgHTTPBodyDecodeCost\":\"%.1f\", "
+        + "\"httpDiscard\":\"%s\"}";
 
     private float wholeCost = 0f;
 
@@ -75,7 +57,7 @@ public class SummaryMetrics {
 
     private AtomicLong httpRequestPerSecond = new AtomicLong(0);
 
-    private LinkedList<Integer> httpRequestTPSSnapshots = new LinkedList<Integer>();
+    private LinkedList<Integer> httpRequestTPSSnapshots = new LinkedList<>();
 
     public float avgHTTPCost() {
         float cost = (wholeRequestNum.longValue() == 0L) ? 0f : wholeCost / wholeRequestNum.longValue();
@@ -151,7 +133,7 @@ public class SummaryMetrics {
 
     //////////////////////////////////////////////////////////////////////////
     public static final String EVENTMESH_MONITOR_FORMAT_BATCHSENDMSG = "{\"maxBatchSendMsgTPS\":\"%.1f\",\"avgBatchSendMsgTPS\":\"%.1f\","
-            + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"discard\":\"%s\"}";
+        + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"discard\":\"%s\"}";
 
     private AtomicLong sendBatchMsgNumPerSecond = new AtomicLong(0);
 
@@ -219,7 +201,7 @@ public class SummaryMetrics {
 
     //////////////////////////////////////////////////////////////////////////
     public static final String EVENTMESH_MONITOR_FORMAT_SENDMSG = "{\"maxSendMsgTPS\":\"%.1f\",\"avgSendMsgTPS\":\"%.1f\","
-            + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"replyMsg\":\"%s\", \"replyFail\":\"%s\"}";
+        + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.2f\", \"replyMsg\":\"%s\", \"replyFail\":\"%s\"}";
 
     private AtomicLong sendMsgNumSum = new AtomicLong(0);
 
@@ -298,7 +280,7 @@ public class SummaryMetrics {
 
     ////////////////////////////////////////////////////////////////////////////
     public static final String EVENTMESH_MONITOR_FORMAT_PUSHMSG = "{\"maxPushMsgTPS\":\"%.1f\",\"avgPushMsgTPS\":\"%.1f\","
-            + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.1f\", \"maxClientLatency\":\"%.1f\", \"avgClientLatency\":\"%.1f\"}";
+        + " \"sum\":\"%s\", \"sumFail\":\"%s\", \"sumFailRate\":\"%.1f\", \"maxClientLatency\":\"%.1f\", \"avgClientLatency\":\"%.1f\"}";
 
     private float wholePushCost = 0f;
 
@@ -380,11 +362,11 @@ public class SummaryMetrics {
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public static final String EVENTMESH_MONITOR_FORMAT_BLOCKQ = "{\"batchMsgQ\":\"%s\",\"sendMsgQ\":\"%s\","
-            + "\"pushMsgQ\":\"%s\",\"httpRetryQ\":\"%s\"}";
+        + "\"pushMsgQ\":\"%s\",\"httpRetryQ\":\"%s\"}";
 
     ///////////////////////////////////////////////////////////////////////////
     public static final String EVENTMESH_MONITOR_FORMAT_MQ_CLIENT = "{\"batchAvgSend2MQCost\":\"%.1f\", "
-            + "\"avgSend2MQCost\":\"%.1f\", \"avgReply2MQCost\":\"%.1f\"}";
+        + "\"avgSend2MQCost\":\"%.1f\", \"avgReply2MQCost\":\"%.1f\"}";
 
     private float batchSend2MQWholeCost = 0f;
 
@@ -436,4 +418,40 @@ public class SummaryMetrics {
         reply2MQWholeCost = 0f;
         reply2MQNum.set(0L);
     }
+
+    // execute metrics
+    private final ThreadPoolExecutor batchMsgExecutor;
+
+    private final ThreadPoolExecutor sendMsgExecutor;
+
+    private final ThreadPoolExecutor pushMsgExecutor;
+
+    private final DelayQueue<?> httpFailedQueue;
+
+    public int getBatchMsgQueueSize() {
+        return batchMsgExecutor.getQueue().size();
+    }
+
+    public int getSendMsgQueueSize() {
+        return sendMsgExecutor.getQueue().size();
+    }
+
+    public int getPushMsgQueueSize() {
+        return pushMsgExecutor.getQueue().size();
+    }
+
+    public int getHttpRetryQueueSize() {
+        return httpFailedQueue.size();
+    }
+
+
+    private float avg(LinkedList<Integer> linkedList) {
+        if (linkedList.isEmpty()) {
+            return 0.0f;
+        }
+
+        int sum = linkedList.stream().reduce(Integer::sum).get();
+        return (float) sum / linkedList.size();
+    }
+
 }
