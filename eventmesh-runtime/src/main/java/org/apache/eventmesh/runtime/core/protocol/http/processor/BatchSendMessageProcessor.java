@@ -166,11 +166,10 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         if (!eventMeshHTTPServer.getBatchRateLimiter()
                 .tryAcquire(eventSize, EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
-                    sendMessageBatchResponseHeader,
-                    SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR.getRetCode(),
-                            EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR.getErrMsg()));
-            eventMeshHTTPServer.metrics.summaryMetrics
-                    .recordSendBatchMsgDiscard(eventSize);
+                sendMessageBatchResponseHeader,
+                SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR.getRetCode(),
+                    EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR.getErrMsg()));
+            eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendBatchMsgDiscard(eventSize);
             asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
@@ -258,7 +257,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         }
 
         long delta = eventSize;
-        eventMeshHTTPServer.metrics.summaryMetrics.recordSendBatchMsg(delta);
+        eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendBatchMsg(delta);
 
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerBatchMsgBatchEnabled) {
             for (List<CloudEvent> eventlist : topicBatchMessageMappings.values()) {
@@ -314,7 +313,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         }
 
         long batchEndTime = System.currentTimeMillis();
-        eventMeshHTTPServer.metrics.summaryMetrics.recordBatchSendMsgCost(batchEndTime - batchStartTime);
+        eventMeshHTTPServer.metrics.getSummaryMetrics().recordBatchSendMsgCost(batchEndTime - batchStartTime);
         batchMessageLogger.debug("batchMessage|eventMesh2mq|REQ|ASYNC|batchId={}|send2MQCost={}ms|msgNum={}|topics={}",
                 batchId, batchEndTime - batchStartTime, eventSize, topicBatchMessageMappings.keySet());
 
