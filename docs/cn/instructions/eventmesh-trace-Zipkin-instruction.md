@@ -18,10 +18,14 @@
 
 eventmesh-runtime/conf/eventmesh.properties中：
 
+默认的exporter是log，需要手动改成Zipkin
+
 ```properties
 #trace exporter
 eventmesh.trace.exporter.type=Zipkin
-
+```
+下面是关于Zipkin的各种配置
+```properties
 #set the maximum batch size to use
 eventmesh.trace.exporter.max.export.size=512
 #set the queue size. This must be >= the export batch size
@@ -36,7 +40,7 @@ eventmesh.trace.export.zipkin.ip=localhost
 eventmesh.trace.export.zipkin.port=9411
 ```
 
-以上都是相关的配置，如果你十分熟悉zipkin的话可以自行修改。
+以上都是相关的配置，如果你十分熟悉Zipkin的话可以自行修改。
 
 
 
