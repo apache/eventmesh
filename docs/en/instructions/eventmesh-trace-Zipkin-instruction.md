@@ -18,10 +18,14 @@ run eventmesh-example(reference [eventmesh-sdk-java-quickstart](eventmesh-sdk-ja
 
 In eventmesh-runtime/conf/eventmesh.properties：
 
+The default exporter is log, which needs to be manually changed to Zipkin
+
 ```properties
 #trace exporter
 eventmesh.trace.exporter.type=Zipkin
-
+```
+Here are various configurations of Zipkin
+```properties
 #set the maximum batch size to use
 eventmesh.trace.exporter.max.export.size=512
 #set the queue size. This must be >= the export batch size
