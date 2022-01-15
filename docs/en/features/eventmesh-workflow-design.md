@@ -2,44 +2,52 @@
 
 ## Business Problem
 
-Imaging you are building a simple Order Management System for an E-Commerce Store. The system is able to taking new orders from store website,
-and process the orders, handle the payments, and finally process the shipment.
+Imaging you are building a simple Order Management System for an E-Commerce Store. 
+The system should be able to receive and provision new orders from a store website. The provisioning process
+should be able to process all orders, handle payments, as well as process shipments.
 
-For the high availability and high performance, you architect the system using event-driven architecture (EDA), and build microservice apps to handle
+For high availability and high performance, you architect the system using event-driven architecture (EDA), and build microservice apps to handle
 store frontend, order management, payment processing, and shipment management.
-You deploy the whole system in a cloud environment. To handle the high workload, you leverage the messaging system to buffer the loads,
-and scale up multiple instances of microservices. The architecture looks similar to the followings:
+You deploy the whole system in a cloud environment. To handle high workloads, you leverage a messaging system to buffer the loads,
+and scale up multiple instances of microservices. The architecture could look similar to:
 
 ![eventmesh-workflow-uc](../../images/features/eventmesh-workflow-usecase.jpg?raw=true)
 
 While each microservice is acting on its own event channels, EventMesh plays a crucial role of doing Event Orchestration.
 
-We use CNCF Serverless Workflow to describe this Event Workflow Orchestration.
+We use [CNCF Serverless Workflow](https://serverlessworkflow.io/) to describe this Event Workflow Orchestration.
 
 ## About CNCF Serverless Workflow
 
 CNCF Serverless Workflow defines a vendor-neutral, open-source, and fully community-driven ecosystem
 for defining and running DSL-based workflows that target the Serverless technology domain.
 
-Serverless workflow has Domain Specific Language (DSL) to describe a workflow orchestration of serverless functions and microservices.
+Serverless Workflow defines a Domain Specific Language (DSL) 
+to describe stateful and stateless workflow-based orchestrations of serverless functions and microservices.
 
 More about this can be found in its [official github site](https://github.com/serverlessworkflow/specification)
 
 ## EventMesh Workflow
 
-We leverage Serverless Workflow DSL to describe the EventMesh workflow. Based on its spec, the workflow is consists of a serials of states.
-At this moment we only support event related states. See the supported states in [Workflow DSL Design](#workflow-dsl-design-wip).
+We leverage Serverless Workflow DSL to describe the EventMesh workflow. Based on its spec, the workflow is consists of a series of 
+workflow states used to describe the control-flow logic.
+At this time we only support event related workflow states. See the supported states in [Workflow DSL Design](#workflow-dsl-design-wip).
 
-In the workflow `state`, it has the applicable `Action` to perform. The `Action` has reference to the `Function` definition.
-In EDA solution, we usually defined the event-driven microservice using AsyncAPI.
-Serverless workflow supports AsyncAPI as the `Function` definition.
+A `workflow state` can include applicable `actions`, or services/functions that should be invoked during workflow execution. 
+These `actions` can reference reusable `function` definitions which define how these functions/services should be invoked.
+They can also reference events that trigger event-based service invocations, and events to wait for that denote completion of 
+such event-based service invocation completion. 
+
+In EDA solution, we usually defined our event-driven microservice using AsyncAPI.
+Serverless workflow `function` definitions support defining invocation semantics using AsyncAPI. 
 See [Using Funtions for AsyncAPI Service](https://github.com/serverlessworkflow/specification/blob/main/specification.md#using-functions-for-async-api-service-invocations)
+for more information.
 
 ### AsyncAPI
 
 AsyncAPI is an open source initiative that seeks to improve the current state of Event-Driven Architectures (EDA).
 Our long-term goal is to make working with EDAs as easy as it is to work with REST APIs.
-That goes from documentation to code generation, from discovery to event management.
+That goes from documentation to code generation, discovery to event management.
 Most of the processes you apply to your REST APIs nowadays would be applicable to your event-driven/asynchronous APIs too.
 
 See AsyncAPI detail in the [official site](https://www.asyncapi.com/docs/getting-started)
@@ -48,7 +56,7 @@ See AsyncAPI detail in the [official site](https://www.asyncapi.com/docs/getting
 
 In this example, we build the event-driven workflow of the Order management system above.
 
-First, we need the AsyncAPI definitions of the microservice apps. 
+First, we need to define AsyncAPI definitions for our microservice apps. 
 
 - Online Store App
 
@@ -80,7 +88,7 @@ channels:
         name: Order
   order/outbound:
     subscribe:
-      operationId: receivedPurchaseOrder
+      operationId: processedOrder
       message:
         name: PurchaseOrder
 ```
@@ -100,7 +108,7 @@ channels:
         name: Payment
   payment/outbound:
     subscribe:
-      operationId: receivedPaymentReceipt
+      operationId: paymentReceipt
       message:
         name: PaymentReceipt
 ```
@@ -113,93 +121,76 @@ info:
   title: Shipment Service
   version: '0.1.0'
 channels:
-  shipmet/inbound:
+  shipment/inbound:
     publish:
       operationId: sendShipment
       message:
         name: Shipment
 ```
 
-Then we write the workflow using Serverless Workflow DSL.
+Once that is defined, we define the order workflow that describes our Order Management business logic.
 
 ```yaml
-id: StoreOrderWorkflow
+id: storeorderworkflow
 version: '1.0'
 specVersion: '0.8'
 name: Store Order Management Workflow
-start: Received Store Order
-functions:
-  - name: receivedStoreOrder
-    operation: file://onlineStoreApp.yaml#receivedStoreOrder
-  - name: dispatchOrder
-    operation: file://orderService.yaml#sendOrder
-  - name: recievedPO
-    operation: file://orderService.yaml#receivedPurchaseOrder
-  - name: dispatchPayment
-    operation: file://paymentService.yaml#sendPayment
-  - name: receivedReceipt
-    operation: file://paymentService.yaml#receivedPaymentReceipt
-  - name: dispatchShipment
-    operation: file://shipmentService.yaml#sendShipment
-events:
-  - name: StoreOrder
-    type: StoreOrderType
-    source: OnlineStoreApp
-  - name: PurchaseOrder
-    type: PurchaseOrderType
-    source: OrderService
-  - name: PaymentReceipt
-    type: PaymentReceiptType
-    source: PaymentService
-  - name: PaymentDenial
-    type: PaymentDenialType
-    source: PaymentService
 states:
-- name: Received Store Order
-  type: operation
-  actions:
-    - functionRef:
-        refName: receivedStoreOrder
-  transition: Process Store Order
-- name: Process Store Order
-  type: event
-  onEvents:
-    - eventRefs:
-        - StoreOrder
-      actionMode: sequential
-      actions:
-        - functionRef:
-            refName: dispatchOrder
-        - functionRef:
-            refName: recievedPO
-  transition: Process Order Payment
-- name: Process Order Payment
-  type: event
-  onEvents:
-    - eventRefs:
-        - PurchaseOrder
-      actionMode: sequential
-      actions:
-        - functionRef:
-            refName: dispatchPayment
-        - functionRef:
-            refName: receivedReceipt
-  transition: Check Payment Receipt
-- name: Check Payment Receipt
-  type: switch
-  eventConditions:
-    - eventRef: PaymentReceipt
-      transition: Process Order Shipment
-    - eventRef: PaymentDenial
+  - name: Receive New Order Event
+    type: event
+    onEvents:
+      - eventRefs:
+          - NewOrderEvent
+        actions:
+          - eventRef:
+              triggerEventRef: OrderServiceSendEvent
+              resultEventRef: OrderServiceResultEvent
+          - eventRef:
+              triggerEventRef: PaymentServiceSendEvent
+              resultEventRef: PaymentServiceResultEvent
+    transition: Check Payment Status
+  - name: Check Payment Status
+    type: switch
+    dataConditions:
+      - name: Payment Successfull
+        condition: "${ .payment.status == 'success' }"
+        transition: Send Order Shipment
+      - name: Payment Denied
+        condition: "${ .payment.status == 'denied' }"
+        end: true
+    defaultCondition:
       end: true
-  defaultCondition
+  - name: Send Order Shipment
+    type: operation
+    actions:
+      - eventRef:
+          triggerEventRef: ShipmentServiceSendEvent
     end: true
-- name: Process Order Shipment
-  type: operation
-  action:
-    - functionRef:
-        refName: dispatchShipment    
-  end: true
+events:
+  - name: NewOrderEvent
+    type: orders.new
+    source: file://onlineStoreApp.yaml#receivedStoreOrder
+    kind: consumed
+  - name: OrderServiceSendEvent
+    type: orders.process
+    source: file://orderService.yaml#sendOrder
+    kind: produced
+  - name: OrderServiceResultEvent
+    type: orders.process
+    source: file://orderService.yaml#processedOrder
+    kind: consumed
+  - name: PaymentServiceSendEvent
+    type: orders.payment
+    source: file://paymentService.yaml#sendPayment
+    kind: produced
+  - name: PaymentServiceResultEvent
+    type: orders.payment
+    source: file://paymentService.yaml#paymentReceipt
+    kind: consumed
+  - name: ShipmentServiceSendEvent
+    type: orders.shipping
+    source: file://shipmentService.yaml#sendShipment
+    kind: produced
 ```
 
 ## EventMesh Workflow Engine
