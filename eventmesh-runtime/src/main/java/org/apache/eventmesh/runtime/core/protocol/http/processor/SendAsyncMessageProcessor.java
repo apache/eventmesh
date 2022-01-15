@@ -173,7 +173,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getRetCode(),
                             EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getErrMsg()));
-            eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPDiscard();
+            eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPDiscard();
             asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
@@ -237,7 +237,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
         final SendMessageContext sendMessageContext = new SendMessageContext(bizNo, event, eventMeshProducer,
                 eventMeshHTTPServer);
-        eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsg();
+        eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsg();
 
         long startTime = System.currentTimeMillis();
 
@@ -249,7 +249,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                         httpLogger.debug("{}", httpCommand);
                     }
                     eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                    eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(
+                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
                             System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
                 } catch (Exception ex) {
                     //ignore
@@ -273,7 +273,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                                     EventMeshRetCode.SUCCESS.getErrMsg() + sendResult.toString()));
                     asyncContext.onComplete(succ, handler);
                     long endTime = System.currentTimeMillis();
-                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
+                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
                     messageLogger.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                             endTime - startTime, topic, bizNo, uniqueId);
                 }
@@ -289,8 +289,8 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
                     eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
                     long endTime = System.currentTimeMillis();
-                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
-                    eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
+                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
+                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
                     messageLogger.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                             endTime - startTime, topic, bizNo, uniqueId, context.getException());
                 }
@@ -307,8 +307,8 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             long endTime = System.currentTimeMillis();
             messageLogger.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, bizNo, uniqueId, ex);
-            eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
-            eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
+            eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
+            eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
         }
 
         return;
