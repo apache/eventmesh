@@ -204,9 +204,42 @@ states:
 
 ## EventMesh Workflow Engine
 
+In the following architecture diagram, the EventMesh Catalog, EventMesh Workflow Engine and EventMesh Runtime are running in three different processors.
+
 ![eventmesh-workflow-arch](../../images/features/eventmesh-workflow-arch.jpg?raw=true)
 
-## EventMesh Workflow Engine Design
+The steps running the workflow is the followings:
+
+1. Deploy the Publisher and Subscriber Apps in the environment.
+   Describe the App APIs using AsyncAPI, generate the asyncAPI yaml.
+   Register the Publisher and Subscriber Apps in EventMesh Catalog using AsyncAPI.
+   
+
+2. Register the Serverless Workflow DSL in EventMesh Workflow Engine.
+
+
+3. EventMesh Workflow Engine query the EventMesh Catalog for Publisher and Subscribers required in Workflow DSL `function`
+
+
+4. Event-driven Apps are publish events to EventMesh Runtime to trigger the Workflow. EventMesh Workflow Engine also publish and subscribe events for orchestrating the events.
+
+
+### EventMesh Catalog Design
+
+EventMesh Catalog store the Publisher, Subscriber and Channel metadata. consists of the following modules:
+
+- AsyncAPI Parser
+
+  Using the SDK provided by AsyncAPI community (see [tool list](https://www.asyncapi.com/docs/community/tooling)),
+  parse and validated the AsyncAPI yaml inputs, and generate the AsyncAPI definition.
+
+
+- Publisher, Channel, Subscriber Modules
+  
+  From the AsyncAPI definition store the Publisher, Subscriber and Channel information.
+
+
+### EventMesh Workflow Engine Design
 
 EventMesh Workflow Engine consists of the following modules:
 
@@ -214,12 +247,6 @@ EventMesh Workflow Engine consists of the following modules:
   
   Using the SDK provided by Serverless Workflow community (see supported [SDKs](https://github.com/serverlessworkflow/specification#sdks)),
   parse and validated the workflow DSL inputs, and generate workflow definition.
-  
-
-- AsyncAPI Parser
- 
-  Using the SDK provided by AsyncAPI community (see [tool list](https://www.asyncapi.com/docs/community/tooling)),
-  parse and validated the AsyncAPI yaml inputs, and generate the AsyncAPI definition.
 
 
 - Workflow Module
