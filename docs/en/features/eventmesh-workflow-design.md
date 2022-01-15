@@ -170,21 +170,27 @@ states:
 events:
   - name: NewOrderEvent
     source: file://onlineStoreApp.yaml#newStoreOrder
+    type: asyncapi
     kind: consumed
   - name: OrderServiceSendEvent
     source: file://orderService.yaml#sendOrder
+    type: asyncapi
     kind: produced
   - name: OrderServiceResultEvent
     source: file://orderService.yaml#processedOrder
+    type: asyncapi
     kind: consumed
   - name: PaymentServiceSendEvent
     source: file://paymentService.yaml#sendPayment
+    type: asyncapi
     kind: produced
   - name: PaymentServiceResultEvent
     source: file://paymentService.yaml#paymentReceipt
+    type: asyncapi
     kind: consumed
   - name: ShipmentServiceSendEvent
     source: file://shipmentService.yaml#sendShipment
+    type: asyncapi
     kind: produced
 ```
 
