@@ -68,9 +68,10 @@ info:
 channels:
   store/order:
     subscribe:
-      operationId: receivedStoreOrder
+      operationId: newStoreOrder
       message:
-        name: StoreOrder
+        $ref : '#/components/NewOrder'
+
 ```
 
 - Order Service
@@ -85,12 +86,12 @@ channels:
     publish:
       operationId: sendOrder
       message:
-        name: Order
+        $ref : '#/components/Order'
   order/outbound:
     subscribe:
       operationId: processedOrder
       message:
-        name: PurchaseOrder
+        $ref : '#/components/Order'
 ```
 
 - Payment Service
@@ -105,12 +106,12 @@ channels:
     publish:
       operationId: sendPayment
       message:
-        name: Payment
+        $ref : '#/components/OrderPayment'
   payment/outbound:
     subscribe:
       operationId: paymentReceipt
       message:
-        name: PaymentReceipt
+        $ref : '#/components/OrderPayment'
 ```
 
 - Shipment Service
@@ -125,7 +126,7 @@ channels:
     publish:
       operationId: sendShipment
       message:
-        name: Shipment
+        $ref : '#/components/OrderShipment'
 ```
 
 Once that is defined, we define the order workflow that describes our Order Management business logic.
@@ -168,27 +169,21 @@ states:
     end: true
 events:
   - name: NewOrderEvent
-    type: orders.new
-    source: file://onlineStoreApp.yaml#receivedStoreOrder
+    source: file://onlineStoreApp.yaml#newStoreOrder
     kind: consumed
   - name: OrderServiceSendEvent
-    type: orders.process
     source: file://orderService.yaml#sendOrder
     kind: produced
   - name: OrderServiceResultEvent
-    type: orders.process
     source: file://orderService.yaml#processedOrder
     kind: consumed
   - name: PaymentServiceSendEvent
-    type: orders.payment
     source: file://paymentService.yaml#sendPayment
     kind: produced
   - name: PaymentServiceResultEvent
-    type: orders.payment
     source: file://paymentService.yaml#paymentReceipt
     kind: consumed
   - name: ShipmentServiceSendEvent
-    type: orders.shipping
     source: file://shipmentService.yaml#sendShipment
     kind: produced
 ```
