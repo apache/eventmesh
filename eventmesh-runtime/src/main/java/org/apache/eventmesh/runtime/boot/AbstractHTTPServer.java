@@ -296,7 +296,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             }
             decoder.destroy();
         }
-        metrics.summaryMetrics.recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
+        metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
         return httpRequestBody;
     }
 
@@ -336,7 +336,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     sendError(ctx, errorStatus);
                     return;
                 }
-                metrics.summaryMetrics.recordHTTPRequest();
+                metrics.getSummaryMetrics().recordHTTPRequest();
 
                 final HttpCommand requestCommand = new HttpCommand();
 
@@ -422,7 +422,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                             return;
                         }
 
-                        metrics.summaryMetrics
+                        metrics.getSummaryMetrics()
                                 .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
 
                         if (httpLogger.isDebugEnabled()) {
@@ -437,8 +437,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             } catch (RejectedExecutionException re) {
                 HttpCommand responseCommand = request.createHttpCommandResponse(EventMeshRetCode.OVERLOAD);
                 asyncContext.onComplete(responseCommand);
-                metrics.summaryMetrics.recordHTTPDiscard();
-                metrics.summaryMetrics.recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
+                metrics.getSummaryMetrics().recordHTTPDiscard();
+                metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
                 try {
                     sendResponse(ctx, asyncContext.getResponse().httpResponse());
                 } catch (Exception e) {

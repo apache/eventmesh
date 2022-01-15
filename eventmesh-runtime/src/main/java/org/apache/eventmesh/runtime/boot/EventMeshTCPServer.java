@@ -23,6 +23,8 @@ import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
 import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
+import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -37,11 +39,15 @@ import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import org.assertj.core.util.Lists;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -210,12 +216,18 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         eventMeshTcpRetryer = new EventMeshTcpRetryer(this);
         eventMeshTcpRetryer.init();
 
-        eventMeshTcpMonitor = new EventMeshTcpMonitor(this);
+        // The MetricsRegistry is singleton, so we can use factory method to get.
+        final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
+        Optional.ofNullable(eventMeshTCPConfiguration.eventMeshMetricsPluginType)
+            .ifPresent(
+                metricsPlugins -> metricsPlugins.forEach(
+                    pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
+        eventMeshTcpMonitor = new EventMeshTcpMonitor(this, metricsRegistries);
         eventMeshTcpMonitor.init();
 
         if (eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             eventMeshRebalanceService = new EventMeshRebalanceService(this,
-                    new EventmeshRebalanceImpl(this));
+                new EventmeshRebalanceImpl(this));
             eventMeshRebalanceService.init();
         }
         logger.info("--------------------------EventMeshTCPServer Inited");

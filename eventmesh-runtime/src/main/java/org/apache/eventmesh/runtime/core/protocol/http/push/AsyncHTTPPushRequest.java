@@ -159,7 +159,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
         builder.setEntity(new UrlEncodedFormEntity(body, StandardCharsets.UTF_8));
 
-        eventMeshHTTPServer.metrics.summaryMetrics.recordPushMsg();
+        eventMeshHTTPServer.metrics.getSummaryMetrics().recordPushMsg();
 
         this.lastPushTime = System.currentTimeMillis();
 
@@ -174,9 +174,9 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                 public Object handleResponse(HttpResponse response) {
                     removeWaitingMap(AsyncHTTPPushRequest.this);
                     long cost = System.currentTimeMillis() - lastPushTime;
-                    eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPPushTimeCost(cost);
+                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPPushTimeCost(cost);
                     if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                        eventMeshHTTPServer.metrics.summaryMetrics.recordHttpPushMsgFailed();
+                        eventMeshHTTPServer.metrics.getSummaryMetrics().recordHttpPushMsgFailed();
                         messageLogger.info(
                                 "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
                                         + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
