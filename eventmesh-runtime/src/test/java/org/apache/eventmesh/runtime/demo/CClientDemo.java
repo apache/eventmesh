@@ -64,7 +64,7 @@ public class CClientDemo {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
                 if (msg.getHeader().getCmd() == Command.ASYNC_MESSAGE_TO_CLIENT || msg.getHeader().getCmd() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-                    logger.error("receive message-------------------------------------" + msg.toString());
+                    logger.error("receive message-------------------------------------" + msg);
                 }
             }
         });
