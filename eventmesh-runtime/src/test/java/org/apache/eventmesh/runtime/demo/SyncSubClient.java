@@ -44,7 +44,7 @@ public class SyncSubClient {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
                 if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
-                    logger.error("receive message -------------------------------" + msg.toString());
+                    logger.error("receive message -------------------------------" + msg);
                 }
             }
         });
