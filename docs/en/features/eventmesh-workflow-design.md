@@ -194,6 +194,10 @@ events:
     kind: produced
 ```
 
+The corresponding workflow diagram is the following:
+
+![eventmesh-workflow-diag](../../images/features/eventmesh-workflow-diag.png?raw=true)
+
 ## EventMesh Workflow Engine
 
 In the following architecture diagram, the EventMesh Catalog, EventMesh Workflow Engine and EventMesh Runtime are running in three different processors.
