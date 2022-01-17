@@ -35,7 +35,7 @@ public class RemotingHelper {
     public static String exceptionSimpleDesc(final Throwable e) {
         StringBuilder sb = new StringBuilder();
         if (e != null) {
-            sb.append(e.toString());
+            sb.append(e);
 
             StackTraceElement[] stackTrace = e.getStackTrace();
             if (stackTrace != null && stackTrace.length > 0) {
