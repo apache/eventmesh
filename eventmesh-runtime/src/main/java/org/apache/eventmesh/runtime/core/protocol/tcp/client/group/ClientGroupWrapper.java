@@ -666,7 +666,7 @@ public class ClientGroupWrapper {
         HttpTinyClient.HttpResult result = null;
 
         try {
-            logger.info("pushMsgToEventMesh,targetUrl:{},msg:{}", targetUrl.toString(),
+            logger.info("pushMsgToEventMesh,targetUrl:{},msg:{}", targetUrl,
                     msg);
             List<String> paramValues = new ArrayList<String>();
             paramValues.add("msg");
