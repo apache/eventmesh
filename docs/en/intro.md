@@ -12,3 +12,6 @@
 ### [metrics](features/eventmesh-metrics-export-design.md)
 
 ### [SchemaRegistry](features/eventmesh-schemaregistry-design.md)
+
+
+### [Workflow](features/eventmesh-workflow-design.md)
