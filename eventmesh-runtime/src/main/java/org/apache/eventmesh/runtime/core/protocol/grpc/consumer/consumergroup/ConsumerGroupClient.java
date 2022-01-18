@@ -20,6 +20,7 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
 import lombok.Getter;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import java.util.Date;
 import lombok.Builder;
@@ -41,7 +42,7 @@ public class ConsumerGroupClient {
 
     private String url;
 
-    private EventEmitter<EventMeshMessage> eventEmitter;
+    private EventEmitter<SimpleMessage> eventEmitter;
 
     private final SubscriptionMode subscriptionMode;
 
@@ -60,7 +61,7 @@ public class ConsumerGroupClient {
     public void setUrl(String url) {
         this.url = url;
     }
-    public void setEventEmitter(EventEmitter<EventMeshMessage> emitter) {
+    public void setEventEmitter(EventEmitter<SimpleMessage> emitter) {
         this.eventEmitter = emitter;
     }
 

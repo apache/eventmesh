@@ -3,6 +3,7 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.StreamTopicConfig;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
@@ -17,9 +18,9 @@ public class StreamPushRequest extends AbstractPushRequest {
 
     private final Logger messageLogger = LoggerFactory.getLogger("message");
 
-    private final Map<String, List<EventEmitter<EventMeshMessage>>> idcEmitters;
+    private final Map<String, List<EventEmitter<SimpleMessage>>> idcEmitters;
 
-    private final List<EventEmitter<EventMeshMessage>> totalEmitters;
+    private final List<EventEmitter<SimpleMessage>> totalEmitters;
 
     private final int startIdx;
 
@@ -34,42 +35,42 @@ public class StreamPushRequest extends AbstractPushRequest {
 
     @Override
     public void tryPushRequest() {
-        if (eventMeshMessage == null) {
+        if (simpleMessage == null) {
             return;
         }
 
-        EventEmitter<EventMeshMessage> eventEmitter = selectEmitter();
+        EventEmitter<SimpleMessage> eventEmitter = selectEmitter();
 
         if (eventEmitter == null) {
             return;
         }
         this.lastPushTime = System.currentTimeMillis();
 
-        eventMeshMessage = EventMeshMessage.newBuilder(eventMeshMessage)
+        simpleMessage = SimpleMessage.newBuilder(simpleMessage)
             .putProperties(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(lastPushTime))
             .build();
         try {
             long cost = System.currentTimeMillis() - lastPushTime;
             // catch the error and retry, don't use eventEmitter.onNext() to hide the error
-            eventEmitter.getEmitter().onNext(eventMeshMessage);
+            eventEmitter.getEmitter().onNext(simpleMessage);
             messageLogger.info(
                 "message|eventMesh2client|emitter|topic={}|bizSeqNo={}"
-                    + "|uniqueId={}|cost={}", eventMeshMessage.getTopic(),
-                eventMeshMessage.getSeqNum(), eventMeshMessage.getUniqueId(), cost);
+                    + "|uniqueId={}|cost={}", simpleMessage.getTopic(),
+                simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost);
             complete();
         } catch (Throwable t) {
             long cost = System.currentTimeMillis() - lastPushTime;
             messageLogger.error(
                 "message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}"
-                    + "|uniqueId={}|cost={}", t.getMessage(), eventMeshMessage.getTopic(),
-                eventMeshMessage.getSeqNum(), eventMeshMessage.getUniqueId(), cost, t);
+                    + "|uniqueId={}|cost={}", t.getMessage(), simpleMessage.getTopic(),
+                simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost, t);
 
             delayRetry();
         }
     }
 
-    private EventEmitter<EventMeshMessage> selectEmitter() {
-        List<EventEmitter<EventMeshMessage>> emitterList = MapUtils.getObject(idcEmitters,
+    private EventEmitter<SimpleMessage> selectEmitter() {
+        List<EventEmitter<SimpleMessage>> emitterList = MapUtils.getObject(idcEmitters,
             eventMeshGrpcConfiguration.eventMeshIDC, null);
         if (CollectionUtils.isNotEmpty(emitterList)) {
             return emitterList.get((startIdx + retryTimes) % emitterList.size());
