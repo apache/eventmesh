@@ -5,6 +5,7 @@ import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
@@ -51,12 +52,12 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         });
     }
 
-    public void subscribeStream(Subscription request, StreamObserver<EventMeshMessage> responseObserver) {
+    public void subscribeStream(Subscription request, StreamObserver<SimpleMessage> responseObserver) {
         logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             "subscribeStream", EventMeshConstants.PROTOCOL_GRPC,
             request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
 
-        EventEmitter<EventMeshMessage> emitter = new EventEmitter<>(responseObserver);
+        EventEmitter<SimpleMessage> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
             SubscribeStreamProcessor streamProcessor = new SubscribeStreamProcessor(eventMeshGrpcServer);
             try {
@@ -70,12 +71,12 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
                 resp.put("respMsg", code.getErrMsg() + " " + e.getMessage());
 
                 RequestHeader header = request.getHeader();
-                EventMeshMessage eventMeshMessage = EventMeshMessage.newBuilder()
+                SimpleMessage simpleMessage = SimpleMessage.newBuilder()
                     .setHeader(header)
                     .setContent(JsonUtils.serialize(resp))
                     .build();
 
-                emitter.onNext(eventMeshMessage);
+                emitter.onNext(simpleMessage);
                 emitter.onCompleted();
             }
         });

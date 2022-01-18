@@ -3,6 +3,7 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -37,7 +38,7 @@ public class SubscribeStreamProcessor {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
-    public void process(Subscription subscription, EventEmitter<EventMeshMessage> emitter) throws Exception {
+    public void process(Subscription subscription, EventEmitter<SimpleMessage> emitter) throws Exception {
 
         RequestHeader header = subscription.getHeader();
 
@@ -109,38 +110,38 @@ public class SubscribeStreamProcessor {
         sendResp(subscription, StatusCode.SUCCESS, "subscribe success", emitter);
     }
 
-    private void sendRespAndComplete(Subscription subscription, StatusCode code, EventEmitter<EventMeshMessage> emitter) {
+    private void sendRespAndComplete(Subscription subscription, StatusCode code, EventEmitter<SimpleMessage> emitter) {
         Map<String, String> resp = new HashMap<>();
         resp.put("respCode", code.getRetCode());
         resp.put("respMsg", code.getErrMsg());
 
         RequestHeader header = subscription.getHeader();
-        EventMeshMessage eventMeshMessage = EventMeshMessage.newBuilder()
+        SimpleMessage simpleMessage = SimpleMessage.newBuilder()
             .setHeader(header)
             .setContent(JsonUtils.serialize(resp))
             .build();
 
-        emitter.onNext(eventMeshMessage);
+        emitter.onNext(simpleMessage);
         emitter.onCompleted();
     }
 
-    private void sendRespAndComplete(Subscription subscription, StatusCode code, String message, EventEmitter<EventMeshMessage> emitter) {
+    private void sendRespAndComplete(Subscription subscription, StatusCode code, String message, EventEmitter<SimpleMessage> emitter) {
         sendResp(subscription, code, message, emitter);
         emitter.onCompleted();
     }
 
-    private void sendResp(Subscription subscription, StatusCode code, String message, EventEmitter<EventMeshMessage> emitter) {
+    private void sendResp(Subscription subscription, StatusCode code, String message, EventEmitter<SimpleMessage> emitter) {
         Map<String, String> resp = new HashMap<>();
         resp.put("respCode", code.getRetCode());
         resp.put("respMsg", code.getErrMsg() + " " + message);
 
         RequestHeader header = subscription.getHeader();
-        EventMeshMessage eventMeshMessage = EventMeshMessage.newBuilder()
+        SimpleMessage simpleMessage = SimpleMessage.newBuilder()
             .setHeader(header)
             .setContent(JsonUtils.serialize(resp))
             .build();
 
-        emitter.onNext(eventMeshMessage);
+        emitter.onNext(simpleMessage);
     }
 
     private void doAclCheck(Subscription subscription) throws AclException {
