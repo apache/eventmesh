@@ -7,10 +7,10 @@ import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.producer.CloudEventProducer;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc.PublisherServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,10 +54,10 @@ public class EventMeshGrpcProducer implements AutoCloseable {
         return cloudEventProducer.requestReply(cloudEvent, timeout);
     }
 
-    public Response publish(EventMeshMessage message) {
+    public Response publish(SimpleMessage message) {
         logger.info("Publish message " + message.toString());
 
-        EventMeshMessage enhancedMessage = EventMeshMessage.newBuilder(message)
+        SimpleMessage enhancedMessage = SimpleMessage.newBuilder(message)
             .setHeader(EventMeshClientUtil.buildHeader(clientConfig, PROTOCOL_TYPE))
             .setProducerGroup(clientConfig.getProducerGroup())
             .build();
@@ -71,10 +71,10 @@ public class EventMeshGrpcProducer implements AutoCloseable {
         }
     }
 
-    public Response requestReply(EventMeshMessage message, int timeout) {
+    public Response requestReply(SimpleMessage message, int timeout) {
         logger.info("RequestReply message " + message.toString());
 
-        EventMeshMessage enhancedMessage = EventMeshMessage.newBuilder(message)
+        SimpleMessage enhancedMessage = SimpleMessage.newBuilder(message)
             .setHeader(EventMeshClientUtil.buildHeader(clientConfig, PROTOCOL_TYPE))
             .setProducerGroup(clientConfig.getProducerGroup())
             .setTtl(String.valueOf(timeout))

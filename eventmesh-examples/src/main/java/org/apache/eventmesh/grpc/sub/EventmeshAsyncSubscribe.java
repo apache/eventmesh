@@ -5,7 +5,7 @@ import org.apache.eventmesh.client.grpc.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.ReceiveMsgHook;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem;
 import org.apache.eventmesh.util.Utils;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Slf4j
-public class EventmeshAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
+public class EventmeshAsyncSubscribe implements ReceiveMsgHook<SimpleMessage> {
 
     public static EventmeshAsyncSubscribe handler = new EventmeshAsyncSubscribe();
 
@@ -56,7 +56,7 @@ public class EventmeshAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage>
     }
 
     @Override
-    public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
+    public Optional<SimpleMessage> handle(SimpleMessage msg) {
         log.info("receive async msg====================={}", msg);
         return Optional.empty();
     }

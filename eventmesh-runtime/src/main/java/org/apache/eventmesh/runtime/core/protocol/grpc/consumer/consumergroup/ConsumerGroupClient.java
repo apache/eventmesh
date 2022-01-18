@@ -20,7 +20,6 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
 import lombok.Getter;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import java.util.Date;
 import lombok.Builder;

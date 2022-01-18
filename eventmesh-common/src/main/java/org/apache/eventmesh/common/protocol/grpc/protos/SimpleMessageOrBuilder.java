@@ -20,8 +20,8 @@
 
 package org.apache.eventmesh.common.protocol.grpc.protos;
 
-public interface EventMeshMessageOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:eventmesh.common.protocol.grpc.EventMeshMessage)
+public interface SimpleMessageOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:eventmesh.common.protocol.grpc.SimpleMessage)
     com.google.protobuf.MessageOrBuilder {
 
   /**

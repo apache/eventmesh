@@ -24,9 +24,7 @@ import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.util.Utils;
 
 import java.net.URI;

@@ -2,7 +2,6 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import io.grpc.stub.StreamObserver;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
@@ -11,7 +10,6 @@ import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
@@ -22,8 +20,6 @@ import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupTopicConfig;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.StreamTopicConfig;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.WebhookTopicConfig;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.push.HandleMsgContext;
@@ -32,11 +28,9 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class EventMeshConsumer {

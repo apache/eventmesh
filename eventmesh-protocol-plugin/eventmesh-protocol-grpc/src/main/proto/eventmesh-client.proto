@@ -38,7 +38,7 @@ message RequestHeader {
     string protocolDesc = 12;
 }
 
-message EventMeshMessage {
+message SimpleMessage {
    RequestHeader header = 1;
    string producerGroup = 2;
    string topic = 3;
@@ -117,9 +117,9 @@ message Heartbeat {
 }
 
 service PublisherService {
-   rpc publish(EventMeshMessage) returns (Response);
+   rpc publish(SimpleMessage) returns (Response);
 
-   rpc requestReply(EventMeshMessage) returns (Response);
+   rpc requestReply(SimpleMessage) returns (Response);
 
    rpc batchPublish(BatchMessage) returns (Response);
 }
@@ -127,7 +127,7 @@ service PublisherService {
 service ConsumerService {
    rpc subscribe(Subscription) returns (Response);
 
-   rpc subscribeStream(Subscription) returns (stream EventMeshMessage);
+   rpc subscribeStream(Subscription) returns (stream SimpleMessage);
 
    rpc unsubscribe(Subscription) returns (Response);
 }

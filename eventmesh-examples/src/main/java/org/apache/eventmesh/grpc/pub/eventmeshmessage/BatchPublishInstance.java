@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.util.Utils;

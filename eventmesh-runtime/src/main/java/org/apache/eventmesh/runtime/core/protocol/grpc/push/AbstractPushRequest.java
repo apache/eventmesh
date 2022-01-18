@@ -19,15 +19,11 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
 import com.google.common.collect.Sets;
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
@@ -84,7 +80,7 @@ public abstract class AbstractPushRequest extends RetryContext {
             String protocolType = Objects.requireNonNull(cloudEvent.getExtension(Constants.PROTOCOL_TYPE)).toString();
             ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
             ProtocolTransportObject protocolTransportObject = protocolAdaptor.fromCloudEvent(cloudEvent);
-            return ((EventMeshMessageWrapper) protocolTransportObject).getMessage();
+            return ((SimpleMessageWrapper) protocolTransportObject).getMessage();
         } catch (Exception e) {
             logger.error("Error in getting EventMeshMessage from CloudEvent", e);
             return null;
@@ -95,7 +91,7 @@ public abstract class AbstractPushRequest extends RetryContext {
         try {
             String protocolType = Objects.requireNonNull(eventMeshMessage.getHeader().getProtocolType());
             ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
-            return protocolAdaptor.toCloudEvent(new EventMeshMessageWrapper(eventMeshMessage));
+            return protocolAdaptor.toCloudEvent(new SimpleMessageWrapper(eventMeshMessage));
         } catch (Exception e) {
             logger.error("Error in getting CloudEvent from EventMeshMessage", e);
             return null;

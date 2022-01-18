@@ -1,15 +1,14 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.service;
 
-import io.grpc.stub.StreamObserver;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat.ClientType;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 
@@ -27,7 +26,7 @@ public class ServiceUtils {
             && StringUtils.isNotEmpty(header.getLanguage());
     }
 
-    public static boolean validateMessage(EventMeshMessage message) {
+    public static boolean validateMessage(SimpleMessage message) {
         return StringUtils.isNotEmpty(message.getUniqueId())
             && StringUtils.isNotEmpty(message.getProducerGroup())
             && StringUtils.isNotEmpty(message.getTopic())

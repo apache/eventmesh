@@ -1,6 +1,5 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.slf4j.Logger;

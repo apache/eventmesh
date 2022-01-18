@@ -4,12 +4,12 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage.MessageItem;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
 import java.net.URI;
@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class GrpcMessageProtocolResolver {
 
-    public static CloudEvent buildEvent(EventMeshMessage message) throws ProtocolHandleException {
+    public static CloudEvent buildEvent(SimpleMessage message) throws ProtocolHandleException {
         try {
             RequestHeader requestHeader = message.getHeader();
 
@@ -200,7 +200,7 @@ public class GrpcMessageProtocolResolver {
         return events;
     }
 
-    public static EventMeshMessageWrapper buildEventMeshMessage(CloudEvent cloudEvent) {
+    public static SimpleMessageWrapper buildSimpleMessage(CloudEvent cloudEvent) {
         String env = cloudEvent.getExtension(ProtocolKey.ENV) == null ? null : cloudEvent.getExtension(ProtocolKey.ENV).toString();
         String idc = cloudEvent.getExtension(ProtocolKey.IDC) == null ? null : cloudEvent.getExtension(ProtocolKey.IDC).toString();
         String ip = cloudEvent.getExtension(ProtocolKey.IP) == null ? null : cloudEvent.getExtension(ProtocolKey.IP).toString();
@@ -229,7 +229,7 @@ public class GrpcMessageProtocolResolver {
             .setProtocolDesc(protocolDesc).setProtocolVersion(protocolVersion)
             .build();
 
-        EventMeshMessage.Builder messageBuilder = EventMeshMessage.newBuilder()
+        SimpleMessage.Builder messageBuilder = SimpleMessage.newBuilder()
             .setHeader(header)
             .setContent(new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8))
             .setProducerGroup(producerGroup)
@@ -242,8 +242,8 @@ public class GrpcMessageProtocolResolver {
             messageBuilder.putProperties(key, cloudEvent.getExtension(key).toString());
         }
 
-        EventMeshMessage eventMeshMessage = messageBuilder.build();
+        SimpleMessage simpleMessage = messageBuilder.build();
 
-        return new EventMeshMessageWrapper(eventMeshMessage);
+        return new SimpleMessageWrapper(simpleMessage);
     }
 }
