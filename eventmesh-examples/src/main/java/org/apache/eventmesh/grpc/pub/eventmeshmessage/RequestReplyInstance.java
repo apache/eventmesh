@@ -20,7 +20,7 @@ package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.util.Utils;
@@ -58,7 +58,7 @@ public class RequestReplyInstance {
         content.put("content", "testRequestReplyMessage");
 
         for (int i = 0; i < messageSize; i++) {
-            EventMeshMessage message = EventMeshMessage.newBuilder()
+            SimpleMessage message = SimpleMessage.newBuilder()
                 .setContent(JsonUtils.serialize(content))
                 .setTopic(topic)
                 .setUniqueId(RandomStringUtils.generateNum(30))

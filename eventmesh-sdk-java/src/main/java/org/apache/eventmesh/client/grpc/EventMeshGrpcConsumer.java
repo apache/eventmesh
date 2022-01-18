@@ -1,7 +1,6 @@
 package org.apache.eventmesh.client.grpc;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 import io.grpc.ManagedChannel;
@@ -12,18 +11,17 @@ import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceBlockingStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
 import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc.HeartbeatServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Event;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -96,7 +94,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME))
             .setConsumerGroup(clientConfig.getConsumerGroup())
             .build();
-        Iterator<EventMeshMessage> msgIterator;
+        Iterator<SimpleMessage> msgIterator;
         try {
             msgIterator = consumerClient.subscribeStream(enhancedSubscription);
         } catch (Exception e) {
@@ -191,13 +189,13 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     static class ListenerThread<T> extends Thread {
-        private final Iterator<EventMeshMessage> msgIterator;
+        private final Iterator<SimpleMessage> msgIterator;
 
         private final ReceiveMsgHook<T> listener;
 
         private String protocolType;
 
-        ListenerThread(Iterator<EventMeshMessage> msgIterator, ReceiveMsgHook<T> listener, String protocolType) {
+        ListenerThread(Iterator<SimpleMessage> msgIterator, ReceiveMsgHook<T> listener, String protocolType) {
             this.msgIterator = msgIterator;
             this.listener = listener;
             this.protocolType = protocolType;
@@ -209,8 +207,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
                 while (msgIterator.hasNext()) {
                     logger.info("sdk received message ");
 
-                    EventMeshMessage eventMeshMessage = msgIterator.next();
-                    T msg = buildMessage(eventMeshMessage);
+                    SimpleMessage simpleMessage = msgIterator.next();
+                    T msg = buildMessage(simpleMessage);
                     if (msg != null) {
                         listener.handle(msg);
                     }
@@ -220,14 +218,14 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             }
         }
 
-        private T buildMessage(EventMeshMessage eventMeshMessage) {
+        private T buildMessage(SimpleMessage simpleMessage) {
             try {
                 if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
-                    String contentType = eventMeshMessage.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE, JsonFormat.CONTENT_TYPE);
+                    String contentType = simpleMessage.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE, JsonFormat.CONTENT_TYPE);
                     return (T) EventFormatProvider.getInstance().resolveFormat(contentType)
-                        .deserialize(eventMeshMessage.getContent().getBytes(StandardCharsets.UTF_8));
+                        .deserialize(simpleMessage.getContent().getBytes(StandardCharsets.UTF_8));
                 }
-                return (T) eventMeshMessage;
+                return (T) simpleMessage;
             } catch (Throwable t) {
                 logger.warn("Error in building message. {}", t.getMessage());
                 return null;

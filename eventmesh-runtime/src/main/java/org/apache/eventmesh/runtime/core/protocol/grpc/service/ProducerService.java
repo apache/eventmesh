@@ -3,9 +3,9 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.service;
 import io.grpc.stub.StreamObserver;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.BatchPublishMessageProcessor;
@@ -32,7 +32,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         this.threadPoolExecutor = threadPoolExecutor;
     }
 
-    public void publish(EventMeshMessage request, StreamObserver<Response> responseObserver) {
+    public void publish(SimpleMessage request, StreamObserver<Response> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "AsyncPublish",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
             eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
@@ -50,7 +50,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         });
     }
 
-    public void requestReply(EventMeshMessage request, StreamObserver<Response> responseObserver) {
+    public void requestReply(SimpleMessage request, StreamObserver<Response> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "RequestReply",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
             eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
@@ -86,6 +86,4 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         });
     }
 
-    public void broadcast(EventMeshMessage request, StreamObserver<Response> responseObserver) {
-    }
 }

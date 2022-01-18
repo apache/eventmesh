@@ -2,7 +2,6 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;

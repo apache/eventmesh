@@ -1,11 +1,8 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
-import io.grpc.stub.StreamObserver;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.awt.image.ImageWatched;
 
 import java.util.ArrayList;
 import java.util.HashSet;

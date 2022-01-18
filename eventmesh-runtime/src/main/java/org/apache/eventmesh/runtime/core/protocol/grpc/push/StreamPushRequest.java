@@ -3,7 +3,6 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.StreamTopicConfig;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;

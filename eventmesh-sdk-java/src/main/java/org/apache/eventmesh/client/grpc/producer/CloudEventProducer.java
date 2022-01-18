@@ -10,10 +10,10 @@ import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage.MessageItem;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc.PublisherServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -42,7 +42,7 @@ public class CloudEventProducer {
         logger.info("Publish message " + cloudEvent.toString());
         CloudEvent enhanceEvent = enhanceCloudEvent(cloudEvent, null);
 
-        EventMeshMessage enhancedMessage = buildEventMeshMessage(enhanceEvent);
+        SimpleMessage enhancedMessage = buildSimpleMessage(enhanceEvent);
 
         try {
             Response response = publisherClient.publish(enhancedMessage);
@@ -58,7 +58,7 @@ public class CloudEventProducer {
         logger.info("RequestReply message " + cloudEvent.toString());
         CloudEvent enhanceEvent = enhanceCloudEvent(cloudEvent, String.valueOf(timeout));
 
-        EventMeshMessage enhancedMessage = buildEventMeshMessage(enhanceEvent);
+        SimpleMessage enhancedMessage = buildSimpleMessage(enhanceEvent);
         try {
             Response response = publisherClient.requestReply(enhancedMessage);
             logger.info("Received response " + response.toString());
@@ -113,7 +113,7 @@ public class CloudEventProducer {
         return builder.build();
     }
 
-    private EventMeshMessage buildEventMeshMessage(CloudEvent cloudEvent) {
+    private SimpleMessage buildSimpleMessage(CloudEvent cloudEvent) {
         String contentType = StringUtils.isEmpty(cloudEvent.getDataContentType()) ? "application/cloudevents+json"
             : cloudEvent.getDataContentType();
         byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(contentType)
@@ -122,7 +122,7 @@ public class CloudEventProducer {
         String ttl = cloudEvent.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null ? "4000"
             : cloudEvent.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL).toString();
 
-        return EventMeshMessage.newBuilder()
+        return SimpleMessage.newBuilder()
             .setHeader(EventMeshClientUtil.buildHeader(clientConfig, PROTOCOL_TYPE))
             .setProducerGroup(clientConfig.getProducerGroup())
             .setTopic(cloudEvent.getSubject())

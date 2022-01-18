@@ -23,16 +23,12 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
-import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
@@ -45,7 +41,6 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
-import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +58,7 @@ public class SendAsyncMessageProcessor {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
-    public void process(EventMeshMessage message, EventEmitter<Response> emitter) throws Exception {
+    public void process(SimpleMessage message, EventEmitter<Response> emitter) throws Exception {
         RequestHeader requestHeader = message.getHeader();
 
         if (!ServiceUtils.validateHeader(requestHeader)) {
@@ -99,7 +94,7 @@ public class SendAsyncMessageProcessor {
 
         String protocolType = requestHeader.getProtocolType();
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
-        CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new EventMeshMessageWrapper(message));
+        CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new SimpleMessageWrapper(message));
 
         ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
         EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
@@ -127,7 +122,7 @@ public class SendAsyncMessageProcessor {
         });
     }
 
-    private void doAclCheck(EventMeshMessage message) throws AclException {
+    private void doAclCheck(SimpleMessage message) throws AclException {
         RequestHeader requestHeader = message.getHeader();
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
             String remoteAdd = requestHeader.getIp();

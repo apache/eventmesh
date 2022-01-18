@@ -290,7 +290,7 @@ message RequestHeader {
     string protocolDesc = 12;
 }
 
-message EventMeshMessage {
+message SimpleMessage {
    RequestHeader header = 1;
    string producerGroup = 2;
    string topic = 3;
@@ -388,10 +388,10 @@ message Heartbeat {
 ```
 service PublisherService {
    # 异步事件生产
-   rpc publish(EventMeshMessage) returns (Response);
+   rpc publish(SimpleMessage) returns (Response);
 
    # 同步事件生产
-   rpc requestReply(EventMeshMessage) returns (Response);
+   rpc requestReply(SimpleMessage) returns (Response);
 
    # 批量事件生产
    rpc batchPublish(BatchMessage) returns (Response);
@@ -406,7 +406,7 @@ service ConsumerService {
    rpc subscribe(Subscription) returns (Response);
 
    # 所消费事件通过 TCP stream推送事件
-   rpc subscribeStream(Subscription) returns (stream EventMeshMessage);
+   rpc subscribeStream(Subscription) returns (stream SimpleMessage);
 
    rpc unsubscribe(Subscription) returns (Response);
 }

@@ -19,16 +19,13 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
 import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.RequestReplyCallback;
-import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.AclException;
-import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
@@ -58,7 +55,7 @@ public class RequestReplyMessageProcessor {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
-    public void process(EventMeshMessage message, EventEmitter<Response> emitter) throws Exception {
+    public void process(SimpleMessage message, EventEmitter<Response> emitter) throws Exception {
         RequestHeader requestHeader = message.getHeader();
 
         if (!ServiceUtils.validateHeader(requestHeader)) {
@@ -95,7 +92,7 @@ public class RequestReplyMessageProcessor {
 
         String protocolType = requestHeader.getProtocolType();
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
-        CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new EventMeshMessageWrapper(message));
+        CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new SimpleMessageWrapper(message));
 
         ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
         EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
@@ -123,7 +120,7 @@ public class RequestReplyMessageProcessor {
         }, ttl);
     }
 
-    private void doAclCheck(EventMeshMessage message) throws AclException {
+    private void doAclCheck(SimpleMessage message) throws AclException {
         RequestHeader requestHeader = message.getHeader();
         if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
             String remoteAdd = requestHeader.getIp();

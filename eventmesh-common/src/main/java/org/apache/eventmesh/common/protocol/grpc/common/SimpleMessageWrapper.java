@@ -18,17 +18,17 @@
 package org.apache.eventmesh.common.protocol.grpc.common;
 
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 
-public class EventMeshMessageWrapper implements ProtocolTransportObject {
+public class SimpleMessageWrapper implements ProtocolTransportObject {
 
-    private EventMeshMessage eventMeshMessage;
+    private SimpleMessage simpleMessage;
 
-    public EventMeshMessageWrapper(EventMeshMessage eventMeshMessage) {
-        this.eventMeshMessage = eventMeshMessage;
+    public SimpleMessageWrapper(SimpleMessage simpleMessage) {
+        this.simpleMessage = simpleMessage;
     }
 
-    public EventMeshMessage getMessage() {
-        return eventMeshMessage;
+    public SimpleMessage getMessage() {
+        return simpleMessage;
     }
 }

@@ -21,18 +21,18 @@
 package org.apache.eventmesh.common.protocol.grpc.protos;
 
 /**
- * Protobuf type {@code eventmesh.common.protocol.grpc.EventMeshMessage}
+ * Protobuf type {@code eventmesh.common.protocol.grpc.SimpleMessage}
  */
-public  final class EventMeshMessage extends
+public  final class SimpleMessage extends
     com.google.protobuf.GeneratedMessageV3 implements
-    // @@protoc_insertion_point(message_implements:eventmesh.common.protocol.grpc.EventMeshMessage)
-    EventMeshMessageOrBuilder {
+    // @@protoc_insertion_point(message_implements:eventmesh.common.protocol.grpc.SimpleMessage)
+    SimpleMessageOrBuilder {
 private static final long serialVersionUID = 0L;
-  // Use EventMeshMessage.newBuilder() to construct.
-  private EventMeshMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+  // Use SimpleMessage.newBuilder() to construct.
+  private SimpleMessage(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
     super(builder);
   }
-  private EventMeshMessage() {
+  private SimpleMessage() {
     producerGroup_ = "";
     topic_ = "";
     content_ = "";
@@ -47,7 +47,7 @@ private static final long serialVersionUID = 0L;
   getUnknownFields() {
     return this.unknownFields;
   }
-  private EventMeshMessage(
+  private SimpleMessage(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
@@ -155,7 +155,7 @@ private static final long serialVersionUID = 0L;
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_descriptor;
+    return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_descriptor;
   }
 
   @SuppressWarnings({"rawtypes"})
@@ -171,9 +171,9 @@ private static final long serialVersionUID = 0L;
   }
   protected FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_fieldAccessorTable
+    return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            EventMeshMessage.class, Builder.class);
+            SimpleMessage.class, Builder.class);
   }
 
   private int bitField0_;
@@ -442,7 +442,7 @@ private static final long serialVersionUID = 0L;
         String, String> defaultEntry =
             com.google.protobuf.MapEntry
             .<String, String>newDefaultInstance(
-                EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_PropertiesEntry_descriptor,
+                EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_PropertiesEntry_descriptor,
                 com.google.protobuf.WireFormat.FieldType.STRING,
                 "",
                 com.google.protobuf.WireFormat.FieldType.STRING,
@@ -607,10 +607,10 @@ private static final long serialVersionUID = 0L;
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof EventMeshMessage)) {
+    if (!(obj instanceof SimpleMessage)) {
       return super.equals(obj);
     }
-    EventMeshMessage other = (EventMeshMessage) obj;
+    SimpleMessage other = (SimpleMessage) obj;
 
     boolean result = true;
     result = result && (hasHeader() == other.hasHeader());
@@ -672,69 +672,69 @@ private static final long serialVersionUID = 0L;
     return hash;
   }
 
-  public static EventMeshMessage parseFrom(
+  public static SimpleMessage parseFrom(
       java.nio.ByteBuffer data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static EventMeshMessage parseFrom(
+  public static SimpleMessage parseFrom(
       java.nio.ByteBuffer data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static EventMeshMessage parseFrom(
+  public static SimpleMessage parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static EventMeshMessage parseFrom(
+  public static SimpleMessage parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static EventMeshMessage parseFrom(byte[] data)
+  public static SimpleMessage parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static EventMeshMessage parseFrom(
+  public static SimpleMessage parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static EventMeshMessage parseFrom(java.io.InputStream input)
+  public static SimpleMessage parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static EventMeshMessage parseFrom(
+  public static SimpleMessage parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static EventMeshMessage parseDelimitedFrom(java.io.InputStream input)
+  public static SimpleMessage parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static EventMeshMessage parseDelimitedFrom(
+  public static SimpleMessage parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static EventMeshMessage parseFrom(
+  public static SimpleMessage parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static EventMeshMessage parseFrom(
+  public static SimpleMessage parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -746,7 +746,7 @@ private static final long serialVersionUID = 0L;
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(EventMeshMessage prototype) {
+  public static Builder newBuilder(SimpleMessage prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -761,15 +761,15 @@ private static final long serialVersionUID = 0L;
     return builder;
   }
   /**
-   * Protobuf type {@code eventmesh.common.protocol.grpc.EventMeshMessage}
+   * Protobuf type {@code eventmesh.common.protocol.grpc.SimpleMessage}
    */
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-      // @@protoc_insertion_point(builder_implements:eventmesh.common.protocol.grpc.EventMeshMessage)
-      EventMeshMessageOrBuilder {
+      // @@protoc_insertion_point(builder_implements:eventmesh.common.protocol.grpc.SimpleMessage)
+      SimpleMessageOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_descriptor;
+      return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -796,12 +796,12 @@ private static final long serialVersionUID = 0L;
     }
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_fieldAccessorTable
+      return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              EventMeshMessage.class, Builder.class);
+              SimpleMessage.class, Builder.class);
     }
 
-    // Construct using org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage.newBuilder()
+    // Construct using org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -844,23 +844,23 @@ private static final long serialVersionUID = 0L;
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_EventMeshMessage_descriptor;
+      return EventmeshGrpc.internal_static_eventmesh_common_protocol_grpc_SimpleMessage_descriptor;
     }
 
-    public EventMeshMessage getDefaultInstanceForType() {
-      return EventMeshMessage.getDefaultInstance();
+    public SimpleMessage getDefaultInstanceForType() {
+      return SimpleMessage.getDefaultInstance();
     }
 
-    public EventMeshMessage build() {
-      EventMeshMessage result = buildPartial();
+    public SimpleMessage build() {
+      SimpleMessage result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public EventMeshMessage buildPartial() {
-      EventMeshMessage result = new EventMeshMessage(this);
+    public SimpleMessage buildPartial() {
+      SimpleMessage result = new SimpleMessage(this);
       int from_bitField0_ = bitField0_;
       int to_bitField0_ = 0;
       if (headerBuilder_ == null) {
@@ -909,16 +909,16 @@ private static final long serialVersionUID = 0L;
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof EventMeshMessage) {
-        return mergeFrom((EventMeshMessage)other);
+      if (other instanceof SimpleMessage) {
+        return mergeFrom((SimpleMessage)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(EventMeshMessage other) {
-      if (other == EventMeshMessage.getDefaultInstance()) return this;
+    public Builder mergeFrom(SimpleMessage other) {
+      if (other == SimpleMessage.getDefaultInstance()) return this;
       if (other.hasHeader()) {
         mergeHeader(other.getHeader());
       }
@@ -965,11 +965,11 @@ private static final long serialVersionUID = 0L;
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      EventMeshMessage parsedMessage = null;
+      SimpleMessage parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (EventMeshMessage) e.getUnfinishedMessage();
+        parsedMessage = (SimpleMessage) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -1713,39 +1713,39 @@ private static final long serialVersionUID = 0L;
     }
 
 
-    // @@protoc_insertion_point(builder_scope:eventmesh.common.protocol.grpc.EventMeshMessage)
+    // @@protoc_insertion_point(builder_scope:eventmesh.common.protocol.grpc.SimpleMessage)
   }
 
-  // @@protoc_insertion_point(class_scope:eventmesh.common.protocol.grpc.EventMeshMessage)
-  private static final EventMeshMessage DEFAULT_INSTANCE;
+  // @@protoc_insertion_point(class_scope:eventmesh.common.protocol.grpc.SimpleMessage)
+  private static final SimpleMessage DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new EventMeshMessage();
+    DEFAULT_INSTANCE = new SimpleMessage();
   }
 
-  public static EventMeshMessage getDefaultInstance() {
+  public static SimpleMessage getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
-  private static final com.google.protobuf.Parser<EventMeshMessage>
-      PARSER = new com.google.protobuf.AbstractParser<EventMeshMessage>() {
-    public EventMeshMessage parsePartialFrom(
+  private static final com.google.protobuf.Parser<SimpleMessage>
+      PARSER = new com.google.protobuf.AbstractParser<SimpleMessage>() {
+    public SimpleMessage parsePartialFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
-      return new EventMeshMessage(input, extensionRegistry);
+      return new SimpleMessage(input, extensionRegistry);
     }
   };
 
-  public static com.google.protobuf.Parser<EventMeshMessage> parser() {
+  public static com.google.protobuf.Parser<SimpleMessage> parser() {
     return PARSER;
   }
 
   @Override
-  public com.google.protobuf.Parser<EventMeshMessage> getParserForType() {
+  public com.google.protobuf.Parser<SimpleMessage> getParserForType() {
     return PARSER;
   }
 
-  public EventMeshMessage getDefaultInstanceForType() {
+  public SimpleMessage getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 
