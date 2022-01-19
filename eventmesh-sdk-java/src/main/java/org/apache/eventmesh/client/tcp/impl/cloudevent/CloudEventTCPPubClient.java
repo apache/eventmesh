@@ -96,7 +96,6 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
             super.send(msg);
             this.callbackConcurrentHashMap.put((String) RequestContext.key(msg), callback);
         } catch (Exception ex) {
-            // should trigger callback?
             throw new EventMeshException("asyncRR error", ex);
         }
     }
