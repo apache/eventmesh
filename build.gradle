@@ -421,7 +421,7 @@ subprojects {
 
             dependency "org.apache.httpcomponents:httpclient:4.5.2"
 
-            dependency "io.netty:netty-all:4.1.49.Final"
+            dependency "io.netty:netty-all:4.1.73.Final"
 
             dependency 'io.dropwizard.metrics:metrics-core:4.1.0'
             dependency "io.dropwizard.metrics:metrics-healthchecks:4.1.0"
