@@ -169,7 +169,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
             String newProxyIp = eventMeshRecommendResult.get(i).split(":")[0];
             String newProxyPort = eventMeshRecommendResult.get(i).split(":")[1];
             String redirectSessionAddr = EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer, newProxyIp,
-                    Integer.valueOf(newProxyPort), sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
+                    Integer.parseInt(newProxyPort), sessionList.get(i), eventMeshTCPServer.getClientSessionGroupMapping());
             logger.info("doRebalance,redirect sessionAddr:{}", redirectSessionAddr);
             try {
                 Thread.sleep(eventMeshTCPServer.getEventMeshTCPConfiguration().sleepIntervalInRebalanceRedirectMills);
@@ -192,7 +192,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
                                    Map<String, Integer> clientDistributionMap) throws Exception {
         int sum = 0;
         for (Integer item : clientDistributionMap.values()) {
-            sum += item.intValue();
+            sum += item;
         }
         int currentNum = 0;
         if (clientDistributionMap.get(eventMeshName) != null) {
