@@ -251,6 +251,7 @@ subprojects {
                                    "eventmesh-registry-api",
                                    "eventmesh-runtime",
                                    "eventmesh-security-api",
+                                   "eventmesh-protocol-api",
                                    "eventmesh-starter",
                                    "eventmesh-spi"]
         doLast {
