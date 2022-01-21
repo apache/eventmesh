@@ -245,9 +245,9 @@ jackson-databind 2.11.0: https://github.com/FasterXML/jackson-databind, Apache 2
 javassist 3.20.0-GA/3.24.0-GA: https://github.com/jboss-javassist/javassist, Apache 2.0
 jcommander 1.72: https://github.com/cbeust/jcommander, Apache 2.0
 jna 4.2.2: https://github.com/java-native-access/jna, Apache 2.0
-log4j-api 2.17.1: https://github.com/apache/log4j, Apache 2.0
-log4j-core 2.17.1: https://github.com/apache/log4j, Apache 2.0
-log4j-slf4j-impl 2.17.1: https://github.com/qos-ch/slf4j, Apache 2.0
+log4j-api 2.17.1: https://logging.apache.org/log4j/2.x/, Apache 2.0
+log4j-core 2.17.1: https://logging.apache.org/log4j/2.x/, Apache 2.0
+log4j-slf4j-impl 2.17.1: https://logging.apache.org/log4j/2.x/log4j-slf4j-impl, Apache 2.0
 metrics-annotation 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
 metrics-core 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
 metrics-healthchecks 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
