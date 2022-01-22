@@ -100,7 +100,7 @@ public class ClientConfiguration {
         if (StringUtils.isNotBlank(consumeTimeoutStr)) {
             Preconditions.checkState(StringUtils.isNumeric(consumeTimeoutStr),
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_ROCKETMQ_CLIENT_CONSUME_TIMEOUT));
-            consumeTimeout = Long.valueOf(consumeTimeoutStr);
+            consumeTimeout = Long.parseLong(consumeTimeoutStr);
         }
 
         String clientPullBatchSizeStr =
