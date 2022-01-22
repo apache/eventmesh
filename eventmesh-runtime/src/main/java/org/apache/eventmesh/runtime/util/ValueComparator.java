@@ -24,7 +24,7 @@ public class ValueComparator implements Comparator<Map.Entry<String, Integer>> {
     @Override
     public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
         if (x.getValue().intValue() != y.getValue().intValue()) {
-            return x.getValue().intValue() - y.getValue().intValue();
+            return x.getValue() - y.getValue();
         } else {
             return x.getKey().compareTo(y.getKey());
         }
