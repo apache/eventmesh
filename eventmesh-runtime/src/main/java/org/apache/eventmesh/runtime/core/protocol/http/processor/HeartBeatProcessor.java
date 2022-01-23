@@ -135,7 +135,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                 String user = heartbeatRequestHeader.getUsername();
                 String pass = heartbeatRequestHeader.getPasswd();
-                int requestCode = Integer.valueOf(heartbeatRequestHeader.getCode());
+                int requestCode = Integer.parseInt(heartbeatRequestHeader.getCode());
                 try {
                     Acl.doAclCheckInHttpHeartbeat(remoteAddr, user, pass, sys, client.topic, requestCode);
                 } catch (Exception e) {

@@ -85,7 +85,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
             log.info("{}|rr|send|type={}|msg={}", clientNo, msg, msg);
             return io(msg, timeout);
         } catch (Exception ex) {
-            throw new EventMeshException("rr error");
+            throw new EventMeshException("rr error", ex);
         }
     }
 
@@ -96,7 +96,6 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
             super.send(msg);
             this.callbackConcurrentHashMap.put((String) RequestContext.key(msg), callback);
         } catch (Exception ex) {
-            // should trigger callback?
             throw new EventMeshException("asyncRR error", ex);
         }
     }

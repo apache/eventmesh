@@ -245,13 +245,14 @@ jackson-databind 2.11.0: https://github.com/FasterXML/jackson-databind, Apache 2
 javassist 3.20.0-GA/3.24.0-GA: https://github.com/jboss-javassist/javassist, Apache 2.0
 jcommander 1.72: https://github.com/cbeust/jcommander, Apache 2.0
 jna 4.2.2: https://github.com/java-native-access/jna, Apache 2.0
-log4j-api 2.17.0: https://github.com/apache/log4j, Apache 2.0
-log4j-core 2.17.0: https://github.com/apache/log4j, Apache 2.0
+log4j-api 2.17.1: https://logging.apache.org/log4j/2.x/, Apache 2.0
+log4j-core 2.17.1: https://logging.apache.org/log4j/2.x/, Apache 2.0
+log4j-slf4j-impl 2.17.1: https://logging.apache.org/log4j/2.x/log4j-slf4j-impl, Apache 2.0
 metrics-annotation 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
 metrics-core 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
 metrics-healthchecks 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
 metrics-json 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
-netty-all 4.1.49.Final: https://github.com/netty/netty, Apache 2.0
+netty-all 4.1.73.Final: https://github.com/netty/netty, Apache 2.0
 netty-tcnative-boringssl-static 1.1.33.Fork26: https://github.com/netty/netty, Apache 2.0
 okio 1.17.2: https://github.com/square/okio, Apache 2.0
 okhttp 3.14.9: https://github.com/square/okhttp
@@ -332,5 +333,4 @@ The following components are provided under the MIT license. See project link fo
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
 checker-qual 2.11.1: https://github.com/typetools/checker-framework, MIT
-log4j-slf4j-impl 2.16.0: https://github.com/qos-ch/slf4j, MIT
 slf4j-api 1.7.30: https://github.com/qos-ch/slf4j, MIT
