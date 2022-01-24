@@ -247,6 +247,7 @@ subprojects {
             new File("${projectDir}/dist/licenses").mkdirs()
         }
         Set<String> rootProject = ["eventmesh-admin",
+                                   "eventmesh-admin-rocketmq",
                                    "eventmesh-common",
                                    "eventmesh-connector-api",
                                    "eventmesh-metrics-api",
