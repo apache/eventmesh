@@ -38,7 +38,6 @@ body:
           required: true
 
   - type: dropdown
-    id: environment
     attributes:
       label: Environment
       description: Describe the environment.
@@ -50,18 +49,17 @@ body:
     validations:
       required: true
 
-  -type: dropdown
-   id: version
-   attributes:
-     label: EventMesh version
-     description: Describe the EventMesh version.
-     options:
-       - master
-       - 1.3.0
-       - 1.2.0
-       - Other
-   validations:
-     required: true
+  - type: dropdown
+    attributes:
+      label: EventMesh version
+      description: Describe the EventMesh version.
+      options:
+        - master
+        - 1.3.0
+        - 1.2.0
+        - Other
+    validations:
+      required: true
 
   - type: textarea
     attributes:
