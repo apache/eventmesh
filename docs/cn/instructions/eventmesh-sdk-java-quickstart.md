@@ -72,8 +72,8 @@ TCP, HTTP 和 GRPC 示例都在**eventmesh-example**模块下
 
 ### 3. GRPC 演示
 
-> 对于 GRPC, eventmesh-sdk-java 实现了 Google gRPC 和 Google Protocol Buffers 协议. 它能异步和同步发送事件到 eventmesh-runtime.
-> 它可以通过webhook和事件流方式订阅消费事件， 同时也支持Apache CloudEvents 协议.
+> eventmesh-sdk-java 实现了 gRPC 协议. 它能异步和同步发送事件到 eventmesh-runtime.
+> 它可以通过webhook和事件流方式订阅消费事件， 同时也支持 CNCF CloudEvents 协议.
 
 <h4> 异步事件发送 和 webhook订阅 </h4>
 

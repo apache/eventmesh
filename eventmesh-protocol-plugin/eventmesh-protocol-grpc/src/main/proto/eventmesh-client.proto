@@ -117,16 +117,21 @@ message Heartbeat {
 }
 
 service PublisherService {
+   // Async event publish
    rpc publish(SimpleMessage) returns (Response);
 
+   // Sync event publish
    rpc requestReply(SimpleMessage) returns (Response);
 
+   // Async batch event publish
    rpc batchPublish(BatchMessage) returns (Response);
 }
 
 service ConsumerService {
+   // The subscribed event will be delivered by invoking the webhook url in the Subscription
    rpc subscribe(Subscription) returns (Response);
 
+   //  The subscribed event will be delivered through stream of Message
    rpc subscribeStream(Subscription) returns (stream SimpleMessage);
 
    rpc unsubscribe(Subscription) returns (Response);
