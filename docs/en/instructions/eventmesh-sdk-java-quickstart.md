@@ -72,9 +72,9 @@ Run the main method of org.apache.eventmesh.http.demo.pub.eventmeshmessage.Async
 
 ### 3. GRPC DEMO
 
-> As to GRPC, eventmesh-sdk-java implements the Google gRPC and Google Protocol Buffers. It can send events to eventmesh-runtime asynchronously
+> eventmesh-sdk-java implements the gRPC transport protocol. It can send events to eventmesh-runtime asynchronously
 > and synchronously (using request-reply). It can also subscribe to the events using webhook subscriber and stream subscriber.
-> Apache CloudEvents protocol is also supported in the demo.
+> CNCF CloudEvents protocol is also supported in the demo.
 
 #### Async event publisher and webhook subscriber
 
