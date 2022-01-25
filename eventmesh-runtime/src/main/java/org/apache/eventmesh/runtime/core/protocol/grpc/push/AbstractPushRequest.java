@@ -68,6 +68,7 @@ public abstract class AbstractPushRequest extends RetryContext {
         this.handleMsgContext = handleMsgContext;
         this.waitingRequests = waitingRequests;
 
+        this.eventMeshConsumer = handleMsgContext.getEventMeshConsumer();
         this.eventMeshGrpcConfiguration = handleMsgContext.getEventMeshGrpcServer().getEventMeshGrpcConfiguration();
         this.grpcRetryer = handleMsgContext.getEventMeshGrpcServer().getGrpcRetryer();
         CloudEvent event = handleMsgContext.getEvent();

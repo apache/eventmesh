@@ -219,16 +219,23 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         }
 
         private T buildMessage(SimpleMessage simpleMessage) {
-            try {
-                if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
+            if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
+                String content = simpleMessage.getContent();
+                if (content.contains(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)) {
                     String contentType = simpleMessage.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE, JsonFormat.CONTENT_TYPE);
-                    return (T) EventFormatProvider.getInstance().resolveFormat(contentType)
-                        .deserialize(simpleMessage.getContent().getBytes(StandardCharsets.UTF_8));
+
+                    try {
+                        return (T) EventFormatProvider.getInstance().resolveFormat(contentType)
+                            .deserialize(content.getBytes(StandardCharsets.UTF_8));
+                    } catch (Throwable t) {
+                            logger.warn("Error in building message. {}", t.getMessage());
+                            return null;
+                    }
+                } else {
+                    return null;
                 }
+            } else {
                 return (T) simpleMessage;
-            } catch (Throwable t) {
-                logger.warn("Error in building message. {}", t.getMessage());
-                return null;
             }
         }
     }
