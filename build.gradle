@@ -78,9 +78,10 @@ allprojects {
 }
 
 task tar(type: Tar) {
-    extension = 'tar.gz'
+    archiveBaseName.set(project.name)
+    archiveVersion.set(project.version.toString())
+    archiveExtension.set('tar.gz')
     compression = Compression.GZIP
-    archiveFileName = project.name + '-' + project.version + '.' + extension
     destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
@@ -88,8 +89,9 @@ task tar(type: Tar) {
 }
 
 task zip(type: Zip) {
-    extension = 'zip'
-    archiveFileName = project.name + '-' + project.version + '.' + extension
+    archiveBaseName.set(project.name)
+    archiveVersion.set(project.version.toString())
+    archiveExtension.set('zip')
     destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
@@ -245,6 +247,7 @@ subprojects {
             new File("${projectDir}/dist/licenses").mkdirs()
         }
         Set<String> rootProject = ["eventmesh-admin",
+                                   "eventmesh-admin-rocketmq",
                                    "eventmesh-common",
                                    "eventmesh-connector-api",
                                    "eventmesh-metrics-api",
