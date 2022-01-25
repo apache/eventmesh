@@ -1,6 +1,7 @@
 package org.apache.eventmesh.protocol.cloudevents.resolver.grpc;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
@@ -56,22 +57,42 @@ public class GrpcMessageProtocolResolver {
         String producerGroup = StringUtils.isEmpty(message.getProducerGroup())
             ? event.getExtension(ProtocolKey.PRODUCERGROUP).toString() : message.getProducerGroup();
 
-        return CloudEventBuilder.from(event)
-            .withExtension(ProtocolKey.ENV, env)
-            .withExtension(ProtocolKey.IDC, idc)
-            .withExtension(ProtocolKey.IP, ip)
-            .withExtension(ProtocolKey.PID, pid)
-            .withExtension(ProtocolKey.SYS, sys)
-            .withExtension(ProtocolKey.USERNAME, username)
-            .withExtension(ProtocolKey.PASSWD, passwd)
-            .withExtension(ProtocolKey.LANGUAGE, language)
-            .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-            .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-            .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-            .withExtension(ProtocolKey.SEQ_NUM, seqNum)
-            .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
-            .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
-            .withExtension(ProtocolKey.TTL, ttl).build();
+        if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
+            return CloudEventBuilder.v1(event)
+                .withExtension(ProtocolKey.ENV, env)
+                .withExtension(ProtocolKey.IDC, idc)
+                .withExtension(ProtocolKey.IP, ip)
+                .withExtension(ProtocolKey.PID, pid)
+                .withExtension(ProtocolKey.SYS, sys)
+                .withExtension(ProtocolKey.USERNAME, username)
+                .withExtension(ProtocolKey.PASSWD, passwd)
+                .withExtension(ProtocolKey.LANGUAGE, language)
+                .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                .withExtension(ProtocolKey.SEQ_NUM, seqNum)
+                .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
+                .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
+                .withExtension(ProtocolKey.TTL, ttl).build();
+        } else {
+            return CloudEventBuilder.v03(event)
+                .withExtension(ProtocolKey.ENV, env)
+                .withExtension(ProtocolKey.IDC, idc)
+                .withExtension(ProtocolKey.IP, ip)
+                .withExtension(ProtocolKey.PID, pid)
+                .withExtension(ProtocolKey.SYS, sys)
+                .withExtension(ProtocolKey.USERNAME, username)
+                .withExtension(ProtocolKey.PASSWD, passwd)
+                .withExtension(ProtocolKey.LANGUAGE, language)
+                .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                .withExtension(ProtocolKey.SEQ_NUM, seqNum)
+                .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
+                .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
+                .withExtension(ProtocolKey.TTL, ttl).build();
+        }
+
     }
 
     public static SimpleMessageWrapper buildSimpleMessage(CloudEvent cloudEvent) {
@@ -158,21 +179,38 @@ public class GrpcMessageProtocolResolver {
             String username = StringUtils.isEmpty(header.getUsername()) ? event.getExtension(ProtocolKey.USERNAME).toString() : header.getUsername();
             String passwd = StringUtils.isEmpty(header.getPassword()) ? event.getExtension(ProtocolKey.PASSWD).toString() : header.getPassword();
 
-            CloudEvent enhancedEvent = CloudEventBuilder.from(event)
-                .withExtension(ProtocolKey.ENV, env)
-                .withExtension(ProtocolKey.IDC, idc)
-                .withExtension(ProtocolKey.IP, ip)
-                .withExtension(ProtocolKey.PID, pid)
-                .withExtension(ProtocolKey.SYS, sys)
-                .withExtension(ProtocolKey.USERNAME, username)
-                .withExtension(ProtocolKey.PASSWD, passwd)
-                .withExtension(ProtocolKey.LANGUAGE, language)
-                .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                .build();
+            if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
+                CloudEvent enhancedEvent = CloudEventBuilder.v1(event)
+                    .withExtension(ProtocolKey.ENV, env)
+                    .withExtension(ProtocolKey.IDC, idc)
+                    .withExtension(ProtocolKey.IP, ip)
+                    .withExtension(ProtocolKey.PID, pid)
+                    .withExtension(ProtocolKey.SYS, sys)
+                    .withExtension(ProtocolKey.USERNAME, username)
+                    .withExtension(ProtocolKey.PASSWD, passwd)
+                    .withExtension(ProtocolKey.LANGUAGE, language)
+                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                    .build();
+                cloudEvents.add(enhancedEvent);
+            } else {
+                CloudEvent enhancedEvent = CloudEventBuilder.v03(event)
+                    .withExtension(ProtocolKey.ENV, env)
+                    .withExtension(ProtocolKey.IDC, idc)
+                    .withExtension(ProtocolKey.IP, ip)
+                    .withExtension(ProtocolKey.PID, pid)
+                    .withExtension(ProtocolKey.SYS, sys)
+                    .withExtension(ProtocolKey.USERNAME, username)
+                    .withExtension(ProtocolKey.PASSWD, passwd)
+                    .withExtension(ProtocolKey.LANGUAGE, language)
+                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                    .build();
+                cloudEvents.add(enhancedEvent);
+            }
 
-            cloudEvents.add(enhancedEvent);
         }
         return cloudEvents;
     }
