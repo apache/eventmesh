@@ -5,20 +5,22 @@ import org.apache.eventmesh.client.grpc.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.ReceiveMsgHook;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem;
+import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.util.Utils;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
 
 @Slf4j
-public class EventmeshAsyncSubscribe implements ReceiveMsgHook<SimpleMessage> {
+public class EventmeshAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
     public static EventmeshAsyncSubscribe handler = new EventmeshAsyncSubscribe();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         Properties properties = Utils.readPropertiesFile("application.properties");
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
@@ -32,16 +34,10 @@ public class EventmeshAsyncSubscribe implements ReceiveMsgHook<SimpleMessage> {
             .env("env").idc("idc")
             .sys("1234").build();
 
-        SubscriptionItem subscriptionItem = SubscriptionItem.newBuilder()
-            .setTopic(topic)
-            .setMode(Subscription.SubscriptionItem.SubscriptionMode.CLUSTERING)
-            .setType(Subscription.SubscriptionItem.SubscriptionType.ASYNC)
-            .build();
-
-        Subscription subscription = Subscription.newBuilder()
-            .addSubscriptionItems(subscriptionItem)
-            .build();
-
+        SubscriptionItem subscriptionItem = new SubscriptionItem();
+        subscriptionItem.setTopic(topic);
+        subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
+        subscriptionItem.setType(SubscriptionType.ASYNC);
 
         EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
 
@@ -49,14 +45,14 @@ public class EventmeshAsyncSubscribe implements ReceiveMsgHook<SimpleMessage> {
 
         eventMeshGrpcConsumer.registerListener(handler);
 
-        eventMeshGrpcConsumer.subscribeStream(subscription);
+        eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
 
-
-        //eventMeshGrpcConsumer.unsubscribe(subscription);
+        Thread.sleep(60000);
+        eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
     }
 
     @Override
-    public Optional<SimpleMessage> handle(SimpleMessage msg) {
+    public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
         log.info("receive async msg====================={}", msg);
         return Optional.empty();
     }

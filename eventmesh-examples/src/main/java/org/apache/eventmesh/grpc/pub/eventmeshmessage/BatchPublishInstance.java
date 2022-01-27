@@ -20,12 +20,15 @@ package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.util.Utils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -54,20 +57,19 @@ public class BatchPublishInstance {
         Map<String, String> content = new HashMap<>();
         content.put("content", "testRequestReplyMessage");
 
-        BatchMessage.Builder messageBuilder = BatchMessage.newBuilder()
-            .setTopic(topic);
+        List<EventMeshMessage> messageList = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            BatchMessage.MessageItem item = BatchMessage.MessageItem.newBuilder()
-                .setContent((JsonUtils.serialize(content)))
-                .setUniqueId(RandomStringUtils.generateNum(30))
-                .setSeqNum(RandomStringUtils.generateNum(30))
-                .setTtl(String.valueOf(4 * 1000))
-                .build();
-
-            messageBuilder.addMessageItem(item);
+            EventMeshMessage message = EventMeshMessage.builder()
+                .topic(topic)
+                .content((JsonUtils.serialize(content)))
+                .uniqueId(RandomStringUtils.generateNum(30))
+                .bizSeqNo(RandomStringUtils.generateNum(30))
+                .build()
+                .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
+            messageList.add(message);
         }
 
-        eventMeshGrpcProducer.publish(messageBuilder.build());
+        eventMeshGrpcProducer.publish(messageList);
         Thread.sleep(10000);
         try (EventMeshGrpcProducer ignore = eventMeshGrpcProducer) {
             // ignore

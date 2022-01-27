@@ -21,10 +21,9 @@ package org.apache.eventmesh.grpc.sub.app.service;
 
 import org.apache.eventmesh.client.grpc.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
-import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionType;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.grpc.pub.eventmeshmessage.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
@@ -33,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 import javax.annotation.PreDestroy;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
@@ -45,11 +45,7 @@ public class SubService implements InitializingBean {
 
     final Properties properties = Utils.readPropertiesFile("application.properties");
 
-    final SubscriptionItem subscriptionItem = SubscriptionItem.newBuilder()
-        .setTopic("TEST-TOPIC-GRPC-ASYNC")
-        .setMode(SubscriptionMode.CLUSTERING)
-        .setType(SubscriptionType.ASYNC)
-        .build();
+    final SubscriptionItem subscriptionItem = new SubscriptionItem();
 
     final String                 localIp           = IPUtils.getLocalAddress();
     final String                 localPort         = properties.getProperty("server.port");
@@ -59,11 +55,6 @@ public class SubService implements InitializingBean {
     final String                 env               = "P";
     final String                 idc               = "FT";
     final String                 subsys            = "1234";
-
-    final Subscription subscription = Subscription.newBuilder()
-        .setUrl(url)
-        .addSubscriptionItems(subscriptionItem)
-        .build();
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
@@ -78,9 +69,13 @@ public class SubService implements InitializingBean {
             .env(env).idc(idc)
             .sys(subsys).build();
 
+        subscriptionItem.setTopic("TEST-TOPIC-GRPC-ASYNC");
+        subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
+        subscriptionItem.setType(SubscriptionType.ASYNC);
+
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();
-        eventMeshGrpcConsumer.subscribe(subscription);
+        eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem), url);
 
         // Wait for all messaged to be consumed
         Thread stopThread = new Thread(() -> {
@@ -99,7 +94,7 @@ public class SubService implements InitializingBean {
     public void cleanup() {
         logger.info("start destory ....");
         try {
-            eventMeshGrpcConsumer.unsubscribe(subscription);
+            eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem), url);
         } catch (Exception e) {
             e.printStackTrace();
         }
