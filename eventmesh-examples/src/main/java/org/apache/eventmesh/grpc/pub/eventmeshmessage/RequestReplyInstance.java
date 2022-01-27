@@ -20,6 +20,8 @@ package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
@@ -58,15 +60,15 @@ public class RequestReplyInstance {
         content.put("content", "testRequestReplyMessage");
 
         for (int i = 0; i < messageSize; i++) {
-            SimpleMessage message = SimpleMessage.newBuilder()
-                .setContent(JsonUtils.serialize(content))
-                .setTopic(topic)
-                .setUniqueId(RandomStringUtils.generateNum(30))
-                .setSeqNum(RandomStringUtils.generateNum(30))
-                .setTtl(String.valueOf(4 * 1000))
-                .build();
+            EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
+                .content(JsonUtils.serialize(content))
+                .topic(topic)
+                .uniqueId(RandomStringUtils.generateNum(30))
+                .bizSeqNo(RandomStringUtils.generateNum(30))
+                .build()
+                .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
 
-            eventMeshGrpcProducer.requestReply(message, 10000);
+            eventMeshGrpcProducer.requestReply(eventMeshMessage, 10000);
             Thread.sleep(1000);
         }
         Thread.sleep(30000);

@@ -9,6 +9,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
@@ -66,17 +70,14 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         heartBeat();
     }
 
-    public Response subscribe(Subscription subscription) {
-        logger.info("Create subscription: " + subscription.toString());
+    public Response subscribe(List<SubscriptionItem> subscriptionItems, String url) {
+        logger.info("Create subscription: " + subscriptionItems + ", url: " + url);
 
-        addSubscription(subscription);
+        addSubscription(subscriptionItems, url);
 
-        Subscription enhancedSubscription = Subscription.newBuilder(subscription)
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME))
-            .setConsumerGroup(clientConfig.getConsumerGroup())
-            .build();
+        Subscription subscription = buildSubscription(subscriptionItems, url);
         try {
-            Response response = consumerClient.subscribe(enhancedSubscription);
+            Response response = consumerClient.subscribe(subscription);
             logger.info("Received response " + response.toString());
             return response;
         } catch (Exception e) {
@@ -85,18 +86,15 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         }
     }
 
-    public void subscribeStream(Subscription subscription) {
-        logger.info("Create streaming subscription: " + subscription.toString());
+    public void subscribe(List<SubscriptionItem> subscriptionItems) {
+        logger.info("Create streaming subscription: " + subscriptionItems);
 
-        addSubscription(subscription);
+        addSubscription(subscriptionItems, "grpc_stream");
 
-        Subscription enhancedSubscription = Subscription.newBuilder(subscription)
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME))
-            .setConsumerGroup(clientConfig.getConsumerGroup())
-            .build();
+        Subscription subscription = buildSubscription(subscriptionItems, null);
         Iterator<SimpleMessage> msgIterator;
         try {
-            msgIterator = consumerClient.subscribeStream(enhancedSubscription);
+            msgIterator = consumerClient.subscribeStream(subscription);
         } catch (Exception e) {
             logger.error("Error in subscribe. error {}", e.getMessage());
             return;
@@ -107,37 +105,75 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         listenerThread.start();
     }
 
-    private void addSubscription(Subscription subscription) {
-        for (Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
-            String url = StringUtils.isEmpty(subscription.getUrl()) ? "grpc_stream" : subscription.getUrl();
+    private void addSubscription(List<SubscriptionItem> subscriptionItems, String url) {
+        for (SubscriptionItem item : subscriptionItems) {
             subscriptionMap.put(item.getTopic(), url);
         }
     }
 
-    private void removeSubscription(Subscription subscription) {
-        for (Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
+    private void removeSubscription(List<SubscriptionItem> subscriptionItems) {
+        for (SubscriptionItem item : subscriptionItems) {
             subscriptionMap.remove(item.getTopic());
         }
     }
 
-    public Response unsubscribe(Subscription subscription) {
-        logger.info("Removing subscription: " + subscription.toString());
+    public Response unsubscribe(List<SubscriptionItem> subscriptionItems, String url) {
+        logger.info("Removing subscription: " + subscriptionItems + ", url: " + url);
 
-        removeSubscription(subscription);
+        removeSubscription(subscriptionItems);
 
-        Subscription enhancedSubscription = Subscription.newBuilder(subscription)
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME))
-            .setConsumerGroup(clientConfig.getConsumerGroup())
-            .build();
+        Subscription subscription = buildSubscription(subscriptionItems, url);
 
         try {
-            Response response = consumerClient.unsubscribe(enhancedSubscription);
+            Response response = consumerClient.unsubscribe(subscription);
             logger.info("Received response " + response.toString());
             return response;
         } catch (Exception e) {
             logger.error("Error in unsubscribe. error {}", e.getMessage());
             return null;
         }
+    }
+
+    public Response unsubscribe(List<SubscriptionItem> subscriptionItems) {
+        return unsubscribe(subscriptionItems, null);
+    }
+
+    private Subscription buildSubscription(List<SubscriptionItem> subscriptionItems, String url) {
+        Subscription.Builder builder = Subscription.newBuilder()
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME))
+            .setConsumerGroup(clientConfig.getConsumerGroup());
+
+        if (StringUtils.isNotEmpty(url)) {
+            builder.setUrl(url);
+        }
+
+        for (SubscriptionItem subscriptionItem: subscriptionItems) {
+            Subscription.SubscriptionItem.SubscriptionMode mode;
+            if (SubscriptionMode.CLUSTERING.equals(subscriptionItem.getMode())) {
+                mode = Subscription.SubscriptionItem.SubscriptionMode.CLUSTERING;
+            } else if (SubscriptionMode.BROADCASTING.equals(subscriptionItem.getMode())) {
+                mode = Subscription.SubscriptionItem.SubscriptionMode.BROADCASTING;
+            } else {
+                mode = Subscription.SubscriptionItem.SubscriptionMode.UNRECOGNIZED;
+            }
+
+            Subscription.SubscriptionItem.SubscriptionType type;
+            if (SubscriptionType.ASYNC.equals(subscriptionItem.getType())) {
+                type = Subscription.SubscriptionItem.SubscriptionType.ASYNC;
+            } else if (SubscriptionType.SYNC.equals(subscriptionItem.getType())) {
+                type = Subscription.SubscriptionItem.SubscriptionType.SYNC;
+            } else {
+                type = Subscription.SubscriptionItem.SubscriptionType.UNRECOGNIZED;
+            }
+
+            Subscription.SubscriptionItem item = Subscription.SubscriptionItem.newBuilder()
+                .setTopic(subscriptionItem.getTopic())
+                .setMode(mode)
+                .setType(type)
+                .build();
+            builder.addSubscriptionItems(item);
+        }
+        return builder.build();
     }
 
     public void registerListener(ReceiveMsgHook<?> listener) {
@@ -235,7 +271,14 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
                     return null;
                 }
             } else {
-                return (T) simpleMessage;
+                EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
+                    .content(simpleMessage.getContent())
+                    .topic(simpleMessage.getTopic())
+                    .bizSeqNo(simpleMessage.getSeqNum())
+                    .uniqueId(simpleMessage.getUniqueId())
+                    .prop(simpleMessage.getPropertiesMap())
+                    .build();
+                return (T) eventMeshMessage;
             }
         }
     }

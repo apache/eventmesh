@@ -6,6 +6,8 @@ import io.grpc.ManagedChannelBuilder;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.producer.CloudEventProducer;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc.PublisherServiceBlockingStub;
@@ -46,23 +48,16 @@ public class EventMeshGrpcProducer implements AutoCloseable {
         return cloudEventProducer.publish(cloudEvent);
     }
 
-    public Response publish(List<CloudEvent> cloudEventList) {
-        return cloudEventProducer.publish(cloudEventList);
-    }
-
     public Response requestReply(CloudEvent cloudEvent, int timeout) {
         return cloudEventProducer.requestReply(cloudEvent, timeout);
     }
 
-    public Response publish(SimpleMessage message) {
+    public Response publish(EventMeshMessage message) {
         logger.info("Publish message " + message.toString());
 
-        SimpleMessage enhancedMessage = SimpleMessage.newBuilder(message)
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, PROTOCOL_TYPE))
-            .setProducerGroup(clientConfig.getProducerGroup())
-            .build();
+        SimpleMessage simpleMessage = buildMessage(message);
         try {
-            Response response = publisherClient.publish(enhancedMessage);
+            Response response = publisherClient.publish(simpleMessage);
             logger.info("Received response " + response.toString());
             return response;
         } catch (Exception e) {
@@ -71,16 +66,12 @@ public class EventMeshGrpcProducer implements AutoCloseable {
         }
     }
 
-    public Response requestReply(SimpleMessage message, int timeout) {
+    public Response requestReply(EventMeshMessage message, int timeout) {
         logger.info("RequestReply message " + message.toString());
 
-        SimpleMessage enhancedMessage = SimpleMessage.newBuilder(message)
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, PROTOCOL_TYPE))
-            .setProducerGroup(clientConfig.getProducerGroup())
-            .setTtl(String.valueOf(timeout))
-            .build();
+        SimpleMessage simpleMessage = buildMessage(message);
         try {
-            Response response = publisherClient.requestReply(enhancedMessage);
+            Response response = publisherClient.requestReply(simpleMessage);
             logger.info("Received response " + response.toString());
             return response;
         } catch (Exception e) {
@@ -89,24 +80,59 @@ public class EventMeshGrpcProducer implements AutoCloseable {
         }
     }
 
-    public Response publish(BatchMessage message) {
-        logger.info("BatchPublish message " + message.toString());
+    public <T> Response publish(List<T> messageList) {
+        logger.info("BatchPublish message " + messageList.toString());
 
-        BatchMessage enhancedMessage = BatchMessage.newBuilder(message)
-            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, PROTOCOL_TYPE))
-            .setProducerGroup(clientConfig.getProducerGroup())
-            .build();
+        if (messageList.size() == 0) {
+            return null;
+        }
+        if (messageList.get(0) instanceof CloudEvent) {
+            return cloudEventProducer.publish((List<CloudEvent>) messageList);
+        }
+        BatchMessage batchMessage = buildBatchMessages((List<EventMeshMessage>) messageList);
         try {
-            Response response = publisherClient.batchPublish(enhancedMessage);
+            Response response = publisherClient.batchPublish(batchMessage);
             logger.info("Received response " + response.toString());
             return response;
         } catch (Exception e) {
-            logger.error("Error in BatchPublish message {}, error {}", message, e.getMessage());
+            logger.error("Error in BatchPublish message {}, error {}", messageList, e.getMessage());
             return null;
         }
     }
 
     public void close() {
         channel.shutdown();
+    }
+
+    private SimpleMessage buildMessage(EventMeshMessage message) {
+        return SimpleMessage.newBuilder()
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, PROTOCOL_TYPE))
+            .setProducerGroup(clientConfig.getProducerGroup())
+            .setTopic(message.getTopic())
+            .setContent(message.getContent())
+            .setSeqNum(message.getBizSeqNo())
+            .setUniqueId(message.getUniqueId())
+            .setTtl(message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL))
+            .putAllProperties(message.getProp())
+            .build();
+    }
+
+    private BatchMessage buildBatchMessages(List<EventMeshMessage> messageList) {
+        BatchMessage.Builder messageBuilder = BatchMessage.newBuilder()
+            .setHeader(EventMeshClientUtil.buildHeader(clientConfig, PROTOCOL_TYPE))
+            .setProducerGroup(clientConfig.getProducerGroup());
+
+        for (EventMeshMessage message: messageList) {
+            messageBuilder.setTopic(message.getTopic());
+            BatchMessage.MessageItem item = BatchMessage.MessageItem.newBuilder()
+                .setContent(message.getContent())
+                .setUniqueId(message.getUniqueId())
+                .setSeqNum(message.getBizSeqNo())
+                .setTtl(message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL))
+                .putAllProperties(message.getProp())
+                .build();
+            messageBuilder.addMessageItem(item);
+        }
+        return messageBuilder.build();
     }
 }
