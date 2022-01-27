@@ -1,6 +1,7 @@
 package org.apache.eventmesh.client.grpc;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 import io.grpc.ManagedChannel;
@@ -40,21 +41,15 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(EventMeshGrpcConsumer.class);
 
     private final EventMeshGrpcClientConfig clientConfig;
-
-    private ManagedChannel channel;
-
-    private ConsumerServiceBlockingStub consumerClient;
-    private HeartbeatServiceBlockingStub heartbeatClient;
-
-    private ReceiveMsgHook<?> listener;
-
     private final List<ListenerThread> listenerThreads = new LinkedList<>();
-
     private final Map<String, String> subscriptionMap = new ConcurrentHashMap<>();
-
     private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
         Runtime.getRuntime().availableProcessors(),
         new ThreadFactoryBuilder().setNameFormat("GRPCClientScheduler").setDaemon(true).build());
+    private ManagedChannel channel;
+    private ConsumerServiceBlockingStub consumerClient;
+    private HeartbeatServiceBlockingStub heartbeatClient;
+    private ReceiveMsgHook<?> listener;
 
     public EventMeshGrpcConsumer(EventMeshGrpcClientConfig clientConfig) {
         this.clientConfig = clientConfig;
@@ -147,7 +142,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             builder.setUrl(url);
         }
 
-        for (SubscriptionItem subscriptionItem: subscriptionItems) {
+        for (SubscriptionItem subscriptionItem : subscriptionItems) {
             Subscription.SubscriptionItem.SubscriptionMode mode;
             if (SubscriptionMode.CLUSTERING.equals(subscriptionItem.getMode())) {
                 mode = Subscription.SubscriptionItem.SubscriptionMode.CLUSTERING;
@@ -229,7 +224,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
         private final ReceiveMsgHook<T> listener;
 
-        private String protocolType;
+        private final String protocolType;
 
         ListenerThread(Iterator<SimpleMessage> msgIterator, ReceiveMsgHook<T> listener, String protocolType) {
             this.msgIterator = msgIterator;
@@ -255,27 +250,30 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         }
 
         private T buildMessage(SimpleMessage simpleMessage) {
-            if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
-                String content = simpleMessage.getContent();
-                if (content.contains(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)) {
-                    String contentType = simpleMessage.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE, JsonFormat.CONTENT_TYPE);
+            String seq = simpleMessage.getSeqNum();
+            String uniqueId = simpleMessage.getUniqueId();
 
-                    try {
-                        return (T) EventFormatProvider.getInstance().resolveFormat(contentType)
-                            .deserialize(content.getBytes(StandardCharsets.UTF_8));
-                    } catch (Throwable t) {
-                            logger.warn("Error in building message. {}", t.getMessage());
-                            return null;
-                    }
-                } else {
+            // This is GRPC response message, ignore it
+            if (StringUtils.isEmpty(seq) && StringUtils.isEmpty(uniqueId)) {
+                return null;
+            }
+
+            if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
+                String contentType = simpleMessage.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE, JsonFormat.CONTENT_TYPE);
+                try {
+                    CloudEvent cloudEvent = EventFormatProvider.getInstance().resolveFormat(contentType)
+                        .deserialize(simpleMessage.getContent().getBytes(StandardCharsets.UTF_8));
+                    return (T) cloudEvent;
+                } catch (Throwable t) {
+                    logger.warn("Error in building message. {}", t.getMessage());
                     return null;
                 }
             } else {
                 EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                     .content(simpleMessage.getContent())
                     .topic(simpleMessage.getTopic())
-                    .bizSeqNo(simpleMessage.getSeqNum())
-                    .uniqueId(simpleMessage.getUniqueId())
+                    .bizSeqNo(seq)
+                    .uniqueId(uniqueId)
                     .prop(simpleMessage.getPropertiesMap())
                     .build();
                 return (T) eventMeshMessage;
