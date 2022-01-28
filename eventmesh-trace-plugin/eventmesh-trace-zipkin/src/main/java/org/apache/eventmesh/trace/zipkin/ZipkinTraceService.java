@@ -37,12 +37,10 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  *
  */
-@Slf4j
 public class ZipkinTraceService implements TraceService {
     // Zipkin API Endpoints for uploading spans
     private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
@@ -63,15 +61,16 @@ public class ZipkinTraceService implements TraceService {
         //zipkin's config
         eventMeshZipkinIP = ZipkinConfiguration.getEventMeshZipkinIP();
         eventMeshZipkinPort = ZipkinConfiguration.getEventMeshZipkinPort();
-        String httpUrl = String.format("http://%s:%s", eventMeshZipkinIP, eventMeshZipkinPort);
-        ZipkinSpanExporter zipkinExporter =
-            ZipkinSpanExporter.builder().setEndpoint(httpUrl + ENDPOINT_V2_SPANS).build();
-
         //exporter's config
         eventMeshTraceExportInterval = ExporterConfiguration.getEventMeshTraceExportInterval();
         eventMeshTraceExportTimeout = ExporterConfiguration.getEventMeshTraceExportTimeout();
         eventMeshTraceMaxExportSize = ExporterConfiguration.getEventMeshTraceMaxExportSize();
         eventMeshTraceMaxQueueSize = ExporterConfiguration.getEventMeshTraceMaxQueueSize();
+
+        String httpUrl = String.format("http://%s:%s", eventMeshZipkinIP, eventMeshZipkinPort);
+        ZipkinSpanExporter zipkinExporter =
+            ZipkinSpanExporter.builder().setEndpoint(httpUrl + ENDPOINT_V2_SPANS).build();
+
         SpanProcessor spanProcessor = BatchSpanProcessor.builder(zipkinExporter)
             .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
             .setExporterTimeout(eventMeshTraceExportTimeout, TimeUnit.SECONDS)
