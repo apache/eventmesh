@@ -1,8 +1,8 @@
 package org.apache.eventmesh.grpc.sub;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.client.grpc.EventMeshGrpcConsumer;
-import org.apache.eventmesh.client.grpc.ReceiveMsgHook;
+import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
+import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshMessage;

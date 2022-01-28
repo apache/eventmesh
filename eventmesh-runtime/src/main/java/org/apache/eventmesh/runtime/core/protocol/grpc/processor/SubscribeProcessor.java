@@ -39,12 +39,12 @@ public class SubscribeProcessor {
         RequestHeader header = subscription.getHeader();
 
         if (!ServiceUtils.validateHeader(header)) {
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateSubscription(grpcType, subscription)) {
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -52,7 +52,7 @@ public class SubscribeProcessor {
             doAclCheck(subscription);
         } catch (AclException e) {
             aclLogger.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
+            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
@@ -104,7 +104,7 @@ public class SubscribeProcessor {
             logger.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
 
-        ServiceUtils.sendResp(StatusCode.SUCCESS, "subscribe success", emitter);
+        ServiceUtils.sendRespAndDone(StatusCode.SUCCESS, "subscribe success", emitter);
     }
 
     private void doAclCheck(Subscription subscription) throws AclException {

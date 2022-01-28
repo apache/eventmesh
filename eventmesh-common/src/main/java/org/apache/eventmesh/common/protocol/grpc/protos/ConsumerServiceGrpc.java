@@ -18,13 +18,13 @@
 package org.apache.eventmesh.common.protocol.grpc.protos;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
+import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
 import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
 import static io.grpc.stub.ClientCalls.blockingUnaryCall;
 import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
+import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
 import static io.grpc.stub.ServerCalls.asyncUnaryCall;
+import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
 import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
@@ -72,29 +72,29 @@ public final class ConsumerServiceGrpc {
   }
 
   private static volatile io.grpc.MethodDescriptor<Subscription,
-      org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage> getSubscribeStreamMethod;
+      SimpleMessage> getSubscribeStreamMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "subscribeStream",
       requestType = Subscription.class,
-      responseType = org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage.class,
-      methodType = io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
+      responseType = SimpleMessage.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
   public static io.grpc.MethodDescriptor<Subscription,
-      org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage> getSubscribeStreamMethod() {
-    io.grpc.MethodDescriptor<Subscription, org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage> getSubscribeStreamMethod;
+      SimpleMessage> getSubscribeStreamMethod() {
+    io.grpc.MethodDescriptor<Subscription, SimpleMessage> getSubscribeStreamMethod;
     if ((getSubscribeStreamMethod = ConsumerServiceGrpc.getSubscribeStreamMethod) == null) {
       synchronized (ConsumerServiceGrpc.class) {
         if ((getSubscribeStreamMethod = ConsumerServiceGrpc.getSubscribeStreamMethod) == null) {
           ConsumerServiceGrpc.getSubscribeStreamMethod = getSubscribeStreamMethod = 
-              io.grpc.MethodDescriptor.<Subscription, org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage>newBuilder()
-              .setType(io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING)
+              io.grpc.MethodDescriptor.<Subscription, SimpleMessage>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING)
               .setFullMethodName(generateFullMethodName(
                   "eventmesh.common.protocol.grpc.ConsumerService", "subscribeStream"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
                   Subscription.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage.getDefaultInstance()))
+                  SimpleMessage.getDefaultInstance()))
                   .setSchemaDescriptor(new ConsumerServiceMethodDescriptorSupplier("subscribeStream"))
                   .build();
           }
@@ -163,6 +163,9 @@ public final class ConsumerServiceGrpc {
   public static abstract class ConsumerServiceImplBase implements io.grpc.BindableService {
 
     /**
+     * <pre>
+     * The subscribed event will be delivered by invoking the webhook url in the Subscription
+     * </pre>
      */
     public void subscribe(Subscription request,
                           io.grpc.stub.StreamObserver<Response> responseObserver) {
@@ -170,10 +173,13 @@ public final class ConsumerServiceGrpc {
     }
 
     /**
+     * <pre>
+     *  The subscribed event will be delivered through stream of Message
+     * </pre>
      */
-    public void subscribeStream(Subscription request,
-                                io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage> responseObserver) {
-      asyncUnimplementedUnaryCall(getSubscribeStreamMethod(), responseObserver);
+    public io.grpc.stub.StreamObserver<Subscription> subscribeStream(
+        io.grpc.stub.StreamObserver<SimpleMessage> responseObserver) {
+      return asyncUnimplementedStreamingCall(getSubscribeStreamMethod(), responseObserver);
     }
 
     /**
@@ -194,10 +200,10 @@ public final class ConsumerServiceGrpc {
                   this, METHODID_SUBSCRIBE)))
           .addMethod(
             getSubscribeStreamMethod(),
-            asyncServerStreamingCall(
+            asyncBidiStreamingCall(
               new MethodHandlers<
                 Subscription,
-                org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage>(
+                SimpleMessage>(
                   this, METHODID_SUBSCRIBE_STREAM)))
           .addMethod(
             getUnsubscribeMethod(),
@@ -229,6 +235,9 @@ public final class ConsumerServiceGrpc {
     }
 
     /**
+     * <pre>
+     * The subscribed event will be delivered by invoking the webhook url in the Subscription
+     * </pre>
      */
     public void subscribe(Subscription request,
                           io.grpc.stub.StreamObserver<Response> responseObserver) {
@@ -237,11 +246,14 @@ public final class ConsumerServiceGrpc {
     }
 
     /**
+     * <pre>
+     *  The subscribed event will be delivered through stream of Message
+     * </pre>
      */
-    public void subscribeStream(Subscription request,
-                                io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage> responseObserver) {
-      asyncServerStreamingCall(
-          getChannel().newCall(getSubscribeStreamMethod(), getCallOptions()), request, responseObserver);
+    public io.grpc.stub.StreamObserver<Subscription> subscribeStream(
+        io.grpc.stub.StreamObserver<SimpleMessage> responseObserver) {
+      return asyncBidiStreamingCall(
+          getChannel().newCall(getSubscribeStreamMethod(), getCallOptions()), responseObserver);
     }
 
     /**
@@ -272,18 +284,13 @@ public final class ConsumerServiceGrpc {
     }
 
     /**
+     * <pre>
+     * The subscribed event will be delivered by invoking the webhook url in the Subscription
+     * </pre>
      */
     public Response subscribe(Subscription request) {
       return blockingUnaryCall(
           getChannel(), getSubscribeMethod(), getCallOptions(), request);
-    }
-
-    /**
-     */
-    public java.util.Iterator<org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage> subscribeStream(
-        Subscription request) {
-      return blockingServerStreamingCall(
-          getChannel(), getSubscribeStreamMethod(), getCallOptions(), request);
     }
 
     /**
@@ -313,6 +320,9 @@ public final class ConsumerServiceGrpc {
     }
 
     /**
+     * <pre>
+     * The subscribed event will be delivered by invoking the webhook url in the Subscription
+     * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<Response> subscribe(
         Subscription request) {
@@ -330,8 +340,8 @@ public final class ConsumerServiceGrpc {
   }
 
   private static final int METHODID_SUBSCRIBE = 0;
-  private static final int METHODID_SUBSCRIBE_STREAM = 1;
-  private static final int METHODID_UNSUBSCRIBE = 2;
+  private static final int METHODID_UNSUBSCRIBE = 1;
+  private static final int METHODID_SUBSCRIBE_STREAM = 2;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -354,10 +364,6 @@ public final class ConsumerServiceGrpc {
           serviceImpl.subscribe((Subscription) request,
               (io.grpc.stub.StreamObserver<Response>) responseObserver);
           break;
-        case METHODID_SUBSCRIBE_STREAM:
-          serviceImpl.subscribeStream((Subscription) request,
-              (io.grpc.stub.StreamObserver<org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage>) responseObserver);
-          break;
         case METHODID_UNSUBSCRIBE:
           serviceImpl.unsubscribe((Subscription) request,
               (io.grpc.stub.StreamObserver<Response>) responseObserver);
@@ -372,6 +378,9 @@ public final class ConsumerServiceGrpc {
     public io.grpc.stub.StreamObserver<Req> invoke(
         io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
+        case METHODID_SUBSCRIBE_STREAM:
+          return (io.grpc.stub.StreamObserver<Req>) serviceImpl.subscribeStream(
+              (io.grpc.stub.StreamObserver<SimpleMessage>) responseObserver);
         default:
           throw new AssertionError();
       }

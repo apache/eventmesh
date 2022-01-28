@@ -32,12 +32,12 @@ public class UnsubscribeProcessor {
         RequestHeader header = subscription.getHeader();
 
         if (!ServiceUtils.validateHeader(header)) {
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateSubscription(null, subscription)) {
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -89,6 +89,6 @@ public class UnsubscribeProcessor {
             logger.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
 
-        ServiceUtils.sendResp(StatusCode.SUCCESS, "unsubscribe success", emitter);
+        ServiceUtils.sendRespAndDone(StatusCode.SUCCESS, "unsubscribe success", emitter);
     }
 }

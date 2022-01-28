@@ -80,4 +80,17 @@ public interface SubscriptionOrBuilder extends
    */
   com.google.protobuf.ByteString
       getUrlBytes();
+
+  /**
+   * <code>.eventmesh.common.protocol.grpc.Subscription.Reply reply = 5;</code>
+   */
+  boolean hasReply();
+  /**
+   * <code>.eventmesh.common.protocol.grpc.Subscription.Reply reply = 5;</code>
+   */
+  Subscription.Reply getReply();
+  /**
+   * <code>.eventmesh.common.protocol.grpc.Subscription.Reply reply = 5;</code>
+   */
+  Subscription.ReplyOrBuilder getReplyOrBuilder();
 }

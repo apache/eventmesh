@@ -18,11 +18,11 @@
 package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
+import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.util.Utils;
@@ -68,7 +68,7 @@ public class RequestReplyInstance {
                 .build()
                 .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
 
-            eventMeshGrpcProducer.requestReply(eventMeshMessage, 10000);
+            eventMeshGrpcProducer.requestReply(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             Thread.sleep(1000);
         }
         Thread.sleep(30000);

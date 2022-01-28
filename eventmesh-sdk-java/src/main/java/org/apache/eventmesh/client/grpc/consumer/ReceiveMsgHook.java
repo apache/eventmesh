@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.grpc;
+package org.apache.eventmesh.client.grpc.consumer;
 
 import java.util.Optional;
 

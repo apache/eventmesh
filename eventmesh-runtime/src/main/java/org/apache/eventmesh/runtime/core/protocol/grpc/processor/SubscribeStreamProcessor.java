@@ -43,12 +43,12 @@ public class SubscribeStreamProcessor {
         RequestHeader header = subscription.getHeader();
 
         if (!ServiceUtils.validateHeader(header)) {
-            sendRespAndComplete(subscription, StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+            ServiceUtils.sendStreamRespAndDone(header, StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateSubscription(grpcType, subscription)) {
-            sendRespAndComplete(subscription, StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendStreamRespAndDone(header, StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -56,7 +56,7 @@ public class SubscribeStreamProcessor {
             doAclCheck(subscription);
         } catch (AclException e) {
             aclLogger.warn("CLIENT HAS NO PERMISSION to Subscribe. failed", e);
-            sendRespAndComplete(subscription, StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
+            ServiceUtils.sendStreamRespAndDone(header, StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
@@ -107,41 +107,7 @@ public class SubscribeStreamProcessor {
             logger.warn("EventMesh consumer [{}] didn't restart.", consumerGroup);
         }
 
-        sendResp(subscription, StatusCode.SUCCESS, "subscribe success", emitter);
-    }
-
-    private void sendRespAndComplete(Subscription subscription, StatusCode code, EventEmitter<SimpleMessage> emitter) {
-        Map<String, String> resp = new HashMap<>();
-        resp.put("respCode", code.getRetCode());
-        resp.put("respMsg", code.getErrMsg());
-
-        RequestHeader header = subscription.getHeader();
-        SimpleMessage simpleMessage = SimpleMessage.newBuilder()
-            .setHeader(header)
-            .setContent(JsonUtils.serialize(resp))
-            .build();
-
-        emitter.onNext(simpleMessage);
-        emitter.onCompleted();
-    }
-
-    private void sendRespAndComplete(Subscription subscription, StatusCode code, String message, EventEmitter<SimpleMessage> emitter) {
-        sendResp(subscription, code, message, emitter);
-        emitter.onCompleted();
-    }
-
-    private void sendResp(Subscription subscription, StatusCode code, String message, EventEmitter<SimpleMessage> emitter) {
-        Map<String, String> resp = new HashMap<>();
-        resp.put("respCode", code.getRetCode());
-        resp.put("respMsg", code.getErrMsg() + " " + message);
-
-        RequestHeader header = subscription.getHeader();
-        SimpleMessage simpleMessage = SimpleMessage.newBuilder()
-            .setHeader(header)
-            .setContent(JsonUtils.serialize(resp))
-            .build();
-
-        emitter.onNext(simpleMessage);
+        ServiceUtils.sendStreamResp(header, StatusCode.SUCCESS, "subscribe success", emitter);
     }
 
     private void doAclCheck(Subscription subscription) throws AclException {

@@ -10,7 +10,11 @@ import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServiceUtils {
 
@@ -83,7 +87,7 @@ public class ServiceUtils {
         return true;
     }
 
-    public static void sendResp(StatusCode code, EventEmitter<Response> emitter) {
+    public static void sendRespAndDone(StatusCode code, EventEmitter<Response> emitter) {
         Response response = Response.newBuilder()
             .setRespCode(code.getRetCode())
             .setRespMsg(code.getErrMsg())
@@ -93,7 +97,7 @@ public class ServiceUtils {
         emitter.onCompleted();
     }
 
-    public static void sendResp(StatusCode code, String message, EventEmitter<Response> emitter) {
+    public static void sendRespAndDone(StatusCode code, String message, EventEmitter<Response> emitter) {
         Response response = Response.newBuilder()
             .setRespCode(code.getRetCode())
             .setRespMsg(code.getErrMsg() + " " + message)
@@ -103,4 +107,35 @@ public class ServiceUtils {
         emitter.onCompleted();
     }
 
+    public static void sendStreamResp(RequestHeader header, StatusCode code, String message, EventEmitter<SimpleMessage> emitter) {
+        Map<String, String> resp = new HashMap<>();
+        resp.put("respCode", code.getRetCode());
+        resp.put("respMsg", code.getErrMsg() + " " + message);
+
+        SimpleMessage simpleMessage = SimpleMessage.newBuilder()
+            .setHeader(header)
+            .setContent(JsonUtils.serialize(resp))
+            .build();
+
+        emitter.onNext(simpleMessage);
+    }
+
+    public static void sendStreamRespAndDone(RequestHeader header, StatusCode code, String message, EventEmitter<SimpleMessage> emitter) {
+        sendStreamResp(header, code, message, emitter);
+        emitter.onCompleted();
+    }
+
+    public static void sendStreamRespAndDone(RequestHeader header, StatusCode code, EventEmitter<SimpleMessage> emitter) {
+        Map<String, String> resp = new HashMap<>();
+        resp.put("respCode", code.getRetCode());
+        resp.put("respMsg", code.getErrMsg());
+
+        SimpleMessage simpleMessage = SimpleMessage.newBuilder()
+            .setHeader(header)
+            .setContent(JsonUtils.serialize(resp))
+            .build();
+
+        emitter.onNext(simpleMessage);
+        emitter.onCompleted();
+    }
 }

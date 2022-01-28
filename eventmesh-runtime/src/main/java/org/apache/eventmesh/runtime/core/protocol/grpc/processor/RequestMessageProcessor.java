@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
-public class RequestReplyMessageProcessor {
+public class RequestMessageProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -51,20 +51,20 @@ public class RequestReplyMessageProcessor {
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    public RequestReplyMessageProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
+    public RequestMessageProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
-    public void process(SimpleMessage message, EventEmitter<Response> emitter) throws Exception {
+    public void process(SimpleMessage message, EventEmitter<SimpleMessage> emitter) throws Exception {
         RequestHeader requestHeader = message.getHeader();
 
         if (!ServiceUtils.validateHeader(requestHeader)) {
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+            ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateMessage(message)) {
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -78,7 +78,7 @@ public class RequestReplyMessageProcessor {
             doAclCheck(message);
         } catch (Exception e) {
             aclLogger.warn("CLIENT HAS NO PERMISSION,RequestReplyMessageProcessor send failed", e);
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
+            ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
@@ -86,7 +86,7 @@ public class RequestReplyMessageProcessor {
         if (!eventMeshGrpcServer.getMsgRateLimiter()
             .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             logger.error("Send message speed over limit.");
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, emitter);
+            ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, emitter);
             return;
         }
 
@@ -103,18 +103,31 @@ public class RequestReplyMessageProcessor {
         eventMeshProducer.request(sendMessageContext, new RequestReplyCallback() {
             @Override
             public void onSuccess(CloudEvent event) {
-                ServiceUtils.sendResp(StatusCode.SUCCESS, event.toString(), emitter);
-                long endTime = System.currentTimeMillis();
-                logger.info("message|eventMesh2mq|REQ|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime, topic, seqNum, uniqueId);
+                try {
+                    SimpleMessageWrapper wrapper = (SimpleMessageWrapper) grpcCommandProtocolAdaptor.fromCloudEvent(event);
+
+                    emitter.onNext(wrapper.getMessage());
+                    emitter.onCompleted();
+
+                    long endTime = System.currentTimeMillis();
+                    logger.info("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                        endTime - startTime, topic, seqNum, uniqueId);
+                } catch (Exception e) {
+                    ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
+                        EventMeshUtil.stackTrace(e, 2), emitter);
+
+                    long endTime = System.currentTimeMillis();
+                    logger.error("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                        endTime - startTime, topic, seqNum, uniqueId, e);
+                }
             }
 
             @Override
             public void onException(Throwable e) {
-                ServiceUtils.sendResp(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
+                ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
                     EventMeshUtil.stackTrace(e, 2), emitter);
                 long endTime = System.currentTimeMillis();
-                logger.error("message|eventMesh2mq|REQ|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                logger.error("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, seqNum, uniqueId, e);
             }
         }, ttl);
