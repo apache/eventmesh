@@ -15,29 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.trace.api;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
+import lombok.experimental.UtilityClass;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * to get the trace service
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    ;
+@UtilityClass
+public class TracePluginFactory {
+    /**
+     * to get TraceService
+     *
+     * @param traceServiceType
+     * @return
+     */
+    public static TraceService getTraceService(String traceServiceType) {
+        checkNotNull(traceServiceType, "traceServiceType cannot be null");
 
-    private final String extensionTypeName;
-
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+        TraceService traceService = EventMeshExtensionFactory.getExtension(TraceService.class, traceServiceType);
+        return checkNotNull(traceService, "traceServiceType: " + traceServiceType + " is not supported");
     }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
-
 }

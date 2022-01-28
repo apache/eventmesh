@@ -39,7 +39,10 @@ import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.push.AbstractHTTPPushRequest;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
-import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
+import org.apache.eventmesh.trace.api.TracePluginFactory;
+import org.apache.eventmesh.trace.api.TraceService;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -60,6 +63,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     public ServiceState serviceState;
 
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
+
+    private TraceService traceService;
 
     public final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
             new ConcurrentHashMap<>();
@@ -216,9 +221,16 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         registerHTTPRequestProcessor();
 
-        super.openTelemetryTraceFactory = new OpenTelemetryTraceFactory(eventMeshHttpConfiguration);
-        super.tracer = openTelemetryTraceFactory.getTracer(this.getClass().toString());
-        super.textMapPropagator = openTelemetryTraceFactory.getTextMapPropagator();
+        //get the trace-plugin
+        if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.eventMeshTracePluginType)) {
+
+            traceService =
+                TracePluginFactory.getTraceService(eventMeshHttpConfiguration.eventMeshTracePluginType);
+            traceService.init();
+            super.tracer = traceService.getTracer(super.getClass().toString());
+            super.textMapPropagator = traceService.getTextMapPropagator();
+            super.useTrace = true;
+        }
 
         logger.info("--------------------------EventMeshHTTPServer inited");
     }
@@ -239,6 +251,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         super.shutdown();
 
         metrics.shutdown();
+
+        if (traceService!=null){
+            traceService.shutdown();
+        }
 
         consumerManager.shutdown();
 
