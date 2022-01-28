@@ -252,7 +252,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         metrics.shutdown();
 
-        if (traceService!=null){
+        if (traceService != null) {
             traceService.shutdown();
         }
 
