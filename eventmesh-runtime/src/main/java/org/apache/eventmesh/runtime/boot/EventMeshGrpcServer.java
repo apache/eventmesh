@@ -40,6 +40,8 @@ public class EventMeshGrpcServer {
 
     private ThreadPoolExecutor sendMsgExecutor;
 
+    private ThreadPoolExecutor replyMsgExecutor;
+
     private ThreadPoolExecutor clientMgmtExecutor;
 
     private ThreadPoolExecutor pushMsgExecutor;
@@ -74,7 +76,7 @@ public class EventMeshGrpcServer {
 
         server = ServerBuilder.forPort(serverPort)
             .addService(new ProducerService(this, sendMsgExecutor))
-            .addService(new ConsumerService(this, clientMgmtExecutor))
+            .addService(new ConsumerService(this, clientMgmtExecutor, replyMsgExecutor))
             .addService(new HeartbeatService(this, clientMgmtExecutor))
             .build();
 
@@ -166,6 +168,13 @@ public class EventMeshGrpcServer {
         pushMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(eventMeshGrpcConfiguration.eventMeshServerPushMsgThreadNum,
                 eventMeshGrpcConfiguration.eventMeshServerPushMsgThreadNum, pushMsgThreadPoolQueue,
                 "eventMesh-grpc-pushMsg-%d", true);
+
+        BlockingQueue<Runnable> replyMsgThreadPoolQueue =
+            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.eventMeshServerSendMsgBlockQueueSize);
+
+        replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(eventMeshGrpcConfiguration.eventMeshServerReplyMsgThreadNum,
+            eventMeshGrpcConfiguration.eventMeshServerReplyMsgThreadNum, sendMsgThreadPoolQueue,
+            "eventMesh-grpc-replyMsg-%d", true);
     }
 
     private void initHttpClientPool() {
@@ -180,6 +189,7 @@ public class EventMeshGrpcServer {
         sendMsgExecutor.shutdown();
         clientMgmtExecutor.shutdown();
         pushMsgExecutor.shutdown();
+        replyMsgExecutor.shutdown();
     }
 
     private void shutdownHttpClientPool() {

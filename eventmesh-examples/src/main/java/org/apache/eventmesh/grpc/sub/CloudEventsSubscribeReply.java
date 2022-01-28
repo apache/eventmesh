@@ -2,9 +2,9 @@ package org.apache.eventmesh.grpc.sub;
 
 import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
-import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
@@ -16,9 +16,9 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Slf4j
-public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
+public class CloudEventsSubscribeReply implements ReceiveMsgHook<CloudEvent> {
 
-    public static CloudEventsAsyncSubscribe handler = new CloudEventsAsyncSubscribe();
+    public static CloudEventsSubscribeReply handler = new CloudEventsSubscribeReply();
 
     public static void main(String[] args) throws InterruptedException {
         Properties properties = Utils.readPropertiesFile("application.properties");
@@ -34,7 +34,7 @@ public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
             .env("env").idc("idc")
             .sys("1234").build();
 
-        org.apache.eventmesh.common.protocol.SubscriptionItem subscriptionItem = new SubscriptionItem();
+        SubscriptionItem subscriptionItem = new SubscriptionItem();
         subscriptionItem.setTopic(topic);
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
@@ -55,7 +55,7 @@ public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
     @Override
     public Optional<CloudEvent> handle(CloudEvent msg) {
         log.info("receive async msg====================={}", msg);
-        return Optional.empty();
+        return Optional.of(msg);
     }
 
     @Override

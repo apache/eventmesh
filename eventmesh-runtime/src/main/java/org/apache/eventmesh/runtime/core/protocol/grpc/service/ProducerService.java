@@ -9,7 +9,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.BatchPublishMessageProcessor;
-import org.apache.eventmesh.runtime.core.protocol.grpc.processor.RequestReplyMessageProcessor;
+import org.apache.eventmesh.runtime.core.protocol.grpc.processor.RequestMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.SendAsyncMessageProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,25 +45,25 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
             } catch (Exception e) {
                 logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode(),
                     StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg(), e);
-                ServiceUtils.sendResp(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR, e.getMessage(), emitter);
             }
         });
     }
 
-    public void requestReply(SimpleMessage request, StreamObserver<Response> responseObserver) {
+    public void requestReply(SimpleMessage request, StreamObserver<SimpleMessage> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "RequestReply",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
             eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
 
-        EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
+        EventEmitter<SimpleMessage> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
-            RequestReplyMessageProcessor requestReplyMessageProcessor = new RequestReplyMessageProcessor(eventMeshGrpcServer);
+            RequestMessageProcessor requestMessageProcessor = new RequestMessageProcessor(eventMeshGrpcServer);
             try {
-                requestReplyMessageProcessor.process(request, emitter);
+                requestMessageProcessor.process(request, emitter);
             } catch (Exception e) {
                 logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_SEND_SYNC_MSG_ERR.getRetCode(),
                     StatusCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg(), e);
-                ServiceUtils.sendResp(StatusCode.EVENTMESH_SEND_SYNC_MSG_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendStreamRespAndDone(request.getHeader(), StatusCode.EVENTMESH_SEND_SYNC_MSG_ERR, e.getMessage(), emitter);
             }
         });
     }
@@ -81,7 +81,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
             } catch (Exception e) {
                 logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_BATCH_PUBLISH_ERR.getRetCode(),
                     StatusCode.EVENTMESH_BATCH_PUBLISH_ERR.getErrMsg(), e);
-                ServiceUtils.sendResp(StatusCode.EVENTMESH_BATCH_PUBLISH_ERR, e.getMessage(), emitter);
+                ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_BATCH_PUBLISH_ERR, e.getMessage(), emitter);
             }
         });
     }

@@ -20,7 +20,7 @@ package org.apache.eventmesh.grpc.pub.cloudevents;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
+import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
@@ -35,7 +35,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 @Slf4j
-public class CloudEventsRequestReplyInstance {
+public class CloudEventsRequestInstance {
 
     // This messageSize is also used in SubService.java (Subscriber)
     public static int messageSize = 5;
@@ -73,7 +73,7 @@ public class CloudEventsRequestReplyInstance {
                 .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
                 .build();
 
-            eventMeshGrpcProducer.requestReply(event, 10000);
+            eventMeshGrpcProducer.requestReply(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             Thread.sleep(1000);
         }
         Thread.sleep(30000);

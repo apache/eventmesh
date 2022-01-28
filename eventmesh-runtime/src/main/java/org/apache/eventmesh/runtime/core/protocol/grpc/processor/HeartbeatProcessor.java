@@ -6,8 +6,6 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat.ClientType;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.http.body.message.SendMessageResponseBody;
-import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
@@ -15,7 +13,6 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
-import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Date;
@@ -35,12 +32,12 @@ public class HeartbeatProcessor {
         RequestHeader header = heartbeat.getHeader();
 
         if (!ServiceUtils.validateHeader(header)) {
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateHeartBeat(heartbeat)) {
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -48,14 +45,14 @@ public class HeartbeatProcessor {
             doAclCheck(heartbeat);
         } catch (AclException e) {
             aclLogger.warn("CLIENT HAS NO PERMISSION, HeartbeatProcessor failed", e);
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
+            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
         // only handle heartbeat for consumers
         ClientType clientType = heartbeat.getClientType();
         if (!ClientType.SUB.equals(clientType)) {
-            ServiceUtils.sendResp(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -78,7 +75,7 @@ public class HeartbeatProcessor {
             consumerManager.updateClientTime(hbClient);
         }
 
-        ServiceUtils.sendResp(StatusCode.SUCCESS, "heartbeat success", emitter);
+        ServiceUtils.sendRespAndDone(StatusCode.SUCCESS, "heartbeat success", emitter);
     }
 
     private void doAclCheck(Heartbeat heartbeat) throws AclException {

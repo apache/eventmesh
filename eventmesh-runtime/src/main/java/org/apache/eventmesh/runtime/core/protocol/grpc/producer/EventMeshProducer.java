@@ -49,6 +49,10 @@ public class EventMeshProducer {
         mqProducerWrapper.request(sendMsgContext.getEvent(), rrCallback, timeout);
     }
 
+    public void reply(SendMessageContext sendMessageContext, SendCallback sendCallback) throws Exception {
+        mqProducerWrapper.reply(sendMessageContext.getEvent(), sendCallback);
+    }
+
     public MQProducerWrapper getMqProducerWrapper() {
         return mqProducerWrapper;
     }

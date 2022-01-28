@@ -26,7 +26,6 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
@@ -40,13 +39,12 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageConte
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
-public class SendAsyncMessageProcessor {
+public class ReplyMessageProcessor {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -54,20 +52,20 @@ public class SendAsyncMessageProcessor {
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 
-    public SendAsyncMessageProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
+    public ReplyMessageProcessor(EventMeshGrpcServer eventMeshGrpcServer) {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
-    public void process(SimpleMessage message, EventEmitter<Response> emitter) throws Exception {
+    public void process(SimpleMessage message, EventEmitter<SimpleMessage> emitter) throws Exception {
         RequestHeader requestHeader = message.getHeader();
 
         if (!ServiceUtils.validateHeader(requestHeader)) {
-            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
+            ServiceUtils.sendStreamRespAndDone(requestHeader, StatusCode.EVENTMESH_PROTOCOL_HEADER_ERR, emitter);
             return;
         }
 
         if (!ServiceUtils.validateMessage(message)) {
-            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
+            ServiceUtils.sendStreamRespAndDone(requestHeader, StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
 
@@ -79,8 +77,8 @@ public class SendAsyncMessageProcessor {
         try {
             doAclCheck(message);
         } catch (Exception e) {
-            aclLogger.warn("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);
-            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
+            aclLogger.warn("CLIENT HAS NO PERMISSION,RequestReplyMessageProcessor reply failed", e);
+            ServiceUtils.sendStreamRespAndDone(requestHeader, StatusCode.EVENTMESH_ACL_ERR, e.getMessage(), emitter);
             return;
         }
 
@@ -88,7 +86,7 @@ public class SendAsyncMessageProcessor {
         if (!eventMeshGrpcServer.getMsgRateLimiter()
             .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             logger.error("Send message speed over limit.");
-            ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, emitter);
+            ServiceUtils.sendStreamRespAndDone(requestHeader, StatusCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, emitter);
             return;
         }
 
@@ -102,22 +100,21 @@ public class SendAsyncMessageProcessor {
         SendMessageContext sendMessageContext = new SendMessageContext(message.getSeqNum(), cloudEvent, eventMeshProducer, eventMeshGrpcServer);
 
         long startTime = System.currentTimeMillis();
-        eventMeshProducer.send(sendMessageContext, new SendCallback() {
+        eventMeshProducer.reply(sendMessageContext, new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
-                ServiceUtils.sendRespAndDone(StatusCode.SUCCESS, sendResult.toString(), emitter);
                 long endTime = System.currentTimeMillis();
-                logger.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                logger.info("message|eventMesh2mq|REQ|ReplyToServer|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, seqNum, uniqueId);
             }
 
             @Override
-            public void onException(OnExceptionContext context) {
-                ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
-                    EventMeshUtil.stackTrace(context.getException(), 2), emitter);
+            public void onException(OnExceptionContext onExceptionContext) {
+                ServiceUtils.sendStreamRespAndDone(requestHeader, StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
+                    EventMeshUtil.stackTrace(onExceptionContext.getException(), 2), emitter);
                 long endTime = System.currentTimeMillis();
-                logger.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime, topic, seqNum, uniqueId, context.getException());
+                logger.error("message|eventMesh2mq|REQ|ReplyToServer|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    endTime - startTime, topic, seqNum, uniqueId, onExceptionContext.getException());
             }
         });
     }

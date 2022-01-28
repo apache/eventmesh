@@ -1,11 +1,11 @@
 package org.apache.eventmesh.grpc.sub;
 
-import io.cloudevents.CloudEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
-import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -16,9 +16,9 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Slf4j
-public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
+public class EventmeshSubscribeReply implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static CloudEventsAsyncSubscribe handler = new CloudEventsAsyncSubscribe();
+    public static EventmeshSubscribeReply handler = new EventmeshSubscribeReply();
 
     public static void main(String[] args) throws InterruptedException {
         Properties properties = Utils.readPropertiesFile("application.properties");
@@ -34,11 +34,10 @@ public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
             .env("env").idc("idc")
             .sys("1234").build();
 
-        org.apache.eventmesh.common.protocol.SubscriptionItem subscriptionItem = new SubscriptionItem();
+        SubscriptionItem subscriptionItem = new SubscriptionItem();
         subscriptionItem.setTopic(topic);
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
-
 
         EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
 
@@ -53,13 +52,13 @@ public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
     }
 
     @Override
-    public Optional<CloudEvent> handle(CloudEvent msg) {
+    public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
         log.info("receive async msg====================={}", msg);
-        return Optional.empty();
+        return Optional.of(msg);
     }
 
     @Override
     public String getProtocolType() {
-        return EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME;
+        return EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME;
     }
 }

@@ -1,35 +1,26 @@
-package org.apache.eventmesh.client.grpc;
+package org.apache.eventmesh.client.grpc.consumer;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
-import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
 import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc.HeartbeatServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
-import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,15 +32,19 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(EventMeshGrpcConsumer.class);
 
     private final EventMeshGrpcClientConfig clientConfig;
-    private final List<ListenerThread> listenerThreads = new LinkedList<>();
+
     private final Map<String, String> subscriptionMap = new ConcurrentHashMap<>();
     private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
         Runtime.getRuntime().availableProcessors(),
         new ThreadFactoryBuilder().setNameFormat("GRPCClientScheduler").setDaemon(true).build());
+
     private ManagedChannel channel;
     private ConsumerServiceBlockingStub consumerClient;
+    private ConsumerServiceStub consumerAsyncClient;
     private HeartbeatServiceBlockingStub heartbeatClient;
+
     private ReceiveMsgHook<?> listener;
+    private SubStreamHandler<?> subStreamHandler;
 
     public EventMeshGrpcConsumer(EventMeshGrpcClientConfig clientConfig) {
         this.clientConfig = clientConfig;
@@ -60,6 +55,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             .usePlaintext().build();
 
         consumerClient = ConsumerServiceGrpc.newBlockingStub(channel);
+        consumerAsyncClient = ConsumerServiceGrpc.newStub(channel);
         heartbeatClient = HeartbeatServiceGrpc.newBlockingStub(channel);
 
         heartBeat();
@@ -84,20 +80,21 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     public void subscribe(List<SubscriptionItem> subscriptionItems) {
         logger.info("Create streaming subscription: " + subscriptionItems);
 
-        addSubscription(subscriptionItems, "grpc_stream");
-
-        Subscription subscription = buildSubscription(subscriptionItems, null);
-        Iterator<SimpleMessage> msgIterator;
-        try {
-            msgIterator = consumerClient.subscribeStream(subscription);
-        } catch (Exception e) {
-            logger.error("Error in subscribe. error {}", e.getMessage());
+        if (listener == null) {
+            logger.error("Error in subscriber, no Event Listener is registered.");
             return;
         }
 
-        ListenerThread listenerThread = new ListenerThread(msgIterator, listener, listener.getProtocolType());
-        listenerThreads.add(listenerThread);
-        listenerThread.start();
+        addSubscription(subscriptionItems, "grpc_stream");
+
+        Subscription subscription = buildSubscription(subscriptionItems, null);
+
+        synchronized (this) {
+            if (subStreamHandler == null) {
+                subStreamHandler = new SubStreamHandler<>(consumerAsyncClient, clientConfig, listener);
+            }
+        }
+        subStreamHandler.sendSubscription(subscription);
     }
 
     private void addSubscription(List<SubscriptionItem> subscriptionItems, String url) {
@@ -171,7 +168,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         return builder.build();
     }
 
-    public void registerListener(ReceiveMsgHook<?> listener) {
+    public synchronized void registerListener(ReceiveMsgHook<?> listener) {
         if (this.listener == null) {
             this.listener = listener;
         }
@@ -212,72 +209,10 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     @Override
     public void close() {
-        for (ListenerThread thread : listenerThreads) {
-            thread.stop();
+        if (this.subStreamHandler != null) {
+            this.subStreamHandler.close();
         }
         channel.shutdown();
         scheduler.shutdown();
-    }
-
-    static class ListenerThread<T> extends Thread {
-        private final Iterator<SimpleMessage> msgIterator;
-
-        private final ReceiveMsgHook<T> listener;
-
-        private final String protocolType;
-
-        ListenerThread(Iterator<SimpleMessage> msgIterator, ReceiveMsgHook<T> listener, String protocolType) {
-            this.msgIterator = msgIterator;
-            this.listener = listener;
-            this.protocolType = protocolType;
-        }
-
-        public void run() {
-            logger.info("start receiving...");
-            try {
-                while (msgIterator.hasNext()) {
-                    logger.info("sdk received message ");
-
-                    SimpleMessage simpleMessage = msgIterator.next();
-                    T msg = buildMessage(simpleMessage);
-                    if (msg != null) {
-                        listener.handle(msg);
-                    }
-                }
-            } catch (Throwable t) {
-                logger.warn("Error in handling message. {}", t.getMessage());
-            }
-        }
-
-        private T buildMessage(SimpleMessage simpleMessage) {
-            String seq = simpleMessage.getSeqNum();
-            String uniqueId = simpleMessage.getUniqueId();
-
-            // This is GRPC response message, ignore it
-            if (StringUtils.isEmpty(seq) && StringUtils.isEmpty(uniqueId)) {
-                return null;
-            }
-
-            if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
-                String contentType = simpleMessage.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE, JsonFormat.CONTENT_TYPE);
-                try {
-                    CloudEvent cloudEvent = EventFormatProvider.getInstance().resolveFormat(contentType)
-                        .deserialize(simpleMessage.getContent().getBytes(StandardCharsets.UTF_8));
-                    return (T) cloudEvent;
-                } catch (Throwable t) {
-                    logger.warn("Error in building message. {}", t.getMessage());
-                    return null;
-                }
-            } else {
-                EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-                    .content(simpleMessage.getContent())
-                    .topic(simpleMessage.getTopic())
-                    .bizSeqNo(seq)
-                    .uniqueId(uniqueId)
-                    .prop(simpleMessage.getPropertiesMap())
-                    .build();
-                return (T) eventMeshMessage;
-            }
-        }
     }
 }
