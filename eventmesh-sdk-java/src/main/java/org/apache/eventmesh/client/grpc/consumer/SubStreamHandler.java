@@ -4,12 +4,20 @@ import io.grpc.stub.StreamObserver;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceStub;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class SubStreamHandler<T> {
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+
+public class SubStreamHandler<T> extends Thread {
+
+    private static final Logger logger = LoggerFactory.getLogger(SubStreamHandler.class);
+
+    private CountDownLatch latch = new CountDownLatch(1);
 
     private ConsumerServiceStub consumerAsyncClient;
 
@@ -40,10 +48,23 @@ public class SubStreamHandler<T> {
             @Override
             public void onNext(SimpleMessage message) {
                 T msg = EventMeshClientUtil.buildMessage(message, listener.getProtocolType());
-                if (!(msg instanceof Response)) {
-                    Optional<T> reply = listener.handle(msg);
-                    if (reply.isPresent()) {
-                        Subscription streamReply = buildReplyMessage(reply.get());
+
+                if (msg instanceof Map) {
+                    logger.info("Received message from Server." + message);
+                } else {
+                    logger.info("Received message from Server.|seq={}|uniqueId={}|", message.getSeqNum(), message.getUniqueId());
+                    Subscription streamReply = null;
+                    try {
+                        Optional<T> reply = listener.handle(msg);
+                        if (reply.isPresent()) {
+                            streamReply = buildReplyMessage(message, reply.get());
+                        }
+                    } catch (Throwable t) {
+                        logger.error("Error in handling reply message.|seq={}|uniqueId={}|", message.getSeqNum(), message.getUniqueId(), t);
+                    }
+                    if (streamReply != null) {
+                        logger.info("Sending reply message to Server.|seq={}|uniqueId={}|", streamReply.getReply().getSeqNum(),
+                            streamReply.getReply().getUniqueId());
                         sender.onNext(streamReply);
                     }
                 }
@@ -51,42 +72,55 @@ public class SubStreamHandler<T> {
 
             @Override
             public void onError(Throwable t) {
-                sender.onCompleted();
+                logger.error("Received Server side error: " + t.getMessage());
+                close();
             }
 
             @Override
             public void onCompleted() {
-                sender.onCompleted();
+                logger.info("Finished receiving messages from server.");
+                close();
             }
         };
     }
 
-    private Subscription buildReplyMessage(T message) {
-        SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(message, clientConfig, listener.getProtocolType());
+    private Subscription buildReplyMessage(SimpleMessage reqMessage, T replyMessage) {
+        SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(replyMessage, clientConfig, listener.getProtocolType());
 
         // set the producerGroup
         simpleMessage = SimpleMessage.newBuilder(simpleMessage)
             .setProducerGroup(clientConfig.getConsumerGroup())
             .build();
 
-        Subscription.Reply reply = Subscription.Reply.newBuilder()
+        Subscription.Reply.Builder replyBuilder = Subscription.Reply.newBuilder()
             .setProducerGroup(simpleMessage.getProducerGroup())
             .setTopic(simpleMessage.getTopic())
             .setContent(simpleMessage.getContent())
             .setSeqNum(simpleMessage.getSeqNum())
             .setUniqueId(simpleMessage.getUniqueId())
             .setTtl(simpleMessage.getTtl())
-            .putAllProperties(simpleMessage.getPropertiesMap())
-            .build();
+            .putAllProperties(reqMessage.getPropertiesMap())
+            .putAllProperties(simpleMessage.getPropertiesMap());
+
 
         return Subscription.newBuilder()
             .setHeader(simpleMessage.getHeader())
-            .setReply(reply).build();
+            .setReply(replyBuilder.build()).build();
+    }
+
+    public void run() {
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            logger.error("SubStreamHandler Thread interrupted." + e.getMessage());
+        }
     }
 
     public void close() {
         if (this.sender != null) {
             this.sender.onCompleted();
         }
+        latch.countDown();
+        logger.info("SubStreamHandler closed.");
     }
 }

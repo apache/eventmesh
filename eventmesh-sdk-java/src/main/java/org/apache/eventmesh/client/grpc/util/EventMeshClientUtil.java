@@ -7,25 +7,23 @@ import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
-import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.java2d.pipe.hw.AccelDeviceEventNotifier;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EventMeshClientUtil {
 
@@ -99,13 +97,18 @@ public class EventMeshClientUtil {
                 .setProducerGroup(clientConfig.getProducerGroup())
                 .setTopic(cloudEvent.getSubject())
                 .setTtl(ttl)
-                .setSeqNum(cloudEvent.getExtension(org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.SEQ_NUM).toString())
-                .setUniqueId(cloudEvent.getExtension(org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.UNIQUE_ID).toString())
+                .setSeqNum(cloudEvent.getExtension(ProtocolKey.SEQ_NUM).toString())
+                .setUniqueId(cloudEvent.getExtension(ProtocolKey.UNIQUE_ID).toString())
                 .setContent(content)
-                .putProperties(org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.CONTENT_TYPE, contentType)
+                .putProperties(ProtocolKey.CONTENT_TYPE, contentType)
                 .build();
         } else {
             EventMeshMessage eventMeshMessage = (EventMeshMessage) message;
+
+            String ttl = eventMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null ? "4000"
+                : eventMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL);
+            Map<String, String> props = eventMeshMessage.getProp() == null ? new HashMap<>() : eventMeshMessage.getProp();
+
             return SimpleMessage.newBuilder()
                 .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
                 .setProducerGroup(clientConfig.getProducerGroup())
@@ -113,8 +116,8 @@ public class EventMeshClientUtil {
                 .setContent(eventMeshMessage.getContent())
                 .setSeqNum(eventMeshMessage.getBizSeqNo())
                 .setUniqueId(eventMeshMessage.getUniqueId())
-                .setTtl(eventMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL))
-                .putAllProperties(eventMeshMessage.getProp())
+                .setTtl(ttl)
+                .putAllProperties(props)
                 .build();
         }
     }
@@ -141,9 +144,9 @@ public class EventMeshClientUtil {
                 BatchMessage.MessageItem messageItem = BatchMessage.MessageItem.newBuilder()
                     .setContent(content)
                     .setTtl(ttl)
-                    .setSeqNum(event.getExtension(org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.SEQ_NUM).toString())
-                    .setUniqueId(event.getExtension(org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.UNIQUE_ID).toString())
-                    .putProperties(org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey.CONTENT_TYPE, contentType)
+                    .setSeqNum(event.getExtension(ProtocolKey.SEQ_NUM).toString())
+                    .setUniqueId(event.getExtension(ProtocolKey.UNIQUE_ID).toString())
+                    .putProperties(ProtocolKey.CONTENT_TYPE, contentType)
                     .build();
 
                 messageBuilder.addMessageItem(messageItem);

@@ -76,7 +76,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
             logger.info("Received reply message" + reply.toString());
 
             Object msg = EventMeshClientUtil.buildMessage(reply, PROTOCOL_TYPE);
-            if (!(msg instanceof Response)) {
+            if (msg instanceof EventMeshMessage) {
                 return (EventMeshMessage) msg;
             } else {
                 return null;

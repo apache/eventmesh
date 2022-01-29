@@ -18,6 +18,8 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.AclException;
@@ -69,11 +71,6 @@ public class ReplyMessageProcessor {
             return;
         }
 
-        String seqNum = message.getSeqNum();
-        String uniqueId = message.getUniqueId();
-        String topic = message.getTopic();
-        String producerGroup = message.getProducerGroup();
-
         try {
             doAclCheck(message);
         } catch (Exception e) {
@@ -86,9 +83,18 @@ public class ReplyMessageProcessor {
         if (!eventMeshGrpcServer.getMsgRateLimiter()
             .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             logger.error("Send message speed over limit.");
-            ServiceUtils.sendStreamRespAndDone(requestHeader, StatusCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, emitter);
+            ServiceUtils.sendStreamRespAndDone(requestHeader, StatusCode.EVENTMESH_SEND_MESSAGE_SPEED_OVER_LIMIT_ERR, emitter);
             return;
         }
+
+        String seqNum = message.getSeqNum();
+        String uniqueId = message.getUniqueId();
+        String producerGroup = message.getProducerGroup();
+
+        // set reply topic for ths message
+        String mqCluster = message.getPropertiesOrDefault(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER, "defaultCluster");
+        String replyTopic = mqCluster + "-" + EventMeshConstants.RR_REPLY_TOPIC;
+        message = SimpleMessage.newBuilder(message).setTopic(replyTopic).build();
 
         String protocolType = requestHeader.getProtocolType();
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
@@ -105,16 +111,16 @@ public class ReplyMessageProcessor {
             public void onSuccess(SendResult sendResult) {
                 long endTime = System.currentTimeMillis();
                 logger.info("message|eventMesh2mq|REQ|ReplyToServer|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime, topic, seqNum, uniqueId);
+                    endTime - startTime, replyTopic, seqNum, uniqueId);
             }
 
             @Override
             public void onException(OnExceptionContext onExceptionContext) {
-                ServiceUtils.sendStreamRespAndDone(requestHeader, StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
+                ServiceUtils.sendStreamRespAndDone(requestHeader, StatusCode.EVENTMESH_REPLY_MSG_ERR,
                     EventMeshUtil.stackTrace(onExceptionContext.getException(), 2), emitter);
                 long endTime = System.currentTimeMillis();
                 logger.error("message|eventMesh2mq|REQ|ReplyToServer|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                    endTime - startTime, topic, seqNum, uniqueId, onExceptionContext.getException());
+                    endTime - startTime, replyTopic, seqNum, uniqueId, onExceptionContext.getException());
             }
         });
     }
@@ -127,7 +133,7 @@ public class ReplyMessageProcessor {
             String pass = requestHeader.getPassword();
             String subsystem = requestHeader.getSys();
             String topic = message.getTopic();
-            Acl.doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.MSG_SEND_ASYNC.getRequestCode());
+            Acl.doAclCheckInHttpSend(remoteAdd, user, pass, subsystem, topic, RequestCode.REPLY_MESSAGE.getRequestCode());
         }
     }
 }

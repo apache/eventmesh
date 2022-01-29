@@ -48,7 +48,7 @@ public class GrpcMessageProtocolResolver {
             ? event.getExtension(ProtocolKey.UNIQUE_ID).toString() : message.getUniqueId();
 
         String seqNum = StringUtils.isEmpty(message.getSeqNum())
-            ? event.getExtension(ProtocolKey.SEQ_NUM).toString() : header.getProtocolVersion();
+            ? event.getExtension(ProtocolKey.SEQ_NUM).toString() : message.getSeqNum();
 
         String username = StringUtils.isEmpty(header.getUsername()) ? event.getExtension(ProtocolKey.USERNAME).toString() : header.getUsername();
         String passwd = StringUtils.isEmpty(header.getPassword()) ? event.getExtension(ProtocolKey.PASSWD).toString() : header.getPassword();
@@ -179,6 +179,12 @@ public class GrpcMessageProtocolResolver {
             String username = StringUtils.isEmpty(header.getUsername()) ? event.getExtension(ProtocolKey.USERNAME).toString() : header.getUsername();
             String passwd = StringUtils.isEmpty(header.getPassword()) ? event.getExtension(ProtocolKey.PASSWD).toString() : header.getPassword();
 
+            String seqNum = StringUtils.isEmpty(item.getSeqNum()) ? event.getExtension(ProtocolKey.SEQ_NUM).toString() : item.getSeqNum();
+            String uniqueId = StringUtils.isEmpty(item.getUniqueId()) ? event.getExtension(ProtocolKey.UNIQUE_ID).toString() : item.getUniqueId();
+            String producerGroup = StringUtils.isEmpty(batchMessage.getProducerGroup()) ?
+                event.getExtension(ProtocolKey.PRODUCERGROUP).toString() : batchMessage.getProducerGroup();
+            String ttl = StringUtils.isEmpty(item.getTtl()) ? event.getExtension(ProtocolKey.TTL).toString() : item.getTtl();
+
             if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
                 CloudEvent enhancedEvent = CloudEventBuilder.v1(event)
                     .withExtension(ProtocolKey.ENV, env)
@@ -192,6 +198,10 @@ public class GrpcMessageProtocolResolver {
                     .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
                     .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
                     .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                    .withExtension(ProtocolKey.SEQ_NUM, seqNum)
+                    .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
+                    .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
+                    .withExtension(ProtocolKey.TTL, ttl)
                     .build();
                 cloudEvents.add(enhancedEvent);
             } else {
@@ -207,6 +217,10 @@ public class GrpcMessageProtocolResolver {
                     .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
                     .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
                     .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                    .withExtension(ProtocolKey.SEQ_NUM, seqNum)
+                    .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
+                    .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
+                    .withExtension(ProtocolKey.TTL, ttl)
                     .build();
                 cloudEvents.add(enhancedEvent);
             }

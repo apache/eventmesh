@@ -44,11 +44,7 @@ public class SendMessageContext extends RetryContext {
 
     private long createTime = System.currentTimeMillis();
 
-    private Map<String, String> props;
-
     public EventMeshGrpcServer eventMeshGrpcServer;
-
-    private List<CloudEvent> eventList;
 
     public SendMessageContext(String bizSeqNo, CloudEvent event, EventMeshProducer eventMeshProducer,
                               EventMeshGrpcServer eventMeshGrpcServer) {
@@ -56,17 +52,6 @@ public class SendMessageContext extends RetryContext {
         this.event = event;
         this.eventMeshProducer = eventMeshProducer;
         this.eventMeshGrpcServer = eventMeshGrpcServer;
-    }
-
-    public void addProp(String key, String val) {
-        if (props == null) {
-            props = new HashMap<>();
-        }
-        props.put(key, val);
-    }
-
-    public String getProp(String key) {
-        return props.get(key);
     }
 
     public String getBizSeqNo() {
@@ -99,14 +84,6 @@ public class SendMessageContext extends RetryContext {
 
     public void setCreateTime(long createTime) {
         this.createTime = createTime;
-    }
-
-    public List<CloudEvent> getEventList() {
-        return eventList;
-    }
-
-    public void setEventList(List<CloudEvent> eventList) {
-        this.eventList = eventList;
     }
 
     @Override
@@ -144,7 +121,6 @@ public class SendMessageContext extends RetryContext {
             @Override
             public void onException(OnExceptionContext context) {
                 logger.warn("", context.getException());
-                //eventMeshHTTPServer.metrics.summaryMetrics.recordSendBatchMsgFailed(1);
             }
         });
         return true;
