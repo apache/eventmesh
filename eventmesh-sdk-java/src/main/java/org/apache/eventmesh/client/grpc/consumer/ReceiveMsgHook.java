@@ -27,7 +27,7 @@ public interface ReceiveMsgHook<T> {
      * @param msg
      * @return
      */
-    Optional<T> handle(T msg);
+    Optional<T> handle(T msg) throws Throwable;
 
     String getProtocolType();
 

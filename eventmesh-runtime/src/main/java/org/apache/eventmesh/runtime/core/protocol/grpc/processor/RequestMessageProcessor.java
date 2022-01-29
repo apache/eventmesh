@@ -86,7 +86,7 @@ public class RequestMessageProcessor {
         if (!eventMeshGrpcServer.getMsgRateLimiter()
             .tryAcquire(EventMeshConstants.DEFAULT_FASTFAIL_TIMEOUT_IN_MILLISECONDS, TimeUnit.MILLISECONDS)) {
             logger.error("Send message speed over limit.");
-            ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR, emitter);
+            ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_SEND_MESSAGE_SPEED_OVER_LIMIT_ERR, emitter);
             return;
         }
 
@@ -113,7 +113,7 @@ public class RequestMessageProcessor {
                     logger.info("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         endTime - startTime, topic, seqNum, uniqueId);
                 } catch (Exception e) {
-                    ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
+                    ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR,
                         EventMeshUtil.stackTrace(e, 2), emitter);
 
                     long endTime = System.currentTimeMillis();
@@ -124,7 +124,7 @@ public class RequestMessageProcessor {
 
             @Override
             public void onException(Throwable e) {
-                ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_SEND_ASYNC_MSG_ERR,
+                ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR,
                     EventMeshUtil.stackTrace(e, 2), emitter);
                 long endTime = System.currentTimeMillis();
                 logger.error("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",

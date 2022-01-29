@@ -31,7 +31,7 @@ import java.util.Properties;
 
 public class EventMeshProducer {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ProducerGroupConf producerGroupConfig;
 
@@ -51,10 +51,6 @@ public class EventMeshProducer {
 
     public void reply(SendMessageContext sendMessageContext, SendCallback sendCallback) throws Exception {
         mqProducerWrapper.reply(sendMessageContext.getEvent(), sendCallback);
-    }
-
-    public MQProducerWrapper getMqProducerWrapper() {
-        return mqProducerWrapper;
     }
 
     public synchronized void init(EventMeshGrpcConfiguration eventMeshGrpcConfiguration,
@@ -93,10 +89,6 @@ public class EventMeshProducer {
         mqProducerWrapper.shutdown();
         serviceState = ServiceState.STOPED;
         logger.info("EventMeshProducer [{}] shutdown.........", producerGroupConfig.getGroupName());
-    }
-
-    public ProducerGroupConf getProducerGroupConfig() {
-        return this.producerGroupConfig;
     }
 
     public ServiceState getStatus() {

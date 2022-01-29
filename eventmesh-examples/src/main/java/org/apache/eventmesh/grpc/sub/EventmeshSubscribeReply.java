@@ -25,7 +25,7 @@ public class EventmeshSubscribeReply implements ReceiveMsgHook<EventMeshMessage>
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
 
-        final String topic = "TEST-TOPIC-GRPC-ASYNC";
+        final String topic = "TEST-TOPIC-GRPC-RR";
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
@@ -47,14 +47,16 @@ public class EventmeshSubscribeReply implements ReceiveMsgHook<EventMeshMessage>
 
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
 
-        Thread.sleep(60000);
-        eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
+        //Thread.sleep(60000);
+        //eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
     }
 
     @Override
     public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
-        log.info("receive async msg====================={}", msg);
-        return Optional.of(msg);
+        log.info("receive request-reply msg====================={}", msg);
+        EventMeshMessage m1 = EventMeshMessage.builder().content("reply").uniqueId(msg.getUniqueId())
+            .bizSeqNo(msg.getBizSeqNo()).topic("mytopic").build();
+        return Optional.of(m1);
     }
 
     @Override

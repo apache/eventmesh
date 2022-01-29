@@ -63,7 +63,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         return new StreamObserver<Subscription>() {
             @Override
             public void onNext(Subscription subscription) {
-                if (subscription.getReply() == null) {
+                if (!subscription.getSubscriptionItemsList().isEmpty()) {
                     logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
                         "subscribeStream", EventMeshConstants.PROTOCOL_GRPC,
                         subscription.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
@@ -80,11 +80,13 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
 
             @Override
             public void onError(Throwable t) {
+                logger.error("Receive error from client: " + t.getMessage());
                 responseObserver.onCompleted();
             }
 
             @Override
             public void onCompleted() {
+                logger.info("Client finish sending messages");
                 responseObserver.onCompleted();
             }
         };

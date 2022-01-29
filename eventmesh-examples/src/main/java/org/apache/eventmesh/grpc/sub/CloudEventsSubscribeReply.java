@@ -25,7 +25,7 @@ public class CloudEventsSubscribeReply implements ReceiveMsgHook<CloudEvent> {
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
 
-        final String topic = "TEST-TOPIC-GRPC-ASYNC";
+        final String topic = "TEST-TOPIC-GRPC-RR";
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
@@ -54,7 +54,7 @@ public class CloudEventsSubscribeReply implements ReceiveMsgHook<CloudEvent> {
 
     @Override
     public Optional<CloudEvent> handle(CloudEvent msg) {
-        log.info("receive async msg====================={}", msg);
+        log.info("receive request-reply msg====================={}", msg);
         return Optional.of(msg);
     }
 

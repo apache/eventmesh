@@ -92,6 +92,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         synchronized (this) {
             if (subStreamHandler == null) {
                 subStreamHandler = new SubStreamHandler<>(consumerAsyncClient, clientConfig, listener);
+                subStreamHandler.start();
             }
         }
         subStreamHandler.sendSubscription(subscription);

@@ -61,9 +61,9 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
             try {
                 requestMessageProcessor.process(request, emitter);
             } catch (Exception e) {
-                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_SEND_SYNC_MSG_ERR.getRetCode(),
-                    StatusCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg(), e);
-                ServiceUtils.sendStreamRespAndDone(request.getHeader(), StatusCode.EVENTMESH_SEND_SYNC_MSG_ERR, e.getMessage(), emitter);
+                logger.error("Error code {}, error message {}", StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR.getRetCode(),
+                    StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR.getErrMsg(), e);
+                ServiceUtils.sendStreamRespAndDone(request.getHeader(), StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR, e.getMessage(), emitter);
             }
         });
     }

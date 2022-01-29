@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CloudEventProducer {
@@ -61,7 +62,7 @@ public class CloudEventProducer {
             logger.info("Received reply message" + reply.toString());
 
             Object msg = EventMeshClientUtil.buildMessage(reply, PROTOCOL_TYPE);
-            if (!(msg instanceof Response)) {
+            if (msg instanceof CloudEvent) {
                 return (CloudEvent) msg;
             } else {
                 return null;
