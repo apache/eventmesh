@@ -23,7 +23,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase {
 
-    private final Logger logger = LoggerFactory.getLogger(ProducerService.class);
+    private final Logger logger = LoggerFactory.getLogger(ConsumerService.class);
 
     private final EventMeshGrpcServer eventMeshGrpcServer;
 

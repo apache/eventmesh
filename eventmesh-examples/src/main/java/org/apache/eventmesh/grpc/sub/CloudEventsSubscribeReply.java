@@ -55,7 +55,11 @@ public class CloudEventsSubscribeReply implements ReceiveMsgHook<CloudEvent> {
     @Override
     public Optional<CloudEvent> handle(CloudEvent msg) {
         log.info("receive request-reply msg====================={}", msg);
-        return Optional.of(msg);
+        if (msg != null) {
+            return Optional.of(msg);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
