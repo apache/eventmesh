@@ -110,7 +110,7 @@ public class ReplyMessageProcessor {
             @Override
             public void onSuccess(SendResult sendResult) {
                 long endTime = System.currentTimeMillis();
-                logger.info("message|eventMesh2mq|REQ|ReplyToServer|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                logger.info("message|mq2eventmesh|REPLY|ReplyToServer|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, replyTopic, seqNum, uniqueId);
             }
 
@@ -119,7 +119,7 @@ public class ReplyMessageProcessor {
                 ServiceUtils.sendStreamRespAndDone(requestHeader, StatusCode.EVENTMESH_REPLY_MSG_ERR,
                     EventMeshUtil.stackTrace(onExceptionContext.getException(), 2), emitter);
                 long endTime = System.currentTimeMillis();
-                logger.error("message|eventMesh2mq|REQ|ReplyToServer|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                logger.error("message|mq2eventmesh|REPLY|ReplyToServer|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, replyTopic, seqNum, uniqueId, onExceptionContext.getException());
             }
         });

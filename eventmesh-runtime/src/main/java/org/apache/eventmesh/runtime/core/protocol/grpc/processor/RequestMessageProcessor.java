@@ -110,14 +110,14 @@ public class RequestMessageProcessor {
                     emitter.onCompleted();
 
                     long endTime = System.currentTimeMillis();
-                    logger.info("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    logger.info("message|eventmesh2client|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         endTime - startTime, topic, seqNum, uniqueId);
                 } catch (Exception e) {
                     ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR,
                         EventMeshUtil.stackTrace(e, 2), emitter);
 
                     long endTime = System.currentTimeMillis();
-                    logger.error("message|eventMesh2mq|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                    logger.error("message|mq2eventmesh|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         endTime - startTime, topic, seqNum, uniqueId, e);
                 }
             }
