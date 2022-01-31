@@ -35,7 +35,7 @@ import java.util.Properties;
 public class RequestReplyInstance {
 
     // This messageSize is also used in SubService.java (Subscriber)
-    public static int messageSize = 1;
+    public static int messageSize = 5;
 
     public static void main(String[] args) throws Exception {
 
