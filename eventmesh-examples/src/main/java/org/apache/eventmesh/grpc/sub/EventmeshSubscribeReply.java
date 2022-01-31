@@ -47,16 +47,18 @@ public class EventmeshSubscribeReply implements ReceiveMsgHook<EventMeshMessage>
 
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
 
-        //Thread.sleep(60000);
-        //eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
+        Thread.sleep(60000);
+        eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
     }
 
     @Override
     public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
         log.info("receive request-reply msg====================={}", msg);
-        EventMeshMessage m1 = EventMeshMessage.builder().content("reply").uniqueId(msg.getUniqueId())
-            .bizSeqNo(msg.getBizSeqNo()).topic("mytopic").build();
-        return Optional.of(m1);
+        if (msg != null) {
+            return Optional.of(msg);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
