@@ -119,6 +119,7 @@ public class SubStreamHandler<T> extends Thread {
     public void close() {
         if (this.sender != null) {
             this.sender.onCompleted();
+            this.sender = null;
         }
         latch.countDown();
         logger.info("SubStreamHandler closed.");

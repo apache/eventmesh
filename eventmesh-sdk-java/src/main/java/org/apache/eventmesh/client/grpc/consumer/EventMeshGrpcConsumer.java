@@ -31,6 +31,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     private static final Logger logger = LoggerFactory.getLogger(EventMeshGrpcConsumer.class);
 
+    private static final String SDK_STREAM_URL = "grpc_stream";
+
     private final EventMeshGrpcClientConfig clientConfig;
 
     private final Map<String, String> subscriptionMap = new ConcurrentHashMap<>();
@@ -85,7 +87,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
             return;
         }
 
-        addSubscription(subscriptionItems, "grpc_stream");
+        addSubscription(subscriptionItems, SDK_STREAM_URL);
 
         Subscription subscription = buildSubscription(subscriptionItems, null);
 
@@ -128,7 +130,28 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
     }
 
     public Response unsubscribe(List<SubscriptionItem> subscriptionItems) {
-        return unsubscribe(subscriptionItems, null);
+        logger.info("Removing subscription stream: " + subscriptionItems);
+
+        removeSubscription(subscriptionItems);
+
+        Subscription subscription = buildSubscription(subscriptionItems, null);
+
+        try {
+            Response response = consumerClient.unsubscribe(subscription);
+            logger.info("Received response " + response.toString());
+
+            // there is no stream subscriptions, stop the subscription stream handler
+            synchronized (this) {
+                if (!subscriptionMap.containsValue(SDK_STREAM_URL) && subStreamHandler != null) {
+                    subStreamHandler.close();
+                    subStreamHandler = null;
+                }
+            }
+            return response;
+        } catch (Exception e) {
+            logger.error("Error in unsubscribe. error {}", e.getMessage());
+            return null;
+        }
     }
 
     private Subscription buildSubscription(List<SubscriptionItem> subscriptionItems, String url) {
