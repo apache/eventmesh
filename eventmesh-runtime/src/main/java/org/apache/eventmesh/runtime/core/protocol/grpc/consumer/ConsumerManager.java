@@ -165,11 +165,11 @@ public class ConsumerManager {
             return;
         }
 
-        if (eventMeshConsumer.getStatus() == null) {
-            eventMeshConsumer.init();
-        } else if (ServiceState.RUNNING.equals(eventMeshConsumer.getStatus())) {
+        if (ServiceState.RUNNING.equals(eventMeshConsumer.getStatus())) {
             eventMeshConsumer.shutdown();
         }
+
+        eventMeshConsumer.init();
         eventMeshConsumer.start();
 
         if (!ServiceState.RUNNING.equals(eventMeshConsumer.getStatus())) {
