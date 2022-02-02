@@ -40,7 +40,7 @@ public class SubStreamHandler<T> extends Thread {
                 this.sender = consumerAsyncClient.subscribeStream(createReceiver());
             }
         }
-       this.sender.onNext(subscription);
+       senderOnNext(subscription);
     }
 
     private StreamObserver<SimpleMessage> createReceiver() {
@@ -65,7 +65,7 @@ public class SubStreamHandler<T> extends Thread {
                     if (streamReply != null) {
                         logger.info("Sending reply message to Server.|seq={}|uniqueId={}|", streamReply.getReply().getSeqNum(),
                             streamReply.getReply().getUniqueId());
-                        sender.onNext(streamReply);
+                        senderOnNext(streamReply);
                     }
                 }
             }
@@ -113,10 +113,26 @@ public class SubStreamHandler<T> extends Thread {
 
     public void close() {
         if (this.sender != null) {
-            this.sender.onCompleted();
+            senderOnComplete();
             this.sender = null;
         }
         latch.countDown();
         logger.info("SubStreamHandler closed.");
+    }
+
+    private void senderOnNext(Subscription subscription) {
+        try {
+            sender.onNext(subscription);
+        } catch (Throwable t) {
+            logger.warn("StreamObserver Error onNext {}", t.getMessage());
+        }
+    }
+
+    private void senderOnComplete() {
+        try {
+            sender.onCompleted();
+        } catch (Throwable t) {
+            logger.warn("StreamObserver Error onComplete {}", t.getMessage());
+        }
     }
 }

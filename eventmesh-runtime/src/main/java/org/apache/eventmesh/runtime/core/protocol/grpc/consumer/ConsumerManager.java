@@ -150,11 +150,7 @@ public class ConsumerManager {
 
     private void closeEventStream(ConsumerGroupClient client) {
         if (client.getEventEmitter() != null) {
-            try {
-                client.getEventEmitter().onCompleted();
-            } catch (Exception e) {
-                logger.warn("GRPC client {} already closed.", client.toString());
-            }
+            client.getEventEmitter().onCompleted();
         }
     }
 

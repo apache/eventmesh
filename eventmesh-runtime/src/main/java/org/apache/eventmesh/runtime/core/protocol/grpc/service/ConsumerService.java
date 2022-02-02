@@ -3,11 +3,9 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.service;
 import io.grpc.stub.StreamObserver;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc;
-import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.ReplyMessageProcessor;
@@ -16,9 +14,6 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.processor.SubscribeStream
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.UnsubscribeProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase {
@@ -81,13 +76,13 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
             @Override
             public void onError(Throwable t) {
                 logger.error("Receive error from client: " + t.getMessage());
-                responseObserver.onCompleted();
+                emitter.onCompleted();
             }
 
             @Override
             public void onCompleted() {
                 logger.info("Client finish sending messages");
-                responseObserver.onCompleted();
+                emitter.onCompleted();
             }
         };
     }

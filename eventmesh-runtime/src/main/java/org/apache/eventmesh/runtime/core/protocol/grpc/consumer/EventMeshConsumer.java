@@ -107,6 +107,11 @@ public class EventMeshConsumer {
     }
 
     public synchronized void init() throws Exception {
+        if (consumerGroupTopicConfig.size() == 0) {
+            // no topics, don't init the consumer
+            return;
+        }
+
         Properties keyValue = new Properties();
         keyValue.put("isBroadcast", "false");
         keyValue.put("consumerGroup", consumerGroup);
