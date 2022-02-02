@@ -63,7 +63,6 @@ public class UnsubscribeProcessor {
                 .lastUpTime(new Date())
                 .build();
             removeClients.add(newClient);
-            consumerManager.deregisterClient(newClient);
         }
 
         // deregister clients from ConsumerManager

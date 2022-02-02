@@ -37,7 +37,7 @@ public class CloudEventsSubscribeReply implements ReceiveMsgHook<CloudEvent> {
         SubscriptionItem subscriptionItem = new SubscriptionItem();
         subscriptionItem.setTopic(topic);
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
-        subscriptionItem.setType(SubscriptionType.ASYNC);
+        subscriptionItem.setType(SubscriptionType.SYNC);
 
 
         EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
