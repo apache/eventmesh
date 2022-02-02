@@ -59,44 +59,33 @@ public class GrpcMessageProtocolResolver {
         String producerGroup = StringUtils.isEmpty(message.getProducerGroup())
             ? event.getExtension(ProtocolKey.PRODUCERGROUP).toString() : message.getProducerGroup();
 
+        CloudEventBuilder eventBuilder;
         if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-            return CloudEventBuilder.v1(event)
-                .withSubject(topic)
-                .withExtension(ProtocolKey.ENV, env)
-                .withExtension(ProtocolKey.IDC, idc)
-                .withExtension(ProtocolKey.IP, ip)
-                .withExtension(ProtocolKey.PID, pid)
-                .withExtension(ProtocolKey.SYS, sys)
-                .withExtension(ProtocolKey.USERNAME, username)
-                .withExtension(ProtocolKey.PASSWD, passwd)
-                .withExtension(ProtocolKey.LANGUAGE, language)
-                .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                .withExtension(ProtocolKey.SEQ_NUM, seqNum)
-                .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
-                .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
-                .withExtension(ProtocolKey.TTL, ttl).build();
+            eventBuilder = CloudEventBuilder.v1(event);
         } else {
-            return CloudEventBuilder.v03(event)
-                .withSubject(topic)
-                .withExtension(ProtocolKey.ENV, env)
-                .withExtension(ProtocolKey.IDC, idc)
-                .withExtension(ProtocolKey.IP, ip)
-                .withExtension(ProtocolKey.PID, pid)
-                .withExtension(ProtocolKey.SYS, sys)
-                .withExtension(ProtocolKey.USERNAME, username)
-                .withExtension(ProtocolKey.PASSWD, passwd)
-                .withExtension(ProtocolKey.LANGUAGE, language)
-                .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                .withExtension(ProtocolKey.SEQ_NUM, seqNum)
-                .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
-                .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
-                .withExtension(ProtocolKey.TTL, ttl).build();
+            eventBuilder = CloudEventBuilder.v03(event);
         }
 
+        eventBuilder.withSubject(topic)
+            .withExtension(ProtocolKey.ENV, env)
+            .withExtension(ProtocolKey.IDC, idc)
+            .withExtension(ProtocolKey.IP, ip)
+            .withExtension(ProtocolKey.PID, pid)
+            .withExtension(ProtocolKey.SYS, sys)
+            .withExtension(ProtocolKey.USERNAME, username)
+            .withExtension(ProtocolKey.PASSWD, passwd)
+            .withExtension(ProtocolKey.LANGUAGE, language)
+            .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+            .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+            .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+            .withExtension(ProtocolKey.SEQ_NUM, seqNum)
+            .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
+            .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
+            .withExtension(ProtocolKey.TTL, ttl);
+
+        message.getPropertiesMap().forEach((k, v) -> eventBuilder.withExtension(k, v));
+
+        return eventBuilder.build();
     }
 
     public static SimpleMessageWrapper buildSimpleMessage(CloudEvent cloudEvent) {
@@ -133,13 +122,13 @@ public class GrpcMessageProtocolResolver {
 
         SimpleMessage.Builder messageBuilder = SimpleMessage.newBuilder()
             .setHeader(header)
-            .setContent(new String( eventFormat.serialize(cloudEvent), StandardCharsets.UTF_8))
+            .setContent(new String(eventFormat.serialize(cloudEvent), StandardCharsets.UTF_8))
             .setProducerGroup(producerGroup)
             .setSeqNum(seqNum)
             .setUniqueId(uniqueId)
             .setTopic(cloudEvent.getSubject())
             .setTtl(ttl)
-            .putProperties(ProtocolKey.CONTENT_TYPE, contentType) ;
+            .putProperties(ProtocolKey.CONTENT_TYPE, contentType);
 
         for (String key : cloudEvent.getExtensionNames()) {
             messageBuilder.putProperties(key, cloudEvent.getExtension(key).toString());
@@ -192,48 +181,33 @@ public class GrpcMessageProtocolResolver {
                 event.getExtension(ProtocolKey.PRODUCERGROUP).toString() : batchMessage.getProducerGroup();
             String ttl = StringUtils.isEmpty(item.getTtl()) ? event.getExtension(ProtocolKey.TTL).toString() : item.getTtl();
 
+            CloudEventBuilder eventBuilder;
             if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-                CloudEvent enhancedEvent = CloudEventBuilder.v1(event)
-                    .withSubject(topic)
-                    .withExtension(ProtocolKey.ENV, env)
-                    .withExtension(ProtocolKey.IDC, idc)
-                    .withExtension(ProtocolKey.IP, ip)
-                    .withExtension(ProtocolKey.PID, pid)
-                    .withExtension(ProtocolKey.SYS, sys)
-                    .withExtension(ProtocolKey.USERNAME, username)
-                    .withExtension(ProtocolKey.PASSWD, passwd)
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(ProtocolKey.SEQ_NUM, seqNum)
-                    .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
-                    .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
-                    .withExtension(ProtocolKey.TTL, ttl)
-                    .build();
-                cloudEvents.add(enhancedEvent);
+                eventBuilder = CloudEventBuilder.v1(event);
             } else {
-                CloudEvent enhancedEvent = CloudEventBuilder.v03(event)
-                    .withSubject(topic)
-                    .withExtension(ProtocolKey.ENV, env)
-                    .withExtension(ProtocolKey.IDC, idc)
-                    .withExtension(ProtocolKey.IP, ip)
-                    .withExtension(ProtocolKey.PID, pid)
-                    .withExtension(ProtocolKey.SYS, sys)
-                    .withExtension(ProtocolKey.USERNAME, username)
-                    .withExtension(ProtocolKey.PASSWD, passwd)
-                    .withExtension(ProtocolKey.LANGUAGE, language)
-                    .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
-                    .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
-                    .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
-                    .withExtension(ProtocolKey.SEQ_NUM, seqNum)
-                    .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
-                    .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
-                    .withExtension(ProtocolKey.TTL, ttl)
-                    .build();
-                cloudEvents.add(enhancedEvent);
+                eventBuilder = CloudEventBuilder.v03(event);
             }
 
+            eventBuilder.withSubject(topic)
+                .withExtension(ProtocolKey.ENV, env)
+                .withExtension(ProtocolKey.IDC, idc)
+                .withExtension(ProtocolKey.IP, ip)
+                .withExtension(ProtocolKey.PID, pid)
+                .withExtension(ProtocolKey.SYS, sys)
+                .withExtension(ProtocolKey.USERNAME, username)
+                .withExtension(ProtocolKey.PASSWD, passwd)
+                .withExtension(ProtocolKey.LANGUAGE, language)
+                .withExtension(ProtocolKey.PROTOCOL_TYPE, protocolType)
+                .withExtension(ProtocolKey.PROTOCOL_DESC, protocolDesc)
+                .withExtension(ProtocolKey.PROTOCOL_VERSION, protocolVersion)
+                .withExtension(ProtocolKey.SEQ_NUM, seqNum)
+                .withExtension(ProtocolKey.UNIQUE_ID, uniqueId)
+                .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
+                .withExtension(ProtocolKey.TTL, ttl);
+
+            item.getPropertiesMap().forEach((k, v) -> eventBuilder.withExtension(k, v));
+
+            cloudEvents.add(eventBuilder.build());
         }
         return cloudEvents;
     }

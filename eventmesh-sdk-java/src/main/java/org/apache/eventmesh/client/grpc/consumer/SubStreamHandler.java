@@ -87,25 +87,20 @@ public class SubStreamHandler<T> extends Thread {
     private Subscription buildReplyMessage(SimpleMessage reqMessage, T replyMessage) {
         SimpleMessage simpleMessage = EventMeshClientUtil.buildSimpleMessage(replyMessage, clientConfig, listener.getProtocolType());
 
-        // set the producerGroup
-        simpleMessage = SimpleMessage.newBuilder(simpleMessage)
+        Subscription.Reply reply = Subscription.Reply.newBuilder()
             .setProducerGroup(clientConfig.getConsumerGroup())
-            .build();
-
-        Subscription.Reply.Builder replyBuilder = Subscription.Reply.newBuilder()
-            .setProducerGroup(simpleMessage.getProducerGroup())
             .setTopic(simpleMessage.getTopic())
             .setContent(simpleMessage.getContent())
             .setSeqNum(simpleMessage.getSeqNum())
             .setUniqueId(simpleMessage.getUniqueId())
             .setTtl(simpleMessage.getTtl())
             .putAllProperties(reqMessage.getPropertiesMap())
-            .putAllProperties(simpleMessage.getPropertiesMap());
-
+            .putAllProperties(simpleMessage.getPropertiesMap())
+            .build();
 
         return Subscription.newBuilder()
             .setHeader(simpleMessage.getHeader())
-            .setReply(replyBuilder.build()).build();
+            .setReply(reply).build();
     }
 
     public void run() {

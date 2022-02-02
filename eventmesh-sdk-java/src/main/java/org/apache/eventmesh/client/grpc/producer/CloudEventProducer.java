@@ -6,7 +6,6 @@ import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.PublisherServiceGrpc.PublisherServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
@@ -103,7 +102,7 @@ public class CloudEventProducer {
             .withExtension(ProtocolKey.SYS, clientConfig.getSys())
             .withExtension(ProtocolKey.LANGUAGE, "JAVA")
             .withExtension(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
-            .withExtension(ProtocolKey.PROTOCOL_DESC, cloudEvent.getSpecVersion().name())
+            .withExtension(ProtocolKey.PROTOCOL_DESC, "grpc")
             .withExtension(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString())
             .withExtension(ProtocolKey.UNIQUE_ID, RandomStringUtils.generateNum(30))
             .withExtension(ProtocolKey.SEQ_NUM, RandomStringUtils.generateNum(30))
