@@ -5,7 +5,7 @@ cloudevents-core-2.2.0.jar
 cloudevents-json-jackson-2.2.0.jar
 commons-beanutils-1.9.2.jar
 commons-cli-1.2.jar
-commons-codec-1.9.jar
+commons-codec-1.11.jar
 commons-collections-3.2.2.jar
 commons-collections4-4.1.jar
 commons-digester-1.8.1.jar

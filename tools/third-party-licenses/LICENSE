@@ -221,7 +221,7 @@ cloudevents-core 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
 cloudevents-json-jackson 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
 commons-beanutils 1.9.2: https://github.com/apache/commons-beanutils, Apache 2.0
 commons-cli 1.2: https://github.com/apache/commons-cli, Apache 2.0
-commons-codec 1.9: https://github.com/apache/commons-codec, Apache 2.0
+commons-codec 1.11: https://github.com/apache/commons-codec, Apache 2.0
 commons-collections 3.2.2: https://github.com/apache/commons-collections, Apache 2.0
 commons-collections4 4.1: https://github.com/apache/commons-collections, Apache 2.0
 commons-digester 1.8.1: https://github.com/apache/commons-digester, Apache 2.0
