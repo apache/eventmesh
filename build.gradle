@@ -75,6 +75,10 @@ allprojects {
         maxWarnings = 0
         configFile = new File("${rootDir}/style/checkStyle.xml")
     }
+
+    dependencies {
+        testImplementation "junit:junit"
+    }
 }
 
 task tar(type: Tar) {
