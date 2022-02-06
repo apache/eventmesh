@@ -231,7 +231,7 @@ commons-text 1.9: https://github.com/apache/commons-text, Apache 2.0
 commons-validator 1.6: https://github.com/apache/commons-validator, Apache 2.0
 disruptor 3.4.2: https://github.com/LMAX-Exchange/disruptor, Apache 2.0
 dledger 0.1: https://github.com/openmessaging/dledger, Apache 2.0
-error_prone_annotations 2.3.4: https://github.com/google/error-prone, Apache 2.0
+error_prone_annotations 2.7.1: https://github.com/google/error-prone, Apache 2.0
 failureaccess 1.0.1: https://github.com/google/guava, Apache 2.0
 listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://github.com/google/guava, Apache 2.0
 fastjson 1.2.69: https://github.com/alibaba/fastjson, Apache 2.0
@@ -365,5 +365,5 @@ MIT licenses
 The following components are provided under the MIT license. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
-checker-qual 2.11.1: https://github.com/typetools/checker-framework, MIT
+checker-qual 3.12.0: https://github.com/typetools/checker-framework, MIT
 slf4j-api 1.7.30: https://github.com/qos-ch/slf4j, MIT

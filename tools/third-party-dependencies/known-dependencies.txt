@@ -1,5 +1,5 @@
 assertj-core-2.6.0.jar
-checker-qual-2.11.1.jar
+checker-qual-3.12.0.jar
 cloudevents-api-2.2.0.jar
 cloudevents-core-2.2.0.jar
 cloudevents-json-jackson-2.2.0.jar
@@ -15,7 +15,7 @@ commons-text-1.9.jar
 commons-validator-1.6.jar
 disruptor-3.4.2.jar
 dledger-0.1.jar
-error_prone_annotations-2.3.4.jar
+error_prone_annotations-2.7.1.jar
 failureaccess-1.0.1.jar
 fastjson-1.2.69.jar
 guava-31.0.1-jre.jar
