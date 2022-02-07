@@ -34,8 +34,11 @@ import java.util.regex.Pattern;
 import inet.ipaddr.HostName;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
+
 import io.netty.channel.Channel;
+
 import org.apache.commons.lang3.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -193,14 +196,14 @@ public class IPUtils {
         if (isValidIp(url)) {
             return true;
         }
-        IPAddress iPAddress = domain2Ip(url);
-        if (iPAddress == null) {
+        IPAddress ipAddress = domain2Ip(url);
+        if (ipAddress == null) {
             return false;
         }
-        if (iPAddress.isIPv4()) {
-            return isReservedIp(iPAddress, ipV4ReservedAddrs);
+        if (ipAddress.isIPv4()) {
+            return isReservedIp(ipAddress, ipV4ReservedAddrs);
         } else {
-            return isReservedIp(iPAddress, ipV6ReservedAddrs);
+            return isReservedIp(ipAddress, ipV6ReservedAddrs);
         }
     }
 
