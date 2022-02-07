@@ -148,6 +148,28 @@ public class SubscribeProcessor implements HttpRequestProcessor {
         String url = subscribeRequestBody.getUrl();
         String consumerGroup = subscribeRequestBody.getConsumerGroup();
 
+        // validate URL
+        try {
+            if (!IPUtils.isValidDomainOrIp(url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv4BlackList,
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv6BlackList)) {
+                responseEventMeshCommand = request.createHttpCommandResponse(
+                    subscribeResponseHeader,
+                    SubscribeResponseBody
+                        .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
+                            EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url));
+                asyncContext.onComplete(responseEventMeshCommand);
+                return;
+            }
+        } catch (Exception e) {
+            responseEventMeshCommand = request.createHttpCommandResponse(
+                subscribeResponseHeader,
+                SubscribeResponseBody
+                    .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
+                        EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url));
+            asyncContext.onComplete(responseEventMeshCommand);
+            return;
+        }
+
         synchronized (eventMeshHTTPServer.localClientInfoMapping) {
 
             registerClient(subscribeRequestHeader, consumerGroup, subTopicList, url);

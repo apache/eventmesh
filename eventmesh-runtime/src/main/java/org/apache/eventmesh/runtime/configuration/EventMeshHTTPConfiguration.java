@@ -17,14 +17,26 @@
 
 package org.apache.eventmesh.runtime.configuration;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressString;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Preconditions;
+import org.apache.eventmesh.runtime.boot.EventMeshStartup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.List;
 
 public class EventMeshHTTPConfiguration extends CommonConfiguration {
+
+    public static Logger logger = LoggerFactory.getLogger(EventMeshHTTPConfiguration.class);
 
     public int httpServerPort = 10105;
 
@@ -69,6 +81,10 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
     public int eventMeshHttpMsgReqNumPerSecond = 15000;
 
     public int eventMeshBatchMsgRequestNumPerSecond = 20000;
+
+    public List<IPAddress> eventMeshIpv4BlackList = Collections.emptyList();
+
+    public List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
 
     public EventMeshHTTPConfiguration(ConfigurationWrapper configurationWrapper) {
         super(configurationWrapper);
@@ -248,7 +264,32 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
                 eventMeshHttpMsgReqNumPerSecond = Integer.parseInt(eventMeshHttpMsgReqNumPerSecondStr);
 
             }
+
+            String ipv4BlackList = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_IPV4_BLACK_LIST);
+            if (StringUtils.isNotEmpty(ipv4BlackList)) {
+                eventMeshIpv4BlackList = getBlacklist(ipv4BlackList);
+            }
+
+            String ipv6BlackList = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_IPV6_BLACK_LIST);
+            if (StringUtils.isNotEmpty(ipv6BlackList)) {
+                eventMeshIpv6BlackList = getBlacklist(ipv6BlackList);
+            }
         }
+    }
+
+    private static List<IPAddress> getBlacklist(String cidrs) {
+        List<String> cidrList = Splitter.on(",").omitEmptyStrings()
+            .trimResults().splitToList(cidrs);
+
+        List<IPAddress> iPAddresses = Lists.newArrayList();
+        for (String cidr : cidrList) {
+            try {
+                iPAddresses.add(new IPAddressString(cidr).toAddress());
+            } catch (Exception e) {
+                logger.warn("Invalid cidr={}", cidr, e);
+            }
+        }
+        return iPAddresses;
     }
 
     static class ConfKeys {
@@ -296,5 +337,9 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
         public static String KEY_EVENTMESH_HTTPS_ENABLED = "eventMesh.server.useTls.enabled";
 
         public static String KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND = "eventMesh.server.http.msgReqnumPerSecond";
+
+        public static String KEY_EVENTMESH_SERVER_IPV4_BLACK_LIST = "eventmesh.server.blacklist.ipv4";
+
+        public static String KEY_EVENTMESH_SERVER_IPV6_BLACK_LIST = "eventmesh.server.blacklist.ipv6";
     }
 }
