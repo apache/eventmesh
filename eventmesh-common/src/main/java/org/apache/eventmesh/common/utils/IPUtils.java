@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -31,16 +33,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import inet.ipaddr.HostName;
-import inet.ipaddr.IPAddress;
-import inet.ipaddr.IPAddressString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.netty.channel.Channel;
 
-import org.apache.commons.lang3.StringUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import inet.ipaddr.HostName;
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressString;
 
 public class IPUtils {
 

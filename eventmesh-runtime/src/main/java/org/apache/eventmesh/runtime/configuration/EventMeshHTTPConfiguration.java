@@ -17,22 +17,23 @@
 
 package org.apache.eventmesh.runtime.configuration;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import inet.ipaddr.IPAddress;
-import inet.ipaddr.IPAddressString;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.common.base.Preconditions;
-import org.apache.eventmesh.runtime.boot.EventMeshStartup;
+import java.util.Collections;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.List;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressString;
 
 public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
@@ -281,15 +282,15 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
         List<String> cidrList = Splitter.on(",").omitEmptyStrings()
             .trimResults().splitToList(cidrs);
 
-        List<IPAddress> iPAddresses = Lists.newArrayList();
+        List<IPAddress> ipAddresses = Lists.newArrayList();
         for (String cidr : cidrList) {
             try {
-                iPAddresses.add(new IPAddressString(cidr).toAddress());
+                ipAddresses.add(new IPAddressString(cidr).toAddress());
             } catch (Exception e) {
                 logger.warn("Invalid cidr={}", cidr, e);
             }
         }
-        return iPAddresses;
+        return ipAddresses;
     }
 
     static class ConfKeys {
