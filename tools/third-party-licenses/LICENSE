@@ -355,7 +355,7 @@ EPL licenses
 The following components are provided under the EPL License. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
-junit 4.12: https://github.com/junit-team/junit5, EPL
+junit 4.13.2: https://github.com/junit-team/junit5, EPL
 logback-core 1.0.13: https://github.com/qos-ch/logback, EPL
 
 ========================================================================

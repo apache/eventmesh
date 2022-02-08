@@ -21,5 +21,4 @@ dependencies {
 
     testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
     testImplementation "io.cloudevents:cloudevents-core"
-    testImplementation "junit:junit"
 }
