@@ -18,7 +18,6 @@
 dependencies {
     api "com.google.guava:guava"
     api "org.slf4j:slf4j-api"
-    api "junit:junit"
     api "org.assertj:assertj-core"
     api "org.apache.commons:commons-collections4"
     api "org.apache.commons:commons-text"
@@ -65,7 +64,6 @@ dependencies {
 
     testImplementation "io.netty:netty-all"
 
-    testImplementation "junit:junit"
     testImplementation "org.assertj:assertj-core"
 
     testImplementation "org.mockito:mockito-core"
