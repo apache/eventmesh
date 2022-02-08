@@ -25,7 +25,6 @@ dependencies {
     testImplementation project(":eventmesh-common")
 
     testImplementation "io.cloudevents:cloudevents-core"
-    testImplementation "junit:junit"
 
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
