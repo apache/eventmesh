@@ -75,6 +75,10 @@ allprojects {
         maxWarnings = 0
         configFile = new File("${rootDir}/style/checkStyle.xml")
     }
+
+    dependencies {
+        testImplementation "junit:junit"
+    }
 }
 
 task tar(type: Tar) {
@@ -423,7 +427,7 @@ subprojects {
             dependency "com.fasterxml.jackson.core:jackson-core:2.11.0"
             dependency "com.fasterxml.jackson.core:jackson-annotations:2.11.0"
 
-            dependency "org.apache.httpcomponents:httpclient:4.5.2"
+            dependency "org.apache.httpcomponents:httpclient:4.5.13"
 
             dependency "io.netty:netty-all:4.1.73.Final"
 
@@ -449,7 +453,7 @@ subprojects {
             dependency "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
             dependency "io.openmessaging:registry-server:0.0.1"
 
-            dependency "junit:junit:4.12"
+            dependency "junit:junit:4.13.2"
             dependency "com.github.stefanbirkner:system-rules:1.16.1"
             dependency "org.assertj:assertj-core:2.6.0"
 

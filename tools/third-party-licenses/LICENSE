@@ -221,7 +221,7 @@ cloudevents-core 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
 cloudevents-json-jackson 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
 commons-beanutils 1.9.2: https://github.com/apache/commons-beanutils, Apache 2.0
 commons-cli 1.2: https://github.com/apache/commons-cli, Apache 2.0
-commons-codec 1.9: https://github.com/apache/commons-codec, Apache 2.0
+commons-codec 1.11: https://github.com/apache/commons-codec, Apache 2.0
 commons-collections 3.2.2: https://github.com/apache/commons-collections, Apache 2.0
 commons-collections4 4.1: https://github.com/apache/commons-collections, Apache 2.0
 commons-digester 1.8.1: https://github.com/apache/commons-digester, Apache 2.0
@@ -236,8 +236,8 @@ failureaccess 1.0.1: https://github.com/google/guava, Apache 2.0
 listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://github.com/google/guava, Apache 2.0
 fastjson 1.2.69: https://github.com/alibaba/fastjson, Apache 2.0
 guava 31.0.1-jre: https://github.com/google/guava, Apache 2.0
-httpclient 4.5.2: https://github.com/apache/httpcomponents-client, Apache 2.0
-httpcore 4.4.4: https://github.com/apache/httpcomponents-core, Apache 2.0
+httpclient 4.5.13: https://github.com/apache/httpcomponents-client, Apache 2.0
+httpcore 4.4.13: https://github.com/apache/httpcomponents-core, Apache 2.0
 j2objc-annotations 1.3: https://github.com/google/j2objc, Apache 2.0
 jackson-annotations 2.11.0: https://github.com/FasterXML/jackson-annotations, Apache 2.0
 jackson-core 2.11.0:https://github.com/FasterXML/jackson-core, Apache 2.0
@@ -355,7 +355,7 @@ EPL licenses
 The following components are provided under the EPL License. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
-junit 4.12: https://github.com/junit-team/junit5, EPL
+junit 4.13.2: https://github.com/junit-team/junit5, EPL
 logback-core 1.0.13: https://github.com/qos-ch/logback, EPL
 
 ========================================================================
