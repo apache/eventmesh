@@ -26,6 +26,8 @@ dependencies {
     implementation "org.apache.httpcomponents:httpclient"
     implementation 'io.netty:netty-all'
 
+    implementation 'com.github.seancfoley:ipaddress:5.3.3'
+
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-spi")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
