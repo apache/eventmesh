@@ -89,8 +89,8 @@ public class MessageTransferTask extends AbstractTask {
 
             String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
             if (content.length() > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshEventSize) {
-                throw new Exception("event size exceeds the limit: " +
-                    eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshEventSize);
+                throw new Exception("event size exceeds the limit: "
+                    + eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshEventSize);
             }
 
             //do acl check in sending msg
