@@ -463,6 +463,8 @@ subprojects {
 
             dependency "io.cloudevents:cloudevents-core:2.2.0"
             dependency "io.cloudevents:cloudevents-json-jackson:2.2.0"
+
+            dependency "com.github.seancfoley:ipaddress:5.3.3"
         }
     }
 }
