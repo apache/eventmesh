@@ -70,6 +70,10 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public int eventMeshBatchMsgRequestNumPerSecond = 20000;
 
+    public int eventMeshEventSize = 1000;
+
+    public int eventMeshEventBatchSize = 10;
+
     public EventMeshHTTPConfiguration(ConfigurationWrapper configurationWrapper) {
         super(configurationWrapper);
     }
@@ -248,6 +252,16 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
                 eventMeshHttpMsgReqNumPerSecond = Integer.parseInt(eventMeshHttpMsgReqNumPerSecondStr);
 
             }
+
+            String eventSize = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_EVENTSIZE);
+            if (StringUtils.isNotEmpty(eventSize) && StringUtils.isNumeric(eventSize)) {
+                eventMeshEventSize = Integer.parseInt(eventSize);
+            }
+
+            String eventBatchSize = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_EVENT_BATCHSIZE);
+            if (StringUtils.isNotEmpty(eventBatchSize) && StringUtils.isNumeric(eventBatchSize)) {
+                eventMeshEventBatchSize = Integer.parseInt(eventBatchSize);
+            }
         }
     }
 
@@ -296,5 +310,9 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
         public static String KEY_EVENTMESH_HTTPS_ENABLED = "eventMesh.server.useTls.enabled";
 
         public static String KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND = "eventMesh.server.http.msgReqnumPerSecond";
+
+        public static String KEY_EVENTMESH_SERVER_EVENTSIZE = "eventmesh.server.eventSize";
+
+        public static String KEY_EVENTMESH_SERVER_EVENT_BATCHSIZE = "eventmesh.server.eventBatchSize";
     }
 }

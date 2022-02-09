@@ -46,6 +46,7 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -111,6 +112,18 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
         String producerGroup = "";
         int eventSize = eventList.size();
 
+        if (eventSize > eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventBatchSize) {
+            batchMessageLogger.error("Event batch size exceeds the limit: {}",
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventBatchSize);
+
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                sendMessageBatchResponseHeader,
+                SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
+                    "Event batch size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventBatchSize));
+            asyncContext.onComplete(responseEventMeshCommand);
+            return;
+        }
+
         for (CloudEvent event : eventList) {
             //validate event
             if (StringUtils.isBlank(event.getId())
@@ -122,6 +135,19 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                         sendMessageBatchResponseHeader,
                         SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
                                 EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
+                asyncContext.onComplete(responseEventMeshCommand);
+                return;
+            }
+
+            String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+            if (content.length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize) {
+                batchMessageLogger.error("Event size exceeds the limit: {}",
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize);
+
+                responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                    sendMessageBatchResponseHeader,
+                    SendMessageBatchResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
+                        "Event size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize));
                 asyncContext.onComplete(responseEventMeshCommand);
                 return;
             }
