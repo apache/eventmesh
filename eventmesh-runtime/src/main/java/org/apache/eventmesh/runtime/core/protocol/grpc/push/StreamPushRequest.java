@@ -1,5 +1,6 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
+import io.grpc.stub.StreamObserver;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -54,7 +55,10 @@ public class StreamPushRequest extends AbstractPushRequest {
                 .build();
             try {
                 // catch the error and retry, don't use eventEmitter.onNext() to hide the error
-                eventEmitter.getEmitter().onNext(simpleMessage);
+                StreamObserver<SimpleMessage> emitter = eventEmitter.getEmitter();
+                synchronized (emitter) {
+                    emitter.onNext(simpleMessage);
+                }
 
                 long cost = System.currentTimeMillis() - lastPushTime;
                 messageLogger.info(
