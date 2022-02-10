@@ -18,13 +18,12 @@
 package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
+import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
-import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
-import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.util.Utils;
 
 import java.util.HashMap;
@@ -60,15 +59,14 @@ public class AsyncPublishInstance {
         content.put("content", "testAsyncMessage");
 
         for (int i = 0; i < messageSize; i++) {
-            EventMeshMessage message = EventMeshMessage.newBuilder()
-                .setContent(JsonUtils.serialize(content))
-                .setTopic(topic)
-                .setUniqueId(RandomStringUtils.generateNum(30))
-                .setSeqNum(RandomStringUtils.generateNum(30))
-                .setTtl(String.valueOf(4 * 1000))
-                .build();
-
-            eventMeshGrpcProducer.publish(message);
+            EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
+                .content(JsonUtils.serialize(content))
+                .topic(topic)
+                .uniqueId(RandomStringUtils.generateNum(30))
+                .bizSeqNo(RandomStringUtils.generateNum(30))
+                .build()
+                .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));
+            eventMeshGrpcProducer.publish(eventMeshMessage);
             Thread.sleep(1000);
         }
         Thread.sleep(30000);

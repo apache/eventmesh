@@ -19,15 +19,12 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
 import com.google.common.collect.Sets;
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
@@ -62,7 +59,7 @@ public abstract class AbstractPushRequest extends RetryContext {
 
     protected HandleMsgContext handleMsgContext;
   //  protected CloudEvent event;
-    protected EventMeshMessage eventMeshMessage;
+    protected SimpleMessage simpleMessage;
 
     private final AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
 
@@ -71,31 +68,32 @@ public abstract class AbstractPushRequest extends RetryContext {
         this.handleMsgContext = handleMsgContext;
         this.waitingRequests = waitingRequests;
 
+        this.eventMeshConsumer = handleMsgContext.getEventMeshConsumer();
         this.eventMeshGrpcConfiguration = handleMsgContext.getEventMeshGrpcServer().getEventMeshGrpcConfiguration();
         this.grpcRetryer = handleMsgContext.getEventMeshGrpcServer().getGrpcRetryer();
         CloudEvent event = handleMsgContext.getEvent();
-        this.eventMeshMessage = getEventMeshMessage(event);
+        this.simpleMessage = getSimpleMessage(event);
     }
 
     public abstract void tryPushRequest();
 
-    private EventMeshMessage getEventMeshMessage(CloudEvent cloudEvent) {
+    private SimpleMessage getSimpleMessage(CloudEvent cloudEvent) {
         try {
             String protocolType = Objects.requireNonNull(cloudEvent.getExtension(Constants.PROTOCOL_TYPE)).toString();
             ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
             ProtocolTransportObject protocolTransportObject = protocolAdaptor.fromCloudEvent(cloudEvent);
-            return ((EventMeshMessageWrapper) protocolTransportObject).getMessage();
+            return ((SimpleMessageWrapper) protocolTransportObject).getMessage();
         } catch (Exception e) {
             logger.error("Error in getting EventMeshMessage from CloudEvent", e);
             return null;
         }
     }
 
-    private CloudEvent getCloudEvent(EventMeshMessage eventMeshMessage) {
+    private CloudEvent getCloudEvent(SimpleMessage simpleMessage) {
         try {
-            String protocolType = Objects.requireNonNull(eventMeshMessage.getHeader().getProtocolType());
+            String protocolType = Objects.requireNonNull(simpleMessage.getHeader().getProtocolType());
             ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
-            return protocolAdaptor.toCloudEvent(new EventMeshMessageWrapper(eventMeshMessage));
+            return protocolAdaptor.toCloudEvent(new SimpleMessageWrapper(simpleMessage));
         } catch (Exception e) {
             logger.error("Error in getting CloudEvent from EventMeshMessage", e);
             return null;
@@ -125,7 +123,7 @@ public abstract class AbstractPushRequest extends RetryContext {
     private void finish() {
         AbstractContext context = handleMsgContext.getContext();
         SubscriptionMode subscriptionMode = handleMsgContext.getSubscriptionMode();
-        CloudEvent event = getCloudEvent(eventMeshMessage);
+        CloudEvent event = getCloudEvent(simpleMessage);
         if (eventMeshConsumer != null && context != null && event != null) {
             try {
                 eventMeshConsumer.updateOffset(subscriptionMode, Collections.singletonList(event), context);
@@ -141,7 +139,7 @@ public abstract class AbstractPushRequest extends RetryContext {
     }
 
     protected void timeout() {
-        if (!isComplete() && System.currentTimeMillis() - lastPushTime >= Long.parseLong(eventMeshMessage.getTtl())) {
+        if (!isComplete() && System.currentTimeMillis() - lastPushTime >= Long.parseLong(simpleMessage.getTtl())) {
             delayRetry();
         }
     }

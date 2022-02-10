@@ -107,7 +107,7 @@ public class SessionPusher {
             retCode = -1;
             retMsg = e.toString();
         } finally {
-            session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getEventMesh2clientMsgNum().incrementAndGet();
+            session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
 
             session.getContext().writeAndFlush(pkg).addListener(
                     new ChannelFutureListener() {

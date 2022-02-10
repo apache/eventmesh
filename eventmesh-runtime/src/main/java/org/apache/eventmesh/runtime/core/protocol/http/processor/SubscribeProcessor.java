@@ -233,8 +233,8 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                                 httpLogger.debug("{}", httpCommand);
                             }
                             eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
-                            eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPReqResTimeCost(
-                                    System.currentTimeMillis() - request.getReqTime());
+                            eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
+                                System.currentTimeMillis() - request.getReqTime());
                         } catch (Exception ex) {
                             // ignore
                         }
@@ -245,20 +245,20 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 asyncContext.onComplete(responseEventMeshCommand, handler);
             } catch (Exception e) {
                 HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
-                        subscribeResponseHeader,
-                        SubscribeResponseBody
-                                .buildBody(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getRetCode(),
-                                        EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg()
-                                                + EventMeshUtil.stackTrace(e, 2)));
+                    subscribeResponseHeader,
+                    SubscribeResponseBody
+                        .buildBody(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getRetCode(),
+                            EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg()
+                                + EventMeshUtil.stackTrace(e, 2)));
                 asyncContext.onComplete(err);
                 long endTime = System.currentTimeMillis();
                 httpLogger.error(
-                        "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
-                                + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
-                        JsonUtils.serialize(subscribeRequestBody.getTopics()),
-                        subscribeRequestBody.getUrl(), e);
-                eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgFailed();
-                eventMeshHTTPServer.metrics.summaryMetrics.recordSendMsgCost(endTime - startTime);
+                    "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
+                        + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
+                    JsonUtils.serialize(subscribeRequestBody.getTopics()),
+                    subscribeRequestBody.getUrl(), e);
+                eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
+                eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
             }
         }
     }

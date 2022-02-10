@@ -177,7 +177,7 @@ public class MessageTransferTask extends AbstractTask {
             public void onSuccess(SendResult sendResult) {
                 session.getSender().getUpstreamBuff().release();
                 messageLogger.info("upstreamMsg message success|user={}|callback cost={}", session.getClient(),
-                        String.valueOf(System.currentTimeMillis() - createTime));
+                        System.currentTimeMillis() - createTime);
                 if (replyCmd.equals(Command.BROADCAST_MESSAGE_TO_SERVER_ACK) || replyCmd.equals(Command
                         .ASYNC_MESSAGE_TO_SERVER_ACK)) {
                     msg.setHeader(new Header(replyCmd, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),

@@ -226,7 +226,7 @@ public class SubClientImpl extends TCPClient implements SubClient {
                     logger.info("send broadcast request to client ack failed");
                 }
             } else if (cmd == Command.SERVER_GOODBYE_REQUEST) {
-                logger.error("server goodby request: ---------------------------" + msg.toString());
+                logger.error("server goodby request: ---------------------------" + msg);
                 close();
             } else {
                 //control instruction set

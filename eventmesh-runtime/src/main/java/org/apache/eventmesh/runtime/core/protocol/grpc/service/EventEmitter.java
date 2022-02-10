@@ -13,7 +13,7 @@ public class EventEmitter<T> {
         this.emitter = emitter;
     }
 
-    public void onNext(T event) {
+    public synchronized void onNext(T event) {
         try {
             emitter.onNext(event);
         } catch (Throwable t) {
@@ -21,7 +21,7 @@ public class EventEmitter<T> {
         }
     }
 
-    public void onCompleted() {
+    public synchronized void onCompleted() {
         try {
             emitter.onCompleted();
         } catch (Throwable t) {
@@ -29,7 +29,7 @@ public class EventEmitter<T> {
         }
     }
 
-    public void onError(Throwable t) {
+    public synchronized void onError(Throwable t) {
         try {
             emitter.onError(t);
         } catch (Throwable t1) {

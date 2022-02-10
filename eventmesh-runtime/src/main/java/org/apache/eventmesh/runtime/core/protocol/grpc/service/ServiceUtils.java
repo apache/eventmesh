@@ -1,17 +1,20 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.service;
 
-import io.grpc.stub.StreamObserver;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
-import org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat.ClientType;
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServiceUtils {
 
@@ -27,7 +30,7 @@ public class ServiceUtils {
             && StringUtils.isNotEmpty(header.getLanguage());
     }
 
-    public static boolean validateMessage(EventMeshMessage message) {
+    public static boolean validateMessage(SimpleMessage message) {
         return StringUtils.isNotEmpty(message.getUniqueId())
             && StringUtils.isNotEmpty(message.getProducerGroup())
             && StringUtils.isNotEmpty(message.getTopic())
@@ -84,7 +87,7 @@ public class ServiceUtils {
         return true;
     }
 
-    public static void sendResp(StatusCode code, EventEmitter<Response> emitter) {
+    public static void sendRespAndDone(StatusCode code, EventEmitter<Response> emitter) {
         Response response = Response.newBuilder()
             .setRespCode(code.getRetCode())
             .setRespMsg(code.getErrMsg())
@@ -94,7 +97,7 @@ public class ServiceUtils {
         emitter.onCompleted();
     }
 
-    public static void sendResp(StatusCode code, String message, EventEmitter<Response> emitter) {
+    public static void sendRespAndDone(StatusCode code, String message, EventEmitter<Response> emitter) {
         Response response = Response.newBuilder()
             .setRespCode(code.getRetCode())
             .setRespMsg(code.getErrMsg() + " " + message)
@@ -104,4 +107,35 @@ public class ServiceUtils {
         emitter.onCompleted();
     }
 
+    public static void sendStreamResp(RequestHeader header, StatusCode code, String message, EventEmitter<SimpleMessage> emitter) {
+        Map<String, String> resp = new HashMap<>();
+        resp.put("respCode", code.getRetCode());
+        resp.put("respMsg", code.getErrMsg() + " " + message);
+
+        SimpleMessage simpleMessage = SimpleMessage.newBuilder()
+            .setHeader(header)
+            .setContent(JsonUtils.serialize(resp))
+            .build();
+
+        emitter.onNext(simpleMessage);
+    }
+
+    public static void sendStreamRespAndDone(RequestHeader header, StatusCode code, String message, EventEmitter<SimpleMessage> emitter) {
+        sendStreamResp(header, code, message, emitter);
+        emitter.onCompleted();
+    }
+
+    public static void sendStreamRespAndDone(RequestHeader header, StatusCode code, EventEmitter<SimpleMessage> emitter) {
+        Map<String, String> resp = new HashMap<>();
+        resp.put("respCode", code.getRetCode());
+        resp.put("respMsg", code.getErrMsg());
+
+        SimpleMessage simpleMessage = SimpleMessage.newBuilder()
+            .setHeader(header)
+            .setContent(JsonUtils.serialize(resp))
+            .build();
+
+        emitter.onNext(simpleMessage);
+        emitter.onCompleted();
+    }
 }

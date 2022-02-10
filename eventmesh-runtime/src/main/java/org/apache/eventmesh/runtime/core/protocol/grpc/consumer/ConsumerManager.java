@@ -150,11 +150,7 @@ public class ConsumerManager {
 
     private void closeEventStream(ConsumerGroupClient client) {
         if (client.getEventEmitter() != null) {
-            try {
-                client.getEventEmitter().onCompleted();
-            } catch (Exception e) {
-                logger.warn("GRPC client {} already closed.", client.toString());
-            }
+            client.getEventEmitter().onCompleted();
         }
     }
 
@@ -165,11 +161,11 @@ public class ConsumerManager {
             return;
         }
 
-        if (eventMeshConsumer.getStatus() == null) {
-            eventMeshConsumer.init();
-        } else if (ServiceState.RUNNING.equals(eventMeshConsumer.getStatus())) {
+        if (ServiceState.RUNNING.equals(eventMeshConsumer.getStatus())) {
             eventMeshConsumer.shutdown();
         }
+
+        eventMeshConsumer.init();
         eventMeshConsumer.start();
 
         if (!ServiceState.RUNNING.equals(eventMeshConsumer.getStatus())) {

@@ -20,8 +20,9 @@ package org.apache.eventmesh.protocol.meshmessage;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.grpc.common.BatchMessageWrapper;
-import org.apache.eventmesh.common.protocol.grpc.common.EventMeshMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
@@ -63,15 +64,15 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             String requestCode = ((HttpCommand) protocol).getRequestCode();
 
             return deserializeHttpProtocol(requestCode, header, body);
-        } else if (protocol instanceof EventMeshMessageWrapper) {
-            org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage message = ((EventMeshMessageWrapper)protocol).getMessage();
+        } else if (protocol instanceof SimpleMessageWrapper) {
+            SimpleMessage message = ((SimpleMessageWrapper)protocol).getMessage();
             return deserializeGrpcProtocol(message);
         } else {
             throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));
         }
     }
 
-    private CloudEvent deserializeGrpcProtocol(org.apache.eventmesh.common.protocol.grpc.protos.EventMeshMessage message)
+    private CloudEvent deserializeGrpcProtocol(SimpleMessage message)
         throws ProtocolHandleException {
         return GrpcMessageProtocolResolver.buildEvent(message);
     }
@@ -127,7 +128,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             httpCommand.setBody(body);
             return httpCommand;
         } else if (StringUtils.equals("grpc", protocolDesc)) {
-            return GrpcMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
+            return GrpcMessageProtocolResolver.buildSimpleMessage(cloudEvent);
         } else if (StringUtils.equals("tcp", protocolDesc)) {
             return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
         } else {

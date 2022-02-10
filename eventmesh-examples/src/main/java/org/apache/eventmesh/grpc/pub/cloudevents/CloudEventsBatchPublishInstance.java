@@ -20,13 +20,11 @@ package org.apache.eventmesh.grpc.pub.cloudevents;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.client.grpc.EventMeshGrpcProducer;
+import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.util.Utils;
 
 import java.net.URI;
@@ -47,7 +45,7 @@ public class CloudEventsBatchPublishInstance {
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
         final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
 
-        final String topic = "TEST-TOPIC-GRPC-RR";
+        final String topic = "TEST-TOPIC-GRPC-ASYNC";
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
