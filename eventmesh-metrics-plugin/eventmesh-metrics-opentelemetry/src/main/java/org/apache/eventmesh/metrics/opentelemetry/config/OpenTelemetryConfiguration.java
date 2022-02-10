@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.metrics.opentelemetry.config;
 
+import org.apache.eventmesh.common.Constants;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
@@ -24,8 +26,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.Properties;
 
 import lombok.experimental.UtilityClass;
@@ -56,25 +56,25 @@ public class OpenTelemetryConfiguration {
         }
     }
 
+    /**
+     * Load properties file from classpath and conf home.
+     * The properties defined in conf home will override classpath.
+     */
     private void loadProperties() {
-        URL resource = OpenTelemetryConfiguration.class.getClassLoader().getResource(CONFIG_FILE);
-        if (resource != null) {
-            try (InputStream inputStream = resource.openStream()) {
-                if (inputStream.available() > 0) {
-                    properties.load(new BufferedReader(new InputStreamReader(inputStream)));
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Load opentelemetry.properties file from classpath error");
+        try (InputStream resourceAsStream = OpenTelemetryConfiguration.class.getResourceAsStream(File.separator + CONFIG_FILE)) {
+            if (resourceAsStream != null) {
+                properties.load(resourceAsStream);
             }
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Load %s file from classpath error", CONFIG_FILE));
         }
-        // get from config home
         try {
-            String configPath = System.getProperty("confPath", System.getenv("confPath")) + File.separator + CONFIG_FILE;
+            String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONFIG_FILE;
             if (new File(configPath).exists()) {
                 properties.load(new BufferedReader(new FileReader(configPath)));
             }
         } catch (IOException e) {
-            throw new IllegalArgumentException("Cannot load opentelemetry.properties file from conf");
+            throw new IllegalArgumentException(String.format("Cannot load %s file from conf", CONFIG_FILE));
         }
     }
 
