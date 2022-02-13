@@ -76,6 +76,10 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
 
     public int sleepIntervalInRebalanceRedirectMills = 200;
 
+    public int eventMeshEventSize = 1000;
+
+    public int eventMeshEventBatchSize = 10;
+
     private TrafficShapingConfig gtc = new TrafficShapingConfig(0, 10_000, 1_000, 2000);
     private TrafficShapingConfig ctc = new TrafficShapingConfig(0, 2_000, 1_000, 10_000);
 
@@ -155,6 +159,10 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
         sleepIntervalInRebalanceRedirectMills = configurationWrapper.getIntProp(
                 ConfKeys.KEYS_EVENTMESH_SERVER_REBALANCE_REDIRECT_SLEEP_TIME, sleepIntervalInRebalanceRedirectMills);
 
+        eventMeshEventSize = configurationWrapper.getIntProp(ConfKeys.KEYS_EVENTMESH_SERVER_EVENTSIZE, eventMeshEventSize);
+
+        eventMeshEventBatchSize = configurationWrapper.getIntProp(
+                ConfKeys.KEYS_EVENTMESH_SERVER_EVENT_BATCHSIZE, eventMeshEventBatchSize);
     }
 
     public TrafficShapingConfig getGtc() {
@@ -191,6 +199,8 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
         public static String KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME = "eventMesh.server.tcp.pushFailIsolateTimeInMills";
         public static String KEYS_EVENTMESH_SERVER_GRACEFUL_SHUTDOWN_SLEEP_TIME = "eventMesh.server.gracefulShutdown.sleepIntervalInMills";
         public static String KEYS_EVENTMESH_SERVER_REBALANCE_REDIRECT_SLEEP_TIME = "eventMesh.server.rebalanceRedirect.sleepIntervalInM";
+        public static String KEYS_EVENTMESH_SERVER_EVENTSIZE = "eventMesh.server.maxEventSize";
+        public static String KEYS_EVENTMESH_SERVER_EVENT_BATCHSIZE = "eventMesh.server.maxEventBatchSize";
     }
 
     public static class TrafficShapingConfig {

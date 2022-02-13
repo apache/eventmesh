@@ -45,6 +45,7 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -193,6 +194,19 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         if (StringUtils.isBlank(event.getExtension(SendMessageRequestBody.TTL).toString())
                 && !StringUtils.isNumeric(event.getExtension(SendMessageRequestBody.TTL).toString())) {
             event = CloudEventBuilder.from(event).withExtension(SendMessageRequestBody.TTL, ttl).build();
+        }
+
+        String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+        if (content.length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize) {
+            httpLogger.error("Event size exceeds the limit: {}",
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize);
+
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                sendMessageResponseHeader,
+                SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
+                    "Event size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize));
+            asyncContext.onComplete(responseEventMeshCommand);
+            return;
         }
 
         try {
