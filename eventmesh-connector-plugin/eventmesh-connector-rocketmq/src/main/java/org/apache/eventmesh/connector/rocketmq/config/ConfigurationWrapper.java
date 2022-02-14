@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.rocketmq.config;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +26,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Properties;
 
 import lombok.experimental.UtilityClass;
@@ -38,27 +39,33 @@ public class ConfigurationWrapper {
     private static final Properties properties = new Properties();
 
     static {
-        String configFile = getConfigFilePath();
-        log.info("loading config: {}", configFile);
-        try {
-            properties.load(new BufferedReader(new FileReader(configFile)));
-        } catch (IOException e) {
-            throw new IllegalArgumentException(
-                    String.format("Cannot load RocketMQ configuration file from :%s", configFile));
-        }
+        loadProperties();
     }
 
     public String getProp(String key) {
         return StringUtils.isEmpty(key) ? null : properties.getProperty(key, null);
     }
 
-    private static String getConfigFilePath() {
-        // get from classpath
-        URL resource = ConfigurationWrapper.class.getClassLoader().getResource(EventMeshConstants.EVENTMESH_CONF_FILE);
-        if (resource != null && new File(resource.getPath()).exists()) {
-            return resource.getPath();
+    /**
+     * Load rocketmq properties file from classpath and conf home.
+     * The properties defined in conf home will override classpath.
+     */
+    private void loadProperties() {
+        try (InputStream resourceAsStream = ConfigurationWrapper.class.getResourceAsStream(
+            File.separator + EventMeshConstants.EVENTMESH_CONF_FILE)) {
+            if (resourceAsStream != null) {
+                properties.load(resourceAsStream);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Load %s.properties file from classpath error", EventMeshConstants.EVENTMESH_CONF_FILE));
         }
-        // get from config home
-        return EventMeshConstants.EVENTMESH_CONF_HOME + File.separator + EventMeshConstants.EVENTMESH_CONF_FILE;
+        try {
+            String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + EventMeshConstants.EVENTMESH_CONF_FILE;
+            if (new File(configPath).exists()) {
+                properties.load(new BufferedReader(new FileReader(configPath)));
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException(String.format("Cannot load %s file from conf", EventMeshConstants.EVENTMESH_CONF_FILE));
+        }
     }
 }
