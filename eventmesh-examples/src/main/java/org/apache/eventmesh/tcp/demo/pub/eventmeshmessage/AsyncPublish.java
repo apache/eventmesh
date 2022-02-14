@@ -37,8 +37,6 @@ public class AsyncPublish {
 
     private static EventMeshTCPClient<EventMeshMessage> client;
 
-    public static AsyncPublish handler = new AsyncPublish();
-
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile("application.properties");
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
