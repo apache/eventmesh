@@ -75,6 +75,16 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     public void tryHTTPRequest() {
     }
 
+    public void delayRetry(long delayTime) {
+        if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES && delayTime > 0) {
+            retryTimes++;
+            delay(delayTime);
+            retryer.pushRetry(this);
+        } else {
+            complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
+        }
+    }
+
     public void delayRetry() {
         if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES) {
             retryTimes++;

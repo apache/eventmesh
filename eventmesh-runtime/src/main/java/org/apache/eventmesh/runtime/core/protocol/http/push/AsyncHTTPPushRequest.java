@@ -34,10 +34,14 @@ import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
+import org.apache.eventmesh.runtime.core.urlauth.UrlAuthFactory;
+import org.apache.eventmesh.runtime.core.urlauth.AuthType;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -51,9 +55,11 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -157,7 +163,20 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
                 JsonUtils.serialize(EventMeshUtil.getEventProp(handleMsgContext.getEvent()))));
 
-        builder.setEntity(new UrlEncodedFormEntity(body, StandardCharsets.UTF_8));
+        HttpEntity httpEntity = new UrlEncodedFormEntity(body, StandardCharsets.UTF_8);
+        builder.setHeader("Content-Type", httpEntity.getContentType().getValue());
+        builder.setEntity(httpEntity);
+
+        String webHookOrigin = "eventmesh." + eventMeshHttpConfiguration.eventMeshIDC;
+        builder.setHeader("WebHook-Request-Origin", webHookOrigin);
+
+        // For Webhook url authentication
+        AuthType urlAuthType = handleMsgContext.getConsumerGroupConfig().getConsumerGroupTopicConf()
+            .get(handleMsgContext.getTopic()).getUrlAuthTypeMap().get(currPushUrl);
+        Header authHeader = UrlAuthFactory.getProvider(urlAuthType).getAuthHeader();
+        if (authHeader != null) {
+            builder.addHeader(authHeader);
+        }
 
         eventMeshHTTPServer.metrics.getSummaryMetrics().recordPushMsg();
 
@@ -175,32 +194,23 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                     removeWaitingMap(AsyncHTTPPushRequest.this);
                     long cost = System.currentTimeMillis() - lastPushTime;
                     eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPPushTimeCost(cost);
-                    if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                        eventMeshHTTPServer.metrics.getSummaryMetrics().recordHttpPushMsgFailed();
-                        messageLogger.info(
-                                "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                                        + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
-                                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
 
-                        delayRetry();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else {
+                    if (processResponseStatus(response.getStatusLine().getStatusCode(), response)) {
+                        // this is successful response, process response payload
                         String res = "";
                         try {
                             res = EntityUtils.toString(response.getEntity(),
-                                    Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
+                                Charset.forName(EventMeshConstants.DEFAULT_CHARSET));
                         } catch (IOException e) {
                             handleMsgContext.finish();
                             return new Object();
                         }
                         ClientRetCode result = processResponseContent(res);
                         messageLogger.info(
-                                "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
-                                        + "|uniqueId={}|cost={}",
-                                result, currPushUrl, handleMsgContext.getTopic(),
-                                handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                            "message|eventMesh2client|{}|url={}|topic={}|bizSeqNo={}"
+                                + "|uniqueId={}|cost={}",
+                            result, currPushUrl, handleMsgContext.getTopic(),
+                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
                         if (result == ClientRetCode.OK) {
                             complete();
                             if (isComplete()) {
@@ -221,6 +231,16 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                             if (isComplete()) {
                                 handleMsgContext.finish();
                             }
+                        }
+                    } else {
+                        eventMeshHTTPServer.metrics.getSummaryMetrics().recordHttpPushMsgFailed();
+                        messageLogger.info(
+                            "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
+                                + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
+                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+
+                        if (isComplete()) {
+                            handleMsgContext.finish();
                         }
                     }
                     return new Object();
@@ -262,6 +282,31 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                 .append(",createTime=")
                 .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
         return sb.toString();
+    }
+
+    boolean processResponseStatus(int httpStatus, HttpResponse httpResponse) {
+        if (httpStatus == HttpStatus.SC_OK || httpStatus == HttpStatus.SC_CREATED
+            || httpStatus == HttpStatus.SC_NO_CONTENT || httpStatus == HttpStatus.SC_ACCEPTED) {
+            // success http response
+            return true;
+        } else if (httpStatus == 429) {
+            // failed with customer retry interval
+
+            // Response Status code is 429 Too Many Requests
+            // retry after the time specified by the header
+           Optional<Header> optHeader = Arrays.stream(httpResponse.getHeaders("Retry-After")).findAny();
+           if (optHeader.isPresent() && StringUtils.isNumeric(optHeader.get().getValue())) {
+               delayRetry(Long.parseLong(optHeader.get().getValue()));
+           }
+            return false;
+        } else if (httpStatus == HttpStatus.SC_GONE || httpStatus == HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE) {
+            // failed with no retry
+            return false;
+        }
+
+        // failed with default retry
+        delayRetry();
+        return false;
     }
 
     ClientRetCode processResponseContent(String content) {
