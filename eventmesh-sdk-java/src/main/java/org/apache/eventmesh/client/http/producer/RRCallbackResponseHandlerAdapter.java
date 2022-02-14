@@ -58,8 +58,9 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
                                             long timeout) {
         Preconditions.checkNotNull(rrCallback, "rrCallback invalid");
         Preconditions.checkNotNull(protocolMessage, "message invalid");
-        if (!(protocolMessage instanceof EventMeshMessage) && !(protocolMessage instanceof CloudEvent)
-                && !(protocolMessage instanceof Message)) {
+        if (!(protocolMessage instanceof EventMeshMessage)
+            && !(protocolMessage instanceof CloudEvent)
+            && !(protocolMessage instanceof Message)) {
             throw new IllegalArgumentException(String.format("ProtocolMessage: %s is not supported", protocolMessage));
         }
         this.protocolMessage = protocolMessage;
@@ -95,15 +96,18 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
         return protocolMessage.toString();
     }
 
+    @SuppressWarnings("unchecked")
     private ProtocolMessage transformToProtocolMessage(EventMeshRetObj ret) {
-        // todo: constructor other protocol message, can judge by protocol type in properties
-        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(ret.getRetMsg(),
-                SendMessageResponseBody.ReplyMessage.class);
-        EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
+        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
+        if (protocolMessage instanceof EventMeshMessage) {
+            EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                 .content(replyMessage.body)
                 .prop(replyMessage.properties)
                 .topic(replyMessage.topic)
                 .build();
-        return (ProtocolMessage) eventMeshMessage;
+            return (ProtocolMessage) eventMeshMessage;
+        }
+        // todo: constructor other protocol message
+        throw new RuntimeException("Unsupported callback message type");
     }
 }
