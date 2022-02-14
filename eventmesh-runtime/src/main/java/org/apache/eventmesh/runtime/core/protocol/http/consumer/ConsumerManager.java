@@ -192,7 +192,7 @@ public class ConsumerManager {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
             notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW;
             notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig;
+            notification.consumerGroupConfig = latestConsumerGroupConfig.clone();
             eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }
@@ -201,7 +201,7 @@ public class ConsumerManager {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
             notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.CHANGE;
             notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig;
+            notification.consumerGroupConfig = latestConsumerGroupConfig.clone();
             eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }

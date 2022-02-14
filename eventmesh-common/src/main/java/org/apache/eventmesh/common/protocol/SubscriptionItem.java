@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.protocol;
 
-public class SubscriptionItem {
+public class SubscriptionItem implements Cloneable {
 
     private String topic;
 
@@ -65,6 +65,11 @@ public class SubscriptionItem {
                 + ", mode=" + mode
                 + ", type=" + type
                 + '}';
+    }
+
+    @Override
+    public SubscriptionItem clone() {
+        return new SubscriptionItem(topic, mode, type);
     }
 }
 
