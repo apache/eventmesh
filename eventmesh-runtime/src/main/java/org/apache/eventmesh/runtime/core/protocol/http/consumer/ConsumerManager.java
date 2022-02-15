@@ -40,6 +40,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -192,7 +193,7 @@ public class ConsumerManager {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
             notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW;
             notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig.clone();
+            notification.consumerGroupConfig = EventMeshUtil.cloneObject(latestConsumerGroupConfig);
             eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }
@@ -201,7 +202,7 @@ public class ConsumerManager {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
             notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.CHANGE;
             notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig.clone();
+            notification.consumerGroupConfig = EventMeshUtil.cloneObject(latestConsumerGroupConfig);
             eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }

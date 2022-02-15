@@ -17,7 +17,11 @@
 
 package org.apache.eventmesh.common.protocol;
 
-public class SubscriptionItem implements Cloneable {
+import com.google.common.base.Objects;
+
+import java.io.Serializable;
+
+public class SubscriptionItem implements Serializable {
 
     private String topic;
 
@@ -68,8 +72,20 @@ public class SubscriptionItem implements Cloneable {
     }
 
     @Override
-    public SubscriptionItem clone() {
-        return new SubscriptionItem(topic, mode, type);
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        SubscriptionItem that = (SubscriptionItem) o;
+        return Objects.equal(topic, that.topic) && mode == that.mode && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(topic, mode, type);
     }
 }
 

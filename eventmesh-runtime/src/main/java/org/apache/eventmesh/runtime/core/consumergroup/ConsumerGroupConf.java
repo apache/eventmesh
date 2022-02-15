@@ -17,13 +17,13 @@
 
 package org.apache.eventmesh.runtime.core.consumergroup;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Maps;
 
-public class ConsumerGroupConf implements Cloneable {
+public class ConsumerGroupConf implements Serializable {
     //eg . 5013-1A0
     private String consumerGroup;
 
@@ -76,16 +76,5 @@ public class ConsumerGroupConf implements Cloneable {
                 .append("groupName=").append(consumerGroup).append(",")
                 .append(",consumerGroupTopicConf=").append(consumerGroupTopicConf).append("}");
         return sb.toString();
-    }
-
-    @Override
-    public ConsumerGroupConf clone() {
-        ConsumerGroupConf clone = new ConsumerGroupConf(consumerGroup);
-
-        Map<String, ConsumerGroupTopicConf> cloneGroupTopicConf = new ConcurrentHashMap<>();
-        consumerGroupTopicConf.forEach((topic, groupTopicConf) -> cloneGroupTopicConf.put(topic, groupTopicConf.clone()));
-
-        clone.setConsumerGroupTopicConf(cloneGroupTopicConf);
-        return clone;
     }
 }

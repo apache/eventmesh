@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.core.consumergroup;
 
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public class ConsumerGroupTopicConf implements Cloneable {
+public class ConsumerGroupTopicConf implements Serializable {
 
     public static Logger logger = LoggerFactory.getLogger(ConsumerGroupTopicConf.class);
 
@@ -126,20 +126,5 @@ public class ConsumerGroupTopicConf implements Cloneable {
 
     public void setUrls(Set<String> urls) {
         this.urls = urls;
-    }
-
-    @Override
-    public ConsumerGroupTopicConf clone() {
-        ConsumerGroupTopicConf clone = new ConsumerGroupTopicConf();
-        clone.setConsumerGroup(consumerGroup);
-        clone.setTopic(topic);
-        clone.setSubscriptionItem(subscriptionItem.clone());
-
-        Map<String, List<String>> cloneIdcUrls = Maps.newConcurrentMap();
-        idcUrls.forEach((idc, urls) -> cloneIdcUrls.put(idc, new ArrayList<>(urls)));
-        clone.setIdcUrls(cloneIdcUrls);
-
-        clone.setUrls(Sets.newConcurrentHashSet(urls));
-        return clone;
     }
 }

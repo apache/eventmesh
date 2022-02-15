@@ -26,6 +26,11 @@ import org.apache.eventmesh.runtime.constants.EventMeshVersion;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -343,5 +348,23 @@ public class EventMeshUtil {
                 .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
                 .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
                 .getCompletedTaskCount());
+    }
+
+    /**
+     * Perform deep clone of the given object using serialization
+     * @param object
+     * @param <T>
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public static <T> T cloneObject(T object) throws IOException, ClassNotFoundException {
+        ByteArrayOutputStream byOut = new ByteArrayOutputStream();
+        ObjectOutputStream outputStream = new ObjectOutputStream(byOut);
+        outputStream.writeObject(object);
+
+        ByteArrayInputStream byIn = new ByteArrayInputStream(byOut.toByteArray());
+        ObjectInputStream inputStream = new ObjectInputStream(byIn);
+        return (T) inputStream.readObject();
     }
 }
