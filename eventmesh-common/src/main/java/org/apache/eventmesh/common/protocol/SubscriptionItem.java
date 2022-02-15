@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.common.protocol;
 
-import com.google.common.base.Objects;
-
 import java.io.Serializable;
+
+import com.google.common.base.Objects;
 
 public class SubscriptionItem implements Serializable {
 

@@ -24,6 +24,7 @@ import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.consumergroup.event.ConsumerGroupStateEvent;
 import org.apache.eventmesh.runtime.core.consumergroup.event.ConsumerGroupTopicConfChangeEvent;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,7 +41,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

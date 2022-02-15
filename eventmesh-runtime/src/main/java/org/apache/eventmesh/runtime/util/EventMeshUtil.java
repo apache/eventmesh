@@ -353,8 +353,7 @@ public class EventMeshUtil {
     /**
      * Perform deep clone of the given object using serialization
      * @param object
-     * @param <T>
-     * @return
+     * @return cloned object
      * @throws IOException
      * @throws ClassNotFoundException
      */
