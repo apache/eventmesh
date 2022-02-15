@@ -15,24 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.metrics.http;
+package org.apache.eventmesh.metrics.opentelemetry.config;
 
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.junit.Assert;
+import org.junit.Test;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public class OpenTelemetryConfigurationTest {
 
-import com.codahale.metrics.MetricRegistry;
-
-public class HealthMetrics {
-
-    private EventMeshHTTPServer eventMeshHTTPServer;
-    private MetricRegistry metricRegistry;
-
-    public Logger logger = LoggerFactory.getLogger("httpMonitor");
-
-    public HealthMetrics(EventMeshHTTPServer eventMeshHTTPServer, MetricRegistry metricRegistry) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
-        this.metricRegistry = metricRegistry;
+    @Test
+    public void getEventMeshPrometheusPort() {
+        int eventMeshPrometheusPort = OpenTelemetryConfiguration.getEventMeshPrometheusPort();
+        Assert.assertEquals(19091, eventMeshPrometheusPort);
     }
 }

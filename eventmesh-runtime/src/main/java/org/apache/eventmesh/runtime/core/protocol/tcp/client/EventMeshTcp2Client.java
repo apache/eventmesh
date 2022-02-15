@@ -105,7 +105,7 @@ public class EventMeshTcp2Client {
                                       EventMeshTcpMonitor eventMeshTcpMonitor) {
         long startTime = System.currentTimeMillis();
         Package pkg = new Package(new Header(SERVER_GOODBYE_REQUEST, OPStatus.FAIL.getCode(), errMsg, null));
-        eventMeshTcpMonitor.getEventMesh2clientMsgNum().incrementAndGet();
+        eventMeshTcpMonitor.getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
         logger.info("goodBye2Client client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
         ctx.writeAndFlush(pkg).addListener(
                 new ChannelFutureListener() {

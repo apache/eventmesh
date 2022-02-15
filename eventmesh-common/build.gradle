@@ -18,7 +18,6 @@
 dependencies {
     api "com.google.guava:guava"
     api "org.slf4j:slf4j-api"
-    api "junit:junit"
     api "org.assertj:assertj-core"
     api "org.apache.commons:commons-collections4"
     api "org.apache.commons:commons-text"
@@ -27,6 +26,8 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-api"
     implementation "org.apache.logging.log4j:log4j-core"
     implementation "org.apache.logging.log4j:log4j-slf4j-impl"
+
+    implementation 'com.github.seancfoley:ipaddress:5.3.3'
 
     implementation "com.lmax:disruptor"
 
@@ -65,7 +66,6 @@ dependencies {
 
     testImplementation "io.netty:netty-all"
 
-    testImplementation "junit:junit"
     testImplementation "org.assertj:assertj-core"
 
     testImplementation "org.mockito:mockito-core"

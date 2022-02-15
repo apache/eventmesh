@@ -22,13 +22,10 @@ package org.apache.eventmesh.tcp.common;
  */
 public class EventMeshTestCaseTopicSet {
 
-    //    public static final String TOPIC_PRX_WQ2ClientBroadCast = "topic-broadcast-test";
     public static final String TOPIC_PRX_WQ2ClientBroadCast = "TEST-TOPIC-TCP-BROADCAST";
 
-    //    public static final String TOPIC_PRX_SyncSubscribeTest = "topic-sync-test";
     public static final String TOPIC_PRX_SyncSubscribeTest = "TEST-TOPIC-TCP-SYNC";
 
-    //    public static final String TOPIC_PRX_WQ2ClientUniCast = "topic-async-test";
     public static final String TOPIC_PRX_WQ2ClientUniCast = "TEST-TOPIC-TCP-ASYNC";
 
 }

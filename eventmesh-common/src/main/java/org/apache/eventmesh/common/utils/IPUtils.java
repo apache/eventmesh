@@ -17,20 +17,34 @@
 
 package org.apache.eventmesh.common.utils;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.channel.Channel;
 
+import inet.ipaddr.HostName;
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressString;
+
 public class IPUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(IPUtils.class);
 
     public static String getLocalAddress() {
         // if the progress works under docker environment
@@ -172,5 +186,60 @@ public class IPUtils {
         }
 
         return "";
+    }
+
+    public static boolean isValidDomainOrIp(String url, List<IPAddress> ipV4ReservedAddrs, List<IPAddress> ipV6ReservedAddrs) {
+        if (StringUtils.isBlank(url)) {
+            return false;
+        }
+        // Engine only need to verify DNS transformed result
+        if (isValidIp(url)) {
+            return true;
+        }
+        IPAddress ipAddress = domain2Ip(url);
+        if (ipAddress == null) {
+            return false;
+        }
+        if (ipAddress.isIPv4()) {
+            return isReservedIp(ipAddress, ipV4ReservedAddrs);
+        } else {
+            return isReservedIp(ipAddress, ipV6ReservedAddrs);
+        }
+    }
+
+    public static boolean isValidIp(String url) {
+        try {
+            IPAddressString ipString = new IPAddressString(url);
+            if (!ipString.isValid()) {
+                return new IPAddressString(new URL(url).getHost()).isValid();
+            }
+        } catch (Exception e) {
+            logger.warn("Invalid URL format url={}", url, e);
+            return false;
+        }
+        return true;
+    }
+
+    public static IPAddress domain2Ip(String url) {
+        HostName hostName = new HostName(url);
+        if (hostName.isValid()) {
+            return hostName.getAddress();
+        }
+        try {
+            String host = new URL(url).getHost();
+            return new HostName(host).getAddress();
+        } catch (MalformedURLException e) {
+            logger.error("Invalid URL format url={}", url, e);
+            return null;
+        }
+    }
+
+    private static boolean isReservedIp(IPAddress ipAddress, List<IPAddress> reservedIps) {
+        for (IPAddress address : reservedIps) {
+            if (address.contains(ipAddress)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

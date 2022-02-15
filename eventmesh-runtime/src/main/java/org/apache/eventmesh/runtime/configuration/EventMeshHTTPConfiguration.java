@@ -22,9 +22,22 @@ import org.apache.eventmesh.common.config.ConfigurationWrapper;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressString;
 
 public class EventMeshHTTPConfiguration extends CommonConfiguration {
+
+    public static Logger logger = LoggerFactory.getLogger(EventMeshHTTPConfiguration.class);
 
     public int httpServerPort = 10105;
 
@@ -69,6 +82,14 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
     public int eventMeshHttpMsgReqNumPerSecond = 15000;
 
     public int eventMeshBatchMsgRequestNumPerSecond = 20000;
+
+    public int eventMeshEventSize = 1000;
+
+    public int eventMeshEventBatchSize = 10;
+
+    public List<IPAddress> eventMeshIpv4BlackList = Collections.emptyList();
+
+    public List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
 
     public EventMeshHTTPConfiguration(ConfigurationWrapper configurationWrapper) {
         super(configurationWrapper);
@@ -248,7 +269,42 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
                 eventMeshHttpMsgReqNumPerSecond = Integer.parseInt(eventMeshHttpMsgReqNumPerSecondStr);
 
             }
+
+            String eventSize = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_EVENTSIZE);
+            if (StringUtils.isNotEmpty(eventSize) && StringUtils.isNumeric(eventSize)) {
+                eventMeshEventSize = Integer.parseInt(eventSize);
+            }
+
+            String eventBatchSize = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_EVENT_BATCHSIZE);
+            if (StringUtils.isNotEmpty(eventBatchSize) && StringUtils.isNumeric(eventBatchSize)) {
+                eventMeshEventBatchSize = Integer.parseInt(eventBatchSize);
+            }
+
+            String ipv4BlackList = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_IPV4_BLACK_LIST);
+            if (StringUtils.isNotEmpty(ipv4BlackList)) {
+                eventMeshIpv4BlackList = getBlacklist(ipv4BlackList);
+            }
+
+            String ipv6BlackList = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_IPV6_BLACK_LIST);
+            if (StringUtils.isNotEmpty(ipv6BlackList)) {
+                eventMeshIpv6BlackList = getBlacklist(ipv6BlackList);
+            }
         }
+    }
+
+    private static List<IPAddress> getBlacklist(String cidrs) {
+        List<String> cidrList = Splitter.on(",").omitEmptyStrings()
+            .trimResults().splitToList(cidrs);
+
+        List<IPAddress> ipAddresses = Lists.newArrayList();
+        for (String cidr : cidrList) {
+            try {
+                ipAddresses.add(new IPAddressString(cidr).toAddress());
+            } catch (Exception e) {
+                logger.warn("Invalid cidr={}", cidr, e);
+            }
+        }
+        return ipAddresses;
     }
 
     static class ConfKeys {
@@ -296,5 +352,13 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
         public static String KEY_EVENTMESH_HTTPS_ENABLED = "eventMesh.server.useTls.enabled";
 
         public static String KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND = "eventMesh.server.http.msgReqnumPerSecond";
+
+        public static String KEY_EVENTMESH_SERVER_EVENTSIZE = "eventMesh.server.maxEventSize";
+
+        public static String KEY_EVENTMESH_SERVER_EVENT_BATCHSIZE = "eventMesh.server.maxEventBatchSize";
+
+        public static String KEY_EVENTMESH_SERVER_IPV4_BLACK_LIST = "eventMesh.server.blacklist.ipv4";
+
+        public static String KEY_EVENTMESH_SERVER_IPV6_BLACK_LIST = "eventMesh.server.blacklist.ipv6";
     }
 }

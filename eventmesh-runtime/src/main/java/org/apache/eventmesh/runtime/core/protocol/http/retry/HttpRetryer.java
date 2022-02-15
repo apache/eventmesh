@@ -41,7 +41,7 @@ public class HttpRetryer {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
 
-    private DelayQueue<DelayRetryable> failed = new DelayQueue<DelayRetryable>();
+    private DelayQueue<DelayRetryable> failed = new DelayQueue<>();
 
     private ThreadPoolExecutor pool;
 
@@ -100,6 +100,13 @@ public class HttpRetryer {
 
     public int size() {
         return failed.size();
+    }
+
+    /**
+     * Get failed queue, this method is just used for metrics.
+     */
+    public DelayQueue<DelayRetryable> getFailedQueue() {
+        return failed;
     }
 
     public void shutdown() {

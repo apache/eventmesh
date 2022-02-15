@@ -75,12 +75,17 @@ allprojects {
         maxWarnings = 0
         configFile = new File("${rootDir}/style/checkStyle.xml")
     }
+
+    dependencies {
+        testImplementation "junit:junit"
+    }
 }
 
 task tar(type: Tar) {
-    extension = 'tar.gz'
+    archiveBaseName.set(project.name)
+    archiveVersion.set(project.version.toString())
+    archiveExtension.set('tar.gz')
     compression = Compression.GZIP
-    archiveFileName = project.name + '-' + project.version + '.' + extension
     destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
@@ -88,8 +93,9 @@ task tar(type: Tar) {
 }
 
 task zip(type: Zip) {
-    extension = 'zip'
-    archiveFileName = project.name + '-' + project.version + '.' + extension
+    archiveBaseName.set(project.name)
+    archiveVersion.set(project.version.toString())
+    archiveExtension.set('zip')
     destinationDirectory = new File(projectDir, 'build')
     into('/') {
         from 'dist'
@@ -245,11 +251,14 @@ subprojects {
             new File("${projectDir}/dist/licenses").mkdirs()
         }
         Set<String> rootProject = ["eventmesh-admin",
+                                   "eventmesh-admin-rocketmq",
                                    "eventmesh-common",
                                    "eventmesh-connector-api",
+                                   "eventmesh-metrics-api",
                                    "eventmesh-registry-api",
                                    "eventmesh-runtime",
                                    "eventmesh-security-api",
+                                   "eventmesh-protocol-api",
                                    "eventmesh-starter",
                                    "eventmesh-spi"]
         doLast {
@@ -405,12 +414,12 @@ subprojects {
             dependency "org.apache.commons:commons-text:1.9"
 
 
-            dependency "com.google.guava:guava:29.0-jre"
+            dependency "com.google.guava:guava:31.0.1-jre"
             
             dependency "org.slf4j:slf4j-api:1.7.30"
-            dependency "org.apache.logging.log4j:log4j-api:2.17.0"
-            dependency "org.apache.logging.log4j:log4j-core:2.17.0"
-            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.17.0"
+            dependency "org.apache.logging.log4j:log4j-api:2.17.1"
+            dependency "org.apache.logging.log4j:log4j-core:2.17.1"
+            dependency "org.apache.logging.log4j:log4j-slf4j-impl:2.17.1"
 
             dependency "com.lmax:disruptor:3.4.2"
 
@@ -418,9 +427,9 @@ subprojects {
             dependency "com.fasterxml.jackson.core:jackson-core:2.11.0"
             dependency "com.fasterxml.jackson.core:jackson-annotations:2.11.0"
 
-            dependency "org.apache.httpcomponents:httpclient:4.5.2"
+            dependency "org.apache.httpcomponents:httpclient:4.5.13"
 
-            dependency "io.netty:netty-all:4.1.49.Final"
+            dependency "io.netty:netty-all:4.1.73.Final"
 
             dependency 'io.dropwizard.metrics:metrics-core:4.1.0'
             dependency "io.dropwizard.metrics:metrics-healthchecks:4.1.0"
@@ -444,7 +453,7 @@ subprojects {
             dependency "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
             dependency "io.openmessaging:registry-server:0.0.1"
 
-            dependency "junit:junit:4.12"
+            dependency "junit:junit:4.13.2"
             dependency "com.github.stefanbirkner:system-rules:1.16.1"
             dependency "org.assertj:assertj-core:2.6.0"
 
@@ -454,6 +463,8 @@ subprojects {
 
             dependency "io.cloudevents:cloudevents-core:2.2.0"
             dependency "io.cloudevents:cloudevents-json-jackson:2.2.0"
+
+            dependency "com.github.seancfoley:ipaddress:5.3.3"
         }
     }
 }

@@ -68,7 +68,7 @@ public class AsyncPublishInstance {
                 .password("pass")
                 .build();
 
-        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);) {
+        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig)) {
             for (int i = 0; i < messageSize; i++) {
                 Map<String, String> content = new HashMap<>();
                 content.put("content", "testPublishMessage");

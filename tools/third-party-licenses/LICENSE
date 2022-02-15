@@ -221,7 +221,7 @@ cloudevents-core 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
 cloudevents-json-jackson 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
 commons-beanutils 1.9.2: https://github.com/apache/commons-beanutils, Apache 2.0
 commons-cli 1.2: https://github.com/apache/commons-cli, Apache 2.0
-commons-codec 1.9: https://github.com/apache/commons-codec, Apache 2.0
+commons-codec 1.11: https://github.com/apache/commons-codec, Apache 2.0
 commons-collections 3.2.2: https://github.com/apache/commons-collections, Apache 2.0
 commons-collections4 4.1: https://github.com/apache/commons-collections, Apache 2.0
 commons-digester 1.8.1: https://github.com/apache/commons-digester, Apache 2.0
@@ -231,13 +231,13 @@ commons-text 1.9: https://github.com/apache/commons-text, Apache 2.0
 commons-validator 1.6: https://github.com/apache/commons-validator, Apache 2.0
 disruptor 3.4.2: https://github.com/LMAX-Exchange/disruptor, Apache 2.0
 dledger 0.1: https://github.com/openmessaging/dledger, Apache 2.0
-error_prone_annotations 2.3.4: https://github.com/google/error-prone, Apache 2.0
+error_prone_annotations 2.7.1: https://github.com/google/error-prone, Apache 2.0
 failureaccess 1.0.1: https://github.com/google/guava, Apache 2.0
 listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://github.com/google/guava, Apache 2.0
 fastjson 1.2.69: https://github.com/alibaba/fastjson, Apache 2.0
-guava 29.0-jre: https://github.com/google/guava, Apache 2.0
-httpclient 4.5.2: https://github.com/apache/httpcomponents-client, Apache 2.0
-httpcore 4.4.4: https://github.com/apache/httpcomponents-core, Apache 2.0
+guava 31.0.1-jre: https://github.com/google/guava, Apache 2.0
+httpclient 4.5.13: https://github.com/apache/httpcomponents-client, Apache 2.0
+httpcore 4.4.13: https://github.com/apache/httpcomponents-core, Apache 2.0
 j2objc-annotations 1.3: https://github.com/google/j2objc, Apache 2.0
 jackson-annotations 2.11.0: https://github.com/FasterXML/jackson-annotations, Apache 2.0
 jackson-core 2.11.0:https://github.com/FasterXML/jackson-core, Apache 2.0
@@ -245,14 +245,48 @@ jackson-databind 2.11.0: https://github.com/FasterXML/jackson-databind, Apache 2
 javassist 3.20.0-GA/3.24.0-GA: https://github.com/jboss-javassist/javassist, Apache 2.0
 jcommander 1.72: https://github.com/cbeust/jcommander, Apache 2.0
 jna 4.2.2: https://github.com/java-native-access/jna, Apache 2.0
-log4j-api 2.17.0: https://github.com/apache/log4j, Apache 2.0
-log4j-core 2.17.0: https://github.com/apache/log4j, Apache 2.0
+log4j-api 2.17.1: https://logging.apache.org/log4j/2.x/, Apache 2.0
+log4j-core 2.17.1: https://logging.apache.org/log4j/2.x/, Apache 2.0
+log4j-slf4j-impl 2.17.1: https://logging.apache.org/log4j/2.x/log4j-slf4j-impl, Apache 2.0
 metrics-annotation 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
 metrics-core 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
 metrics-healthchecks 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
 metrics-json 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
-netty-all 4.1.49.Final: https://github.com/netty/netty, Apache 2.0
+netty-all 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-buffer 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec-dns 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec-haproxy 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec-http 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec-http2 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec-memcache 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec-mqtt 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec-redis 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec-smtp 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec-socks 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec-stomp 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-codec-xml 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-common 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-handler 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-handler-proxy 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-resolver 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-resolver-dns 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-resolver-dns-classes-macos 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-resolver-dns-native-macos 4.1.73.Final-osx-aarch_64: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-resolver-dns-native-macos 4.1.73.Final-osx-x86_64: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
 netty-tcnative-boringssl-static 1.1.33.Fork26: https://github.com/netty/netty, Apache 2.0
+netty-tcnative-classes 2.0.46.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-transport 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-transport-classes-epoll 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-transport-classes-kqueue 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-transport-native-epoll 4.1.73.Final-linux-aarch_64: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-transport-native-epoll 4.1.73.Final-linux-x86_64: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-transport-native-kqueue 4.1.73.Final-osx-aarch_64: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-transport-native-kqueue 4.1.73.Final-osx-x86_64: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-transport-native-unix-common 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-transport-rxtx 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-transport-sctp 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+netty-transport-udt 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
 okio 1.17.2: https://github.com/square/okio, Apache 2.0
 okhttp 3.14.9: https://github.com/square/okhttp
 openmessaging-api 2.22.1-pubsub: https://github.com/openmessaging/dledger, Apache 2.0
@@ -321,7 +355,7 @@ EPL licenses
 The following components are provided under the EPL License. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
-junit 4.12: https://github.com/junit-team/junit5, EPL
+junit 4.13.2: https://github.com/junit-team/junit5, EPL
 logback-core 1.0.13: https://github.com/qos-ch/logback, EPL
 
 ========================================================================
@@ -331,6 +365,5 @@ MIT licenses
 The following components are provided under the MIT license. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
-checker-qual 2.11.1: https://github.com/typetools/checker-framework, MIT
-log4j-slf4j-impl 2.16.0: https://github.com/qos-ch/slf4j, MIT
+checker-qual 3.12.0: https://github.com/typetools/checker-framework, MIT
 slf4j-api 1.7.30: https://github.com/qos-ch/slf4j, MIT

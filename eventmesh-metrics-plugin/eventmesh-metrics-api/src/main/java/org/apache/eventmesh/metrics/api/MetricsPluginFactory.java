@@ -15,19 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.metrics.http;
+package org.apache.eventmesh.metrics.api;
 
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.codahale.metrics.MetricRegistry;
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
-public class TopicMetrics {
+import lombok.experimental.UtilityClass;
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
-    private MetricRegistry metricRegistry;
+@UtilityClass
+public class MetricsPluginFactory {
 
-    public TopicMetrics(EventMeshHTTPServer eventMeshHTTPServer, MetricRegistry metricRegistry) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
-        this.metricRegistry = metricRegistry;
+    /**
+     * Get {@code MetricsRegistry}.
+     *
+     * @param metricsRegistryType
+     * @return
+     */
+    public static MetricsRegistry getMetricsRegistry(String metricsRegistryType) {
+        checkNotNull(metricsRegistryType, "MetricsRegistryType cannot be null");
+
+        MetricsRegistry metricsRegistry = EventMeshExtensionFactory.getExtension(MetricsRegistry.class, metricsRegistryType);
+        return checkNotNull(metricsRegistry, "MetricsRegistryType: " + metricsRegistryType + " is not supported");
     }
 }

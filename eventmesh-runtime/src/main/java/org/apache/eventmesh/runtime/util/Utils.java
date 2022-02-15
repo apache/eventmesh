@@ -67,8 +67,8 @@ public class Utils {
                                 logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
 
                                 if (session != null) {
-                                    session.getClientGroupWrapper().get().getEventMeshTcpMonitor()
-                                            .getEventMesh2clientMsgNum().incrementAndGet();
+                                    session.getClientGroupWrapper().get()
+                                        .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
                                 }
                             }
                         }

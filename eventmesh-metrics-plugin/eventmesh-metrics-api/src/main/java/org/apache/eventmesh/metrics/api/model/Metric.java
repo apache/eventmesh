@@ -15,20 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.metrics.http;
+package org.apache.eventmesh.metrics.api.model;
 
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-
-import com.codahale.metrics.MetricRegistry;
-
-public class GroupMetrics {
-
-    private EventMeshHTTPServer eventMeshHTTPServer;
-
-    private MetricRegistry metricRegistry;
-
-    public GroupMetrics(EventMeshHTTPServer eventMeshHTTPServer, MetricRegistry metricRegistry) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
-        this.metricRegistry = metricRegistry;
-    }
+/**
+ * Top-level metric, all metrics should implement this interface.
+ */
+public interface Metric {
 }

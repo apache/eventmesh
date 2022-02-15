@@ -83,4 +83,6 @@ public class Constants {
 
     public static final String MESSAGE_PROP_SEPARATOR = "99";
 
+    public static final String EVENTMESH_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
+
 }
