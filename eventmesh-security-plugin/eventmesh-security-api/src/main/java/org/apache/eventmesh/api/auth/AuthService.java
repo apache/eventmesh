@@ -15,30 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.urlauth;
+package org.apache.eventmesh.api.auth;
 
-public enum AuthType {
-    BASIC("BASIC"),
-    TOKEN("TOKEN"),
-    AKSK("AKSK"),
-    NONE("NONE");
+import org.apache.eventmesh.api.exception.AuthException;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-    private final String name;
+import java.util.Map;
 
-    AuthType(String name) {
-        this.name = name;
-    }
+@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.SECURITY)
+public interface AuthService {
 
-    public String getName() {
-        return name;
-    }
+    void init() throws AuthException;
 
-    public static AuthType getTargetAuthType(String name) {
-        for (AuthType type : AuthType.values()) {
-            if (type.name().equals(name)) {
-                return type;
-            }
-        }
-        return null;
-    }
+    void start() throws AuthException;
+
+    void shutdown() throws AuthException;
+
+    Map getAuthParams() throws AuthException;
 }

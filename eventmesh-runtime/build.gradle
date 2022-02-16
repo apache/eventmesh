@@ -34,6 +34,7 @@ dependencies {
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
+    implementation project(":eventmesh-security-plugin:eventmesh-security-auth-http-basic")
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
 

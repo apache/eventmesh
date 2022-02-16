@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.eventmesh.runtime.core.urlauth.AuthType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +57,7 @@ public class ConsumerGroupTopicConf {
     /**
      * url auth type
      */
-    private Map<String, AuthType> UrlAuthTypeMap = Maps.newConcurrentMap();
+    private Map<String, String> httpAuthTypeMap = Maps.newConcurrentMap();
 
     @Override
     public boolean equals(Object o) {
@@ -133,7 +132,7 @@ public class ConsumerGroupTopicConf {
         this.urls = urls;
     }
 
-    public Map<String, AuthType> getUrlAuthTypeMap() {
-        return UrlAuthTypeMap;
+    public Map<String, String> getHttpAuthTypeMap() {
+        return httpAuthTypeMap;
     }
 }

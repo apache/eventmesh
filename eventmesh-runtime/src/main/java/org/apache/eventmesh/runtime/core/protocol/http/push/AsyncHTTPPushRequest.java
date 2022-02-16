@@ -34,8 +34,6 @@ import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
-import org.apache.eventmesh.runtime.core.urlauth.UrlAuthFactory;
-import org.apache.eventmesh.runtime.core.urlauth.AuthType;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +46,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
@@ -171,12 +170,10 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         builder.setHeader("WebHook-Request-Origin", webHookOrigin);
 
         // For Webhook url authentication
-        AuthType urlAuthType = handleMsgContext.getConsumerGroupConfig().getConsumerGroupTopicConf()
-            .get(handleMsgContext.getTopic()).getUrlAuthTypeMap().get(currPushUrl);
-        Header authHeader = UrlAuthFactory.getProvider(urlAuthType).getAuthHeader();
-        if (authHeader != null) {
-            builder.addHeader(authHeader);
-        }
+       Map<String, String> authParam = getHttpAuth(currPushUrl);
+       if (authParam != null) {
+           authParam.forEach((k, v) -> builder.addHeader(new BasicHeader(k, v)));
+       }
 
         eventMeshHTTPServer.metrics.getSummaryMetrics().recordPushMsg();
 

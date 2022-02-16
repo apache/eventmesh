@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.urlauth;
+package org.apache.eventmesh.api.exception;
 
-public class UrlAuthFactory {
+/**
+ * HttpAuthException
+ */
+public class AuthException extends RuntimeException {
 
-    public static UrlAuth getProvider(AuthType authType) {
+    public AuthException(String message) {
+        super(message);
+    }
 
-        Reflections reflections = new Reflectioins()
-
-        return new NoneUrlAuthProvider();
+    public AuthException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
