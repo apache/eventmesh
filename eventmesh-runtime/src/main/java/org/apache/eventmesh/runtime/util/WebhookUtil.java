@@ -17,20 +17,21 @@
 
 package org.apache.eventmesh.runtime.util;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.auth.AuthService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for implementing CloudEvents Http Webhook spec
