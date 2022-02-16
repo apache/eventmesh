@@ -39,4 +39,4 @@ include 'eventmesh-admin:eventmesh-admin-rocketmq'
 include 'eventmesh-metrics-plugin'
 include 'eventmesh-metrics-plugin:eventmesh-metrics-api'
 include 'eventmesh-metrics-plugin:eventmesh-metrics-opentelemetry'
-
+include 'eventmesh-security-plugin:eventmesh-security-auth-http-basic'
