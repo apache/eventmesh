@@ -17,12 +17,13 @@
 
 package org.apache.eventmesh.runtime.core.consumergroup;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
 import com.google.common.collect.Maps;
 
-public class ConsumerGroupConf {
+public class ConsumerGroupConf implements Serializable {
     //eg . 5013-1A0
     private String consumerGroup;
 

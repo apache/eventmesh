@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.tcp.common;
+package org.apache.eventmesh.metrics.opentelemetry.config;
 
-/**
- * Testcase set
- */
-public class EventMeshTestCaseTopicSet {
+import org.junit.Assert;
+import org.junit.Test;
 
-    public static final String TOPIC_PRX_WQ2ClientBroadCast = "TEST-TOPIC-TCP-BROADCAST";
+public class OpenTelemetryConfigurationTest {
 
-    public static final String TOPIC_PRX_SyncSubscribeTest = "TEST-TOPIC-TCP-SYNC";
-
-    public static final String TOPIC_PRX_WQ2ClientUniCast = "TEST-TOPIC-TCP-ASYNC";
-
+    @Test
+    public void getEventMeshPrometheusPort() {
+        int eventMeshPrometheusPort = OpenTelemetryConfiguration.getEventMeshPrometheusPort();
+        Assert.assertEquals(19091, eventMeshPrometheusPort);
+    }
 }

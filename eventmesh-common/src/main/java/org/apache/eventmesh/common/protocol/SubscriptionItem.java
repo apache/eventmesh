@@ -17,7 +17,11 @@
 
 package org.apache.eventmesh.common.protocol;
 
-public class SubscriptionItem {
+import java.io.Serializable;
+
+import com.google.common.base.Objects;
+
+public class SubscriptionItem implements Serializable {
 
     private String topic;
 
@@ -65,6 +69,23 @@ public class SubscriptionItem {
                 + ", mode=" + mode
                 + ", type=" + type
                 + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        SubscriptionItem that = (SubscriptionItem) o;
+        return Objects.equal(topic, that.topic) && mode == that.mode && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(topic, mode, type);
     }
 }
 

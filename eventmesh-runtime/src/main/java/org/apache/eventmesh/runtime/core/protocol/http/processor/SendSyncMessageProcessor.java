@@ -43,6 +43,7 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -187,6 +188,19 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     .buildBody(EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getRetCode(),
                         EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getErrMsg()));
             eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPDiscard();
+            asyncContext.onComplete(responseEventMeshCommand);
+            return;
+        }
+
+        String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+        if (content.length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize) {
+            httpLogger.error("Event size exceeds the limit: {}",
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize);
+
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                sendMessageResponseHeader,
+                SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
+                    "Event size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize));
             asyncContext.onComplete(responseEventMeshCommand);
             return;
         }

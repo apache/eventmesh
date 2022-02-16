@@ -38,8 +38,6 @@ public class AsyncPublish {
 
     private static EventMeshTCPClient<CloudEvent> client;
 
-    public static AsyncPublish handler = new AsyncPublish();
-
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile("application.properties");
         final String eventMeshIp = properties.getProperty("eventmesh.ip");
@@ -55,7 +53,7 @@ public class AsyncPublish {
                     EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 2; i++) {
                 CloudEvent event = EventMeshTestUtils.generateCloudEventV1Async();
                 logger.info("begin send async msg[{}]==================={}", i, event);
                 client.publish(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);

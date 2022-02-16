@@ -83,6 +83,10 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public int eventMeshBatchMsgRequestNumPerSecond = 20000;
 
+    public int eventMeshEventSize = 1000;
+
+    public int eventMeshEventBatchSize = 10;
+
     public List<IPAddress> eventMeshIpv4BlackList = Collections.emptyList();
 
     public List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
@@ -266,6 +270,16 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
             }
 
+            String eventSize = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_EVENTSIZE);
+            if (StringUtils.isNotEmpty(eventSize) && StringUtils.isNumeric(eventSize)) {
+                eventMeshEventSize = Integer.parseInt(eventSize);
+            }
+
+            String eventBatchSize = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_EVENT_BATCHSIZE);
+            if (StringUtils.isNotEmpty(eventBatchSize) && StringUtils.isNumeric(eventBatchSize)) {
+                eventMeshEventBatchSize = Integer.parseInt(eventBatchSize);
+            }
+
             String ipv4BlackList = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_IPV4_BLACK_LIST);
             if (StringUtils.isNotEmpty(ipv4BlackList)) {
                 eventMeshIpv4BlackList = getBlacklist(ipv4BlackList);
@@ -339,8 +353,12 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
         public static String KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND = "eventMesh.server.http.msgReqnumPerSecond";
 
-        public static String KEY_EVENTMESH_SERVER_IPV4_BLACK_LIST = "eventmesh.server.blacklist.ipv4";
+        public static String KEY_EVENTMESH_SERVER_EVENTSIZE = "eventMesh.server.maxEventSize";
 
-        public static String KEY_EVENTMESH_SERVER_IPV6_BLACK_LIST = "eventmesh.server.blacklist.ipv6";
+        public static String KEY_EVENTMESH_SERVER_EVENT_BATCHSIZE = "eventMesh.server.maxEventBatchSize";
+
+        public static String KEY_EVENTMESH_SERVER_IPV4_BLACK_LIST = "eventMesh.server.blacklist.ipv4";
+
+        public static String KEY_EVENTMESH_SERVER_IPV6_BLACK_LIST = "eventMesh.server.blacklist.ipv6";
     }
 }

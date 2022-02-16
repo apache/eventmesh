@@ -41,6 +41,7 @@ import org.apache.eventmesh.runtime.util.Utils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -84,6 +85,12 @@ public class MessageTransferTask extends AbstractTask {
             event = protocolAdaptor.toCloudEvent(pkg);
             if (event == null) {
                 throw new Exception("event is null");
+            }
+
+            String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+            if (content.length() > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshEventSize) {
+                throw new Exception("event size exceeds the limit: "
+                    + eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshEventSize);
             }
 
             //do acl check in sending msg
