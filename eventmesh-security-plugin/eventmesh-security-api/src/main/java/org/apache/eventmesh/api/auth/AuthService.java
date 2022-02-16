@@ -23,6 +23,9 @@ import org.apache.eventmesh.spi.EventMeshSPI;
 
 import java.util.Map;
 
+/**
+ * AuthService
+ */
 @EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.SECURITY)
 public interface AuthService {
 
