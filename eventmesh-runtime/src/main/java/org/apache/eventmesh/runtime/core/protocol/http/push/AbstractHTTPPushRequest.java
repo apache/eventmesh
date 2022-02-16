@@ -17,12 +17,9 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.api.auth.AuthService;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.plugin.HttpAuthWrapper;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.RetryContext;
@@ -37,7 +34,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.collect.Lists;
-import org.apache.http.message.BasicHeader;
 
 public abstract class AbstractHTTPPushRequest extends RetryContext {
 
@@ -60,8 +56,6 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     public int ttl;
 
     public HandleMsgContext handleMsgContext;
-
-    public static HTTPClientPool httpClientPool = new HTTPClientPool(10);
 
     private AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
 
@@ -129,21 +123,6 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     public void timeout() {
         if (!isComplete() && System.currentTimeMillis() - lastPushTime >= ttl) {
             delayRetry();
-        }
-    }
-
-    public Map<String, String> getHttpAuth(String url) {
-        String httpAuthType = handleMsgContext.getConsumerGroupConfig().getConsumerGroupTopicConf()
-            .get(handleMsgContext.getTopic()).getHttpAuthTypeMap().get(url);
-
-        if (StringUtils.isEmpty(httpAuthType)) {
-            return null;
-        }
-        AuthService authService = HttpAuthWrapper.getHttpAuthPlugin("auth-http-basic");
-        if (authService != null) {
-            return authService.getAuthParams();
-        } else {
-            return null;
         }
     }
 }

@@ -35,7 +35,7 @@ public class Constants {
 
     public static final String PROTOCOL_DESC = "protocoldesc";
 
-    public static final int DEFAULT_HTTP_TIME_OUT = 3000;
+    public static final int DEFAULT_HTTP_TIME_OUT = 15000;
 
     public static final String EVENTMESH_MESSAGE_CONST_TTL = "ttl";
 

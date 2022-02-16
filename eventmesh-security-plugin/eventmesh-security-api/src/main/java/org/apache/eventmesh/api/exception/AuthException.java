@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.api.exception;
 
-/**
- * HttpAuthException
- */
 public class AuthException extends RuntimeException {
 
     public AuthException(String message) {

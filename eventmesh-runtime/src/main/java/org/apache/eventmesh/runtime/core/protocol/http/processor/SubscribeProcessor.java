@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.eventmesh.runtime.util.WebhookUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,6 +169,21 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 SubscribeResponseBody
                     .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
                         EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url));
+            asyncContext.onComplete(responseEventMeshCommand);
+            return;
+        }
+
+        // obtain webhook delivery agreement for Abuse Protection
+        boolean isWebhookAllowed = WebhookUtil.obtainDeliveryAgreement(eventMeshHTTPServer.httpClientPool.getClient(),
+            url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshWebhookOrigin);
+
+        if (!isWebhookAllowed) {
+            httpLogger.error("subscriber url {} is not allowed by the target system", url);
+            responseEventMeshCommand = request.createHttpCommandResponse(
+                subscribeResponseHeader,
+                SubscribeResponseBody
+                    .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
+                        EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " unauthorized webhook URL: " + url));
             asyncContext.onComplete(responseEventMeshCommand);
             return;
         }
@@ -329,4 +345,5 @@ public class SubscribeProcessor implements HttpRequestProcessor {
             }
         }
     }
+
 }

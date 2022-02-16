@@ -38,6 +38,7 @@ import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.eventmesh.runtime.util.WebhookUtil;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -163,17 +164,15 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                 JsonUtils.serialize(EventMeshUtil.getEventProp(handleMsgContext.getEvent()))));
 
         HttpEntity httpEntity = new UrlEncodedFormEntity(body, StandardCharsets.UTF_8);
-        builder.setHeader("Content-Type", httpEntity.getContentType().getValue());
+
         builder.setEntity(httpEntity);
 
-        String webHookOrigin = "eventmesh." + eventMeshHttpConfiguration.eventMeshIDC;
-        builder.setHeader("WebHook-Request-Origin", webHookOrigin);
+        // for CloudEvents Webhook spec
+        String urlAuthType = handleMsgContext.getConsumerGroupConfig().getConsumerGroupTopicConf()
+            .get(handleMsgContext.getTopic()).getHttpAuthTypeMap().get(currPushUrl);
 
-        // For Webhook url authentication
-       Map<String, String> authParam = getHttpAuth(currPushUrl);
-       if (authParam != null) {
-           authParam.forEach((k, v) -> builder.addHeader(new BasicHeader(k, v)));
-       }
+        WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(), eventMeshHttpConfiguration.eventMeshWebhookOrigin,
+            urlAuthType);
 
         eventMeshHTTPServer.metrics.getSummaryMetrics().recordPushMsg();
 
@@ -185,7 +184,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                 IPUtils.getLocalAddress(), currPushUrl);
 
         try {
-            httpClientPool.getClient().execute(builder, new ResponseHandler<Object>() {
+            eventMeshHTTPServer.httpClientPool.getClient().execute(builder, new ResponseHandler<Object>() {
                 @Override
                 public Object handleResponse(HttpResponse response) {
                     removeWaitingMap(AsyncHTTPPushRequest.this);
