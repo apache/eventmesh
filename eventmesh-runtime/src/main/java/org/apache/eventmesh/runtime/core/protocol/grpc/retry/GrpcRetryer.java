@@ -19,8 +19,6 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.retry;
 
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.DelayQueue;
@@ -28,6 +26,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GrpcRetryer {
 
@@ -57,27 +58,27 @@ public class GrpcRetryer {
 
     public void init() {
         pool = new ThreadPoolExecutor(grpcConfiguration.eventMeshServerRetryThreadNum,
-                grpcConfiguration.eventMeshServerRetryThreadNum,
-                60000,
-                TimeUnit.MILLISECONDS,
+            grpcConfiguration.eventMeshServerRetryThreadNum,
+            60000,
+            TimeUnit.MILLISECONDS,
             new ArrayBlockingQueue<>(grpcConfiguration.eventMeshServerRetryBlockQueueSize),
-                new ThreadFactory() {
-                    private AtomicInteger count = new AtomicInteger();
+            new ThreadFactory() {
+                private AtomicInteger count = new AtomicInteger();
 
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        Thread thread = new Thread(r, "grpc-retry-" + count.incrementAndGet());
-                        thread.setPriority(Thread.NORM_PRIORITY);
-                        thread.setDaemon(true);
-                        return thread;
-                    }
-                }, new ThreadPoolExecutor.AbortPolicy());
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread thread = new Thread(r, "grpc-retry-" + count.incrementAndGet());
+                    thread.setPriority(Thread.NORM_PRIORITY);
+                    thread.setDaemon(true);
+                    return thread;
+                }
+            }, new ThreadPoolExecutor.AbortPolicy());
 
         dispatcher = new Thread(() -> {
             try {
                 DelayRetryable retryObj = null;
                 while (!Thread.currentThread().isInterrupted()
-                        && (retryObj = failed.take()) != null) {
+                    && (retryObj = failed.take()) != null) {
                     final DelayRetryable delayRetryable = retryObj;
                     pool.execute(() -> {
                         try {

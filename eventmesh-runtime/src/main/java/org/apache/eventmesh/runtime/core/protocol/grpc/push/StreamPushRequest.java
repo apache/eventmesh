@@ -17,22 +17,25 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
-import io.grpc.stub.StreamObserver;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.StreamTopicConfig;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.RandomUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.grpc.stub.StreamObserver;
 
 public class StreamPushRequest extends AbstractPushRequest {
 
@@ -64,7 +67,7 @@ public class StreamPushRequest extends AbstractPushRequest {
 
         List<EventEmitter<SimpleMessage>> eventEmitters = selectEmitter();
 
-        for (EventEmitter<SimpleMessage> eventEmitter: eventEmitters) {
+        for (EventEmitter<SimpleMessage> eventEmitter : eventEmitters) {
             this.lastPushTime = System.currentTimeMillis();
 
             simpleMessage = SimpleMessage.newBuilder(simpleMessage)
@@ -111,7 +114,7 @@ public class StreamPushRequest extends AbstractPushRequest {
         if (CollectionUtils.isNotEmpty(totalEmitters)) {
             if (subscriptionMode.equals(SubscriptionMode.CLUSTERING)) {
                 return Collections.singletonList(totalEmitters.get((startIdx + retryTimes) % totalEmitters.size()));
-            } else if(subscriptionMode.equals(SubscriptionMode.BROADCASTING)) {
+            } else if (subscriptionMode.equals(SubscriptionMode.BROADCASTING)) {
                 return totalEmitters;
             } else {
                 messageLogger.error("Invalid Subscription Mode, no message returning back to subscriber.");

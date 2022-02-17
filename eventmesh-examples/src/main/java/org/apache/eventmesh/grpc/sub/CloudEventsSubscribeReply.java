@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.grpc.sub;
 
-import io.cloudevents.CloudEvent;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
@@ -31,6 +29,10 @@ import org.apache.eventmesh.util.Utils;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
+
+import io.cloudevents.CloudEvent;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CloudEventsSubscribeReply implements ReceiveMsgHook<CloudEvent> {

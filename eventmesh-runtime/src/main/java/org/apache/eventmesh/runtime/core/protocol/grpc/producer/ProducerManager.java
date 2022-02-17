@@ -20,10 +20,11 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.producer;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ProducerManager {
 
@@ -67,13 +68,13 @@ public class ProducerManager {
     }
 
     private synchronized EventMeshProducer createEventMeshProducer(
-            ProducerGroupConf producerGroupConfig) throws Exception {
+        ProducerGroupConf producerGroupConfig) throws Exception {
         if (producerTable.containsKey(producerGroupConfig.getGroupName())) {
             return producerTable.get(producerGroupConfig.getGroupName());
         }
         EventMeshProducer eventMeshProducer = new EventMeshProducer();
         eventMeshProducer.init(eventMeshGrpcServer.getEventMeshGrpcConfiguration(),
-                producerGroupConfig);
+            producerGroupConfig);
         producerTable.put(producerGroupConfig.getGroupName(), eventMeshProducer);
         return eventMeshProducer;
     }

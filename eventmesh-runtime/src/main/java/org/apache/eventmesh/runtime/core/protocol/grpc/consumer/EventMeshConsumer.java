@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
@@ -42,13 +40,17 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageConte
 import org.apache.eventmesh.runtime.core.protocol.grpc.push.HandleMsgContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.push.MessageHandler;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class EventMeshConsumer {
 
@@ -85,6 +87,7 @@ public class EventMeshConsumer {
 
     /**
      * Register client's topic information and return true if this EventMeshConsumer required restart because of the topic changes
+     *
      * @param client ConsumerGroupClient
      * @return true if the underlining EventMeshConsumer needs to restart later; false otherwise
      */
@@ -106,6 +109,7 @@ public class EventMeshConsumer {
 
     /**
      * Deregister client's topic information and return true if this EventMeshConsumer required restart because of the topic changes
+     *
      * @param client ConsumerGroupClient
      * @return true if the underlining EventMeshConsumer needs to restart later; false otherwise
      */

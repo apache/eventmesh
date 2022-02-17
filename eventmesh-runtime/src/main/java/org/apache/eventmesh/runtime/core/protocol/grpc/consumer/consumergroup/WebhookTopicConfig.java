@@ -18,8 +18,6 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
     private final Logger logger = LoggerFactory.getLogger(WebhookTopicConfig.class);
@@ -80,7 +81,7 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
 
     @Override
     public int getSize() {
-       return totalUrls.size();
+        return totalUrls.size();
     }
 
     @Override

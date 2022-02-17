@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.service;
 
-import io.grpc.stub.StreamObserver;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
 import org.apache.eventmesh.common.protocol.grpc.protos.HeartbeatServiceGrpc;
@@ -25,9 +24,13 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.HeartbeatProcessor;
+
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.concurrent.ThreadPoolExecutor;
+
+import io.grpc.stub.StreamObserver;
 
 public class HeartbeatService extends HeartbeatServiceGrpc.HeartbeatServiceImplBase {
 

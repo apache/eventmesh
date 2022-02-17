@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.service;
 
-import io.grpc.stub.StreamObserver;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.Response;
@@ -29,9 +28,13 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.processor.ReplyMessagePro
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.SubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.SubscribeStreamProcessor;
 import org.apache.eventmesh.runtime.core.protocol.grpc.processor.UnsubscribeProcessor;
+
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.concurrent.ThreadPoolExecutor;
+
+import io.grpc.stub.StreamObserver;
 
 public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase {
 

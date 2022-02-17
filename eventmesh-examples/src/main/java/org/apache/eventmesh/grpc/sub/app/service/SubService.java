@@ -19,22 +19,25 @@
 
 package org.apache.eventmesh.grpc.sub.app.service;
 
-import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
+import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.grpc.pub.eventmeshmessage.AsyncPublishInstance;
 import org.apache.eventmesh.util.Utils;
+
+import java.util.Collections;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
-import javax.annotation.PreDestroy;
-import java.util.Collections;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
 
 @Component
 public class SubService implements InitializingBean {
@@ -47,14 +50,14 @@ public class SubService implements InitializingBean {
 
     final SubscriptionItem subscriptionItem = new SubscriptionItem();
 
-    final String                 localIp           = IPUtils.getLocalAddress();
-    final String                 localPort         = properties.getProperty("server.port");
-    final String                 eventMeshIp       = properties.getProperty("eventmesh.ip");
-    final String                 eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
-    final String                 url               = "http://" + localIp + ":" + localPort + "/sub/test";
-    final String                 env               = "P";
-    final String                 idc               = "FT";
-    final String                 subsys            = "1234";
+    final String localIp = IPUtils.getLocalAddress();
+    final String localPort = properties.getProperty("server.port");
+    final String eventMeshIp = properties.getProperty("eventmesh.ip");
+    final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
+    final String url = "http://" + localIp + ":" + localPort + "/sub/test";
+    final String env = "P";
+    final String idc = "FT";
+    final String subsys = "1234";
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
@@ -69,12 +72,13 @@ public class SubService implements InitializingBean {
             .env(env).idc(idc)
             .sys(subsys).build();
 
+        eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
+        eventMeshGrpcConsumer.init();
+
         subscriptionItem.setTopic("TEST-TOPIC-GRPC-ASYNC");
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
-        eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
-        eventMeshGrpcConsumer.init();
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem), url);
 
         // Wait for all messaged to be consumed

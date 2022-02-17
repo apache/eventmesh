@@ -65,7 +65,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
 
             return deserializeHttpProtocol(requestCode, header, body);
         } else if (protocol instanceof SimpleMessageWrapper) {
-            SimpleMessage message = ((SimpleMessageWrapper)protocol).getMessage();
+            SimpleMessage message = ((SimpleMessageWrapper) protocol).getMessage();
             return deserializeGrpcProtocol(message);
         } else {
             throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));

@@ -17,20 +17,19 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.producer;
 
-import io.cloudevents.CloudEvent;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.RetryContext;
+
+import org.apache.commons.lang3.time.DateFormatUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import io.cloudevents.CloudEvent;
 
 public class SendMessageContext extends RetryContext {
 
@@ -90,14 +89,14 @@ public class SendMessageContext extends RetryContext {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("sendMessageContext={")
-                .append("bizSeqNo=").append(bizSeqNo)
-                .append(",retryTimes=").append(retryTimes)
-                .append(",producer=")
-                .append(eventMeshProducer != null ? eventMeshProducer : null)
-                .append(",executeTime=")
-                .append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT))
-                .append(",createTime=")
-                .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
+            .append("bizSeqNo=").append(bizSeqNo)
+            .append(",retryTimes=").append(retryTimes)
+            .append(",producer=")
+            .append(eventMeshProducer != null ? eventMeshProducer : null)
+            .append(",executeTime=")
+            .append(DateFormatUtils.format(executeTime, Constants.DATE_FORMAT))
+            .append(",createTime=")
+            .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
         return sb.toString();
     }
 

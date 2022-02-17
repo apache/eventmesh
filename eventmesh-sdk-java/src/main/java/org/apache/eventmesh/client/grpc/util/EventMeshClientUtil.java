@@ -17,13 +17,6 @@
 
 package org.apache.eventmesh.client.grpc.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.SpecVersion;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
@@ -36,13 +29,24 @@ import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
+import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 public class EventMeshClientUtil {
 
@@ -73,7 +77,8 @@ public class EventMeshClientUtil {
 
         // This is GRPC response message
         if (StringUtils.isEmpty(seq) && StringUtils.isEmpty(uniqueId)) {
-            HashMap<String, String> response = JsonUtils.deserialize(content, new TypeReference<HashMap<String, String>>() {});
+            HashMap<String, String> response = JsonUtils.deserialize(content, new TypeReference<HashMap<String, String>>() {
+            });
             return (T) response;
         }
 
@@ -135,7 +140,7 @@ public class EventMeshClientUtil {
                 .setContent(content)
                 .putProperties(ProtocolKey.CONTENT_TYPE, contentType);
 
-            for (String extName: cloudEvent.getExtensionNames()) {
+            for (String extName : cloudEvent.getExtensionNames()) {
                 builder.putProperties(extName, cloudEvent.getExtension(extName).toString());
             }
 
@@ -175,7 +180,7 @@ public class EventMeshClientUtil {
                 .setProducerGroup(clientConfig.getProducerGroup())
                 .setTopic(events.get(0).getSubject());
 
-            for (CloudEvent event: events) {
+            for (CloudEvent event : events) {
                 String contentType = StringUtils.isEmpty(event.getDataContentType()) ? "application/cloudevents+json"
                     : event.getDataContentType();
                 byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(contentType)
@@ -201,7 +206,7 @@ public class EventMeshClientUtil {
                 .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
                 .setProducerGroup(clientConfig.getProducerGroup());
 
-            for (EventMeshMessage message : (List<EventMeshMessage>)messageList) {
+            for (EventMeshMessage message : (List<EventMeshMessage>) messageList) {
                 messageBuilder.setTopic(message.getTopic());
                 BatchMessage.MessageItem item = BatchMessage.MessageItem.newBuilder()
                     .setContent(message.getContent())

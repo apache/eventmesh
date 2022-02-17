@@ -19,6 +19,10 @@ package org.apache.eventmesh.client.grpc.consumer;
 
 import java.util.Optional;
 
+/**
+ *
+ * @param <T>
+ */
 public interface ReceiveMsgHook<T> {
 
     /**

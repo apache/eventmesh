@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.processor;
 
-import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.AclException;
@@ -40,10 +39,14 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.grpc.producer.SendMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
 
 public class BatchPublishMessageProcessor {
 
@@ -93,7 +96,7 @@ public class BatchPublishMessageProcessor {
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         List<CloudEvent> cloudEvents = grpcCommandProtocolAdaptor.toBatchCloudEvent(new BatchMessageWrapper(message));
 
-        for (CloudEvent event: cloudEvents) {
+        for (CloudEvent event : cloudEvents) {
             String seqNum = event.getId();
             String uniqueId = event.getExtension(ProtocolKey.UNIQUE_ID).toString();
             ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();

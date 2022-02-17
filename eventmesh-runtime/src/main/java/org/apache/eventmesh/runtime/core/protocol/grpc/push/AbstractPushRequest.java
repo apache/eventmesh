@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.push;
 
-import com.google.common.collect.Sets;
-import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
@@ -34,14 +32,19 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.EventMeshConsume
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupTopicConfig;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.GrpcRetryer;
 import org.apache.eventmesh.runtime.core.protocol.grpc.retry.RetryContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
+
+import com.google.common.collect.Sets;
 
 public abstract class AbstractPushRequest extends RetryContext {
 
@@ -58,7 +61,7 @@ public abstract class AbstractPushRequest extends RetryContext {
     protected Map<String, Set<AbstractPushRequest>> waitingRequests;
 
     protected HandleMsgContext handleMsgContext;
-  //  protected CloudEvent event;
+    //  protected CloudEvent event;
     protected SimpleMessage simpleMessage;
 
     private final AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);

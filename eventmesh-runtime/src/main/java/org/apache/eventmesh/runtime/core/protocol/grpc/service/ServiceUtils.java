@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.service;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Heartbeat;
@@ -29,6 +27,9 @@ import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,17 +57,17 @@ public class ServiceUtils {
     }
 
     public static boolean validateBatchMessage(BatchMessage batchMessage) {
-         if (StringUtils.isEmpty(batchMessage.getTopic())
-             || StringUtils.isEmpty(batchMessage.getProducerGroup())) {
-             return false;
-         }
-         for (BatchMessage.MessageItem item : batchMessage.getMessageItemList()) {
-             if (StringUtils.isEmpty(item.getContent()) || StringUtils.isEmpty(item.getSeqNum())
-                 || StringUtils.isEmpty(item.getTtl()) || StringUtils.isEmpty(item.getUniqueId())) {
-                 return false;
-             }
-         }
-         return true;
+        if (StringUtils.isEmpty(batchMessage.getTopic())
+            || StringUtils.isEmpty(batchMessage.getProducerGroup())) {
+            return false;
+        }
+        for (BatchMessage.MessageItem item : batchMessage.getMessageItemList()) {
+            if (StringUtils.isEmpty(item.getContent()) || StringUtils.isEmpty(item.getSeqNum())
+                || StringUtils.isEmpty(item.getTtl()) || StringUtils.isEmpty(item.getUniqueId())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static boolean validateSubscription(GrpcType grpcType, Subscription subscription) {

@@ -17,9 +17,8 @@
 
 package org.apache.eventmesh.grpc.pub.eventmeshmessage;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
+import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
@@ -30,6 +29,8 @@ import org.apache.eventmesh.util.Utils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RequestReplyInstance {

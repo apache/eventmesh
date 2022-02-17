@@ -17,18 +17,20 @@
 
 package org.apache.eventmesh.client.grpc.consumer;
 
-import io.grpc.stub.StreamObserver;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.grpc.stub.StreamObserver;
 
 public class SubStreamHandler<T> extends Thread {
 
@@ -57,7 +59,7 @@ public class SubStreamHandler<T> extends Thread {
                 this.sender = consumerAsyncClient.subscribeStream(createReceiver());
             }
         }
-       senderOnNext(subscription);
+        senderOnNext(subscription);
     }
 
     private StreamObserver<SimpleMessage> createReceiver() {

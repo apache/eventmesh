@@ -31,12 +31,13 @@ import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.Co
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.ServiceUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SubscribeProcessor {
 
@@ -133,7 +134,7 @@ public class SubscribeProcessor {
             String subsystem = header.getSys();
             for (Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
                 Acl.doAclCheckInHttpReceive(remoteAdd, user, pass, subsystem, item.getTopic(),
-                        RequestCode.SUBSCRIBE.getRequestCode());
+                    RequestCode.SUBSCRIBE.getRequestCode());
             }
         }
     }

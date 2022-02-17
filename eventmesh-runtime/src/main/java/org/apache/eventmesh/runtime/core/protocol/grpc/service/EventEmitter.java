@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.service;
 
-import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.grpc.stub.StreamObserver;
 
 public class EventEmitter<T> {
     private final Logger logger = LoggerFactory.getLogger(EventEmitter.class);

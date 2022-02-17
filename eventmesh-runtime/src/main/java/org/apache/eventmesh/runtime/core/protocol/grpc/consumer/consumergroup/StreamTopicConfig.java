@@ -20,14 +20,15 @@ package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
 import org.apache.eventmesh.runtime.core.protocol.grpc.service.EventEmitter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StreamTopicConfig extends ConsumerGroupTopicConfig {
     private final Logger logger = LoggerFactory.getLogger(StreamTopicConfig.class);

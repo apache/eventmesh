@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup;
 
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription.SubscriptionItem.SubscriptionMode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
