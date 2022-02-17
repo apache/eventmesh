@@ -20,6 +20,7 @@
 
 package org.apache.eventmesh.common.protocol.grpc.protos;
 
+@SuppressWarnings({"all"})
 public interface RequestHeaderOrBuilder extends
     // @@protoc_insertion_point(interface_extends:eventmesh.common.protocol.grpc.RequestHeader)
     com.google.protobuf.MessageOrBuilder {

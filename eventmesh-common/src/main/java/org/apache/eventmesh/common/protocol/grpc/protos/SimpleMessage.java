@@ -23,6 +23,7 @@ package org.apache.eventmesh.common.protocol.grpc.protos;
 /**
  * Protobuf type {@code eventmesh.common.protocol.grpc.SimpleMessage}
  */
+@SuppressWarnings({"all"})
 public  final class SimpleMessage extends
     com.google.protobuf.GeneratedMessageV3 implements
     // @@protoc_insertion_point(message_implements:eventmesh.common.protocol.grpc.SimpleMessage)

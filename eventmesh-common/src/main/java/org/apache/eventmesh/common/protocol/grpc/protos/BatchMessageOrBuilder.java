@@ -20,6 +20,7 @@
 
 package org.apache.eventmesh.common.protocol.grpc.protos;
 
+@SuppressWarnings({"all"})
 public interface BatchMessageOrBuilder extends
     // @@protoc_insertion_point(interface_extends:eventmesh.common.protocol.grpc.BatchMessage)
     com.google.protobuf.MessageOrBuilder {

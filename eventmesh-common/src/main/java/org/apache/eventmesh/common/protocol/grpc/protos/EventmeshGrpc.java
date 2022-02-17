@@ -20,6 +20,7 @@
 
 package org.apache.eventmesh.common.protocol.grpc.protos;
 
+@SuppressWarnings({"all"})
 public final class EventmeshGrpc {
   private EventmeshGrpc() {}
   public static void registerAllExtensions(
