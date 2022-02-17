@@ -59,7 +59,6 @@
   </module>
 
   <module name="TreeWalker">
-
     <module name="SuppressWarningsHolder" />
     <module name="OuterTypeFilename"/>
     <module name="IllegalTokenText">
