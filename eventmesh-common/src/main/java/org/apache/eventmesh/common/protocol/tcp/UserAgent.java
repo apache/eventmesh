@@ -36,8 +36,7 @@ public class UserAgent {
     private String username;
     private String password;
     private String idc;
-    private String producerGroup;
-    private String consumerGroup;
+    private String group;
     private String purpose;
     @Builder.Default
     private int unack = 0;
@@ -46,8 +45,7 @@ public class UserAgent {
     }
 
     public UserAgent(String env, String subsystem, String path, int pid, String host, int port, String version,
-                     String username, String password, String idc, String producerGroup, String consumerGroup,
-                     String purpose, int unack) {
+                     String username, String password, String idc, String group, String purpose, int unack) {
         this.env = env;
         this.subsystem = subsystem;
         this.path = path;
@@ -58,8 +56,7 @@ public class UserAgent {
         this.username = username;
         this.password = password;
         this.idc = idc;
-        this.producerGroup = producerGroup;
-        this.consumerGroup = consumerGroup;
+        this.group = group;
         this.purpose = purpose;
         this.unack = unack;
     }
@@ -67,8 +64,8 @@ public class UserAgent {
     @Override
     public String toString() {
         return String.format(
-                "UserAgent{env='%s', subsystem='%s', path='%s', pid=%d, host='%s', port=%d, version='%s', idc='%s', purpose='%s', unack='%d'}",
-                env, subsystem, path, pid, host, port, version, idc, purpose, unack);
+                "UserAgent{env='%s', subsystem='%s', group='%s', path='%s', pid=%d, host='%s', port=%d, version='%s', idc='%s', purpose='%s', unack='%d'}",
+                env, subsystem, group, path, pid, host, port, version, idc, purpose, unack);
     }
 
     @Override
@@ -96,6 +93,10 @@ public class UserAgent {
         }
 
         if (!Objects.equals(subsystem, userAgent.subsystem)) {
+            return false;
+        }
+
+        if (!Objects.equals(group, userAgent.group)) {
             return false;
         }
 
@@ -134,6 +135,7 @@ public class UserAgent {
     @Override
     public int hashCode() {
         int result = subsystem != null ? subsystem.hashCode() : 0;
+        result = 31 * result + (group != null ? group.hashCode() : 0);
         result = 31 * result + (path != null ? path.hashCode() : 0);
         result = 31 * result + pid;
         result = 31 * result + (host != null ? host.hashCode() : 0);
