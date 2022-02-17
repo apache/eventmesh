@@ -24,6 +24,7 @@ import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.consumergroup.event.ConsumerGroupStateEvent;
 import org.apache.eventmesh.runtime.core.consumergroup.event.ConsumerGroupTopicConfChangeEvent;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -192,7 +193,7 @@ public class ConsumerManager {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
             notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.NEW;
             notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig;
+            notification.consumerGroupConfig = EventMeshUtil.cloneObject(latestConsumerGroupConfig);
             eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }
@@ -201,7 +202,7 @@ public class ConsumerManager {
             ConsumerGroupStateEvent notification = new ConsumerGroupStateEvent();
             notification.action = ConsumerGroupStateEvent.ConsumerGroupStateAction.CHANGE;
             notification.consumerGroup = consumerGroup;
-            notification.consumerGroupConfig = latestConsumerGroupConfig;
+            notification.consumerGroupConfig = EventMeshUtil.cloneObject(latestConsumerGroupConfig);
             eventMeshHTTPServer.getEventBus().post(notification);
             return;
         }
