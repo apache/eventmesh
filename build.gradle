@@ -471,6 +471,8 @@ subprojects {
             dependency "io.grpc:grpc-netty:1.15.0"
             dependency "io.grpc:grpc-netty-shaded:1.15.0"
 
+            dependency "javax.annotation:javax.annotation-api:1.3.2"
+
             dependency "com.github.seancfoley:ipaddress:5.3.3"
         }
     }
