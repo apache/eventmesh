@@ -56,8 +56,8 @@ netty-buffer-4.1.73.Final.jar
 netty-codec-4.1.73.Final.jar
 netty-codec-dns-4.1.73.Final.jar
 netty-codec-haproxy-4.1.73.Final.jar
-netty-codec-http2-4.1.73.Final.jar
 netty-codec-http-4.1.73.Final.jar
+netty-codec-http2-4.1.73.Final.jar
 netty-codec-memcache-4.1.73.Final.jar
 netty-codec-mqtt-4.1.73.Final.jar
 netty-codec-redis-4.1.73.Final.jar
@@ -101,8 +101,8 @@ opentelemetry-sdk-common-1.3.0.jar
 opentelemetry-sdk-metrics-1.3.0-alpha.jar
 opentelemetry-sdk-trace-1.3.0.jar
 opentelemetry-semconv-1.3.0-alpha.jar
-protobuf-java-3.5.1.jar
 proto-google-common-protos-1.0.0.jar
+protobuf-java-3.5.1.jar
 rocketmq-acl-4.7.1.jar
 rocketmq-broker-4.7.1.jar
 rocketmq-client-4.7.1.jar
@@ -115,9 +115,9 @@ rocketmq-srvutil-4.7.1.jar
 rocketmq-store-4.7.1.jar
 rocketmq-test-4.7.1.jar
 rocketmq-tools-4.7.1.jar
+simpleclient-0.8.1.jar
 simpleclient_common-0.8.1.jar
 simpleclient_httpserver-0.8.1.jar
-simpleclient-0.8.1.jar
 slf4j-api-1.7.30.jar
 snakeyaml-1.19.jar
 system-rules-1.16.1.jar
