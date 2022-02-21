@@ -31,6 +31,9 @@ find "$decompress_conf" -name "*.jar" -exec basename {} \; | uniq | sort > "$all
 
 grep -wvf "$self_modules_txt" "$all_dependencies_txt" | uniq | sort > "$third_party_dependencies_txt"
 
+sort "$third_party_dependencies_txt"|uniq > "$third_party_dependencies_txt"
+sort "$known_third_party_dependencies_txt"|uniq > "$known_third_party_dependencies_txt"
+
 # If the check is success it will return 0
 diff -w -B "$third_party_dependencies_txt" "$known_third_party_dependencies_txt"
 
