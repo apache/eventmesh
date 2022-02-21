@@ -236,6 +236,14 @@ failureaccess 1.0.1: https://github.com/google/guava, Apache 2.0
 listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://github.com/google/guava, Apache 2.0
 fastjson 1.2.69: https://github.com/alibaba/fastjson, Apache 2.0
 guava 31.0.1-jre: https://github.com/google/guava, Apache 2.0
+grpc-context 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
+grpc-core 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
+grpc-netty 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
+grpc-netty-shaded 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
+grpc-protobuf 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
+grpc-protobuf-lite 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
+grpc-stub 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
+gson 2.7:https://github.com/google/gson, Apache 2.0
 httpclient 4.5.13: https://github.com/apache/httpcomponents-client, Apache 2.0
 httpcore 4.4.13: https://github.com/apache/httpcomponents-core, Apache 2.0
 j2objc-annotations 1.3: https://github.com/google/j2objc, Apache 2.0
@@ -288,7 +296,9 @@ netty-transport-rxtx 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1
 netty-transport-sctp 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
 netty-transport-udt 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
 okio 1.17.2: https://github.com/square/okio, Apache 2.0
-okhttp 3.14.9: https://github.com/square/okhttp
+okhttp 3.14.9: https://github.com/square/okhttp, Apache 2.0
+opencensus-api 0.12.3: https://github.com/census-instrumentation/opencensus-java, Apache 2.0
+opencensus-contrib-grpc-metrics 0.12.3: https://github.com/census-instrumentation/opencensus-java, Apache 2.0
 openmessaging-api 2.22.1-pubsub: https://github.com/openmessaging/dledger, Apache 2.0
 opentelemetry-api 1.3.0: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
 opentelemetry-api-metrics 1.3.0-alpha: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
@@ -300,6 +310,7 @@ opentelemetry-sdk-common 1.3.0: https://github.com/open-telemetry/opentelemetry-
 opentelemetry-sdk-metrics 1.3.0-alpha: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
 opentelemetry-sdk-trace 1.3.0: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
 opentelemetry-semconv 1.3.0-alpha: https://github.com/open-telemetry/opentelemetry-java, Apache 2.0
+proto-google-common-protos 1.0.0: https://github.com/googleapis/common-protos-java, Apache 2.0
 rocketmq-acl 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
 rocketmq-broker 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
 rocketmq-client 4.7.1: https://github.com/apache/rocketmq, Apache 2.0
@@ -330,6 +341,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
 
 hamcrest-core 1.3: https://github.com/hamcrest/JavaHamcrest, BSD
 jsr305 3.0.2: https://code.google.com/archive/p/jsr-305, BSD
+protobuf-java 3.5.1: https://github.com/protocolbuffers/protobuf, BSD
 
 ========================================================================
 CDDL licenses
@@ -338,6 +350,7 @@ CDDL licenses
 The following components are provided under the CDDL License. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
+javax.annotation-api 1.3.2: https://github.com/javaee/javax.annotation , CDDL1.1
 
 ========================================================================
 CPL licenses

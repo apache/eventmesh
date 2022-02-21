@@ -37,11 +37,11 @@ cd ../bin
 sh start.sh
 tail -f ./logs/eventmesh.out
 EventMeshTCPServer[port=10000] started
-...
-HTTPServer[port=10105] started
-...
-```
 
+HTTPServer[port=10105] started
+
+EventMeshGrpcServer[port=10205] started
+```
 
 ## 2 Run Locally
 
@@ -98,7 +98,8 @@ eventMesh.connector.plugin.type=rocketmq
 running `org.apache.eventmesh.starter.StartUp` main method in eventmesh-starter module.
 
 EventMeshTCPServer[port=10000] started
-...
+
 HTTPServer[port=10105] started
-...
+
+EventMeshGrpcServer[port=10205] started
 ```
