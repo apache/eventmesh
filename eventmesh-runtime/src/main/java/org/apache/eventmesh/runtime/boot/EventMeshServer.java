@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
+import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.connector.ConnectorResource;
@@ -36,6 +37,10 @@ public class EventMeshServer {
 
     private EventMeshTCPServer eventMeshTCPServer;
 
+    private EventMeshGrpcServer eventMeshGrpcServer;
+
+    private EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
+
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
     private EventMeshTCPConfiguration eventMeshTCPConfiguration;
@@ -49,9 +54,11 @@ public class EventMeshServer {
     private ServiceState serviceState;
 
     public EventMeshServer(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
-                           EventMeshTCPConfiguration eventMeshTCPConfiguration) {
+                           EventMeshTCPConfiguration eventMeshTCPConfiguration,
+                           EventMeshGrpcConfiguration eventMeshGrpcConfiguration) {
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
+        this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
         this.acl = new Acl();
         this.registry = new Registry();
         this.connectorResource = new ConnectorResource();
@@ -69,6 +76,11 @@ public class EventMeshServer {
         }
 
         connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
+
+        if (eventMeshGrpcConfiguration != null) {
+            eventMeshGrpcServer = new EventMeshGrpcServer(eventMeshGrpcConfiguration);
+            eventMeshGrpcServer.init();
+        }
 
         eventMeshHTTPServer = new EventMeshHTTPServer(this, eventMeshHttpConfiguration);
         eventMeshHTTPServer.init();
@@ -96,6 +108,10 @@ public class EventMeshServer {
             registry.start();
         }
 
+        if (eventMeshGrpcConfiguration != null) {
+            eventMeshGrpcServer.start();
+        }
+
         eventMeshHTTPServer.start();
         if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.start();
@@ -117,11 +133,19 @@ public class EventMeshServer {
 
         connectorResource.release();
 
+        if (eventMeshGrpcConfiguration != null) {
+            eventMeshGrpcServer.shutdown();
+        }
+
         if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable) {
             acl.shutdown();
         }
         serviceState = ServiceState.STOPED;
         logger.info("server state:{}", serviceState);
+    }
+
+    public EventMeshGrpcServer getEventMeshGrpcServer() {
+        return eventMeshGrpcServer;
     }
 
     public EventMeshHTTPServer getEventMeshHTTPServer() {

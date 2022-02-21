@@ -77,6 +77,7 @@ Some default key-values are listed below:
 |----------------------------|---------------|----------------------------|
 | eventMesh.server.http.port | 10105         | EventMesh http server port |
 | eventMesh.server.tcp.port  | 10000         | EventMesh tcp server port  |
+| eventMesh.server.grpc.port  | 10205         | EventMesh grpc server port  |
 
 
 
