@@ -97,12 +97,6 @@ public class RecommendTask extends AbstractTask {
         if (userAgent == null) {
             return null;
         }
-        if (EventMeshConstants.PURPOSE_PUB.equals(userAgent.getPurpose())) {
-            return userAgent.getProducerGroup();
-        } else if (EventMeshConstants.PURPOSE_SUB.equals(userAgent.getPurpose())) {
-            return userAgent.getConsumerGroup();
-        } else {
-            return null;
-        }
+        return userAgent.getGroup();
     }
 }

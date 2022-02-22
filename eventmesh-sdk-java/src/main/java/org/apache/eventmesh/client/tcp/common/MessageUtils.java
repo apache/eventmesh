@@ -150,8 +150,7 @@ public class MessageUtils {
                 .pid(agent.getPid())
                 .version(agent.getVersion())
                 .idc(agent.getIdc())
-                .consumerGroup(agent.getConsumerGroup())
-                .producerGroup(agent.getProducerGroup())
+                .group(agent.getGroup())
                 .purpose(EventMeshCommon.USER_AGENT_PURPOSE_SUB)
                 .build();
     }
@@ -168,8 +167,7 @@ public class MessageUtils {
                 .pid(agent.getPid())
                 .version(agent.getVersion())
                 .idc(agent.getIdc())
-                .consumerGroup(agent.getConsumerGroup())
-                .producerGroup(agent.getProducerGroup())
+                .group(agent.getGroup())
                 .purpose(EventMeshCommon.USER_AGENT_PURPOSE_PUB)
                 .build();
     }
