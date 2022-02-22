@@ -179,29 +179,29 @@ public class ClientSessionGroupMapping {
         }
     }
 
-    private ClientGroupWrapper constructClientGroupWrapper(String sysId, String producerGroup, String consumerGroup,
+    private ClientGroupWrapper constructClientGroupWrapper(String sysId, String group,
                                                            EventMeshTCPServer eventMeshTCPServer,
                                                            DownstreamDispatchStrategy downstreamDispatchStrategy) {
-        return new ClientGroupWrapper(sysId, producerGroup, consumerGroup, eventMeshTCPServer,
+        return new ClientGroupWrapper(sysId, group, eventMeshTCPServer,
                 downstreamDispatchStrategy);
     }
 
     private void initClientGroupWrapper(UserAgent user, Session session) throws Exception {
-        if (!lockMap.containsKey(user.getSubsystem())) {
-            Object obj = lockMap.putIfAbsent(user.getSubsystem(), new Object());
+        if (!lockMap.containsKey(user.getGroup())) {
+            Object obj = lockMap.putIfAbsent(user.getGroup(), new Object());
             if (obj == null) {
-                logger.info("add lock to map for subsystem:{}", user.getSubsystem());
+                logger.info("add lock to map for group:{}", user.getGroup());
             }
         }
-        synchronized (lockMap.get(user.getSubsystem())) {
-            if (!clientGroupMap.containsKey(user.getSubsystem())) {
-                ClientGroupWrapper cgw = constructClientGroupWrapper(user.getSubsystem(), user.getProducerGroup(),
-                        user.getConsumerGroup(), eventMeshTCPServer, new FreePriorityDispatchStrategy());
-                clientGroupMap.put(user.getSubsystem(), cgw);
-                logger.info("create new ClientGroupWrapper, subsystem:{}", user.getSubsystem());
+        synchronized (lockMap.get(user.getGroup())) {
+            if (!clientGroupMap.containsKey(user.getGroup())) {
+                ClientGroupWrapper cgw = constructClientGroupWrapper(user.getSubsystem(), user.getGroup(),
+                        eventMeshTCPServer, new FreePriorityDispatchStrategy());
+                clientGroupMap.put(user.getGroup(), cgw);
+                logger.info("create new ClientGroupWrapper, group:{}", user.getGroup());
             }
 
-            ClientGroupWrapper cgw = clientGroupMap.get(user.getSubsystem());
+            ClientGroupWrapper cgw = clientGroupMap.get(user.getGroup());
 
             if (EventMeshConstants.PURPOSE_PUB.equals(user.getPurpose())) {
                 startClientGroupProducer(cgw, session);
@@ -307,7 +307,7 @@ public class ClientSessionGroupMapping {
                     continue;
                 }
                 Session reChooseSession = session.getClientGroupWrapper().get().getDownstreamDispatchStrategy()
-                        .select(session.getClientGroupWrapper().get().getConsumerGroup(),
+                        .select(session.getClientGroupWrapper().get().getGroup(),
                                 downStreamMsgContext.event.getSubject(),
                                 Objects.requireNonNull(session.getClientGroupWrapper().get()).groupConsumerSessions);
                 if (reChooseSession != null) {
