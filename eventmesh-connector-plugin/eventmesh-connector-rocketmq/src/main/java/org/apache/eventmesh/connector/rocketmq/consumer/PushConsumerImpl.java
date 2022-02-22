@@ -202,7 +202,7 @@ public class PushConsumerImpl {
             final Properties contextProperties = new Properties();
             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
                     EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
-            AsyncConsumeContext asyncConsumeContext = new AsyncConsumeContext() {
+            EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
                 @Override
                 public void commit(EventMeshAction action) {
                     switch (action) {
@@ -224,7 +224,9 @@ public class PushConsumerImpl {
                 }
             };
 
-            eventListener.consume(cloudEvent, asyncConsumeContext);
+            eventMeshAsyncConsumeContext.setAbstractContext(context);
+
+            eventListener.consume(cloudEvent, eventMeshAsyncConsumeContext);
 
             return EventMeshConsumeConcurrentlyStatus.valueOf(
                     contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));

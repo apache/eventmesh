@@ -23,9 +23,10 @@ _Status description:_
 | Status | Description | Comments |
 | --- | --- |  --- |
 | ✏️️| A lightable full-featured polyglot capability support | [doc](https://github.com/apache/incubator-eventmesh/issues/417)  |
-| ✏️️| Event Governance for choreography | [doc](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/features/eventmesh-workflow-design.md)  |
-| ✏️️| Event Streaming | [doc](https://github.com/apache/incubator-eventmesh/issues/676)  |
-| 🚩| Support federated connector | [doc](https://github.com/apache/incubator-eventmesh/issues/577)  |
-| 🚩| EventMesh supports dashboard | [doc](https://github.com/apache/incubator-eventmesh/issues/700)  |
-| 🚩| Transaction event support | [doc](https://github.com/apache/incubator-eventmesh/issues/697)  |
+| 🚩| Event Governance for choreography | [doc](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/features/eventmesh-workflow-design.md)  |
+| 🚩| Event Streaming | [doc](https://github.com/apache/incubator-eventmesh/issues/676)  |
+| 🚩| Federated connector | [doc](https://github.com/apache/incubator-eventmesh/issues/577)  |
+| 🚩| Dashboard | [doc](https://github.com/apache/incubator-eventmesh/issues/700)  |
+| 🚩| Transaction event | [doc](https://github.com/apache/incubator-eventmesh/issues/697)  |
+| 🚩| Event-query language(EQL)| [doc](https://github.com/apache/incubator-eventmesh/issues/778)  |
 
