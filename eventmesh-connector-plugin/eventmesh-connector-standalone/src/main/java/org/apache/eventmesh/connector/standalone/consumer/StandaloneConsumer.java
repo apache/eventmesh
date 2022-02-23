@@ -37,6 +37,8 @@ public class StandaloneConsumer implements Consumer {
 
     private StandaloneBroker standaloneBroker;
 
+    private EventListener listener;
+
     private AtomicBoolean isStarted;
 
     private final ConcurrentHashMap<String, SubScribeTask> subscribeTaskTable;
@@ -90,10 +92,8 @@ public class StandaloneConsumer implements Consumer {
     }
 
     @Override
-    public void subscribe(String topic, EventListener listener) throws Exception {
-        if (listener == null) {
-            throw new IllegalArgumentException("listener cannot be null");
-        }
+    public void subscribe(String topic) throws Exception {
+
         if (subscribeTaskTable.containsKey(topic)) {
             return;
         }
@@ -115,5 +115,10 @@ public class StandaloneConsumer implements Consumer {
             subScribeTask.shutdown();
             subscribeTaskTable.remove(topic);
         }
+    }
+
+    @Override
+    public void registerEventListener(EventListener listener) {
+        this.listener = listener;
     }
 }
