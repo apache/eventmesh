@@ -164,8 +164,6 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
         Collections.shuffle(new ArrayList<>(sessionList));
 
         for (int i = 0; i < judge; i++) {
-            //String redirectSessionAddr = ProxyTcp2Client.redirectClientForRebalance(sessionList.get(i),
-            // eventMeshTCPServer.getClientSessionGroupMapping());
             String newProxyIp = eventMeshRecommendResult.get(i).split(":")[0];
             String newProxyPort = eventMeshRecommendResult.get(i).split(":")[1];
             String redirectSessionAddr = EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer, newProxyIp,

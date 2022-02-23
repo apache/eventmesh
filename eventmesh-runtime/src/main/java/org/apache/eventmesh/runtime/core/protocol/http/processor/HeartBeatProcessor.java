@@ -139,8 +139,6 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
                 try {
                     Acl.doAclCheckInHttpHeartbeat(remoteAddr, user, pass, sys, client.topic, requestCode);
                 } catch (Exception e) {
-                    //String errorMsg = String.format("CLIENT HAS NO PERMISSION,send failed, topic:%s, subsys:%s, realIp:%s", topic, subsys, realIp);
-
                     responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                             heartbeatResponseHeader,
                             SendMessageResponseBody

@@ -22,12 +22,9 @@ import org.apache.eventmesh.api.acl.AclService;
 import org.apache.eventmesh.api.exception.AclException;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
-
 import org.apache.commons.lang3.StringUtils;
-
 import java.util.Properties;
 import java.util.ServiceLoader;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +33,6 @@ public class Acl {
     private static AclService aclService;
 
     public void init(String aclPluginType) throws AclException {
-        //aclService = getSpiAclService();
         aclService = EventMeshExtensionFactory.getExtension(AclService.class, aclPluginType);
         if (aclService == null) {
             logger.error("can't load the aclService plugin, please check.");
