@@ -89,15 +89,7 @@ public class PushConsumerImplTest {
         consumedMsg.setBody(testBody);
         consumedMsg.putUserProperty(NonStandardKeys.MESSAGE_DESTINATION, "TOPIC");
         consumedMsg.setTopic("HELLO_QUEUE");
-        consumer.subscribe("HELLO_QUEUE", "*", new EventListener() {
-
-            @Override
-            public void consume(CloudEvent cloudEvent, org.apache.eventmesh.api.AsyncConsumeContext context) {
-                assertThat(cloudEvent.getExtension("MESSAGE_ID")).isEqualTo("NewMsgId");
-                assertThat(cloudEvent.getData()).isEqualTo(testBody);
-                context.commit(EventMeshAction.CommitMessage);
-            }
-        });
+        consumer.subscribe("HELLO_QUEUE", "*");
         ((MessageListenerConcurrently) rocketmqPushConsumer
                 .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
 

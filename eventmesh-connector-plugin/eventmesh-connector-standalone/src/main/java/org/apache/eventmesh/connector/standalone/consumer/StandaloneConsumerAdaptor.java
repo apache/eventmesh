@@ -69,8 +69,8 @@ public class StandaloneConsumerAdaptor implements Consumer {
     }
 
     @Override
-    public void subscribe(String topic, EventListener listener) throws Exception {
-        consumer.subscribe(topic, listener);
+    public void subscribe(String topic) throws Exception {
+        consumer.subscribe(topic);
     }
 
     @Override
@@ -78,95 +78,8 @@ public class StandaloneConsumerAdaptor implements Consumer {
         consumer.unsubscribe(topic);
     }
 
-    //@Override
-    //public void init(Properties keyValue) throws Exception {
-    //    String producerGroup = keyValue.getProperty("producerGroup");
-    //
-    //    MessagingAccessPointImpl messagingAccessPoint = new MessagingAccessPointImpl(keyValue);
-    //    consumer = (StandaloneConsumer) messagingAccessPoint.createConsumer(keyValue);
-    //
-    //}
-    //
-    //@Override
-    //public void updateOffset(List<Message> msgs, AbstractContext context) {
-    //    for(Message message : msgs) {
-    //        consumer.updateOffset(message);
-    //    }
-    //}
-    //
-    //@Override
-    //public void subscribe(String topic, AsyncMessageListener listener) throws Exception {
-    //    // todo: support subExpression
-    //    consumer.subscribe(topic, "*", listener);
-    //}
-    //
-    //@Override
-    //public void unsubscribe(String topic) {
-    //    consumer.unsubscribe(topic);
-    //}
-    //
-    //@Override
-    //public void subscribe(String topic, String subExpression, MessageListener listener) {
-    //    throw new UnsupportedOperationException("not supported yet");
-    //}
-    //
-    //@Override
-    //public void subscribe(String topic, MessageSelector selector, MessageListener listener) {
-    //    throw new UnsupportedOperationException("not supported yet");
-    //}
-    //
-    //@Override
-    //public <T> void subscribe(String topic, String subExpression, GenericMessageListener<T> listener) {
-    //    throw new UnsupportedOperationException("not supported yet");
-    //}
-    //
-    //@Override
-    //public <T> void subscribe(String topic, MessageSelector selector, GenericMessageListener<T> listener) {
-    //    throw new UnsupportedOperationException("not supported yet");
-    //}
-    //
-    //@Override
-    //public void subscribe(String topic, String subExpression, AsyncMessageListener listener) {
-    //    throw new UnsupportedOperationException("not supported yet");
-    //}
-    //
-    //@Override
-    //public void subscribe(String topic, MessageSelector selector, AsyncMessageListener listener) {
-    //    throw new UnsupportedOperationException("not supported yet");
-    //}
-    //
-    //@Override
-    //public <T> void subscribe(String topic, String subExpression, AsyncGenericMessageListener<T> listener) {
-    //    throw new UnsupportedOperationException("not supported yet");
-    //}
-    //
-    //@Override
-    //public <T> void subscribe(String topic, MessageSelector selector, AsyncGenericMessageListener<T> listener) {
-    //    throw new UnsupportedOperationException("not supported yet");
-    //}
-    //
-    //@Override
-    //public void updateCredential(Properties credentialProperties) {
-    //
-    //}
-    //
-    //@Override
-    //public boolean isStarted() {
-    //    return consumer.isStarted();
-    //}
-    //
-    //@Override
-    //public boolean isClosed() {
-    //    return consumer.isClosed();
-    //}
-    //
-    //@Override
-    //public void start() {
-    //    consumer.start();
-    //}
-    //
-    //@Override
-    //public void shutdown() {
-    //    consumer.shutdown();
-    //}
+    @Override
+    public void registerEventListener(EventListener listener) {
+        consumer.registerEventListener(listener);
+    }
 }

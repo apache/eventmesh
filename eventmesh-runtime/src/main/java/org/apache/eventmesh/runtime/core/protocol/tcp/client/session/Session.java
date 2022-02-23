@@ -171,7 +171,7 @@ public class Session {
 
             clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().checkTopicExist(item.getTopic());
 
-            clientGroupWrapper.get().addSubscription(item.getTopic(), this);
+            clientGroupWrapper.get().addSubscription(item, this);
             subscribeLogger.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
         }
     }
@@ -179,7 +179,7 @@ public class Session {
     public void unsubscribe(List<SubscriptionItem> items) throws Exception {
         for (SubscriptionItem item : items) {
             sessionContext.subscribeTopics.remove(item.getTopic());
-            clientGroupWrapper.get().removeSubscription(item.getTopic(), this);
+            clientGroupWrapper.get().removeSubscription(item, this);
 
             if (!clientGroupWrapper.get().hasSubscription(item.getTopic())) {
                 clientGroupWrapper.get().unsubscribe(item);
