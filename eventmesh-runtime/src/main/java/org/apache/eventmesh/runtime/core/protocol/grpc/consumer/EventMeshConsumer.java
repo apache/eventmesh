@@ -140,6 +140,8 @@ public class EventMeshConsumer {
         keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroup,
             eventMeshGrpcConfiguration.eventMeshCluster));
         persistentMqConsumer.init(keyValue);
+        EventListener clusterEventListner = createEventListener(SubscriptionMode.CLUSTERING);
+        persistentMqConsumer.registerEventListener(clusterEventListner);
 
         Properties broadcastKeyValue = new Properties();
         broadcastKeyValue.put("isBroadcast", "true");
@@ -148,6 +150,8 @@ public class EventMeshConsumer {
         broadcastKeyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroup,
             eventMeshGrpcConfiguration.eventMeshCluster));
         broadcastMqConsumer.init(broadcastKeyValue);
+        EventListener broadcastEventListner = createEventListener(SubscriptionMode.BROADCASTING);
+        broadcastMqConsumer.registerEventListener(broadcastEventListner);
 
         serviceState = ServiceState.INITED;
         logger.info("EventMeshConsumer [{}] initialized.............", consumerGroup);
@@ -184,9 +188,9 @@ public class EventMeshConsumer {
 
     public void subscribe(String topic, SubscriptionMode subscriptionMode) throws Exception {
         if (SubscriptionMode.CLUSTERING.equals(subscriptionMode)) {
-            persistentMqConsumer.subscribe(topic, createEventListener(subscriptionMode));
+            persistentMqConsumer.subscribe(topic);
         } else if (SubscriptionMode.BROADCASTING.equals(subscriptionMode)) {
-            broadcastMqConsumer.subscribe(topic, createEventListener(subscriptionMode));
+            broadcastMqConsumer.subscribe(topic);
         } else {
             logger.error("Subscribe Failed. Incorrect Subscription Mode");
             throw new Exception("Subscribe Failed. Incorrect Subscription Mode");

@@ -283,7 +283,7 @@ public class ClientSessionGroupMapping {
      */
     private void cleanSubscriptionInSession(Session session) throws Exception {
         for (SubscriptionItem item : session.getSessionContext().subscribeTopics.values()) {
-            session.getClientGroupWrapper().get().removeSubscription(item.getTopic(), session);
+            session.getClientGroupWrapper().get().removeSubscription(item, session);
             if (!session.getClientGroupWrapper().get().hasSubscription(item.getTopic())) {
                 session.getClientGroupWrapper().get().unsubscribe(item);
             }
