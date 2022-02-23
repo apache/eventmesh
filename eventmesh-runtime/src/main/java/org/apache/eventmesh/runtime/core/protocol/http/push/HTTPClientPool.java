@@ -37,6 +37,8 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -47,13 +49,11 @@ import javax.net.ssl.SSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-
 public class HTTPClientPool {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private List<CloseableHttpClient> clients = Lists.newArrayList();
+    private List<CloseableHttpClient> clients = Collections.synchronizedList(new ArrayList<>());
 
     private int core = 1;
 

@@ -55,7 +55,8 @@ public class WebhookUtil {
 
         try (CloseableHttpResponse response = httpClient.execute(builder)) {
             String allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
-            return allowedOrigin.equals("*") || allowedOrigin.equalsIgnoreCase(requestOrigin);
+            return StringUtils.isEmpty(allowedOrigin) ||
+                allowedOrigin.equals("*") || allowedOrigin.equalsIgnoreCase(requestOrigin);
         } catch (Exception e) {
             logger.warn("HTTP Options Method is not supported at the Delivery Target: {},"
                 + " unable to obtain the webhook delivery agreement.", targetUrl);
