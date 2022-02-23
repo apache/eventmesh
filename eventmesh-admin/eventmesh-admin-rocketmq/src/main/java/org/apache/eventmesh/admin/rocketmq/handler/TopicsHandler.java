@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.admin.rocketmq.handler;
 
+import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
+
 import org.apache.eventmesh.admin.rocketmq.request.TopicCreateRequest;
 import org.apache.eventmesh.admin.rocketmq.response.TopicResponse;
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
@@ -34,7 +36,6 @@ import org.slf4j.LoggerFactory;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
-import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
 
 public class TopicsHandler implements HttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(TopicsHandler.class);

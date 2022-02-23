@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.admin.rocketmq.controller;
 
+import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
+
 import org.apache.eventmesh.admin.rocketmq.handler.TopicsHandler;
 
 import java.io.IOException;
@@ -26,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpServer;
 
-import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
 
 public class AdminController {
 
@@ -36,9 +37,9 @@ public class AdminController {
     }
 
     public void run(HttpServer server) throws IOException {
-                
+
         server.createContext(TOPIC_MANAGE_PATH, new TopicsHandler());
-        
+
         logger.info("EventMesh-Admin Controller server context created successfully");
     }
 }
