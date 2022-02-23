@@ -15,30 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.rocketmq.controller;
+package org.apache.eventmesh.admin.rocketmq;
 
-import org.apache.eventmesh.admin.rocketmq.handler.TopicsHandler;
+public class Constants {
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.sun.net.httpserver.HttpServer;
-
-import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
-
-public class AdminController {
-
-    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
-
-    public AdminController() {
-    }
-
-    public void run(HttpServer server) throws IOException {
-                
-        server.createContext(TOPIC_MANAGE_PATH, new TopicsHandler());
-        
-        logger.info("EventMesh-Admin Controller server context created successfully");
-    }
+    public static final String TOPIC_MANAGE_PATH = "/topicManage";
 }

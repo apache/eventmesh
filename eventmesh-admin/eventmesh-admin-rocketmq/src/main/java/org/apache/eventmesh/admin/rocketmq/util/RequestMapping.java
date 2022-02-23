@@ -18,11 +18,12 @@
 package org.apache.eventmesh.admin.rocketmq.util;
 
 import com.sun.net.httpserver.HttpExchange;
+import org.apache.eventmesh.admin.rocketmq.HttpMethod;
 
 public class RequestMapping {      
 
     public static boolean postMapping(String value, HttpExchange httpExchange)  {
-        if ("post".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+        if (HttpMethod.POST.name().equalsIgnoreCase(httpExchange.getRequestMethod())) { 
             String requestUri = httpExchange.getRequestURI().getPath();
             UrlMappingPattern matcher = new UrlMappingPattern(value);
             return matcher.matches(requestUri);
@@ -31,7 +32,7 @@ public class RequestMapping {
     }
 
     public static boolean getMapping(String value, HttpExchange httpExchange)  {
-        if ("get".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+        if (HttpMethod.GET.name().equalsIgnoreCase(httpExchange.getRequestMethod())) { 
             String requestUri = httpExchange.getRequestURI().getPath();
             UrlMappingPattern matcher = new UrlMappingPattern(value);
             return matcher.matches(requestUri);
@@ -40,7 +41,7 @@ public class RequestMapping {
     }
 
     public static boolean putMapping(String value, HttpExchange httpExchange)  {
-        if ("put".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+        if (HttpMethod.PUT.name().equalsIgnoreCase(httpExchange.getRequestMethod())) { 
             String requestUri = httpExchange.getRequestURI().getPath();
             UrlMappingPattern matcher = new UrlMappingPattern(value);
             return matcher.matches(requestUri);
@@ -49,7 +50,7 @@ public class RequestMapping {
     }
 
     public static boolean deleteMapping(String value, HttpExchange httpExchange)  {
-        if ("delete".equalsIgnoreCase(httpExchange.getRequestMethod())) { 
+        if (HttpMethod.DELETE.name().equalsIgnoreCase(httpExchange.getRequestMethod())) { 
             String requestUri = httpExchange.getRequestURI().getPath();
             UrlMappingPattern matcher = new UrlMappingPattern(value);
             return matcher.matches(requestUri);
