@@ -84,11 +84,6 @@ public class RequestContext {
 
 
     public static Object key(Package request) {
-        //MessageType type = request.getHeader().getType();
-        //if(MessageType.SyncRequest == type || MessageType.SyncResponse == type
-        //        || MessageType.AsyncRequest == type || MessageType.AsyncResponse == type) {
-        //    return request.getBody().getSysHeader().getUniqueId() ;
-        //}
         return request.getHeader().getSeq();
     }
 }
