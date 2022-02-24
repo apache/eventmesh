@@ -179,15 +179,11 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         long startTime = System.currentTimeMillis();
 
-        //Message rocketMQMsg;
-        //Message omsMsg = new Message();
         String replyTopic = EventMeshConstants.RR_REPLY_TOPIC;
 
         String origTopic = event.getSubject();
 
-        //Map<String, String> extFields = replyMessageRequestBody.getExtFields();
         final String replyMQCluster = event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER).toString();
-        //final String replyMQCluster = MapUtils.getString(extFields, EventMeshConstants.PROPERTY_MESSAGE_CLUSTER, null);
         if (!org.apache.commons.lang3.StringUtils.isEmpty(replyMQCluster)) {
             replyTopic = replyMQCluster + "-" + replyTopic;
         } else {
