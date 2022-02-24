@@ -15,29 +15,41 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.trace.api;
+
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
+
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * The top-level interface of trace
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    ;
+@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.TRACE)
+public interface TraceService {
+    /**
+     * init the trace service
+     */
+    void init();
 
-    private final String extensionTypeName;
+    /**
+     * close the trace service
+     */
+    void shutdown();
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    /**
+     * get the tracer
+     *
+     * @param instrumentationName
+     * @return
+     */
+    Tracer getTracer(String instrumentationName);
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
-
+    /**
+     * get TextMapPropagator
+     *
+     * @return
+     */
+    TextMapPropagator getTextMapPropagator();
 }
