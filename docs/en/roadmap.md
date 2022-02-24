@@ -28,5 +28,5 @@ _Status description:_
 | 🚩| Federated connector | [doc](https://github.com/apache/incubator-eventmesh/issues/577)  |
 | 🚩| Dashboard | [doc](https://github.com/apache/incubator-eventmesh/issues/700)  |
 | 🚩| Transaction event | [doc](https://github.com/apache/incubator-eventmesh/issues/697)  |
-| 🚩| Event-query language(EQL)| [doc](https://github.com/apache/incubator-eventmesh/issues/778)  |
-
+| 🚩| Event-query language(EQL)| [doc](https://github.com/apache/incubator-eventmesh/issues/778)  | 
+| 🚩| Knative Eventing Infra| [doc](https://github.com/apache/incubator-eventmesh/issues/790)  |
