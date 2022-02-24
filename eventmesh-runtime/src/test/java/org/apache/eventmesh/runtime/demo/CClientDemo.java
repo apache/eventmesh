@@ -48,18 +48,6 @@ public class CClientDemo {
         client.justSubscribe(ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
         client.justSubscribe(BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
         client.listen();
-        //for (int i = 0; i < 10000; i++) {
-        //    Package rr = null;
-        //    AccessMessage rrMessage = null;
-        //    try {
-        //        rr = client.rr(MessageUtils.rrMesssage("TEST-TOPIC-TCP-SYNC"), 3000);
-        //        Thread.sleep(100);
-        //        //rrMessage = (AccessMessage) rr.getBody();
-        //        logger.error(         "rr-reply-------------------------------------------------" + rr.toString());
-        //    } catch (Exception e) {
-        //        e.printStackTrace();
-        //    }
-        //}
         client.registerSubBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {

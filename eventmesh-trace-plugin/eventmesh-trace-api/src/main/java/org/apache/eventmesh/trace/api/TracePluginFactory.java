@@ -15,11 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.http.consumer;
+package org.apache.eventmesh.trace.api;
 
-public enum HandleResult {
-    OK,
-    NOLISTEN,
-    RETRY,
-    FAIL
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
+import lombok.experimental.UtilityClass;
+
+/**
+ * to get the trace service
+ */
+@UtilityClass
+public class TracePluginFactory {
+    /**
+     * to get TraceService
+     *
+     * @param traceServiceType
+     * @return
+     */
+    public static TraceService getTraceService(String traceServiceType) {
+        checkNotNull(traceServiceType, "traceServiceType cannot be null");
+
+        TraceService traceService = EventMeshExtensionFactory.getExtension(TraceService.class, traceServiceType);
+        return checkNotNull(traceService, "traceServiceType: " + traceServiceType + " is not supported");
+    }
 }

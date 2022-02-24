@@ -15,20 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.http.consumer.listener;
+dependencies {
+    implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
+    implementation project(":eventmesh-common")
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'org.apache.commons:commons-lang3'
+    implementation 'com.google.guava:guava'
 
+    implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
+    implementation 'io.opentelemetry:opentelemetry-semconv'
 
-import org.apache.eventmesh.client.http.consumer.HandleResult;
-import org.apache.eventmesh.client.http.consumer.context.LiteConsumeContext;
-import org.apache.eventmesh.common.EventMeshMessage;
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
-/**
- * LiteMessageListener
- */
-public interface LiteMessageListener {
-
-    HandleResult handle(EventMeshMessage eventMeshMessage, LiteConsumeContext liteConsumeContext);
-
-    boolean reject();
-
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }

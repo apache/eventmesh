@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.exporter;
+package org.apache.eventmesh.runtime.trace;
 
 import java.util.Collection;
 
