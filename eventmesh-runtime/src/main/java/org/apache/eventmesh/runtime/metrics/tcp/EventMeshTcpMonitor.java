@@ -164,7 +164,6 @@ public class EventMeshTcpMonitor {
         }), delay, period, TimeUnit.MILLISECONDS);
 
         monitorThreadPoolTask = eventMeshTCPServer.getScheduler().scheduleAtFixedRate(() -> {
-            //ThreadPoolHelper.printThreadPoolState();
             eventMeshTCPServer.getEventMeshRebalanceService().printRebalanceThreadPoolState();
             eventMeshTCPServer.getEventMeshTcpRetryer().printRetryThreadPoolState();
 
