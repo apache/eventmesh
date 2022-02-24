@@ -27,6 +27,7 @@ public enum EventMeshExtensionType {
     SECURITY("security"),
     PROTOCOL("protocol"),
     METRICS("metrics"),
+    TRACE("trace"),
     ;
 
     private final String extensionTypeName;

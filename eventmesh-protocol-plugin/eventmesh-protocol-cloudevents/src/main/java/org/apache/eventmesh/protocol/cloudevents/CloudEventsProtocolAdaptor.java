@@ -19,6 +19,10 @@ package org.apache.eventmesh.protocol.cloudevents;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.grpc.common.BatchMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
@@ -26,6 +30,7 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.cloudevents.resolver.grpc.GrpcMessageProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageBatchV2ProtocolResolver;
 import org.apache.eventmesh.protocol.cloudevents.resolver.http.SendMessageRequestProtocolResolver;
@@ -51,7 +56,7 @@ import com.google.common.base.Preconditions;
  * @since 1.3.0
  */
 public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
-        implements ProtocolAdaptor<ProtocolTransportObject> {
+    implements ProtocolAdaptor<ProtocolTransportObject> {
 
     @Override
     public CloudEvent toCloudEvent(ProtocolTransportObject cloudEvent) throws ProtocolHandleException {
@@ -69,6 +74,9 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
             String requestCode = ((HttpCommand) cloudEvent).getRequestCode();
 
             return deserializeHttpProtocol(requestCode, header, body);
+        } else if (cloudEvent instanceof SimpleMessageWrapper) {
+            SimpleMessage simpleMessage = ((SimpleMessageWrapper) cloudEvent).getMessage();
+            return GrpcMessageProtocolResolver.buildEvent(simpleMessage);
         } else {
             throw new ProtocolHandleException(String.format("protocol class: %s", cloudEvent.getClass()));
         }
@@ -98,8 +106,13 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
 
     @Override
     public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol)
-            throws ProtocolHandleException {
-        return null;
+        throws ProtocolHandleException {
+        if (protocol instanceof BatchMessageWrapper) {
+            BatchMessage batchMessage = ((BatchMessageWrapper) protocol).getMessage();
+            return GrpcMessageProtocolResolver.buildBatchEvents(batchMessage);
+        } else {
+            throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));
+        }
     }
 
     @Override
@@ -113,7 +126,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
                 @Override
                 public Map<String, Object> toMap() {
                     byte[] eventByte =
-                            EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(cloudEvent);
+                        EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE).serialize(cloudEvent);
                     map.put("content", new String(eventByte, StandardCharsets.UTF_8));
                     return map;
                 }
@@ -127,9 +140,11 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
             Preconditions.checkNotNull(dataContentType, "DateContentType cannot be null");
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(dataContentType);
             Preconditions.checkNotNull(eventFormat,
-                    String.format("DateContentType:%s is not supported", dataContentType));
+                String.format("DateContentType:%s is not supported", dataContentType));
             pkg.setBody(eventFormat.serialize(cloudEvent));
             return pkg;
+        } else if (StringUtils.equals("grpc", protocolDesc)) {
+            return GrpcMessageProtocolResolver.buildSimpleMessage(cloudEvent);
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));
         }

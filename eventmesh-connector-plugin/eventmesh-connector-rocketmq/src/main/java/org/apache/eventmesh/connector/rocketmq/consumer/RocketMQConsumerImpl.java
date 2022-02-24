@@ -70,8 +70,8 @@ public class RocketMQConsumerImpl implements Consumer {
     }
 
     @Override
-    public void subscribe(String topic, EventListener listener) throws Exception {
-        pushConsumer.subscribe(topic, "*", listener);
+    public void subscribe(String topic) throws Exception {
+        pushConsumer.subscribe(topic, "*");
     }
 
     @Override
@@ -97,6 +97,11 @@ public class RocketMQConsumerImpl implements Consumer {
     @Override
     public void unsubscribe(String topic) {
         pushConsumer.unsubscribe(topic);
+    }
+
+    @Override
+    public void registerEventListener(EventListener listener) {
+        pushConsumer.registerEventListener(listener);
     }
 
     @Override

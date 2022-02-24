@@ -92,8 +92,6 @@ public class SessionPusher {
         downStreamMsgContext.event = CloudEventBuilder.from(downStreamMsgContext.event)
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                 .build();
-        //downStreamMsgContext.event.getSystemProperties().put(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-        //String.valueOf(System.currentTimeMillis()));
         EventMeshMessage body = null;
         int retCode = 0;
         String retMsg = null;

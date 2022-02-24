@@ -59,7 +59,7 @@ public class PushConsumerImpl {
     private final DefaultMQPushConsumer rocketmqPushConsumer;
     private final Properties properties;
     private AtomicBoolean started = new AtomicBoolean(false);
-    private final Map<String, EventListener> subscribeTable = new ConcurrentHashMap<>();
+    private EventListener eventListener;
     private final ClientConfig clientConfig;
 
     public PushConsumerImpl(final Properties properties) {
@@ -134,9 +134,7 @@ public class PushConsumerImpl {
         return rocketmqPushConsumer;
     }
 
-
-    public void subscribe(String topic, String subExpression, EventListener listener) {
-        this.subscribeTable.put(topic, listener);
+    public void subscribe(String topic, String subExpression) {
         try {
             this.rocketmqPushConsumer.subscribe(topic, subExpression);
         } catch (MQClientException e) {
@@ -146,7 +144,6 @@ public class PushConsumerImpl {
 
 
     public void unsubscribe(String topic) {
-        this.subscribeTable.remove(topic);
         try {
             this.rocketmqPushConsumer.unsubscribe(topic);
         } catch (Exception e) {
@@ -197,9 +194,7 @@ public class PushConsumerImpl {
                 cloudEvent = cloudEventBuilder.build();
             }
 
-            EventListener listener = PushConsumerImpl.this.subscribeTable.get(msg.getTopic());
-
-            if (listener == null) {
+            if (eventListener == null) {
                 throw new ConnectorRuntimeException(String.format("The topic/queue %s isn't attached to this consumer",
                         msg.getTopic()));
             }
@@ -207,7 +202,7 @@ public class PushConsumerImpl {
             final Properties contextProperties = new Properties();
             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
                     EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
-            AsyncConsumeContext asyncConsumeContext = new AsyncConsumeContext() {
+            EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
                 @Override
                 public void commit(EventMeshAction action) {
                     switch (action) {
@@ -229,7 +224,9 @@ public class PushConsumerImpl {
                 }
             };
 
-            listener.consume(cloudEvent, asyncConsumeContext);
+            eventMeshAsyncConsumeContext.setAbstractContext(context);
+
+            eventListener.consume(cloudEvent, eventMeshAsyncConsumeContext);
 
             return EventMeshConsumeConcurrentlyStatus.valueOf(
                     contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
@@ -268,9 +265,7 @@ public class PushConsumerImpl {
                 cloudEvent = cloudEventBuilder.build();
             }
 
-            EventListener listener = PushConsumerImpl.this.subscribeTable.get(msg.getTopic());
-
-            if (listener == null) {
+            if (eventListener == null) {
                 throw new ConnectorRuntimeException(String.format("The topic/queue %s isn't attached to this consumer",
                         msg.getTopic()));
             }
@@ -304,12 +299,14 @@ public class PushConsumerImpl {
 
             eventMeshAsyncConsumeContext.setAbstractContext(context);
 
-            listener.consume(cloudEvent, eventMeshAsyncConsumeContext);
+            eventListener.consume(cloudEvent, eventMeshAsyncConsumeContext);
 
             return EventMeshConsumeConcurrentlyStatus.valueOf(
                     contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
         }
     }
 
-
+    public void registerEventListener(EventListener listener) {
+        this.eventListener = listener;
+    }
 }

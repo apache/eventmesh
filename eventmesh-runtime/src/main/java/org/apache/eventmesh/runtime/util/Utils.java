@@ -146,20 +146,6 @@ public class Utils {
     }
 
     /**
-     * print part of the mq message
-     *
-     * @param message
-     * @return
-     */
-    //public static String printMqMessage(org.apache.rocketmq.common.message.Message message) {
-    //    Map<String, String> properties = message.getProperties();
-    //    String bizSeqNo = message.getKeys();
-    //    String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", message.getTopic()
-    //            , properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), bizSeqNo);
-    //    return result;
-    //}
-
-    /**
      * get serviceId according to topic
      */
     public static String getServiceId(String topic) {
