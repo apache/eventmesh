@@ -15,15 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.exporter;
+dependencies {
+    implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
+    implementation project(":eventmesh-common")
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'org.apache.commons:commons-lang3'
+    implementation 'com.google.guava:guava'
 
-import org.apache.eventmesh.common.config.CommonConfiguration;
+    implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
+    implementation 'io.opentelemetry:opentelemetry-semconv'
 
-import io.opentelemetry.sdk.trace.export.SpanExporter;
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
-/**
- * different exporters should implement this interface.
- */
-public interface EventMeshExporter {
-    public SpanExporter getSpanExporter(CommonConfiguration configuration);
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }

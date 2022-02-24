@@ -15,29 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+dependencies {
+    api project(":eventmesh-spi")
+    implementation project(":eventmesh-common")
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    ;
+    implementation 'io.opentelemetry:opentelemetry-api'
+    implementation 'io.opentelemetry:opentelemetry-sdk'
 
-    private final String extensionTypeName;
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
-
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
-
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }
