@@ -96,14 +96,12 @@ public class EventMeshConsumer {
             @Override
             public void consume(CloudEvent event, AsyncConsumeContext context) {
                 String topic = event.getSubject();
-                //String topic = message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
                 String bizSeqNo = (String) event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
                 String uniqueId = (String) event.getExtension(Constants.RMB_UNIQ_ID);
 
                 event = CloudEventBuilder.from(event)
                     .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .build();
-                //message.getUserProperties().put(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                 if (messageLogger.isDebugEnabled()) {
                     messageLogger.debug("message|mq2eventMesh|topic={}|event={}", topic, event);
                 } else {
@@ -118,9 +116,6 @@ public class EventMeshConsumer {
                     logger.error("no topicConfig found, consumerGroup:{} topic:{}", consumerGroupConf.getConsumerGroup(), topic);
                     try {
                         sendMessageBack(event, uniqueId, bizSeqNo);
-                        //context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                        // EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                        //context.ack();
                         eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                         return;
                     } catch (Exception ex) {
@@ -135,9 +130,6 @@ public class EventMeshConsumer {
                     consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                 if (httpMessageHandler.handle(handleMsgContext)) {
-                    //context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                    // EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
-                    //context.ack();
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
                 } else {
                     try {
@@ -145,9 +137,6 @@ public class EventMeshConsumer {
                     } catch (Exception e) {
                         //ignore
                     }
-                    //context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                    // EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                    //context.ack();
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                 }
             }
@@ -192,9 +181,6 @@ public class EventMeshConsumer {
                         consumerGroupConf.getConsumerGroup(), topic);
                     try {
                         sendMessageBack(event, uniqueId, bizSeqNo);
-                        //context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                        // EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                        //context.ack();
                         eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                         return;
                     } catch (Exception ex) {
@@ -209,9 +195,6 @@ public class EventMeshConsumer {
                     consumerGroupConf, eventMeshHTTPServer, bizSeqNo, uniqueId, currentTopicConfig);
 
                 if (httpMessageHandler.handle(handleMsgContext)) {
-                    //context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                    // EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
-                    //context.ack();
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
                 } else {
                     try {
@@ -219,9 +202,6 @@ public class EventMeshConsumer {
                     } catch (Exception e) {
                         //ignore
                     }
-                    //context.attributes().put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                    // EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                    //context.ack();
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                 }
             }
@@ -255,15 +235,6 @@ public class EventMeshConsumer {
             persistentMqConsumer.unsubscribe(topic);
         }
     }
-
-    //public boolean isPause() {
-    //    return persistentMqConsumer.isPause() && broadcastMqConsumer.isPause();
-    //}
-    //
-    //public void pause() {
-    //    persistentMqConsumer.pause();
-    //    broadcastMqConsumer.pause();
-    //}
 
     public synchronized void shutdown() throws Exception {
         persistentMqConsumer.shutdown();
@@ -313,12 +284,6 @@ public class EventMeshConsumer {
                 logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqno:{}, uniqueId:{}",
                         consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);
             }
-
-            //@Override
-            //public void onException(Throwable e) {
-            //    logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqno:{}, uniqueId:{}",
-            //    consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);
-            //}
         });
     }
 }
