@@ -55,6 +55,11 @@ public class ConsumerGroupTopicConf implements Serializable {
      */
     private Set<String> urls = Sets.newConcurrentHashSet();
 
+    /**
+     * url auth type
+     */
+    private Map<String, String> httpAuthTypeMap = Maps.newConcurrentMap();
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -126,5 +131,9 @@ public class ConsumerGroupTopicConf implements Serializable {
 
     public void setUrls(Set<String> urls) {
         this.urls = urls;
+    }
+
+    public Map<String, String> getHttpAuthTypeMap() {
+        return httpAuthTypeMap;
     }
 }

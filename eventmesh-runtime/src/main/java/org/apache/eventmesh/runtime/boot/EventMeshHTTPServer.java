@@ -37,6 +37,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.UnSubscribeProc
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.push.AbstractHTTPPushRequest;
+import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
@@ -106,6 +107,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     private RateLimiter msgRateLimiter;
 
     private RateLimiter batchRateLimiter;
+
+    public HTTPClientPool httpClientPool = new HTTPClientPool(10);
 
     public void shutdownThreadPool() throws Exception {
         batchMsgExecutor.shutdown();
@@ -260,7 +263,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         shutdownThreadPool();
 
-        AbstractHTTPPushRequest.httpClientPool.shutdown();
+        httpClientPool.shutdown();
 
         producerManager.shutdown();
 
