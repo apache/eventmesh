@@ -16,9 +16,7 @@
  */
 
 dependencies {
-    implementation 'org.slf4j:slf4j-api'
+    implementation project(":eventmesh-security-plugin:eventmesh-security-api")
 
-    api project(":eventmesh-spi")
-
-    testImplementation project(":eventmesh-spi")
+    testImplementation project(":eventmesh-security-plugin:eventmesh-security-api")
 }

@@ -48,6 +48,8 @@ public class CommonConfiguration {
     public    boolean              eventMeshServerRegistryEnable      = false;
     protected ConfigurationWrapper configurationWrapper;
 
+    public String eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
+
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
         this.configurationWrapper = configurationWrapper;
     }
