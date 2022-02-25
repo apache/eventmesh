@@ -4,10 +4,10 @@ EventMesh Administration Module for EventMesh. It manages Admin Service, Configu
 
 ## Administration Client Manager APIs
 
-### POST /topicmanage
+### POST /topicManage
 - Create a new topic if does not exist
 - Exposed POST endpoint to create a new topic if it does not exist.
-    * Url - http://localhost:8081/topicmanage
+    * Url - http://localhost:8081/topicManage
     * sample request payload 
      ```json
         {
@@ -23,12 +23,12 @@ EventMesh Administration Module for EventMesh. It manages Admin Service, Configu
         "created_time": "2021-09-03",
    }
    ```
-### DELETE /topicmanage/(string: topic)
+### DELETE /topicManage/(string: topic)
 - Delete a specific topic.
 - Exposed DELETE endpoint to remove a specific topic
     * URL -     
     ```url 
-    http://localhost:8081/topicmanage/mytopic1
+    http://localhost:8081/topicManage/mytopic1
     ```
     
     * Response - 
@@ -39,12 +39,12 @@ EventMesh Administration Module for EventMesh. It manages Admin Service, Configu
    }
    ```
 
-### GET /topicmanage 
+### GET /topicManage 
 - Retrieve a list of topics
 - Exposed GET endpoint to retrieve all topics
     * URL - 
     ```url 
-    http://localhost:8081/topicmanage
+    http://localhost:8081/topicManage
     ```
     * Response 
     
