@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.admin.rocketmq.util;
 
+import org.apache.eventmesh.admin.rocketmq.HttpMethod;
+
 import org.apache.http.Consts;
 
 import java.io.IOException;
@@ -29,8 +31,8 @@ public class NetUtils {
     public static String parsePostBody(HttpExchange exchange)
             throws IOException {
         StringBuilder body = new StringBuilder();
-        if ("post".equalsIgnoreCase(exchange.getRequestMethod())
-                || "put".equalsIgnoreCase(exchange.getRequestMethod())) {
+        if (HttpMethod.POST.name().equalsIgnoreCase(exchange.getRequestMethod())
+                || HttpMethod.PUT.name().equalsIgnoreCase(exchange.getRequestMethod())) {
             try (InputStreamReader reader =
                          new InputStreamReader(exchange.getRequestBody(), Consts.UTF_8)) {
                 char[] buffer = new char[256];
