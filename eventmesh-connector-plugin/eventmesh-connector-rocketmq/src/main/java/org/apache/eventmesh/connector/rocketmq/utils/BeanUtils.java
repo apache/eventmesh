@@ -30,12 +30,12 @@ import java.util.Set;
 
 public final class BeanUtils {
 
-    private static final InternalLogger log = ClientLogger.getLog();
+    private static final InternalLogger LOG = ClientLogger.getLog();
 
     /**
      * Maps primitive {@code Class}es to their corresponding wrapper {@code Class}.
      */
-    private static Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<Class<?>, Class<?>>();
+    private static Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<>();
 
     static {
         primitiveWrapperMap.put(Boolean.TYPE, Boolean.class);
@@ -49,7 +49,7 @@ public final class BeanUtils {
         primitiveWrapperMap.put(Void.TYPE, Void.TYPE);
     }
 
-    private static Map<Class<?>, Class<?>> wrapperMap = new HashMap<Class<?>, Class<?>>();
+    private static Map<Class<?>, Class<?>> wrapperMap = new HashMap<>();
 
     static {
         for (final Class<?> primitiveClass : primitiveWrapperMap.keySet()) {
@@ -91,7 +91,7 @@ public final class BeanUtils {
             obj = clazz.getDeclaredConstructor().newInstance();
             return populate(properties, obj);
         } catch (Throwable e) {
-            log.warn("Error occurs !", e);
+            LOG.warn("Error occurs !", e);
         }
         return obj;
     }
@@ -116,21 +116,10 @@ public final class BeanUtils {
                 }
             }
         } catch (RuntimeException e) {
-            log.warn("Error occurs !", e);
+            LOG.warn("Error occurs !", e);
         }
         return obj;
     }
-
-    //public static <T> T populate(final KeyValue properties, final Class<T> clazz) {
-    //    T obj = null;
-    //    try {
-    //        obj = clazz.newInstance();
-    //        return populate(properties, obj);
-    //    } catch (Throwable e) {
-    //        log.warn("Error occurs !", e);
-    //    }
-    //    return obj;
-    //}
 
     public static Class<?> getMethodClass(Class<?> clazz, String methodName) {
         Method[] methods = clazz.getMethods();
@@ -160,30 +149,5 @@ public final class BeanUtils {
             setterMethod.invoke(obj, value);
         }
     }
-
-
-    //public static <T> T populate(final Properties properties, final T obj) {
-    //    Class<?> clazz = obj.getClass();
-    //    try {
-    //
-    //        final Set<Object> keySet = properties.keySet();
-    //        for (Object key : keySet) {
-    //            String[] keyGroup = key.toString().split("[\\._]");
-    //            for (int i = 0; i < keyGroup.length; i++) {
-    //                keyGroup[i] = keyGroup[i].toLowerCase();
-    //                keyGroup[i] = StringUtils.capitalize(keyGroup[i]);
-    //            }
-    //            String beanFieldNameWithCapitalization = StringUtils.join(keyGroup);
-    //            try {
-    //                setProperties(clazz, obj, "set" + beanFieldNameWithCapitalization, properties.getProperty(key.toString()));
-    //            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
-    //                //ignored...
-    //            }
-    //        }
-    //    } catch (RuntimeException e) {
-    //        log.warn("Error occurs !", e);
-    //    }
-    //    return obj;
-    //}
 }
 
