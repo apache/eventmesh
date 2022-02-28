@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.grpc.sub;
 
+import org.apache.eventmesh.ExampleConstants;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
@@ -39,9 +40,9 @@ public class EventmeshSubscribeReply implements ReceiveMsgHook<EventMeshMessage>
     public static EventmeshSubscribeReply handler = new EventmeshSubscribeReply();
 
     public static void main(String[] args) throws InterruptedException {
-        Properties properties = Utils.readPropertiesFile("application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
+        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
         final String topic = "TEST-TOPIC-GRPC-RR";
 

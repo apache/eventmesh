@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.tcp.demo.sub.eventmeshmessage;
 
+import org.apache.eventmesh.ExampleConstants;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
@@ -39,9 +40,9 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage>
     public static AsyncSubscribeBroadcast handler = new AsyncSubscribeBroadcast();
 
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile("application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
+        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         UserAgent userAgent = EventMeshTestUtils.generateClient2();
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
                 .host(eventMeshIp)

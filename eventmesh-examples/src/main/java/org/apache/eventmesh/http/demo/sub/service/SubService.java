@@ -19,6 +19,7 @@
 
 package org.apache.eventmesh.http.demo.sub.service;
 
+import org.apache.eventmesh.ExampleConstants;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.consumer.EventMeshHttpConsumer;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
@@ -50,15 +51,15 @@ public class SubService implements InitializingBean {
 
     private EventMeshHttpConsumer eventMeshHttpConsumer;
 
-    final Properties properties = Utils.readPropertiesFile("application.properties");
+    final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
 
     final List<SubscriptionItem> topicList = Lists.newArrayList(
             new SubscriptionItem("TEST-TOPIC-HTTP-ASYNC", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
     );
     final String localIp = IPUtils.getLocalAddress();
     final String localPort = properties.getProperty("server.port");
-    final String eventMeshIp = properties.getProperty("eventmesh.ip");
-    final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
+    final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+    final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
     final String url = "http://" + localIp + ":" + localPort + "/sub/test";
     final String env = "P";
     final String idc = "FT";
