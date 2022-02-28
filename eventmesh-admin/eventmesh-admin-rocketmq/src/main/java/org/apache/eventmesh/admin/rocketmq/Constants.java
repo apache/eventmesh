@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation 'org.slf4j:slf4j-api'
+package org.apache.eventmesh.admin.rocketmq;
 
-    api project(":eventmesh-spi")
+public class Constants {
 
-    testImplementation project(":eventmesh-spi")
+    public static final String TOPIC_MANAGE_PATH = "/topicManage";
 }

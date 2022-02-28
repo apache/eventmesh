@@ -57,8 +57,6 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
 
     public HandleMsgContext handleMsgContext;
 
-    public static HTTPClientPool httpClientPool = new HTTPClientPool(10);
-
     private AtomicBoolean complete = new AtomicBoolean(Boolean.FALSE);
 
     public AbstractHTTPPushRequest(HandleMsgContext handleMsgContext) {
@@ -73,6 +71,16 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
     }
 
     public void tryHTTPRequest() {
+    }
+
+    public void delayRetry(long delayTime) {
+        if (retryTimes < EventMeshConstants.DEFAULT_PUSH_RETRY_TIMES && delayTime > 0) {
+            retryTimes++;
+            delay(delayTime);
+            retryer.pushRetry(this);
+        } else {
+            complete.compareAndSet(Boolean.FALSE, Boolean.TRUE);
+        }
     }
 
     public void delayRetry() {

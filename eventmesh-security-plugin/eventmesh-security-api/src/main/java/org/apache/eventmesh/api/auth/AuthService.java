@@ -15,10 +15,25 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation 'org.slf4j:slf4j-api'
+package org.apache.eventmesh.api.auth;
 
-    api project(":eventmesh-spi")
+import org.apache.eventmesh.api.exception.AuthException;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-    testImplementation project(":eventmesh-spi")
+import java.util.Map;
+
+/**
+ * AuthService
+ */
+@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.SECURITY)
+public interface AuthService {
+
+    void init() throws AuthException;
+
+    void start() throws AuthException;
+
+    void shutdown() throws AuthException;
+
+    Map getAuthParams() throws AuthException;
 }

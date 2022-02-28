@@ -24,14 +24,9 @@ import org.apache.eventmesh.api.producer.Producer;
 
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
 public class StandaloneProducerAdaptor implements Producer {
-
-    private final Logger logger = LoggerFactory.getLogger(StandaloneProducerAdaptor.class);
 
     private StandaloneProducer standaloneProducer;
 
@@ -82,11 +77,6 @@ public class StandaloneProducerAdaptor implements Producer {
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
         standaloneProducer.sendAsync(cloudEvent, sendCallback);
     }
-
-    //@Override
-    //public void request(CloudEvent cloudEvent, RRCallback rrCallback, long timeout) throws Exception {
-    //    standaloneProducer.request(cloudEvent, rrCallback, timeout);
-    //}
 
     @Override
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {

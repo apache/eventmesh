@@ -15,10 +15,15 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation 'org.slf4j:slf4j-api'
+package org.apache.eventmesh.api.exception;
 
-    api project(":eventmesh-spi")
+public class AuthException extends RuntimeException {
 
-    testImplementation project(":eventmesh-spi")
+    public AuthException(String message) {
+        super(message);
+    }
+
+    public AuthException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

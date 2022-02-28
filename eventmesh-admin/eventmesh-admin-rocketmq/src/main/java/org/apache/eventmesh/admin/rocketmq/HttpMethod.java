@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation 'org.slf4j:slf4j-api'
+package org.apache.eventmesh.admin.rocketmq;
 
-    api project(":eventmesh-spi")
+public enum HttpMethod {
 
-    testImplementation project(":eventmesh-spi")
+    GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, TRACE
+
 }
