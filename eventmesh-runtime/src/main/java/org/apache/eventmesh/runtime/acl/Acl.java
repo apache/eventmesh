@@ -36,7 +36,6 @@ public class Acl {
     private static AclService aclService;
 
     public void init(String aclPluginType) throws AclException {
-        //aclService = getSpiAclService();
         aclService = EventMeshExtensionFactory.getExtension(AclService.class, aclPluginType);
         if (aclService == null) {
             logger.error("can't load the aclService plugin, please check.");

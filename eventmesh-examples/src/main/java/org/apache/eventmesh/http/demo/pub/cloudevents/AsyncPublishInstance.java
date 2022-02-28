@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AsyncPublishInstance {
     
     // This messageSize is also used in SubService.java (Subscriber)
-    public static final int MESSAGE_SIZE = 5;
+    public static final int MESSAGE_SIZE = 1;
     
     public static final String DEFAULT_IP_PORT = "127.0.0.1:10105";
     

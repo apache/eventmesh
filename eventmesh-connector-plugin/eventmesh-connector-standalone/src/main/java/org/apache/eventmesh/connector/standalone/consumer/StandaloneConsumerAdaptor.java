@@ -31,8 +31,6 @@ import io.cloudevents.CloudEvent;
 
 public class StandaloneConsumerAdaptor implements Consumer {
 
-    private final Logger logger = LoggerFactory.getLogger(StandaloneConsumerAdaptor.class);
-
     private StandaloneConsumer consumer;
 
     public StandaloneConsumerAdaptor() {

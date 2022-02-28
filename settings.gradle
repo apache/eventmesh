@@ -43,3 +43,8 @@ include 'eventmesh-metrics-plugin'
 include 'eventmesh-metrics-plugin:eventmesh-metrics-api'
 include 'eventmesh-metrics-plugin:eventmesh-metrics-opentelemetry'
 
+include 'eventmesh-security-plugin:eventmesh-security-auth-http-basic'
+
+include 'eventmesh-trace-plugin'
+include 'eventmesh-trace-plugin:eventmesh-trace-api'
+include 'eventmesh-trace-plugin:eventmesh-trace-zipkin'
