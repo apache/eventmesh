@@ -67,12 +67,6 @@ public final class RocketMQMessageWriter<R>
     @Override
     public CloudEventContextWriter withContextAttribute(String name, String value)
             throws CloudEventRWException {
-
-        //String propName = RocketMQHeaders.ATTRIBUTES_TO_HEADERS.get(name);
-        //if (propName == null) {
-        //propName = RocketMQHeaders.CE_PREFIX + name;
-        //}
-        //message.putUserProperty(propName, value);
         message.putUserProperty(name, value);
         return this;
     }
