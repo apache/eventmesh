@@ -104,7 +104,6 @@ public class CloudEventUtils {
 
 
     private static String buildCloudEventPropertyKey(String propName) {
-        //return RocketMQHeaders.CE_PREFIX + propName;
         return propName;
     }
 
