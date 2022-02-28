@@ -61,12 +61,6 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
             client.registerSubBusiHandler(handler);
 
             client.listen();
-
-            //client.unsubscribe();
-
-            // release resource and close client
-            // client.close();
-
         } catch (Exception e) {
             log.warn("AsyncSubscribe failed", e);
         }
