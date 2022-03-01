@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.admin.rocketmq.handler;
 
+import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
+
 import org.apache.eventmesh.admin.rocketmq.request.TopicCreateRequest;
 import org.apache.eventmesh.admin.rocketmq.response.TopicResponse;
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
@@ -41,7 +43,7 @@ public class TopicsHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
 
         // create a new topic
-        if (RequestMapping.postMapping("/topicmanage", httpExchange)) {
+        if (RequestMapping.postMapping(TOPIC_MANAGE_PATH, httpExchange)) {
             createTopicHandler(httpExchange);
             return;
         }
@@ -60,7 +62,7 @@ public class TopicsHandler implements HttpHandler {
         try {
             String params = NetUtils.parsePostBody(httpExchange);
             TopicCreateRequest topicCreateRequest =
-                    JsonUtils.toObject(params, TopicCreateRequest.class);
+                JsonUtils.toObject(params, TopicCreateRequest.class);
             String topic = topicCreateRequest.getName();
 
             if (StringUtils.isBlank(topic)) {
@@ -74,7 +76,7 @@ public class TopicsHandler implements HttpHandler {
             TopicResponse topicResponse = null;
             if (topicResponse != null) {
                 logger.info("create a new topic: {}", topic);
-                httpExchange.getResponseHeaders().add("Content-Type", "appication/json");
+                httpExchange.getResponseHeaders().add("Content-Type", "application/json");
                 httpExchange.sendResponseHeaders(200, 0);
                 result = JsonUtils.toJson(topicResponse);
                 logger.info(result);
@@ -88,7 +90,7 @@ public class TopicsHandler implements HttpHandler {
                 return;
             }
         } catch (Exception e) {
-            httpExchange.getResponseHeaders().add("Content-Type", "appication/json");
+            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
             httpExchange.sendResponseHeaders(500, 0);
             result = String.format("create topic failed! Server side error");
             logger.error(result);

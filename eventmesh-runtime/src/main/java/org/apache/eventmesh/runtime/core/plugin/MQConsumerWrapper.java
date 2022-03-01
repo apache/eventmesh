@@ -44,8 +44,8 @@ public class MQConsumerWrapper extends MQWrapper {
         }
     }
 
-    public void subscribe(String topic, EventListener listener) throws Exception {
-        meshMQPushConsumer.subscribe(topic, listener);
+    public void subscribe(String topic) throws Exception {
+        meshMQPushConsumer.subscribe(topic);
     }
 
     public void unsubscribe(String topic) throws Exception {
@@ -69,9 +69,9 @@ public class MQConsumerWrapper extends MQWrapper {
         started.compareAndSet(false, true);
     }
 
-    //public void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently) {
-    //    meshMQPushConsumer.registerMessageListener(messageListenerConcurrently);
-    //}
+    public void registerEventListener(EventListener listener) {
+        meshMQPushConsumer.registerEventListener(listener);
+    }
 
     public void updateOffset(List<CloudEvent> events, AbstractContext eventMeshConsumeConcurrentlyContext) {
         meshMQPushConsumer.updateOffset(events, eventMeshConsumeConcurrentlyContext);

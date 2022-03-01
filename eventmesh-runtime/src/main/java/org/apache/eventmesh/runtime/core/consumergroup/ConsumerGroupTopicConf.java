@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.core.consumergroup;
 
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public class ConsumerGroupTopicConf {
+public class ConsumerGroupTopicConf implements Serializable {
 
     public static Logger logger = LoggerFactory.getLogger(ConsumerGroupTopicConf.class);
 
@@ -53,6 +54,11 @@ public class ConsumerGroupTopicConf {
      * ALL IDC URLs
      */
     private Set<String> urls = Sets.newConcurrentHashSet();
+
+    /**
+     * url auth type
+     */
+    private Map<String, String> httpAuthTypeMap = Maps.newConcurrentMap();
 
     @Override
     public boolean equals(Object o) {
@@ -125,5 +131,9 @@ public class ConsumerGroupTopicConf {
 
     public void setUrls(Set<String> urls) {
         this.urls = urls;
+    }
+
+    public Map<String, String> getHttpAuthTypeMap() {
+        return httpAuthTypeMap;
     }
 }

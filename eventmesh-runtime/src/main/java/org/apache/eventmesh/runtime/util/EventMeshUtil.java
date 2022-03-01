@@ -26,6 +26,11 @@ import org.apache.eventmesh.runtime.constants.EventMeshVersion;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -154,87 +159,6 @@ public class EventMeshUtil {
         return prop;
     }
 
-    //public static org.apache.rocketmq.common.message.Message decodeMessage(AccessMessage accessMessage) {
-    //    org.apache.rocketmq.common.message.Message msg = new org.apache.rocketmq.common.message.Message();
-    //    msg.setTopic(accessMessage.getTopic());
-    //    msg.setBody(accessMessage.getBody().getBytes());
-    //    msg.getProperty("init");
-    //    for (Map.Entry<String, String> property : accessMessage.getProperties().entrySet()) {
-    //        msg.getProperties().put(property.getKey(), property.getValue());
-    //    }
-    //    return msg;
-    //}
-
-    //public static Message decodeMessage(EventMeshMessage eventMeshMessage) {
-    //    Message omsMsg = new Message();
-    //    omsMsg.setBody(eventMeshMessage.getBody().getBytes());
-    //    omsMsg.setTopic(eventMeshMessage.getTopic());
-    //    Properties systemProperties = new Properties();
-    //    Properties userProperties = new Properties();
-    //
-    //    final Set<Map.Entry<String, String>> entries = eventMeshMessage.getProperties().entrySet();
-    //
-    //    for (final Map.Entry<String, String> entry : entries) {
-    //        if (isOMSHeader(entry.getKey())) {
-    //            systemProperties.put(entry.getKey(), entry.getValue());
-    //        } else {
-    //            userProperties.put(entry.getKey(), entry.getValue());
-    //        }
-    //    }
-    //
-    //    systemProperties.put(Constants.PROPERTY_MESSAGE_DESTINATION, eventMeshMessage.getTopic());
-    //    omsMsg.setSystemProperties(systemProperties);
-    //    omsMsg.setUserProperties(userProperties);
-    //    return omsMsg;
-    //}
-    //
-    //public static AccessMessage encodeMessage(org.apache.rocketmq.common.message.Message msg) throws Exception {
-    //    AccessMessage accessMessage = new AccessMessage();
-    //    accessMessage.setBody(new String(msg.getBody(), "UTF-8"));
-    //    accessMessage.setTopic(msg.getTopic());
-    //    for (Map.Entry<String, String> property : msg.getProperties().entrySet()) {
-    //        accessMessage.getProperties().put(property.getKey(), property.getValue());
-    //    }
-    //    return accessMessage;
-    //}
-
-    //public static EventMeshMessage encodeMessage(Message omsMessage) throws Exception {
-    //
-    //    EventMeshMessage eventMeshMessage = new EventMeshMessage();
-    //    eventMeshMessage.setBody(new String(omsMessage.getBody(), StandardCharsets.UTF_8));
-    //
-    //    Properties sysHeaders = omsMessage.getSystemProperties();
-    //    Properties userHeaders = omsMessage.getUserProperties();
-    //
-    //    //All destinations in RocketMQ use Topic
-    //    eventMeshMessage.setTopic(sysHeaders.getProperty(Constants.PROPERTY_MESSAGE_DESTINATION));
-    //
-    //    if (sysHeaders.containsKey("START_TIME")) {
-    //        long deliverTime;
-    //        if (StringUtils.isBlank(sysHeaders.getProperty("START_TIME"))) {
-    //            deliverTime = 0;
-    //        } else {
-    //            deliverTime = Long.parseLong(sysHeaders.getProperty("START_TIME"));
-    //        }
-    //
-    //        if (deliverTime > 0) {
-    //        //                rmqMessage.putUserProperty(RocketMQConstants.START_DELIVER_TIME, String.valueOf(deliverTime));
-    //            eventMeshMessage.getProperties().put("START_TIME", String.valueOf(deliverTime));
-    //        }
-    //    }
-    //
-    //    for (String key : userHeaders.stringPropertyNames()) {
-    //        eventMeshMessage.getProperties().put(key, userHeaders.getProperty(key));
-    //    }
-    //
-    //    //System headers has a high priority
-    //    for (String key : sysHeaders.stringPropertyNames()) {
-    //        eventMeshMessage.getProperties().put(key, sysHeaders.getProperty(key));
-    //    }
-    //
-    //    return eventMeshMessage;
-    //}
-
     public static String getLocalAddr() {
         //priority of networkInterface when generating client ip
         String priority = System.getProperty("networkInterface.priority", "bond1<eth1<eth0");
@@ -343,5 +267,22 @@ public class EventMeshUtil {
                 .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
                 .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
                 .getCompletedTaskCount());
+    }
+
+    /**
+     * Perform deep clone of the given object using serialization
+     * @param object
+     * @return cloned object
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public static <T> T cloneObject(T object) throws IOException, ClassNotFoundException {
+        ByteArrayOutputStream byOut = new ByteArrayOutputStream();
+        ObjectOutputStream outputStream = new ObjectOutputStream(byOut);
+        outputStream.writeObject(object);
+
+        ByteArrayInputStream byIn = new ByteArrayInputStream(byOut.toByteArray());
+        ObjectInputStream inputStream = new ObjectInputStream(byIn);
+        return (T) inputStream.readObject();
     }
 }

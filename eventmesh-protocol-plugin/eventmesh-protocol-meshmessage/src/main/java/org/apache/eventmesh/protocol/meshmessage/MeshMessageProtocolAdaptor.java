@@ -19,6 +19,10 @@ package org.apache.eventmesh.protocol.meshmessage;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.grpc.common.BatchMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
+import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
+import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
@@ -28,6 +32,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.meshmessage.resolver.grpc.GrpcMessageProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageBatchV2ProtocolResolver;
 import org.apache.eventmesh.protocol.meshmessage.resolver.http.SendMessageRequestProtocolResolver;
@@ -59,9 +64,17 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             String requestCode = ((HttpCommand) protocol).getRequestCode();
 
             return deserializeHttpProtocol(requestCode, header, body);
+        } else if (protocol instanceof SimpleMessageWrapper) {
+            SimpleMessage message = ((SimpleMessageWrapper) protocol).getMessage();
+            return deserializeGrpcProtocol(message);
         } else {
             throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));
         }
+    }
+
+    private CloudEvent deserializeGrpcProtocol(SimpleMessage message)
+        throws ProtocolHandleException {
+        return GrpcMessageProtocolResolver.buildEvent(message);
     }
 
     private CloudEvent deserializeTcpProtocol(Header header, String bodyJson) throws ProtocolHandleException {
@@ -88,7 +101,12 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
 
     @Override
     public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol) throws ProtocolHandleException {
-        return null;
+        if (protocol instanceof BatchMessageWrapper) {
+            BatchMessage batchMessage = ((BatchMessageWrapper) protocol).getMessage();
+            return GrpcMessageProtocolResolver.buildBatchEvents(batchMessage);
+        } else {
+            throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));
+        }
     }
 
     @Override
@@ -109,6 +127,8 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             body.toMap();
             httpCommand.setBody(body);
             return httpCommand;
+        } else if (StringUtils.equals("grpc", protocolDesc)) {
+            return GrpcMessageProtocolResolver.buildSimpleMessage(cloudEvent);
         } else if (StringUtils.equals("tcp", protocolDesc)) {
             return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
         } else {

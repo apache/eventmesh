@@ -31,7 +31,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.trace.AttributeKeys;
-import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
 import org.apache.eventmesh.runtime.trace.SpanKey;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
@@ -111,11 +110,9 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     private boolean useTLS;
 
-    private Boolean useTrace = true; //Determine whether trace is enabled
+    public Boolean useTrace = false; //Determine whether trace is enabled
 
     public TextMapPropagator textMapPropagator;
-
-    public OpenTelemetryTraceFactory openTelemetryTraceFactory;
 
     public Tracer tracer;
 

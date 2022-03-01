@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+def grpcVersion = '1.15.0'
+
 dependencies {
     implementation 'io.cloudevents:cloudevents-core'
 
@@ -34,16 +36,30 @@ dependencies {
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
+    implementation project(":eventmesh-security-plugin:eventmesh-security-auth-http-basic")
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-netty:${grpcVersion}"
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    // for debug only, can be removed
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
 
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-api")
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-opentelemetry")
+
+    implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
+    implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
 
     testImplementation "org.mockito:mockito-core"
     testImplementation "org.powermock:powermock-module-junit4"

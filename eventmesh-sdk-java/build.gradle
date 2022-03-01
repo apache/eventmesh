@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+def grpcVersion = '1.15.0'
+
 dependencies {
     implementation project(":eventmesh-common")
 
@@ -25,6 +27,11 @@ dependencies {
 
     implementation "io.netty:netty-all"
     implementation "org.apache.httpcomponents:httpclient"
+
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-netty:${grpcVersion}"
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     // protocol
     implementation "io.cloudevents:cloudevents-core"
@@ -40,6 +47,9 @@ dependencies {
     testImplementation "io.netty:netty-all"
     testImplementation "org.apache.httpcomponents:httpclient"
 
+    implementation "io.grpc:grpc-protobuf:1.15.0"
+    implementation "io.grpc:grpc-stub:1.15.0"
+    implementation "com.google.protobuf:protobuf-java-util:3.5.1"
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
