@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh;
+package org.apache.eventmesh.common;
 
 public class ExampleConstants {
 

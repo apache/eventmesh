@@ -17,22 +17,22 @@
 
 package org.apache.eventmesh.tcp.demo.sub.eventmeshmessage;
 
-import org.apache.eventmesh.ExampleConstants;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
+import org.apache.eventmesh.util.Utils;
 
 import java.util.Optional;
 import java.util.Properties;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.eventmesh.util.Utils;
 
 @Slf4j
 public class SyncResponse implements ReceiveMsgHook<EventMeshMessage> {

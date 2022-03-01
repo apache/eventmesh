@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.grpc.pub.cloudevents;
 
-import org.apache.eventmesh.ExampleConstants;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.util.Utils;
 
