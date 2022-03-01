@@ -51,7 +51,7 @@ eventmesh/eventmesh      v1.3.0      da0008c1d03b   7 days ago     922MB
 ## Prepare Configuration Files
 Before running the EventMesh container from downloaded image, you need to configure some files.
 
-Here this instruction takes RocketMQ as connector for example, so that two configuration files should be created: ```eventMesh.properties``` and ```rocketmq-client.properties```.
+Here this instruction takes RocketMQ as connector for example, so that two configuration files should be created: ```eventmesh.properties``` and ```rocketmq-client.properties```.
 
 First, you may need to create such files, using following commands:
 ```shell
@@ -61,7 +61,7 @@ sudo touch eventmesh.properties
 sudo touch rocketmq-client.properties
 ```
 
-### eventMesh.properties
+### eventmesh.properties
 
 It contains properties of  EventMesh runtime env and integrated plugins.
 
@@ -109,7 +109,7 @@ So that the command for running EventMesh is:
 ```shell
 sudo docker run -d \
 > -p 10000:10000 -p 10105:10105 \
-> -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties \
+> -v /data/eventmesh/rocketmq/conf/eventmesh.properties:/data/app/eventmesh/conf/eventmesh.properties \
 > -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties \
 > eventmesh/eventmesh:v1.3.0
 ```
