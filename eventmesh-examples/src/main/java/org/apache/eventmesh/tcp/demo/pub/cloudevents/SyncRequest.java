@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
@@ -41,9 +42,9 @@ public class SyncRequest {
     private static EventMeshTCPClient<CloudEvent> client;
 
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile("application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
+        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         UserAgent userAgent = EventMeshTestUtils.generateClient1();
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
                 .host(eventMeshIp)

@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.client.http.producer.RRCallback;
 import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -39,10 +40,10 @@ public class AsyncSyncRequestInstance {
 
     public static void main(String[] args) throws Exception {
 
-        Properties properties = Utils.readPropertiesFile("application.properties");
-        Preconditions.checkNotNull(properties, "application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
+        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        Preconditions.checkNotNull(properties, ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
 
         EventMeshHttpProducer eventMeshHttpProducer = null;
         try {
