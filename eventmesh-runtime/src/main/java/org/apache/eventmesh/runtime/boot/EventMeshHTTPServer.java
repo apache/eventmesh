@@ -36,15 +36,9 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.SubscribeProces
 import org.apache.eventmesh.runtime.core.protocol.http.processor.UnSubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
-import org.apache.eventmesh.runtime.core.protocol.http.push.AbstractHTTPPushRequest;
 import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
-import org.apache.eventmesh.trace.api.TracePluginFactory;
-import org.apache.eventmesh.trace.api.TraceService;
-
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
@@ -65,7 +59,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
-    private TraceService traceService;
+//    private TraceService traceService;
 
     public final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
             new ConcurrentHashMap<>();
@@ -224,15 +218,13 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         registerHTTPRequestProcessor();
 
-        //get the trace-plugin
-        if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.eventMeshTracePluginType)) {
+        //enable trace
+        if (eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
+//            super.tracer = traceService.getTracer(super.getClass().toString());
+//            super.textMapPropagator = traceService.getTextMapPropagator();
 
-            traceService =
-                TracePluginFactory.getTraceService(eventMeshHttpConfiguration.eventMeshTracePluginType);
-            traceService.init();
-            super.tracer = traceService.getTracer(super.getClass().toString());
-            super.textMapPropagator = traceService.getTextMapPropagator();
-            super.useTrace = true;
+            super.trace = eventMeshServer.getTrace();
+            super.useTrace = eventMeshHttpConfiguration.eventMeshServerTraceEnable;
         }
 
         logger.info("--------------------------EventMeshHTTPServer inited");
@@ -255,9 +247,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         metrics.shutdown();
 
-        if (traceService != null) {
-            traceService.shutdown();
-        }
+//        if (traceService != null) {
+//            traceService.shutdown();
+//        }
 
         consumerManager.shutdown();
 

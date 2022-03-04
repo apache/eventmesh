@@ -19,18 +19,20 @@ package org.apache.eventmesh.trace.zipkin;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import org.apache.eventmesh.trace.api.TraceService;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.trace.api.EventMeshTraceService;
+import org.apache.eventmesh.trace.api.EventMeshTracer;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
+import org.apache.eventmesh.trace.api.exception.TraceException;
+import org.apache.eventmesh.trace.api.propagation.EventMeshContextCarrier;
 import org.apache.eventmesh.trace.zipkin.config.ZipkinConfiguration;
 
 import java.util.concurrent.TimeUnit;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.zipkin.ZipkinSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
@@ -41,7 +43,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 /**
  *
  */
-public class ZipkinTraceService implements TraceService {
+public class ZipkinTraceService implements EventMeshTraceService {
     // Zipkin API Endpoints for uploading spans
     private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
     // Name of the service(using the instrumentationName)
@@ -96,6 +98,16 @@ public class ZipkinTraceService implements TraceService {
     }
 
     @Override
+    public EventMeshTracer getTracer(String serviceName) throws TraceException {
+        return new ZipkinEventMeshTracer(serviceName, openTelemetry);
+    }
+
+    @Override
+    public EventMeshContextCarrier extractFrom(ProtocolTransportObject pkg) throws TraceException {
+        return null;
+    }
+
+    @Override
     public void shutdown() {
         //todo: check the spanProcessor if it was already close
 
@@ -104,15 +116,15 @@ public class ZipkinTraceService implements TraceService {
         //todo: turn the value of useTrace in AbstractHTTPServer into false
     }
 
-    //Gets or creates a named tracer instance
-    @Override
-    public Tracer getTracer(String instrumentationName) {
-        return openTelemetry.getTracer(instrumentationName);
-    }
-
-    //to inject or extract span context
-    @Override
-    public TextMapPropagator getTextMapPropagator() {
-        return openTelemetry.getPropagators().getTextMapPropagator();
-    }
+//    //Gets or creates a named tracer instance
+//    @Override
+//    public Tracer getTracer(String instrumentationName) {
+//        return openTelemetry.getTracer(instrumentationName);
+//    }
+//
+//    //to inject or extract span context
+//    @Override
+//    public TextMapPropagator getTextMapPropagator() {
+//        return openTelemetry.getPropagators().getTextMapPropagator();
+//    }
 }

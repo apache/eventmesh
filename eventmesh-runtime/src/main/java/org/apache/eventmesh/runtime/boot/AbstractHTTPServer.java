@@ -32,7 +32,13 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequest
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.trace.AttributeKeys;
 import org.apache.eventmesh.runtime.trace.SpanKey;
+import org.apache.eventmesh.runtime.trace.Trace;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
+import org.apache.eventmesh.trace.api.EventMeshSpan;
+import org.apache.eventmesh.trace.api.EventMeshTraceContext;
+import org.apache.eventmesh.trace.api.EventMeshTraceService;
+import org.apache.eventmesh.trace.api.EventMeshTracer;
+import org.apache.eventmesh.trace.api.propagation.EventMeshContextCarrier;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -112,9 +118,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     public Boolean useTrace = false; //Determine whether trace is enabled
 
-    public TextMapPropagator textMapPropagator;
+//    public TextMapPropagator textMapPropagator;
+//
+//    public Tracer tracer;
 
-    public Tracer tracer;
+    public Trace trace;
 
     public ThreadPoolExecutor asyncContextCompleteHandler =
             ThreadPoolFactory.createThreadPoolExecutor(10, 10, "EventMesh-http-asyncContext-");
@@ -140,11 +148,16 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         responseHeaders.add(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
         responseHeaders.add(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
         if (useTrace) {
-            Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
-            Span span = context.get(SpanKey.SERVER_KEY);
-            try (Scope ignored = context.makeCurrent()) {
-                span.setStatus(StatusCode.ERROR); //set this span's status to ERROR
-                span.end(); // closing the scope does not end the span, this has to be done manually
+//            Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
+//            Span span = context.get(SpanKey.SERVER_KEY);
+//            try (Scope ignored = context.makeCurrent()) {
+//                span.setStatus(StatusCode.ERROR); //set this span's status to ERROR
+//                span.end(); // closing the scope does not end the span, this has to be done manually
+//            }
+            EventMeshTraceContext eventMeshTraceContext = ctx.channel().attr(AttributeKeys.EVENTMESH_SERVER_CONTEXT).get();
+            EventMeshSpan span = eventMeshTraceContext.getSpan();
+            if(span != null){
+                span.finish();
             }
         }
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
@@ -152,10 +165,15 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     public void sendResponse(ChannelHandlerContext ctx, DefaultFullHttpResponse response) {
         if (useTrace) {
-            Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
-            Span span = context.get(SpanKey.SERVER_KEY);
-            try (Scope ignored = context.makeCurrent()) {
-                span.end();
+//            Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
+//            Span span = context.get(SpanKey.SERVER_KEY);
+//            try (Scope ignored = context.makeCurrent()) {
+//                span.end();
+//            }
+            EventMeshTraceContext eventMeshTraceContext = ctx.channel().attr(AttributeKeys.EVENTMESH_SERVER_CONTEXT).get();
+            EventMeshSpan span = eventMeshTraceContext.getSpan();
+            if(span != null){
+                span.finish();
             }
         }
 
@@ -301,31 +319,34 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) {
-            Context context = null;
-            Span span = null;
-            if (useTrace) {
-                //if the client injected span context,this will extract the context from httpRequest or it will be null
-                context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>() {
-                    @Override
-                    public Iterable<String> keys(HttpRequest carrier) {
-                        return carrier.headers().names();
-                    }
+//            Context context = null;
+//            Span span = null;
+//            if (useTrace) {
+//
+//                //if the client injected span context,this will extract the context from httpRequest or it will be null
+//                context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>() {
+//                    @Override
+//                    public Iterable<String> keys(HttpRequest carrier) {
+//                        return carrier.headers().names();
+//                    }
+//
+//                    @Override
+//                    public String get(HttpRequest carrier, String key) {
+//                        return carrier.headers().get(key);
+//                    }
+//                });
+//
+//                span = tracer.spanBuilder("HTTP " + httpRequest.method())
+//                        .setParent(context)
+//                        .setSpanKind(SpanKind.SERVER)
+//                        .startSpan();
+//                //attach the span to the server context
+//                context = context.with(SpanKey.SERVER_KEY, span);
+//                //put the context in channel
+//                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
+//            }
 
-                    @Override
-                    public String get(HttpRequest carrier, String key) {
-                        return carrier.headers().get(key);
-                    }
-                });
-                span = tracer.spanBuilder("HTTP " + httpRequest.method())
-                        .setParent(context)
-                        .setSpanKind(SpanKind.SERVER)
-                        .startSpan();
-                //attach the span to the server context
-                context = context.with(SpanKey.SERVER_KEY, span);
-                //put the context in channel
-                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
-            }
-
+            EventMeshSpan span = null;
             try {
                 preProcessHttpRequestHeader(ctx, httpRequest);
                 final HttpResponseStatus errorStatus = validateHttpRequest(httpRequest);
@@ -348,11 +369,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 requestCommand.setHttpVersion(httpRequest.protocolVersion().protocolName());
                 requestCommand.setRequestCode(requestCode);
 
-                if (useTrace) {
-                    span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
-                    span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
-                    span.setAttribute(String.valueOf(SemanticAttributes.HTTP_STATUS_CODE), requestCode);
-                }
+//                if (useTrace) {
+//                    span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
+//                    span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
+//                    span.setAttribute(String.valueOf(SemanticAttributes.HTTP_STATUS_CODE), requestCode);
+//                }
 
                 HttpCommand responseCommand = null;
 
@@ -374,6 +395,17 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     return;
                 }
 
+                if(useTrace){
+                    EventMeshContextCarrier contextCarrier = trace.extractFrom(requestCommand);
+                    span = trace.getTracker("").createSpan("", contextCarrier);
+                    span.start();
+                    EventMeshTraceContext eventMeshTraceContext = new EventMeshTraceContext();
+                    //attach the span to the server context
+                    eventMeshTraceContext.setSpan(span);
+                    //put the context in channel
+                    ctx.channel().attr(AttributeKeys.EVENTMESH_SERVER_CONTEXT).set(eventMeshTraceContext);
+                }
+
                 if (httpLogger.isDebugEnabled()) {
                     httpLogger.debug("{}", requestCommand);
                 }
@@ -384,11 +416,13 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             } catch (Exception ex) {
                 httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
 
-                if (useTrace) {
-                    span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage());
-                    span.setStatus(StatusCode.ERROR, ex.getMessage()); //set this span's status to ERROR
-                    span.recordException(ex); //record this exception
-                    span.end(); // closing the scope does not end the span, this has to be done manually
+                if (useTrace && span != null) {
+//                    span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage());
+//                    span.setStatus(StatusCode.ERROR, ex.getMessage()); //set this span's status to ERROR
+//                    span.recordException(ex); //record this exception
+//                    span.end(); // closing the scope does not end the span, this has to be done manually
+                    span.addError(ex);
+                    span.finish();
                 }
             }
         }
@@ -458,6 +492,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             if (null != ctx) {
                 ctx.close();
             }
+        }
+
+        Map<String, String> extractFromRequest(HttpRequest httpRequest){
+            return null;
         }
     }
 

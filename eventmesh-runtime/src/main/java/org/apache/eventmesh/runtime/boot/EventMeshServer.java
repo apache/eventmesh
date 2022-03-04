@@ -25,6 +25,7 @@ import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.runtime.trace.Trace;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,8 @@ public class EventMeshServer {
 
     private Registry registry;
 
+    private Trace trace;
+
     private ConnectorResource connectorResource;
 
     private ServiceState serviceState;
@@ -61,6 +64,7 @@ public class EventMeshServer {
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
         this.acl = new Acl();
         this.registry = new Registry();
+        this.trace = new Trace();
         this.connectorResource = new ConnectorResource();
     }
 
@@ -73,6 +77,10 @@ public class EventMeshServer {
                 && eventMeshTCPConfiguration.eventMeshTcpServerEnabled
                 && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             registry.init(eventMeshTCPConfiguration.eventMeshRegistryPluginType);
+        }
+
+        if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
+            trace.init(eventMeshHttpConfiguration.eventMeshTracePluginType);
         }
 
         connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
@@ -140,6 +148,11 @@ public class EventMeshServer {
         if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable) {
             acl.shutdown();
         }
+
+        if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
+            trace.shutdown();
+        }
+
         serviceState = ServiceState.STOPED;
         logger.info("server state:{}", serviceState);
     }
@@ -154,6 +167,10 @@ public class EventMeshServer {
 
     public EventMeshTCPServer getEventMeshTCPServer() {
         return eventMeshTCPServer;
+    }
+
+    public Trace getTrace() {
+        return trace;
     }
 
     public ServiceState getServiceState() {

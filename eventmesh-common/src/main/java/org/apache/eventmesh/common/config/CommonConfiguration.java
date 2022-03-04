@@ -36,9 +36,9 @@ public class CommonConfiguration {
     public String eventMeshConnectorPluginType = "rocketmq";
     public String eventMeshSecurityPluginType  = "security";
     public String eventMeshRegistryPluginType  = "namesrv";
+    public String eventMeshTracePluginType  = "trace";
 
     public List<String> eventMeshMetricsPluginType;
-    public String       eventMeshTracePluginType;
 
     public    String               namesrvAddr                        = "";
     public    Integer              eventMeshRegisterIntervalInMills   = 10 * 1000;
@@ -46,6 +46,7 @@ public class CommonConfiguration {
     public    String               eventMeshServerIp                  = null;
     public    boolean              eventMeshServerSecurityEnable      = false;
     public    boolean              eventMeshServerRegistryEnable      = false;
+    public    boolean              eventMeshServerTraceEnable      = false;
     protected ConfigurationWrapper configurationWrapper;
 
     public String eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
@@ -117,6 +118,13 @@ public class CommonConfiguration {
                     Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
             }
 
+            String eventMeshServerTraceEnableStr =
+                configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_ENABLED);
+            if (StringUtils.isNotBlank(eventMeshServerTraceEnableStr)) {
+                eventMeshServerTraceEnable =
+                    Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerTraceEnableStr));
+            }
+
             eventMeshRegistryPluginType =
                 configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegistryPluginType),
@@ -164,6 +172,8 @@ public class CommonConfiguration {
         public static String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
 
         public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.server.registry.enabled";
+
+        public static String KEYS_EVENTMESH_TRACE_ENABLED = "eventMesh.server.trace.enabled";
 
         public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
 

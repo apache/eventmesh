@@ -20,6 +20,8 @@ package org.apache.eventmesh.runtime.trace;
 import io.netty.util.AttributeKey;
 import io.opentelemetry.context.Context;
 
+import org.apache.eventmesh.trace.api.EventMeshTraceContext;
+
 /**
  * keys.
  */
@@ -38,6 +40,9 @@ public final class AttributeKeys {
 
     public static final AttributeKey<Context> CLIENT_PARENT_CONTEXT =
             AttributeKey.valueOf(AttributeKeys.class, "client-parent-context");
+
+    public static final AttributeKey<EventMeshTraceContext> EVENTMESH_SERVER_CONTEXT =
+        AttributeKey.valueOf(AttributeKeys.class, "server-span");
 
     private AttributeKeys() {
     }

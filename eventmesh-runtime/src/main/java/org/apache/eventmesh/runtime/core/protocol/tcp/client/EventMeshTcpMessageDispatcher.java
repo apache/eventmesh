@@ -33,7 +33,12 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.MessageTransfe
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.RecommendTask;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.SubscribeTask;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.UnSubscribeTask;
+import org.apache.eventmesh.runtime.trace.AttributeKeys;
+import org.apache.eventmesh.runtime.trace.SpanKey;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.trace.api.EventMeshSpan;
+import org.apache.eventmesh.trace.api.EventMeshTraceContext;
+import org.apache.eventmesh.trace.api.propagation.EventMeshContextCarrier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +60,21 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
     protected void channelRead0(ChannelHandlerContext ctx, Package pkg) throws Exception {
         long startTime = System.currentTimeMillis();
         validateMsg(pkg);
+
         eventMeshTCPServer.getEventMeshTcpMonitor().getTcpSummaryMetrics().getClient2eventMeshMsgNum().incrementAndGet();
+
+        EventMeshSpan span = null;
+        EventMeshTraceContext eventMeshTraceContext = new EventMeshTraceContext();
+        if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable) {
+            EventMeshContextCarrier contextCarrier = eventMeshTCPServer.getEventMeshServer().getTrace().extractFrom(pkg);
+            span = eventMeshTCPServer.getEventMeshServer().getTrace().getTracker("null").createSpan("", contextCarrier);
+            span.start();
+            //attach the span to the server context
+            eventMeshTraceContext.setSpan(span);
+            //put the context in channel
+            ctx.channel().attr(AttributeKeys.EVENTMESH_SERVER_CONTEXT).set(eventMeshTraceContext);
+        }
+
         Command cmd = null;
         try {
             Runnable task;
@@ -87,6 +106,10 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
             dispatch(ctx, pkg, startTime, cmd);
         } catch (Exception e) {
             logger.error("exception occurred while pkg|cmd={}|pkg={}", cmd, pkg, e);
+            if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable) {
+                span.addError(e);
+                span.finish();
+            }
             writeToClient(cmd, pkg, ctx, e);
         }
     }

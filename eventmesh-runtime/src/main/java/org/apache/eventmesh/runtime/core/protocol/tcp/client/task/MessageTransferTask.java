@@ -36,8 +36,12 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendStatus;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
+import org.apache.eventmesh.runtime.trace.AttributeKeys;
+import org.apache.eventmesh.runtime.trace.SpanKey;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
+import org.apache.eventmesh.trace.api.EventMeshSpan;
+import org.apache.eventmesh.trace.api.EventMeshTraceContext;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -52,6 +56,9 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 
 public class MessageTransferTask extends AbstractTask {
 
@@ -81,6 +88,16 @@ public class MessageTransferTask extends AbstractTask {
         int retCode = 0;
         EventMeshTcpSendResult sendStatus;
         CloudEvent event = null;
+        EventMeshSpan span = null;
+        try{
+            if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable) {
+                EventMeshTraceContext context = ctx.channel().attr(AttributeKeys.EVENTMESH_SERVER_CONTEXT).get();
+                span = context.getSpan();
+            }
+        }catch (Exception exception){
+            logger.warn("get span from ChannelHandlerContext fail", exception);
+        }
+
         try {
             event = protocolAdaptor.toCloudEvent(pkg);
             if (event == null) {
@@ -132,13 +149,25 @@ public class MessageTransferTask extends AbstractTask {
             }
         } catch (Exception e) {
             logger
-                    .error("MessageTransferTask failed|cmd={}|event={}|user={}|errMsg={}", cmd, event, session.getClient(),
+                    .error("MessageTransferTask failed|cmd={}|event={}|user={}", cmd, event, session.getClient(),
                             e);
+            if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable && span != null) {
+                span.addError(e);
+            }
+
             if (!cmd.equals(RESPONSE_TO_SERVER)) {
                 msg.setHeader(
                         new Header(replyCmd, OPStatus.FAIL.getCode(), e.getStackTrace().toString(), pkg.getHeader()
                                 .getSeq()));
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
+            }
+        }finally {
+            try{
+                if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable && span != null) {
+                    span.finish();
+                }
+            }catch (Exception e){
+                logger.warn("uploadTraceLog failed in MessageTransferTask", e);
             }
         }
     }
