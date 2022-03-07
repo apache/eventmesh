@@ -21,16 +21,9 @@ name: "Continuous Integration"
 
 on:
   push:
-    branches:
-      - develop
-      - master
-      - '[0-9]+.[0-9]+.[0-9]+**'
+    branches: ['*']
   pull_request:
-    branches:
-      - develop
-      - master
-      - '[0-9]+.[0-9]+.[0-9]+**'
-  workflow_dispatch:
+    branches: [ '*' ]
 
 jobs:
   build:
