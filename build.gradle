@@ -79,7 +79,12 @@ allprojects {
     checkstyleMain.exclude '**/org/apache/eventmesh/client/grpc/protos**'
 
     dependencies {
-        testImplementation "junit:junit"
+        repositories {
+            maven {
+                url "https://maven.aliyun.com/repository/public"
+            }
+        }
+        testImplementation "junit:junit:4.13.2"
     }
 }
 
