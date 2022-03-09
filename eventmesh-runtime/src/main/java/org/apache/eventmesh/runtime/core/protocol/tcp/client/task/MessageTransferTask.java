@@ -31,6 +31,7 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
+import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
@@ -88,15 +89,8 @@ public class MessageTransferTask extends AbstractTask {
         int retCode = 0;
         EventMeshTcpSendResult sendStatus;
         CloudEvent event = null;
-        EventMeshSpan span = null;
-        try{
-            if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable) {
-                EventMeshTraceContext context = ctx.channel().attr(AttributeKeys.EVENTMESH_SERVER_CONTEXT).get();
-                span = context.getSpan();
-            }
-        }catch (Exception exception){
-            logger.warn("get span from ChannelHandlerContext fail", exception);
-        }
+
+        EventMeshSpan span = EventMeshServer.getTrace().getSpanFromContext(ctx);
 
         try {
             event = protocolAdaptor.toCloudEvent(pkg);
@@ -151,9 +145,8 @@ public class MessageTransferTask extends AbstractTask {
             logger
                     .error("MessageTransferTask failed|cmd={}|event={}|user={}", cmd, event, session.getClient(),
                             e);
-            if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable && span != null) {
-                span.addError(e);
-            }
+
+            EventMeshServer.getTrace().recordExceptionInSpan(span, e);
 
             if (!cmd.equals(RESPONSE_TO_SERVER)) {
                 msg.setHeader(
@@ -162,13 +155,8 @@ public class MessageTransferTask extends AbstractTask {
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
             }
         }finally {
-            try{
-                if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable && span != null) {
-                    span.finish();
-                }
-            }catch (Exception e){
-                logger.warn("uploadTraceLog failed in MessageTransferTask", e);
-            }
+
+            EventMeshServer.getTrace().finishSpan(span, event);
         }
     }
 

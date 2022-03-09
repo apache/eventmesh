@@ -26,9 +26,13 @@ import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
+import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.Utils;
+import org.apache.eventmesh.trace.api.EventMeshSpan;
+import org.apache.eventmesh.trace.api.EventMeshTraceContext;
+import org.apache.eventmesh.trace.api.propagation.EventMeshContextCarrier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -187,12 +191,21 @@ public class SessionSender {
                 } finally {
                     Utils.writeAndFlush(pkg, startTime, taskExecuteTime, session.getContext(), session);
                     //session.write2Client(pkg);
+
+                    //TODO upload trace
+                    EventMeshSpan span = EventMeshServer.getTrace().createSpan("", event);
+                    EventMeshServer.getTrace().finishSpan(span, event);
                 }
             }
 
             @Override
             public void onException(Throwable e) {
                 messageLogger.error("exception occur while sending RR message|user={}", session.getClient(), new Exception(e));
+
+                //TODO upload trace, spanName定义？
+                EventMeshSpan span = EventMeshServer.getTrace().createSpan("");
+                EventMeshServer.getTrace().recordExceptionInSpan(span, e);
+                EventMeshServer.getTrace().finishSpan(span, null);
             }
         };
     }

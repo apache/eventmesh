@@ -27,9 +27,14 @@ import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
+import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.trace.AttributeKeys;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.trace.api.EventMeshSpan;
+import org.apache.eventmesh.trace.api.EventMeshTraceContext;
+import org.apache.eventmesh.trace.api.propagation.EventMeshContextCarrier;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -141,6 +146,10 @@ public class SessionPusher {
                         }
                     }
             );
+
+            //TODO uploadTrace
+            EventMeshSpan span = EventMeshServer.getTrace().createSpan("");
+            EventMeshServer.getTrace().finishSpan(span, downStreamMsgContext.event);
         }
     }
 

@@ -50,7 +50,7 @@ public class EventMeshServer {
 
     private Registry registry;
 
-    private Trace trace;
+    private static Trace trace;
 
     private ConnectorResource connectorResource;
 
@@ -64,7 +64,7 @@ public class EventMeshServer {
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
         this.acl = new Acl();
         this.registry = new Registry();
-        this.trace = new Trace();
+        this.trace = new Trace(eventMeshHttpConfiguration.eventMeshServerTraceEnable);
         this.connectorResource = new ConnectorResource();
     }
 
@@ -169,7 +169,7 @@ public class EventMeshServer {
         return eventMeshTCPServer;
     }
 
-    public Trace getTrace() {
+    public static Trace getTrace() {
         return trace;
     }
 
