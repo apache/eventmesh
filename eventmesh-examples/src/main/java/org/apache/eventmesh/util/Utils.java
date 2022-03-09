@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.util;
 
+import org.apache.eventmesh.common.ExampleConstants;
+
 import org.apache.commons.lang3.SystemUtils;
 
 import java.io.InputStream;
@@ -76,7 +78,7 @@ public class Utils {
                 }
             }
         } catch (SocketException ex) {
-            ip = "127.0.0.1";
+            ip = ExampleConstants.DEFAULT_EVENTMESH_IP;
             ex.printStackTrace();
         }
         return ip;
