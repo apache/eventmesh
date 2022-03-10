@@ -73,7 +73,7 @@ public class SyncRequestInstance {
 
             EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10000);
             if (logger.isDebugEnabled()) {
-                logger.debug("sendmsg : {}, return : {}, cost:{} ms", eventMeshMessage.getContent(), rsp.getContent(),
+                logger.debug("sendmsg: {}, return: {}, cost:{} ms", eventMeshMessage.getContent(), rsp.getContent(),
                         System.currentTimeMillis() - startTime);
             }
         } catch (Exception e) {

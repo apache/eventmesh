@@ -117,6 +117,6 @@ public class SubService implements InitializingBean {
     public void consumeMessage(String msg) {
         logger.info("consume message: {}", msg);
         countDownLatch.countDown();
-        logger.info("remaining number of messages to be consumed : {}", countDownLatch.getCount());
+        logger.info("remaining number of messages to be consumed: {}", countDownLatch.getCount());
     }
 }
