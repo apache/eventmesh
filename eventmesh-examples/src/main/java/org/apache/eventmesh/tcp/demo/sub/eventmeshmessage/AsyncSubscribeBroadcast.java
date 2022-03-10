@@ -53,7 +53,7 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage>
                 eventMeshTcpClientConfig, EventMeshMessage.class)) {
             client.init();
 
-            client.subscribe("TEST-TOPIC-TCP-BROADCAST", SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
+            client.subscribe(ExampleConstants.EVENTMESH_TCP_BROADCAST_TEST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
             client.registerSubBusiHandler(handler);
 
             client.listen();
@@ -65,7 +65,7 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage>
 
     @Override
     public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
-        log.info("receive broadcast msg==============={}", msg);
+        log.info("receive broadcast msg: {}", msg);
         return Optional.empty();
     }
 

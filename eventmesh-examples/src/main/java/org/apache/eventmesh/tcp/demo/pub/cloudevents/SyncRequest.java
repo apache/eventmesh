@@ -57,12 +57,12 @@ public class SyncRequest {
             client.init();
 
             CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
-            log.info("begin send rr msg=================={}", event);
+            log.info("begin send rr msg: {}", event);
             Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             CloudEvent replyEvent = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
                     .deserialize(response.getBody().toString().getBytes(StandardCharsets.UTF_8));
             String content = new String(replyEvent.getData().toBytes(), StandardCharsets.UTF_8);
-            log.info("receive rr reply==================={}|{}", response, content);
+            log.info("receive rr reply: {}|{}", response, content);
 
         } catch (Exception e) {
             log.warn("SyncRequest failed", e);
