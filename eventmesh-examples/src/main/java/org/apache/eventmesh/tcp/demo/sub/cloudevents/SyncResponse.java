@@ -58,7 +58,7 @@ public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
                     .createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
-            client.subscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
+            client.subscribe(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
             // Synchronize RR messages
             client.registerSubBusiHandler(handler);
 
@@ -72,7 +72,7 @@ public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
     @Override
     public Optional<CloudEvent> handle(CloudEvent event) {
         String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-        log.info("receive sync rr msg================{}|{}", event, content);
+        log.info("receive sync rr msg: {}|{}", event, content);
         return Optional.of(event);
     }
 

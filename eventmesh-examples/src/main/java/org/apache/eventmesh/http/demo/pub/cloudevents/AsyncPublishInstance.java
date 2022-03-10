@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -42,40 +43,24 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AsyncPublishInstance {
-    
-    // This messageSize is also used in SubService.java (Subscriber)
+
     public static final int MESSAGE_SIZE = 1;
-    
-    public static final String DEFAULT_IP_PORT = "127.0.0.1:10105";
-    
-    public static final String FILE_NAME = "application.properties";
-    
-    public static final String IP_KEY = "eventmesh.ip";
-    
-    public static final String PORT_KEY = "eventmesh.http.port";
-    
-    public static final String TEST_TOPIC = "TEST-TOPIC-HTTP-ASYNC";
-    
-    public static final String TEST_GROUP = "EventMeshTest-producerGroup";
-    
-    public static final String CONTENT_TYPE = "application/cloudevents+json";
-    
-    
+
     public static void main(String[] args) throws Exception {
     
-        Properties properties = Utils.readPropertiesFile(FILE_NAME);
-        final String eventMeshIp = properties.getProperty(IP_KEY);
-        final String eventMeshHttpPort = properties.getProperty(PORT_KEY);
+        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
     
         // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-        String eventMeshIPPort = DEFAULT_IP_PORT;
+        String eventMeshIPPort = ExampleConstants.DEFAULT_EVENTMESH_IP_PORT;
         if (StringUtils.isNotBlank(eventMeshIp) || StringUtils.isNotBlank(eventMeshHttpPort)) {
             eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
         }
 
         EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
                 .liteEventMeshAddr(eventMeshIPPort)
-                .producerGroup(TEST_GROUP)
+                .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
                 .env("env")
                 .idc("idc")
                 .ip(IPUtils.getLocalAddress())
@@ -92,15 +77,15 @@ public class AsyncPublishInstance {
 
                 CloudEvent event = CloudEventBuilder.v1()
                         .withId(UUID.randomUUID().toString())
-                        .withSubject(TEST_TOPIC)
+                        .withSubject(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
                         .withSource(URI.create("/"))
-                        .withDataContentType(CONTENT_TYPE)
+                        .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
                         .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
                         .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
                         .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
                         .build();
                 eventMeshHttpProducer.publish(event);
-                log.info("publish event success content:{}", content);
+                log.info("publish event success content: {}", content);
             }
             Thread.sleep(30000);
         }

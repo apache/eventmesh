@@ -48,12 +48,10 @@ public class CloudEventsBatchPublishInstance {
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
-        final String topic = "TEST-TOPIC-GRPC-ASYNC";
-
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .producerGroup("EventMeshTest-producerGroup")
+            .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
             .env("env").idc("idc")
             .sys("1234").build();
 
@@ -68,9 +66,9 @@ public class CloudEventsBatchPublishInstance {
         for (int i = 0; i < 5; i++) {
             CloudEvent event = CloudEventBuilder.v1()
                 .withId(UUID.randomUUID().toString())
-                .withSubject(topic)
+                .withSubject(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
                 .withSource(URI.create("/"))
-                .withDataContentType("application/cloudevents+json")
+                .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
                 .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
                 .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
                 .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))

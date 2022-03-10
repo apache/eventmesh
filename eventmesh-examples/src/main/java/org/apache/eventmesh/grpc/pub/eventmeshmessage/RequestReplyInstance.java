@@ -45,12 +45,10 @@ public class RequestReplyInstance {
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
-        final String topic = "TEST-TOPIC-GRPC-RR";
-
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .producerGroup("EventMeshTest-producerGroup")
+            .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
             .env("env").idc("idc")
             .sys("1234").build();
 
@@ -64,7 +62,7 @@ public class RequestReplyInstance {
         for (int i = 0; i < messageSize; i++) {
             EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                 .content(JsonUtils.serialize(content))
-                .topic(topic)
+                .topic(ExampleConstants.EVENTMESH_GRPC_RR_TEST_TOPIC)
                 .uniqueId(RandomStringUtils.generateNum(30))
                 .bizSeqNo(RandomStringUtils.generateNum(30))
                 .build()

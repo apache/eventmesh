@@ -25,7 +25,6 @@ import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
@@ -58,7 +57,7 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
             client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
-            client.subscribe(EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
+            client.subscribe(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
             client.registerSubBusiHandler(handler);
 
             client.listen();
@@ -70,7 +69,7 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
     @Override
     public Optional<CloudEvent> handle(CloudEvent msg) {
         String content = new String(msg.getData().toBytes(), StandardCharsets.UTF_8);
-        log.info("receive async msg====================={}|{}", msg, content);
+        log.info("receive async msg: {}|{}", msg, content);
         return Optional.empty();
     }
 }
