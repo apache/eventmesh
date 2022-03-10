@@ -20,12 +20,26 @@ package org.apache.eventmesh.common;
 public class ExampleConstants {
 
     public static final String CONFIG_FILE_NAME = "application.properties";
+    public static final String CLOUDEVENT_CONTENT_TYPE = "application/cloudevents+json";
 
     public static final String EVENTMESH_IP = "eventmesh.ip";
-
     public static final String EVENTMESH_HTTP_PORT = "eventmesh.http.port";
-
     public static final String EVENTMESH_TCP_PORT = "eventmesh.tcp.port";
-
     public static final String EVENTMESH_GRPC_PORT = "eventmesh.grpc.port";
+
+    public static final String DEFAULT_EVENTMESH_IP = "127.0.0.1";
+    public static final String DEFAULT_EVENTMESH_IP_PORT = "127.0.0.1:10105";
+
+    public static final String EVENTMESH_GRPC_ASYNC_TEST_TOPIC = "TEST-TOPIC-GRPC-ASYNC";
+    public static final String EVENTMESH_GRPC_RR_TEST_TOPIC = "TEST-TOPIC-GRPC-RR";
+    public static final String EVENTMESH_GRPC_BROADCAT_TEST_TOPIC = "TEST-TOPIC-GRPC-BROADCAST";
+    public static final String EVENTMESH_HTTP_ASYNC_TEST_TOPIC = "TEST-TOPIC-HTTP-ASYNC";
+    public static final String EVENTMESH_HTTP_SYNC_TEST_TOPIC = "TEST-TOPIC-HTTP-SYNC";
+    public static final String EVENTMESH_TCP_ASYNC_TEST_TOPIC = "TEST-TOPIC-TCP-ASYNC";
+    public static final String EVENTMESH_TCP_SYNC_TEST_TOPIC = "TEST-TOPIC-TCP-SYNC";
+    public static final String EVENTMESH_TCP_BROADCAST_TEST_TOPIC = "TEST-TOPIC-TCP-BROADCAST";
+
+    public static final String DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP = "EventMeshTest-producerGroup";
+    public static final String DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP = "EventMeshTest-consumerGroup";
+
 }
