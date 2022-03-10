@@ -43,12 +43,10 @@ public class BatchPublishInstance {
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
-        final String topic = "TEST-TOPIC-GRPC-ASYNC";
-
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .producerGroup("EventMeshTest-producerGroup")
+            .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
             .env("env").idc("idc")
             .sys("1234").build();
 
@@ -62,7 +60,7 @@ public class BatchPublishInstance {
         List<EventMeshMessage> messageList = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             EventMeshMessage message = EventMeshMessage.builder()
-                .topic(topic)
+                .topic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
                 .content((JsonUtils.serialize(content)))
                 .uniqueId(RandomStringUtils.generateNum(30))
                 .bizSeqNo(RandomStringUtils.generateNum(30))

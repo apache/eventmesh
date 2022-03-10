@@ -53,14 +53,14 @@ public class SubController {
     @RequestMapping(value = "/test", method = RequestMethod.POST)
     public String subTest(HttpServletRequest request) {
         String content = request.getParameter("content");
-        log.info("=======receive message======= {}", content);
+        log.info("receive message: {}", content);
         Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
         if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, contentMap.get(ProtocolKey.PROTOCOL_TYPE))) {
             CloudEvent event = EventFormatProvider.getInstance()
                     .resolveFormat(JsonFormat.CONTENT_TYPE)
                     .deserialize(content.getBytes(StandardCharsets.UTF_8));
             String data = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-            log.info("=======receive data======= {}", data);
+            log.info("receive data: {}", data);
         }
 
         subService.consumeMessage(content);

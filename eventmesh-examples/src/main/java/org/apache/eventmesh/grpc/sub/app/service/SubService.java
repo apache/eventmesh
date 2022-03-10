@@ -69,14 +69,14 @@ public class SubService implements InitializingBean {
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup("EventMeshTest-consumerGroup2")
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
             .env(env).idc(idc)
             .sys(subsys).build();
 
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();
 
-        subscriptionItem.setTopic("TEST-TOPIC-GRPC-ASYNC");
+        subscriptionItem.setTopic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC);
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
@@ -115,8 +115,8 @@ public class SubService implements InitializingBean {
      * Count the message already consumed
      */
     public void consumeMessage(String msg) {
-        logger.info("consume message {}", msg);
+        logger.info("consume message: {}", msg);
         countDownLatch.countDown();
-        logger.info("remaining number of messages to be consumed {}", countDownLatch.getCount());
+        logger.info("remaining number of messages to be consumed: {}", countDownLatch.getCount());
     }
 }

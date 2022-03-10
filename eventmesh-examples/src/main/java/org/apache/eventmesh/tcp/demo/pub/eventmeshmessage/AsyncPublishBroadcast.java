@@ -51,7 +51,7 @@ public class AsyncPublishBroadcast {
             client.init();
 
             EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateBroadcastMqMsg();
-            logger.info("begin send broadcast msg============={}", eventMeshMessage);
+            logger.info("begin send broadcast msg: {}", eventMeshMessage);
             client.broadcast(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
             Thread.sleep(2000);
