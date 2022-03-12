@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.opentelemetry.config;
+package org.apache.eventmesh.metrics.prometheus.config;
 
 import org.apache.eventmesh.common.Constants;
 
@@ -33,9 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @UtilityClass
-public class OpenTelemetryConfiguration {
+public class PrometheusConfiguration {
 
-    private static final String     CONFIG_FILE = "opentelemetry.properties";
+    private static final String     CONFIG_FILE = "prometheus.properties";
     private static final Properties properties  = new Properties();
 
     private int eventMeshPrometheusPort = 19090;
@@ -61,7 +61,7 @@ public class OpenTelemetryConfiguration {
      * The properties defined in conf home will override classpath.
      */
     private void loadProperties() {
-        try (InputStream resourceAsStream = OpenTelemetryConfiguration.class.getResourceAsStream(File.separator + CONFIG_FILE)) {
+        try (InputStream resourceAsStream = PrometheusConfiguration.class.getResourceAsStream(File.separator + CONFIG_FILE)) {
             if (resourceAsStream != null) {
                 properties.load(resourceAsStream);
             }
