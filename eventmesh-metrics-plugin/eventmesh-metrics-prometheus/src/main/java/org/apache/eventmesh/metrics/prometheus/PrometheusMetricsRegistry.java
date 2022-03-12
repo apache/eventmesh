@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.opentelemetry;
+package org.apache.eventmesh.metrics.prometheus;
 
 import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.Metric;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
-import org.apache.eventmesh.metrics.opentelemetry.config.OpenTelemetryConfiguration;
-import org.apache.eventmesh.metrics.opentelemetry.metrics.OpenTelemetryHttpExporter;
-import org.apache.eventmesh.metrics.opentelemetry.metrics.OpenTelemetryTcpExporter;
+import org.apache.eventmesh.metrics.prometheus.config.PrometheusConfiguration;
+import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusHttpExporter;
+import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusTcpExporter;
 
 import java.io.IOException;
 
@@ -34,19 +34,19 @@ import io.prometheus.client.exporter.HTTPServer;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class OpenTelemetryMetricsRegistry implements MetricsRegistry {
+public class PrometheusMetricsRegistry implements MetricsRegistry {
 
     private volatile HTTPServer prometheusHttpServer;
 
     @Override
     public void start() {
         if (prometheusHttpServer == null) {
-            synchronized (OpenTelemetryMetricsRegistry.class) {
+            synchronized (PrometheusMetricsRegistry.class) {
                 if (prometheusHttpServer == null) {
                     SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
                     PrometheusCollector
                         .builder().setMetricProducer(sdkMeterProvider).buildAndRegister();
-                    int port = OpenTelemetryConfiguration.getEventMeshPrometheusPort();
+                    int port = PrometheusConfiguration.getEventMeshPrometheusPort();
                     try {
                         //Use the daemon thread to start an HTTP server to serve the default Prometheus registry.
                         prometheusHttpServer = new HTTPServer(port, true);
@@ -72,11 +72,11 @@ public class OpenTelemetryMetricsRegistry implements MetricsRegistry {
             throw new IllegalArgumentException("Metric cannot be null");
         }
         if (metric instanceof HttpSummaryMetrics) {
-            OpenTelemetryHttpExporter.export("apache-eventmesh", (HttpSummaryMetrics) metric);
+            PrometheusHttpExporter.export("apache-eventmesh", (HttpSummaryMetrics) metric);
         }
 
         if (metric instanceof TcpSummaryMetrics) {
-            OpenTelemetryTcpExporter.export("apache-eventmesh", (TcpSummaryMetrics) metric);
+            PrometheusTcpExporter.export("apache-eventmesh", (TcpSummaryMetrics) metric);
         }
     }
 
