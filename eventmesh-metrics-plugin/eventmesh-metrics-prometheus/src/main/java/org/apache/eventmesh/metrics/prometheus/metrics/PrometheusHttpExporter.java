@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.opentelemetry.metrics;
+package org.apache.eventmesh.metrics.prometheus.metrics;
 
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 
@@ -26,7 +26,7 @@ import io.opentelemetry.api.metrics.common.Labels;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class OpenTelemetryHttpExporter {
+public class PrometheusHttpExporter {
 
     public static void export(String name, HttpSummaryMetrics summaryMetrics) {
         Meter meter = GlobalMeterProvider.getMeter(name);

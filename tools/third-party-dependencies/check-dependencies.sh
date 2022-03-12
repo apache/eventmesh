@@ -46,10 +46,11 @@ grep -wvf "$self_modules_txt" "$all_dependencies_txt" | uniq | sort > "$third_pa
 # If the check is success it will return 0
 sort "$known_third_party_dependencies_txt" | diff - "$third_party_dependencies_txt"
 
-if [ $? -eq 0 ]
+compareCode=$?
+if [ $compareCode -eq 0 ]
 then
   echo "Dependencies check success"
 else
   echo "Dependencies check failed, please check if you add unknown dependencies"
-  exit 1
+  exit $compareCode
 fi
