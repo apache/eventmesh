@@ -53,9 +53,9 @@ public class SyncRequest {
             client.init();
 
             EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateSyncRRMqMsg();
-            log.info("begin send rr msg=================={}", eventMeshMessage);
+            log.info("begin send rr msg: {}", eventMeshMessage);
             Package response = client.rr(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-            log.info("receive rr reply==================={}", response);
+            log.info("receive rr reply: {}", response);
 
         } catch (Exception e) {
             log.warn("SyncRequest failed", e);

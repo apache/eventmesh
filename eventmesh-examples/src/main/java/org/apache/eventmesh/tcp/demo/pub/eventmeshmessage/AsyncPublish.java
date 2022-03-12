@@ -56,7 +56,7 @@ public class AsyncPublish {
             for (int i = 0; i < 5; i++) {
                 EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateAsyncEventMqMsg();
 
-                logger.info("begin send async msg[{}]==================={}", i, eventMeshMessage);
+                logger.info("begin send async msg[{}]: {}", i, eventMeshMessage);
                 client.publish(eventMeshMessage, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
 
                 Thread.sleep(1000);

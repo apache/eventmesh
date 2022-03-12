@@ -20,6 +20,7 @@ package org.apache.eventmesh.http.demo.pub.eventmeshmessage;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -36,8 +37,9 @@ public class SyncRequestInstance {
     public static void main(String[] args) throws Exception {
 
         EventMeshHttpProducer eventMeshHttpProducer = null;
-        String eventMeshIPPort = "127.0.0.1:10105";
-        String topic = "EventMesh.SyncRequestInstance";
+        String eventMeshIPPort = ExampleConstants.DEFAULT_EVENTMESH_IP_PORT;
+        String topic = ExampleConstants.EVENTMESH_HTTP_SYNC_TEST_TOPIC;
+
         try {
             if (args.length > 0 && StringUtils.isNotBlank(args[0])) {
                 eventMeshIPPort = args[0];
@@ -48,12 +50,12 @@ public class SyncRequestInstance {
 
             if (StringUtils.isBlank(eventMeshIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-                eventMeshIPPort = "127.0.0.1:10105";
+                eventMeshIPPort = ExampleConstants.DEFAULT_EVENTMESH_IP_PORT;
             }
 
             EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
                     .liteEventMeshAddr(eventMeshIPPort)
-                    .producerGroup("EventMeshTest-producerGroup")
+                    .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
                     .env("env")
                     .idc("idc")
                     .ip(IPUtils.getLocalAddress())
@@ -71,7 +73,7 @@ public class SyncRequestInstance {
 
             EventMeshMessage rsp = eventMeshHttpProducer.request(eventMeshMessage, 10000);
             if (logger.isDebugEnabled()) {
-                logger.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), rsp.getContent(),
+                logger.debug("sendmsg: {}, return: {}, cost:{} ms", eventMeshMessage.getContent(), rsp.getContent(),
                         System.currentTimeMillis() - startTime);
             }
         } catch (Exception e) {

@@ -54,7 +54,7 @@ public class SubService implements InitializingBean {
     final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
 
     final List<SubscriptionItem> topicList = Lists.newArrayList(
-            new SubscriptionItem("TEST-TOPIC-HTTP-ASYNC", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
+            new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_SYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
     );
     final String localIp = IPUtils.getLocalAddress();
     final String localPort = properties.getProperty("server.port");
@@ -74,7 +74,7 @@ public class SubService implements InitializingBean {
         final String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
         EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
                 .liteEventMeshAddr(eventMeshIPPort)
-                .consumerGroup("EventMeshTest-consumerGroup")
+                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
                 .env(env)
                 .idc(idc)
                 .ip(IPUtils.getLocalAddress())
@@ -122,8 +122,8 @@ public class SubService implements InitializingBean {
      * Count the message already consumed
      */
     public void consumeMessage(String msg) {
-        logger.info("consume message {}", msg);
+        logger.info("consume message: {}", msg);
         countDownLatch.countDown();
-        logger.info("remaining number of messages to be consumed {}", countDownLatch.getCount());
+        logger.info("remaining number: {} of messages to be consumed", countDownLatch.getCount());
     }
 }

@@ -44,17 +44,15 @@ public class EventmeshSubscribeBroadcast implements ReceiveMsgHook<EventMeshMess
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
-        final String topic = "TEST-TOPIC-GRPC-BROADCAST";
-
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup("EventMeshTest-consumerGroup")
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
             .env("env").idc("idc")
             .sys("1234").build();
 
         SubscriptionItem subscriptionItem = new SubscriptionItem();
-        subscriptionItem.setTopic(topic);
+        subscriptionItem.setTopic(ExampleConstants.EVENTMESH_GRPC_BROADCAT_TEST_TOPIC);
         subscriptionItem.setMode(SubscriptionMode.BROADCASTING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
@@ -72,7 +70,7 @@ public class EventmeshSubscribeBroadcast implements ReceiveMsgHook<EventMeshMess
 
     @Override
     public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
-        log.info("receive async broadcast msg====================={}", msg);
+        log.info("receive async broadcast msg: {}", msg);
         return Optional.empty();
     }
 

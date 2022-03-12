@@ -18,12 +18,10 @@
 package org.apache.eventmesh.tcp.common;
 
 import static org.apache.eventmesh.common.protocol.tcp.Command.RESPONSE_TO_SERVER;
-import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_SyncSubscribeTest;
-import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientBroadCast;
-import static org.apache.eventmesh.tcp.common.EventMeshTestCaseTopicSet.TOPIC_PRX_WQ2ClientUniCast;
 
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.tcp.common.MessageUtils;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -42,6 +40,7 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class EventMeshTestUtils {
+
     private static final int seqLength = 10;
 
     // generate pub-client
@@ -117,7 +116,7 @@ public class EventMeshTestUtils {
 
     public static EventMeshMessage generateSyncRRMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
-        mqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
+        mqMsg.setTopic(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC);
         mqMsg.getProperties().put("msgtype", "persistent");
         mqMsg.getProperties().put("ttl", "300000");
         mqMsg.getProperties().put("keys", generateRandomString(16));
@@ -128,7 +127,7 @@ public class EventMeshTestUtils {
 
     private static EventMeshMessage generateAsyncRRMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
-        mqMsg.setTopic(TOPIC_PRX_SyncSubscribeTest);
+        mqMsg.setTopic(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC);
         mqMsg.getProperties().put("replyto", "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         mqMsg.getProperties().put("ttl", "300000");
         mqMsg.getProperties().put("propertymessagereplyto", "notnull");
@@ -138,7 +137,7 @@ public class EventMeshTestUtils {
 
     public static EventMeshMessage generateAsyncEventMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
-        mqMsg.setTopic(TOPIC_PRX_WQ2ClientUniCast);
+        mqMsg.setTopic(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC);
         mqMsg.getProperties().put("replyto", "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         mqMsg.getProperties().put("ttl", "30000");
         mqMsg.getProperties().put("propertymessagereplyto", "notnull");
@@ -148,7 +147,7 @@ public class EventMeshTestUtils {
 
     public static EventMeshMessage generateBroadcastMqMsg() {
         EventMeshMessage mqMsg = new EventMeshMessage();
-        mqMsg.setTopic(TOPIC_PRX_WQ2ClientBroadCast);
+        mqMsg.setTopic(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC);
         mqMsg.getProperties().put("replyto", "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI");
         mqMsg.getProperties().put("ttl", "30000");
         mqMsg.getProperties().put("propertymessagereplyto", "notnull");
@@ -170,7 +169,7 @@ public class EventMeshTestUtils {
 
         CloudEvent event = CloudEventBuilder.v1()
                 .withId(UUID.randomUUID().toString())
-                .withSubject(TOPIC_PRX_WQ2ClientUniCast)
+                .withSubject(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
                 .withSource(URI.create("/"))
                 .withDataContentType("application/cloudevents+json")
                 .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
@@ -186,9 +185,9 @@ public class EventMeshTestUtils {
 
         CloudEvent event = CloudEventBuilder.v1()
                 .withId(UUID.randomUUID().toString())
-                .withSubject(TOPIC_PRX_SyncSubscribeTest)
+                .withSubject(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC)
                 .withSource(URI.create("/"))
-                .withDataContentType("application/cloudevents+json")
+                .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
                 .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
                 .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
                 .withExtension("ttl", "30000")

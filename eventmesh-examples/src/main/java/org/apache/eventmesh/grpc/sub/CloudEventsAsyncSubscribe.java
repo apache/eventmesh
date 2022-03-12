@@ -45,20 +45,17 @@ public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
-        final String topic = "TEST-TOPIC-GRPC-ASYNC";
-
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup("EventMeshTest-consumerGroup")
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
             .env("env").idc("idc")
             .sys("1234").build();
 
         org.apache.eventmesh.common.protocol.SubscriptionItem subscriptionItem = new SubscriptionItem();
-        subscriptionItem.setTopic(topic);
+        subscriptionItem.setTopic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC);
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
-
 
         EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
 
@@ -74,7 +71,7 @@ public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
 
     @Override
     public Optional<CloudEvent> handle(CloudEvent msg) {
-        log.info("receive async msg====================={}", msg);
+        log.info("receive async msg: {}", msg);
         return Optional.empty();
     }
 
