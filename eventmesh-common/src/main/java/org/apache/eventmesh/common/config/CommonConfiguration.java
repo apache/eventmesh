@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
@@ -57,70 +58,27 @@ public class CommonConfiguration {
     public void init() {
 
         if (configurationWrapper != null) {
-            String eventMeshEnvStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ENV);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshEnvStr),
-                    String.format("%s error", ConfKeys.KEYS_EVENTMESH_ENV));
-            eventMeshEnv = StringUtils.deleteWhitespace(eventMeshEnvStr);
+            eventMeshEnv = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_ENV);
 
-            String sysIdStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
-            Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr),
-                    String.format("%s error", ConfKeys.KEYS_EVENTMESH_SYSID));
-            sysID = StringUtils.deleteWhitespace(sysIdStr);
+            sysID = checkNumeric(ConfKeys.KEYS_EVENTMESH_SYSID);
 
-            String eventMeshClusterStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshClusterStr),
-                    String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER));
-            eventMeshCluster = StringUtils.deleteWhitespace(eventMeshClusterStr);
+            eventMeshCluster = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
 
-            String eventMeshNameStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshNameStr),
-                    String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_NAME));
-            eventMeshName = StringUtils.deleteWhitespace(eventMeshNameStr);
+            eventMeshName = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
 
-            String eventMeshIdcStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIdcStr),
-                    String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
-            eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIdcStr);
+            eventMeshIDC = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_IDC);
 
-            eventMeshServerIp =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
-            if (StringUtils.isBlank(eventMeshServerIp)) {
-                eventMeshServerIp = IPUtils.getLocalAddress();
-            }
+            eventMeshServerIp = get(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP, IPUtils::getLocalAddress);
 
-            eventMeshConnectorPluginType =
-                    configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshConnectorPluginType),
-                    String.format("%s error", ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE));
+            eventMeshConnectorPluginType = checkNotEmpty(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
 
-            String eventMeshServerAclEnableStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED);
-            if (StringUtils.isNotBlank(eventMeshServerAclEnableStr)) {
-                eventMeshServerSecurityEnable =
-                        Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
-            }
+            eventMeshServerSecurityEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED, () -> "false"));
 
-            eventMeshSecurityPluginType =
-                    configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshSecurityPluginType),
-                    String.format("%s error", ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE));
+            eventMeshSecurityPluginType = checkNotEmpty(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
 
-            String eventMeshServerRegistryEnableStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED);
-            if (StringUtils.isNotBlank(eventMeshServerRegistryEnableStr)) {
-                eventMeshServerRegistryEnable =
-                    Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
-            }
+            eventMeshServerRegistryEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED, () -> "false"));
 
-            eventMeshRegistryPluginType =
-                configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegistryPluginType),
-                String.format("%s error", ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE));
+            eventMeshRegistryPluginType = checkNotEmpty(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
 
             String metricsPluginType = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_METRICS_PLUGIN_TYPE);
             if (StringUtils.isNotEmpty(metricsPluginType)) {
@@ -130,12 +88,34 @@ public class CommonConfiguration {
                     .collect(Collectors.toList());
             }
 
-            String eventMeshTracePluginTypeStr =
-                configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTracePluginTypeStr),
-                String.format("%s error", ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE));
-            eventMeshTracePluginType = StringUtils.deleteWhitespace(eventMeshTracePluginTypeStr);
+            eventMeshTracePluginType = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE);
         }
+    }
+
+    private String checkNotEmpty(String key) {
+        String value = configurationWrapper.getProp(key);
+        if (value != null) {
+            value = StringUtils.deleteWhitespace(value);
+        }
+        Preconditions.checkState(StringUtils.isNotEmpty(value), key + " is invalidated");
+        return value;
+    }
+
+    private String checkNumeric(String key) {
+        String value = configurationWrapper.getProp(key);
+        if (value != null) {
+            value = StringUtils.deleteWhitespace(value);
+        }
+        Preconditions.checkState(StringUtils.isNotEmpty(value) && StringUtils.isNumeric(value), key + " is invalidated");
+        return value;
+    }
+
+    private String get(String key, Supplier<String> defaultValueSupplier) {
+        String value = configurationWrapper.getProp(key);
+        if (value != null) {
+            value = StringUtils.deleteWhitespace(value);
+        }
+        return StringUtils.isEmpty(value) ? defaultValueSupplier.get() : value;
     }
 
     static class ConfKeys {
