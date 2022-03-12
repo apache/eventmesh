@@ -263,6 +263,7 @@ subprojects {
                                    "eventmesh-connector-api",
                                    "eventmesh-metrics-api",
                                    "eventmesh-registry-api",
+                                   "eventmesh-trace-api",
                                    "eventmesh-runtime",
                                    "eventmesh-security-api",
                                    "eventmesh-protocol-api",
