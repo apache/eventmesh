@@ -56,7 +56,7 @@ dependencies {
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
 
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-api")
-    implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-opentelemetry")
+    implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-prometheus")
 
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
