@@ -47,6 +47,7 @@ public class CommonConfiguration {
     public    String               eventMeshServerIp                  = null;
     public    boolean              eventMeshServerSecurityEnable      = false;
     public    boolean              eventMeshServerRegistryEnable      = false;
+    public    boolean              eventMeshServerTraceEnable         = false;
     protected ConfigurationWrapper configurationWrapper;
 
     public String eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
@@ -88,6 +89,7 @@ public class CommonConfiguration {
                     .collect(Collectors.toList());
             }
 
+            eventMeshServerTraceEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_TRACE_ENABLED, () -> "false"));
             eventMeshTracePluginType = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE);
         }
     }
@@ -147,8 +149,10 @@ public class CommonConfiguration {
 
         public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
 
-        public static String KEYS_EVENTMESH_METRICS_PLUGIN_TYPE = "eventmesh.metrics.plugin";
+        public static String KEYS_EVENTMESH_METRICS_PLUGIN_TYPE = "eventMesh.metrics.plugin";
 
-        public static String KEYS_EVENTMESH_TRACE_PLUGIN_TYPE = "eventmesh.trace.plugin";
+        public static String KEYS_EVENTMESH_TRACE_ENABLED = "eventMesh.server.trace.enabled";
+
+        public static String KEYS_EVENTMESH_TRACE_PLUGIN_TYPE = "eventMesh.trace.plugin";
     }
 }

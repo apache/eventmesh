@@ -54,7 +54,7 @@ public class SubService implements InitializingBean {
     final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
 
     final List<SubscriptionItem> topicList = Lists.newArrayList(
-            new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_SYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
+            new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
     );
     final String localIp = IPUtils.getLocalAddress();
     final String localPort = properties.getProperty("server.port");
