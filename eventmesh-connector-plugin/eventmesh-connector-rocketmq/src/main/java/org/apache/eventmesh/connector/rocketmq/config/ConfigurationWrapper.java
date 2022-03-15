@@ -52,7 +52,7 @@ public class ConfigurationWrapper {
      */
     private void loadProperties() {
         try (InputStream resourceAsStream = ConfigurationWrapper.class.getResourceAsStream(
-            File.separator + EventMeshConstants.EVENTMESH_CONF_FILE)) {
+            "/" + EventMeshConstants.EVENTMESH_CONF_FILE)) {
             if (resourceAsStream != null) {
                 properties.load(resourceAsStream);
             }
