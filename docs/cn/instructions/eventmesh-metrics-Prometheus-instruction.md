@@ -1,9 +1,10 @@
-## 通过Prometheus观察metrics
+# 通过 Prometheus 观察 Metrics
 
-### 1、下载Prometheus
+## 下载 Prometheus
+
 官网：https://prometheus.io/
 
-本地下载Prometheus：https://prometheus.io/download/ 
+本地下载Prometheus：https://prometheus.io/download/
 
 选择自己电脑对应的版本下载并解压缩
 
@@ -21,8 +22,6 @@
 
 如果你十分了解Prometheus，可以自行配置，eventmesh默认的导出的端口为19090。
 
-
-
 ps：如果需要更换端口的话，请修改eventmesh-runtime/conf/eventmesh.properties中的
 
 ```properties
@@ -30,7 +29,7 @@ ps：如果需要更换端口的话，请修改eventmesh-runtime/conf/eventmesh.
 eventMesh.metrics.prometheus.port=19090
 ```
 
-### 3、运行Prometheus.exe和eventmesh
+## 运行 Prometheus 和 EventMesh
 
 双击Prometheus.exe运行
 
@@ -40,9 +39,7 @@ eventMesh.metrics.prometheus.port=19090
 
 打开浏览器访问：http://localhost:9090/
 
-
-
-### 4、输入你想观察的metrics
+### 输入想观察的 Metrics
 
 输入’**eventmesh_**‘ 就会出现相关的指标的提示
 

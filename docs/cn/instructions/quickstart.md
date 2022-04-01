@@ -1,6 +1,6 @@
 # 快速入门说明
 
-### 依赖
+## 依赖
 
 ```
 建议使用64位操作系统，建议使用Linux / Unix；
@@ -8,11 +8,11 @@
 Gradle至少为5.6, 推荐 5.6.*
 ```
 
-### 部署eventmesh-store
+### 部署 eventmesh-store
 
 阅读更多[这里](eventmesh-store-quickstart.zh-CN.md)
 
-### 部署eventmesh-runtime
+### 部署 eventmesh-runtime
 
 阅读更多[这里](eventmesh-runtime-quickstart.zh-CN.md)
 
@@ -24,5 +24,6 @@ Gradle至少为5.6, 推荐 5.6.*
 
 阅读更多[这里](eventmesh-runtime-protocol.zh-CN.md)
 
-### eventMesh 导入Eclipse 快速入门说明
-阅读更多[这里](eclipse.zh-CN.md)
+### EventMesh 导入 Eclipse 快速入门说明
+
+阅读更多[这里](eclipse.md)

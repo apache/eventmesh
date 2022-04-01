@@ -83,7 +83,7 @@ public enum Command {
     UNSUBSCRIBE_RESPONSE(11),                          //server回复client的取消订阅请求
 
     //监听
-    LISTEN_REQUEST(12),                            	   //client发给server的启动监听请求
+    LISTEN_REQUEST(12),                                //client发给server的启动监听请求
     LISTEN_RESPONSE(13),                               //server回复client的监听请求
 
     //RR
@@ -259,7 +259,6 @@ public class LiteMessage {
 | ------------------ | ---------------------------- | -------------------------- | ---------------------- |
 | 客户端接收异步事件 | HTTP_PUSH_CLIENT_ASYNC(105)  | retCode                    | retCode值为0时代表成功 |
 
-
 ## gRPC 协议文档
 
 #### 1. protobuf
@@ -270,7 +269,7 @@ public class LiteMessage {
 
 #### 2. gRPC 数据模型
 
-- 消息
++ 消息
 
 以下消息数据模型用于 `publish()`, `requestReply()` 和 `broadcast()` APIs.
 
@@ -326,7 +325,7 @@ message Response {
 }
 ```
 
-- 订阅
++ 订阅
 
 以下订阅数据模型用于 `subscribe()` 和 `unsubscribe()` APIs.
 
@@ -356,7 +355,7 @@ message Subscription {
 }
 ```
 
-- 心跳
++ 心跳
 
 以下心跳数据模型用于 `heartbeat()` API.
 
@@ -383,7 +382,7 @@ message Heartbeat {
 
 #### 3. gRPC 服务接口
 
-- 事件生产端服务 APIs
++ 事件生产端服务 APIs
 
 ```
 service PublisherService {
@@ -398,7 +397,7 @@ service PublisherService {
 }
 ```
 
-- 事件消费端服务 APIs
++ 事件消费端服务 APIs
 
 ```
 service ConsumerService {
@@ -412,7 +411,7 @@ service ConsumerService {
 }
 ```
 
-- 客户端心跳服务 API
++ 客户端心跳服务 API
 
 ```
 service HeartbeatService {

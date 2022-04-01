@@ -16,7 +16,7 @@ Power your metrics and alerting with a leading open-source monitoring solution.
 - Powerful queries
 - Great visualization
 - Efficient storage
-- Simple operation 
+- Simple operation
 - Precise alerting
 - Many client libraries
 - Many integrations
@@ -42,6 +42,6 @@ use the meter instrument provided by OpenTelemetry to observe the metrics exist 
 
 ## Appendix
 
-#### References
+### References
 
-https://github.com/open-telemetry/docs-cn/blob/main/QUICKSTART.md#%E5%88%9B%E5%BB%BA%E5%9F%BA%E7%A1%80Span
+<https://github.com/open-telemetry/docs-cn/blob/main/QUICKSTART.md#%E5%88%9B%E5%BB%BA%E5%9F%BA%E7%A1%80Span>
