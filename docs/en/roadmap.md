@@ -12,6 +12,7 @@ _Status description:_
 ## Releases
 
 - [Roadmap for next planned release](#plan)
+- [v1.4.0 released 31 Mar 2022](https://github.com/apache/incubator-eventmesh/releases/tag/v1.4.0)
 - [v1.3.0 released 12 Dec 2021](https://github.com/apache/incubator-eventmesh/releases/tag/v1.3.0)
 - [v1.2.0 released 31 Jul 2021](https://github.com/apache/incubator-eventmesh/releases/tag/v1.2.0)
 - [v1.1.1 released 11 Nov 2020](https://github.com/apache/incubator-eventmesh/releases/tag/v1.1.1)
@@ -22,11 +23,18 @@ _Status description:_
 
 | Status | Description | Comments |
 | --- | --- |  --- |
-| ✏️️| A lightable full-featured polyglot capability support | [doc](https://github.com/apache/incubator-eventmesh/issues/417)  |
-| 🚩| Event Governance for choreography | [doc](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/features/eventmesh-workflow-design.md)  |
+| ✔| A lightable full-featured polyglot capability support | [doc](https://github.com/apache/incubator-eventmesh/issues/417)  |
+| ✏️| Event Governance for choreography | [doc](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/features/eventmesh-workflow-design.md)  |
 | 🚩| Event Streaming | [doc](https://github.com/apache/incubator-eventmesh/issues/676)  |
 | 🚩| Federated connector | [doc](https://github.com/apache/incubator-eventmesh/issues/577)  |
 | 🚩| Dashboard | [doc](https://github.com/apache/incubator-eventmesh/issues/700)  |
 | 🚩| Transaction event | [doc](https://github.com/apache/incubator-eventmesh/issues/697)  |
 | 🚩| Event-query language(EQL)| [doc](https://github.com/apache/incubator-eventmesh/issues/778)  | 
 | 🚩| Knative Eventing Infra| [doc](https://github.com/apache/incubator-eventmesh/issues/790)  |
+| 🚩| Metadata consistency persistent| [doc](https://github.com/apache/incubator-eventmesh/issues/817)  |
+| 🚩| Go sdk| [doc](https://github.com/apache/incubator-eventmesh/issues/762)  |
+| 🚩| Rust sdk| [doc](https://github.com/apache/incubator-eventmesh/issues/815)  |
+| 🚩| Wasm runtime| [doc](https://github.com/apache/incubator-eventmesh/issues/576)  |
+| 🚩| Filter Chain| [doc](https://github.com/apache/incubator-eventmesh/issues/664)  |
+| 🚩| kafka as eventStore| [doc](https://github.com/apache/incubator-eventmesh/issues/199)  |
+| 🚩| Redis as eventStore| [doc](https://github.com/apache/incubator-eventmesh/issues/389)  |
