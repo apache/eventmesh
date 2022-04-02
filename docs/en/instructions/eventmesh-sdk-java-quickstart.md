@@ -1,5 +1,6 @@
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.eventmesh/eventmesh-sdk-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.apache.eventmesh/eventmesh-sdk-java)
 # How to run eventmesh-sdk-java demo
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.eventmesh/eventmesh-sdk-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.apache.eventmesh/eventmesh-sdk-java)
 
 > EventMesh-sdk-java, as the client, communicated with eventmesh-runtime, used to complete the sending and receiving of message.
 >
@@ -14,7 +15,7 @@ TCP, HTTP and GRPC demos are both under the **eventmesh-example** module.
 #### Async msg
 
 - Create topic TEST-TOPIC-TCP-ASYNC on rocketmq-console
-  
+
 - Start consumer, subscribe topic in previous step.
 
 ```
@@ -37,7 +38,7 @@ Run the main method of org.apache.eventmesh.tcp.demo.pub.eventmeshmessage.AsyncP
 Run the main method of org.apache.eventmesh.tcp.demo.sub.eventmeshmessage.AsyncSubscribeBroadcast
 ```
 
-* Start producer, send broadcast message
+- Start producer, send broadcast message
 
 ```
 Run the main method of org.apache.eventmesh.tcp.demo.pub.eventmeshmessage.AsyncPublishBroadcast

@@ -1,4 +1,3 @@
-
 # EventMesh Roadmap
 
 _Note: Items in tables for each milestone do not imply an order of implementation._
@@ -29,7 +28,7 @@ _Status description:_
 | 🚩| Federated connector | [doc](https://github.com/apache/incubator-eventmesh/issues/577)  |
 | 🚩| Dashboard | [doc](https://github.com/apache/incubator-eventmesh/issues/700)  |
 | 🚩| Transaction event | [doc](https://github.com/apache/incubator-eventmesh/issues/697)  |
-| 🚩| Event-query language(EQL)| [doc](https://github.com/apache/incubator-eventmesh/issues/778)  | 
+| 🚩| Event-query language(EQL)| [doc](https://github.com/apache/incubator-eventmesh/issues/778)  |
 | 🚩| Knative Eventing Infra| [doc](https://github.com/apache/incubator-eventmesh/issues/790)  |
 | 🚩| Metadata consistency persistent| [doc](https://github.com/apache/incubator-eventmesh/issues/817)  |
 | 🚩| Go sdk| [doc](https://github.com/apache/incubator-eventmesh/issues/762)  |

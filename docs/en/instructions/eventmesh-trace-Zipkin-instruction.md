@@ -1,20 +1,16 @@
-## Observe trace through Zipkin
+# Observe trace through Zipkin
 
-### 1、Download and run Zipkin
+## Download and run Zipkin
 
-Reference:https://zipkin.io/pages/quickstart.html
+Reference:<https://zipkin.io/pages/quickstart.html>
 
-
-
-### 2、Run eventmesh
+## Run EventMesh
 
 run eventmesh-starter(reference [eventmesh-runtime-quickstart](eventmesh-runtime-quickstart.md))
 
 run eventmesh-example(reference [eventmesh-sdk-java-quickstart](eventmesh-sdk-java-quickstart.md))
 
-
-
-### 3、Related settings
+## Related settings
 
 In eventmesh-runtime/conf/eventmesh.properties：
 
@@ -24,7 +20,9 @@ The default exporter is log, which needs to be manually changed to Zipkin
 #trace exporter
 eventmesh.trace.exporter.type=Zipkin
 ```
+
 Here are various configurations of Zipkin
+
 ```properties
 #set the maximum batch size to use
 eventmesh.trace.exporter.max.export.size=512
@@ -42,8 +40,6 @@ eventmesh.trace.export.zipkin.port=9411
 
 The above are related configurations. If you are familiar with Zipkin, you can modify it yourself.
 
+## Observe
 
-
-### 4、Observe
-
-Open browser access： **localhost:9411** 
+Open browser access： **http://localhost:9411**
