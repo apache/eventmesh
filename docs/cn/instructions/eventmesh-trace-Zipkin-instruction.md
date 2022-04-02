@@ -1,4 +1,4 @@
-## 通过Zipkin观察trace
+# 通过 Zipkin 观察 Trace
 
 ### 1、下载和运行Zipkin
 
@@ -46,4 +46,4 @@ eventmesh.trace.export.zipkin.port=9411
 
 ### 4、观察
 
-浏览器打开： **localhost:9411** 
+浏览器打开： **localhost:9411**
