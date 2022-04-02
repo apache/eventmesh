@@ -81,7 +81,7 @@ Second is the integration of Open Schema in Eventmesh, which includes validation
 
 As for the first proposal, some developing statuses are as follows.
 
-**Status Code and Exception Code**
+#### Status Code and Exception Code
 
 No. | Status Code | Exception Code | Description | status
 --- | :---: | :---: | :---: | :---:
@@ -97,7 +97,7 @@ No. | Status Code | Exception Code | Description | status
 10 | 500 | 50001 | Storage Service Exception | ✔
 11 | ^ | 50002 | Timeout Exception | ✔
 
-**API developing status** :
+#### API developing status
 
 No. | Type | URL | response | exception | code | test
 --- | --- | --- | --- | --- | --- | ---
@@ -115,7 +115,7 @@ No. | Type | URL | response | exception | code | test
 12 | GET | /compatibility/(string: subject) | `Compatibility.class` | 40101\40402\50001 | ✔ | ❌
 13 | PUT | /compatibility/(string: subject) | `Compatibility.class` |  40101\40402\40901\42204\50001 | - | ❌
 
-**Overall Project Structure**
+#### Overall Project Structure
 
 ```SchemaController.java```+```SchemaService.java``` : ```OpenSchema 7.1.1~7.1.2 (API 1~2)```
 

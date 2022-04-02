@@ -1,6 +1,7 @@
-## Observe metrics through Prometheus
+# Observe Metrics through Prometheus
 
-### 1、download Prometheus
+## Download Prometheus
+
 Official website：https://prometheus.io/
 
 Download Prometheus locally：https://prometheus.io/download/
@@ -9,7 +10,7 @@ Select the corresponding version of your computer, download and unzip it
 
 ![Prometheus-download](../../images/Prometheus-download.png)
 
-### 2、In Prometheus Add configuration in YML
+## Add YML configuration in Prometheus
 
 If you are new to Prometheus, you can copy it directly： eventmesh-runtime/conf/prometheus.yml
 
@@ -21,8 +22,6 @@ Replace the file in the red box
 
 If you know Prometheus well, you can configure it yourself. The default export port of eventmesh is 19090.
 
-
-
 ps：If the port needs to be replaced, please modify:eventmesh-runtime/conf/eventmesh.properties中的
 
 ```properties
@@ -30,7 +29,7 @@ ps：If the port needs to be replaced, please modify:eventmesh-runtime/conf/even
 eventMesh.metrics.prometheus.port=19090
 ```
 
-### 3、run Prometheus and eventmesh
+## Run Prometheus and EventMesh
 
 Double click Prometheus.exe startup
 
@@ -40,9 +39,7 @@ run eventmesh-example(reference [eventmesh-sdk-java-quickstart](eventmesh-sdk-ja
 
 Open browser access：http://localhost:9090/
 
-
-
-### 4、Enter the metrics you want to observe
+## Enter the metrics to be observed
 
 input '**eventmesh_**' Relevant indicators will appear
 
