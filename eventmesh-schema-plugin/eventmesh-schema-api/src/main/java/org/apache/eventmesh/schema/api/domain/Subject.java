@@ -15,30 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.schema.api.domain;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    SCHEMA("schema")
-    ;
+import lombok.Data;
 
-    private final String extensionTypeName;
+@Data
+public class Subject {
+    private String subject;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    private String tenant;
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
-    }
+    private String namespace;
 
+    private String app;
+
+    private String description;
+
+    private String status;
+
+    private String compatibility;
+
+    private String coordinate;
+
+    private String createdTime;
+
+    private String lastModifiedTime;
+
+    private String format;
 }

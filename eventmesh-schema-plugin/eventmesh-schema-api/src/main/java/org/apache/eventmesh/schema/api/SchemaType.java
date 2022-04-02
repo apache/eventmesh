@@ -15,30 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.schema.api;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    SCHEMA("schema")
-    ;
+import org.apache.commons.lang3.StringUtils;
 
-    private final String extensionTypeName;
+public enum SchemaType {
+    JSON("JSON"),
+    AVRO("AVRO"),
+    PROTOBUF("PROTOBUF");
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+    private final String schemaTypeName;
+
+    SchemaType(String schemaTypeName){
+        this.schemaTypeName = StringUtils.upperCase(StringUtils.deleteWhitespace(schemaTypeName));
     }
 
-    public String getExtensionTypeName() {
-        return extensionTypeName;
+    public String getSchemaTypeByName(){
+        return schemaTypeName;
     }
-
 }
