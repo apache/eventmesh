@@ -16,9 +16,9 @@ OpenTelemetry is a collection of tools, APIs, and SDKs. You can use it to instru
 
 ## Design Details
 
-* SpanProcessor:   BatchSpanProcessor
+- SpanProcessor:   BatchSpanProcessor
 
-* Exporter:  log(default), would be changed from properties
+- Exporter:  log(default), would be changed from properties
 
 ```java
 // Configure the batch spans processor. This span processor exports span in batches.
@@ -49,7 +49,7 @@ super.textMapPropagator = openTelemetryTraceFactory.getTextMapPropagator();
 
 ## Problems
 
-#### How to set different exporter in class 'OpenTelemetryTraceFactory'?(Solved)
+### How to set different exporter in class 'OpenTelemetryTraceFactory'? (Solved)
 
 After I get the exporter type from properties, how to deal with it.
 
@@ -58,12 +58,15 @@ The 'logExporter' only needs to new it.
 But the 'zipkinExporter' needs to new and use the "getZipkinExporter()" method.
 
 ## Solutions
-#### Solution of different exporter
+
+### Solution of different exporter
+
 Use reflection to get an exporter.
 
 First of all, different exporter must implement the interface 'EventMeshExporter'.
 
 Then we get the exporter name from the configuration and reflect to the class.
+
 ```java
 //different spanExporter
 String exporterName = configuration.eventMeshTraceExporterType;
@@ -79,11 +82,10 @@ Additional, this will surround with try catch.If the specified exporter cannot b
 
 SPI(To be completed)
 
-
 ## Appendix
 
-#### References
+### References
 
-https://github.com/open-telemetry/docs-cn/blob/main/QUICKSTART.md
+<https://github.com/open-telemetry/docs-cn/blob/main/QUICKSTART.md>
 
-https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/netty
+<https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/netty>

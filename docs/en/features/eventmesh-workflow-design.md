@@ -2,7 +2,7 @@
 
 ## Business Problem
 
-Imaging you are building a simple Order Management System for an E-Commerce Store. 
+Imaging you are building a simple Order Management System for an E-Commerce Store.
 The system should be able to receive and provision new orders from a store website. The provisioning process
 should be able to process all orders, handle payments, as well as process shipments.
 
@@ -22,24 +22,24 @@ We use [CNCF Serverless Workflow](https://serverlessworkflow.io/) to describe th
 CNCF Serverless Workflow defines a vendor-neutral, open-source, and fully community-driven ecosystem
 for defining and running DSL-based workflows that target the Serverless technology domain.
 
-Serverless Workflow defines a Domain Specific Language (DSL) 
+Serverless Workflow defines a Domain Specific Language (DSL)
 to describe stateful and stateless workflow-based orchestrations of serverless functions and microservices.
 
 More about this can be found in its [official github site](https://github.com/serverlessworkflow/specification)
 
 ## EventMesh Workflow
 
-We leverage Serverless Workflow DSL to describe the EventMesh workflow. Based on its spec, the workflow is consists of a series of 
+We leverage Serverless Workflow DSL to describe the EventMesh workflow. Based on its spec, the workflow is consists of a series of
 workflow states used to describe the control-flow logic.
 At this time we only support event related workflow states. See the supported states in [Workflow DSL Design](#workflow-dsl-design-wip).
 
-A `workflow state` can include applicable `actions`, or services/functions that should be invoked during workflow execution. 
+A `workflow state` can include applicable `actions`, or services/functions that should be invoked during workflow execution.
 These `actions` can reference reusable `function` definitions which define how these functions/services should be invoked.
-They can also reference events that trigger event-based service invocations, and events to wait for that denote completion of 
-such event-based service invocation completion. 
+They can also reference events that trigger event-based service invocations, and events to wait for that denote completion of
+such event-based service invocation completion.
 
 In EDA solution, we usually defined our event-driven microservice using AsyncAPI.
-Serverless workflow `function` definitions support defining invocation semantics using AsyncAPI. 
+Serverless workflow `function` definitions support defining invocation semantics using AsyncAPI.
 See [Using Funtions for AsyncAPI Service](https://github.com/serverlessworkflow/specification/blob/main/specification.md#using-functions-for-async-api-service-invocations)
 for more information.
 
@@ -56,7 +56,7 @@ See AsyncAPI detail in the [official site](https://www.asyncapi.com/docs/getting
 
 In this example, we build the event-driven workflow of the Order management system above.
 
-First, we need to define AsyncAPI definitions for our microservice apps. 
+First, we need to define AsyncAPI definitions for our microservice apps.
 
 - Online Store App
 
@@ -209,16 +209,12 @@ The steps running the workflow is the followings:
 1. Deploy the Publisher and Subscriber Apps in the environment.
    Describe the App APIs using AsyncAPI, generate the asyncAPI yaml.
    Register the Publisher and Subscriber Apps in EventMesh Catalog using AsyncAPI.
-   
 
 2. Register the Serverless Workflow DSL in EventMesh Workflow Engine.
 
-
 3. EventMesh Workflow Engine query the EventMesh Catalog for Publisher and Subscribers required in Workflow DSL `function`
 
-
 4. Event-driven Apps are publish events to EventMesh Runtime to trigger the Workflow. EventMesh Workflow Engine also publish and subscribe events for orchestrating the events.
-
 
 ### EventMesh Catalog Design
 
@@ -229,58 +225,51 @@ EventMesh Catalog store the Publisher, Subscriber and Channel metadata. consists
   Using the SDK provided by AsyncAPI community (see [tool list](https://www.asyncapi.com/docs/community/tooling)),
   parse and validated the AsyncAPI yaml inputs, and generate the AsyncAPI definition.
 
-
 - Publisher, Channel, Subscriber Modules
-  
-  From the AsyncAPI definition store the Publisher, Subscriber and Channel information.
 
+  From the AsyncAPI definition store the Publisher, Subscriber and Channel information.
 
 ### EventMesh Workflow Engine Design
 
 EventMesh Workflow Engine consists of the following modules:
 
 - Workflow Parser
-  
+
   Using the SDK provided by Serverless Workflow community (see supported [SDKs](https://github.com/serverlessworkflow/specification#sdks)),
   parse and validated the workflow DSL inputs, and generate workflow definition.
 
-
 - Workflow Module
-  
-  It manages a workflow instance life cycle, from create, start, stop to destroy.
 
+  It manages a workflow instance life cycle, from create, start, stop to destroy.
 
 - State Module
 
   It manages workflow state life cycle. We support the event-related states, and the supported state list below is Work-in-Progress.
 
-  | Workflow State | Description | 
+  | Workflow State | Description |
   | --- | --- |
   | Operation | Execute the AsyncAPI functions defined in the Actions |
   | Event | Check if the defined Event matched, if so execute the defined AsyncAPI functions |
   | Switch | Check the event is matched with the event-conditions, and execute teh defined AsyncAPI functions |
   | Parallel | Execute the defined AsyncAPI functions in parallel |
   | ForEach | Iterate the inputCollection and execute the defined AsyncAPI functions |
-  
+
 - Action Module
 
-  It managed the functions inside the action. 
-
+  It managed the functions inside the action.
 
 - Function Module
- 
+
   It manages the AsyncAPI functions by creating the publisher and/or subscriber in EventMesh Runtime, and manage the publisher/subscriber life cycle.
 
-    | AsyncAPI Operation | EventMesh Runtime | 
-    | --- | --- | 
-    |  Publish | Publisher | 
+    | AsyncAPI Operation | EventMesh Runtime |
+    | --- | --- |
+    |  Publish | Publisher |
     | Subscribe | Subscriber |
-
 
 - Event Module
 
   It manages the CloudEvents data model, including event filter, correlation and transformation using the rules defined in the workflow DSL.
-
 
 - Retry Module
 
