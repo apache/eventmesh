@@ -35,6 +35,6 @@ public class SchemaPluginFactory {
     public static SchemaRegistry getSchemaRegistry(String schemaRegistryType) {
         checkNotNull(schemaRegistryType, "SchemaRegistryType cannot be null");
         SchemaRegistry schemaRegistry = EventMeshExtensionFactory.getExtension(SchemaRegistry.class, schemaRegistryType);
-        return checkNotNull(schemaRegistry, "MetricsRegistryType: " + schemaRegistryType + " is not supported");
+        return checkNotNull(schemaRegistry, "SchemaRegistryType: " + schemaRegistryType + " is not supported");
     }
 }
