@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.schema.api.domain;
 
-import lombok.Data;
 import org.apache.eventmesh.schema.api.SchemaType;
+
+import lombok.Data;
 
 @Data
 public class SchemaAgenda {

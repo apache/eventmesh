@@ -26,11 +26,11 @@ public enum SchemaType {
 
     private final String schemaTypeName;
 
-    SchemaType(String schemaTypeName){
+    SchemaType(String schemaTypeName) {
         this.schemaTypeName = StringUtils.upperCase(StringUtils.deleteWhitespace(schemaTypeName));
     }
 
-    public String getSchemaTypeByName(){
+    public String getSchemaTypeByName() {
         return schemaTypeName;
     }
 }

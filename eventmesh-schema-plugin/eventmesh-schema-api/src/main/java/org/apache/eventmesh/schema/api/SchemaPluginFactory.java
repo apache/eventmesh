@@ -17,10 +17,11 @@
 
 package org.apache.eventmesh.schema.api;
 
-import lombok.experimental.UtilityClass;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class SchemaPluginFactory {

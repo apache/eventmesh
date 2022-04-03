@@ -23,6 +23,10 @@ import org.apache.eventmesh.schema.api.domain.Subject;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
+/**
+ * The top-level interface of schema registry, used to register different schemas.
+ * It should have multiple sub implementation, such as openschema etc.
+ */
 @EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.SCHEMA)
 public interface SchemaRegistry {
     /**
@@ -78,6 +82,7 @@ public interface SchemaRegistry {
 
     /**
      * check the validity of a content according to schema
+     *
      * @param schemaAgenda a wrapper of content, content type, and schema
      * @return whether the content is valid
      */
