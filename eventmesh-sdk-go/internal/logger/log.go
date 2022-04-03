@@ -15,7 +15,55 @@
 
 package logger
 
-import "go.uber.org/zap"
+import (
+	"go.uber.org/zap"
+)
+
+var (
+	// _defaultLogger global logger instance, default to zap.logger
+	_defaultLogger Logger = &DefaultLogger{
+		SugaredLogger: zap.SugaredLogger{},
+	}
+)
+
+// SetLogger set the logger
+func SetLogger(l Logger) {
+	_defaultLogger = l
+}
+
+func Debugf(template string, args ...interface{}) {
+	_defaultLogger.Debugf(template, args, nil)
+}
+
+func Infof(template string, args ...interface{}) {
+	_defaultLogger.Infof(template, args, nil)
+}
+
+// Warnf uses fmt.Sprintf to log a templated message.
+func Warnf(template string, args ...interface{}) {
+	_defaultLogger.Warnf(template, args, nil)
+}
+
+// Errorf uses fmt.Sprintf to log a templated message.
+func Errorf(template string, args ...interface{}) {
+	_defaultLogger.Errorf(template, args, nil)
+}
+
+// DPanicf uses fmt.Sprintf to log a templated message. In development, the
+// logger then panics. (See DPanicLevel for details.)
+func DPanicf(template string, args ...interface{}) {
+	_defaultLogger.DPanicf(template, args, nil)
+}
+
+// Panicf uses fmt.Sprintf to log a templated message, then panics.
+func Panicf(template string, args ...interface{}) {
+	_defaultLogger.Panicf(template, args, nil)
+}
+
+// Fatalf uses fmt.Sprintf to log a templated message, then calls os.Exit.
+func Fatalf(template string, args ...interface{}) {
+	_defaultLogger.Fatalf(template, args, nil)
+}
 
 // Logger define the logger api for eventmesh
 type Logger interface {
@@ -50,48 +98,35 @@ type Logger interface {
 	Fatalf(template string, args ...interface{})
 }
 
-// defaultLogger write logger by zap logger
-type defaultLogger struct {
+// DefaultLogger write logger by zap logger
+type DefaultLogger struct {
 	zap.SugaredLogger
 }
 
-// NewDefaultLogger create a default logger by zap SugredLogger
-func NewDefaultLogger() Logger {
-	return &defaultLogger{
-		SugaredLogger: zap.SugaredLogger{},
-	}
-}
-
-func (s *defaultLogger) Debugf(template string, args ...interface{}) {
+func (s *DefaultLogger) Debugf(template string, args ...interface{}) {
 	s.SugaredLogger.Debugf(template, args, nil)
 }
 
-func (s *defaultLogger) Infof(template string, args ...interface{}) {
+func (s *DefaultLogger) Infof(template string, args ...interface{}) {
 	s.SugaredLogger.Infof(template, args, nil)
 }
 
-// Warnf uses fmt.Sprintf to log a templated message.
-func (s *defaultLogger) Warnf(template string, args ...interface{}) {
+func (s *DefaultLogger) Warnf(template string, args ...interface{}) {
 	s.SugaredLogger.Warnf(template, args, nil)
 }
 
-// Errorf uses fmt.Sprintf to log a templated message.
-func (s *defaultLogger) Errorf(template string, args ...interface{}) {
+func (s *DefaultLogger) Errorf(template string, args ...interface{}) {
 	s.SugaredLogger.Errorf(template, args, nil)
 }
 
-// DPanicf uses fmt.Sprintf to log a templated message. In development, the
-// logger then panics. (See DPanicLevel for details.)
-func (s *defaultLogger) DPanicf(template string, args ...interface{}) {
+func (s *DefaultLogger) DPanicf(template string, args ...interface{}) {
 	s.SugaredLogger.DPanicf(template, args, nil)
 }
 
-// Panicf uses fmt.Sprintf to log a templated message, then panics.
-func (s *defaultLogger) Panicf(template string, args ...interface{}) {
+func (s *DefaultLogger) Panicf(template string, args ...interface{}) {
 	s.SugaredLogger.Panicf(template, args, nil)
 }
 
-// Fatalf uses fmt.Sprintf to log a templated message, then calls os.Exit.
-func (s *defaultLogger) Fatalf(template string, args ...interface{}) {
+func (s *DefaultLogger) Fatalf(template string, args ...interface{}) {
 	s.SugaredLogger.Fatalf(template, args, nil)
 }
