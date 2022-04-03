@@ -21,13 +21,13 @@ import org.apache.commons.lang3.StringUtils;
 
 public enum SchemaType {
     JSON("JSON"),
-    AVRO("AVRO"),
-    PROTOBUF("PROTOBUF");
+    AVRO("Avro"),
+    PROTOBUF("Protobuf");
 
     private final String schemaTypeName;
 
     SchemaType(String schemaTypeName) {
-        this.schemaTypeName = StringUtils.upperCase(StringUtils.deleteWhitespace(schemaTypeName));
+        this.schemaTypeName = schemaTypeName;
     }
 
     public String getSchemaTypeByName() {
