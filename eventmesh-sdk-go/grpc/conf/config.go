@@ -17,24 +17,87 @@ package conf
 
 import "time"
 
+var (
+	// Language define the current sdk language
+	Language = "GO"
+	// ProtocolDesc the protocol type
+	ProtocolDesc = "grpc"
+)
+
 // GRPCConfig grpc configuration
 type GRPCConfig struct {
-	// Address about the target eventmesh server
-	Address []string
+	// Hosts about the target eventmesh server
+	Hosts []string
 	// Port port for eventmesh server
 	Port int
-	// HeartbeatPeriod duration to send heartbeat
-	// default to 5s
-	HeartbeatPeriod time.Duration
-
+	// ENV environment for client
+	ENV string
+	// Region always be the location
+	Region string
+	// IDC idc district
+	IDC string
+	// IP current host ip
+	IP string
+	// PID current program ID
+	PID string
+	// SYS system name
+	SYS string
+	// Username to access the eventmesh
+	Username string
+	// Password to access the eventmesh
+	Password string
+	// ProtocolType the type for current protocol
+	ProtocolType string
+	// ProtocolVersion version for current sdk used
+	ProtocolVersion string
+	// ProducerGroup uniq consumergroup for current client
+	ProducerGroup string
 	// ConsumerConfig if the client is listen some event
 	// optional
 	ConsumerConfig
+
+	// ProducerConfig if the client need to send message
+	// you should configure it
+	// optional
+	ProducerConfig
+
+	// HeartbeatConfig heartbeat configuration
+	HeartbeatConfig
 }
 
-// ConsumerConfig concumer configuration, include subscribe configurations
+// LoadBalancerType type for LoadBalancer
+type LoadBalancerType string
+
+var (
+	Random     LoadBalancerType = "random"
+	RoundRobin LoadBalancerType = "roundrobin"
+	IPHash     LoadBalancerType = "iphash"
+)
+
+// ProducerConfig configuration producer
+type ProducerConfig struct {
+	LoadBalancerType LoadBalancerType
+}
+
+// HeartbeatConfig heartbeat configuration
+// required
+type HeartbeatConfig struct {
+	// Period duration to send heartbeat
+	// default to 5s
+	Period time.Duration
+	// Timeout timeout in send heartbeat msg
+	// default to 5s
+	Timeout time.Duration
+}
+
+// ConsumerConfig consumer configuration, include subscribe configurations
 type ConsumerConfig struct {
+	// Items subscribes to eventmesh
 	Items []SubscribeItem
+	// ConsumerGroup uniq consumergroup for current client
+	ConsumerGroup string
+	// PoolSize goroutine pool to dispatch msg for a topic
+	PoolSize int
 }
 
 // SubscribeItem content about subscribe
