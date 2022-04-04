@@ -15,10 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.schema.api.domain;
+package org.apache.eventmesh.common.schema;
 
 import lombok.Data;
 
+/**
+ * The schema and its metadata in Eventmesh.
+ */
 @Data
 public class Schema {
 

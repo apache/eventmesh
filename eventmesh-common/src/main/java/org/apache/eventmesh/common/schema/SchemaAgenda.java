@@ -15,22 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.schema.api;
+package org.apache.eventmesh.common.schema;
 
-import org.apache.commons.lang3.StringUtils;
+import lombok.Data;
 
-public enum SchemaType {
-    JSON("JSON"),
-    AVRO("Avro"),
-    PROTOBUF("Protobuf");
+/**
+ * The schema agenda wraps serialized content, its type and schema.
+ */
+@Data
+public class SchemaAgenda {
 
-    private final String schemaTypeName;
+    private String content;
 
-    SchemaType(String schemaTypeName) {
-        this.schemaTypeName = schemaTypeName;
-    }
+    private SchemaType contentType;
 
-    public String getSchemaTypeByName() {
-        return schemaTypeName;
-    }
+    private Schema schema;
 }

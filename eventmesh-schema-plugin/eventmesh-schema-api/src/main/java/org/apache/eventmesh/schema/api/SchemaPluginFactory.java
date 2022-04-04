@@ -27,14 +27,14 @@ import lombok.experimental.UtilityClass;
 public class SchemaPluginFactory {
 
     /**
-     * Get {@code SchemaRegistry}
+     * Get {@code SchemaService}
      *
-     * @param schemaRegistryType the name of schema registry that configured in properties file
-     * @return schema registry plugin or null
+     * @param schemaServiceType the name of schema service
+     * @return schema service plugin or null
      */
-    public static SchemaRegistry getSchemaRegistry(String schemaRegistryType) {
-        checkNotNull(schemaRegistryType, "SchemaRegistryType cannot be null");
-        SchemaRegistry schemaRegistry = EventMeshExtensionFactory.getExtension(SchemaRegistry.class, schemaRegistryType);
-        return checkNotNull(schemaRegistry, "SchemaRegistryType: " + schemaRegistryType + " is not supported");
+    public static SchemaService getSchemaService(String schemaServiceType) {
+        checkNotNull(schemaServiceType, "SchemaServiceType cannot be null");
+        SchemaService schemaService = EventMeshExtensionFactory.getExtension(SchemaService.class, schemaServiceType);
+        return checkNotNull(schemaService, "SchemaServiceType: " + schemaServiceType + " is not supported");
     }
 }

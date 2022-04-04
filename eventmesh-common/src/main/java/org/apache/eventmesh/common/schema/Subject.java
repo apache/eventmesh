@@ -15,18 +15,34 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.schema.api.domain;
-
-import org.apache.eventmesh.schema.api.SchemaType;
+package org.apache.eventmesh.common.schema;
 
 import lombok.Data;
 
+/**
+ * The subject and its metadata in Eventmesh.
+ */
 @Data
-public class SchemaAgenda {
+public class Subject {
+    private String subject;
 
-    private String content;
+    private String tenant;
 
-    private SchemaType contentType;
+    private String namespace;
 
-    private Schema schema;
+    private String app;
+
+    private String description;
+
+    private String status;
+
+    private String compatibility;
+
+    private String coordinate;
+
+    private String createdTime;
+
+    private String lastModifiedTime;
+
+    private String format;
 }

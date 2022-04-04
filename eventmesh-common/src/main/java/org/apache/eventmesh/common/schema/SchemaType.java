@@ -15,31 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.schema.api.domain;
+package org.apache.eventmesh.common.schema;
 
-import lombok.Data;
+/**
+ * Schema types supported in Eventmesh.
+ */
+public enum SchemaType {
+    JSON("JSON"),
+    AVRO("Avro"),
+    PROTOBUF("Protobuf");
 
-@Data
-public class Subject {
-    private String subject;
+    private final String schemaTypeName;
 
-    private String tenant;
+    SchemaType(String schemaTypeName) {
+        this.schemaTypeName = schemaTypeName;
+    }
 
-    private String namespace;
-
-    private String app;
-
-    private String description;
-
-    private String status;
-
-    private String compatibility;
-
-    private String coordinate;
-
-    private String createdTime;
-
-    private String lastModifiedTime;
-
-    private String format;
+    public String getSchemaTypeByName() {
+        return schemaTypeName;
+    }
 }
