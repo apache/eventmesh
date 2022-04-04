@@ -15,14 +15,24 @@
 
 package loadbalancer
 
-import "sync"
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
+	"sync"
+)
 
+// LoadBalancer interface to process all grpc client
 type LoadBalancer interface {
 	// GetAllStatusServer return all status server in the lb
 	GetAllStatusServer() []*StatusServer
 
 	// GetAvailableServer available servers which is ready for service
 	GetAvailableServer() []*StatusServer
+
+	// AddServer add servers to LoadBalancer
+	AddServer([]*StatusServer)
+
+	// Choose peek client with rule inside
+	Choose(input interface{}) (interface{}, error)
 }
 
 // BaseLoadBalancer loadbalancer instance
@@ -32,9 +42,33 @@ type BaseLoadBalancer struct {
 	rule    Rule
 }
 
-// AddServer add servers to the lb
-func (b *BaseLoadBalancer) AddServer() {
+// NewLoadBalancer create new loadbalancer with lb type and servers
+func NewLoadBalancer(lbType conf.LoadBalancerType, srvs []*StatusServer) LoadBalancer {
+	lb := &BaseLoadBalancer{
+		servers: srvs,
+		rule: func() Rule {
+			switch lbType {
+			case conf.IPHash:
+				return &IPHashRule{}
+			case conf.Random:
+				return &RandomRule{}
+			case conf.RoundRobin:
+				return &RoundRobinRule{}
+			}
+			return nil
+		}(),
+		lock: new(sync.RWMutex),
+	}
 
+	lb.rule = lb
+	return lb
+}
+
+// AddServer add servers to the lb
+func (b *BaseLoadBalancer) AddServer(srvs []*StatusServer) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	b.servers = append(b.servers, srvs...)
 }
 
 // Choose choose server in current lb
@@ -43,6 +77,12 @@ func (b *BaseLoadBalancer) Choose(input interface{}) (interface{}, error) {
 }
 
 func (b *BaseLoadBalancer) GetAllStatusServer() []*StatusServer {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
+	return b.servers
+}
+
+func (b *BaseLoadBalancer) GetAvailableServer() []*StatusServer {
 	b.lock.RLock()
 	defer b.lock.RUnlock()
 	return b.servers

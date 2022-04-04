@@ -47,7 +47,7 @@ func (r *RandomRule) Choose(interface{}) (interface{}, error) {
 			continue
 		}
 
-		log.Debugf("success peek server:%s by random", srv.RemoteAddr)
+		log.Debugf("success peek server:%s by random", srv.Host)
 		return srv, nil
 	}
 }

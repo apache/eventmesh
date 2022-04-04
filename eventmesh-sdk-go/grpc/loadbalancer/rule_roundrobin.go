@@ -51,7 +51,7 @@ func (r *RoundRobinRule) Choose(interface{}) (interface{}, error) {
 			continue
 			count++
 		}
-		log.Debugf("success peek server:%s by roundrobin", srv.RemoteAddr)
+		log.Debugf("success peek server:%s by roundrobin", srv.Host)
 		return srv, nil
 	}
 }
