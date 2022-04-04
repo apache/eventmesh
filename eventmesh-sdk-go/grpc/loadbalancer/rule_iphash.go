@@ -43,6 +43,6 @@ func (i *IPHashRule) Choose(ip interface{}) (interface{}, error) {
 	count := len(srvs)
 	hashN := xxhash.Sum64(*(*[]byte)(unsafe.Pointer(&host))) % uint64(count)
 	srv := srvs[hashN]
-	log.Debugf("success peek host:%s by iphash, input:%v", srv.RemoteAddr, ip)
+	log.Debugf("success peek host:%s by iphash, input:%v", srv.Host, ip)
 	return srv, nil
 }
