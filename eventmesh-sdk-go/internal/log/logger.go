@@ -13,20 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package logger
+package log
 
 import (
 	"go.uber.org/zap"
 )
 
 var (
-	// _defaultLogger global logger instance, default to zap.logger
+	// _defaultLogger global log instance, default to zap.log
 	_defaultLogger Logger = &DefaultLogger{
 		SugaredLogger: zap.SugaredLogger{},
 	}
 )
 
-// SetLogger set the logger
+// SetLogger set the log
 func SetLogger(l Logger) {
 	_defaultLogger = l
 }
@@ -50,7 +50,7 @@ func Errorf(template string, args ...interface{}) {
 }
 
 // DPanicf uses fmt.Sprintf to log a templated message. In development, the
-// logger then panics. (See DPanicLevel for details.)
+// log then panics. (See DPanicLevel for details.)
 func DPanicf(template string, args ...interface{}) {
 	_defaultLogger.DPanicf(template, args, nil)
 }
@@ -65,7 +65,7 @@ func Fatalf(template string, args ...interface{}) {
 	_defaultLogger.Fatalf(template, args, nil)
 }
 
-// Logger define the logger api for eventmesh
+// Logger define the log api for eventmesh
 type Logger interface {
 	// Debugf uses fmt.Sprintf to log a templated message.
 	// DebugLevel logs are typically voluminous, and are usually disabled in
@@ -88,7 +88,7 @@ type Logger interface {
 
 	// DPanicf uses fmt.Sprintf to log a templated message. In development, the
 	// DPanicLevel logs are particularly important errors. In development the
-	// logger panics after writing the message.
+	// log panics after writing the message.
 	DPanicf(template string, args ...interface{})
 
 	// Panicf uses fmt.Sprintf to log a templated message, then panics.
@@ -98,7 +98,7 @@ type Logger interface {
 	Fatalf(template string, args ...interface{})
 }
 
-// DefaultLogger write logger by zap logger
+// DefaultLogger write log by zap log
 type DefaultLogger struct {
 	zap.SugaredLogger
 }
