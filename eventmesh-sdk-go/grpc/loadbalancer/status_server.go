@@ -13,4 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package loadbalancer
+
+import "fmt"
+
+// StatusServer server with status check
+type StatusServer struct {
+	// ReadyForService indicate the remote is connected
+	// and ready for service for client
+	ReadyForService bool
+	// Host holds the eventmesh server host
+	Host string
+	// RealServer holds the grpc client, producer/consumer/heartbeat
+	RealServer interface{}
+}
+
+// NewStatusServer create new status server
+func NewStatusServer(in interface{}, host string) *StatusServer {
+	return &StatusServer{
+		RealServer:      in,
+		Host:            host,
+		ReadyForService: true,
+	}
+}
+
+// String return the description about the server
+func (s *StatusServer) String() string {
+	return fmt.Sprintf("removeAddr:%s, host:%v", s.Host, s.ReadyForService)
+}
