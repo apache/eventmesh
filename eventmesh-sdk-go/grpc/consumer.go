@@ -21,6 +21,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/internal/log"
 	"google.golang.org/grpc"
+	"io"
 )
 
 // onMessage on receive message from eventmesh
@@ -36,6 +37,8 @@ type EventMeshConsumer struct {
 	dispatcher *messageDispatcher
 	// heartbeat used to keep the conn with eventmesh
 	heartbeat *EventMeshHeartbeat
+	// closeCtx close context
+	closeCtx context.Context
 }
 
 // NewConsumer create new consumer
@@ -52,6 +55,7 @@ func NewConsumer(ctx context.Context, cfg *conf.GRPCConfig, connsMap map[string]
 		return nil, err
 	}
 	return &EventMeshConsumer{
+		closeCtx:    ctx,
 		consumerMap: mm,
 		cfg:         cfg,
 		heartbeat:   heartbeat,
@@ -121,5 +125,31 @@ func (d *EventMeshConsumer) UnSubscribe() error {
 
 // SubscribeStream subscribe stream, dispatch the message for all topic
 func (d *EventMeshConsumer) SubscribeStream() error {
+	for host, cli := range d.consumerMap {
+		stream, err := cli.SubscribeStream(d.closeCtx)
+		if err != nil {
+			log.Warnf("failed to get subscribe stream for host:%s, err:%v", host, err)
+			return err
+		}
+		go func() {
+			ss := stream
+			log.Infof("start rece stream, host:%s", host)
+			for {
+				msg, err := ss.Recv()
+				if err == io.EOF {
+					log.Infof("recv msg got io.EOF exit stream recv")
+					break
+				}
+				if err != nil {
+					log.Warnf("recv msg got err:%v, need to return", err)
+					return
+				}
+				if err := d.dispatcher.onMessage(msg); err != nil {
+					log.Warnf("dispatcher msg err:%v", err)
+				}
+			}
+			log.Infof("close rece stream, host:%s", host)
+		}()
+	}
 	return nil
 }

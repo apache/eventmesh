@@ -54,11 +54,13 @@ func NewHeartbeat(ctx context.Context, cfg *conf.GRPCConfig, consMap map[string]
 		closeCtx:           ctx,
 		subscribeItemsLock: new(sync.RWMutex),
 	}
+	go heartbeat.Run()
 	return heartbeat, nil
 }
 
 // Run run the ticker to send heartbeat msg
 func (e *EventMeshHeartbeat) Run() {
+	log.Infof("start heartbeat goroutine")
 	tick := time.NewTicker(e.cfg.Period)
 	for {
 		select {
