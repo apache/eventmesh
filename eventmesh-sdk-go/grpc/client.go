@@ -98,6 +98,9 @@ func NewEventMeshGRPCClient(cfg *conf.GRPCConfig) (*EventMeshGRPCClient, error) 
 			log.Warnf("failed to create producer, err:%v", err)
 			return nil, err
 		}
+		if err := consumer.SubscribeStream(); err != nil {
+			return nil, err
+		}
 		cli.consumer = consumer
 	}
 
