@@ -23,6 +23,9 @@ import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import lombok.experimental.UtilityClass;
 
+/**
+ * The plugin for schema.
+ */
 @UtilityClass
 public class SchemaPluginFactory {
 
