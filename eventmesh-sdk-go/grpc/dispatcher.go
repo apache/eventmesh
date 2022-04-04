@@ -18,6 +18,7 @@ package grpc
 import (
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/internal/log"
 	"sync"
 
 	"github.com/panjf2000/ants"
@@ -73,5 +74,17 @@ func (m *messageDispatcher) addHandler(topic string, hdl onMessage) error {
 		Pool:    pool,
 		handler: hdl,
 	})
+	return nil
+}
+
+// onMessage dispatch the message by topic
+func (m *messageDispatcher) onMessage(msg *proto.SimpleMessage) error {
+	val, ok := m.topicMap.Load(msg.Topic)
+	if !ok {
+		log.Warnf("no dispatch found for topic:%s, drop msg", msg.Topic)
+		return ErrTopicDispatcherExist
+	}
+	onMessage := val.(onMessage)
+	onMessage(msg)
 	return nil
 }
