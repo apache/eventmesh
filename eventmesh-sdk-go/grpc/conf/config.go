@@ -27,9 +27,9 @@ var (
 // GRPCConfig grpc configuration
 type GRPCConfig struct {
 	// Hosts about the target eventmesh server
-	Hosts []string
+	Hosts []string `validator:"required"`
 	// Port port for eventmesh server
-	Port int
+	Port int `validator:"required"`
 	// ENV environment for client
 	ENV string
 	// Region always be the location
@@ -43,9 +43,9 @@ type GRPCConfig struct {
 	// SYS system name
 	SYS string
 	// Username to access the eventmesh
-	Username string
+	Username string `validator:"required"`
 	// Password to access the eventmesh
-	Password string
+	Password string `validator:"required"`
 	// ProtocolType the type for current protocol
 	ProtocolType string
 	// ProtocolVersion version for current sdk used
@@ -92,8 +92,8 @@ type HeartbeatConfig struct {
 
 // ConsumerConfig consumer configuration, include subscribe configurations
 type ConsumerConfig struct {
-	// Items subscribes to eventmesh
-	Items []SubscribeItem
+	// Enabled enable subscribe
+	Enabled bool
 	// ConsumerGroup uniq consumergroup for current client
 	ConsumerGroup string
 	// PoolSize goroutine pool to dispatch msg for a topic
