@@ -66,7 +66,9 @@ func (m *messageDispatcher) addHandler(topic string, hdl OnMessage) error {
 	if ok {
 		return ErrTopicDispatcherExist
 	}
-	pool, err := ants.NewPool(m.poolsize)
+	pool, err := ants.NewPool(m.poolsize, ants.WithPanicHandler(func(i interface{}) {
+		log.Warnf("process message failure, err:%v", i)
+	}))
 	if err != nil {
 		return err
 	}
