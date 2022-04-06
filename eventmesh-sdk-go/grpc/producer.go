@@ -35,15 +35,15 @@ var (
 	LoadBalancerInput = "LoadBalancerInput"
 )
 
-// EventMeshProducer producer for eventmesh
-type EventMeshProducer struct {
+// eventMeshProducer producer for eventmesh
+type eventMeshProducer struct {
 	// loadbalancer loadbalancer for multiple grpc client
 	loadbalancer loadbalancer.LoadBalancer
 }
 
-// NewProducer create new producer instance to send events
-func NewProducer(cfg *conf.GRPCConfig, connsMap map[string]*grpc.ClientConn) (*EventMeshProducer, error) {
-	producer := &EventMeshProducer{}
+// newProducer create new producer instance to send events
+func newProducer(cfg *conf.GRPCConfig, connsMap map[string]*grpc.ClientConn) (*eventMeshProducer, error) {
+	producer := &eventMeshProducer{}
 	var srvs []*loadbalancer.StatusServer
 	for host, conn := range connsMap {
 		cli := proto.NewPublisherServiceClient(conn)
@@ -56,13 +56,13 @@ func NewProducer(cfg *conf.GRPCConfig, connsMap map[string]*grpc.ClientConn) (*E
 }
 
 // Close recover all resource hold in the producer
-func (e *EventMeshProducer) Close() error {
+func (e *eventMeshProducer) Close() error {
 	log.Infof("close eventmesh producer")
 	return nil
 }
 
 // Publish Async event publish
-func (e *EventMeshProducer) Publish(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.Response, error) {
+func (e *eventMeshProducer) Publish(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.Response, error) {
 	log.Infof("publish event:%v", msg.String())
 	cli, err := e.choose(ctx)
 	if err != nil {
@@ -81,7 +81,7 @@ func (e *EventMeshProducer) Publish(ctx context.Context, msg *proto.SimpleMessag
 }
 
 // RequestReply Sync event publish
-func (e *EventMeshProducer) RequestReply(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.SimpleMessage, error) {
+func (e *eventMeshProducer) RequestReply(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.SimpleMessage, error) {
 	log.Infof("request reply event:%v", msg.String())
 	cli, err := e.choose(ctx)
 	if err != nil {
@@ -98,7 +98,7 @@ func (e *EventMeshProducer) RequestReply(ctx context.Context, msg *proto.SimpleM
 }
 
 // BatchPublish Async batch event publish
-func (e *EventMeshProducer) BatchPublish(ctx context.Context, msg *proto.BatchMessage, opts ...grpc.CallOption) (*proto.Response, error) {
+func (e *eventMeshProducer) BatchPublish(ctx context.Context, msg *proto.BatchMessage, opts ...grpc.CallOption) (*proto.Response, error) {
 	log.Infof("request batch publish event:%v", msg.String())
 	cli, err := e.choose(ctx)
 	if err != nil {
@@ -115,7 +115,7 @@ func (e *EventMeshProducer) BatchPublish(ctx context.Context, msg *proto.BatchMe
 }
 
 // choose choose a producer client from loadbalancer
-func (e *EventMeshProducer) choose(ctx context.Context) (proto.PublisherServiceClient, error) {
+func (e *eventMeshProducer) choose(ctx context.Context) (proto.PublisherServiceClient, error) {
 	// try to load input from context
 	val := ctx.Value(LoadBalancerInput)
 	cli, err := e.loadbalancer.Choose(val)

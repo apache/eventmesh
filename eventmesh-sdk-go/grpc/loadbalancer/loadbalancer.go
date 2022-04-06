@@ -17,6 +17,7 @@ package loadbalancer
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/internal/log"
 	"sync"
 )
 
@@ -54,6 +55,8 @@ func NewLoadBalancer(lbType conf.LoadBalancerType, srvs []*StatusServer) LoadBal
 				return &RandomRule{}
 			case conf.RoundRobin:
 				return &RoundRobinRule{}
+			default:
+				log.Panicf("invalid load balancer rule:%v", lbType)
 			}
 			return nil
 		}(),

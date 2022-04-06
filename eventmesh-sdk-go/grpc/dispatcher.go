@@ -32,7 +32,7 @@ var (
 // pooledHandler internal handler for subscribe message with goroutine pool
 type pooledHandler struct {
 	*ants.Pool
-	handler onMessage
+	handler OnMessage
 }
 
 // OnMessage redirect the msg with pool
@@ -61,7 +61,7 @@ func newMessageDispatcher(ps int) *messageDispatcher {
 }
 
 // addHandler add msg handler
-func (m *messageDispatcher) addHandler(topic string, hdl onMessage) error {
+func (m *messageDispatcher) addHandler(topic string, hdl OnMessage) error {
 	_, ok := m.topicMap.Load(topic)
 	if ok {
 		return ErrTopicDispatcherExist
@@ -77,14 +77,14 @@ func (m *messageDispatcher) addHandler(topic string, hdl onMessage) error {
 	return nil
 }
 
-// onMessage dispatch the message by topic
+// OnMessage dispatch the message by topic
 func (m *messageDispatcher) onMessage(msg *proto.SimpleMessage) error {
 	val, ok := m.topicMap.Load(msg.Topic)
 	if !ok {
 		log.Warnf("no dispatch found for topic:%s, drop msg", msg.Topic)
 		return ErrTopicDispatcherExist
 	}
-	onMessage := val.(onMessage)
-	onMessage(msg)
+	ph := val.(*pooledHandler)
+	ph.OnMessage(msg)
 	return nil
 }
