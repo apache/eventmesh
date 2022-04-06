@@ -19,22 +19,29 @@ import (
 	"context"
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/loadbalancer"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/internal/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"math/rand"
+	"time"
 )
 
-// EventMeshGRPCClient define the grpc client for eventmesh api
-type EventMeshGRPCClient struct {
-	// loadbalancer loadbalancer for multiple grpc client
-	loadbalancer loadbalancer.LoadBalancer
+// New create new eventmesh grpc client
+func New(cfg *conf.GRPCConfig) (Interface, error) {
+	cli, err := newEventMeshGRPCClient(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return cli, err
+}
+
+// internalEventMeshGRPCClient define the grpc client for eventmesh api
+type internalEventMeshGRPCClient struct {
 	// producer used to send msg to evenmesh
-	producer *EventMeshProducer
+	*eventMeshProducer
 	// consumer used to subscribe msg from eventmesh
-	consumer *EventMeshConsumer
-	// closeCtx context to release all resources
-	closeCtx context.Context
+	*eventMeshConsumer
 	// consMap holds the connection remote, used free on clsoe
 	consMap map[string]*grpc.ClientConn
 	// cancel to close the client
@@ -42,7 +49,7 @@ type EventMeshGRPCClient struct {
 }
 
 // NewEventMeshGRPCClient create new grpc client
-func NewEventMeshGRPCClient(cfg *conf.GRPCConfig) (*EventMeshGRPCClient, error) {
+func newEventMeshGRPCClient(cfg *conf.GRPCConfig) (*internalEventMeshGRPCClient, error) {
 	var (
 		err         error
 		consmap     = make(map[string]*grpc.ClientConn)
@@ -53,12 +60,12 @@ func NewEventMeshGRPCClient(cfg *conf.GRPCConfig) (*EventMeshGRPCClient, error) 
 	}
 	defer func() {
 		if err != nil {
-			// if err != nil and the grpc.ClientConn is connect
+			// if err != nil and the grpc.ClientConn is connected
 			// we need to close it
 			if len(consmap) != 0 {
 				for host, v := range consmap {
 					if errc := v.Close(); errc != nil {
-						log.Warnf("failed to close conn:%, err:%v", host, errc)
+						log.Warnf("failed to close conn with host:%, err:%v", host, errc)
 					}
 				}
 			}
@@ -74,26 +81,32 @@ func NewEventMeshGRPCClient(cfg *conf.GRPCConfig) (*EventMeshGRPCClient, error) 
 		log.Infof("success make grpc conn with:%s", addr)
 		return conn, nil
 	}
+	// shuffle the hosts before make connection with eventmesh server
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(cfg.Hosts), func(i, j int) {
+		cfg.Hosts[i], cfg.Hosts[j] = cfg.Hosts[j], cfg.Hosts[i]
+	})
 	for _, host := range cfg.Hosts {
+		time.Sleep(time.Nanosecond * time.Duration(rand.Int31n(50)))
 		conn, err := makeGRPCConn(host)
 		if err != nil {
 			continue
 		}
 		consmap[host] = conn
 	}
-	producer, err := NewProducer(cfg, consmap)
+	producer, err := newProducer(cfg, consmap)
 	if err != nil {
 		log.Warnf("failed to create producer, err:%v", err)
 		return nil, err
 	}
-	cli := &EventMeshGRPCClient{
-		consMap:  consmap,
-		producer: producer,
-		cancel:   cancel,
+	cli := &internalEventMeshGRPCClient{
+		consMap:           consmap,
+		eventMeshProducer: producer,
+		cancel:            cancel,
 	}
-	if len(cfg.ConsumerConfig.Items) > 0 {
-		log.Infof("subscribe enable for topics:%v", cfg.Items)
-		consumer, err := NewConsumer(ctx, cfg, consmap)
+	if cfg.ConsumerConfig.Enabled {
+		log.Infof("subscribe enabled")
+		consumer, err := newConsumer(ctx, cfg, consmap)
 		if err != nil {
 			log.Warnf("failed to create producer, err:%v", err)
 			return nil, err
@@ -101,8 +114,34 @@ func NewEventMeshGRPCClient(cfg *conf.GRPCConfig) (*EventMeshGRPCClient, error) 
 		if err := consumer.SubscribeStream(); err != nil {
 			return nil, err
 		}
-		cli.consumer = consumer
+		cli.eventMeshConsumer = consumer
 	}
 
 	return cli, nil
+}
+
+// Close meshclient and free all resources
+func (c *internalEventMeshGRPCClient) Close() error {
+	log.Infof("close grpc client")
+	c.cancel()
+	if c.eventMeshProducer != nil {
+		if err := c.eventMeshProducer.Close(); err != nil {
+			log.Warnf("close producer err:%v", err)
+		}
+		c.eventMeshProducer = nil
+	}
+	if c.eventMeshConsumer != nil {
+		if err := c.eventMeshConsumer.close(); err != nil {
+			log.Warnf("close consumer err:%v", err)
+		}
+		c.eventMeshConsumer = nil
+	}
+	for host, conn := range c.consMap {
+		log.Infof("close conn with host:%s", host)
+		if err := conn.Close(); err != nil {
+			log.Infof("err in close conn with host:%s, err:%v", host, err)
+		}
+	}
+	log.Infof("success close grpc client")
+	return nil
 }
