@@ -22,7 +22,7 @@ EventMesh(incubating) is a dynamic event-driven application runtime used to deco
 **Orchestration:**
 ![architecture1](docs/images/eventmesh-orchestration.png)
 
-**Federation:**
+**Bridge(Federated Governance):**
 ![architecture1](docs/images/eventmesh-federation.png)
 
 **Components:**
