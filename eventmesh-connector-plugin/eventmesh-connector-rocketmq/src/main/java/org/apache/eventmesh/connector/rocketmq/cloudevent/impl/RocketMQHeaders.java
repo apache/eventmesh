@@ -27,10 +27,10 @@ public class RocketMQHeaders {
     public static final String CE_PREFIX = "CE_";
 
     protected static final Map<String, String> ATTRIBUTES_TO_HEADERS =
-        MessageUtils.generateAttributesToHeadersMapping(v -> v);
+            MessageUtils.generateAttributesToHeadersMapping(v -> v);
 
     public static final String CONTENT_TYPE =
-        ATTRIBUTES_TO_HEADERS.get(CloudEventV1.DATACONTENTTYPE);
+            ATTRIBUTES_TO_HEADERS.get(CloudEventV1.DATACONTENTTYPE);
 
     public static final String SPEC_VERSION = ATTRIBUTES_TO_HEADERS.get(CloudEventV1.SPECVERSION);
 

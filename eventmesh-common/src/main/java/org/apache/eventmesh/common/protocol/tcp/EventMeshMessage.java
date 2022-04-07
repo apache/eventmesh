@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EventMeshMessage {
 
-    private String              topic;
+    private String topic;
     private Map<String, String> properties = new ConcurrentHashMap<>();
-    private String              body;
+    private String body;
 }

@@ -19,10 +19,11 @@ package org.apache.eventmesh.runtime.client.api;
 
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 
-
+/**
+ * PubClient
+ */
 public interface PubClient {
 
     void init() throws Exception;

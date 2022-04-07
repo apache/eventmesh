@@ -20,6 +20,9 @@ package org.apache.eventmesh.spi.example;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
+/**
+ * TestSingletonExtension
+ */
 @EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.UNKNOWN)
 public interface TestSingletonExtension {
 

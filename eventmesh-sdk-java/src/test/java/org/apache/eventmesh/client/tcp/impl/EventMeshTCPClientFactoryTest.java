@@ -36,19 +36,21 @@ public class EventMeshTCPClientFactoryTest {
     @Test
     public void createEventMeshTCPClient() {
         EventMeshTCPClientConfig meshTCPClientConfig = EventMeshTCPClientConfig.builder()
-            .host("localhost")
-            .port(1234)
-            .build();
+                .host("localhost")
+                .port(1234)
+                .build();
+
+
         EventMeshTCPClient<EventMeshMessage> eventMeshMessageTCPClient =
-            EventMeshTCPClientFactory.createEventMeshTCPClient(meshTCPClientConfig, EventMeshMessage.class);
+                EventMeshTCPClientFactory.createEventMeshTCPClient(meshTCPClientConfig, EventMeshMessage.class);
         Assert.assertEquals(EventMeshMessageTCPClient.class, eventMeshMessageTCPClient.getClass());
 
         EventMeshTCPClient<CloudEvent> cloudEventTCPClient =
-            EventMeshTCPClientFactory.createEventMeshTCPClient(meshTCPClientConfig, CloudEvent.class);
+                EventMeshTCPClientFactory.createEventMeshTCPClient(meshTCPClientConfig, CloudEvent.class);
         Assert.assertEquals(CloudEventTCPClient.class, cloudEventTCPClient.getClass());
 
         EventMeshTCPClient<Message> openMessageTCPClient =
-            EventMeshTCPClientFactory.createEventMeshTCPClient(meshTCPClientConfig, Message.class);
+                EventMeshTCPClientFactory.createEventMeshTCPClient(meshTCPClientConfig, Message.class);
         Assert.assertEquals(OpenMessageTCPClient.class, openMessageTCPClient.getClass());
     }
 }

@@ -30,11 +30,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 public class ReplyMessageRequestBody extends Body {
 
-    public static final String ORIGTOPIC     = "origtopic";
-    public static final String BIZSEQNO      = "bizseqno";
-    public static final String UNIQUEID      = "uniqueid";
-    public static final String CONTENT       = "content";
-    public static final String EXTFIELDS     = "extFields";
+    public static final String ORIGTOPIC = "origtopic";
+    public static final String BIZSEQNO = "bizseqno";
+    public static final String UNIQUEID = "uniqueid";
+    public static final String CONTENT = "content";
+    public static final String EXTFIELDS = "extFields";
     public static final String PRODUCERGROUP = "producergroup";
 
     private String bizSeqNo;
@@ -106,8 +106,8 @@ public class ReplyMessageRequestBody extends Body {
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
         if (StringUtils.isNotBlank(extFields)) {
             body.setExtFields(
-                JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
-                }));
+                    JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
+                    }));
         }
         body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
         return body;
@@ -117,12 +117,12 @@ public class ReplyMessageRequestBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("replyMessageRequestBody={")
-            .append("bizSeqNo=").append(bizSeqNo).append(",")
-            .append("uniqueId=").append(uniqueId).append(",")
-            .append("origTopic=").append(origTopic).append(",")
-            .append("content=").append(content).append(",")
-            .append("producerGroup=").append(producerGroup).append(",")
-            .append("extFields=").append(extFields).append("}");
+                .append("bizSeqNo=").append(bizSeqNo).append(",")
+                .append("uniqueId=").append(uniqueId).append(",")
+                .append("origTopic=").append(origTopic).append(",")
+                .append("content=").append(content).append(",")
+                .append("producerGroup=").append(producerGroup).append(",")
+                .append("extFields=").append(extFields).append("}");
         return sb.toString();
     }
 

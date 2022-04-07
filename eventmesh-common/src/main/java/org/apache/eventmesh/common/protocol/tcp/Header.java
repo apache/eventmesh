@@ -25,10 +25,10 @@ import lombok.Data;
 @Data
 public class Header {
 
-    private Command             cmd;
-    private int                 code;
-    private String              desc;
-    private String              seq;
+    private Command cmd;
+    private int code;
+    private String desc;
+    private String seq;
     private Map<String, Object> properties = new HashMap<>();
 
     public Header() {
@@ -70,6 +70,10 @@ public class Header {
             return null;
         }
         return property.toString();
+    }
+
+    public Command getCommand() {
+        return this.cmd;
     }
 
 }

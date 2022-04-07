@@ -17,5 +17,8 @@
 
 package org.apache.eventmesh.api;
 
+/**
+ * AbstractContext
+ */
 public interface AbstractContext {
 }

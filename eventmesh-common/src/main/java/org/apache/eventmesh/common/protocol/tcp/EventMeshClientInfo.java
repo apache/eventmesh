@@ -29,7 +29,8 @@
 //    private long lastUpdateTimestamp;
 //    private int protocolNumber;
 //
-//    public EventMeshClientInfo(String clientId, String consumerGroup, String endpoint, String language, long version, DataVersion dataVersion, long lastUpdateTimestamp, int protocolNumber) {
+//    public EventMeshClientInfo(String clientId, String consumerGroup, String endpoint, String language, long version,
+//                               DataVersion dataVersion, long lastUpdateTimestamp, int protocolNumber) {
 //        this.clientId = clientId;
 //        this.endpoint = endpoint;
 //        this.language = language;
@@ -106,6 +107,8 @@
 //
 //    @Override
 //    public String toString() {
-//        return "ClientId [clientId=" + clientId + ", consumerGroup=" + consumerGroup + ", endpoint=" + endpoint + ", language=" + language + ", version=" + version + ", dataVersion=" + dataVersion + ", lastUpdateTimestamp=" + lastUpdateTimestamp + "]";
+//        return "ClientId [clientId=" + clientId + ", consumerGroup=" + consumerGroup + ", endpoint=" + endpoint
+//        + ", language=" + language + ", version=" + version + ", dataVersion=" + dataVersion
+//        + ", lastUpdateTimestamp=" + lastUpdateTimestamp + "]";
 //    }
 //}

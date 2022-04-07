@@ -20,11 +20,12 @@ package org.apache.eventmesh.connector.standalone.broker.task;
 import org.apache.eventmesh.connector.standalone.broker.MessageQueue;
 import org.apache.eventmesh.connector.standalone.broker.model.MessageEntity;
 import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This task used to clear the history message, the element in message queue can only be cleaned by this task.
@@ -39,7 +40,7 @@ public class HistoryMessageClearTask implements Runnable {
     /**
      * If the currentTimeMills - messageCreateTimeMills >= MESSAGE_STORE_WINDOW, then the message will be clear
      */
-    private final long MESSAGE_STORE_WINDOW = 60 * 60 * 1000;
+    private static final long MESSAGE_STORE_WINDOW = 60 * 60 * 1000;
 
     public HistoryMessageClearTask(ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer) {
         this.messageContainer = messageContainer;

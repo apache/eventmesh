@@ -17,29 +17,30 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
-import org.apache.eventmesh.common.utils.IPUtils;
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.exception.JsonException;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.runtime.util.WebhookUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -52,10 +53,19 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Sets;
@@ -67,10 +77,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
     public Logger cmdLogger = LoggerFactory.getLogger("cmd");
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private Map<String, Set<AbstractHTTPPushRequest>> waitingRequests;
-
     public String currPushUrl;
+    private Map<String, Set<AbstractHTTPPushRequest>> waitingRequests;
 
     public AsyncHTTPPushRequest(HandleMsgContext handleMsgContext,
                                 Map<String, Set<AbstractHTTPPushRequest>> waitingRequests) {
@@ -110,9 +118,9 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshIDC);
 
         CloudEvent event = CloudEventBuilder.from(handleMsgContext.getEvent())
-                .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
-                        String.valueOf(System.currentTimeMillis()))
-                .build();
+            .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
+                String.valueOf(System.currentTimeMillis()))
+            .build();
         handleMsgContext.setEvent(event);
 
         String content = "";
@@ -152,9 +160,18 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         body.add(new BasicNameValuePair(PushMessageRequestBody.EXTFIELDS,
             JsonUtils.serialize(EventMeshUtil.getEventProp(handleMsgContext.getEvent()))));
 
-        builder.setEntity(new UrlEncodedFormEntity(body, StandardCharsets.UTF_8));
+        HttpEntity httpEntity = new UrlEncodedFormEntity(body, StandardCharsets.UTF_8);
 
-        eventMeshHTTPServer.metrics.summaryMetrics.recordPushMsg();
+        builder.setEntity(httpEntity);
+
+        // for CloudEvents Webhook spec
+        String urlAuthType = handleMsgContext.getConsumerGroupConfig().getConsumerGroupTopicConf()
+            .get(handleMsgContext.getTopic()).getHttpAuthTypeMap().get(currPushUrl);
+
+        WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(), eventMeshHttpConfiguration.eventMeshWebhookOrigin,
+            urlAuthType);
+
+        eventMeshHTTPServer.metrics.getSummaryMetrics().recordPushMsg();
 
         this.lastPushTime = System.currentTimeMillis();
 
@@ -164,24 +181,15 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             IPUtils.getLocalAddress(), currPushUrl);
 
         try {
-            httpClientPool.getClient().execute(builder, new ResponseHandler<Object>() {
+            eventMeshHTTPServer.httpClientPool.getClient().execute(builder, new ResponseHandler<Object>() {
                 @Override
                 public Object handleResponse(HttpResponse response) {
                     removeWaitingMap(AsyncHTTPPushRequest.this);
                     long cost = System.currentTimeMillis() - lastPushTime;
-                    eventMeshHTTPServer.metrics.summaryMetrics.recordHTTPPushTimeCost(cost);
-                    if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                        eventMeshHTTPServer.metrics.summaryMetrics.recordHttpPushMsgFailed();
-                        messageLogger.info(
-                            "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
-                                + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
-                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPPushTimeCost(cost);
 
-                        delayRetry();
-                        if (isComplete()) {
-                            handleMsgContext.finish();
-                        }
-                    } else {
+                    if (processResponseStatus(response.getStatusLine().getStatusCode(), response)) {
+                        // this is successful response, process response payload
                         String res = "";
                         try {
                             res = EntityUtils.toString(response.getEntity(),
@@ -216,6 +224,16 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                             if (isComplete()) {
                                 handleMsgContext.finish();
                             }
+                        }
+                    } else {
+                        eventMeshHTTPServer.metrics.getSummaryMetrics().recordHttpPushMsgFailed();
+                        messageLogger.info(
+                            "message|eventMesh2client|exception|url={}|topic={}|bizSeqNo={}"
+                                + "|uniqueId={}|cost={}", currPushUrl, handleMsgContext.getTopic(),
+                            handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
+
+                        if (isComplete()) {
+                            handleMsgContext.finish();
                         }
                     }
                     return new Object();
@@ -257,6 +275,31 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             .append(",createTime=")
             .append(DateFormatUtils.format(createTime, Constants.DATE_FORMAT)).append("}");
         return sb.toString();
+    }
+
+    boolean processResponseStatus(int httpStatus, HttpResponse httpResponse) {
+        if (httpStatus == HttpStatus.SC_OK || httpStatus == HttpStatus.SC_CREATED
+            || httpStatus == HttpStatus.SC_NO_CONTENT || httpStatus == HttpStatus.SC_ACCEPTED) {
+            // success http response
+            return true;
+        } else if (httpStatus == 429) {
+            // failed with customer retry interval
+
+            // Response Status code is 429 Too Many Requests
+            // retry after the time specified by the header
+            Optional<Header> optHeader = Arrays.stream(httpResponse.getHeaders("Retry-After")).findAny();
+            if (optHeader.isPresent() && StringUtils.isNumeric(optHeader.get().getValue())) {
+                delayRetry(Long.parseLong(optHeader.get().getValue()));
+            }
+            return false;
+        } else if (httpStatus == HttpStatus.SC_GONE || httpStatus == HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE) {
+            // failed with no retry
+            return false;
+        }
+
+        // failed with default retry
+        delayRetry();
+        return false;
     }
 
     ClientRetCode processResponseContent(String content) {

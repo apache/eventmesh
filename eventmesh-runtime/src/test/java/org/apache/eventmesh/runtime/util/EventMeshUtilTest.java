@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import java.util.regex.Pattern;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.regex.Pattern;
 
 public class EventMeshUtilTest {
 

@@ -17,10 +17,8 @@
 
 package org.apache.eventmesh.common.loadbalance;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.summingInt;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -29,8 +27,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.summingInt;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WeightRandomLoadBalanceSelectorTest {
 

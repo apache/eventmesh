@@ -43,7 +43,7 @@ public class ClientManageController {
     private static final Logger logger = LoggerFactory.getLogger(ClientManageController.class);
 
     private EventMeshTCPServer eventMeshTCPServer;
-    
+
     private AdminController adminController;
 
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer) {
@@ -63,10 +63,10 @@ public class ClientManageController {
         server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler(eventMeshTCPServer));
         server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler(eventMeshTCPServer));
         server.createContext("/eventMesh/recommend", new QueryRecommendEventMeshHandler(eventMeshTCPServer));
-        
+
         adminController = new AdminController();
         adminController.run(server);
-        
+
         server.start();
         logger.info("ClientManageController start success, port:{}", port);
     }

@@ -29,6 +29,8 @@ public class ProtocolKey {
 
     public static final String PROTOCOL_DESC = "protocoldesc";
 
+    public static final String CONTENT_TYPE = "contenttype";
+
     public static class ClientInstanceKey {
         ////////////////////////////////////Protocol layer requester description///////////
         public static final String ENV = "env";

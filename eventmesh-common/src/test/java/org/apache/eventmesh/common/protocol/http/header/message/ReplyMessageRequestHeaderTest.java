@@ -17,17 +17,18 @@
 
 package org.apache.eventmesh.common.protocol.http.header.message;
 
+import static org.hamcrest.CoreMatchers.is;
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.is;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 public class ReplyMessageRequestHeaderTest {
 

@@ -17,11 +17,7 @@
 
 package org.apache.eventmesh.common.protocol.http.header.client;
 
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.junit.Assert;
 import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.is;
 
 public class HeartbeatResponseHeaderTest extends AbstractResponseHeaderTest {
 

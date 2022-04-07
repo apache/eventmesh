@@ -17,36 +17,38 @@
 
 package org.apache.eventmesh.common.config;
 
-import com.google.common.base.Preconditions;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.utils.IPUtils;
 
-public class CommonConfiguration {
-    public String eventMeshEnv = "P";
-    public String eventMeshIDC = "FT";
-    public String eventMeshCluster = "LS";
-    public String eventMeshName = "";
-    public String sysID = "5477";
-    public String eventMeshConnectorPluginType = "rocketmq";
-    public String eventMeshSecurityPluginType = "security";
-    public int eventMeshPrometheusPort = 19090;
-    public String eventMeshRegistryPluginType = "namesrv";
-    public String eventMeshTraceExporterType = "Log";
-    public int eventMeshTraceExporterMaxExportSize = 512;
-    public int eventMeshTraceExporterMaxQueueSize = 2048;
-    public int eventMeshTraceExporterExportTimeout = 30;
-    public int eventMeshTraceExporterExportInterval = 5;
-    public String eventMeshTraceExportZipkinIp = "localhost";
-    public int eventMeshTraceExportZipkinPort = 9411;
+import org.apache.commons.lang3.StringUtils;
 
-    public String namesrvAddr = "";
-    public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
-    public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
-    public String eventMeshServerIp = null;
-    public boolean eventMeshServerSecurityEnable = false;
-    public boolean eventMeshServerRegistryEnable = false;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.google.common.base.Preconditions;
+
+public class CommonConfiguration {
+    public String eventMeshEnv                 = "P";
+    public String eventMeshIDC                 = "FT";
+    public String eventMeshCluster             = "LS";
+    public String eventMeshName                = "";
+    public String sysID                        = "5477";
+    public String eventMeshConnectorPluginType = "rocketmq";
+    public String eventMeshSecurityPluginType  = "security";
+    public String eventMeshRegistryPluginType  = "namesrv";
+
+    public List<String> eventMeshMetricsPluginType;
+    public String       eventMeshTracePluginType;
+
+    public    String               namesrvAddr                        = "";
+    public    Integer              eventMeshRegisterIntervalInMills   = 10 * 1000;
+    public    Integer              eventMeshFetchRegistryAddrInterval = 10 * 1000;
+    public    String               eventMeshServerIp                  = null;
+    public    boolean              eventMeshServerSecurityEnable      = false;
+    public    boolean              eventMeshServerRegistryEnable      = false;
     protected ConfigurationWrapper configurationWrapper;
+
+    public String eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
 
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
         this.configurationWrapper = configurationWrapper;
@@ -85,13 +87,6 @@ public class CommonConfiguration {
                     String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
             eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIdcStr);
 
-            String eventMeshPrometheusPortStr =
-                    configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_METRICS_PROMETHEUS_PORT);
-            if (StringUtils.isNotEmpty(eventMeshPrometheusPortStr)) {
-                eventMeshPrometheusPort =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshPrometheusPortStr));
-            }
-
             eventMeshServerIp =
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
             if (StringUtils.isBlank(eventMeshServerIp)) {
@@ -107,7 +102,7 @@ public class CommonConfiguration {
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED);
             if (StringUtils.isNotBlank(eventMeshServerAclEnableStr)) {
                 eventMeshServerSecurityEnable =
-                        Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
+                        Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
             }
 
             eventMeshSecurityPluginType =
@@ -119,61 +114,27 @@ public class CommonConfiguration {
                     configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED);
             if (StringUtils.isNotBlank(eventMeshServerRegistryEnableStr)) {
                 eventMeshServerRegistryEnable =
-                        Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
+                    Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
             }
 
             eventMeshRegistryPluginType =
-                    configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
+                configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
             Preconditions.checkState(StringUtils.isNotEmpty(eventMeshRegistryPluginType),
-                    String.format("%s error", ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE));
+                String.format("%s error", ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE));
 
-            String eventMeshTraceExporterTypeStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTraceExporterTypeStr),
-                    String.format("%s error", ConfKeys.KEYS_ENENTMESH_TRACE_EXPORTER_TYPE));
-            eventMeshTraceExporterType =
-                    StringUtils.deleteWhitespace(eventMeshTraceExporterTypeStr);
-
-            String eventMeshTraceExporterMaxExportSizeStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORTER_MAX_EXPORT_SIZE);
-            if (StringUtils.isNotEmpty(eventMeshTraceExporterMaxExportSizeStr)) {
-                eventMeshTraceExporterMaxExportSize =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExporterMaxExportSizeStr));
+            String metricsPluginType = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_METRICS_PLUGIN_TYPE);
+            if (StringUtils.isNotEmpty(metricsPluginType)) {
+                eventMeshMetricsPluginType = Arrays.stream(metricsPluginType.split(","))
+                    .filter(StringUtils::isNotBlank)
+                    .map(String::trim)
+                    .collect(Collectors.toList());
             }
 
-            String eventMeshTraceExporterMaxQueueSizeStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORTER_MAX_QUEUE_SIZE);
-            if (StringUtils.isNotEmpty(eventMeshTraceExporterMaxQueueSizeStr)) {
-                eventMeshTraceExporterMaxQueueSize =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExporterMaxQueueSizeStr));
-            }
-
-            String eventMeshTraceExporterExportTimeoutStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORTER_EXPORT_TIMEOUT);
-            if (StringUtils.isNotEmpty(eventMeshTraceExporterExportTimeoutStr)) {
-                eventMeshTraceExporterExportTimeout =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExporterExportTimeoutStr));
-            }
-
-            String eventMeshTraceExporterExportIntervalStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORTER_EXPORT_INTERVAL);
-            if (StringUtils.isNotEmpty(eventMeshTraceExporterExportIntervalStr)) {
-                eventMeshTraceExporterExportInterval =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExporterExportIntervalStr));
-            }
-
-            String eventMeshTraceExportZipkinIpStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORT_ZIPKIN_IP);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTraceExportZipkinIpStr),
-                    String.format("%s error", ConfKeys.KEYS_EVENTMESH_TRACE_EXPORT_ZIPKIN_IP));
-            eventMeshTraceExportZipkinIp = StringUtils.deleteWhitespace(eventMeshTraceExportZipkinIpStr);
-
-            String eventMeshTraceExportZipkinPortStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_EXPORT_ZIPKIN_PORT);
-            if (StringUtils.isNotEmpty(eventMeshTraceExportZipkinPortStr)) {
-                eventMeshTraceExportZipkinPort =
-                        Integer.valueOf(StringUtils.deleteWhitespace(eventMeshTraceExportZipkinPortStr));
-            }
+            String eventMeshTracePluginTypeStr =
+                configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE);
+            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTracePluginTypeStr),
+                String.format("%s error", ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE));
+            eventMeshTracePluginType = StringUtils.deleteWhitespace(eventMeshTracePluginTypeStr);
         }
     }
 
@@ -202,24 +163,12 @@ public class CommonConfiguration {
 
         public static String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
 
-        public static String KEY_EVENTMESH_METRICS_PROMETHEUS_PORT = "eventMesh.metrics.prometheus.port";
-
         public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.server.registry.enabled";
 
         public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
 
-        public static String KEYS_ENENTMESH_TRACE_EXPORTER_TYPE = "eventmesh.trace.exporter.type";
+        public static String KEYS_EVENTMESH_METRICS_PLUGIN_TYPE = "eventmesh.metrics.plugin";
 
-        public static String KEYS_EVENTMESH_TRACE_EXPORTER_MAX_EXPORT_SIZE = "eventmesh.trace.exporter.max.export.size";
-
-        public static String KEYS_EVENTMESH_TRACE_EXPORTER_MAX_QUEUE_SIZE = "eventmesh.trace.exporter.max.queue.size";
-
-        public static String KEYS_EVENTMESH_TRACE_EXPORTER_EXPORT_TIMEOUT = "eventmesh.trace.exporter.export.timeout";
-
-        public static String KEYS_EVENTMESH_TRACE_EXPORTER_EXPORT_INTERVAL = "eventmesh.trace.exporter.export.interval";
-
-        public static String KEYS_EVENTMESH_TRACE_EXPORT_ZIPKIN_IP = "eventmesh.trace.export.zipkin.ip";
-
-        public static String KEYS_EVENTMESH_TRACE_EXPORT_ZIPKIN_PORT = "eventmesh.trace.export.zipkin.port";
+        public static String KEYS_EVENTMESH_TRACE_PLUGIN_TYPE = "eventmesh.trace.plugin";
     }
 }

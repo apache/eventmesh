@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -46,14 +47,14 @@ public class RocketMQConsumerImpl implements Consumer {
         final ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.init();
         boolean isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast"));
-        String consumerGroup = keyValue.getProperty("consumerGroup");
-        String instanceName = keyValue.getProperty("instanceName");
 
+        String consumerGroup = keyValue.getProperty("consumerGroup");
         if (isBroadcast) {
             consumerGroup = Constants.BROADCAST_PREFIX + consumerGroup;
         }
 
         String namesrvAddr = clientConfiguration.namesrvAddr;
+        String instanceName = keyValue.getProperty("instanceName");
         Properties properties = new Properties();
         properties.put("ACCESS_POINTS", namesrvAddr);
         properties.put("REGION", "namespace");
@@ -69,8 +70,8 @@ public class RocketMQConsumerImpl implements Consumer {
     }
 
     @Override
-    public void subscribe(String topic, EventListener listener) throws Exception {
-        pushConsumer.subscribe(topic, "*", listener);
+    public void subscribe(String topic) throws Exception {
+        pushConsumer.subscribe(topic, "*");
     }
 
     @Override
@@ -96,6 +97,11 @@ public class RocketMQConsumerImpl implements Consumer {
     @Override
     public void unsubscribe(String topic) {
         pushConsumer.unsubscribe(topic);
+    }
+
+    @Override
+    public void registerEventListener(EventListener listener) {
+        pushConsumer.registerEventListener(listener);
     }
 
     @Override

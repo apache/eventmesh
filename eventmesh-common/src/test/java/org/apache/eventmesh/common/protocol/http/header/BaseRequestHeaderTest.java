@@ -18,14 +18,15 @@
 package org.apache.eventmesh.common.protocol.http.header;
 
 
+import static org.hamcrest.CoreMatchers.is;
+
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.is;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class BaseRequestHeaderTest {
 

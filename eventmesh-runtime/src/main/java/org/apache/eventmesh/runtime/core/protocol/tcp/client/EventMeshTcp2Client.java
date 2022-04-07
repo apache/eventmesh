@@ -53,8 +53,8 @@ public class EventMeshTcp2Client {
             long startTime = System.currentTimeMillis();
             Package msg = new Package();
             msg.setHeader(
-                new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(), "graceful normal quit from eventmesh",
-                    null));
+                    new Header(SERVER_GOODBYE_REQUEST, OPStatus.SUCCESS.getCode(), "graceful normal quit from eventmesh",
+                            null));
 
             eventMeshTCPServer.getScheduler().submit(new Runnable() {
                 @Override
@@ -105,27 +105,27 @@ public class EventMeshTcp2Client {
                                       EventMeshTcpMonitor eventMeshTcpMonitor) {
         long startTime = System.currentTimeMillis();
         Package pkg = new Package(new Header(SERVER_GOODBYE_REQUEST, OPStatus.FAIL.getCode(), errMsg, null));
-        eventMeshTcpMonitor.getEventMesh2clientMsgNum().incrementAndGet();
+        eventMeshTcpMonitor.getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
         logger.info("goodBye2Client client[{}]", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
         ctx.writeAndFlush(pkg).addListener(
-            new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
-                    Utils.logSucceedMessageFlow(pkg, null, startTime, startTime);
-                    try {
-                        mapping.closeSession(ctx);
-                    } catch (Exception e) {
-                        logger.warn("close session failed!", e);
+                new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        Utils.logSucceedMessageFlow(pkg, null, startTime, startTime);
+                        try {
+                            mapping.closeSession(ctx);
+                        } catch (Exception e) {
+                            logger.warn("close session failed!", e);
+                        }
                     }
                 }
-            }
         );
     }
 
     public static String redirectClient2NewEventMesh(EventMeshTCPServer eventMeshTCPServer, String newEventMeshIp,
                                                      int port, Session session, ClientSessionGroupMapping mapping) {
         logger.info("begin to gracefully redirect Client {}, newIPPort[{}]", session.getClient(),
-            newEventMeshIp + ":" + port);
+                newEventMeshIp + ":" + port);
         try {
             long startTime = System.currentTimeMillis();
 

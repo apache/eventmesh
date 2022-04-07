@@ -35,6 +35,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.channel.ChannelHandlerContext;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -87,11 +88,11 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
 
     @Override
     public void asyncRR(EventMeshMessage eventMeshMessage, AsyncRRCallback callback, long timeout)
-        throws EventMeshException {
+            throws EventMeshException {
         try {
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.REQUEST_TO_SERVER);
             super.send(msg);
-            this.callbackConcurrentHashMap.put((String) RequestContext._key(msg), callback);
+            this.callbackConcurrentHashMap.put((String) RequestContext.key(msg), callback);
         } catch (Exception ex) {
             // should trigger callback?
             throw new EventMeshException("asyncRR error", ex);
@@ -103,8 +104,8 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         try {
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.ASYNC_MESSAGE_TO_SERVER);
             log.info("SimplePubClientImpl em message|{}|publish|send|type={}|protocol={}|msg={}",
-                clientNo, msg.getHeader().getCmd(),
-                msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
+                    clientNo, msg.getHeader().getCmd(),
+                    msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             return io(msg, timeout);
         } catch (Exception ex) {
             throw new EventMeshException("publish error", ex);
@@ -117,7 +118,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
             // todo: transform EventMeshMessage to Package
             Package msg = MessageUtils.buildPackage(eventMeshMessage, Command.BROADCAST_MESSAGE_TO_SERVER);
             log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCmd(),
-                msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
+                    msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             super.send(msg);
         } catch (Exception ex) {
             throw new EventMeshException("Broadcast message error", ex);
@@ -148,7 +149,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         public void callback(EventMeshMessage eventMeshMessage, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(eventMeshMessage).ifPresent(
-                    responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
+                        responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
                 );
             }
         }
