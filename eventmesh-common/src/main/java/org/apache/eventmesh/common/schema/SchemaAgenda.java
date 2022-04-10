@@ -27,7 +27,5 @@ public class SchemaAgenda {
 
     private String content;
 
-    private SchemaType contentType;
-
     private Schema schema;
 }

@@ -50,3 +50,7 @@ include 'eventmesh-trace-plugin:eventmesh-trace-zipkin'
 
 include 'eventmesh-schema-plugin'
 include 'eventmesh-schema-plugin:eventmesh-schema-api'
+include 'eventmesh-schema-plugin:eventmesh-schema-json'
+include 'eventmesh-schema-plugin:eventmesh-schema-avro'
+include 'eventmesh-schema-plugin:eventmesh-schema-protobuf'
+

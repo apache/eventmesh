@@ -15,16 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.prometheus.config;
+package org.apache.eventmesh.schema.protobuf;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.eventmesh.common.schema.SchemaAgenda;
+import org.apache.eventmesh.schema.api.SchemaService;
 
-public class PrometheusConfigurationTest {
+public class ProtobufSchemaService implements SchemaService {
+    @Override
+    public void contract() {
+        //TODO
+    }
 
-    @Test
-    public void getEventMeshPrometheusPort() {
-        int eventMeshPrometheusPort = PrometheusConfiguration.getEventMeshPrometheusPort();
-        Assert.assertEquals(19090, eventMeshPrometheusPort);
+    @Override
+    public void serialize() {
+        //TODO
+    }
+
+    @Override
+    public void deserialize() {
+        //TODO
+    }
+
+    @Override
+    public boolean checkSchemaValidity(SchemaAgenda schemaAgenda) {
+        return false;
     }
 }
