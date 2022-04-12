@@ -70,7 +70,7 @@ EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apa
 
 |              微信助手                           |                微信公众号                   | Slack                                                  |
 | :----------------------------------------------------:  | :----------------------------------------------------: | :----------------------------------------------------: |
-| ![wechat_qr](docs/images/mesh-helper.jpg) | ![wechat_official_qr](docs/images/wechat-official.png) |[加入slack](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-11974dndy-cn3Aq638eleKwKPWP9tkLg) |
+| ![wechat_qr](docs/images/mesh-helper.jpg) | ![wechat_official_qr](docs/images/wechat-official.png) |[加入slack](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-16y1n77va-q~JepYy3RqpkygDYmQaQbw) |
 
 Mailing Lists:
 
