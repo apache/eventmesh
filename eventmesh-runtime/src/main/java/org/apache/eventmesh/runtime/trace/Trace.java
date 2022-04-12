@@ -2,13 +2,16 @@ package org.apache.eventmesh.runtime.trace;
 
 import io.cloudevents.CloudEvent;
 import io.netty.channel.ChannelHandlerContext;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.context.Context;
 
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.trace.api.EventMeshSpan;
-import org.apache.eventmesh.trace.api.EventMeshTraceContext;
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
-import org.apache.eventmesh.trace.api.propagation.EventMeshContextCarrier;
+
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,113 +22,191 @@ public class Trace {
     private boolean useTrace = false;
     private EventMeshTraceService eventMeshTraceService;
 
-    public Trace(boolean useTrace){
+    public Trace(boolean useTrace) {
         this.useTrace = useTrace;
     }
 
-    public void init(String tracePluginType) throws Exception{
-        if(useTrace) {
+    public void init(String tracePluginType) throws Exception {
+        if (useTrace) {
             eventMeshTraceService = TracePluginFactory.getEventMeshTraceService(tracePluginType);
             eventMeshTraceService.init();
         }
     }
 
-//    public EventMeshTracer getTracer() throws Exception{
-//        return eventMeshTraceService.getTracer();
-//    }
-
-    public EventMeshContextCarrier extractFrom(ProtocolTransportObject pkg) throws Exception{
-        return eventMeshTraceService.extractFrom(pkg);
-    }
-
-    public EventMeshSpan createSpan(String spanName){
-        if(!useTrace) return null;
-        return eventMeshTraceService.createSpan(spanName);
-    }
-
-    public EventMeshSpan createSpan(String spanName, ProtocolTransportObject pkg){
-        if(!useTrace) return null;
-        if(pkg == null){
-            return eventMeshTraceService.createSpan(spanName);
-        }else {
-            EventMeshContextCarrier contextCarrier = eventMeshTraceService.extractFrom(pkg);
-            return eventMeshTraceService.createSpan(spanName, contextCarrier);
+    public Span createSpan(String spanName, SpanKind spanKind, long startTime, TimeUnit timeUnit,
+                           Context context, boolean isSpanFinishInOtherThread) {
+        if (!useTrace) {
+            return null;
         }
+        return eventMeshTraceService.createSpan(spanName, spanKind, startTime, timeUnit, context,
+            isSpanFinishInOtherThread);
     }
 
-    public EventMeshSpan createSpan(String spanName, CloudEvent cloudEvent){
-        if(!useTrace) return null;
-        if(cloudEvent == null){
-            return eventMeshTraceService.createSpan(spanName);
-        }else {
-            EventMeshContextCarrier contextCarrier = eventMeshTraceService.extractFrom(cloudEvent);
-            return eventMeshTraceService.createSpan(spanName, contextCarrier);
+    public Span createSpan(String spanName, SpanKind spanKind, Context context,
+                           boolean isSpanFinishInOtherThread) {
+        if (!useTrace) {
+            return null;
         }
+        return eventMeshTraceService.createSpan(spanName, spanKind, context,
+            isSpanFinishInOtherThread);
     }
 
-    public EventMeshSpan getSpanFromContext(ChannelHandlerContext ctx){
-        try{
+    public Context extractFrom(Context context, Map<String, Object> map) {
+        if (!useTrace) {
+            return null;
+        }
+        return eventMeshTraceService.extractFrom(context, map);
+    }
+
+    public void inject(Context context, Map map) {
+        if (!useTrace) {
+            return;
+        }
+        eventMeshTraceService.inject(context, map);
+    }
+
+    public Span addTraceInfoToSpan(ChannelHandlerContext ctx, CloudEvent cloudEvent) {
+        if (!useTrace) {
+            return null;
+        }
+        Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
+        Span span = context != null ? context.get(SpanKey.SERVER_KEY) : null;
+
+        if (span == null) {
+            logger.warn("span is null when finishSpan");
+            return null;
+        }
+
+        //add trace info
+        for (String entry : cloudEvent.getExtensionNames()) {
+            span.setAttribute(entry, cloudEvent.getExtension(entry).toString());
+        }
+        return span;
+    }
+
+    public Span addTraceInfoToSpan(Span span, CloudEvent cloudEvent) {
+        if (!useTrace) {
+            return null;
+        }
+
+        if (span == null) {
+            logger.warn("span is null when finishSpan");
+            return null;
+        }
+
+        if (cloudEvent == null) {
+            return span;
+        }
+
+        for (String entry : cloudEvent.getExtensionNames()) {
+            span.setAttribute(entry, cloudEvent.getExtension(entry).toString());
+        }
+        return span;
+    }
+
+    public Span addTraceInfoToSpan(Span span, Map<String, Object> map) {
+        if (!useTrace) {
+            return null;
+        }
+
+        if (span == null) {
+            logger.warn("span is null when finishSpan");
+            return null;
+        }
+
+        if (map == null || map.size() < 1) {
+            return span;
+        }
+
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            span.setAttribute(entry.getKey(), entry.getValue().toString());
+        }
+        return span;
+    }
+
+    public void finishSpan(ChannelHandlerContext ctx, StatusCode statusCode) {
+        try {
             if (useTrace) {
-                EventMeshTraceContext
-                    context = ctx.channel().attr(AttributeKeys.EVENTMESH_SERVER_CONTEXT).get();
-                return context!=null ? context.getSpan() : null;
-            }
-        }catch (Exception exception){
-            logger.warn("get span from ChannelHandlerContext fail", exception);
-        }
-        return null;
-    }
+                Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
+                Span span = context != null ? context.get(SpanKey.SERVER_KEY) : null;
 
-    public void recordExceptionInSpan(EventMeshSpan span, Throwable e){
-        try{
-            if (useTrace) {
-                if(span == null){
-                    logger.warn("span is null when recordExceptionInSpan");
-                    return;
-                }
-                span.addError(e);
-            }
-        }catch (Exception ex){
-            logger.warn("finishSpan occur exception,", ex);
-        }
-
-    }
-
-    public void addTraceInfoInSpan(EventMeshSpan span, CloudEvent cloudEvent){
-        try{
-            if (useTrace) {
-                if(span == null){
+                if (span == null) {
                     logger.warn("span is null when finishSpan");
                     return;
                 }
-                EventMeshContextCarrier contextCarrier = eventMeshTraceService.extractFrom(cloudEvent);
-
+                if (statusCode != null) {
+                    span.setStatus(statusCode);
+                }
+                span.end();
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.warn("finishSpan occur exception,", e);
         }
     }
 
-    public void finishSpan(EventMeshSpan span, CloudEvent cloudEvent){
-        try{
+    public void finishSpan(Span span, StatusCode statusCode) {
+        try {
             if (useTrace) {
-                if(span == null){
+                if (span == null) {
                     logger.warn("span is null when finishSpan");
                     return;
                 }
-                if(cloudEvent != null){
-                    EventMeshContextCarrier contextCarrier = eventMeshTraceService.extractFrom(cloudEvent);
-                    eventMeshTraceService.addTraceInfoInSpan(span, contextCarrier);
+                if (statusCode != null) {
+                    span.setStatus(statusCode);
                 }
-                span.finish();
+                span.end();
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.warn("finishSpan occur exception,", e);
         }
     }
 
-    public void shutdown() throws Exception{
-        if(useTrace){
+    public void finishSpan(Span span, StatusCode statusCode, String errMsg, Throwable throwable) {
+        try {
+            if (useTrace) {
+                if (span == null) {
+                    logger.warn("span is null when finishSpan");
+                    return;
+                }
+                if (statusCode != null) {
+                    span.setStatus(statusCode, errMsg);
+                }
+                if (throwable != null) {
+                    span.recordException(throwable);
+                }
+                span.end();
+            }
+        } catch (Exception e) {
+            logger.warn("finishSpan occur exception,", e);
+        }
+    }
+
+    public void finishSpan(ChannelHandlerContext ctx, StatusCode statusCode, String errMsg,
+                           Throwable throwable) {
+        try {
+            if (useTrace) {
+                Context context = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).get();
+                Span span = context != null ? context.get(SpanKey.SERVER_KEY) : null;
+
+                if (span == null) {
+                    logger.warn("span is null when finishSpan");
+                    return;
+                }
+                if (statusCode != null) {
+                    span.setStatus(statusCode, errMsg);
+                }
+                if (throwable != null) {
+                    span.recordException(throwable);
+                }
+                span.end();
+            }
+        } catch (Exception e) {
+            logger.warn("finishSpan occur exception,", e);
+        }
+    }
+
+    public void shutdown() throws Exception {
+        if (useTrace) {
             eventMeshTraceService.shutdown();
         }
     }

@@ -22,7 +22,6 @@ import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.GoodbyeTask;
@@ -34,17 +33,18 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.MessageTransfe
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.RecommendTask;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.SubscribeTask;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.UnSubscribeTask;
-import org.apache.eventmesh.runtime.trace.AttributeKeys;
+import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.apache.eventmesh.trace.api.EventMeshSpan;
-import org.apache.eventmesh.trace.api.EventMeshTraceContext;
-import org.apache.eventmesh.trace.api.propagation.EventMeshContextCarrier;
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.opentelemetry.api.trace.Span;
+
+import java.util.concurrent.TimeUnit;
 
 public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<Package> {
 
@@ -61,22 +61,12 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
         long startTime = System.currentTimeMillis();
         validateMsg(pkg);
 
-        eventMeshTCPServer.getEventMeshTcpMonitor().getTcpSummaryMetrics().getClient2eventMeshMsgNum().incrementAndGet();
+        eventMeshTCPServer.getEventMeshTcpMonitor().getTcpSummaryMetrics()
+            .getClient2eventMeshMsgNum().incrementAndGet();
 
-        EventMeshSpan span = null;
-        EventMeshTraceContext eventMeshTraceContext = new EventMeshTraceContext();
-        if(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable) {
-            span = EventMeshServer.getTrace().createSpan("", pkg);
-            //attach the span to the server context
-            eventMeshTraceContext.setSpan(span);
-            //put the context in channel
-            ctx.channel().attr(AttributeKeys.EVENTMESH_SERVER_CONTEXT).set(eventMeshTraceContext);
-        }
-
-        Command cmd = null;
+        Command cmd = pkg.getHeader().getCmd();
         try {
             Runnable task;
-            cmd = pkg.getHeader().getCmd();
             if (cmd.equals(Command.RECOMMEND_REQUEST)) {
                 messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                 task = new RecommendTask(pkg, ctx, startTime, eventMeshTCPServer);
@@ -97,29 +87,42 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
 
             logMessageFlow(ctx, pkg, cmd);
 
-            if (eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx).getSessionState() == SessionState.CLOSED) {
-                throw new Exception("this eventMesh tcp session will be closed, may be reboot or version change!");
+            if (eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx)
+                .getSessionState() == SessionState.CLOSED) {
+                throw new Exception(
+                    "this eventMesh tcp session will be closed, may be reboot or version change!");
             }
 
             dispatch(ctx, pkg, startTime, cmd);
         } catch (Exception e) {
             logger.error("exception occurred while pkg|cmd={}|pkg={}", cmd, pkg, e);
 
-            if(Command.REQUEST_TO_SERVER == cmd || Command.REQUEST_TO_SERVER == cmd ||
-                Command.ASYNC_MESSAGE_TO_SERVER == cmd || Command.BROADCAST_MESSAGE_TO_SERVER == cmd) {
-                EventMeshServer.getTrace().recordExceptionInSpan(span, e);
-                EventMeshServer.getTrace().finishSpan(span, null);
+            if (isNeedTrace(cmd)) {
+                Span span = TraceUtils.prepareServerSpan(pkg.getHeader().getProperties(),
+                    EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, startTime,
+                    TimeUnit.MILLISECONDS, false);
+                TraceUtils.finishSpanWithException(span, pkg.getHeader().getProperties(),
+                    "exception occurred while dispatch pkg", e);
             }
 
             writeToClient(cmd, pkg, ctx, e);
         }
     }
 
+    private boolean isNeedTrace(Command cmd) {
+        if (cmd != null && (Command.REQUEST_TO_SERVER == cmd
+            || Command.ASYNC_MESSAGE_TO_SERVER == cmd
+            || Command.BROADCAST_MESSAGE_TO_SERVER == cmd)) {
+            return true;
+        }
+        return false;
+    }
+
     private void writeToClient(Command cmd, Package pkg, ChannelHandlerContext ctx, Exception e) {
         try {
             Package res = new Package();
-            res.setHeader(new Header(getReplyCommand(cmd), OPStatus.FAIL.getCode(), e.toString(), pkg.getHeader()
-                    .getSeq()));
+            res.setHeader(new Header(getReplyCommand(cmd), OPStatus.FAIL.getCode(), e.toString(),
+                pkg.getHeader().getSeq()));
             ctx.writeAndFlush(res);
         } catch (Exception ex) {
             logger.warn("writeToClient failed", ex);
@@ -155,11 +158,12 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
 
     private void logMessageFlow(ChannelHandlerContext ctx, Package pkg, Command cmd) {
         if (pkg.getBody() instanceof EventMeshMessage) {
-            messageLogger.info("pkg|c2eventMesh|cmd={}|Msg={}|user={}", cmd, EventMeshUtil.printMqMessage((EventMeshMessage) pkg
-                    .getBody()), eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx).getClient());
+            messageLogger.info("pkg|c2eventMesh|cmd={}|Msg={}|user={}", cmd,
+                EventMeshUtil.printMqMessage((EventMeshMessage) pkg.getBody()),
+                eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx).getClient());
         } else {
             messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}|user={}", cmd, pkg,
-                    eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx).getClient());
+                eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx).getClient());
         }
     }
 
@@ -177,8 +181,8 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
         }
     }
 
-    private void dispatch(ChannelHandlerContext ctx, Package pkg, long startTime, Command cmd) throws
-            Exception {
+    private void dispatch(ChannelHandlerContext ctx, Package pkg, long startTime, Command cmd)
+        throws Exception {
         Runnable task;
         switch (cmd) {
             case HEARTBEAT_REQUEST:
