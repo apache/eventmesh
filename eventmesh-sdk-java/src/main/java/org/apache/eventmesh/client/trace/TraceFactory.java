@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.trace.api.common;
+package org.apache.eventmesh.client.trace;
 
+import org.apache.eventmesh.client.trace.common.TraceConstants;
+import org.apache.eventmesh.client.trace.impl.zipkin.ZipkinTraceService;
+import org.apache.eventmesh.trace.api.EventMeshTraceService;
 
-public class EventMeshTraceConstants {
+public class TraceFactory {
+    public static EventMeshTraceService createEventMeshTraceService(String traceType) {
 
-    public static final String TRACE_EVENTMESH_SDK_CLIENT_SPAN = "eventmesh-sdk-client-span";
-
-    public static final String TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN = "upstream-eventmesh-server-span";
-    public static final String TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN = "upstream-eventmesh-client-span";
-
-    public static final String TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN = "downstream-eventmesh-server-span";
-    public static final String TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN = "downstream-eventmesh-client-span";
-
-    public static final String TRACE_EVENTMESH_SDK_SERVER_SPAN = "eventmesh-sdk-server-span";
-
+        if (TraceConstants.TRACE_TYPE_ZIPKIN.equals(traceType)) {
+            return new ZipkinTraceService();
+        } else {
+            return null;
+        }
+    }
 }
