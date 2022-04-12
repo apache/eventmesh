@@ -55,16 +55,16 @@ should be an easy way to achieve the requirements.
 ##### SDK side for publish
 
 - add the CloudEvents identifier in `package` header
-- use `CloudEventBuilder` build the CloudEvent and put it into the `package` body 
+- use `CloudEventBuilder` build the CloudEvent and put it into the `package` body
 
 ##### SDK side for subscribe
 
 - add `convert` function under the `ReceiveMsgHook` interface, for converting the `package` body to the specific protocol with the identifier in `package` header
-- different protocols should implement the `ReceiveMsgHook`  interface 
+- different protocols should implement the `ReceiveMsgHook`  interface
 
 ##### Server side for publish
 
-- design the protocol convert api contains `decodeMessage` interface which convert the package's body to CloudEvent 
+- design the protocol convert api contains `decodeMessage` interface which convert the package's body to CloudEvent
 - update `Session.upstreamMsg()` in `MessageTransferTask` change the input parameter Message to CloudEvent, the CloudEvent use the last step `decodeMessage` api convert
 - update `SessionSender.send()`  change the input parameter `Message` to `CloudEvent`
 - update `MeshMQProducer` api support send `CloudEvents` in runtime
@@ -78,7 +78,7 @@ should be an easy way to achieve the requirements.
 
 - update the `MeshMQPushConsumer.updateOffset()` implementation change the the input parameter `Message` to `CloudEvent`
 
-- update `DownStreamMsgContext` , change the input parameter `Message` to `CloudEvent`, update the `DownStreamMsgContext.ackMsg` 
+- update `DownStreamMsgContext` , change the input parameter `Message` to `CloudEvent`, update the `DownStreamMsgContext.ackMsg`
 
 #### For HTTP
 
@@ -104,4 +104,5 @@ should be an easy way to achieve the requirements.
 ## Appendix
 
 ### References
-- https://cloudevents.github.io/sdk-java/kafka
+
+- <https://cloudevents.github.io/sdk-java/kafka>

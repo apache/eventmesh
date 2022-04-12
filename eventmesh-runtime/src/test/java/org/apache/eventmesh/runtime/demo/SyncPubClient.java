@@ -19,10 +19,10 @@ package org.apache.eventmesh.runtime.demo;
 
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
 import org.apache.eventmesh.runtime.client.impl.PubClientImpl;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +39,7 @@ public class SyncPubClient {
             Package rr = pubClient.rr(MessageUtils.rrMesssage("TEST-TOPIC-TCP-SYNC", i), 3000);
             if (rr.getBody() instanceof EventMeshMessage) {
                 String body = ((EventMeshMessage) rr.getBody()).getBody();
-                logger.error("rrMessage: " + body + "             " + "rr-reply-------------------------------------------------" + rr.toString());
+                logger.error("rrMessage: " + body + "             " + "rr-reply-------------------------------------------------" + rr);
             }
         }
     }

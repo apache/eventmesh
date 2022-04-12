@@ -17,14 +17,15 @@
 
 package org.apache.eventmesh.runtime.client.api;
 
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 
-
+/**
+ * SubClient
+ */
 public interface SubClient {
     void init() throws Exception;
 

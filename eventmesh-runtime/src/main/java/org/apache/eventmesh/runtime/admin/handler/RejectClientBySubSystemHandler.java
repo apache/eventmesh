@@ -17,17 +17,14 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.NetUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -36,6 +33,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 
 public class RejectClientBySubSystemHandler implements HttpHandler {
 
@@ -60,6 +63,7 @@ public class RejectClientBySubSystemHandler implements HttpHandler {
 
     /**
      * remove c client by dcn and susysId
+     *
      * @param httpExchange
      * @throws IOException
      */
@@ -96,13 +100,15 @@ public class RejectClientBySubSystemHandler implements HttpHandler {
                 }
             } catch (Exception e) {
                 logger.error("clientManage|rejectClientBySubSystem|fail|subSystemId={},errMsg={}", subSystem, e);
-                result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%d} , {" +
+                result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%d} , {"
+                        +
                         "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs), subSystem, e.getMessage());
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes());
                 return;
             }
-            result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {" +
+            result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
+                    +
                     "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
             httpExchange.sendResponseHeaders(200, 0);
             out.write(result.getBytes());

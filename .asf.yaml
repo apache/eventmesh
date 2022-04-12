@@ -37,8 +37,8 @@ github:
     - microservice
     - state-management
   enabled_merge_buttons:
-    merge:   true
     squash:  true
+    merge:   true
     rebase:  false
   protected_branches:
     master:
@@ -46,4 +46,4 @@ github:
         strict: true
       required_pull_request_reviews:
         dismiss_stale_reviews: true
-        required_approving_review_count: 2
+        required_approving_review_count: 1

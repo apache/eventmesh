@@ -29,11 +29,11 @@ public class CloudEventsProtocolAdaptorTest {
     @Test
     public void loadPlugin() {
         ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
-            ProtocolPluginFactory.getProtocolAdaptor(CloudEventsProtocolConstant.PROTOCOL_NAME);
+                ProtocolPluginFactory.getProtocolAdaptor(CloudEventsProtocolConstant.PROTOCOL_NAME);
 
         Assert.assertNotNull(protocolAdaptor);
         Assert.assertEquals(
-            CloudEventsProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
+                CloudEventsProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
         Assert.assertEquals(CloudEventsProtocolAdaptor.class, protocolAdaptor.getClass());
     }
 }

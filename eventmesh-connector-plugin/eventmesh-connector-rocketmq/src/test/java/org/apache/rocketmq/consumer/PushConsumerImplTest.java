@@ -52,10 +52,11 @@ public class PushConsumerImplTest {
     @Before
     public void before() throws Exception {
         Properties consumerProp = new Properties();
-//        consumerProp.setProperty(OMSBuiltinKeys.DRIVER_IMPL,
-//            "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
+        //consumerProp.setProperty(OMSBuiltinKeys.DRIVER_IMPL,
+        //    "org.apache.eventmesh.connector.rocketmq.MessagingAccessPointImpl");
         consumerProp.setProperty("access_points", "IP1:9876,IP2:9876");
-        //final MessagingAccessPoint messagingAccessPoint = OMS.builder().build(consumerProp);//.endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build(config);
+        //final MessagingAccessPoint messagingAccessPoint = OMS.builder().build(consumerProp);
+        // .endpoint("oms:rocketmq://IP1:9876,IP2:9876/namespace").build(config);
 
         consumerProp.setProperty("message.model", "CLUSTERING");
 
@@ -81,24 +82,16 @@ public class PushConsumerImplTest {
 
     @Test
     public void testConsumeMessage() {
-        final byte[] testBody = new byte[] {'a', 'b'};
+        final byte[] testBody = new byte[]{'a', 'b'};
 
         MessageExt consumedMsg = new MessageExt();
         consumedMsg.setMsgId("NewMsgId");
         consumedMsg.setBody(testBody);
         consumedMsg.putUserProperty(NonStandardKeys.MESSAGE_DESTINATION, "TOPIC");
         consumedMsg.setTopic("HELLO_QUEUE");
-        consumer.subscribe("HELLO_QUEUE", "*", new EventListener() {
-
-            @Override
-            public void consume(CloudEvent cloudEvent, org.apache.eventmesh.api.AsyncConsumeContext context) {
-                assertThat(cloudEvent.getExtension("MESSAGE_ID")).isEqualTo("NewMsgId");
-                assertThat(cloudEvent.getData()).isEqualTo(testBody);
-                context.commit(EventMeshAction.CommitMessage);
-            }
-        });
+        consumer.subscribe("HELLO_QUEUE", "*");
         ((MessageListenerConcurrently) rocketmqPushConsumer
-            .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
+                .getMessageListener()).consumeMessage(Collections.singletonList(consumedMsg), null);
 
 
     }

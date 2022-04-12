@@ -17,18 +17,18 @@
 
 package org.apache.eventmesh.runtime.demo;
 
-import io.netty.channel.ChannelHandlerContext;
-
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
 import org.apache.eventmesh.runtime.client.impl.EventMeshClientImpl;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.netty.channel.ChannelHandlerContext;
 
 /**
  * simple client usage example
@@ -48,36 +48,24 @@ public class CClientDemo {
         client.justSubscribe(ASYNC_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
         client.justSubscribe(BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
         client.listen();
-//        for (int i = 0; i < 10000; i++) {
-//            Package rr = null;
-//            AccessMessage rrMessage = null;
-//            try {
-//                rr = client.rr(MessageUtils.rrMesssage("TEST-TOPIC-TCP-SYNC"), 3000);
-//                Thread.sleep(100);
-//                //rrMessage = (AccessMessage) rr.getBody();
-//                logger.error(         "rr-reply-------------------------------------------------" + rr.toString());
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
         client.registerSubBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
                 if (msg.getHeader().getCmd() == Command.ASYNC_MESSAGE_TO_CLIENT || msg.getHeader().getCmd() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-                    logger.error("receive message-------------------------------------" + msg.toString());
+                    logger.error("receive message-------------------------------------" + msg);
                 }
             }
         });
         for (int i = 0; i < 10000; i++) {
-//            ThreadUtil.randomSleep(0,200);
+            //ThreadUtil.randomSleep(0,200);
             //broadcast message
             client.broadcast(MessageUtils.broadcastMessage("TEST-TOPIC-TCP-BROADCAST", i), 5000);
             //asynchronous message
             client.publish(MessageUtils.asyncMessage(ASYNC_TOPIC, i), 5000);
         }
-//
-//        Thread.sleep(10000);
-//        client.close();
+        //
+        //Thread.sleep(10000);
+        //client.close();
 
 
     }

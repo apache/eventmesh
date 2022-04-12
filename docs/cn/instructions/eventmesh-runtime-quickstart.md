@@ -73,11 +73,15 @@ sh start.sh
 ***2.3.2.1 安装插件***
 
 有两种方式安装插件
+
 - classpath加载：本地开发可以通过在eventmesh-starter模块build.gradle中进行声明，例如声明使用rocketmq插件
+
 ```java
    implementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
 ```
+
 - 文件加载：通过将插件安装到插件目录，EventMesh在运行时会根据条件自动加载插件目录下的插件，可以通过执行以下命令安装插件
+
 ```shell
 ./gradlew clean jar dist && ./gradlew installPlugin
 ```
@@ -86,6 +90,7 @@ sh start.sh
 
 EventMesh会默认加载dist/plugin目录下的插件，可以通过`-DeventMeshPluginDir=your_plugin_directory`来改变插件目录。运行时需要使用的插件实例可以在
 `confPath`目录下面的`eventmesh.properties`中进行配置。例如通过以下设置声明在运行时使用rocketmq插件。
+
 ```properties
 #connector plugin
 eventMesh.connector.plugin.type=rocketmq
@@ -99,6 +104,7 @@ eventMesh.connector.plugin.type=rocketmq
 -Deventmesh.home=eventmesh-runtime
 -DconfPath=eventmesh-runtime/conf
 ```
+
 > 注：如果操作系统为Windows, 可能需要将文件分隔符换成\
 
 **2.3.4 启动运行**
@@ -111,7 +117,7 @@ eventMesh.connector.plugin.type=rocketmq
 
 ### 3.1 拉取镜像
 
-执行 `docker pull eventmesh/eventmesh-rocketmq:v1.2.0` , 你将会获取到EventMesh的镜像，如下图所示：
+执行 `docker pull eventmesh/eventmesh-rocketmq:v1.3.0` , 你将会获取到EventMesh的镜像，如下图所示：
 
 ![image-20210309155255510](../../images/docker/docker-image.png)
 
@@ -129,6 +135,7 @@ eventMesh.connector.plugin.type=rocketmq
 | ---------------------- | ------ | ----------------------- |
 | eventMesh.server.http.port | 10105  | EventMesh http 服务端口 |
 | eventMesh.server.tcp.port  | 10000  | EventMesh tcp 服务端口  |
+| eventMesh.server.grpc.port  | 10205  | EventMesh grpc 服务端口  |
 
 **rocketmq-client.properties**
 
@@ -157,7 +164,7 @@ vi rocketmq-client.properties
 执行下面的命令来运行容器
 
 ```shell
-docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.2.0
+docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties docker.io/eventmesh/eventmesh-rocketmq:v1.3.0
 ```
 
 > -p : 将容器内端口与宿主机端口绑定，容器的端口应与配置文件中的端口一致
@@ -207,7 +214,7 @@ Windows
 
 Linux
 
-- **获取 eventmesh-test_1.2.0-SNAPSHOT.tar.gz**
+- **获取 eventmesh-test_1.3.0-release.tar.gz**
 
   你可以从我们的 **releases** 获取或者**通过源码的方式进行构建**
 
@@ -218,15 +225,15 @@ Linux
   gradle clean testdist testtar -x test`
   ```
 
-  可以在 `/eventmesh-test/build` 目录下获得 **eventmesh-test_1.2.0-SNAPSHOT.tar.gz**
+  可以在 `/eventmesh-test/build` 目录下获得 **eventmesh-test_1.3.0-release.tar.gz**
 
 - **修改配置文件**
 
   ```shell
   #上传
-  upload eventmesh-test_1.2.0-SNAPSHOT.tar.gz
+  upload eventmesh-test_1.3.0-release.tar.gz
   #解压
-  tar -zxvf eventmesh-test_1.2.0-SNAPSHOT.tar.gz
+  tar -zxvf eventmesh-test_1.3.0-release.tar.gz
   #配置
   cd conf
   config your application.properties
@@ -277,4 +284,3 @@ Linux
   ```
 
   之后 , 你可以在 `/logs` 目录下面看到不同模式的运行日志
-

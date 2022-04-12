@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.runtime.client.hook;
 
-import io.netty.channel.ChannelHandlerContext;
-
 import org.apache.eventmesh.common.protocol.tcp.Package;
+
+import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Business callback hook, which is a callback for all types of messages

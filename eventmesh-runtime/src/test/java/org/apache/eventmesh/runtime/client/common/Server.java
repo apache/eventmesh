@@ -34,7 +34,7 @@ public class Server {
     public void startAccessServer() throws Exception {
         EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(null);
         eventMeshHttpConfiguration.init();
-        server = new EventMeshServer(eventMeshHttpConfiguration, null);
+        server = new EventMeshServer(eventMeshHttpConfiguration, null, null);
         server.init();
         server.start();
     }

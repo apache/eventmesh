@@ -40,13 +40,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.google.common.base.Preconditions;
-
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 import io.netty.channel.ChannelHandlerContext;
+
+import com.google.common.base.Preconditions;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -55,8 +56,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<CloudEvent> {
 
-    private final List<SubscriptionItem>     subscriptionItems = Collections.synchronizedList(new LinkedList<>());
-    private       ReceiveMsgHook<CloudEvent> callback;
+    private final List<SubscriptionItem> subscriptionItems = Collections.synchronizedList(new LinkedList<>());
+    private ReceiveMsgHook<CloudEvent> callback;
 
     public CloudEventTCPSubClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
         super(eventMeshTcpClientConfig);
@@ -93,7 +94,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
 
     @Override
     public void subscribe(String topic, SubscriptionMode subscriptionMode, SubscriptionType subscriptionType)
-        throws EventMeshException {
+            throws EventMeshException {
         try {
             subscriptionItems.add(new SubscriptionItem(topic, subscriptionMode, subscriptionType));
             Package request = MessageUtils.subscribe(topic, subscriptionMode, subscriptionType);
@@ -141,7 +142,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
     private class CloudEventTCPSubHandler extends AbstractEventMeshTCPSubHandler<CloudEvent> {
 
         public CloudEventTCPSubHandler(
-            ConcurrentHashMap<Object, RequestContext> contexts) {
+                ConcurrentHashMap<Object, RequestContext> contexts) {
             super(contexts);
         }
 
@@ -149,7 +150,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         public CloudEvent getProtocolMessage(Package tcpPackage) {
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             Preconditions.checkNotNull(eventFormat,
-                String.format("Cannot find the cloudevent format: %s", JsonFormat.CONTENT_TYPE));
+                    String.format("Cannot find the cloudevent format: %s", JsonFormat.CONTENT_TYPE));
             return eventFormat.deserialize(tcpPackage.getBody().toString().getBytes(StandardCharsets.UTF_8));
         }
 
@@ -157,7 +158,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
         public void callback(CloudEvent cloudEvent, ChannelHandlerContext ctx) {
             if (callback != null) {
                 callback.handle(cloudEvent).ifPresent(
-                    responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
+                        responseMessage -> ctx.writeAndFlush(MessageUtils.buildPackage(responseMessage, Command.RESPONSE_TO_SERVER))
                 );
             }
         }

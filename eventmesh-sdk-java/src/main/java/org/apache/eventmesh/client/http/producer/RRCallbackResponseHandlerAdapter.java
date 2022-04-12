@@ -33,10 +33,11 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import com.google.common.base.Preconditions;
-
 import io.cloudevents.CloudEvent;
 import io.openmessaging.api.Message;
+
+import com.google.common.base.Preconditions;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -57,7 +58,8 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
                                             long timeout) {
         Preconditions.checkNotNull(rrCallback, "rrCallback invalid");
         Preconditions.checkNotNull(protocolMessage, "message invalid");
-        if (!(protocolMessage instanceof EventMeshMessage) && !(protocolMessage instanceof CloudEvent)
+        if (!(protocolMessage instanceof EventMeshMessage)
+            && !(protocolMessage instanceof CloudEvent)
             && !(protocolMessage instanceof Message)) {
             throw new IllegalArgumentException(String.format("ProtocolMessage: %s is not supported", protocolMessage));
         }
@@ -94,15 +96,18 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
         return protocolMessage.toString();
     }
 
+    @SuppressWarnings("unchecked")
     private ProtocolMessage transformToProtocolMessage(EventMeshRetObj ret) {
-        // todo: constructor other protocol message, can judge by protocol type in properties
-        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(ret.getRetMsg(),
-            SendMessageResponseBody.ReplyMessage.class);
-        EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
-            .content(replyMessage.body)
-            .prop(replyMessage.properties)
-            .topic(replyMessage.topic)
-            .build();
-        return (ProtocolMessage) eventMeshMessage;
+        SendMessageResponseBody.ReplyMessage replyMessage = JsonUtils.deserialize(ret.getRetMsg(), SendMessageResponseBody.ReplyMessage.class);
+        if (protocolMessage instanceof EventMeshMessage) {
+            EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
+                .content(replyMessage.body)
+                .prop(replyMessage.properties)
+                .topic(replyMessage.topic)
+                .build();
+            return (ProtocolMessage) eventMeshMessage;
+        }
+        // todo: constructor other protocol message
+        throw new RuntimeException("Unsupported callback message type");
     }
 }

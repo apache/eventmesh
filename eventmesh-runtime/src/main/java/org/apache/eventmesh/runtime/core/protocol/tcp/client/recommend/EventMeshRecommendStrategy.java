@@ -14,13 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend;
 
 import java.util.List;
 import java.util.Map;
 
+/**
+ * EventMeshRecommendStrategy
+ */
 public interface EventMeshRecommendStrategy {
     String calculateRecommendEventMesh(String group, String purpose) throws Exception;
 
-    List<String> calculateRedirectRecommendEventMesh(Map<String, String> eventMeshMap, Map<String, Integer> clientDistributeMap, String group, int recommendNum, String eventMeshName) throws Exception;
+    List<String> calculateRedirectRecommendEventMesh(Map<String, String> eventMeshMap,
+                                                     Map<String, Integer> clientDistributeMap, String group,
+                                                     int recommendNum, String eventMeshName) throws Exception;
 }

@@ -18,8 +18,6 @@
 package org.apache.eventmesh.common.protocol.http.header;
 
 
-import java.util.Map;
-
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.client.HeartbeatRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.client.RegRequestHeader;
@@ -31,6 +29,8 @@ import org.apache.eventmesh.common.protocol.http.header.message.ReplyMessageRequ
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchRequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageRequestHeader;
+
+import java.util.Map;
 
 public abstract class Header {
 

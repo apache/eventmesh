@@ -14,8 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.api.registry.dto;
 
+/**
+ * EventMeshDataInfo
+ */
 public class EventMeshDataInfo {
     private String eventMeshClusterName;
     private String eventMeshName;
