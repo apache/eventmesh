@@ -73,7 +73,9 @@ EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apa
 
 |              WeChat Assistant                           |                WeChat public account                   | Slack                                                  |
 | :----------------------------------------------------:  | :----------------------------------------------------: | :----------------------------------------------------: |
-| ![wechat_qr](docs/images/mesh-helper.jpg) | ![wechat_official_qr](docs/images/wechat-official.png) |[Join slack chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-11974dndy-cn3Aq638eleKwKPWP9tkLg) |
+| ![wechat_qr](docs/images/mesh-helper.jpg) | ![wechat_official_qr](docs/images/wechat-official.png) |[Join slack chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-16y1n77va-q~JepYy3RqpkygDYmQaQbw) |
+
+
 
 Mailing Lists:
 
