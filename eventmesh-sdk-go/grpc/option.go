@@ -13,41 +13,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package loadbalancer
+package grpc
 
 import (
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/id"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
-	"math/rand"
 )
 
-// RandomRule random rule by math.Random
-type RandomRule struct {
-	BaseRule
+// GRPCOption option to set up the option for grpc client
+type GRPCOption func(*eventMeshGRPCClient)
+
+// WithLogger set the logger for client, replace with the default
+func WithLogger(l log.Logger) GRPCOption {
+	return func(client *eventMeshGRPCClient) {
+		log.SetLogger(l)
+	}
 }
 
-// Choose return the instance by random
-// the input must be ip
-func (r *RandomRule) Choose(interface{}) (interface{}, error) {
-	count := 0
-	for {
-		if count == 64 {
-			log.Warnf("failed to peek server by roundrobin after try 64 times")
-			return nil, ErrNoServerFound
-		}
-		srvs := r.lb.GetAvailableServer()
-		if len(srvs) == 0 {
-			log.Warnf("no available server found, load all server instead")
-			srvs = r.lb.GetAllStatusServer()
-		}
-		serverCount := len(srvs)
-		rdi := rand.Int63n(int64(serverCount))
-		srv := srvs[rdi]
-		if !srv.ReadyForService {
-			count++
-			continue
-		}
-
-		log.Debugf("success peek server:%s by random", srv.Host)
-		return srv, nil
+// WithID setup the id generate api
+func WithID(i id.Interface) GRPCOption {
+	return func(client *eventMeshGRPCClient) {
+		client.idg = i
 	}
 }

@@ -16,7 +16,7 @@
 package loadbalancer
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/internal/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	"go.uber.org/atomic"
 )
 
@@ -24,10 +24,6 @@ import (
 type RoundRobinRule struct {
 	BaseRule
 	cycleCounter atomic.Int64
-}
-
-func NewRoundRobinRule() Rule {
-	return &RoundRobinRule{}
 }
 
 // Choose return the instance by roundrobin

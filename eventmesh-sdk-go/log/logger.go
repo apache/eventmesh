@@ -22,7 +22,10 @@ import (
 var (
 	// _defaultLogger global log instance, default to zap.log
 	_defaultLogger Logger = &DefaultLogger{
-		SugaredLogger: zap.SugaredLogger{},
+		SugaredLogger: func() *zap.SugaredLogger {
+			l, _ := zap.NewProduction()
+			return l.Sugar()
+		}(),
 	}
 )
 
@@ -100,7 +103,7 @@ type Logger interface {
 
 // DefaultLogger write log by zap log
 type DefaultLogger struct {
-	zap.SugaredLogger
+	*zap.SugaredLogger
 }
 
 func (s *DefaultLogger) Debugf(template string, args ...interface{}) {

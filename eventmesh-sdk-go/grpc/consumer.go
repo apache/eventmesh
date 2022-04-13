@@ -19,7 +19,7 @@ import (
 	"context"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/internal/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	"google.golang.org/grpc"
 	"io"
 )

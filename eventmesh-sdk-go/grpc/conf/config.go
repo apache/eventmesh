@@ -36,22 +36,16 @@ type GRPCConfig struct {
 	Region string
 	// IDC idc district
 	IDC string
-	// IP current host ip
-	IP string
-	// PID current program ID
-	PID string
 	// SYS system name
 	SYS string
 	// Username to access the eventmesh
-	Username string `validator:"required"`
+	Username string
 	// Password to access the eventmesh
-	Password string `validator:"required"`
+	Password string
 	// ProtocolType the type for current protocol
 	ProtocolType string
 	// ProtocolVersion version for current sdk used
 	ProtocolVersion string
-	// ProducerGroup uniq consumergroup for current client
-	ProducerGroup string
 	// ConsumerConfig if the client is listen some event
 	// optional
 	ConsumerConfig
@@ -76,7 +70,10 @@ var (
 
 // ProducerConfig configuration producer
 type ProducerConfig struct {
+	// LoadBalancerType load balancer type, support random/roundrobin/iphash
 	LoadBalancerType LoadBalancerType
+	// ProducerGroup uniq consumer group for current client
+	ProducerGroup string
 }
 
 // HeartbeatConfig heartbeat configuration
