@@ -23,6 +23,9 @@ import (
 	"google.golang.org/grpc"
 )
 
+// GRPC_ID_KEY key to indicate the uniq id
+var GRPC_ID_KEY = "GRPC_ID_KEY"
+
 // OnMessage on receive message from eventmesh, used in subcribe message
 type OnMessage func(*proto.SimpleMessage)
 

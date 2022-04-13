@@ -18,8 +18,10 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/id"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/internal/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"math/rand"
@@ -27,8 +29,8 @@ import (
 )
 
 // New create new eventmesh grpc client
-func New(cfg *conf.GRPCConfig) (Interface, error) {
-	cli, err := newEventMeshGRPCClient(cfg)
+func New(cfg *conf.GRPCConfig, opts ...GRPCOption) (Interface, error) {
+	cli, err := newEventMeshGRPCClient(cfg, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +38,8 @@ func New(cfg *conf.GRPCConfig) (Interface, error) {
 	return cli, err
 }
 
-// internalEventMeshGRPCClient define the grpc client for eventmesh api
-type internalEventMeshGRPCClient struct {
+// eventMeshGRPCClient define the grpc client for eventmesh api
+type eventMeshGRPCClient struct {
 	// producer used to send msg to evenmesh
 	*eventMeshProducer
 	// consumer used to subscribe msg from eventmesh
@@ -46,10 +48,12 @@ type internalEventMeshGRPCClient struct {
 	consMap map[string]*grpc.ClientConn
 	// cancel to close the client
 	cancel context.CancelFunc
+	// idg generate id api
+	idg id.Interface
 }
 
 // NewEventMeshGRPCClient create new grpc client
-func newEventMeshGRPCClient(cfg *conf.GRPCConfig) (*internalEventMeshGRPCClient, error) {
+func newEventMeshGRPCClient(cfg *conf.GRPCConfig, opts ...GRPCOption) (*eventMeshGRPCClient, error) {
 	var (
 		err         error
 		consmap     = make(map[string]*grpc.ClientConn)
@@ -81,6 +85,10 @@ func newEventMeshGRPCClient(cfg *conf.GRPCConfig) (*internalEventMeshGRPCClient,
 		log.Infof("success make grpc conn with:%s", addr)
 		return conn, nil
 	}
+	cli := &eventMeshGRPCClient{}
+	for _, opt := range opts {
+		opt(cli)
+	}
 	// shuffle the hosts before make connection with eventmesh server
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(cfg.Hosts), func(i, j int) {
@@ -99,11 +107,9 @@ func newEventMeshGRPCClient(cfg *conf.GRPCConfig) (*internalEventMeshGRPCClient,
 		log.Warnf("failed to create producer, err:%v", err)
 		return nil, err
 	}
-	cli := &internalEventMeshGRPCClient{
-		consMap:           consmap,
-		eventMeshProducer: producer,
-		cancel:            cancel,
-	}
+	cli.consMap = consmap
+	cli.eventMeshProducer = producer
+	cli.cancel = cancel
 	if cfg.ConsumerConfig.Enabled {
 		log.Infof("subscribe enabled")
 		consumer, err := newConsumer(ctx, cfg, consmap)
@@ -120,23 +126,52 @@ func newEventMeshGRPCClient(cfg *conf.GRPCConfig) (*internalEventMeshGRPCClient,
 	return cli, nil
 }
 
+// Publish send message to eventmesh, without wait the response from other client
+func (e *eventMeshGRPCClient) Publish(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.Response, error) {
+	val := ctx.Value(GRPC_ID_KEY)
+	if val == nil {
+		ctx = context.WithValue(ctx, GRPC_ID_KEY, e.idg.Next())
+	}
+	return e.eventMeshProducer.Publish(ctx, msg, opts...)
+}
+
+// RequestReply send message to eventmesh, and wait for the response
+func (e *eventMeshGRPCClient) RequestReply(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.SimpleMessage, error) {
+	return e.eventMeshProducer.RequestReply(ctx, msg, opts...)
+}
+
+// BatchPublish send batch message to eventmesh
+func (e *eventMeshGRPCClient) BatchPublish(ctx context.Context, msg *proto.BatchMessage, opts ...grpc.CallOption) (*proto.Response, error) {
+	return e.eventMeshProducer.BatchPublish(ctx, msg, opts...)
+}
+
+// Subscribe consumer message, and OnMessage invoked when new message arrived
+func (e *eventMeshGRPCClient) Subscribe(item conf.SubscribeItem, handler OnMessage) error {
+	return e.eventMeshConsumer.Subscribe(item, handler)
+}
+
+// UnSubscribe unsubcribe topic, and don't subscribe msg anymore
+func (e *eventMeshGRPCClient) UnSubscribe() error {
+	return e.eventMeshConsumer.UnSubscribe()
+}
+
 // Close meshclient and free all resources
-func (c *internalEventMeshGRPCClient) Close() error {
+func (e *eventMeshGRPCClient) Close() error {
 	log.Infof("close grpc client")
-	c.cancel()
-	if c.eventMeshProducer != nil {
-		if err := c.eventMeshProducer.Close(); err != nil {
+	e.cancel()
+	if e.eventMeshProducer != nil {
+		if err := e.eventMeshProducer.Close(); err != nil {
 			log.Warnf("close producer err:%v", err)
 		}
-		c.eventMeshProducer = nil
+		e.eventMeshProducer = nil
 	}
-	if c.eventMeshConsumer != nil {
-		if err := c.eventMeshConsumer.close(); err != nil {
+	if e.eventMeshConsumer != nil {
+		if err := e.eventMeshConsumer.close(); err != nil {
 			log.Warnf("close consumer err:%v", err)
 		}
-		c.eventMeshConsumer = nil
+		e.eventMeshConsumer = nil
 	}
-	for host, conn := range c.consMap {
+	for host, conn := range e.consMap {
 		log.Infof("close conn with host:%s", host)
 		if err := conn.Close(); err != nil {
 			log.Infof("err in close conn with host:%s, err:%v", host, err)
