@@ -4,6 +4,11 @@ grpc client for evenemesh, support multiple type of loadbalancer
 
 how to use
 ---
-### producer
+### send message
 
-### consumer
+### subscribe message
+
+
+TODO
+---
+use etcd as service discovery
