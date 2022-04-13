@@ -13,41 +13,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package loadbalancer
+package utils
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
-	"math/rand"
+	"log"
+	"net"
+	"sync"
 )
 
-// RandomRule random rule by math.Random
-type RandomRule struct {
-	BaseRule
-}
+var (
+	// hostIP hold the client ip for current machine
+	hostIPv4 string
 
-// Choose return the instance by random
-// the input must be ip
-func (r *RandomRule) Choose(interface{}) (interface{}, error) {
-	count := 0
-	for {
-		if count == 64 {
-			log.Warnf("failed to peek server by roundrobin after try 64 times")
-			return nil, ErrNoServerFound
-		}
-		srvs := r.lb.GetAvailableServer()
-		if len(srvs) == 0 {
-			log.Warnf("no available server found, load all server instead")
-			srvs = r.lb.GetAllStatusServer()
-		}
-		serverCount := len(srvs)
-		rdi := rand.Int63n(int64(serverCount))
-		srv := srvs[rdi]
-		if !srv.ReadyForService {
-			count++
-			continue
-		}
+	// ipOnce once to set the hostIP
+	ipOnce sync.Once
+)
 
-		log.Debugf("success peek server:%s by random", srv.Host)
-		return srv, nil
-	}
+// HostIPV4 return the current client ip v4
+func HostIPV4() string {
+	ipOnce.Do(func() {
+		addrs, err := net.InterfaceAddrs()
+		if err != nil {
+			log.Panicf("get client ipv4, enum addrs err:%v", err)
+		}
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				if ipnet.IP.To4() != nil {
+					hostIPv4 = ipnet.IP.String()
+				}
+			}
+		}
+		if hostIPv4 == "" {
+			log.Panicf("get client ipv4 is empty")
+		}
+	})
+	return hostIPv4
 }

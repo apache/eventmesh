@@ -16,10 +16,9 @@
 package grpc
 
 import (
-	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
-	"os"
 )
 
 var (
@@ -33,8 +32,8 @@ func CreateHeader(cfg *conf.GRPCConfig, protocolType string) *proto.RequestHeade
 		Env:             cfg.ENV,
 		Region:          cfg.Region,
 		Idc:             cfg.IDC,
-		Ip:              cfg.IP,
-		Pid:             fmt.Sprintf("%v", os.Getpid()),
+		Ip:              utils.HostIPV4(),
+		Pid:             utils.CurrentPID(),
 		Sys:             cfg.SYS,
 		Username:        cfg.Username,
 		Password:        cfg.Password,
