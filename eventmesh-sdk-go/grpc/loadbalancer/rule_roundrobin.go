@@ -23,7 +23,7 @@ import (
 // RoundRobinRule rule with roundrobin algorithm
 type RoundRobinRule struct {
 	BaseRule
-	cycleCounter atomic.Int64
+	cycleCounter *atomic.Int64
 }
 
 // Choose return the instance by roundrobin
