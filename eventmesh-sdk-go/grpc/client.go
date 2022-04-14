@@ -128,20 +128,19 @@ func newEventMeshGRPCClient(cfg *conf.GRPCConfig, opts ...GRPCOption) (*eventMes
 
 // Publish send message to eventmesh, without wait the response from other client
 func (e *eventMeshGRPCClient) Publish(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.Response, error) {
-	val := ctx.Value(GRPC_ID_KEY)
-	if val == nil {
-		ctx = context.WithValue(ctx, GRPC_ID_KEY, e.idg.Next())
-	}
+	ctx = e.setupContext(ctx)
 	return e.eventMeshProducer.Publish(ctx, msg, opts...)
 }
 
 // RequestReply send message to eventmesh, and wait for the response
 func (e *eventMeshGRPCClient) RequestReply(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.SimpleMessage, error) {
+	ctx = e.setupContext(ctx)
 	return e.eventMeshProducer.RequestReply(ctx, msg, opts...)
 }
 
 // BatchPublish send batch message to eventmesh
 func (e *eventMeshGRPCClient) BatchPublish(ctx context.Context, msg *proto.BatchMessage, opts ...grpc.CallOption) (*proto.Response, error) {
+	ctx = e.setupContext(ctx)
 	return e.eventMeshProducer.BatchPublish(ctx, msg, opts...)
 }
 
@@ -153,6 +152,15 @@ func (e *eventMeshGRPCClient) Subscribe(item conf.SubscribeItem, handler OnMessa
 // UnSubscribe unsubcribe topic, and don't subscribe msg anymore
 func (e *eventMeshGRPCClient) UnSubscribe() error {
 	return e.eventMeshConsumer.UnSubscribe()
+}
+
+// setupContext setup the context, add id if not exist
+func (e *eventMeshGRPCClient) setupContext(ctx context.Context) context.Context {
+	val := ctx.Value(GRPC_ID_KEY)
+	if val == nil {
+		ctx = context.WithValue(ctx, GRPC_ID_KEY, e.idg.Next())
+	}
+	return ctx
 }
 
 // Close meshclient and free all resources
