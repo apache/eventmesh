@@ -8,6 +8,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/panjf2000/ants v1.3.0
 	github.com/sony/sonyflake v1.0.0
+	github.com/stretchr/testify v1.7.0
 	go.uber.org/atomic v1.4.0
 	go.uber.org/zap v1.10.0
 	google.golang.org/grpc v1.45.0
