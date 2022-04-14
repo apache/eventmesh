@@ -51,7 +51,11 @@ func newProducer(cfg *conf.GRPCConfig, connsMap map[string]*grpc.ClientConn) (*e
 		srvs = append(srvs, ss)
 	}
 
-	producer.loadbalancer = loadbalancer.NewLoadBalancer(cfg.LoadBalancerType, srvs)
+	lb, err := loadbalancer.NewLoadBalancer(cfg.LoadBalancerType, srvs)
+	if err != nil {
+		return nil, err
+	}
+	producer.loadbalancer = lb
 	return producer, nil
 }
 

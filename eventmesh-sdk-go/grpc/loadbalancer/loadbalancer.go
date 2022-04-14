@@ -16,8 +16,8 @@
 package loadbalancer
 
 import (
+	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	"sync"
 )
 
@@ -44,27 +44,24 @@ type BaseLoadBalancer struct {
 }
 
 // NewLoadBalancer create new loadbalancer with lb type and servers
-func NewLoadBalancer(lbType conf.LoadBalancerType, srvs []*StatusServer) LoadBalancer {
+func NewLoadBalancer(lbType conf.LoadBalancerType, srvs []*StatusServer) (LoadBalancer, error) {
 	lb := &BaseLoadBalancer{
 		servers: srvs,
-		rule: func() Rule {
-			switch lbType {
-			case conf.IPHash:
-				return &IPHashRule{}
-			case conf.Random:
-				return &RandomRule{}
-			case conf.RoundRobin:
-				return &RoundRobinRule{}
-			default:
-				log.Panicf("invalid load balancer rule:%v", lbType)
-			}
-			return nil
-		}(),
-		lock: new(sync.RWMutex),
+		lock:    new(sync.RWMutex),
+	}
+	switch lbType {
+	case conf.IPHash:
+		lb.rule = &IPHashRule{}
+	case conf.Random:
+		lb.rule = &RandomRule{}
+	case conf.RoundRobin:
+		lb.rule = &RoundRobinRule{}
+	default:
+		return nil, fmt.Errorf("invalid load balancer rule:%v", lbType)
 	}
 
 	lb.rule = lb
-	return lb
+	return lb, nil
 }
 
 // AddServer add servers to the lb
