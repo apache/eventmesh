@@ -18,6 +18,7 @@ package loadbalancer
 import (
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
+	"go.uber.org/atomic"
 	"sync"
 )
 
@@ -55,7 +56,9 @@ func NewLoadBalancer(lbType conf.LoadBalancerType, srvs []*StatusServer) (LoadBa
 	case conf.Random:
 		lb.rule = &RandomRule{}
 	case conf.RoundRobin:
-		lb.rule = &RoundRobinRule{}
+		lb.rule = &RoundRobinRule{
+			cycleCounter: atomic.NewInt64(-1),
+		}
 	default:
 		return nil, fmt.Errorf("invalid load balancer rule:%v", lbType)
 	}
@@ -85,5 +88,11 @@ func (b *BaseLoadBalancer) GetAllStatusServer() []*StatusServer {
 func (b *BaseLoadBalancer) GetAvailableServer() []*StatusServer {
 	b.lock.RLock()
 	defer b.lock.RUnlock()
-	return b.servers
+	var asrvs []*StatusServer
+	for _, r := range b.servers {
+		if r.ReadyForService {
+			asrvs = append(asrvs, r)
+		}
+	}
+	return asrvs
 }
