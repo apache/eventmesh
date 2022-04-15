@@ -1,0 +1,183 @@
+// Licensed to the Apache Software Foundation (ASF) under one or more
+// contributor license agreements.  See the NOTICE file distributed with
+// this work for additional information regarding copyright ownership.
+// The ASF licenses this file to You under the Apache License, Version 2.0
+// (the "License"); you may not use this file except in compliance with
+// the License.  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package grpc
+
+import (
+	"context"
+	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/id"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+	"go.uber.org/atomic"
+	"google.golang.org/grpc"
+	"io"
+	"net"
+	"sync"
+	"time"
+)
+
+// fakeServer used to do the test
+type fakeServer struct {
+	proto.UnsafeConsumerServiceServer
+	proto.UnimplementedPublisherServiceServer
+	proto.UnimplementedHeartbeatServiceServer
+	idg      id.Interface
+	seq      *atomic.Int64
+	closeCtx context.Context
+}
+
+// newFakeServer create new fake grpc server for eventmesh
+func runFakeServer(ctx context.Context) error {
+	lis, err := net.Listen("tcp", "8086")
+	if err != nil {
+		return err
+	}
+	f := &fakeServer{
+		idg:      id.NewUUID(),
+		seq:      atomic.NewInt64(0),
+		closeCtx: ctx,
+	}
+	srv := grpc.NewServer()
+	proto.RegisterConsumerServiceServer(srv, f)
+	proto.RegisterHeartbeatServiceServer(srv, f)
+	proto.RegisterPublisherServiceServer(srv, f)
+	go func() {
+		select {
+		case <-ctx.Done():
+			srv.GracefulStop()
+		}
+	}()
+	srv.Serve(lis)
+	log.Infof("stop fake server")
+	return nil
+}
+
+// The subscribed event will be delivered by invoking the webhook url in the Subscription
+func (f *fakeServer) Subscribe(context.Context, *proto.Subscription) (*proto.Response, error) {
+	return &proto.Response{
+		RespCode: "OK",
+		RespMsg:  "OK",
+		RespTime: time.Now().Format("2006-01-02 15:04:05"),
+	}, nil
+}
+
+//  The subscribed event will be delivered through stream of Message
+func (f *fakeServer) SubscribeStream(srv proto.ConsumerService_SubscribeStreamServer) error {
+	wg := new(sync.WaitGroup)
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for {
+			sub, err := srv.Recv()
+			if err == io.EOF {
+				log.Infof("return sub as rece io.EOF")
+				break
+			}
+			if err != nil {
+				log.Warnf("return sub as rece err:%v", err)
+				break
+			}
+			log.Infof("rece sub:%s", sub.String())
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		var index int = 0
+		for {
+			msg := &proto.SimpleMessage{
+				Header:        &proto.RequestHeader{},
+				ProducerGroup: "substream-fake-group",
+				Topic:         "fake-topic",
+				Content:       fmt.Sprintf("%v msg from fake server", index),
+				Ttl:           fmt.Sprintf("%v", time.Hour.Seconds()*24),
+				UniqueId:      f.idg.Next(),
+				SeqNum:        fmt.Sprintf("%v", f.seq.Inc()),
+				Tag:           "substream-fake-tag",
+				Properties: map[string]string{
+					"from":    "fake",
+					"service": "substream",
+				},
+			}
+			err := srv.Send(msg)
+			if err == io.EOF {
+				log.Infof("return send as rece io.EOF")
+				break
+			}
+			if err != nil {
+				log.Warnf("return send as rece err:%v", err)
+				break
+			}
+			log.Infof("send msg:%s", msg.String())
+			index++
+		}
+	}()
+
+	return nil
+}
+
+func (f *fakeServer) Unsubscribe(context.Context, *proto.Subscription) (*proto.Response, error) {
+	return &proto.Response{
+		RespCode: "OK",
+		RespMsg:  "OK",
+		RespTime: time.Now().Format("2006-01-02 15:04:05"),
+	}, nil
+}
+
+func (f *fakeServer) Heartbeat(context.Context, *proto.Heartbeat) (*proto.Response, error) {
+	return &proto.Response{
+		RespCode: "OK",
+		RespMsg:  "OK",
+		RespTime: time.Now().Format("2006-01-02 15:04:05"),
+	}, nil
+}
+
+// Async event publish
+func (f *fakeServer) Publish(context.Context, *proto.SimpleMessage) (*proto.Response, error) {
+	return &proto.Response{
+		RespCode: "OK",
+		RespMsg:  "OK",
+		RespTime: time.Now().Format("2006-01-02 15:04:05"),
+	}, nil
+}
+
+// Sync event publish
+func (f *fakeServer) RequestReply(ctx context.Context, rece *proto.SimpleMessage) (*proto.SimpleMessage, error) {
+	log.Infof("receive request reply topic:%s, content:%s", rece.Topic, rece.Content)
+	return &proto.SimpleMessage{
+		Header:        rece.Header,
+		ProducerGroup: "fake-mock-group",
+		Topic:         rece.Topic,
+		Content:       "fake response for request reply" + rece.Content,
+		Ttl:           fmt.Sprintf("%v", time.Hour.Seconds()*24),
+		UniqueId:      f.idg.Next(),
+		SeqNum:        fmt.Sprintf("%v", f.seq.Inc()),
+		Tag:           "fake-tag",
+		Properties: map[string]string{
+			"from":    "fake",
+			"service": "RequestReply",
+		},
+	}, nil
+}
+
+// Async batch event publish
+func (f *fakeServer) BatchPublish(ctx context.Context, rece *proto.BatchMessage) (*proto.Response, error) {
+	log.Infof("receive batch publish topic:%s, content len:%s", rece.Topic, len(rece.MessageItem))
+	return &proto.Response{
+		RespCode: "OK",
+		RespMsg:  "Response for batchpublish",
+		RespTime: time.Now().Format("2006-01-02 15:04:05"),
+	}, nil
+}
