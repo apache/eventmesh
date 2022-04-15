@@ -15,7 +15,10 @@
 
 package conf
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 var (
 	// Language define the current sdk language
@@ -83,7 +86,7 @@ type HeartbeatConfig struct {
 	// default to 5s
 	Period time.Duration
 	// Timeout timeout in send heartbeat msg
-	// default to 5s
+	// default to 3s
 	Timeout time.Duration
 }
 
@@ -109,4 +112,24 @@ type SubscribeItem struct {
 	// CLUSTERING = 0;
 	// BROADCASTING = 1;
 	SubscribeMode int
+}
+
+// ValidateDefaultConf set the default configuration if user not provided
+// check the conf which is required, and return not nil with parameter error
+func ValidateDefaultConf(cfg *GRPCConfig) error {
+	if len(cfg.Hosts) == 0 {
+		return fmt.Errorf("no hosts provided")
+	}
+	if cfg.ConsumerConfig.Enabled {
+		if cfg.ConsumerConfig.ConsumerGroup == "" {
+			return fmt.Errorf("consumer enabled, but consumer group is empty")
+		}
+	}
+	if cfg.HeartbeatConfig.Timeout == 0 {
+		cfg.HeartbeatConfig.Timeout = time.Second * 3
+	}
+	if cfg.HeartbeatConfig.Period == 0 {
+		cfg.HeartbeatConfig.Period = time.Second * 5
+	}
+	return nil
 }
