@@ -122,9 +122,11 @@ func (f *fakeServer) SubscribeStream(srv proto.ConsumerService_SubscribeStreamSe
 			}
 			log.Infof("send msg:%s", msg.String())
 			index++
+			time.Sleep(time.Second * 5)
 		}
 	}()
-
+	wg.Wait()
+	log.Infof("close SubscribeStream")
 	return nil
 }
 
