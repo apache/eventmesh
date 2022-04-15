@@ -40,9 +40,9 @@ public class TraceUtils {
                                          boolean isSpanFinishInOtherThread) {
         Span span = null;
         try {
-            trace.inject(Context.current(), map);
             span = trace.createSpan(
                 spanName, SpanKind.CLIENT, Context.current(), isSpanFinishInOtherThread);
+            trace.inject(Context.current(), map);
         } catch (Throwable ex) {
             logger.warn("upload trace fail when prepareSpan", ex);
         }

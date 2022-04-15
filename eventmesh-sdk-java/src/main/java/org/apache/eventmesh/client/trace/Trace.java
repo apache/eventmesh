@@ -48,7 +48,7 @@ public class Trace {
         return trace;
     }
 
-    public void init(){
+    public void init() {
         if (useTrace) {
             eventMeshTraceService = TraceFactory.createEventMeshTraceService(traceType);
             if (eventMeshTraceService == null) {
