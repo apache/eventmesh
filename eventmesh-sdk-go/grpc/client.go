@@ -52,7 +52,7 @@ type eventMeshGRPCClient struct {
 	idg id.Interface
 }
 
-// NewEventMeshGRPCClient create new grpc client
+// newEventMeshGRPCClient create new grpc client
 func newEventMeshGRPCClient(cfg *conf.GRPCConfig, opts ...GRPCOption) (*eventMeshGRPCClient, error) {
 	var (
 		err         error
@@ -88,6 +88,9 @@ func newEventMeshGRPCClient(cfg *conf.GRPCConfig, opts ...GRPCOption) (*eventMes
 	cli := &eventMeshGRPCClient{}
 	for _, opt := range opts {
 		opt(cli)
+	}
+	if cli.idg == nil {
+		cli.idg = id.NewUUID()
 	}
 	// shuffle the hosts before make connection with eventmesh server
 	rand.Seed(time.Now().UnixNano())
