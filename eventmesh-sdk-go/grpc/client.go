@@ -59,8 +59,8 @@ func newEventMeshGRPCClient(cfg *conf.GRPCConfig, opts ...GRPCOption) (*eventMes
 		consmap     = make(map[string]*grpc.ClientConn)
 		ctx, cancel = context.WithCancel(context.Background())
 	)
-	if len(cfg.Hosts) == 0 {
-		return nil, ErrNoMeshServer
+	if err = conf.ValidateDefaultConf(cfg); err != nil {
+		return nil, err
 	}
 	defer func() {
 		if err != nil {
