@@ -24,6 +24,11 @@ import (
 type UUID struct {
 }
 
+// NewUUID uuid instance
+func NewUUID() Interface {
+	return &UUID{}
+}
+
 func (u *UUID) Next() string {
 	return strings.ReplaceAll(uuid.New().String(), "-", "")
 }
