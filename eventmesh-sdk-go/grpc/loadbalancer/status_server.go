@@ -39,5 +39,5 @@ func NewStatusServer(in interface{}, host string) *StatusServer {
 
 // String return the description about the server
 func (s *StatusServer) String() string {
-	return fmt.Sprintf("removeAddr:%s, host:%v", s.Host, s.ReadyForService)
+	return fmt.Sprintf("removeAddr:%s, readyForService:%v", s.Host, s.ReadyForService)
 }
