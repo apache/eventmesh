@@ -123,7 +123,7 @@ public class EventMeshGrpcServer {
         grpcRetryer.start();
         server.start();
 
-        if (eventMeshGrpcConfiguration.eventMeshServerRegistryEnable){
+        if (eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
             this.registerToRegistry();
         }
 
@@ -142,7 +142,7 @@ public class EventMeshGrpcServer {
 
         server.shutdown();
 
-        if (eventMeshGrpcConfiguration.eventMeshServerRegistryEnable){
+        if (eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
             this.selfUnRegisterToRegistry();
             registry.shutdown();
         }

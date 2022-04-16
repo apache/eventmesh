@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.client.naming.NacosNamingService;
 
 public class NacosRegistryService implements RegistryService {
@@ -126,8 +127,12 @@ public class NacosRegistryService implements RegistryService {
             String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(NacosConstant.IP_PORT_SEPARATOR);
             String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
             String eventMeshClusterName = eventMeshRegisterInfo.getEventMeshClusterName();
-            namingService.registerInstance(eventMeshName, NacosConstant.DEFAULT_GROUP, ipPort[0], Integer.parseInt(ipPort[1]),
-                eventMeshClusterName);
+            Instance instance = new Instance();
+            instance.setIp(ipPort[0]);
+            instance.setPort(Integer.parseInt(ipPort[1]));
+            instance.setWeight(1.0);
+            instance.setClusterName(eventMeshClusterName);
+            namingService.registerInstance(eventMeshName, NacosConstant.DEFAULT_GROUP, instance);
         } catch (NacosException e) {
             logger.error("[NacosRegistryService][register] error", e);
             throw new RegistryException(e.getMessage());
@@ -142,8 +147,11 @@ public class NacosRegistryService implements RegistryService {
         String eventMeshName = eventMeshUnRegisterInfo.getEventMeshName();
         String eventMeshClusterName = eventMeshUnRegisterInfo.getEventMeshClusterName();
         try {
-            namingService.deregisterInstance(eventMeshName, NacosConstant.DEFAULT_GROUP, ipPort[0], Integer.parseInt(ipPort[1]),
-                eventMeshClusterName);
+            Instance instance = new Instance();
+            instance.setIp(ipPort[0]);
+            instance.setPort(Integer.parseInt(ipPort[1]));
+            instance.setClusterName(eventMeshClusterName);
+            namingService.deregisterInstance(eventMeshName, NacosConstant.DEFAULT_GROUP, instance);
         } catch (NacosException e) {
             logger.error("[NacosRegistryService][unRegister] error", e);
             throw new RegistryException(e.getMessage());

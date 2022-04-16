@@ -166,6 +166,8 @@ public class EventMeshServer {
         if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable) {
             acl.shutdown();
         }
+
+        ConfigurationContextUtil.clear();
         serviceState = ServiceState.STOPED;
         logger.info("server state:{}", serviceState);
     }
