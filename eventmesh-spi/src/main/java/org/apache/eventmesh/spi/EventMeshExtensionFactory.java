@@ -35,8 +35,7 @@ import org.slf4j.LoggerFactory;
  * The extension fetching factory, all extension plugins should be fetched by this factory.
  * And all the extension plugins defined in eventmesh should have {@link EventMeshSPI} annotation.
  */
-public enum EventMeshExtensionFactory {
-    ;
+public class EventMeshExtensionFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(EventMeshExtensionFactory.class);
 
