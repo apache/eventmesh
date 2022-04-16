@@ -38,24 +38,18 @@ public class CommonConfiguration {
     public String eventMeshConnectorPluginType = "rocketmq";
     public String eventMeshSecurityPluginType = "security";
     public String eventMeshRegistryPluginType = "namesrv";
-
     public List<String> eventMeshMetricsPluginType;
     public String eventMeshTracePluginType;
-
     public String namesrvAddr = "";
-
     public String eventMeshRegistryPluginUsername = "";
     public String eventMeshRegistryPluginPassword = "";
     public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
-
     public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
-
     public String eventMeshServerIp = null;
     public boolean eventMeshServerSecurityEnable = false;
     public boolean eventMeshServerRegistryEnable = false;
     public boolean eventMeshServerTraceEnable = false;
     protected ConfigurationWrapper configurationWrapper;
-
     public String eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
 
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
