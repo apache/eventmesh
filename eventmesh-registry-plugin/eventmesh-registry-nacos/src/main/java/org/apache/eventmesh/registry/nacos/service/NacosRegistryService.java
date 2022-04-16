@@ -125,12 +125,12 @@ public class NacosRegistryService implements RegistryService {
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws RegistryException {
         try {
             String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(NacosConstant.IP_PORT_SEPARATOR);
-            String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
-            String eventMeshClusterName = eventMeshRegisterInfo.getEventMeshClusterName();
             Instance instance = new Instance();
             instance.setIp(ipPort[0]);
             instance.setPort(Integer.parseInt(ipPort[1]));
             instance.setWeight(1.0);
+            String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
+            String eventMeshClusterName = eventMeshRegisterInfo.getEventMeshClusterName();
             instance.setClusterName(eventMeshClusterName);
             namingService.registerInstance(eventMeshName, NacosConstant.DEFAULT_GROUP, instance);
         } catch (NacosException e) {
@@ -144,12 +144,12 @@ public class NacosRegistryService implements RegistryService {
     @Override
     public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws RegistryException {
         String[] ipPort = eventMeshUnRegisterInfo.getEndPoint().split(NacosConstant.IP_PORT_SEPARATOR);
-        String eventMeshName = eventMeshUnRegisterInfo.getEventMeshName();
-        String eventMeshClusterName = eventMeshUnRegisterInfo.getEventMeshClusterName();
         try {
             Instance instance = new Instance();
             instance.setIp(ipPort[0]);
             instance.setPort(Integer.parseInt(ipPort[1]));
+            String eventMeshName = eventMeshUnRegisterInfo.getEventMeshName();
+            String eventMeshClusterName = eventMeshUnRegisterInfo.getEventMeshClusterName();
             instance.setClusterName(eventMeshClusterName);
             namingService.deregisterInstance(eventMeshName, NacosConstant.DEFAULT_GROUP, instance);
         } catch (NacosException e) {
