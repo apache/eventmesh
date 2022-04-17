@@ -131,5 +131,8 @@ func ValidateDefaultConf(cfg *GRPCConfig) error {
 	if cfg.HeartbeatConfig.Period == 0 {
 		cfg.HeartbeatConfig.Period = time.Second * 5
 	}
+	if cfg.ConsumerConfig.PoolSize == 0 {
+		cfg.ConsumerConfig.PoolSize = 5
+	}
 	return nil
 }
