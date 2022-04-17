@@ -159,4 +159,20 @@ public class NacosRegistryService implements RegistryService {
         logger.info("EventMesh successfully logout to nacos");
         return true;
     }
+
+    public String getServerAddr() {
+        return serverAddr;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public NamingService getNamingService() {
+        return namingService;
+    }
 }

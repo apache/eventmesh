@@ -15,22 +15,9 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'java'
-}
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
-    implementation group: 'com.alibaba.nacos', name: 'nacos-client', version: '2.0.4'
+    implementation "com.alibaba.nacos:nacos-client:2.0.4"
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     implementation project(":eventmesh-common")
-}
-
-test {
-    useJUnitPlatform()
+    testImplementation "org.mockito:mockito-core"
 }
