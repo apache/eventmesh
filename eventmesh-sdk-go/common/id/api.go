@@ -17,5 +17,6 @@ package id
 
 // Interface api to generate uniq id
 type Interface interface {
+	// Next create uniq ID
 	Next() string
 }

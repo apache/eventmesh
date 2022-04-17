@@ -3,7 +3,9 @@ package grpc
 import (
 	"context"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 	"testing"
 	"time"
 )
@@ -66,7 +68,9 @@ func Test_newEventMeshGRPCClient(t *testing.T) {
 				t.Errorf("newEventMeshGRPCClient() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			assert.NoError(t, cli.Close())
+			if err == nil {
+				assert.NoError(t, cli.Close())
+			}
 		})
 	}
 }
@@ -85,4 +89,338 @@ func Test_multiple_set_context(t *testing.T) {
 		t.Logf("ooor, 10s timeout")
 	}
 
+}
+
+func Test_eventMeshGRPCClient_Publish(t *testing.T) {
+	// run fake server
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go runFakeServer(ctx)
+	cli, err := New(&conf.GRPCConfig{
+		Hosts: []string{"127.0.0.1"},
+		Port:  8086,
+		ProducerConfig: conf.ProducerConfig{
+			ProducerGroup:    "test-publish-group",
+			LoadBalancerType: conf.Random,
+		},
+		ConsumerConfig: conf.ConsumerConfig{
+			Enabled: false,
+		},
+	})
+	assert.NoError(t, err, "create grpc client")
+	type args struct {
+		ctx  context.Context
+		msg  *proto.SimpleMessage
+		opts []grpc.CallOption
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *proto.Response
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "publish msg",
+			args: args{
+				ctx: context.TODO(),
+				msg: &proto.SimpleMessage{
+					Header: &proto.RequestHeader{},
+					Topic:  "test-publish-topic",
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return true
+			},
+		},
+		{
+			name: "publish with timeout",
+			args: args{
+				ctx: func() context.Context {
+					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					return ctx
+				}(),
+				msg: &proto.SimpleMessage{
+					Header: &proto.RequestHeader{},
+					Topic:  "test-timeout-topic",
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return true
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := cli.Publish(tt.args.ctx, tt.args.msg, tt.args.opts...)
+			assert.NoError(t, err)
+			t.Logf("receive publish response:%v", got.String())
+			assert.NoError(t, cli.Close())
+		})
+	}
+}
+
+func Test_eventMeshGRPCClient_RequestReply(t *testing.T) {
+	// run fake server
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go runFakeServer(ctx)
+	cli, err := New(&conf.GRPCConfig{
+		Hosts: []string{"127.0.0.1"},
+		Port:  8086,
+		ProducerConfig: conf.ProducerConfig{
+			ProducerGroup:    "test-publish-group",
+			LoadBalancerType: conf.Random,
+		},
+		ConsumerConfig: conf.ConsumerConfig{
+			Enabled: false,
+		},
+	})
+	assert.NoError(t, err, "create grpc client")
+	type args struct {
+		ctx  context.Context
+		msg  *proto.SimpleMessage
+		opts []grpc.CallOption
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *proto.SimpleMessage
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "test-request-reply",
+			args: args{
+				ctx: context.TODO(),
+				msg: &proto.SimpleMessage{
+					Header: &proto.RequestHeader{},
+					Topic:  "test-request-reply-topic",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := cli.RequestReply(tt.args.ctx, tt.args.msg, tt.args.opts...)
+			assert.NoError(t, err)
+			t.Logf("receive request reply response:%v", got.String())
+			assert.NoError(t, cli.Close())
+		})
+	}
+}
+
+func Test_eventMeshGRPCClient_BatchPublish(t *testing.T) {
+	// run fake server
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go runFakeServer(ctx)
+	cli, err := New(&conf.GRPCConfig{
+		Hosts: []string{"127.0.0.1"},
+		Port:  8086,
+		ProducerConfig: conf.ProducerConfig{
+			ProducerGroup:    "test-publish-group",
+			LoadBalancerType: conf.Random,
+		},
+		ConsumerConfig: conf.ConsumerConfig{
+			Enabled: false,
+		},
+	})
+	assert.NoError(t, err, "create grpc client")
+	type args struct {
+		ctx  context.Context
+		msg  *proto.BatchMessage
+		opts []grpc.CallOption
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *proto.Response
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "test batch publish",
+			args: args{
+				ctx: context.TODO(),
+				msg: &proto.BatchMessage{
+					Header:        &proto.RequestHeader{},
+					ProducerGroup: "fake-batch-group",
+					Topic:         "fake-batch-topic",
+					MessageItem: []*proto.BatchMessage_MessageItem{
+						{
+							Content:  "batch-1",
+							Ttl:      "1",
+							UniqueId: "batch-id",
+							SeqNum:   "1",
+							Tag:      "tag",
+							Properties: map[string]string{
+								"from": "test",
+								"type": "batch-msg",
+							},
+						},
+						{
+							Content:  "batch-2",
+							Ttl:      "2",
+							UniqueId: "batch-id",
+							SeqNum:   "2",
+							Tag:      "tag",
+							Properties: map[string]string{
+								"from": "test",
+								"type": "batch-msg",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := cli.BatchPublish(tt.args.ctx, tt.args.msg, tt.args.opts...)
+			assert.NoError(t, err)
+			t.Logf("receive request reply response:%v", got.String())
+			assert.NoError(t, cli.Close())
+		})
+	}
+}
+
+func Test_eventMeshGRPCClient_Subscribe(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go runFakeServer(ctx)
+	cli, err := New(&conf.GRPCConfig{
+		Hosts: []string{"127.0.0.1"},
+		Port:  8086,
+		ProducerConfig: conf.ProducerConfig{
+			ProducerGroup:    "test-publish-group",
+			LoadBalancerType: conf.Random,
+		},
+		ConsumerConfig: conf.ConsumerConfig{
+			Enabled:       true,
+			ConsumerGroup: "test-consumer-group-subscribe",
+			PoolSize:      5,
+		},
+		HeartbeatConfig: conf.HeartbeatConfig{
+			Period:  time.Second * 5,
+			Timeout: time.Second * 3,
+		},
+	})
+	assert.NoError(t, err, "create grpc client")
+	type args struct {
+		item    conf.SubscribeItem
+		handler OnMessage
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "subcribe one",
+			args: args{
+				item: conf.SubscribeItem{
+					SubscribeMode: 1,
+					SubscribeType: 1,
+					Topic:         "topic-1",
+				},
+				handler: func(message *proto.SimpleMessage) {
+					t.Logf("receive subscribe response:%s", message.String())
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := cli.Subscribe(tt.args.item, tt.args.handler)
+			assert.NoError(t, err)
+			assert.NoError(t, cli.Close())
+		})
+	}
+}
+
+func Test_eventMeshGRPCClient_UnSubscribe(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go runFakeServer(ctx)
+	cli, err := New(&conf.GRPCConfig{
+		Hosts: []string{"127.0.0.1"},
+		Port:  8086,
+		ProducerConfig: conf.ProducerConfig{
+			ProducerGroup:    "test-publish-group",
+			LoadBalancerType: conf.Random,
+		},
+		ConsumerConfig: conf.ConsumerConfig{
+			Enabled:       true,
+			ConsumerGroup: "test-consumer-group-subscribe",
+			PoolSize:      5,
+		},
+		HeartbeatConfig: conf.HeartbeatConfig{
+			Period:  time.Second * 5,
+			Timeout: time.Second * 3,
+		},
+	})
+	assert.NoError(t, err, "create grpc client")
+	err = cli.Subscribe(conf.SubscribeItem{
+		SubscribeMode: 1,
+		SubscribeType: 1,
+		Topic:         "topic-1",
+	}, func(message *proto.SimpleMessage) {
+		t.Logf("receive subscribe response:%s", message.String())
+	})
+	assert.NoError(t, err, "subscribe err")
+	tests := []struct {
+		name    string
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "unsubcribe",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.NoError(t, cli.UnSubscribe())
+			assert.NoError(t, cli.Close())
+		})
+	}
+}
+
+type fakeidg struct {
+}
+
+func (f *fakeidg) Next() string {
+	return "fake"
+}
+
+func Test_eventMeshGRPCClient_setupContext(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+
+	cli := &eventMeshGRPCClient{
+		idg: &fakeidg{},
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "setup with uid",
+			args: args{
+				ctx: context.WithValue(context.Background(), GRPC_ID_KEY, "value"),
+			},
+			want: "value",
+		},
+		{
+			name: "setup without uid",
+			args: args{
+				ctx: context.TODO(),
+			},
+			want: "fake",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := cli.setupContext(tt.args.ctx)
+			assert.Equal(t, ctx.Value(GRPC_ID_KEY).(string), tt.want)
+		})
+	}
 }

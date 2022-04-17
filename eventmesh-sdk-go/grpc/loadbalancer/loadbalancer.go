@@ -52,18 +52,22 @@ func NewLoadBalancer(lbType conf.LoadBalancerType, srvs []*StatusServer) (LoadBa
 	}
 	switch lbType {
 	case conf.IPHash:
-		lb.rule = &IPHashRule{}
+		lb.rule = &IPHashRule{BaseRule{
+			lb: lb,
+		}}
 	case conf.Random:
-		lb.rule = &RandomRule{}
+		lb.rule = &RandomRule{BaseRule{
+			lb: lb,
+		}}
 	case conf.RoundRobin:
 		lb.rule = &RoundRobinRule{
 			cycleCounter: atomic.NewInt64(-1),
+			BaseRule:     BaseRule{lb: lb},
 		}
 	default:
 		return nil, fmt.Errorf("invalid load balancer rule:%v", lbType)
 	}
 
-	lb.rule = lb
 	return lb, nil
 }
 
