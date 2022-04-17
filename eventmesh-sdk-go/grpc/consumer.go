@@ -56,6 +56,7 @@ func newConsumer(ctx context.Context, cfg *conf.GRPCConfig, connsMap map[string]
 	return &eventMeshConsumer{
 		closeCtx:    ctx,
 		consumerMap: mm,
+		topics:      make(map[string]*proto.Subscription_SubscriptionItem),
 		cfg:         cfg,
 		heartbeat:   heartbeat,
 		dispatcher:  newMessageDispatcher(cfg.ConsumerConfig.PoolSize),
@@ -114,7 +115,7 @@ func (d *eventMeshConsumer) UnSubscribe() error {
 			log.Warnf("failed to subscribe topic:%v, err :%v", d.topics, err)
 			return err
 		}
-		log.Infof("success subscribe with host:%s, resp:%s", host, resp.String())
+		log.Infof("success unsubscribe with host:%s, resp:%s", host, resp.String())
 	}
 	return nil
 }
