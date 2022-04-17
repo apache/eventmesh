@@ -18,15 +18,17 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/id"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
-	"go.uber.org/atomic"
-	"google.golang.org/grpc"
 	"io"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/id"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+
+	"go.uber.org/atomic"
+	"google.golang.org/grpc"
 )
 
 // fakeServer used to do the test
@@ -41,7 +43,7 @@ type fakeServer struct {
 
 // newFakeServer create new fake grpc server for eventmesh
 func runFakeServer(ctx context.Context) error {
-	lis, err := net.Listen("tcp", "8086")
+	lis, err := net.Listen("tcp", ":8086")
 	if err != nil {
 		return err
 	}
@@ -60,13 +62,18 @@ func runFakeServer(ctx context.Context) error {
 			srv.GracefulStop()
 		}
 	}()
-	srv.Serve(lis)
+	log.Infof("serve fake server on:%v", srv.GetServiceInfo())
+	if err := srv.Serve(lis); err != nil {
+		log.Warnf("create fake server err:%v", err)
+		return err
+	}
 	log.Infof("stop fake server")
 	return nil
 }
 
-// The subscribed event will be delivered by invoking the webhook url in the Subscription
-func (f *fakeServer) Subscribe(context.Context, *proto.Subscription) (*proto.Response, error) {
+// Subscribe The subscribed event will be delivered by invoking the webhook url in the Subscription
+func (f *fakeServer) Subscribe(ctx context.Context, msg *proto.Subscription) (*proto.Response, error) {
+	log.Infof("fake-server, receive subcribe request:%v", msg.String())
 	return &proto.Response{
 		RespCode: "OK",
 		RespMsg:  "OK",
@@ -74,7 +81,7 @@ func (f *fakeServer) Subscribe(context.Context, *proto.Subscription) (*proto.Res
 	}, nil
 }
 
-//  The subscribed event will be delivered through stream of Message
+// SubscribeStream  The subscribed event will be delivered through stream of Message
 func (f *fakeServer) SubscribeStream(srv proto.ConsumerService_SubscribeStreamServer) error {
 	wg := new(sync.WaitGroup)
 	wg.Add(2)
@@ -130,7 +137,8 @@ func (f *fakeServer) SubscribeStream(srv proto.ConsumerService_SubscribeStreamSe
 	return nil
 }
 
-func (f *fakeServer) Unsubscribe(context.Context, *proto.Subscription) (*proto.Response, error) {
+func (f *fakeServer) Unsubscribe(ctx context.Context, msg *proto.Subscription) (*proto.Response, error) {
+	log.Infof("fake-server, receive unsubcribe request:%v", msg.String())
 	return &proto.Response{
 		RespCode: "OK",
 		RespMsg:  "OK",
@@ -138,7 +146,8 @@ func (f *fakeServer) Unsubscribe(context.Context, *proto.Subscription) (*proto.R
 	}, nil
 }
 
-func (f *fakeServer) Heartbeat(context.Context, *proto.Heartbeat) (*proto.Response, error) {
+func (f *fakeServer) Heartbeat(ctx context.Context, msg *proto.Heartbeat) (*proto.Response, error) {
+	log.Infof("fake-server, receive heartbeat request:%v", msg.String())
 	return &proto.Response{
 		RespCode: "OK",
 		RespMsg:  "OK",
@@ -146,8 +155,9 @@ func (f *fakeServer) Heartbeat(context.Context, *proto.Heartbeat) (*proto.Respon
 	}, nil
 }
 
-// Async event publish
-func (f *fakeServer) Publish(context.Context, *proto.SimpleMessage) (*proto.Response, error) {
+// Publish Async event publish
+func (f *fakeServer) Publish(ctx context.Context, msg *proto.SimpleMessage) (*proto.Response, error) {
+	log.Infof("fake-server, receive publish request:%v", msg.String())
 	return &proto.Response{
 		RespCode: "OK",
 		RespMsg:  "OK",
@@ -155,7 +165,7 @@ func (f *fakeServer) Publish(context.Context, *proto.SimpleMessage) (*proto.Resp
 	}, nil
 }
 
-// Sync event publish
+// RequestReply Sync event publish
 func (f *fakeServer) RequestReply(ctx context.Context, rece *proto.SimpleMessage) (*proto.SimpleMessage, error) {
 	log.Infof("receive request reply topic:%s, content:%s", rece.Topic, rece.Content)
 	return &proto.SimpleMessage{
@@ -174,7 +184,7 @@ func (f *fakeServer) RequestReply(ctx context.Context, rece *proto.SimpleMessage
 	}, nil
 }
 
-// Async batch event publish
+// BatchPublish Async batch event publish
 func (f *fakeServer) BatchPublish(ctx context.Context, rece *proto.BatchMessage) (*proto.Response, error) {
 	log.Infof("receive batch publish topic:%s, content len:%s", rece.Topic, len(rece.MessageItem))
 	return &proto.Response{
