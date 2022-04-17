@@ -80,7 +80,7 @@ func (e *eventMeshProducer) Publish(ctx context.Context, msg *proto.SimpleMessag
 		return nil, err
 	}
 
-	log.Infof("success publish event")
+	log.Infof("success publish msg:%s", msg.String())
 	return resp, nil
 }
 
@@ -127,7 +127,7 @@ func (e *eventMeshProducer) choose(ctx context.Context) (proto.PublisherServiceC
 		log.Warnf("failed to choose status server from loadbalancer, err:%v", err)
 		return nil, ErrLoadBalancer
 	}
-	ss := cli.(loadbalancer.StatusServer)
+	ss := cli.(*loadbalancer.StatusServer)
 	pubClient := ss.RealServer.(proto.PublisherServiceClient)
 	return pubClient, nil
 }

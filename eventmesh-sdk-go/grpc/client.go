@@ -169,7 +169,9 @@ func (e *eventMeshGRPCClient) setupContext(ctx context.Context) context.Context 
 // Close meshclient and free all resources
 func (e *eventMeshGRPCClient) Close() error {
 	log.Infof("close grpc client")
-	e.cancel()
+	if e.cancel != nil {
+		e.cancel()
+	}
 	if e.eventMeshProducer != nil {
 		if err := e.eventMeshProducer.Close(); err != nil {
 			log.Warnf("close producer err:%v", err)
