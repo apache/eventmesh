@@ -26,7 +26,7 @@ import (
 
 var (
 	// ErrTopicDispatcherExist repeated dispatcher for topic
-	ErrTopicDispatcherExist = fmt.Errorf("exist dispatcher for topic")
+	ErrTopicDispatcherExist = fmt.Errorf("already exist dispatcher for given topic")
 )
 
 // pooledHandler internal handler for subscribe message with goroutine pool
