@@ -246,8 +246,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         clientManageController.start();
 
         if (eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
-            eventMeshRebalanceService.start();
             this.register();
+            eventMeshRebalanceService.start();
         }
 
         logger.info("--------------------------EventMeshTCPServer Started");
