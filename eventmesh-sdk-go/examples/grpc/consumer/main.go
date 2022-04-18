@@ -17,7 +17,13 @@ func main() {
 			LoadBalancerType: conf.Random,
 		},
 		ConsumerConfig: conf.ConsumerConfig{
-			Enabled: false,
+			Enabled:       true,
+			ConsumerGroup: "test-consumer-group-subscribe",
+			PoolSize:      5,
+		},
+		HeartbeatConfig: conf.HeartbeatConfig{
+			Period:  time.Second * 5,
+			Timeout: time.Second * 3,
 		},
 	})
 	if err != nil {
