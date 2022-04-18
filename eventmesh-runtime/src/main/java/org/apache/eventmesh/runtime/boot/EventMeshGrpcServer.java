@@ -124,7 +124,7 @@ public class EventMeshGrpcServer {
         server.start();
 
         if (eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
-            this.registerToRegistry();
+            this.toRegister();
         }
 
         logger.info("---------------EventMeshGRPCServer running-------------------");
@@ -143,14 +143,14 @@ public class EventMeshGrpcServer {
         server.shutdown();
 
         if (eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
-            this.selfUnRegisterToRegistry();
+            this.unRegister();
             registry.shutdown();
         }
 
         logger.info("---------------EventMeshGRPCServer stopped-------------------");
     }
 
-    public boolean registerToRegistry() {
+    public boolean toRegister() {
         boolean registerResult = false;
         try {
             String endPoints = IPUtils.getLocalAddress()
@@ -167,7 +167,7 @@ public class EventMeshGrpcServer {
         return registerResult;
     }
 
-    private void selfUnRegisterToRegistry() throws Exception {
+    private void unRegister() throws Exception {
         String endPoints = IPUtils.getLocalAddress()
             + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.grpcServerPort;
         EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();

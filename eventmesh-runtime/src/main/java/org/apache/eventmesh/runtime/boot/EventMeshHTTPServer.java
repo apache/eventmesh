@@ -256,7 +256,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         producerManager.start();
         httpRetryer.start();
         if (eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
-            this.registerToRegistry();
+            this.toRegistry();
         }
         logger.info("--------------------------EventMeshHTTPServer started");
     }
@@ -283,13 +283,13 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         httpRetryer.shutdown();
 
         if (eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
-            this.selfUnRegisterToRegistry();
+            this.unRegister();
             registry.shutdown();
         }
         logger.info("--------------------------EventMeshHTTPServer shutdown");
     }
 
-    public boolean registerToRegistry() {
+    public boolean toRegistry() {
         boolean registerResult = false;
         try {
             String endPoints = IPUtils.getLocalAddress()
@@ -306,7 +306,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         return registerResult;
     }
 
-    private void selfUnRegisterToRegistry() throws Exception {
+    private void unRegister() throws Exception {
         String endPoints = IPUtils.getLocalAddress()
             + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.httpServerPort;
         EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();

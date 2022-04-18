@@ -37,6 +37,10 @@ import org.slf4j.LoggerFactory;
  */
 public class EventMeshExtensionFactory {
 
+    private EventMeshExtensionFactory() {
+
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(EventMeshExtensionFactory.class);
 
     private static final List<ExtensionClassLoader> extensionClassLoaders = new ArrayList<>();
@@ -47,7 +51,7 @@ public class EventMeshExtensionFactory {
     }
 
     private static final ConcurrentHashMap<String, Object> EXTENSION_INSTANCE_CACHE =
-            new ConcurrentHashMap<>(16);
+        new ConcurrentHashMap<>(16);
 
     /**
      * @param extensionType extension plugin class type
@@ -82,7 +86,7 @@ public class EventMeshExtensionFactory {
                 }
                 T extensionInstance = extensionInstanceClass.newInstance();
                 logger.info("initialize extension instance success, extensionType: {}, extensionInstanceName: {}",
-                        extensionType, extensionInstanceName);
+                    extensionType, extensionInstanceName);
                 return extensionInstance;
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new ExtensionException("Extension initialize error", e);
@@ -98,7 +102,7 @@ public class EventMeshExtensionFactory {
             }
             T extensionInstance = extensionInstanceClass.newInstance();
             logger.info("initialize extension instance success, extensionType: {}, extensionName: {}",
-                    extensionType, extensionInstanceName);
+                extensionType, extensionInstanceName);
             return extensionInstance;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new ExtensionException("Extension initialize error", e);

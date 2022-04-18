@@ -57,7 +57,6 @@ public class NacosRegistryService implements RegistryService {
 
     private NamingService namingService;
 
-
     @Override
     public void init() throws RegistryException {
         boolean update = INIT_STATUS.compareAndSet(false, true);
