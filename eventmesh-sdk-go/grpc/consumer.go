@@ -28,7 +28,7 @@ import (
 type eventMeshConsumer struct {
 	// consumerMap store all subscribe api client
 	consumerMap map[string]proto.ConsumerServiceClient
-	// subcribe topics
+	// topics subscribe topics
 	topics map[string]*proto.Subscription_SubscriptionItem
 	// cfg configuration
 	cfg *conf.GRPCConfig
@@ -73,13 +73,9 @@ func (d *eventMeshConsumer) Subscribe(item conf.SubscribeItem, handler OnMessage
 			Type:  proto.Subscription_SubscriptionItem_SubscriptionType(item.SubscribeType),
 		}
 		resp, err := cli.Subscribe(context.TODO(), &proto.Subscription{
-			Header:        CreateHeader(d.cfg, eventmeshmessage),
-			ConsumerGroup: d.cfg.ConsumerGroup,
-			SubscriptionItems: func() []*proto.Subscription_SubscriptionItem {
-				var sitems []*proto.Subscription_SubscriptionItem
-				sitems = append(sitems, pitm)
-				return sitems
-			}(),
+			Header:            CreateHeader(d.cfg, eventmeshmessage),
+			ConsumerGroup:     d.cfg.ConsumerGroup,
+			SubscriptionItems: []*proto.Subscription_SubscriptionItem{pitm},
 		})
 		if err != nil {
 			log.Warnf("failed to subscribe topic:%v, err :%v", pitm, err)
