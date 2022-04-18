@@ -247,7 +247,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
         if (eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             eventMeshRebalanceService.start();
-            this.registerToRegistry();
+            this.register();
         }
 
         logger.info("--------------------------EventMeshTCPServer Started");
@@ -263,7 +263,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         if (eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             eventMeshRebalanceService.shutdown();
 
-            selfUnRegisterToRegistry();
+            this.unRegister();
             registry.shutdown();
         }
 
@@ -293,7 +293,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         logger.info("--------------------------EventMeshTCPServer Shutdown");
     }
 
-    public boolean registerToRegistry() {
+    public boolean register() {
         boolean registerResult = false;
         try {
             String endPoints = IPUtils.getLocalAddress()
@@ -311,7 +311,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         return registerResult;
     }
 
-    private void selfUnRegisterToRegistry() throws Exception {
+    private void unRegister() throws Exception {
         String endPoints = IPUtils.getLocalAddress()
             + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshTCPConfiguration.eventMeshTcpServerPort;
         EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();

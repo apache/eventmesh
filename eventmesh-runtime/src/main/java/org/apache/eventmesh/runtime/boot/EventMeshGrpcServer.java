@@ -124,7 +124,7 @@ public class EventMeshGrpcServer {
         server.start();
 
         if (eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
-            this.toRegister();
+            this.register();
         }
 
         logger.info("---------------EventMeshGRPCServer running-------------------");
@@ -150,7 +150,7 @@ public class EventMeshGrpcServer {
         logger.info("---------------EventMeshGRPCServer stopped-------------------");
     }
 
-    public boolean toRegister() {
+    public boolean register() {
         boolean registerResult = false;
         try {
             String endPoints = IPUtils.getLocalAddress()

@@ -256,7 +256,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         producerManager.start();
         httpRetryer.start();
         if (eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
-            this.toRegistry();
+            this.register();
         }
         logger.info("--------------------------EventMeshHTTPServer started");
     }
@@ -289,7 +289,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         logger.info("--------------------------EventMeshHTTPServer shutdown");
     }
 
-    public boolean toRegistry() {
+    public boolean register() {
         boolean registerResult = false;
         try {
             String endPoints = IPUtils.getLocalAddress()
