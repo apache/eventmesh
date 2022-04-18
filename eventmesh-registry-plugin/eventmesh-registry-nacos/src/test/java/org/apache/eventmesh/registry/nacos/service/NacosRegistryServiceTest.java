@@ -51,7 +51,7 @@ public class NacosRegistryServiceTest {
         configuration.namesrvAddr = "127.0.0.1";
         configuration.eventMeshRegistryPluginPassword = "nacos";
         configuration.eventMeshRegistryPluginUsername = "nacos";
-        ConfigurationContextUtil.add(ConfigurationContextUtil.HTTP, configuration);
+        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
 
         Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");
         Mockito.when(eventMeshRegisterInfo.getEventMeshName()).thenReturn("eventmesh");

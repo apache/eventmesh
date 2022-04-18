@@ -19,9 +19,10 @@ package org.apache.eventmesh.common.utils;
 
 import org.apache.eventmesh.common.config.CommonConfiguration;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.google.common.collect.Lists;
 
 /**
  * ConfigurationContextUtil.
@@ -35,13 +36,7 @@ public class ConfigurationContextUtil {
     public static final String TCP = "tcp";
     public static final String GRPC = "grpc";
 
-    public static final List<String> KEYS = new ArrayList<String>() {
-        {
-            add(HTTP);
-            add(TCP);
-            add(GRPC);
-        }
-    };
+    public static final List<String> KEYS = Lists.newArrayList(HTTP, TCP, GRPC);
 
 
     /**
@@ -50,7 +45,7 @@ public class ConfigurationContextUtil {
      * @param key
      * @param configuration
      */
-    public static void add(String key, CommonConfiguration configuration) {
+    public static void putIfAbsent(String key, CommonConfiguration configuration) {
         CONFIGURATION_MAP.putIfAbsent(key, configuration);
     }
 

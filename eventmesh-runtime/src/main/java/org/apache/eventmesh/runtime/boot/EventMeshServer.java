@@ -64,9 +64,9 @@ public class EventMeshServer {
         this.registry = new Registry();
         this.connectorResource = new ConnectorResource();
 
-        ConfigurationContextUtil.add(ConfigurationContextUtil.TCP, eventMeshTCPConfiguration);
-        ConfigurationContextUtil.add(ConfigurationContextUtil.GRPC, eventMeshGrpcConfiguration);
-        ConfigurationContextUtil.add(ConfigurationContextUtil.HTTP, eventMeshHttpConfiguration);
+        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.TCP, eventMeshTCPConfiguration);
+        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, eventMeshGrpcConfiguration);
+        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, eventMeshHttpConfiguration);
     }
 
     public void init() throws Exception {
