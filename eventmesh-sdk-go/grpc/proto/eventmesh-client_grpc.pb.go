@@ -40,7 +40,7 @@ func NewPublisherServiceClient(cc grpc.ClientConnInterface) PublisherServiceClie
 
 func (c *publisherServiceClient) Publish(ctx context.Context, in *SimpleMessage, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/proto.PublisherService/publish", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/eventmesh.common.protocol.grpc.PublisherService/publish", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (c *publisherServiceClient) Publish(ctx context.Context, in *SimpleMessage,
 
 func (c *publisherServiceClient) RequestReply(ctx context.Context, in *SimpleMessage, opts ...grpc.CallOption) (*SimpleMessage, error) {
 	out := new(SimpleMessage)
-	err := c.cc.Invoke(ctx, "/proto.PublisherService/requestReply", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/eventmesh.common.protocol.grpc.PublisherService/requestReply", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (c *publisherServiceClient) RequestReply(ctx context.Context, in *SimpleMes
 
 func (c *publisherServiceClient) BatchPublish(ctx context.Context, in *BatchMessage, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/proto.PublisherService/batchPublish", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/eventmesh.common.protocol.grpc.PublisherService/batchPublish", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func _PublisherService_Publish_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.PublisherService/publish",
+		FullMethod: "/eventmesh.common.protocol.grpc.PublisherService/publish",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PublisherServiceServer).Publish(ctx, req.(*SimpleMessage))
@@ -132,7 +132,7 @@ func _PublisherService_RequestReply_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.PublisherService/requestReply",
+		FullMethod: "/eventmesh.common.protocol.grpc.PublisherService/requestReply",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PublisherServiceServer).RequestReply(ctx, req.(*SimpleMessage))
@@ -150,7 +150,7 @@ func _PublisherService_BatchPublish_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.PublisherService/batchPublish",
+		FullMethod: "/eventmesh.common.protocol.grpc.PublisherService/batchPublish",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PublisherServiceServer).BatchPublish(ctx, req.(*BatchMessage))
@@ -162,7 +162,7 @@ func _PublisherService_BatchPublish_Handler(srv interface{}, ctx context.Context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var PublisherService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.PublisherService",
+	ServiceName: "eventmesh.common.protocol.grpc.PublisherService",
 	HandlerType: (*PublisherServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -203,7 +203,7 @@ func NewConsumerServiceClient(cc grpc.ClientConnInterface) ConsumerServiceClient
 
 func (c *consumerServiceClient) Subscribe(ctx context.Context, in *Subscription, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/proto.ConsumerService/subscribe", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/eventmesh.common.protocol.grpc.ConsumerService/subscribe", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func (c *consumerServiceClient) Subscribe(ctx context.Context, in *Subscription,
 }
 
 func (c *consumerServiceClient) SubscribeStream(ctx context.Context, opts ...grpc.CallOption) (ConsumerService_SubscribeStreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &ConsumerService_ServiceDesc.Streams[0], "/proto.ConsumerService/subscribeStream", opts...)
+	stream, err := c.cc.NewStream(ctx, &ConsumerService_ServiceDesc.Streams[0], "/eventmesh.common.protocol.grpc.ConsumerService/subscribeStream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +243,7 @@ func (x *consumerServiceSubscribeStreamClient) Recv() (*SimpleMessage, error) {
 
 func (c *consumerServiceClient) Unsubscribe(ctx context.Context, in *Subscription, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/proto.ConsumerService/unsubscribe", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/eventmesh.common.protocol.grpc.ConsumerService/unsubscribe", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +298,7 @@ func _ConsumerService_Subscribe_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.ConsumerService/subscribe",
+		FullMethod: "/eventmesh.common.protocol.grpc.ConsumerService/subscribe",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ConsumerServiceServer).Subscribe(ctx, req.(*Subscription))
@@ -342,7 +342,7 @@ func _ConsumerService_Unsubscribe_Handler(srv interface{}, ctx context.Context, 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.ConsumerService/unsubscribe",
+		FullMethod: "/eventmesh.common.protocol.grpc.ConsumerService/unsubscribe",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ConsumerServiceServer).Unsubscribe(ctx, req.(*Subscription))
@@ -354,7 +354,7 @@ func _ConsumerService_Unsubscribe_Handler(srv interface{}, ctx context.Context, 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ConsumerService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.ConsumerService",
+	ServiceName: "eventmesh.common.protocol.grpc.ConsumerService",
 	HandlerType: (*ConsumerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -394,7 +394,7 @@ func NewHeartbeatServiceClient(cc grpc.ClientConnInterface) HeartbeatServiceClie
 
 func (c *heartbeatServiceClient) Heartbeat(ctx context.Context, in *Heartbeat, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
-	err := c.cc.Invoke(ctx, "/proto.HeartbeatService/heartbeat", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/eventmesh.common.protocol.grpc.HeartbeatService/heartbeat", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -439,7 +439,7 @@ func _HeartbeatService_Heartbeat_Handler(srv interface{}, ctx context.Context, d
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.HeartbeatService/heartbeat",
+		FullMethod: "/eventmesh.common.protocol.grpc.HeartbeatService/heartbeat",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HeartbeatServiceServer).Heartbeat(ctx, req.(*Heartbeat))
@@ -451,7 +451,7 @@ func _HeartbeatService_Heartbeat_Handler(srv interface{}, ctx context.Context, d
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var HeartbeatService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.HeartbeatService",
+	ServiceName: "eventmesh.common.protocol.grpc.HeartbeatService",
 	HandlerType: (*HeartbeatServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
