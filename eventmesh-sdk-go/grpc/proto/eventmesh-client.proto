@@ -29,7 +29,8 @@ syntax = "proto3";
 // install protoc-gen-go: go install google.golang.org/protobuf/cmd/protoc-gen-go
 // generate go code by protoc: protoc --go_out=. eventmesh-client.proto
 
-package proto;
+package eventmesh.common.protocol.grpc;
+
 option go_package= ".;proto";
 
 message RequestHeader {
