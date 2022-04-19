@@ -15,38 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.registry.dto;
-
-/**
- * EventMeshUnRegisterInfo
- */
-public class EventMeshUnRegisterInfo {
-    private String eventMeshClusterName;
-    private String eventMeshName;
-
-    private String endPoint;
-
-    public String getEventMeshClusterName() {
-        return eventMeshClusterName;
-    }
-
-    public void setEventMeshClusterName(String eventMeshClusterName) {
-        this.eventMeshClusterName = eventMeshClusterName;
-    }
-
-    public String getEventMeshName() {
-        return eventMeshName;
-    }
-
-    public void setEventMeshName(String eventMeshName) {
-        this.eventMeshName = eventMeshName;
-    }
-
-    public String getEndPoint() {
-        return endPoint;
-    }
-
-    public void setEndPoint(String endPoint) {
-        this.endPoint = endPoint;
-    }
+dependencies {
+    implementation "com.alibaba.nacos:nacos-client:2.0.4"
+    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
+    implementation project(":eventmesh-common")
+    testImplementation "org.mockito:mockito-core"
 }
