@@ -17,12 +17,18 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	"google.golang.org/grpc"
 	"sync"
 	"time"
+)
+
+var (
+	// ErrHeartbeatResp err in sent heartbeat msg to mesh server, response not success
+	ErrHeartbeatResp = fmt.Errorf("heartbeat response err")
 )
 
 // eventMeshHeartbeat heartbeat to keep the client conn
@@ -83,7 +89,7 @@ func (e *eventMeshHeartbeat) sendMsg(cli proto.HeartbeatServiceClient, host stri
 	e.subscribeItemsLock.RLock()
 	defer e.subscribeItemsLock.RUnlock()
 	msg := &proto.Heartbeat{
-		Header:        CreateHeader(e.cfg, eventmeshmessage),
+		Header:        CreateHeader(e.cfg),
 		ClientType:    proto.Heartbeat_SUB,
 		ConsumerGroup: e.cfg.ConsumerGroup,
 		HeartbeatItems: func() []*proto.Heartbeat_HeartbeatItem {
@@ -100,6 +106,10 @@ func (e *eventMeshHeartbeat) sendMsg(cli proto.HeartbeatServiceClient, host stri
 	if err != nil {
 		log.Warnf("failed to send heartbeat msg to :%s, err:%v", host, err)
 		return err
+	}
+	if resp.RespCode != Success {
+		log.Warnf("heartbeat msg return err, resp:%s", resp.String())
+		return ErrHeartbeatResp
 	}
 	log.Debugf("success send heartbeat to server:%s, resp:%s", host, resp.String())
 	return nil

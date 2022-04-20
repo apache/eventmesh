@@ -17,11 +17,17 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	"google.golang.org/grpc"
 	"io"
+)
+
+var (
+	// ErrSubscribeResponse subscribe response code not ok
+	ErrSubscribeResponse = fmt.Errorf("subscribe response code err")
 )
 
 // eventMeshConsumer consumer to implements the ConsumerService
@@ -72,14 +78,19 @@ func (d *eventMeshConsumer) Subscribe(item conf.SubscribeItem, handler OnMessage
 			Mode:  proto.Subscription_SubscriptionItem_SubscriptionMode(item.SubscribeMode),
 			Type:  proto.Subscription_SubscriptionItem_SubscriptionType(item.SubscribeType),
 		}
-		resp, err := cli.Subscribe(context.TODO(), &proto.Subscription{
-			Header:            CreateHeader(d.cfg, eventmeshmessage),
+		subMsg := &proto.Subscription{
+			Header:            CreateHeader(d.cfg),
 			ConsumerGroup:     d.cfg.ConsumerGroup,
 			SubscriptionItems: []*proto.Subscription_SubscriptionItem{pitm},
-		})
+		}
+		resp, err := cli.Subscribe(context.TODO(), subMsg)
 		if err != nil {
 			log.Warnf("failed to subscribe topic:%v, err :%v", pitm, err)
 			return err
+		}
+		if resp.RespCode != Success {
+			log.Warnf("failed to subscribe resp:%v", resp.String())
+			return ErrSubscribeResponse
 		}
 		if err := d.dispatcher.addHandler(item.Topic, handler); err != nil {
 			log.Warnf("failed to add handler for topic:%s", item.Topic)
@@ -97,7 +108,7 @@ func (d *eventMeshConsumer) UnSubscribe() error {
 	for host, cli := range d.consumerMap {
 		log.Infof("unsubscribe with server:%s", host)
 		resp, err := cli.Unsubscribe(context.TODO(), &proto.Subscription{
-			Header:        CreateHeader(d.cfg, eventmeshmessage),
+			Header:        CreateHeader(d.cfg),
 			ConsumerGroup: d.cfg.ConsumerGroup,
 			SubscriptionItems: func() []*proto.Subscription_SubscriptionItem {
 				var sitems []*proto.Subscription_SubscriptionItem
