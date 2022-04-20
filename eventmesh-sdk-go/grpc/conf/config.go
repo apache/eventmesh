@@ -25,6 +25,9 @@ var (
 	Language = "GO"
 	// ProtocolDesc the protocol type
 	ProtocolDesc = "grpc"
+
+	// ProtocolVersion version for current sdk used
+	ProtocolVersion = "1.0"
 )
 
 // GRPCConfig grpc configuration
@@ -47,8 +50,6 @@ type GRPCConfig struct {
 	Password string
 	// ProtocolType the type for current protocol
 	ProtocolType string
-	// ProtocolVersion version for current sdk used
-	ProtocolVersion string
 	// ConsumerConfig if the client is listen some event
 	// optional
 	ConsumerConfig
@@ -100,18 +101,28 @@ type ConsumerConfig struct {
 	PoolSize int
 }
 
+type SubscriptionMode int
+
+const (
+	CLUSTERING   SubscriptionMode = 0
+	BROADCASTING SubscriptionMode = 1
+)
+
+type SubscriptionType int
+
+const (
+	ASYNC = 0
+	SYNC  = 1
+)
+
 // SubscribeItem content about subscribe
 type SubscribeItem struct {
 	// Topic uniq for eventmesh
 	Topic string
 	// SubscribeType type for subscribe, support as fellow
-	// ASYNC = 0;
-	// SYNC = 1;
-	SubscribeType int
+	SubscribeType SubscriptionType
 	// SubscribeMode mode for subscribe, support as fellow
-	// CLUSTERING = 0;
-	// BROADCASTING = 1;
-	SubscribeMode int
+	SubscribeMode SubscriptionMode
 }
 
 // ValidateDefaultConf set the default configuration if user not provided
