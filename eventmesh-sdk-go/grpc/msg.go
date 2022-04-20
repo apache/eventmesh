@@ -28,6 +28,11 @@ type SimpleMessageBuilder struct {
 	*proto.SimpleMessage
 }
 
+// NewMessageBuilder
+func NewMessageBuilder() *SimpleMessageBuilder {
+	return &SimpleMessageBuilder{SimpleMessage: &proto.SimpleMessage{}}
+}
+
 // WithHeader set the header for message
 func (m *SimpleMessageBuilder) WithHeader(h *proto.RequestHeader) *SimpleMessageBuilder {
 	m.Header = h
@@ -61,6 +66,18 @@ func (m *SimpleMessageBuilder) WithTTL(ttl time.Duration) *SimpleMessageBuilder 
 // WithTag set the tag for message
 func (m *SimpleMessageBuilder) WithTag(tag string) *SimpleMessageBuilder {
 	m.Tag = tag
+	return m
+}
+
+// WithUniqueID set the uniq id for message
+func (m *SimpleMessageBuilder) WithUniqueID(id string) *SimpleMessageBuilder {
+	m.UniqueId = id
+	return m
+}
+
+// WithSeqNO set the sequence no for message
+func (m *SimpleMessageBuilder) WithSeqNO(no string) *SimpleMessageBuilder {
+	m.SeqNum = no
 	return m
 }
 
