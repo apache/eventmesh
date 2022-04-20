@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.GoodbyeTask;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.HeartBeatTask;
@@ -44,6 +45,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.opentelemetry.api.trace.Span;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<Package> {
@@ -67,6 +69,14 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
         Command cmd = pkg.getHeader().getCmd();
         try {
             Runnable task;
+
+            if(isNeedTrace(cmd)) {
+                pkg.getHeader().getProperties()
+                    .put(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, startTime);
+                pkg.getHeader().getProperties().put(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
+                    eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp);
+            }
+
             if (cmd.equals(Command.RECOMMEND_REQUEST)) {
                 messageLogger.info("pkg|c2eventMesh|cmd={}|pkg={}", cmd, pkg);
                 task = new RecommendTask(pkg, ctx, startTime, eventMeshTCPServer);
