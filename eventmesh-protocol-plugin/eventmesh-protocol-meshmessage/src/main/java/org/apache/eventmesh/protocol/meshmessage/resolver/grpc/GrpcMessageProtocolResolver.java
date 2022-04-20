@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage.MessageItem
 import org.apache.eventmesh.common.protocol.grpc.protos.RequestHeader;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.meshmessage.MeshMessageProtocolConstant;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -65,7 +66,7 @@ public class GrpcMessageProtocolResolver {
 
                 cloudEventBuilder = cloudEventBuilder.withId(message.getSeqNum())
                     .withSubject(message.getTopic())
-                    .withType("eventmeshmessage")
+                    .withType(MeshMessageProtocolConstant.PROTOCOL_NAME)
                     .withSource(URI.create("/"))
                     .withData(content.getBytes(StandardCharsets.UTF_8))
                     .withExtension(ProtocolKey.ENV, env)
@@ -95,7 +96,7 @@ public class GrpcMessageProtocolResolver {
                 cloudEventBuilder = CloudEventBuilder.v03();
                 cloudEventBuilder = cloudEventBuilder.withId(message.getSeqNum())
                     .withSubject(message.getTopic())
-                    .withType("eventmeshmessage")
+                    .withType(MeshMessageProtocolConstant.PROTOCOL_NAME)
                     .withSource(URI.create("/"))
                     .withData(content.getBytes(StandardCharsets.UTF_8))
                     .withExtension(ProtocolKey.ENV, env)
@@ -156,7 +157,7 @@ public class GrpcMessageProtocolResolver {
 
                 cloudEventBuilder = cloudEventBuilder.withId(item.getSeqNum())
                     .withSubject(message.getTopic())
-                    .withType("eventmeshmessage")
+                    .withType(MeshMessageProtocolConstant.PROTOCOL_NAME)
                     .withSource(URI.create("/"))
                     .withData(content.getBytes(StandardCharsets.UTF_8))
                     .withExtension(ProtocolKey.ENV, env)
@@ -186,7 +187,7 @@ public class GrpcMessageProtocolResolver {
                 cloudEventBuilder = CloudEventBuilder.v03();
                 cloudEventBuilder = cloudEventBuilder.withId(item.getSeqNum())
                     .withSubject(message.getTopic())
-                    .withType("eventmeshmessage")
+                    .withType(MeshMessageProtocolConstant.PROTOCOL_NAME)
                     .withSource(URI.create("/"))
                     .withData(content.getBytes(StandardCharsets.UTF_8))
                     .withExtension(ProtocolKey.ENV, env)
