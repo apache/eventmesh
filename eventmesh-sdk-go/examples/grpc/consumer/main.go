@@ -10,8 +10,15 @@ import (
 
 func main() {
 	cli, err := grpc.New(&conf.GRPCConfig{
-		Hosts: []string{"101.43.84.47"},
-		Port:  10205,
+		Hosts:        []string{"101.43.84.47"},
+		Port:         10205,
+		ENV:          "go-grpc-test-env",
+		Region:       "sh",
+		IDC:          "pd",
+		SYS:          "grpc-go",
+		Username:     "grpc-go-username",
+		Password:     "grpc-go-passwd",
+		ProtocolType: grpc.EventmeshMessage,
 		ProducerConfig: conf.ProducerConfig{
 			ProducerGroup:    "test-publish-group",
 			LoadBalancerType: conf.Random,
@@ -35,8 +42,8 @@ func main() {
 		}
 	}()
 	cli.Subscribe(conf.SubscribeItem{
-		SubscribeMode: 1,
-		SubscribeType: 1,
+		SubscribeMode: conf.CLUSTERING,
+		SubscribeType: conf.SYNC,
 		Topic:         "grpc-topic",
 	}, func(msg *proto.SimpleMessage) {
 		fmt.Println("receive msg: " + msg.String())

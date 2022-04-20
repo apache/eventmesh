@@ -16,18 +16,62 @@
 package grpc
 
 import (
+	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
+	"time"
 )
 
-var (
-	// eventmeshmessage eventmesh message protocol type
-	eventmeshmessage = "eventmeshmessage"
-)
+// SimpleMessageBuilder used to build the simple message
+type SimpleMessageBuilder struct {
+	*proto.SimpleMessage
+}
+
+// WithHeader set the header for message
+func (m *SimpleMessageBuilder) WithHeader(h *proto.RequestHeader) *SimpleMessageBuilder {
+	m.Header = h
+	return m
+}
+
+// WithProducerGroup set the message producer group
+func (m *SimpleMessageBuilder) WithProducerGroup(grp string) *SimpleMessageBuilder {
+	m.ProducerGroup = grp
+	return m
+}
+
+// WithTopic set the topic
+func (m *SimpleMessageBuilder) WithTopic(topic string) *SimpleMessageBuilder {
+	m.Topic = topic
+	return m
+}
+
+// WithContent set the content to message
+func (m *SimpleMessageBuilder) WithContent(content string) *SimpleMessageBuilder {
+	m.Content = content
+	return m
+}
+
+// WithTTL set the message ttl
+func (m *SimpleMessageBuilder) WithTTL(ttl time.Duration) *SimpleMessageBuilder {
+	m.Ttl = fmt.Sprintf("%v", ttl.Seconds())
+	return m
+}
+
+// WithTag set the tag for message
+func (m *SimpleMessageBuilder) WithTag(tag string) *SimpleMessageBuilder {
+	m.Tag = tag
+	return m
+}
+
+// WithProperties set the properties for message
+func (m *SimpleMessageBuilder) WithProperties(props map[string]string) *SimpleMessageBuilder {
+	m.Properties = props
+	return m
+}
 
 // CreateHeader create msg header
-func CreateHeader(cfg *conf.GRPCConfig, protocolType string) *proto.RequestHeader {
+func CreateHeader(cfg *conf.GRPCConfig) *proto.RequestHeader {
 	return &proto.RequestHeader{
 		Env:             cfg.ENV,
 		Region:          cfg.Region,
@@ -38,8 +82,8 @@ func CreateHeader(cfg *conf.GRPCConfig, protocolType string) *proto.RequestHeade
 		Username:        cfg.Username,
 		Password:        cfg.Password,
 		Language:        conf.Language,
-		ProtocolType:    protocolType,
+		ProtocolType:    EventmeshMessage,
 		ProtocolDesc:    conf.ProtocolDesc,
-		ProtocolVersion: cfg.ProtocolVersion,
+		ProtocolVersion: conf.ProtocolVersion,
 	}
 }
