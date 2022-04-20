@@ -223,7 +223,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 //            super.tracer = traceService.getTracer(super.getClass().toString());
 //            super.textMapPropagator = traceService.getTextMapPropagator();
 
-            super.trace = eventMeshServer.getTrace();
             super.useTrace = eventMeshHttpConfiguration.eventMeshServerTraceEnable;
         }
 

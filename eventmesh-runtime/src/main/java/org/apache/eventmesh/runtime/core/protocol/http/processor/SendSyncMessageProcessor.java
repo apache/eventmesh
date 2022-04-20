@@ -32,6 +32,7 @@ import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
@@ -53,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
+import io.opentelemetry.api.trace.StatusCode;
 
 public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
@@ -256,6 +258,9 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                         httpLogger.debug("{}", httpCommand);
                     }
                     eventMeshHTTPServer.sendResponse(ctx, httpCommand.httpResponse());
+
+                    EventMeshServer.getTrace().finishSpan(ctx, StatusCode.OK);
+
                     eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
                         System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
                 } catch (Exception ex) {

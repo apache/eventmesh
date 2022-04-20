@@ -17,13 +17,21 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
+
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.EventMeshConsumer;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.HandleMsgContext;
+import org.apache.eventmesh.runtime.trace.TraceUtils;
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.MapUtils;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -78,8 +86,19 @@ public class HTTPMessageHandler implements MessageHandler {
 
         try {
             pushExecutor.submit(() -> {
-                AsyncHTTPPushRequest asyncPushRequest = new AsyncHTTPPushRequest(handleMsgContext, waitingRequests);
-                asyncPushRequest.tryHTTPRequest();
+                String protocolVersion = Objects.requireNonNull(handleMsgContext.getEvent().getExtension(
+                    Constants.PROTOCOL_VERSION)).toString();
+
+                Span span = TraceUtils.prepareClientSpan(
+                    EventMeshUtil.getCloudEventExtensionMap(protocolVersion, handleMsgContext.getEvent()), EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
+
+                try(Scope scope = span.makeCurrent()){
+                    AsyncHTTPPushRequest asyncPushRequest = new AsyncHTTPPushRequest(handleMsgContext, waitingRequests);
+                    asyncPushRequest.tryHTTPRequest();
+                }finally {
+                    TraceUtils.finishSpan(span, handleMsgContext.getEvent());
+                }
+
             });
             return true;
         } catch (RejectedExecutionException e) {

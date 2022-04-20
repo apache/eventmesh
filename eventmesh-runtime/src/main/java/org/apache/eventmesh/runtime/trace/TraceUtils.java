@@ -22,10 +22,9 @@ public class TraceUtils {
                                          boolean isSpanFinishInOtherThread) {
         Span span = null;
         try {
-            EventMeshServer.getTrace().inject(
-                Context.current(), map);
             span = EventMeshServer.getTrace().createSpan(
                 spanName, SpanKind.CLIENT, Context.current(), isSpanFinishInOtherThread);
+            EventMeshServer.getTrace().inject(Context.current(), map);
         } catch (Throwable ex) {
             logger.warn("upload trace fail when prepareSpan", ex);
         }
