@@ -524,11 +524,6 @@ public class ClientGroupWrapper {
                 .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
                     eventMeshTCPConfiguration.eventMeshServerIp).build();
             String topic = event.getSubject();
-            //    message.getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION);
-            //message.getSystemProperties().put(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
-            //    String.valueOf(System.currentTimeMillis()));
-            //message.getSystemProperties().put(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
-            //    eventMeshTCPConfiguration.eventMeshServerIp);
 
             EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
                 (EventMeshAsyncConsumeContext) context;
@@ -692,7 +687,6 @@ public class ClientGroupWrapper {
                 3000);
         } catch (Exception e) {
             logger.error("httpPost " + targetUrl + " is fail,", e);
-            //throw new RuntimeException("httpPost " + targetUrl + " is fail," , e);
             throw e;
         }
 
