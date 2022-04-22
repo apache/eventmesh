@@ -70,7 +70,6 @@ public class DownStreamMsgContext extends RetryContext {
         this.createTime = System.currentTimeMillis();
         this.subscriptionItem = subscriptionItem;
         String ttlStr = (String) event.getExtension("TTL");
-        //String ttlStr = msgExt.getUserProperties("TTL");
         long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) :
                 EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
         this.expireTime = System.currentTimeMillis() + ttl;
@@ -86,9 +85,6 @@ public class DownStreamMsgContext extends RetryContext {
             List<CloudEvent> events = new ArrayList<CloudEvent>();
             events.add(event);
             consumer.updateOffset(events, consumeConcurrentlyContext);
-            //ConsumeMessageService consumeMessageService =
-            // consumer.getDefaultMQPushConsumer().getDefaultMQPushConsumerImpl().getConsumeMessageService();
-            //((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, consumeConcurrentlyContext);
             logger.info("ackMsg seq:{}, topic:{}, bizSeq:{}", seq, events.get(0).getSubject(),
                     events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_KEYS));
         } else {
