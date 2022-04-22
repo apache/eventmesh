@@ -93,30 +93,17 @@ public class SessionSender {
                         ttl = Long.parseLong((String) Objects.requireNonNull(
                                 event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL)));
                     }
-                    //long ttl = msg.getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL) != null ?
-                    // Long.parseLong(msg.getSystemProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL))
-                    // : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
                     session.getClientGroupWrapper().get().request(upStreamMsgContext, initSyncRRCallback(header,
                             startTime, taskExecuteTime), ttl);
                     upstreamBuff.release();
                 } else if (Command.RESPONSE_TO_SERVER == cmd) {
                     String cluster = (String) event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER);
-                    //String cluster = msg.getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER);
                     if (!StringUtils.isEmpty(cluster)) {
                         String replyTopic = EventMeshConstants.RR_REPLY_TOPIC;
                         replyTopic = cluster + "-" + replyTopic;
                         event = CloudEventBuilder.from(event).withSubject(replyTopic).build();
-                        //msg.getSystemProperties().put(Constants.PROPERTY_MESSAGE_DESTINATION, replyTopic);
-                        //event(replyTopic);
                     }
-
-                    ////for rocketmq support
-                    //MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_TYPE, MixAll.REPLY_MESSAGE_FLAG);
-                    //MessageAccessor.putProperty(msg, MessageConst.PROPERTY_CORRELATION_ID,
-                    // msg.getProperty(DeFiBusConstant.PROPERTY_RR_REQUEST_ID));
-                    //MessageAccessor.putProperty(msg, MessageConst.PROPERTY_MESSAGE_REPLY_TO_CLIENT,
-                    // msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_REPLY_TO));
 
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
                     session.getClientGroupWrapper().get().reply(upStreamMsgContext);
@@ -148,12 +135,6 @@ public class SessionSender {
             public void onSuccess(CloudEvent event) {
                 String seq = header.getSeq();
                 // TODO: How to assign values here
-                //if (msg instanceof MessageExt) {
-                //    msg.putUserProperty(EventMeshConstants.BORN_TIMESTAMP, String.valueOf(((MessageExt) msg)
-                //            .getBornTimestamp()));
-                //    msg.putUserProperty(EventMeshConstants.STORE_TIMESTAMP, String.valueOf(((MessageExt) msg)
-                //            .getStoreTimestamp()));
-                //}
                 event = CloudEventBuilder.from(event)
                         .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                         .withExtension(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP, session.getEventMeshTCPConfiguration().eventMeshServerIp)
@@ -176,9 +157,7 @@ public class SessionSender {
 
                 Package pkg = new Package();
 
-                //msg.getSystemProperties().put(EventMeshConstants.RSP_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                 try {
-                    //pkg.setBody(EventMeshUtil.encodeMessage(msg));
                     pkg = (Package) protocolAdaptor.fromCloudEvent(event);
                     pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, seq));
                     pkg.getHeader().putProperty(Constants.PROTOCOL_TYPE, protocolType);
@@ -186,7 +165,6 @@ public class SessionSender {
                     pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), null, seq));
                 } finally {
                     Utils.writeAndFlush(pkg, startTime, taskExecuteTime, session.getContext(), session);
-                    //session.write2Client(pkg);
                 }
             }
 
