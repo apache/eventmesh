@@ -15,38 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.registry.dto;
+package org.apache.eventmesh.registry.nacos.constant;
 
 /**
- * EventMeshUnRegisterInfo
+ * NacosConstant.
  */
-public class EventMeshUnRegisterInfo {
-    private String eventMeshClusterName;
-    private String eventMeshName;
+public class NacosConstant {
 
-    private String endPoint;
+    public static final String SERVER_ADDR = "serverAddr";
 
-    public String getEventMeshClusterName() {
-        return eventMeshClusterName;
-    }
+    public static final String NAMESPACE = "namespace";
 
-    public void setEventMeshClusterName(String eventMeshClusterName) {
-        this.eventMeshClusterName = eventMeshClusterName;
-    }
+    public static final String USERNAME = "username";
 
-    public String getEventMeshName() {
-        return eventMeshName;
-    }
+    public static final String PASSWORD = "password";
 
-    public void setEventMeshName(String eventMeshName) {
-        this.eventMeshName = eventMeshName;
-    }
+    public static final String IP_PORT_SEPARATOR = ":";
 
-    public String getEndPoint() {
-        return endPoint;
-    }
-
-    public void setEndPoint(String endPoint) {
-        this.endPoint = endPoint;
-    }
+    public static final String DEFAULT_GROUP = "DEFAULT_GROUP";
 }
