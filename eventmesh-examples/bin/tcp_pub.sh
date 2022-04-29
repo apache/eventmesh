@@ -128,7 +128,7 @@ make_logs_dir
 echo "using jdk[$JAVA]" >> ${DEMO_LOG_HOME}/demo_tcp_pub.out
 
 
-DEMO_MAIN=org.apache.eventmesh.tcp.demo.AsyncPublish
+DEMO_MAIN=org.apache.eventmesh.tcp.demo.pub.eventmeshmessage.AsyncPublish
 if [ $DOCKER ]
 then
 	$JAVA $JAVA_OPT -classpath ${DEMO_HOME}/conf:${DEMO_HOME}/apps/*:${DEMO_HOME}/lib/* $DEMO_MAIN >> ${DEMO_LOG_HOME}/demo_tcp_pub.out
