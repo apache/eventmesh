@@ -35,8 +35,11 @@ import org.slf4j.LoggerFactory;
  * The extension fetching factory, all extension plugins should be fetched by this factory.
  * And all the extension plugins defined in eventmesh should have {@link EventMeshSPI} annotation.
  */
-public enum EventMeshExtensionFactory {
-    ;
+public class EventMeshExtensionFactory {
+
+    private EventMeshExtensionFactory() {
+
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(EventMeshExtensionFactory.class);
 
@@ -48,7 +51,7 @@ public enum EventMeshExtensionFactory {
     }
 
     private static final ConcurrentHashMap<String, Object> EXTENSION_INSTANCE_CACHE =
-            new ConcurrentHashMap<>(16);
+        new ConcurrentHashMap<>(16);
 
     /**
      * @param extensionType extension plugin class type
@@ -83,7 +86,7 @@ public enum EventMeshExtensionFactory {
                 }
                 T extensionInstance = extensionInstanceClass.newInstance();
                 logger.info("initialize extension instance success, extensionType: {}, extensionInstanceName: {}",
-                        extensionType, extensionInstanceName);
+                    extensionType, extensionInstanceName);
                 return extensionInstance;
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new ExtensionException("Extension initialize error", e);
@@ -99,7 +102,7 @@ public enum EventMeshExtensionFactory {
             }
             T extensionInstance = extensionInstanceClass.newInstance();
             logger.info("initialize extension instance success, extensionType: {}, extensionName: {}",
-                    extensionType, extensionInstanceName);
+                extensionType, extensionInstanceName);
             return extensionInstance;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new ExtensionException("Extension initialize error", e);
