@@ -99,7 +99,7 @@ func CreateHeader(cfg *conf.GRPCConfig) *proto.RequestHeader {
 		Username:        cfg.Username,
 		Password:        cfg.Password,
 		Language:        conf.Language,
-		ProtocolType:    EventmeshMessage,
+		ProtocolType:    "STREAM",
 		ProtocolDesc:    conf.ProtocolDesc,
 		ProtocolVersion: conf.ProtocolVersion,
 	}
