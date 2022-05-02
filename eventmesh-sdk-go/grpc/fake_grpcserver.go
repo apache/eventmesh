@@ -19,7 +19,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
+	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -74,6 +77,16 @@ func runFakeServer(ctx context.Context) error {
 // Subscribe The subscribed event will be delivered by invoking the webhook url in the Subscription
 func (f *fakeServer) Subscribe(ctx context.Context, msg *proto.Subscription) (*proto.Response, error) {
 	log.Infof("fake-server, receive subcribe request:%v", msg.String())
+	go func() {
+		// send a fake msg by webhook
+		resp, err := http.Post(msg.Url, "Content-Type:application/json", strings.NewReader("msg from webhook"))
+		if err != nil {
+			log.Errorf("err in create http webhook url:%s, err:%v", msg.Url, err)
+			return
+		}
+		buf, _ := ioutil.ReadAll(resp.Body)
+		log.Infof("send webhook msg success", string(buf))
+	}()
 	return &proto.Response{
 		RespCode: "OK",
 		RespMsg:  "OK",
