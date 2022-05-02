@@ -15,8 +15,8 @@ func Test_eventMeshHeartbeat_sendMsg(t *testing.T) {
 	defer cancel()
 	go runFakeServer(ctx)
 	cli, err := New(&conf.GRPCConfig{
-		Hosts: []string{"127.0.0.1"},
-		Port:  8086,
+		Host: "127.0.0.1",
+		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
 			ProducerGroup:    "test-publish-group",
 			LoadBalancerType: conf.Random,
@@ -32,7 +32,7 @@ func Test_eventMeshHeartbeat_sendMsg(t *testing.T) {
 		},
 	})
 	topic := "fake-topic"
-	assert.NoError(t, cli.Subscribe(conf.SubscribeItem{
+	assert.NoError(t, cli.SubscribeStream(conf.SubscribeItem{
 		SubscribeType: 1,
 		SubscribeMode: 1,
 		Topic:         topic,
@@ -53,9 +53,7 @@ func Test_eventMeshHeartbeat_sendMsg(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			host := "127.0.0.1"
-			beatcli := beat.clientsMap[host]
-			err := beat.sendMsg(beatcli, host)
+			err := beat.sendMsg(beat.client)
 			assert.NoError(t, err)
 		})
 	}
