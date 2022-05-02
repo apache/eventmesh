@@ -281,6 +281,37 @@ func Test_eventMeshGRPCClient_BatchPublish(t *testing.T) {
 	}
 }
 
+func Test_eventMeshGRPCClient_webhook_subscribe(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+	go runWebhookServer(ctx)
+	go runFakeServer(ctx)
+	cli, err := New(&conf.GRPCConfig{
+		Host: "127.0.0.1",
+		Port: 8086,
+		ProducerConfig: conf.ProducerConfig{
+			ProducerGroup:    "test-publish-group",
+			LoadBalancerType: conf.Random,
+		},
+		ConsumerConfig: conf.ConsumerConfig{
+			Enabled:       true,
+			ConsumerGroup: "test-consumer-group-subscribe",
+			PoolSize:      5,
+		},
+		HeartbeatConfig: conf.HeartbeatConfig{
+			Period:  time.Second * 5,
+			Timeout: time.Second * 3,
+		},
+	})
+	assert.NoError(t, err, "create grpc client")
+	assert.NoError(t, cli.SubscribeWebhook(conf.SubscribeItem{
+		SubscribeMode: 1,
+		SubscribeType: 1,
+		Topic:         "topic-1",
+	}, "http://localhost:8080/onmessage"))
+	time.Sleep(time.Second * 5)
+}
+
 func Test_eventMeshGRPCClient_Subscribe(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
