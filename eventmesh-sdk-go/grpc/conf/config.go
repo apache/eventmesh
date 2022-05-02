@@ -33,7 +33,7 @@ var (
 // GRPCConfig grpc configuration
 type GRPCConfig struct {
 	// Hosts about the target eventmesh server
-	Hosts []string `validator:"required"`
+	Host string `validator:"required"`
 	// Port port for eventmesh server
 	Port int `validator:"required"`
 	// ENV environment for client
@@ -86,7 +86,7 @@ type HeartbeatConfig struct {
 	// Period duration to send heartbeat
 	// default to 5s
 	Period time.Duration
-	// Timeout timeout in send heartbeat msg
+	// Timeout ticker in send heartbeat msg
 	// default to 3s
 	Timeout time.Duration
 }
@@ -128,8 +128,8 @@ type SubscribeItem struct {
 // ValidateDefaultConf set the default configuration if user not provided
 // check the conf which is required, and return not nil with parameter error
 func ValidateDefaultConf(cfg *GRPCConfig) error {
-	if len(cfg.Hosts) == 0 {
-		return fmt.Errorf("no hosts provided")
+	if len(cfg.Host) == 0 {
+		return fmt.Errorf("no host provided")
 	}
 	if cfg.ConsumerConfig.Enabled {
 		if cfg.ConsumerConfig.ConsumerGroup == "" {
