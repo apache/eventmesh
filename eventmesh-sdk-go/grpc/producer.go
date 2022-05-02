@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/loadbalancer"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"google.golang.org/grpc"
 )
@@ -37,26 +35,15 @@ var (
 
 // eventMeshProducer producer for eventmesh
 type eventMeshProducer struct {
-	// loadbalancer loadbalancer for multiple grpc client
-	loadbalancer loadbalancer.LoadBalancer
+	// client grpc producer client
+	client proto.PublisherServiceClient
 }
 
 // newProducer create new producer instance to send events
-func newProducer(cfg *conf.GRPCConfig, connsMap map[string]*grpc.ClientConn) (*eventMeshProducer, error) {
-	producer := &eventMeshProducer{}
-	var srvs []*loadbalancer.StatusServer
-	for host, conn := range connsMap {
-		cli := proto.NewPublisherServiceClient(conn)
-		ss := loadbalancer.NewStatusServer(cli, host)
-		srvs = append(srvs, ss)
-	}
-
-	lb, err := loadbalancer.NewLoadBalancer(cfg.LoadBalancerType, srvs)
-	if err != nil {
-		return nil, err
-	}
-	producer.loadbalancer = lb
-	return producer, nil
+func newProducer(grpcConn *grpc.ClientConn) (*eventMeshProducer, error) {
+	return &eventMeshProducer{
+		client: proto.NewPublisherServiceClient(grpcConn),
+	}, nil
 }
 
 // Close recover all resource hold in the producer
@@ -68,14 +55,8 @@ func (e *eventMeshProducer) Close() error {
 // Publish Async event publish
 func (e *eventMeshProducer) Publish(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.Response, error) {
 	log.Infof("publish event:%v", msg.String())
-	cli, err := e.choose(ctx)
+	resp, err := e.client.Publish(ctx, msg, opts...)
 	if err != nil {
-		return nil, err
-	}
-
-	resp, err := cli.Publish(ctx, msg, opts...)
-	if err != nil {
-		// TODO maybe check the err to do the breaks for client
 		log.Warnf("failed to publish msg, err:%v", err)
 		return nil, err
 	}
@@ -87,11 +68,7 @@ func (e *eventMeshProducer) Publish(ctx context.Context, msg *proto.SimpleMessag
 // RequestReply Sync event publish
 func (e *eventMeshProducer) RequestReply(ctx context.Context, msg *proto.SimpleMessage, opts ...grpc.CallOption) (*proto.SimpleMessage, error) {
 	log.Infof("request reply event:%v", msg.String())
-	cli, err := e.choose(ctx)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := cli.RequestReply(ctx, msg, opts...)
+	resp, err := e.client.RequestReply(ctx, msg, opts...)
 	if err != nil {
 		log.Warnf("failed to request reply msg, err:%v", err)
 		return nil, err
@@ -104,11 +81,7 @@ func (e *eventMeshProducer) RequestReply(ctx context.Context, msg *proto.SimpleM
 // BatchPublish Async batch event publish
 func (e *eventMeshProducer) BatchPublish(ctx context.Context, msg *proto.BatchMessage, opts ...grpc.CallOption) (*proto.Response, error) {
 	log.Infof("request batch publish event:%v", msg.String())
-	cli, err := e.choose(ctx)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := cli.BatchPublish(ctx, msg, opts...)
+	resp, err := e.client.BatchPublish(ctx, msg, opts...)
 	if err != nil {
 		log.Warnf("failed to batch publish msg, err:%v", err)
 		return nil, err
@@ -116,18 +89,4 @@ func (e *eventMeshProducer) BatchPublish(ctx context.Context, msg *proto.BatchMe
 
 	log.Infof("success batch publish event")
 	return resp, nil
-}
-
-// choose choose a producer client from loadbalancer
-func (e *eventMeshProducer) choose(ctx context.Context) (proto.PublisherServiceClient, error) {
-	// try to load input from context
-	val := ctx.Value(LoadBalancerInput)
-	cli, err := e.loadbalancer.Choose(val)
-	if err != nil {
-		log.Warnf("failed to choose status server from loadbalancer, err:%v", err)
-		return nil, ErrLoadBalancer
-	}
-	ss := cli.(*loadbalancer.StatusServer)
-	pubClient := ss.RealServer.(proto.PublisherServiceClient)
-	return pubClient, nil
 }

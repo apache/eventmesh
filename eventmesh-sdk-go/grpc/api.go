@@ -23,9 +23,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-// GRPC_ID_KEY key to indicate the uniq id
-var GRPC_ID_KEY = "GRPC_ID_KEY"
-
 // OnMessage on receive message from eventmesh, used in subcribe message
 type OnMessage func(*proto.SimpleMessage)
 
@@ -40,8 +37,11 @@ type Interface interface {
 	// BatchPublish send batch message to eventmesh
 	BatchPublish(ctx context.Context, msg *proto.BatchMessage, opts ...grpc.CallOption) (*proto.Response, error)
 
-	// Subscribe consumer message, and OnMessage invoked when new message arrived
-	Subscribe(item conf.SubscribeItem, handler OnMessage) error
+	// SubscribeWebhook consumer message in webhook, and OnMessage invoked when new message arrived
+	SubscribeWebhook(item conf.SubscribeItem, callbackURL string) error
+
+	// SubscribeStream stream subscribe the message
+	SubscribeStream(item conf.SubscribeItem, handler OnMessage) error
 
 	// UnSubscribe unsubcribe topic, and don't subscribe msg anymore
 	UnSubscribe() error
