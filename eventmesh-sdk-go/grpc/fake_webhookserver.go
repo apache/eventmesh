@@ -22,10 +22,12 @@ import (
 	"net/http"
 )
 
-// RunWebhookServer start a webhook server for fake server on
+// runWebhookServer start a webhook server for fake server on
 // subscribe topic with webhook
-func RunWebhookServer(ctx context.Context) error {
-	http.HandleFunc("/onmessage", func(writer http.ResponseWriter, request *http.Request) {
+// need to call srv.Shutdown() to close the http.Server gracefully
+func runWebhookServer(ctx context.Context) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/onmessage", func(writer http.ResponseWriter, request *http.Request) {
 		buf, err := ioutil.ReadAll(request.Body)
 		if err != nil {
 			fmt.Printf("read webhook msg from body, err:%v", err)
@@ -37,5 +39,19 @@ func RunWebhookServer(ctx context.Context) error {
 		writer.WriteHeader(http.StatusOK)
 		writer.Write([]byte("OK"))
 	})
-	return http.ListenAndServe(":8089", nil)
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: mux,
+	}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			panic(err)
+		}
+		fmt.Println("http server shutdown")
+	}()
+
+	select {
+	case <-ctx.Done():
+		srv.Shutdown(context.TODO())
+	}
 }
