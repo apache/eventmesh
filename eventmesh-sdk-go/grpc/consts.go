@@ -17,3 +17,6 @@ package grpc
 
 // Success grpc code success
 var Success = "0"
+
+// GRPC_ID_KEY key to indicate the uniq id
+var GRPC_ID_KEY = "GRPC_ID_KEY"

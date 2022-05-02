@@ -30,8 +30,8 @@ func WithLogger(l log.Logger) GRPCOption {
 	}
 }
 
-// WithID setup the id generate api
-func WithID(i id.Interface) GRPCOption {
+// WithIDG setup the id generate api
+func WithIDG(i id.Interface) GRPCOption {
 	return func(client *eventMeshGRPCClient) {
 		client.idg = i
 	}
