@@ -16,7 +16,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
@@ -24,7 +23,7 @@ import (
 )
 
 func main() {
-	cfg := &conf.GRPCConfig{
+	cli, err := grpc.New(&conf.GRPCConfig{
 		Host:         "101.43.84.47",
 		Port:         10205,
 		ENV:          "go-grpc-test-env",
@@ -35,38 +34,35 @@ func main() {
 		Password:     "grpc-go-passwd",
 		ProtocolType: grpc.EventmeshMessage,
 		ProducerConfig: conf.ProducerConfig{
-			ProducerGroup:    "test-publish-group",
+			ProducerGroup:    "test-sync-consumer-group",
 			LoadBalancerType: conf.Random,
 		},
 		ConsumerConfig: conf.ConsumerConfig{
-			Enabled: false,
+			Enabled:       true,
+			ConsumerGroup: "test-consumer-group-subscribe",
+			PoolSize:      5,
 		},
-	}
-	cli, err := grpc.New(cfg)
+		HeartbeatConfig: conf.HeartbeatConfig{
+			Period:  time.Second * 5,
+			Timeout: time.Second * 3,
+		},
+	})
 	if err != nil {
-		fmt.Println("create publish client err:" + err.Error())
-		return
+		panic(err)
 	}
 	defer func() {
 		if err := cli.Close(); err != nil {
 			panic(err)
 		}
 	}()
-	builder := grpc.NewMessageBuilder()
-	builder.WithHeader(grpc.CreateHeader(cfg)).
-		WithContent("test for publish go grpc").
-		WithProperties(map[string]string{
-			"from": "grpc",
-			"for":  "test"}).
-		WithProducerGroup("grpc-publish-producergroup").
-		WithTag("grpc publish tag").
-		WithTopic("grpc-publish-topic").
-		WithTTL(time.Hour).
-		WithSeqNO("1").
-		WithUniqueID("1")
-	resp, err := cli.Publish(context.TODO(), builder.SimpleMessage)
+	err = cli.SubscribeWebhook(conf.SubscribeItem{
+		SubscribeMode: conf.CLUSTERING,
+		SubscribeType: conf.SYNC,
+		Topic:         "grpc-topic",
+	}, "")
 	if err != nil {
-		panic(err)
+		fmt.Println(err.Error())
+		return
 	}
-	fmt.Println(resp.String())
+	time.Sleep(time.Hour)
 }

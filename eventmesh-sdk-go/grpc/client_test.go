@@ -23,7 +23,7 @@ func Test_newEventMeshGRPCClient(t *testing.T) {
 		{
 			name: "host is empty",
 			args: args{cfg: &conf.GRPCConfig{
-				Hosts: []string{},
+				Host: "",
 			}},
 			wantErr: true,
 			want:    nil,
@@ -31,7 +31,7 @@ func Test_newEventMeshGRPCClient(t *testing.T) {
 		{
 			name: "producer wrong",
 			args: args{cfg: &conf.GRPCConfig{
-				Hosts: []string{"1.1.1.1"},
+				Host: "1.1.1.1",
 				ProducerConfig: conf.ProducerConfig{
 					LoadBalancerType: "111",
 				},
@@ -42,14 +42,13 @@ func Test_newEventMeshGRPCClient(t *testing.T) {
 		{
 			name: "client with send msg",
 			args: args{cfg: &conf.GRPCConfig{
-				Hosts:           []string{"101.43.84.47"},
-				Port:            10205,
-				ENV:             "sendmsgenv",
-				Region:          "sh",
-				IDC:             "idc01",
-				SYS:             "test-system",
-				ProtocolType:    "grpc",
-				ProtocolVersion: "v1.0.0",
+				Host:         "101.43.84.47",
+				Port:         10205,
+				ENV:          "sendmsgenv",
+				Region:       "sh",
+				IDC:          "idc01",
+				SYS:          "test-system",
+				ProtocolType: "grpc",
 				ProducerConfig: conf.ProducerConfig{
 					ProducerGroup:    "test-producer-group",
 					LoadBalancerType: conf.Random,
@@ -97,8 +96,8 @@ func Test_eventMeshGRPCClient_Publish(t *testing.T) {
 	defer cancel()
 	go runFakeServer(ctx)
 	cli, err := New(&conf.GRPCConfig{
-		Hosts: []string{"127.0.0.1"},
-		Port:  8086,
+		Host: "127.0.0.1",
+		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
 			ProducerGroup:    "test-publish-group",
 			LoadBalancerType: conf.Random,
@@ -165,8 +164,8 @@ func Test_eventMeshGRPCClient_RequestReply(t *testing.T) {
 	defer cancel()
 	go runFakeServer(ctx)
 	cli, err := New(&conf.GRPCConfig{
-		Hosts: []string{"127.0.0.1"},
-		Port:  8086,
+		Host: "127.0.0.1",
+		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
 			ProducerGroup:    "test-publish-group",
 			LoadBalancerType: conf.Random,
@@ -214,8 +213,8 @@ func Test_eventMeshGRPCClient_BatchPublish(t *testing.T) {
 	defer cancel()
 	go runFakeServer(ctx)
 	cli, err := New(&conf.GRPCConfig{
-		Hosts: []string{"127.0.0.1"},
-		Port:  8086,
+		Host: "127.0.0.1",
+		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
 			ProducerGroup:    "test-publish-group",
 			LoadBalancerType: conf.Random,
@@ -287,8 +286,8 @@ func Test_eventMeshGRPCClient_Subscribe(t *testing.T) {
 	defer cancel()
 	go runFakeServer(ctx)
 	cli, err := New(&conf.GRPCConfig{
-		Hosts: []string{"127.0.0.1"},
-		Port:  8086,
+		Host: "127.0.0.1",
+		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
 			ProducerGroup:    "test-publish-group",
 			LoadBalancerType: conf.Random,
@@ -329,7 +328,7 @@ func Test_eventMeshGRPCClient_Subscribe(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := cli.Subscribe(tt.args.item, tt.args.handler)
+			err := cli.SubscribeStream(tt.args.item, tt.args.handler)
 			assert.NoError(t, err)
 			assert.NoError(t, cli.Close())
 		})
@@ -341,8 +340,8 @@ func Test_eventMeshGRPCClient_UnSubscribe(t *testing.T) {
 	defer cancel()
 	go runFakeServer(ctx)
 	cli, err := New(&conf.GRPCConfig{
-		Hosts: []string{"127.0.0.1"},
-		Port:  8086,
+		Host: "127.0.0.1",
+		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
 			ProducerGroup:    "test-publish-group",
 			LoadBalancerType: conf.Random,
@@ -358,7 +357,7 @@ func Test_eventMeshGRPCClient_UnSubscribe(t *testing.T) {
 		},
 	})
 	assert.NoError(t, err, "create grpc client")
-	err = cli.Subscribe(conf.SubscribeItem{
+	err = cli.SubscribeStream(conf.SubscribeItem{
 		SubscribeMode: 1,
 		SubscribeType: 1,
 		Topic:         "topic-1",

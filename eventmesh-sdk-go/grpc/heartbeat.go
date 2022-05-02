@@ -34,7 +34,7 @@ var (
 // eventMeshHeartbeat heartbeat to keep the client conn
 type eventMeshHeartbeat struct {
 	// clientsMap hold all grp client to send heartbeat msg
-	clientsMap map[string]proto.HeartbeatServiceClient
+	client proto.HeartbeatServiceClient
 	// cfg the configuration for grpc client
 	cfg *conf.GRPCConfig
 	// closeCtx close context
@@ -47,15 +47,10 @@ type eventMeshHeartbeat struct {
 
 // newHeartbeat create heartbeat service, and start a goroutine
 // with all eventmesh server
-func newHeartbeat(ctx context.Context, cfg *conf.GRPCConfig, consMap map[string]*grpc.ClientConn) (*eventMeshHeartbeat, error) {
-	clientsMap := make(map[string]proto.HeartbeatServiceClient)
-	for host, conn := range consMap {
-		cli := proto.NewHeartbeatServiceClient(conn)
-		clientsMap[host] = cli
-	}
-
+func newHeartbeat(ctx context.Context, cfg *conf.GRPCConfig, grpcConn *grpc.ClientConn) (*eventMeshHeartbeat, error) {
+	cli := proto.NewHeartbeatServiceClient(grpcConn)
 	heartbeat := &eventMeshHeartbeat{
-		clientsMap:         clientsMap,
+		client:             cli,
 		cfg:                cfg,
 		closeCtx:           ctx,
 		subscribeItemsLock: new(sync.RWMutex),
@@ -64,16 +59,14 @@ func newHeartbeat(ctx context.Context, cfg *conf.GRPCConfig, consMap map[string]
 	return heartbeat, nil
 }
 
-// run run the ticker to send heartbeat msg
+// run the ticker to send heartbeat msg
 func (e *eventMeshHeartbeat) run() {
 	log.Infof("start heartbeat goroutine")
 	tick := time.NewTicker(e.cfg.Period)
 	for {
 		select {
 		case <-tick.C:
-			for host, cli := range e.clientsMap {
-				go e.sendMsg(cli, host)
-			}
+			go e.sendMsg(e.client)
 		case <-e.closeCtx.Done():
 			log.Infof("exit heartbeat goroutine as closed")
 			return
@@ -82,8 +75,8 @@ func (e *eventMeshHeartbeat) run() {
 }
 
 // sendMsg send heartbeat msg to eventmesh server
-func (e *eventMeshHeartbeat) sendMsg(cli proto.HeartbeatServiceClient, host string) error {
-	log.Debugf("send heartbeat msg to server:%s", host)
+func (e *eventMeshHeartbeat) sendMsg(cli proto.HeartbeatServiceClient) error {
+	log.Debugf("send heartbeat msg to server:%s")
 	cancelCtx, cancel := context.WithTimeout(e.closeCtx, e.cfg.Timeout)
 	defer cancel()
 	e.subscribeItemsLock.RLock()
@@ -104,14 +97,14 @@ func (e *eventMeshHeartbeat) sendMsg(cli proto.HeartbeatServiceClient, host stri
 	}
 	resp, err := cli.Heartbeat(cancelCtx, msg)
 	if err != nil {
-		log.Warnf("failed to send heartbeat msg to :%s, err:%v", host, err)
+		log.Warnf("failed to send heartbeat msg, err:%v", err)
 		return err
 	}
 	if resp.RespCode != Success {
 		log.Warnf("heartbeat msg return err, resp:%s", resp.String())
 		return ErrHeartbeatResp
 	}
-	log.Debugf("success send heartbeat to server:%s, resp:%s", host, resp.String())
+	log.Debugf("success send heartbeat to server resp:%s", resp.String())
 	return nil
 }
 
