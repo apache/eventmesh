@@ -23,7 +23,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// OnMessage on receive message from eventmesh, used in subcribe message
+// OnMessage on receive message from eventmesh, used in subscribe message
 type OnMessage func(*proto.SimpleMessage)
 
 // Interface grpc client to producer and consumer message
