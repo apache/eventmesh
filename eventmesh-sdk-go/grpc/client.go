@@ -62,7 +62,7 @@ func newEventMeshGRPCClient(cfg *conf.GRPCConfig, opts ...GRPCOption) (*eventMes
 		return nil, err
 	}
 	defer func() {
-		if grpConn != nil {
+		if err != nil && grpConn != nil {
 			// if err != nil and the grpc.ClientConn is connected
 			// we need to close it
 			if err := grpConn.Close(); err != nil {
