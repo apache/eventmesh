@@ -88,7 +88,7 @@ func (f *fakeServer) Subscribe(ctx context.Context, msg *proto.Subscription) (*p
 		log.Infof("send webhook msg success", string(buf))
 	}()
 	return &proto.Response{
-		RespCode: "OK",
+		RespCode: "0",
 		RespMsg:  "OK",
 		RespTime: time.Now().Format("2006-01-02 15:04:05"),
 	}, nil

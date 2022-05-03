@@ -45,7 +45,7 @@ func runWebhookServer(ctx context.Context) {
 	}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
-			panic(err)
+			return
 		}
 		fmt.Println("http server shutdown")
 	}()
