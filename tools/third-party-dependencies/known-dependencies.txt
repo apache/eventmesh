@@ -131,4 +131,3 @@ javassist-3.21.0-GA.jar
 nacos-client-2.0.4.jar
 reflections-0.9.11.jar
 snakeyaml-1.23.jar
-spring-boot-starter-web-2.6.7.jar
