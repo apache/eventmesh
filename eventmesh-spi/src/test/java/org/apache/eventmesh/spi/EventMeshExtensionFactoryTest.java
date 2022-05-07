@@ -19,6 +19,7 @@ package org.apache.eventmesh.spi;
 
 import org.apache.eventmesh.spi.example.TestPrototypeExtension;
 import org.apache.eventmesh.spi.example.TestSingletonExtension;
+
 import org.junit.Assert;
 import org.junit.Test;
 

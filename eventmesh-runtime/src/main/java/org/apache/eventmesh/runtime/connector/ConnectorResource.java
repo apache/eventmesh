@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.runtime.connector;
 
 import org.apache.eventmesh.api.connector.ConnectorResourceService;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +28,7 @@ public class ConnectorResource {
     private static final Logger logger = LoggerFactory.getLogger(ConnectorResource.class);
     private static ConnectorResourceService connectorResourceService;
 
-    public void init(String connectorResourcePluginType) throws Exception{
+    public void init(String connectorResourcePluginType) throws Exception {
         connectorResourceService = EventMeshExtensionFactory.getExtension(ConnectorResourceService.class, connectorResourcePluginType);
         if (connectorResourceService == null) {
             logger.error("can't load the connectorResourceService plugin, please check.");
@@ -35,7 +37,7 @@ public class ConnectorResource {
         connectorResourceService.init();
     }
 
-    public void release()throws Exception{
+    public void release() throws Exception {
         connectorResourceService.release();
     }
 }

@@ -25,15 +25,15 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-public class JsonUtils {      
+public class JsonUtils {
 
-    private static ObjectMapper objectMapper;   
+    private static ObjectMapper objectMapper;
 
     static {
-        objectMapper = new ObjectMapper();        
+        objectMapper = new ObjectMapper();
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);          
+        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     }
 
     public static <T> byte[] serialize(String topic, Class<T> data) throws JsonProcessingException {
@@ -47,7 +47,7 @@ public class JsonUtils {
         if (obj == null) {
             return null;
         }
-        return objectMapper.writeValueAsString(obj);              
+        return objectMapper.writeValueAsString(obj);
     }
 
     public static <T> T toObject(String json, Class<T> clazz) throws JsonProcessingException {

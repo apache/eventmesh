@@ -73,11 +73,15 @@ sh start.sh
 ***2.3.2.1 安装插件***
 
 有两种方式安装插件
+
 - classpath加载：本地开发可以通过在eventmesh-starter模块build.gradle中进行声明，例如声明使用rocketmq插件
+
 ```java
    implementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
 ```
+
 - 文件加载：通过将插件安装到插件目录，EventMesh在运行时会根据条件自动加载插件目录下的插件，可以通过执行以下命令安装插件
+
 ```shell
 ./gradlew clean jar dist && ./gradlew installPlugin
 ```
@@ -86,6 +90,7 @@ sh start.sh
 
 EventMesh会默认加载dist/plugin目录下的插件，可以通过`-DeventMeshPluginDir=your_plugin_directory`来改变插件目录。运行时需要使用的插件实例可以在
 `confPath`目录下面的`eventmesh.properties`中进行配置。例如通过以下设置声明在运行时使用rocketmq插件。
+
 ```properties
 #connector plugin
 eventMesh.connector.plugin.type=rocketmq
@@ -99,6 +104,7 @@ eventMesh.connector.plugin.type=rocketmq
 -Deventmesh.home=eventmesh-runtime
 -DconfPath=eventmesh-runtime/conf
 ```
+
 > 注：如果操作系统为Windows, 可能需要将文件分隔符换成\
 
 **2.3.4 启动运行**
@@ -129,6 +135,7 @@ eventMesh.connector.plugin.type=rocketmq
 | ---------------------- | ------ | ----------------------- |
 | eventMesh.server.http.port | 10105  | EventMesh http 服务端口 |
 | eventMesh.server.tcp.port  | 10000  | EventMesh tcp 服务端口  |
+| eventMesh.server.grpc.port  | 10205  | EventMesh grpc 服务端口  |
 
 **rocketmq-client.properties**
 
@@ -277,4 +284,3 @@ Linux
   ```
 
   之后 , 你可以在 `/logs` 目录下面看到不同模式的运行日志
-

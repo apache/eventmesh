@@ -27,7 +27,7 @@ public class TopicResponse {
 
     @JsonCreator
     public TopicResponse(@JsonProperty("topic") String topic,
-        @JsonProperty("created_time") String createdTime) {
+                         @JsonProperty("created_time") String createdTime) {
         super();
         this.topic = topic;
         this.createdTime = createdTime;
@@ -51,12 +51,12 @@ public class TopicResponse {
     @JsonProperty("created_time")
     public void setCreatedTime(String createdTime) {
         this.createdTime = createdTime;
-    } 
+    }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("TopicResponse {topic=" + this.topic + ",");   
+        sb.append("TopicResponse {topic=" + this.topic + ",");
         sb.append("created_time=" + this.createdTime + "}");
         return sb.toString();
     }

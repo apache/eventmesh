@@ -88,7 +88,7 @@ fi
 
 echo "eventmesh use java location= "$JAVA
 
-EVENTMESH_HOME=`cd "./.." && pwd`
+EVENTMESH_HOME=`cd $(dirname $0)/.. && pwd`
 
 export EVENTMESH_HOME
 

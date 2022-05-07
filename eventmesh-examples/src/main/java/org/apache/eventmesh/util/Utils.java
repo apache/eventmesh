@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.util;
 
+import org.apache.eventmesh.common.ExampleConstants;
+
 import org.apache.commons.lang3.SystemUtils;
 
 import java.io.InputStream;
@@ -32,9 +34,8 @@ public class Utils {
     /**
      * Get local IP address
      *
-     * @throws SocketException
      */
-    public static String getLocalIP() throws UnknownHostException, SocketException {
+    public static String getLocalIP() throws UnknownHostException {
         if (isWindowsOS()) {
             return InetAddress.getLocalHost().getHostAddress();
         } else {
@@ -55,9 +56,8 @@ public class Utils {
      * Get local IP address under Linux system
      *
      * @return IP address
-     * @throws SocketException
      */
-    private static String getLinuxLocalIp() throws SocketException {
+    private static String getLinuxLocalIp() {
         String ip = "";
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
@@ -68,9 +68,9 @@ public class Utils {
                          enumIpAddr.hasMoreElements(); ) {
                         InetAddress inetAddress = enumIpAddr.nextElement();
                         if (!inetAddress.isLoopbackAddress()) {
-                            String ipaddress = inetAddress.getHostAddress().toString();
+                            String ipaddress = inetAddress.getHostAddress();
                             if (!ipaddress.contains("::") && !ipaddress.contains("0:0:")
-                                && !ipaddress.contains("fe80")) {
+                                    && !ipaddress.contains("fe80")) {
                                 ip = ipaddress;
                             }
                         }
@@ -78,7 +78,7 @@ public class Utils {
                 }
             }
         } catch (SocketException ex) {
-            ip = "127.0.0.1";
+            ip = ExampleConstants.DEFAULT_EVENTMESH_IP;
             ex.printStackTrace();
         }
         return ip;

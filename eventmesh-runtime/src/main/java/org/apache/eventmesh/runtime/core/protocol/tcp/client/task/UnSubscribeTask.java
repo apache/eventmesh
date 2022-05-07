@@ -17,13 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.task;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import io.netty.channel.ChannelHandlerContext;
-
-import org.apache.commons.collections4.MapUtils;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
@@ -31,8 +24,17 @@ import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.util.Utils;
+
+import org.apache.commons.collections4.MapUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.netty.channel.ChannelHandlerContext;
 
 public class UnSubscribeTask extends AbstractTask {
 
@@ -61,7 +63,8 @@ public class UnSubscribeTask extends AbstractTask {
                     .getSeq()));
         } catch (Exception e) {
             messageLogger.error("UnSubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
-            msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), "exception while " +
+            msg.setHeader(new Header(Command.UNSUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), "exception while "
+                    +
                     "unSubscribing", pkg.getHeader().getSeq()));
         } finally {
             Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);

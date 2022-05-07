@@ -47,9 +47,10 @@ public class RedirectInfo {
 
     @Override
     public String toString() {
-        return "RedirectInfo{" +
-                "ip='" + ip + '\'' +
-                ", port=" + port +
-                '}';
+        return "RedirectInfo{"
+                + "ip='" + ip
+                + '\''
+                + ", port=" + port
+                + '}';
     }
 }

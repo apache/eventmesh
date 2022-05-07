@@ -27,6 +27,7 @@ public @interface EventMeshSPI {
 
 }
 ```
+
 Use annotation to declare the interface is an SPI extended interface can improve the readability of the code.
 On the other hand, @EventMeshSPI contains a isSingleton attribute which used to declare whether the extension instance is a singleton.
 If this attribute is true, that means the instance of this interface will be singleton.

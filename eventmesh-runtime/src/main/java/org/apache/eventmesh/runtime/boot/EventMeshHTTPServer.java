@@ -17,10 +17,18 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
+import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
+import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.AdminMetricsProcessor;
@@ -34,16 +42,23 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.SubscribeProces
 import org.apache.eventmesh.runtime.core.protocol.http.processor.UnSubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
-import org.apache.eventmesh.runtime.core.protocol.http.push.AbstractHTTPPushRequest;
+import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
-import org.apache.eventmesh.runtime.trace.OpenTelemetryTraceFactory;
+import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.trace.api.TracePluginFactory;
+import org.apache.eventmesh.trace.api.TraceService;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import org.assertj.core.util.Lists;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.RateLimiter;
@@ -56,6 +71,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
+    private TraceService traceService;
+
+    private Registry registry;
+
     public final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
         new ConcurrentHashMap<>();
 
@@ -67,6 +86,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         super(eventMeshHttpConfiguration.httpServerPort, eventMeshHttpConfiguration.eventMeshServerUseTls);
         this.eventMeshServer = eventMeshServer;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
+        this.registry = eventMeshServer.getRegistry();
     }
 
     public EventMeshServer getEventMeshServer() {
@@ -96,6 +116,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     private RateLimiter msgRateLimiter;
 
     private RateLimiter batchRateLimiter;
+
+    public HTTPClientPool httpClientPool = new HTTPClientPool(10);
 
     public void shutdownThreadPool() throws Exception {
         batchMsgExecutor.shutdown();
@@ -190,7 +212,17 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         msgRateLimiter = RateLimiter.create(eventMeshHttpConfiguration.eventMeshHttpMsgReqNumPerSecond);
         batchRateLimiter = RateLimiter.create(eventMeshHttpConfiguration.eventMeshBatchMsgRequestNumPerSecond);
 
-        metrics = new HTTPMetricsServer(this);
+        // The MetricsRegistry is singleton, so we can use factory method to get.
+        final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
+        Optional.ofNullable(eventMeshHttpConfiguration.eventMeshMetricsPluginType)
+            .ifPresent(
+                metricsPlugins -> metricsPlugins.forEach(
+                    pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
+
+        httpRetryer = new HttpRetryer(this);
+        httpRetryer.init();
+
+        metrics = new HTTPMetricsServer(this, metricsRegistries);
         metrics.init();
 
         consumerManager = new ConsumerManager(this);
@@ -199,14 +231,18 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         producerManager = new ProducerManager(this);
         producerManager.init();
 
-        httpRetryer = new HttpRetryer(this);
-        httpRetryer.init();
-
         registerHTTPRequestProcessor();
 
-        super.openTelemetryTraceFactory = new OpenTelemetryTraceFactory(eventMeshHttpConfiguration);
-        super.tracer = openTelemetryTraceFactory.getTracer(this.getClass().toString());
-        super.textMapPropagator = openTelemetryTraceFactory.getTextMapPropagator();
+        //get the trace-plugin
+        if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.eventMeshTracePluginType) && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
+
+            traceService =
+                TracePluginFactory.getTraceService(eventMeshHttpConfiguration.eventMeshTracePluginType);
+            traceService.init();
+            super.tracer = traceService.getTracer(super.getClass().toString());
+            super.textMapPropagator = traceService.getTextMapPropagator();
+            super.useTrace = true;
+        }
 
         logger.info("--------------------------EventMeshHTTPServer inited");
     }
@@ -218,6 +254,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         consumerManager.start();
         producerManager.start();
         httpRetryer.start();
+        if (eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
+            this.register();
+        }
         logger.info("--------------------------EventMeshHTTPServer started");
     }
 
@@ -228,16 +267,55 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         metrics.shutdown();
 
+        if (traceService != null) {
+            traceService.shutdown();
+        }
+
         consumerManager.shutdown();
 
         shutdownThreadPool();
 
-        AbstractHTTPPushRequest.httpClientPool.shutdown();
+        httpClientPool.shutdown();
 
         producerManager.shutdown();
 
         httpRetryer.shutdown();
+
+        if (eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
+            this.unRegister();
+            registry.shutdown();
+        }
         logger.info("--------------------------EventMeshHTTPServer shutdown");
+    }
+
+    public boolean register() {
+        boolean registerResult = false;
+        try {
+            String endPoints = IPUtils.getLocalAddress()
+                + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.httpServerPort;
+            EventMeshRegisterInfo self = new EventMeshRegisterInfo();
+            self.setEventMeshClusterName(eventMeshHttpConfiguration.eventMeshCluster);
+            self.setEventMeshName(eventMeshHttpConfiguration.eventMeshName + "-" + ConfigurationContextUtil.HTTP);
+            self.setEndPoint(endPoints);
+            registerResult = registry.register(self);
+        } catch (Exception e) {
+            logger.warn("eventMesh register to registry failed", e);
+        }
+
+        return registerResult;
+    }
+
+    private void unRegister() throws Exception {
+        String endPoints = IPUtils.getLocalAddress()
+            + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.httpServerPort;
+        EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();
+        eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.eventMeshCluster);
+        eventMeshUnRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.eventMeshName);
+        eventMeshUnRegisterInfo.setEndPoint(endPoints);
+        boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);
+        if (!registerResult) {
+            throw new EventMeshException("eventMesh fail to unRegister");
+        }
     }
 
     public void registerHTTPRequestProcessor() {

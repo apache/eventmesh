@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.rebalance;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventMeshRebalanceService {
     protected final Logger logger = LoggerFactory.getLogger(EventMeshRebalanceService.class);
@@ -44,8 +46,8 @@ public class EventMeshRebalanceService {
         this.rebalanceIntervalMills = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshTcpRebalanceIntervalInMills;
     }
 
-    public void init(){
-        this.serviceRebalanceScheduler = ThreadPoolFactory.createScheduledExecutor(5, new EventMeshThreadFactoryImpl("proxy-rebalance-sch",true));
+    public void init() {
+        this.serviceRebalanceScheduler = ThreadPoolFactory.createScheduledExecutor(5, new EventMeshThreadFactoryImpl("proxy-rebalance-sch", true));
         logger.info("rebalance service inited......");
     }
 
@@ -61,12 +63,12 @@ public class EventMeshRebalanceService {
         logger.info("rebalance service started......");
     }
 
-    public void shutdown(){
+    public void shutdown() {
         this.serviceRebalanceScheduler.shutdown();
         logger.info("rebalance service shutdown......");
     }
 
-    public void printRebalanceThreadPoolState(){
+    public void printRebalanceThreadPoolState() {
         EventMeshUtil.printState((ThreadPoolExecutor) serviceRebalanceScheduler);
     }
 }

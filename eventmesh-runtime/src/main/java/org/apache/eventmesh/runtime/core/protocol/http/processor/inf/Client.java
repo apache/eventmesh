@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 
 import java.util.Date;
@@ -48,16 +49,16 @@ public class Client {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("endPoint={env=").append(env)
-            .append(",idc=").append(idc)
-            .append(",consumerGroup=").append(consumerGroup)
-            .append(",topic=").append(topic)
-            .append(",url=").append(url)
-            .append(",sys=").append(sys)
-            .append(",ip=").append(ip)
-            .append(",pid=").append(pid)
-            .append(",hostname=").append(hostname)
-            .append(",apiVersion=").append(apiVersion)
-            .append(",registerTime=").append("}");
+                .append(",idc=").append(idc)
+                .append(",consumerGroup=").append(consumerGroup)
+                .append(",topic=").append(topic)
+                .append(",url=").append(url)
+                .append(",sys=").append(sys)
+                .append(",ip=").append(ip)
+                .append(",pid=").append(pid)
+                .append(",hostname=").append(hostname)
+                .append(",apiVersion=").append(apiVersion)
+                .append(",registerTime=").append("}");
         return sb.toString();
     }
 }

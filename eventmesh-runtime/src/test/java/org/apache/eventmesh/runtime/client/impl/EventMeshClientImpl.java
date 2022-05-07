@@ -17,11 +17,10 @@
 
 package org.apache.eventmesh.runtime.client.impl;
 
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-
 import org.apache.eventmesh.runtime.client.api.EventMeshClient;
 import org.apache.eventmesh.runtime.client.api.PubClient;
 import org.apache.eventmesh.runtime.client.api.SubClient;
@@ -84,13 +83,13 @@ public class EventMeshClientImpl implements EventMeshClient {
 
     @Override
     public Package justSubscribe(String topic, SubscriptionMode subscriptionMode,
-        SubscriptionType subscriptionType) throws Exception {
+                                 SubscriptionType subscriptionType) throws Exception {
         return this.subClient.justSubscribe(topic, subscriptionMode, subscriptionType);
     }
 
     @Override
     public Package justUnsubscribe(String topic, SubscriptionMode subscriptionMode,
-        SubscriptionType subscriptionType) throws Exception {
+                                   SubscriptionType subscriptionType) throws Exception {
         return this.subClient.justUnsubscribe(topic, subscriptionMode, subscriptionType);
     }
 
@@ -104,33 +103,37 @@ public class EventMeshClientImpl implements EventMeshClient {
 
     @Override
     public String toString() {
-        return "AccessClientImpl{" +
-            "accessHost='" + accessHost + '\'' +
-            ", accessPort=" + accessPort +
-            ", agent=" + agent +
-            '}';
+        return "AccessClientImpl{"
+                +
+                "accessHost='" + accessHost + '\''
+                +
+                ", accessPort=" + accessPort
+                +
+                ", agent=" + agent
+                +
+                '}';
     }
 
     @Deprecated
     public EventMeshClientImpl(String accessServer, String busiTag, String subSystem) {
-//        this.accessServer = accessServer;
-//        this.pubClient = new PubClientImpl(StringUtils.split(this.accessServer, ":")[0],
-//                Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createPubUserAgent
-//                (busiTag, subSystem));
-//        this.subClient = new SubClientImpl(StringUtils.split(this.accessServer, ":")[0],
-//                Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createSubUserAgent
-//                (busiTag, subSystem));
+        //this.accessServer = accessServer;
+        //this.pubClient = new PubClientImpl(StringUtils.split(this.accessServer, ":")[0],
+        //        Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createPubUserAgent
+        //        (busiTag, subSystem));
+        //this.subClient = new SubClientImpl(StringUtils.split(this.accessServer, ":")[0],
+        //        Integer.parseInt(StringUtils.split(this.accessServer, ":")[1]), OldTestUserAgentFactory.createSubUserAgent
+        //        (busiTag, subSystem));
     }
 
-//    @Override
-//    public void sysLog() throws Exception {
-//        subClient.sysLog();
-//    }
-//
-//    @Override
-//    public void traceLog() throws Exception {
-//        subClient.traceLog();
-//    }
+    //@Override
+    //public void sysLog() throws Exception {
+    //    subClient.sysLog();
+    //}
+    //
+    //@Override
+    //public void traceLog() throws Exception {
+    //    subClient.traceLog();
+    //}
 
     @Override
     public void goodbye() throws Exception {

@@ -29,6 +29,8 @@ public class EventMeshConstants {
 
     public static final String PROTOCOL_TCP = "tcp";
 
+    public static final String PROTOCOL_GRPC = "grpc";
+
     public static final String DEFAULT_CHARSET = "UTF-8";
 
     public static final String IP_PORT_SEPARATOR = ":";
@@ -116,7 +118,6 @@ public class EventMeshConstants {
     public static final String LEAVE_TIME = "leave" + Constants.MESSAGE_PROP_SEPARATOR + "time";            //leaveBrokerTime
     public static final String ARRIVE_TIME = "arrive" + Constants.MESSAGE_PROP_SEPARATOR + "time";
     public static final String STORE_TIME = "store" + Constants.MESSAGE_PROP_SEPARATOR + "time";
-
 
 
 }

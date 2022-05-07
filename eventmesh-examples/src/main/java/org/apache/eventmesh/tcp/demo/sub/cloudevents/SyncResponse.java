@@ -19,25 +19,22 @@ package org.apache.eventmesh.tcp.demo.sub.cloudevents;
 
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
-import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
-import io.cloudevents.CloudEvent;
-import io.netty.channel.ChannelHandlerContext;
-import lombok.extern.slf4j.Slf4j;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Properties;
+
+import io.cloudevents.CloudEvent;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
@@ -46,22 +43,22 @@ public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
 
     private static EventMeshTCPClient<CloudEvent> client;
 
-    public static void main(String[] agrs) throws Exception {
-        Properties properties = Utils.readPropertiesFile("application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty("eventmesh.tcp.port"));
+    public static void main(String[] args) throws Exception {
+        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final int eventMeshTcpPort = Integer.parseInt(properties.getProperty(ExampleConstants.EVENTMESH_TCP_PORT));
         UserAgent userAgent = EventMeshTestUtils.generateClient2();
         EventMeshTCPClientConfig eventMeshTcpClientConfig = EventMeshTCPClientConfig.builder()
-            .host(eventMeshIp)
-            .port(eventMeshTcpPort)
-            .userAgent(userAgent)
-            .build();
+                .host(eventMeshIp)
+                .port(eventMeshTcpPort)
+                .userAgent(userAgent)
+                .build();
         try {
             client = EventMeshTCPClientFactory
-                .createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
+                    .createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
-            client.subscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
+            client.subscribe(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
             // Synchronize RR messages
             client.registerSubBusiHandler(handler);
 
@@ -75,7 +72,7 @@ public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
     @Override
     public Optional<CloudEvent> handle(CloudEvent event) {
         String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-        log.info("receive sync rr msg================{}|{}", event, content);
+        log.info("receive sync rr msg: {}|{}", event, content);
         return Optional.of(event);
     }
 

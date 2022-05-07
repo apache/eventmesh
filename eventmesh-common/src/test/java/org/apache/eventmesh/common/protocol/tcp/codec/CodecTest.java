@@ -17,19 +17,26 @@
 
 package org.apache.eventmesh.common.protocol.tcp.codec;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.PooledByteBufAllocator;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
+
+import java.util.ArrayList;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.PooledByteBufAllocator;
 
 public class CodecTest {
 
     @Test
     public void testCodec() throws Exception {
-        Package testP = new Package();
+        Header header = new Header();
+        header.setCmd(Command.HELLO_REQUEST);
+        Package testP = new Package(header);
+        testP.setBody(new Object());
         Codec.Encoder ce = new Codec.Encoder();
         ByteBuf buf = PooledByteBufAllocator.DEFAULT.buffer();
         ce.encode(null, testP, buf);
@@ -37,7 +44,7 @@ public class CodecTest {
         ArrayList<Object> result = new ArrayList<>();
         cd.decode(null, buf, result);
         Assert.assertNotNull(result.get(0));
-        Assert.assertEquals(result.get(0).toString(), testP.toString());
+        Assert.assertEquals(testP.getHeader(), ((Package) result.get(0)).getHeader());
     }
 
 }

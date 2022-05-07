@@ -17,11 +17,14 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,10 +70,14 @@ public class PushContext {
 
     @Override
     public String toString() {
-        return "PushContext{" +
-                "deliveredMsgsCount=" + deliveredMsgsCount.longValue() +
-                ",deliverFailCount=" + deliverFailMsgsCount.longValue() +
-                ",unAckMsg=" + CollectionUtils.size(unAckMsg) +
+        return "PushContext{"
+                +
+                "deliveredMsgsCount=" + deliveredMsgsCount.longValue()
+                +
+                ",deliverFailCount=" + deliverFailMsgsCount.longValue()
+                +
+                ",unAckMsg=" + CollectionUtils.size(unAckMsg)
+                +
                 ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 }

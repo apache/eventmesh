@@ -17,12 +17,14 @@
 
 package org.apache.eventmesh.runtime.client.api;
 
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
-import org.apache.eventmesh.common.protocol.SubscriptionMode;
 
+/**
+ * EventMeshClient
+ */
 public interface EventMeshClient {
 
     Package rr(Package msg, long timeout) throws Exception;

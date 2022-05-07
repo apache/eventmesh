@@ -17,12 +17,27 @@
 
 package org.apache.eventmesh.runtime.configuration;
 
-import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
+import inet.ipaddr.IPAddress;
+import inet.ipaddr.IPAddressString;
+
 public class EventMeshHTTPConfiguration extends CommonConfiguration {
+
+    public static Logger logger = LoggerFactory.getLogger(EventMeshHTTPConfiguration.class);
 
     public int httpServerPort = 10105;
 
@@ -68,6 +83,14 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public int eventMeshBatchMsgRequestNumPerSecond = 20000;
 
+    public int eventMeshEventSize = 1000;
+
+    public int eventMeshEventBatchSize = 10;
+
+    public List<IPAddress> eventMeshIpv4BlackList = Collections.emptyList();
+
+    public List<IPAddress> eventMeshIpv6BlackList = Collections.emptyList();
+
     public EventMeshHTTPConfiguration(ConfigurationWrapper configurationWrapper) {
         super(configurationWrapper);
     }
@@ -78,114 +101,210 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
         if (configurationWrapper != null) {
             String httpServerPortStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HTTP_PORT);
-            Preconditions.checkState(StringUtils.isNotEmpty(httpServerPortStr) && StringUtils.isNumeric(httpServerPortStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_HTTP_PORT));
-            httpServerPort = Integer.valueOf(StringUtils.deleteWhitespace(httpServerPortStr));
+            Preconditions.checkState(StringUtils.isNotEmpty(httpServerPortStr)
+                    && StringUtils.isNumeric(httpServerPortStr), String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_HTTP_PORT));
+            httpServerPort = Integer.parseInt(StringUtils.deleteWhitespace(httpServerPortStr));
 
-            String eventMeshServerBatchMsgThreadNumStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_BATCHMSG_THREAD_NUM);
-            if (StringUtils.isNotEmpty(eventMeshServerBatchMsgThreadNumStr) && StringUtils.isNumeric(eventMeshServerBatchMsgThreadNumStr)) {
-                eventMeshServerBatchMsgThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerBatchMsgThreadNumStr));
+            String eventMeshServerBatchMsgThreadNumStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_BATCHMSG_THREAD_NUM);
+            if (StringUtils.isNotEmpty(eventMeshServerBatchMsgThreadNumStr)
+                    && StringUtils.isNumeric(eventMeshServerBatchMsgThreadNumStr)) {
+                eventMeshServerBatchMsgThreadNum =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerBatchMsgThreadNumStr));
             }
 
-            String eventMeshServerBatchMsgReqNumPerSecondStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_BATCHMSG_REQ_NUM_PER_SECOND);
-            if (StringUtils.isNotEmpty(eventMeshServerBatchMsgReqNumPerSecondStr) && StringUtils.isNumeric(eventMeshServerBatchMsgReqNumPerSecondStr)) {
-                eventMeshBatchMsgRequestNumPerSecond = Integer.valueOf(eventMeshServerBatchMsgReqNumPerSecondStr);
+            String eventMeshServerBatchMsgReqNumPerSecondStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_BATCHMSG_REQ_NUM_PER_SECOND);
+            if (StringUtils.isNotEmpty(eventMeshServerBatchMsgReqNumPerSecondStr)
+                    && StringUtils.isNumeric(eventMeshServerBatchMsgReqNumPerSecondStr)) {
+                eventMeshBatchMsgRequestNumPerSecond = Integer.parseInt(eventMeshServerBatchMsgReqNumPerSecondStr);
             }
 
-            String eventMeshServerBatchMsgBatchEnableStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_BATCHMSG_BATCH_ENABLED);
+            String eventMeshServerBatchMsgBatchEnableStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_BATCHMSG_BATCH_ENABLED);
             if (StringUtils.isNotBlank(eventMeshServerBatchMsgBatchEnableStr)) {
-                eventMeshServerBatchMsgBatchEnabled = Boolean.valueOf(eventMeshServerBatchMsgBatchEnableStr);
+                eventMeshServerBatchMsgBatchEnabled = Boolean.parseBoolean(eventMeshServerBatchMsgBatchEnableStr);
             }
 
-            String eventMeshServerAsyncAccumulationThresholdStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ASYNC_ACCUMULATION_THRESHOLD);
-            if (StringUtils.isNotEmpty(eventMeshServerAsyncAccumulationThresholdStr) && StringUtils.isNumeric(eventMeshServerAsyncAccumulationThresholdStr)) {
-                eventMeshServerAsyncAccumulationThreshold = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerAsyncAccumulationThresholdStr));
+            String eventMeshServerAsyncAccumulationThresholdStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ASYNC_ACCUMULATION_THRESHOLD);
+            if (StringUtils.isNotEmpty(eventMeshServerAsyncAccumulationThresholdStr)
+                    && StringUtils.isNumeric(eventMeshServerAsyncAccumulationThresholdStr)) {
+                eventMeshServerAsyncAccumulationThreshold =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerAsyncAccumulationThresholdStr));
             }
 
-            String eventMeshServerSendMsgThreadNumStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SENDMSG_THREAD_NUM);
-            if (StringUtils.isNotEmpty(eventMeshServerSendMsgThreadNumStr) && StringUtils.isNumeric(eventMeshServerSendMsgThreadNumStr)) {
-                eventMeshServerSendMsgThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerSendMsgThreadNumStr));
+            String eventMeshServerSendMsgThreadNumStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SENDMSG_THREAD_NUM);
+            if (StringUtils.isNotEmpty(eventMeshServerSendMsgThreadNumStr)
+                    && StringUtils.isNumeric(eventMeshServerSendMsgThreadNumStr)) {
+                eventMeshServerSendMsgThreadNum =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerSendMsgThreadNumStr));
             }
 
-            String eventMeshServerReplyMsgThreadNumStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REPLYMSG_THREAD_NUM);
-            if (StringUtils.isNotEmpty(eventMeshServerReplyMsgThreadNumStr) && StringUtils.isNumeric(eventMeshServerReplyMsgThreadNumStr)) {
-                eventMeshServerReplyMsgThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerReplyMsgThreadNumStr));
+            String eventMeshServerReplyMsgThreadNumStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REPLYMSG_THREAD_NUM);
+            if (StringUtils.isNotEmpty(eventMeshServerReplyMsgThreadNumStr)
+                    && StringUtils.isNumeric(eventMeshServerReplyMsgThreadNumStr)) {
+                eventMeshServerReplyMsgThreadNum =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerReplyMsgThreadNumStr));
             }
 
-            String eventMeshServerPushMsgThreadNumStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PUSHMSG_THREAD_NUM);
-            if (StringUtils.isNotEmpty(eventMeshServerPushMsgThreadNumStr) && StringUtils.isNumeric(eventMeshServerPushMsgThreadNumStr)) {
-                eventMeshServerPushMsgThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerPushMsgThreadNumStr));
+            String eventMeshServerPushMsgThreadNumStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PUSHMSG_THREAD_NUM);
+            if (StringUtils.isNotEmpty(eventMeshServerPushMsgThreadNumStr)
+                    && StringUtils.isNumeric(eventMeshServerPushMsgThreadNumStr)) {
+                eventMeshServerPushMsgThreadNum =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerPushMsgThreadNumStr));
             }
 
-            String eventMeshServerRegistryThreadNumStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_THREAD_NUM);
-            if (StringUtils.isNotEmpty(eventMeshServerRegistryThreadNumStr) && StringUtils.isNumeric(eventMeshServerRegistryThreadNumStr)) {
-                eventMeshServerRegistryThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerRegistryThreadNumStr));
+            String eventMeshServerRegistryThreadNumStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_THREAD_NUM);
+            if (StringUtils.isNotEmpty(eventMeshServerRegistryThreadNumStr)
+                    && StringUtils.isNumeric(eventMeshServerRegistryThreadNumStr)) {
+                eventMeshServerRegistryThreadNum =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerRegistryThreadNumStr));
             }
 
-            String eventMeshServerClientManageThreadNumStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_CLIENTMANAGE_THREAD_NUM);
-            if (StringUtils.isNotEmpty(eventMeshServerClientManageThreadNumStr) && StringUtils.isNumeric(eventMeshServerClientManageThreadNumStr)) {
-                eventMeshServerClientManageThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerClientManageThreadNumStr));
+            String eventMeshServerClientManageThreadNumStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_CLIENTMANAGE_THREAD_NUM);
+            if (StringUtils.isNotEmpty(eventMeshServerClientManageThreadNumStr)
+                    && StringUtils.isNumeric(eventMeshServerClientManageThreadNumStr)) {
+                eventMeshServerClientManageThreadNum =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerClientManageThreadNumStr));
             }
 
-            String eventMeshServerPullRegistryIntervalStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULL_REGISTRY_INTERVAL);
-            if (StringUtils.isNotEmpty(eventMeshServerPullRegistryIntervalStr) && StringUtils.isNumeric(eventMeshServerPullRegistryIntervalStr)) {
-                eventMeshServerPullRegistryInterval = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerPullRegistryIntervalStr));
+            String eventMeshServerPullRegistryIntervalStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULL_REGISTRY_INTERVAL);
+            if (StringUtils.isNotEmpty(eventMeshServerPullRegistryIntervalStr)
+                    && StringUtils.isNumeric(eventMeshServerPullRegistryIntervalStr)) {
+                eventMeshServerPullRegistryInterval =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerPullRegistryIntervalStr));
             }
 
-            String eventMeshServerAdminThreadNumStr = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ADMIN_THREAD_NUM);
-            if (StringUtils.isNotEmpty(eventMeshServerAdminThreadNumStr) && StringUtils.isNumeric(eventMeshServerAdminThreadNumStr)) {
-                eventMeshServerAdminThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerAdminThreadNumStr));
+            String eventMeshServerAdminThreadNumStr =
+                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ADMIN_THREAD_NUM);
+            if (StringUtils.isNotEmpty(eventMeshServerAdminThreadNumStr)
+                    && StringUtils.isNumeric(eventMeshServerAdminThreadNumStr)) {
+                eventMeshServerAdminThreadNum =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerAdminThreadNumStr));
             }
 
-            String eventMeshServerRetryBlockQSizeStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_RETRY_BLOCKQ_SIZE);
-            if (StringUtils.isNotEmpty(eventMeshServerRetryBlockQSizeStr) && StringUtils.isNumeric(eventMeshServerRetryBlockQSizeStr)) {
-                eventMeshServerRetryBlockQSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerRetryBlockQSizeStr));
+            String eventMeshServerRetryBlockQSizeStr =
+                    configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_RETRY_BLOCKQ_SIZE);
+            if (StringUtils.isNotEmpty(eventMeshServerRetryBlockQSizeStr)
+                    && StringUtils.isNumeric(eventMeshServerRetryBlockQSizeStr)) {
+                eventMeshServerRetryBlockQSize =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerRetryBlockQSizeStr));
             }
 
-            String eventMeshServerBatchBlockQSizeStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_BATCHMSG_BLOCKQ_SIZE);
-            if (StringUtils.isNotEmpty(eventMeshServerBatchBlockQSizeStr) && StringUtils.isNumeric(eventMeshServerBatchBlockQSizeStr)) {
-                eventMeshServerBatchBlockQSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerBatchBlockQSizeStr));
+            String eventMeshServerBatchBlockQSizeStr =
+                    configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_BATCHMSG_BLOCKQ_SIZE);
+            if (StringUtils.isNotEmpty(eventMeshServerBatchBlockQSizeStr)
+                    && StringUtils.isNumeric(eventMeshServerBatchBlockQSizeStr)) {
+                eventMeshServerBatchBlockQSize =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerBatchBlockQSizeStr));
             }
 
-            String eventMeshServerSendMsgBlockQSizeStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SENDMSG_BLOCKQ_SIZE);
-            if (StringUtils.isNotEmpty(eventMeshServerSendMsgBlockQSizeStr) && StringUtils.isNumeric(eventMeshServerSendMsgBlockQSizeStr)) {
-                eventMeshServerSendMsgBlockQSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerSendMsgBlockQSizeStr));
+            String eventMeshServerSendMsgBlockQSizeStr =
+                    configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SENDMSG_BLOCKQ_SIZE);
+            if (StringUtils.isNotEmpty(eventMeshServerSendMsgBlockQSizeStr)
+                    && StringUtils.isNumeric(eventMeshServerSendMsgBlockQSizeStr)) {
+                eventMeshServerSendMsgBlockQSize =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerSendMsgBlockQSizeStr));
             }
 
-            String eventMeshServerPushMsgBlockQSizeStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_PUSHMSG_BLOCKQ_SIZE);
-            if (StringUtils.isNotEmpty(eventMeshServerPushMsgBlockQSizeStr) && StringUtils.isNumeric(eventMeshServerPushMsgBlockQSizeStr)) {
-                eventMeshServerPushMsgBlockQSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerPushMsgBlockQSizeStr));
+            String eventMeshServerPushMsgBlockQSizeStr =
+                    configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_PUSHMSG_BLOCKQ_SIZE);
+            if (StringUtils.isNotEmpty(eventMeshServerPushMsgBlockQSizeStr)
+                    && StringUtils.isNumeric(eventMeshServerPushMsgBlockQSizeStr)) {
+                eventMeshServerPushMsgBlockQSize =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerPushMsgBlockQSizeStr));
             }
 
-            String eventMeshServerClientManageBlockQSizeStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_CLIENTM_BLOCKQ_SIZE);
-            if (StringUtils.isNotEmpty(eventMeshServerClientManageBlockQSizeStr) && StringUtils.isNumeric(eventMeshServerClientManageBlockQSizeStr)) {
-                eventMeshServerClientManageBlockQSize = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerClientManageBlockQSizeStr));
+            String eventMeshServerClientManageBlockQSizeStr =
+                    configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_CLIENTM_BLOCKQ_SIZE);
+            if (StringUtils.isNotEmpty(eventMeshServerClientManageBlockQSizeStr)
+                    && StringUtils.isNumeric(eventMeshServerClientManageBlockQSizeStr)) {
+                eventMeshServerClientManageBlockQSize =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerClientManageBlockQSizeStr));
             }
 
-            String eventMeshServerBusyCheckIntervalStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_BUSY_CHECK_INTERVAL);
-            if (StringUtils.isNotEmpty(eventMeshServerBusyCheckIntervalStr) && StringUtils.isNumeric(eventMeshServerBusyCheckIntervalStr)) {
-                eventMeshServerBusyCheckInterval = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerBusyCheckIntervalStr));
+            String eventMeshServerBusyCheckIntervalStr =
+                    configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_BUSY_CHECK_INTERVAL);
+            if (StringUtils.isNotEmpty(eventMeshServerBusyCheckIntervalStr)
+                    && StringUtils.isNumeric(eventMeshServerBusyCheckIntervalStr)) {
+                eventMeshServerBusyCheckInterval =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerBusyCheckIntervalStr));
+
             }
 
-            String eventMeshServerConsumerEnabledStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_CONSUMER_ENABLED);
+            String eventMeshServerConsumerEnabledStr =
+                    configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_CONSUMER_ENABLED);
             if (StringUtils.isNotEmpty(eventMeshServerConsumerEnabledStr)) {
-                eventMeshServerConsumerEnabled = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerConsumerEnabledStr));
+                eventMeshServerConsumerEnabled =
+                        Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerConsumerEnabledStr));
             }
 
-            String eventMeshServerRetryThreadNumStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_RETRY_THREAD_NUM);
-            if (StringUtils.isNotEmpty(eventMeshServerRetryThreadNumStr) && StringUtils.isNumeric(eventMeshServerRetryThreadNumStr)) {
-                eventMeshServerRetryThreadNum = Integer.valueOf(StringUtils.deleteWhitespace(eventMeshServerRetryThreadNumStr));
+
+            String eventMeshServerRetryThreadNumStr =
+                    configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_RETRY_THREAD_NUM);
+            if (StringUtils.isNotEmpty(eventMeshServerRetryThreadNumStr)
+                    && StringUtils.isNumeric(eventMeshServerRetryThreadNumStr)) {
+                eventMeshServerRetryThreadNum =
+                        Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerRetryThreadNumStr));
+
             }
 
             String eventMeshServerUseTlsStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_HTTPS_ENABLED);
             if (StringUtils.isNotEmpty(eventMeshServerUseTlsStr)) {
-                eventMeshServerUseTls = Boolean.valueOf(StringUtils.deleteWhitespace(eventMeshServerUseTlsStr));
+                eventMeshServerUseTls = Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerUseTlsStr));
             }
 
-            String eventMeshHttpMsgReqNumPerSecondStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND);
-            if (StringUtils.isNotEmpty(eventMeshHttpMsgReqNumPerSecondStr) && StringUtils.isNumeric(eventMeshHttpMsgReqNumPerSecondStr)) {
-                eventMeshHttpMsgReqNumPerSecond = Integer.valueOf(eventMeshHttpMsgReqNumPerSecondStr);
+
+            String eventMeshHttpMsgReqNumPerSecondStr =
+                    configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND);
+            if (StringUtils.isNotEmpty(eventMeshHttpMsgReqNumPerSecondStr)
+                    && StringUtils.isNumeric(eventMeshHttpMsgReqNumPerSecondStr)) {
+                eventMeshHttpMsgReqNumPerSecond = Integer.parseInt(eventMeshHttpMsgReqNumPerSecondStr);
+
+            }
+
+            String eventSize = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_EVENTSIZE);
+            if (StringUtils.isNotEmpty(eventSize) && StringUtils.isNumeric(eventSize)) {
+                eventMeshEventSize = Integer.parseInt(eventSize);
+            }
+
+            String eventBatchSize = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_EVENT_BATCHSIZE);
+            if (StringUtils.isNotEmpty(eventBatchSize) && StringUtils.isNumeric(eventBatchSize)) {
+                eventMeshEventBatchSize = Integer.parseInt(eventBatchSize);
+            }
+
+            String ipv4BlackList = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_IPV4_BLACK_LIST);
+            if (StringUtils.isNotEmpty(ipv4BlackList)) {
+                eventMeshIpv4BlackList = getBlacklist(ipv4BlackList);
+            }
+
+            String ipv6BlackList = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_IPV6_BLACK_LIST);
+            if (StringUtils.isNotEmpty(ipv6BlackList)) {
+                eventMeshIpv6BlackList = getBlacklist(ipv6BlackList);
             }
         }
+    }
+
+    private static List<IPAddress> getBlacklist(String cidrs) {
+        List<String> cidrList = Splitter.on(",").omitEmptyStrings()
+            .trimResults().splitToList(cidrs);
+
+        List<IPAddress> ipAddresses = Lists.newArrayList();
+        for (String cidr : cidrList) {
+            try {
+                ipAddresses.add(new IPAddressString(cidr).toAddress());
+            } catch (Exception e) {
+                logger.warn("Invalid cidr={}", cidr, e);
+            }
+        }
+        return ipAddresses;
     }
 
     static class ConfKeys {
@@ -233,5 +352,13 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
         public static String KEY_EVENTMESH_HTTPS_ENABLED = "eventMesh.server.useTls.enabled";
 
         public static String KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND = "eventMesh.server.http.msgReqnumPerSecond";
+
+        public static String KEY_EVENTMESH_SERVER_EVENTSIZE = "eventMesh.server.maxEventSize";
+
+        public static String KEY_EVENTMESH_SERVER_EVENT_BATCHSIZE = "eventMesh.server.maxEventBatchSize";
+
+        public static String KEY_EVENTMESH_SERVER_IPV4_BLACK_LIST = "eventMesh.server.blacklist.ipv4";
+
+        public static String KEY_EVENTMESH_SERVER_IPV6_BLACK_LIST = "eventMesh.server.blacklist.ipv6";
     }
 }

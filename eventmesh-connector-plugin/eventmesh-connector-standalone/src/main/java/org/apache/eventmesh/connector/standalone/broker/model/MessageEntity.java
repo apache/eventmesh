@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.connector.standalone.broker.model;
 
-import io.cloudevents.CloudEvent;
-
 import java.io.Serializable;
+
+import io.cloudevents.CloudEvent;
 
 public class MessageEntity implements Serializable {
 
