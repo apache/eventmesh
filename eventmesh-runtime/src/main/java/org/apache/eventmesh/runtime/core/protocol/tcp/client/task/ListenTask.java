@@ -46,10 +46,6 @@ public class ListenTask extends AbstractTask {
             Integer status = OPStatus.FAIL.getCode();
             header = new Header(LISTEN_RESPONSE, status, e.toString(), pkg.getHeader().getSeq());
         } finally {
-            //res.setHeader(header);
-            //writeAndFlush(res, startTime, session.getContext(), session);
-            //session.write2Client(res);
-
             //check to avoid send repeatedly
             session.trySendListenResponse(header, startTime, taskExecuteTime);
         }

@@ -124,10 +124,10 @@ So that the command for running EventMesh is:
 
 ```shell
 sudo docker run -d \
-> -p 10000:10000 -p 10105:10105 \
-> -v /data/eventmesh/rocketmq/conf/eventmesh.properties:/data/app/eventmesh/conf/eventmesh.properties \
-> -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties \
-> eventmesh/eventmesh:v1.3.0
+    -p 10000:10000 -p 10105:10105 \
+    -v /data/eventmesh/rocketmq/conf/eventmesh.properties:/data/app/eventmesh/conf/eventmesh.properties \
+    -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties \
+    eventmesh/eventmesh:v1.3.0
 ```
 
 After you executing it and seeing a string below it, the container is running successfully.
