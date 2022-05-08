@@ -124,10 +124,10 @@ sudo vi rocketmq-client.properties
 
 ```shell
 sudo docker run -d \
-> -p 10000:10000 -p 10105:10105 \
-> -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties \
-> -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties \
-> eventmesh/eventmesh:v1.3.0
+    -p 10000:10000 -p 10105:10105 \
+    -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties \
+    -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties \
+    eventmesh/eventmesh:v1.3.0
 ```
 
 如果运行命令之后看到新输出一行字符串，那么运行 EventMesh 镜像的容器就启动成功了。

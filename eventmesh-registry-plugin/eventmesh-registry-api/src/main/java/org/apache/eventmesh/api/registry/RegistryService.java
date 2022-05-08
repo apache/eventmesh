@@ -32,6 +32,7 @@ import java.util.Map;
  */
 @EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.REGISTRY)
 public interface RegistryService {
+
     void init() throws RegistryException;
 
     void start() throws RegistryException;
@@ -41,7 +42,7 @@ public interface RegistryService {
     List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws RegistryException;
 
     Map<String/*eventMeshName*/, Map<String/*purpose*/, Integer/*num*/>> findEventMeshClientDistributionData(
-            String clusterName, String group, String purpose) throws RegistryException;
+        String clusterName, String group, String purpose) throws RegistryException;
 
     boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws RegistryException;
 

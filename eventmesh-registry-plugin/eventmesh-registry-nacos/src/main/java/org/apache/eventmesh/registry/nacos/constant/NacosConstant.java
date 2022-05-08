@@ -15,17 +15,22 @@
  * limitations under the License.
  */
 
-
-package org.apache.eventmesh.runtime.domain;
+package org.apache.eventmesh.registry.nacos.constant;
 
 /**
- * RocketMQConstants
+ * NacosConstant.
  */
-public interface RocketMQConstants {
+public class NacosConstant {
 
-    /**
-     * Key of scheduled message delivery time
-     */
-    String START_DELIVER_TIME = "__STARTDELIVERTIME";
+    public static final String SERVER_ADDR = "serverAddr";
 
+    public static final String NAMESPACE = "namespace";
+
+    public static final String USERNAME = "username";
+
+    public static final String PASSWORD = "password";
+
+    public static final String IP_PORT_SEPARATOR = ":";
+
+    public static final String DEFAULT_GROUP = "DEFAULT_GROUP";
 }
