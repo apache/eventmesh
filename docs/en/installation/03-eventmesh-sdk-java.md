@@ -1,18 +1,12 @@
-# How to run eventmesh-sdk-java demo
+# EventMesh SDK for Java
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.eventmesh/eventmesh-sdk-java/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.apache.eventmesh/eventmesh-sdk-java)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.eventmesh/eventmesh-sdk-java/badge.svg?style=for-the-badge)](https://maven-badges.herokuapp.com/maven-central/org.apache.eventmesh/eventmesh-sdk-java)
 
-> EventMesh-sdk-java, as the client, communicated with eventmesh-runtime, used to complete the sending and receiving of message.
->
-> Supports async msg and broadcast msg. Async msg means the producer just sends msg and does not care reply msg. Broadcast msg means the producer send msg once and all the consumer subscribed the broadcast topic will receive the msg.
->
-> EventMesh-sdk-java supports the protocol of TCP, HTTP and GRPC.
+EventMesh SDK for Java is the client that communicates with EventMesh Runtime to send and receive messages. The SDK supports sending async message (the producer sends the message and doesn't wait for the response) and broadcast message (the producer sends the message and all subscribers of the topic will receive the message). The SDK supports TCP, HTTP, and gRPC protocols. The demo projects are located in the [`eventmesh-example`](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) module.
 
-TCP, HTTP and GRPC demos are both under the **eventmesh-example** module.
+## TCP Protocol
 
-### 1. TCP DEMO
-
-#### Async msg
+### Async Message
 
 - Create topic TEST-TOPIC-TCP-ASYNC on rocketmq-console
 
@@ -28,7 +22,7 @@ Run the main method of org.apache.eventmesh.tcp.demo.sub.eventmeshmessage.AsyncS
 Run the main method of org.apache.eventmesh.tcp.demo.pub.eventmeshmessage.AsyncPublish
 ```
 
-#### Broadcast msg
+### Broadcast Message
 
 - Create topic TEST-TOPIC-TCP-BROADCAST on rocketmq-console
 
@@ -44,13 +38,13 @@ Run the main method of org.apache.eventmesh.tcp.demo.sub.eventmeshmessage.AsyncS
 Run the main method of org.apache.eventmesh.tcp.demo.pub.eventmeshmessage.AsyncPublishBroadcast
 ```
 
-### 2. HTTP DEMO
+## HTTP Protocol
 
 > As to HTTP, eventmesh-sdk-java implements  the pub and sub for async event .
 >
 > In the demo, the field of `content` of the java class `LiteMessage` represents a special protocal, so if you want to use http-client of eventmesh-sdk-java, you just need to design the content of protocol and supply the consumer application at the same time.
 
-#### Async event
+### Async Event
 
 > producer send the event to consumer and don't need waiting response msg from consumer
 
@@ -71,13 +65,13 @@ Run the main method of org.apache.eventmesh.http.demo.sub.SpringBootDemoApplicat
 Run the main method of org.apache.eventmesh.http.demo.pub.eventmeshmessage.AsyncPublishInstance
 ```
 
-### 3. GRPC DEMO
+## gRPC Protocol
 
 > eventmesh-sdk-java implements the gRPC transport protocol. It can send events to eventmesh-runtime asynchronously
 > and synchronously (using request-reply). It can also subscribe to the events using webhook subscriber and stream subscriber.
 > CNCF CloudEvents protocol is also supported in the demo.
 
-#### Async event publisher and webhook subscriber
+### Async event publisher and webhook subscriber
 
 > producer asynchronously send the event to eventmesh-runtime, and don't need to wait for the event is delivered to the `event-store` of the eventmesh runtime
 > In webhook subscriber, event is delivered to the http endpoint url that is specified in the `Subscription` model. This is similar to the Http eventmesh client.
@@ -95,7 +89,7 @@ Run the main method of org.apache.eventmesh.grpc.pub.eventmeshmessage.AsyncPubli
 Run the main method of org.apache.eventmesh.grpc.sub.app.SpringBootDemoApplication
 ```
 
-#### Sync event publisher and stream subscriber
+### Sync event publisher and stream subscriber
 
 > producer synchronously send the event to eventmesh-runtime, and wait for the event is delivered to the `event-store` of the eventmesh runtime
 > In stream subscriber, event is delivered to the `ReceiveMsgHook` client as serials of event streams. This is similar to the TCP eventmesh client.
@@ -113,7 +107,7 @@ Run the main method of org.apache.eventmesh.grpc.pub.eventmeshmessage.RequestRep
 Run the main method of org.apache.eventmesh.grpc.sub.EventmeshAsyncSubscribe
 ```
 
-#### Batch async event publisher
+### Batch async event publisher
 
 > Batch event publisher can publish several events in a batch to the eventmesh-runtime. This is synchronous operation.
 
