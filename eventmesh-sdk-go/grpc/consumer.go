@@ -21,13 +21,21 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/grpc"
 	"io"
+	"reflect"
+	"time"
 )
 
 var (
 	// ErrSubscribeResponse subscribe response code not ok
 	ErrSubscribeResponse = fmt.Errorf("subscribe response code err")
+	// ErrUnSupportResponse only support reflect.String, reflect.Struct, reflect.Ptr, reflect.Map
+	ErrUnSupportResponse = fmt.Errorf("un support response msg type")
+
+	// defaultTTL default msg ttl
+	defaultTTL = time.Second * 4
 )
 
 // eventMeshConsumer consumer to implements the ConsumerService
@@ -40,7 +48,7 @@ type eventMeshConsumer struct {
 	cfg *conf.GRPCConfig
 	// dispatcher for topic
 	dispatcher *messageDispatcher
-	// heartbeat used to keep the conn with eventmesh
+	// heartbeat used to keepalive with eventmesh
 	heartbeat *eventMeshHeartbeat
 	// closeCtx close context
 	closeCtx context.Context
@@ -62,7 +70,7 @@ func newConsumer(ctx context.Context, cfg *conf.GRPCConfig, grpcConn *grpc.Clien
 		topics:              make(map[string]*proto.Subscription_SubscriptionItem),
 		cfg:                 cfg,
 		heartbeat:           heartbeat,
-		dispatcher:          newMessageDispatcher(cfg.ConsumerConfig.PoolSize),
+		dispatcher:          newMessageDispatcher(cfg.ConsumerConfig.PoolSize, cfg.ConsumerConfig.Timeout),
 		streamSubscribeChan: make(chan *proto.Subscription),
 	}, nil
 }
@@ -102,11 +110,56 @@ func (d *eventMeshConsumer) startConsumerStream() error {
 				log.Warnf("receive msg got err:%v, need to return", err)
 				return
 			}
-			d.dispatcher.onMessage(msg)
+			reply, err := d.dispatcher.onMessage(msg)
+			if err != nil {
+				log.Warnf("dispatch msg got err:%v, msgID:%s", err, msg.UniqueId)
+				continue
+			}
+			if reply == nil {
+				log.Debugf("doesnot to reply, msgID:%s", msg.UniqueId)
+				continue
+			}
+			if err := d.replyMsg(msg, reply); err != nil {
+				log.Warnf("reply msg err:%v, msgID:%s", err, msg.UniqueId)
+				continue
+			}
 		}
 		log.Infof("close receive stream")
 	}()
 
+	return nil
+}
+
+func (d *eventMeshConsumer) replyMsg(msg *proto.SimpleMessage, reply interface{}) error {
+	replyContent := ""
+	typ := reflect.TypeOf(reply)
+	switch typ.Kind() {
+	case reflect.String:
+		replyContent = reply.(string)
+	case reflect.Ptr, reflect.Struct, reflect.Map:
+		jv, err := jsoniter.MarshalToString(reply)
+		if err != nil {
+			log.Warnf("failed to unmarshal the response for kind:%v, err:%v, msgID:%s", typ.Kind(), err, msg.UniqueId)
+			return err
+		}
+		replyContent = jv
+	default:
+		log.Warnf("un support response msg type:%v", typ.Kind())
+		return ErrUnSupportResponse
+	}
+	ttl := GetTTLWithDefault(msg, defaultTTL)
+	builder := NewMessageBuilder()
+	builder.WithHeader(msg.Header).
+		WithContent(replyContent).
+		WithProperties(msg.Properties).
+		WithProducerGroup(d.cfg.ConsumerGroup).
+		WithTag(msg.Tag).
+		WithTopic(msg.Topic).
+		WithTTL(ttl).
+		WithSeqNO(msg.SeqNum).
+		WithUniqueID(msg.UniqueId)
+
+	// TODO how to send in java onNext
 	return nil
 }
 

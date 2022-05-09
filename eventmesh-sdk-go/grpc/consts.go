@@ -20,3 +20,6 @@ var Success = "0"
 
 // GRPC_ID_KEY key to indicate the uniq id
 var GRPC_ID_KEY = "GRPC_ID_KEY"
+
+// EVENTMESH_MESSAGE_CONST_TTL msg ttl store in the properties
+var EVENTMESH_MESSAGE_CONST_TTL = "ttl"
