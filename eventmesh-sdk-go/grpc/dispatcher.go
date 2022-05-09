@@ -20,6 +20,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	"sync"
+	"time"
 
 	"github.com/panjf2000/ants"
 )
@@ -33,14 +34,34 @@ var (
 type pooledHandler struct {
 	*ants.Pool
 	handler OnMessage
+	timeout time.Duration
 }
 
 // OnMessage redirect the msg with pool
-func (p *pooledHandler) OnMessage(msg *proto.SimpleMessage) {
-	p.Submit(func() {
+func (p *pooledHandler) OnMessage(msg *proto.SimpleMessage) interface{} {
+	ch := make(chan interface{})
+	if err := p.Submit(func() {
 		m := *msg
-		p.handler(&m)
-	})
+		ch <- p.handler(&m)
+	}); err != nil {
+		log.Warnf("submit msg to pool err:%v, msgID:%v", err, msg.UniqueId)
+		return err
+	}
+	select {
+	case <-time.After(p.timeout):
+		log.Warnf("timeout in wait the response, msgID:%v", msg.UniqueId)
+		break
+	case val, ok := <-ch:
+		if !ok {
+			log.Warnf("wait response, msg chan closed, msgID:%v", msg.UniqueId)
+		} else {
+			if val != nil {
+				log.Infof("reply for msg:%v", msg.UniqueId)
+				return val
+			}
+		}
+	}
+	return nil
 }
 
 // messageDispatcher dispatch the message to different handler according to
@@ -50,13 +71,16 @@ type messageDispatcher struct {
 	topicMap *sync.Map
 	// poolSize concurrent for dispatch received msg
 	poolsize int
+	// timeout to process on message
+	timeout time.Duration
 }
 
 // newMessageDispatcher create new message dispatcher
-func newMessageDispatcher(ps int) *messageDispatcher {
+func newMessageDispatcher(ps int, tm time.Duration) *messageDispatcher {
 	return &messageDispatcher{
 		topicMap: new(sync.Map),
 		poolsize: ps,
+		timeout:  tm,
 	}
 }
 
@@ -75,18 +99,18 @@ func (m *messageDispatcher) addHandler(topic string, hdl OnMessage) error {
 	m.topicMap.Store(topic, &pooledHandler{
 		Pool:    pool,
 		handler: hdl,
+		timeout: m.timeout,
 	})
 	return nil
 }
 
 // OnMessage dispatch the message by topic
-func (m *messageDispatcher) onMessage(msg *proto.SimpleMessage) error {
+func (m *messageDispatcher) onMessage(msg *proto.SimpleMessage) (interface{}, error) {
 	val, ok := m.topicMap.Load(msg.Topic)
 	if !ok {
 		log.Warnf("no dispatch found for topic:%s, drop msg", msg.Topic)
-		return ErrTopicDispatcherExist
+		return nil, ErrTopicDispatcherExist
 	}
 	ph := val.(*pooledHandler)
-	ph.OnMessage(msg)
-	return nil
+	return ph.OnMessage(msg), nil
 }
