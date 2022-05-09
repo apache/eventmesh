@@ -24,7 +24,7 @@ import (
 )
 
 // OnMessage on receive message from eventmesh, used in subscribe message
-type OnMessage func(*proto.SimpleMessage)
+type OnMessage func(*proto.SimpleMessage) interface{}
 
 // Interface grpc client to producer and consumer message
 type Interface interface {

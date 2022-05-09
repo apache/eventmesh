@@ -31,10 +31,8 @@ func Test_newEventMeshGRPCClient(t *testing.T) {
 		{
 			name: "producer wrong",
 			args: args{cfg: &conf.GRPCConfig{
-				Host: "1.1.1.1",
-				ProducerConfig: conf.ProducerConfig{
-					LoadBalancerType: "111",
-				},
+				Host:           "1.1.1.1",
+				ProducerConfig: conf.ProducerConfig{},
 			}},
 			wantErr: true,
 			want:    nil,
@@ -50,8 +48,7 @@ func Test_newEventMeshGRPCClient(t *testing.T) {
 				SYS:          "test-system",
 				ProtocolType: "grpc",
 				ProducerConfig: conf.ProducerConfig{
-					ProducerGroup:    "test-producer-group",
-					LoadBalancerType: conf.Random,
+					ProducerGroup: "test-producer-group",
 				},
 				Username: "user",
 				Password: "passwd",
@@ -99,8 +96,7 @@ func Test_eventMeshGRPCClient_Publish(t *testing.T) {
 		Host: "127.0.0.1",
 		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
-			ProducerGroup:    "test-publish-group",
-			LoadBalancerType: conf.Random,
+			ProducerGroup: "test-publish-group",
 		},
 		ConsumerConfig: conf.ConsumerConfig{
 			Enabled: false,
@@ -167,8 +163,7 @@ func Test_eventMeshGRPCClient_RequestReply(t *testing.T) {
 		Host: "127.0.0.1",
 		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
-			ProducerGroup:    "test-publish-group",
-			LoadBalancerType: conf.Random,
+			ProducerGroup: "test-publish-group",
 		},
 		ConsumerConfig: conf.ConsumerConfig{
 			Enabled: false,
@@ -216,8 +211,7 @@ func Test_eventMeshGRPCClient_BatchPublish(t *testing.T) {
 		Host: "127.0.0.1",
 		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
-			ProducerGroup:    "test-publish-group",
-			LoadBalancerType: conf.Random,
+			ProducerGroup: "test-publish-group",
 		},
 		ConsumerConfig: conf.ConsumerConfig{
 			Enabled: false,
@@ -290,8 +284,7 @@ func Test_eventMeshGRPCClient_webhook_subscribe(t *testing.T) {
 		Host: "127.0.0.1",
 		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
-			ProducerGroup:    "test-publish-group",
-			LoadBalancerType: conf.Random,
+			ProducerGroup: "test-publish-group",
 		},
 		ConsumerConfig: conf.ConsumerConfig{
 			Enabled:       true,
@@ -320,8 +313,7 @@ func Test_eventMeshGRPCClient_Subscribe(t *testing.T) {
 		Host: "127.0.0.1",
 		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
-			ProducerGroup:    "test-publish-group",
-			LoadBalancerType: conf.Random,
+			ProducerGroup: "test-publish-group",
 		},
 		ConsumerConfig: conf.ConsumerConfig{
 			Enabled:       true,
@@ -374,8 +366,7 @@ func Test_eventMeshGRPCClient_UnSubscribe(t *testing.T) {
 		Host: "127.0.0.1",
 		Port: 8086,
 		ProducerConfig: conf.ProducerConfig{
-			ProducerGroup:    "test-publish-group",
-			LoadBalancerType: conf.Random,
+			ProducerGroup: "test-publish-group",
 		},
 		ConsumerConfig: conf.ConsumerConfig{
 			Enabled:       true,
