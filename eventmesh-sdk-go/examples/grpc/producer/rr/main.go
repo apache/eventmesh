@@ -35,8 +35,7 @@ func main() {
 		Password:     "grpc-go-passwd",
 		ProtocolType: grpc.EventmeshMessage,
 		ProducerConfig: conf.ProducerConfig{
-			ProducerGroup:    "test-rr-group",
-			LoadBalancerType: conf.Random,
+			ProducerGroup: "test-rr-group",
 		},
 		ConsumerConfig: conf.ConsumerConfig{
 			Enabled: false,
@@ -59,7 +58,7 @@ func main() {
 			"for":  "test"}).
 		WithProducerGroup("grpc-rr-producergroup").
 		WithTag("grpc rr tag").
-		WithTopic("{grpc-topic").
+		WithTopic("grpc-topic").
 		WithTTL(time.Hour).
 		WithSeqNO("1").
 		WithUniqueID("1")

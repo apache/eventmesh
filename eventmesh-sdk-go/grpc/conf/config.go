@@ -99,6 +99,9 @@ type ConsumerConfig struct {
 	ConsumerGroup string
 	// PoolSize goroutine pool to dispatch msg for a topic
 	PoolSize int
+	// Timeout in handle received msg
+	// default to 5s
+	Timeout time.Duration
 }
 
 type SubscriptionMode int
