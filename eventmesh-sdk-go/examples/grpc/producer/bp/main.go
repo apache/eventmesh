@@ -35,8 +35,7 @@ func main() {
 		Password:     "grpc-go-passwd",
 		ProtocolType: grpc.EventmeshMessage,
 		ProducerConfig: conf.ProducerConfig{
-			ProducerGroup:    "test-batch-group",
-			LoadBalancerType: conf.Random,
+			ProducerGroup: "test-batch-group",
 		},
 		ConsumerConfig: conf.ConsumerConfig{
 			Enabled: false,
