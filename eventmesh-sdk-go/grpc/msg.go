@@ -99,8 +99,25 @@ func CreateHeader(cfg *conf.GRPCConfig) *proto.RequestHeader {
 		Username:        cfg.Username,
 		Password:        cfg.Password,
 		Language:        conf.Language,
-		ProtocolType:    "STREAM",
+		ProtocolType:    EventmeshMessage,
 		ProtocolDesc:    conf.ProtocolDesc,
 		ProtocolVersion: conf.ProtocolVersion,
 	}
+}
+
+// GetTTLWithDefault return the ttl for the given msg, if err occurred return default
+func GetTTLWithDefault(msg *proto.SimpleMessage, def time.Duration) time.Duration {
+	if msg == nil {
+		return def
+	}
+	val, ok := msg.Properties[EVENTMESH_MESSAGE_CONST_TTL]
+	if !ok {
+		return def
+	}
+
+	tm, err := time.ParseDuration(val)
+	if err != nil {
+		return def
+	}
+	return tm
 }

@@ -35,8 +35,7 @@ func main() {
 		Password:     "grpc-go-passwd",
 		ProtocolType: grpc.EventmeshMessage,
 		ProducerConfig: conf.ProducerConfig{
-			ProducerGroup:    "test-sync-consumer-group",
-			LoadBalancerType: conf.Random,
+			ProducerGroup: "test-sync-consumer-group",
 		},
 		ConsumerConfig: conf.ConsumerConfig{
 			Enabled:       true,
@@ -60,8 +59,9 @@ func main() {
 		SubscribeMode: conf.CLUSTERING,
 		SubscribeType: conf.SYNC,
 		Topic:         "grpc-topic",
-	}, func(msg *proto.SimpleMessage) {
+	}, func(msg *proto.SimpleMessage) interface{} {
 		fmt.Println("receive msg: " + msg.String())
+		return "response"
 	})
 	if err != nil {
 		fmt.Println(err.Error())
