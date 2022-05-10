@@ -19,6 +19,7 @@ package org.apache.eventmesh.client.http.producer;
 
 import org.apache.eventmesh.client.http.AbstractHttpClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
+import org.apache.eventmesh.client.http.ProtocolConstant;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.model.RequestParam;
 import org.apache.eventmesh.client.http.util.HttpUtils;
@@ -46,10 +47,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocolProducer<CloudEvent> {
-
-    private static final String PROTOCOL_TYPE = "cloudevents";
-
-    private static final String PROTOCOL_DESC = "http";
 
     public CloudEventProducer(EventMeshHttpClientConfig eventMeshHttpClientConfig) throws EventMeshException {
         super(eventMeshHttpClientConfig);
@@ -135,8 +132,8 @@ class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocol
                 .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
                 .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-                .addHeader(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
-                .addHeader(ProtocolKey.PROTOCOL_DESC, PROTOCOL_DESC)
+                .addHeader(ProtocolKey.PROTOCOL_TYPE, ProtocolConstant.CE_PROTOCOL)
+                .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
                 .addHeader(ProtocolKey.PROTOCOL_VERSION, cloudEvent.getSpecVersion().toString())
 
                 // todo: move producerGroup tp header
