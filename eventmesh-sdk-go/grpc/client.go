@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/id"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/seq"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
@@ -49,6 +50,8 @@ type eventMeshGRPCClient struct {
 	cancel context.CancelFunc
 	// idg generate id api
 	idg id.Interface
+	// seqg generate uniq id
+	seqg seq.Interface
 }
 
 // newEventMeshGRPCClient create new grpc client
@@ -86,6 +89,9 @@ func newEventMeshGRPCClient(cfg *conf.GRPCConfig, opts ...GRPCOption) (*eventMes
 	}
 	if cli.idg == nil {
 		cli.idg = id.NewUUID()
+	}
+	if cli.seqg == nil {
+		cli.seqg = seq.NewAtomicSeq()
 	}
 	time.Sleep(time.Nanosecond * time.Duration(rand.Int31n(50)))
 	conn, err := makeGRPCConn(cfg.Host, cfg.Port)
