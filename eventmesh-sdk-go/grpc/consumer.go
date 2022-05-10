@@ -18,6 +18,8 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/id"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/seq"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
@@ -54,10 +56,14 @@ type eventMeshConsumer struct {
 	closeCtx context.Context
 	// streamSubscribeChan chan to receive the subscribe request with stream type
 	streamSubscribeChan chan *proto.Subscription
+	// idg generate uniq id
+	idg id.Interface
+	// seqg generate sequenced id
+	seqg seq.Interface
 }
 
 // newConsumer create new consumer
-func newConsumer(ctx context.Context, cfg *conf.GRPCConfig, grpcConn *grpc.ClientConn) (*eventMeshConsumer, error) {
+func newConsumer(ctx context.Context, cfg *conf.GRPCConfig, grpcConn *grpc.ClientConn, idg id.Interface, seqg seq.Interface) (*eventMeshConsumer, error) {
 	cli := proto.NewConsumerServiceClient(grpcConn)
 	heartbeat, err := newHeartbeat(ctx, cfg, grpcConn)
 	if err != nil {
@@ -71,7 +77,9 @@ func newConsumer(ctx context.Context, cfg *conf.GRPCConfig, grpcConn *grpc.Clien
 		cfg:                 cfg,
 		heartbeat:           heartbeat,
 		dispatcher:          newMessageDispatcher(cfg.ConsumerConfig.PoolSize, cfg.ConsumerConfig.Timeout),
-		streamSubscribeChan: make(chan *proto.Subscription),
+		streamSubscribeChan: make(chan *proto.Subscription, 1024),
+		idg:                 idg,
+		seqg:                seqg,
 	}, nil
 }
 
@@ -148,18 +156,21 @@ func (d *eventMeshConsumer) replyMsg(msg *proto.SimpleMessage, reply interface{}
 		return ErrUnSupportResponse
 	}
 	ttl := GetTTLWithDefault(msg, defaultTTL)
-	builder := NewMessageBuilder()
-	builder.WithHeader(msg.Header).
-		WithContent(replyContent).
-		WithProperties(msg.Properties).
-		WithProducerGroup(d.cfg.ConsumerGroup).
-		WithTag(msg.Tag).
-		WithTopic(msg.Topic).
-		WithTTL(ttl).
-		WithSeqNO(msg.SeqNum).
-		WithUniqueID(msg.UniqueId)
+	d.streamSubscribeChan <- &proto.Subscription{
+		Header:        msg.Header,
+		ConsumerGroup: d.cfg.ConsumerGroup,
+		Reply: &proto.Subscription_Reply{
+			ProducerGroup: d.cfg.ConsumerGroup,
+			Topic:         msg.Topic,
+			Content:       replyContent,
+			Ttl:           fmt.Sprintf("%v", ttl.Seconds()),
+			UniqueId:      d.idg.Next(),
+			SeqNum:        d.seqg.Next(),
+			Tag:           msg.Tag,
+			Properties:    msg.Properties,
+		},
+	}
 
-	// TODO how to send in java onNext
 	return nil
 }
 

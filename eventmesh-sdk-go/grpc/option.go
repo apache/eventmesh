@@ -17,6 +17,7 @@ package grpc
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/id"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/seq"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 )
 
@@ -34,5 +35,11 @@ func WithLogger(l log.Logger) GRPCOption {
 func WithIDG(i id.Interface) GRPCOption {
 	return func(client *eventMeshGRPCClient) {
 		client.idg = i
+	}
+}
+
+func WithSeq(i seq.Interface) GRPCOption {
+	return func(client *eventMeshGRPCClient) {
+		client.seqg = i
 	}
 }
