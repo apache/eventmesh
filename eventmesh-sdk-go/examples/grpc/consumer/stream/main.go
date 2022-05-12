@@ -57,11 +57,11 @@ func main() {
 	}()
 	err = cli.SubscribeStream(conf.SubscribeItem{
 		SubscribeMode: conf.CLUSTERING,
-		SubscribeType: conf.SYNC,
+		SubscribeType: conf.ASYNC,
 		Topic:         "grpc-topic",
 	}, func(msg *proto.SimpleMessage) interface{} {
 		fmt.Println("receive msg: " + msg.String())
-		return "response"
+		return nil
 	})
 	if err != nil {
 		fmt.Println(err.Error())
