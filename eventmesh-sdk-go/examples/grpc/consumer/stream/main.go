@@ -61,7 +61,7 @@ func main() {
 		Topic:         "grpc-topic",
 	}, func(msg *proto.SimpleMessage) interface{} {
 		fmt.Println("receive msg: " + msg.String())
-		return "nil"
+		return nil
 	})
 	if err != nil {
 		fmt.Println(err.Error())
