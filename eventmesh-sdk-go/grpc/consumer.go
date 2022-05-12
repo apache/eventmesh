@@ -125,7 +125,12 @@ func (d *eventMeshConsumer) startConsumerStream() error {
 				log.Warnf("dispatch msg got err:%v, msgID:%s", err, msg.UniqueId)
 				continue
 			}
+
 			if reply == nil {
+				continue
+			}
+			// for async message, do not need to reply it
+			if !d.needToReply(msg.Topic) {
 				continue
 			}
 			if err := d.replyMsg(msg, reply); err != nil {
@@ -274,4 +279,14 @@ func (d *eventMeshConsumer) close() error {
 		d.heartbeat = nil
 	}
 	return nil
+}
+
+// needToReply check the message need to reply, only works on RequestReply
+func (d *eventMeshConsumer) needToReply(topic string) bool {
+	val, ok := d.topics.Load(topic)
+	if !ok {
+		return false
+	}
+	subType := val.(*proto.Subscription_SubscriptionItem)
+	return subType.Type == proto.Subscription_SubscriptionItem_SYNC
 }
