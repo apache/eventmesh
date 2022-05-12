@@ -77,7 +77,7 @@ func (e *eventMeshHeartbeat) run() {
 // sendMsg send heartbeat msg to eventmesh server
 func (e *eventMeshHeartbeat) sendMsg(cli proto.HeartbeatServiceClient) error {
 	log.Debugf("send heartbeat msg to server:%s")
-	cancelCtx, cancel := context.WithTimeout(e.closeCtx, e.cfg.Timeout)
+	cancelCtx, cancel := context.WithTimeout(e.closeCtx, e.cfg.HeartbeatConfig.Timeout)
 	defer cancel()
 	e.subscribeItemsLock.RLock()
 	defer e.subscribeItemsLock.RUnlock()

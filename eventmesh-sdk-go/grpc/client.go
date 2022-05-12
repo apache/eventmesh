@@ -109,7 +109,7 @@ func newEventMeshGRPCClient(cfg *conf.GRPCConfig, opts ...GRPCOption) (*eventMes
 	cli.cancel = cancel
 	if cfg.ConsumerConfig.Enabled {
 		log.Infof("subscribe enabled")
-		consumer, err := newConsumer(ctx, cfg, grpConn)
+		consumer, err := newConsumer(ctx, cfg, grpConn, cli.idg, cli.seqg)
 		if err != nil {
 			log.Warnf("failed to create producer, err:%v", err)
 			return nil, err

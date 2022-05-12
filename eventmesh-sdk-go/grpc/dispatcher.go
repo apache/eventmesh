@@ -106,6 +106,10 @@ func (m *messageDispatcher) addHandler(topic string, hdl OnMessage) error {
 
 // OnMessage dispatch the message by topic
 func (m *messageDispatcher) onMessage(msg *proto.SimpleMessage) (interface{}, error) {
+	// subscribe response ignore it
+	if msg.Topic == "" {
+		return nil, nil
+	}
 	val, ok := m.topicMap.Load(msg.Topic)
 	if !ok {
 		log.Warnf("no dispatch found for topic:%s, drop msg", msg.Topic)
