@@ -124,7 +124,6 @@ func (d *eventMeshConsumer) startConsumerStream() error {
 				continue
 			}
 			if reply == nil {
-				log.Debugf("doesnot to reply, msgID:%s", msg.UniqueId)
 				continue
 			}
 			if err := d.replyMsg(msg, reply); err != nil {
