@@ -27,6 +27,7 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	"reflect"
+	"sync"
 	"time"
 )
 
@@ -45,7 +46,8 @@ type eventMeshConsumer struct {
 	// client subscribe api client
 	client proto.ConsumerServiceClient
 	// topics subscribe topics
-	topics map[string]*proto.Subscription_SubscriptionItem
+	// map[string]*proto.Subscription_SubscriptionItem
+	topics *sync.Map
 	// cfg configuration
 	cfg *conf.GRPCConfig
 	// dispatcher for topic
@@ -73,7 +75,7 @@ func newConsumer(ctx context.Context, cfg *conf.GRPCConfig, grpcConn *grpc.Clien
 	return &eventMeshConsumer{
 		client:              cli,
 		closeCtx:            ctx,
-		topics:              make(map[string]*proto.Subscription_SubscriptionItem),
+		topics:              new(sync.Map),
 		cfg:                 cfg,
 		heartbeat:           heartbeat,
 		dispatcher:          newMessageDispatcher(cfg.ConsumerConfig.PoolSize, cfg.ConsumerConfig.Timeout),
@@ -199,7 +201,7 @@ func (d *eventMeshConsumer) Subscribe(item conf.SubscribeItem, callbackURL strin
 		log.Warnf("failed to subscribe resp:%v", resp.String())
 		return ErrSubscribeResponse
 	}
-	d.topics[item.Topic] = subItem
+	d.topics.Store(item.Topic, subItem)
 	d.heartbeat.addHeartbeat(subItem)
 	log.Infof("success subscribe with topic:%s, resp:%s", item.Topic, resp.String())
 	return nil
@@ -213,9 +215,10 @@ func (d *eventMeshConsumer) UnSubscribe() error {
 		ConsumerGroup: d.cfg.ConsumerGroup,
 		SubscriptionItems: func() []*proto.Subscription_SubscriptionItem {
 			var sitems []*proto.Subscription_SubscriptionItem
-			for _, it := range d.topics {
-				sitems = append(sitems, it)
-			}
+			d.topics.Range(func(key, value interface{}) bool {
+				sitems = append(sitems, value.(*proto.Subscription_SubscriptionItem))
+				return true
+			})
 			return sitems
 		}(),
 	})
@@ -259,7 +262,6 @@ func (d *eventMeshConsumer) addSubscribeHandler(item conf.SubscribeItem, handler
 		log.Warnf("failed to add handler for topic:%s", item.Topic)
 		return err
 	}
-	d.topics[item.Topic] = subItem
 	d.heartbeat.addHeartbeat(subItem)
 	return nil
 }
