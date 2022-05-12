@@ -267,6 +267,7 @@ func (d *eventMeshConsumer) addSubscribeHandler(item conf.SubscribeItem, handler
 		log.Warnf("failed to add handler for topic:%s", item.Topic)
 		return err
 	}
+	d.topics.Store(item.Topic, subItem)
 	d.heartbeat.addHeartbeat(subItem)
 	return nil
 }
