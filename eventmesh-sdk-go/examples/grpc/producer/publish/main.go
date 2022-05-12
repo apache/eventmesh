@@ -59,7 +59,7 @@ func main() {
 			"for":  "test"}).
 		WithProducerGroup("grpc-publish-producergroup").
 		WithTag("grpc publish tag").
-		WithTopic("grpc-publish-topic").
+		WithTopic("grpc-topic").
 		WithTTL(time.Hour).
 		WithSeqNO("1").
 		WithUniqueID("1")
