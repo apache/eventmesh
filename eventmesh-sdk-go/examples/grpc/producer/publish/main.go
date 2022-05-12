@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -51,21 +52,23 @@ func main() {
 			panic(err)
 		}
 	}()
-	builder := grpc.NewMessageBuilder()
-	builder.WithHeader(grpc.CreateHeader(cfg)).
-		WithContent("test for publish go grpc").
-		WithProperties(map[string]string{
-			"from": "grpc",
-			"for":  "test"}).
-		WithProducerGroup("grpc-publish-producergroup").
-		WithTag("grpc publish tag").
-		WithTopic("grpc-topic").
-		WithTTL(time.Hour).
-		WithSeqNO("1").
-		WithUniqueID("1")
-	resp, err := cli.Publish(context.TODO(), builder.SimpleMessage)
-	if err != nil {
-		panic(err)
+	for i := 0; i < 10; i++ {
+		builder := grpc.NewMessageBuilder()
+		builder.WithHeader(grpc.CreateHeader(cfg)).
+			WithContent("test for publish go grpc").
+			WithProperties(map[string]string{
+				"from": "grpc",
+				"for":  "test"}).
+			WithProducerGroup("grpc-publish-producergroup").
+			WithTag("grpc publish tag").
+			WithTopic("grpc-topic").
+			WithTTL(time.Hour).
+			WithSeqNO(uuid.New().String()).
+			WithUniqueID(uuid.New().String())
+		resp, err := cli.Publish(context.TODO(), builder.SimpleMessage)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(resp.String())
 	}
-	fmt.Println(resp.String())
 }
