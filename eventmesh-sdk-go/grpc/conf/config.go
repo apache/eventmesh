@@ -148,5 +148,8 @@ func ValidateDefaultConf(cfg *GRPCConfig) error {
 	if cfg.ConsumerConfig.PoolSize == 0 {
 		cfg.ConsumerConfig.PoolSize = 5
 	}
+	if cfg.ConsumerConfig.Timeout == 0 {
+		cfg.ConsumerConfig.Timeout = time.Second * 5
+	}
 	return nil
 }
