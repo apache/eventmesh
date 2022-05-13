@@ -36,7 +36,7 @@ public class JsonUtils {
         objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
     }
 
-    public static <T> byte[] serialize(String topic, Class<T> data) throws JsonProcessingException {
+    public static <T> byte[] serialize(Object data) throws JsonProcessingException {
         if (data == null) {
             return null;
         }
