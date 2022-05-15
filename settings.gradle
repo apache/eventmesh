@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
+rootProject.name = 'incubator-eventmesh'
 String jdkVersion = "${jdk}"
 include 'eventmesh-runtime'
 include 'eventmesh-sdk-java'
@@ -47,3 +47,10 @@ include 'eventmesh-security-plugin:eventmesh-security-auth-http-basic'
 include 'eventmesh-trace-plugin'
 include 'eventmesh-trace-plugin:eventmesh-trace-api'
 include 'eventmesh-trace-plugin:eventmesh-trace-zipkin'
+
+
+include 'eventmesh-webhook'
+include 'eventmesh-webhook:eventmesh-webhook-api'
+include 'eventmesh-webhook:eventmesh-webhook-admin'
+include 'eventmesh-webhook:eventmesh-webhook-receive'
+

@@ -268,7 +268,8 @@ subprojects {
                                    "eventmesh-security-api",
                                    "eventmesh-protocol-api",
                                    "eventmesh-starter",
-                                   "eventmesh-spi"]
+                                   "eventmesh-spi",
+                                   "eventmesh-webhook-api"]
         doLast {
             copy {
                 into("${projectDir}/dist/apps")
