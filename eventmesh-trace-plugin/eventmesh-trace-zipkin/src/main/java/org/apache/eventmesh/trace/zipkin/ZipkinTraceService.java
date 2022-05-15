@@ -56,6 +56,8 @@ public class ZipkinTraceService implements TraceService {
 
     private OpenTelemetry openTelemetry;
 
+    private Thread shutdownHook;
+
     @Override
     public void init() {
         //zipkin's config
@@ -92,7 +94,8 @@ public class ZipkinTraceService implements TraceService {
             .setTracerProvider(sdkTracerProvider)
             .build();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(sdkTracerProvider::close));
+        shutdownHook = new Thread(sdkTracerProvider::close);
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 
     @Override
