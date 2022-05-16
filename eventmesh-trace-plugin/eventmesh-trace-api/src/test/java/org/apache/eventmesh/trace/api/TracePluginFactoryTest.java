@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.trace.api;
 
-import org.apache.eventmesh.trace.zipkin.ZipkinTraceService;
-
 import static org.hamcrest.CoreMatchers.is;
+
+import org.apache.eventmesh.trace.zipkin.ZipkinTraceService;
 
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
@@ -33,7 +33,8 @@ public class TracePluginFactoryTest {
         MatcherAssert.assertThat(nullPointerException1.getMessage(), is("traceServiceType cannot be null"));
 
         String traceServiceType = "non-Existing";
-        NullPointerException nullPointerException2 = Assert.assertThrows(NullPointerException.class, () -> TracePluginFactory.getTraceService(traceServiceType));
+        NullPointerException nullPointerException2 =
+            Assert.assertThrows(NullPointerException.class, () -> TracePluginFactory.getTraceService(traceServiceType));
         MatcherAssert.assertThat(nullPointerException2.getMessage(), is("traceServiceType: " + traceServiceType + " is not supported"));
     }
 

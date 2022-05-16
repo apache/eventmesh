@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.trace.zipkin;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThrows;
 
 import java.lang.reflect.Field;
 
@@ -34,7 +34,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 public class ZipkinTraceServiceTest {
 
     @Test
-    public void init() throws NoSuchFieldException, IllegalAccessException {
+    public void testInit() throws NoSuchFieldException, IllegalAccessException {
         ZipkinTraceService zipkinTraceService = new ZipkinTraceService();
         zipkinTraceService.init();
 
@@ -53,14 +53,13 @@ public class ZipkinTraceServiceTest {
         Assert.assertNotNull(openTelemetry);
         Assert.assertNotNull(shutdownHook);
 
-        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class, () -> {
-            Runtime.getRuntime().addShutdownHook(shutdownHook);
-        });
+        IllegalArgumentException illegalArgumentException =
+            assertThrows(IllegalArgumentException.class, () -> Runtime.getRuntime().addShutdownHook(shutdownHook));
         Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
     @Test
-    public void shutdown() throws NoSuchFieldException, IllegalAccessException {
+    public void testShutdown() throws NoSuchFieldException, IllegalAccessException {
         SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
         ZipkinTraceService zipkinTraceService = new ZipkinTraceService();
         zipkinTraceService.init();
