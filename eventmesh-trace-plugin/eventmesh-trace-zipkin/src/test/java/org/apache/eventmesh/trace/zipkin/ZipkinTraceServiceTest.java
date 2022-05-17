@@ -23,14 +23,11 @@ import java.lang.reflect.Field;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ZipkinTraceServiceTest {
 
     @Test
@@ -59,7 +56,7 @@ public class ZipkinTraceServiceTest {
     }
 
     @Test
-    public void testShutdown() throws NoSuchFieldException, IllegalAccessException {
+    public void testShutdown() throws Exception {
         SdkTracerProvider mockSdkTracerProvider = Mockito.mock(SdkTracerProvider.class);
         ZipkinTraceService zipkinTraceService = new ZipkinTraceService();
         zipkinTraceService.init();
