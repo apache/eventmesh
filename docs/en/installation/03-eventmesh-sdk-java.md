@@ -2,118 +2,280 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.eventmesh/eventmesh-sdk-java/badge.svg?style=for-the-badge)](https://maven-badges.herokuapp.com/maven-central/org.apache.eventmesh/eventmesh-sdk-java)
 
-EventMesh SDK for Java is the client that communicates with EventMesh Runtime to send and receive messages. The SDK supports sending async message (the producer sends the message and doesn't wait for the response) and broadcast message (the producer sends the message and all subscribers of the topic will receive the message). The SDK supports TCP, HTTP, and gRPC protocols. The demo projects are located in the [`eventmesh-example`](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) module.
-
-## TCP Protocol
-
-### Async Message
-
-- Create topic TEST-TOPIC-TCP-ASYNC on rocketmq-console
-
-- Start consumer, subscribe topic in previous step.
-
-```
-Run the main method of org.apache.eventmesh.tcp.demo.sub.eventmeshmessage.AsyncSubscribe
-```
-
-- Start producer, send message
-
-```
-Run the main method of org.apache.eventmesh.tcp.demo.pub.eventmeshmessage.AsyncPublish
-```
-
-### Broadcast Message
-
-- Create topic TEST-TOPIC-TCP-BROADCAST on rocketmq-console
-
-- Start consumer, subscribe topic in previous step.
-
-```
-Run the main method of org.apache.eventmesh.tcp.demo.sub.eventmeshmessage.AsyncSubscribeBroadcast
-```
-
-- Start producer, send broadcast message
-
-```
-Run the main method of org.apache.eventmesh.tcp.demo.pub.eventmeshmessage.AsyncPublishBroadcast
-```
+EventMesh SDK for Java is a collection of Java libraries to integrate EventMesh in a Java application. The SDK supports sending and receiving synchronous message, asynchronous message, and broadcast message in TCP, HTTP, and gRPC protocols. The SDK implements EventMesh Message, CloudEvents, and OpenMessaging formats. The demo project is available in the [`eventmesh-example`](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) module.
 
 ## HTTP Protocol
 
-> As to HTTP, eventmesh-sdk-java implements  the pub and sub for async event .
->
-> In the demo, the field of `content` of the java class `LiteMessage` represents a special protocal, so if you want to use http-client of eventmesh-sdk-java, you just need to design the content of protocol and supply the consumer application at the same time.
+EventMesh SDK for Java implements the HTTP producer and consumer of asynchronous messages. Both the producer and consumer requires an instance of `EventMEshHttpClientConfig` class that specifies the configuration of EventMesh HTTP client. The `liteEventMeshAddr`, `userName`, and `password` fields should match the `eventmesh.properties` file of EventMesh runtime.
 
-### Async Event
+```java
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 
-> producer send the event to consumer and don't need waiting response msg from consumer
-
-- Create topic TEST-TOPIC-HTTP-ASYNC on rocketmq-console
-
-- Start consumer, subscribe topic
-
-  Async consumer demo is a spring boot application demo, you can easily run this demo to start service and subscribe the
-  topic.
-
+public class HTTP {
+  public static void main(String[] args) throws Exception {
+    EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
+      .liteEventMeshAddr("localhost:10105")
+      .producerGroup("TEST_PRODUCER_GROUP")
+      .env("env")
+      .idc("idc")
+      .ip(IPUtils.getLocalAddress())
+      .sys("1234")
+      .pid(String.valueOf(ThreadUtils.getPID()))
+      .userName("eventmesh")
+      .password("password")
+      .build();
+      /* ... */
+  }
+}
 ```
-Run the main method of org.apache.eventmesh.http.demo.sub.SpringBootDemoApplication
+
+### HTTP Consumer
+
+The `EventMeshHttpConsumer` class implements the `heartbeat`, `subscribe`, and `unsubscribe` methods. The `subscribe` method accepts a list of `SubscriptionItem` that defines the topics to be subscribed and a callback URL.
+
+```java
+import org.apache.eventmesh.client.http.consumer.EventMeshHttpConsumer;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
+import com.google.common.collect.Lists;
+
+public class HTTP {
+  final String url = "http://localhost:8080/callback";
+  final List<SubscriptionItem> topicList = Lists.newArrayList(
+    new SubscriptionItem("eventmesh-async-topic", SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
+  );
+
+  public static void main(String[] args) throws Exception {
+    /* ... */
+    eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
+    eventMeshHttpConsumer.heartBeat(topicList, url);
+    eventMeshHttpConsumer.subscribe(topicList, url);
+    /* ... */
+    eventMeshHttpConsumer.unsubscribe(topicList, url);
+  }
+}
 ```
 
-- Start producer, produce msg
+The EventMesh runtime will send a POST request that contains the message in the [CloudEvents format](https://github.com/cloudevents/spec) to the callback URL. The [`SubController.java` file](https://github.com/apache/incubator-eventmesh/blob/master/eventmesh-examples/src/main/java/org/apache/eventmesh/http/demo/sub/controller/SubController.java) implements a Spring Boot controller that receives and parses the callback messages.
 
+### HTTP Producer
+
+The `EventMeshHttpProducer` class implements the `publish` method. The `publish` method accepts the message to be published and an optional timeout value. The message should be an instance of either of these classes:
+
+- `org.apache.eventmesh.common.EventMeshMessage`
+- `io.cloudevents.CloudEvent`
+- `io.openmessaging.api.Message`
+
+```java
+import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+
+public class HTTP {
+  public static void main(String[] args) throws Exception {
+    /* ... */
+    EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig);
+    Map<String, String> content = new HashMap<>();
+    content.put("content", "testAsyncMessage");
+
+    CloudEvent event = CloudEventBuilder.v1()
+      .withId(UUID.randomUUID().toString())
+      .withSubject("eventmesh-async-topic")
+      .withSource(URI.create("/"))
+      .withDataContentType("application/cloudevents+json")
+      .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+      .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
+      .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
+      .build();
+    eventMeshHttpProducer.publish(event);
+  }
+}
 ```
-Run the main method of org.apache.eventmesh.http.demo.pub.eventmeshmessage.AsyncPublishInstance
-```
+
+## TCP Protocol
+
+:::caution
+The documentation of TCP Protocol is WIP (Work-in-Progress).
+:::
 
 ## gRPC Protocol
 
-> eventmesh-sdk-java implements the gRPC transport protocol. It can send events to eventmesh-runtime asynchronously
-> and synchronously (using request-reply). It can also subscribe to the events using webhook subscriber and stream subscriber.
-> CNCF CloudEvents protocol is also supported in the demo.
+EventMesh SDK for Java implements the gRPC producer and consumer of synchronous, asynchronous, and broadcast messages. Both the producer and consumer requires an instance of `EventMeshGrpcClientConfig` class that specifies the configuration of EventMesh gRPC client. The `liteEventMeshAddr`, `userName`, and `password` fields should match the `eventmesh.properties` file of EventMesh runtime.
 
-### Async event publisher and webhook subscriber
+```java
+import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
+import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
+import io.cloudevents.CloudEvent;
 
-> producer asynchronously send the event to eventmesh-runtime, and don't need to wait for the event is delivered to the `event-store` of the eventmesh runtime
-> In webhook subscriber, event is delivered to the http endpoint url that is specified in the `Subscription` model. This is similar to the Http eventmesh client.
-
-- Create topic TEST-TOPIC-GRPC-ASYNC on rocketmq-console
-- start publisher to publish to the topic as the following:
-
-```
-Run the main method of org.apache.eventmesh.grpc.pub.eventmeshmessage.AsyncPublishInstance
-```
-
-- Start webhook subscriber as the following:
-
-```
-Run the main method of org.apache.eventmesh.grpc.sub.app.SpringBootDemoApplication
+public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
+  public static void main(String[] args) throws InterruptedException {
+    EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
+      .serverAddr("localhost")
+      .serverPort(10205)
+      .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+      .env("env").idc("idc")
+      .sys("1234").build();
+    /* ... */
+  }
+}
 ```
 
-### Sync event publisher and stream subscriber
+### gRPC Consumer
 
-> producer synchronously send the event to eventmesh-runtime, and wait for the event is delivered to the `event-store` of the eventmesh runtime
-> In stream subscriber, event is delivered to the `ReceiveMsgHook` client as serials of event streams. This is similar to the TCP eventmesh client.
+#### Stream Consumer
 
-- Create topic TEST-TOPIC-GRPC-RR on rocketmq-console
-- start Request-Reply publisher to publish to the topic as the following:
+The EventMesh runtime sends the message from producers to the stream consumer as a series of event streams. The consumer should implement the `ReceiveMsgHook` class, which is defined in [`ReceiveMsgHook.java`](https://github.com/apache/incubator-eventmesh/blob/master/eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/grpc/consumer/ReceiveMsgHook.java).
 
-```
-Run the main method of org.apache.eventmesh.grpc.pub.eventmeshmessage.RequestReplyInstance
-```
-
-- Start stream subscriber as the following:
-
-```
-Run the main method of org.apache.eventmesh.grpc.sub.EventmeshAsyncSubscribe
+```java
+public interface ReceiveMsgHook<T> {
+    Optional<T> handle(T msg) throws Throwable;
+    String getProtocolType();
+}
 ```
 
-### Batch async event publisher
+The `EventMeshGrpcConsumer` class implements the `registerListener`, `subscribe`, and `unsubscribe` methods. The `subscribe` method accepts a list of `SubscriptionItem` that defines the topics to be subscribed. The `registerListener` accepts an instance of a class that implements the `ReceiveMsgHook`. The `handle` method will be invoked when the consumer receives a message from the topic it subscribes to.
 
-> Batch event publisher can publish several events in a batch to the eventmesh-runtime. This is synchronous operation.
+```java
+import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
+import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
+import io.cloudevents.CloudEvent;
 
-- Create topic TEST-TOPIC-GRPC-ASYNC on rocketmq-console
-- start publisher to publish to the topic as the following:
+public class CloudEventsAsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
+    public static CloudEventsAsyncSubscribe handler = new CloudEventsAsyncSubscribe();
+    public static void main(String[] args) throws InterruptedException {
+        /* ... */
+        SubscriptionItem subscriptionItem = new SubscriptionItem(
+          "eventmesh-async-topic",
+          SubscriptionMode.CLUSTERING,
+          SubscriptionType.ASYNC
+        );
+        EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
 
+        eventMeshGrpcConsumer.init();
+        eventMeshGrpcConsumer.registerListener(handler);
+        eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem));
+        /* ... */
+        eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem));
+    }
+
+    @Override
+    public Optional<CloudEvent> handle(CloudEvent message) {
+      log.info("Messaged received: {}", message);
+      return Optional.empty();
+    }
+
+    @Override
+    public String getProtocolType() {
+      return EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME;
+    }
+}
 ```
-Run the main method of org.apache.eventmesh.grpc.pub.eventmeshmessage.BatchPublishInstance
+
+#### Webhook Consumer
+
+The `subscribe` method of the `EventMeshGrpcConsumer` class accepts a list of `SubscriptionItem` that defines the topics to be subscribed and an optional callback URL. If the callback URL is provided, the EventMesh runtime will send a POST request that contains the message in the [CloudEvents format](https://github.com/cloudevents/spec) to the callback URL. The [`SubController.java` file](https://github.com/apache/incubator-eventmesh/blob/master/eventmesh-examples/src/main/java/org/apache/eventmesh/grpc/sub/app/controller/SubController.java) implements a Spring Boot controller that receives and parses the callback messages.
+
+```java
+import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
+import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
+import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
+
+@Component
+public class SubService implements InitializingBean {
+  final String url = "http://localhost:8080/callback";
+
+  public void afterPropertiesSet() throws Exception {
+    /* ... */
+    eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
+    eventMeshGrpcConsumer.init();
+
+    SubscriptionItem subscriptionItem = new SubscriptionItem(
+      "eventmesh-async-topic",
+      SubscriptionMode.CLUSTERING,
+      SubscriptionType.ASYNC
+    );
+
+    eventMeshGrpcConsumer.subscribe(Collections.singletonList(subscriptionItem), url);
+    /* ... */
+    eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem), url);
+  }
+}
+```
+
+### gRPC Producer
+
+#### Asynchronous Producer
+
+The `EventMeshGrpcProducer` class implements the `publish` method. The `publish` method accepts the message to be published and an optional timeout value. The message should be an instance of either of these classes:
+
+- `org.apache.eventmesh.common.EventMeshMessage`
+- `io.cloudevents.CloudEvent`
+
+```java
+/* ... */
+EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(eventMeshClientConfig);
+eventMeshGrpcProducer.init();
+
+Map<String, String> content = new HashMap<>();
+content.put("content", "testAsyncMessage");
+
+CloudEvent event = CloudEventBuilder.v1()
+  .withId(UUID.randomUUID().toString())
+  .withSubject(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
+  .withSource(URI.create("/"))
+  .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
+  .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+  .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
+  .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
+  .build();
+eventMeshGrpcProducer.publish(event);
+```
+
+#### Synchronous Producer
+
+The `EventMeshGrpcProducer` class implements the `requestReply` method. The `requestReply` method accepts the message to be published and an optional timeout value. The method returns the message returned from the consumer. The message should be an instance of either of these classes:
+
+- `org.apache.eventmesh.common.EventMeshMessage`
+- `io.cloudevents.CloudEvent`
+
+#### Batch Producer
+
+The `EventMeshGrpcProducer` class overloads the `publish` method, which accepts a list of messages to be published and an optional timeout value. The messages in the list should be an instance of either of these classes:
+
+- `org.apache.eventmesh.common.EventMeshMessage`
+- `io.cloudevents.CloudEvent`
+
+```java
+/* ... */
+List<CloudEvent> cloudEventList = new ArrayList<>();
+for (int i = 0; i < 5; i++) {
+  CloudEvent event = CloudEventBuilder.v1()
+    .withId(UUID.randomUUID().toString())
+    .withSubject(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
+    .withSource(URI.create("/"))
+    .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
+    .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
+    .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
+    .withExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000))
+    .build();
+
+  cloudEventList.add(event);
+}
+
+eventMeshGrpcProducer.publish(cloudEventList);
+/* ... */
 ```
