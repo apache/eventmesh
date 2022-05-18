@@ -52,11 +52,11 @@ public class ZipkinTraceService implements TraceService {
     private int eventMeshTraceExportTimeout;
     private int eventMeshTraceMaxExportSize;
     private int eventMeshTraceMaxQueueSize;
-    private SdkTracerProvider sdkTracerProvider;
+    protected SdkTracerProvider sdkTracerProvider;
 
-    private OpenTelemetry openTelemetry;
+    protected OpenTelemetry openTelemetry;
 
-    private Thread shutdownHook;
+    protected Thread shutdownHook;
 
     @Override
     public void init() {

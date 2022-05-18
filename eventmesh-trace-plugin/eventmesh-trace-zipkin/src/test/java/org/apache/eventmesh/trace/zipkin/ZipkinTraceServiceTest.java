@@ -25,33 +25,21 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 
 public class ZipkinTraceServiceTest {
 
     @Test
-    public void testInit() throws NoSuchFieldException, IllegalAccessException {
+    public void testInit() {
         ZipkinTraceService zipkinTraceService = new ZipkinTraceService();
         zipkinTraceService.init();
 
-        Field sdkTracerProviderField = ZipkinTraceService.class.getDeclaredField("sdkTracerProvider");
-        Field openTelemetryField = ZipkinTraceService.class.getDeclaredField("openTelemetry");
-        Field shutdownHookField = ZipkinTraceService.class.getDeclaredField("shutdownHook");
-        sdkTracerProviderField.setAccessible(true);
-        openTelemetryField.setAccessible(true);
-        shutdownHookField.setAccessible(true);
-
-        SdkTracerProvider sdkTracerProvider = (SdkTracerProvider) sdkTracerProviderField.get(zipkinTraceService);
-        OpenTelemetry openTelemetry = (OpenTelemetry) openTelemetryField.get(zipkinTraceService);
-        Thread shutdownHook = (Thread) shutdownHookField.get(zipkinTraceService);
-
-        Assert.assertNotNull(sdkTracerProvider);
-        Assert.assertNotNull(openTelemetry);
-        Assert.assertNotNull(shutdownHook);
+        Assert.assertNotNull(zipkinTraceService.sdkTracerProvider);
+        Assert.assertNotNull(zipkinTraceService.openTelemetry);
+        Assert.assertNotNull(zipkinTraceService.shutdownHook);
 
         IllegalArgumentException illegalArgumentException =
-            assertThrows(IllegalArgumentException.class, () -> Runtime.getRuntime().addShutdownHook(shutdownHook));
+            assertThrows(IllegalArgumentException.class, () -> Runtime.getRuntime().addShutdownHook(zipkinTraceService.shutdownHook));
         Assert.assertEquals(illegalArgumentException.getMessage(), "Hook previously registered");
     }
 
