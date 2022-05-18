@@ -1,6 +1,6 @@
-#单元测试准则
+# 单元测试准则
 
-##目录以及命名规则
+## 目录以及命名规则
 
 + 单元测试代码必须放在工程目录下:src/test/java  
   测试的配置文件也必须放在: src/test/resources  
@@ -13,7 +13,7 @@
 + 测试类用例命名规范:  
   test + 方法名, 使用test作为方法名的前缀
 
-##编码规范
+## 编码规范
 
 + 单元测试类中必须使用assert断言来进行验证, 不允许使用System.out, if判断验证来进行验证(可以使用log打印关键日志输出)
 + 增量代码要确保单元测试通过
@@ -23,11 +23,11 @@
 + 单元测试必须可以重复执行的, 不受外界环境影响  
   注：单元测试通常放在持续集成中, 如果单个单元测试依赖外部环境, 那么很容易导致集成机制不可用
 
-##断言的使用
+## 断言的使用
 
 **所有的测试用例的结果验证都必须使用断言模式**
 
-###常规断言
+### 常规断言
 
 |       方法       |       说明       |      备注      |
 | :-------------- | :---------------| ------------- |
@@ -39,22 +39,22 @@
 | assertNotNull   | 判断给定的对象应用是否不为空 |  |
 | assertAll       | 多个逻辑一起处理, 只要有一个报错, 整个测试就会失败 |  |
 
-###断言使用实例
+### 断言使用实例
 
 + assertEquals()
-```java
+```
  configuration.init();
  Assert.assertEquals("value1", configuration.eventMeshEnv);
 ```
 
 + assertTrue()
-```java
+```
  BaseResponseHeader header = BaseResponseHeader.buildHeader("200");
  Assert.assertTrue(header.toMap().containsKey(ProtocolKey.REQUEST_CODE));
 ```
 
 + assertFalse()
-```java
+```
  Class<NacosRegistryService> nacosRegistryServiceClass = NacosRegistryService.class;
  Field initStatus = nacosRegistryServiceClass.getDeclaredField("INIT_STATUS");
  initStatus.setAccessible(true);
@@ -63,13 +63,13 @@
 ```
 
 + assertNull()
-```java
+```
  DefaultFullHttpResponse response = httpCommand.httpResponse();
  Assert.assertNull(response);
 ```
 
 + assertNotNull()
-```java
+```
  Codec.Decoder cd = new Codec.Decoder();
  ArrayList<Object> result = new ArrayList<>();
  cd.decode(null, buf, result);
@@ -77,7 +77,7 @@
 ```
 
 + 集合结果集中的每个对象都需要断言(以map为例)
-```java
+```
  Map<String, Object> headerParam = new HashMap<>();
  headerParam.put(ProtocolKey.REQUEST_CODE, 200);
  headerParam.put(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
