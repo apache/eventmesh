@@ -1,4 +1,4 @@
-# EventMesh SPI
+# Service Provider Interface
 
 ## Introduction
 

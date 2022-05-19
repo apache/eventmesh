@@ -1,4 +1,4 @@
-# Eventmesh Runtime Protocol
+# EventMesh Runtime Protocol
 
 ## TCP Protocol
 

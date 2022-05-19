@@ -1,8 +1,6 @@
-# EventMesh pluggable protocols (CloudEvents)
+# CloudEvents Integration
 
 ## Introduction
-
-[EventMesh(incubating)](https://github.com/apache/incubator-eventmesh) is a dynamic cloud-native eventing infrastructure.
 
 [CloudEvents](https://github.com/cloudevents/spec) is a specification for describing event data in common formats to provide interoperability across services, platforms and systems.
 

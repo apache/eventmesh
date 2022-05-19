@@ -1,4 +1,4 @@
-# EventMesh Stream (Camel+Spring Cloud Stream)
+# EventMesh Stream
 
 ## Introduction
 
@@ -41,7 +41,7 @@ and easily integrate various systems consuming or producing data.
 
 ## Architecture
 
-![eventmesh-stream-arch](../../images/eventmesh-stream-arch.png?raw=true)
+![eventmesh-stream-arch](../../images/eventmesh-stream-arch.png)
 
 ## Design
 
@@ -94,8 +94,8 @@ Component interface is the primary entry point, you can use Component object as 
 
 EndPoint which is act as factories for creating Consumer, Producer and Event objects.
 
-- createConsumer() — Creates a consumer endpoint, which represents the source endpoint at the beginning of a route.
-- createProducer() — Creates a producer endpoint, which represents the target endpoint at the end of a route.
+- `createConsumer()` — Creates a consumer endpoint, which represents the source endpoint at the beginning of a route.
+- `createProducer()` — Creates a producer endpoint, which represents the target endpoint at the end of a route.
 
 ![eventmesh-stream-component-routes](../../images/features/eventmesh-stream-component-routes.png?raw=true)
 
