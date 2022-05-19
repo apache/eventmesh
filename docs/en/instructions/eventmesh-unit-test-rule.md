@@ -9,7 +9,7 @@
   Corresponding test class: `src/test/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBodyTest.java`  
   Configuration file: `src/test/resources/configuration.properties`
   
-+ The package name of the test class is the same as that of the tested class
++ The package name of the test class is the same as that of the tested class(as shown above)
   
 + Naming specifications for test classes:  
   Tested (class, interface) name + Test  
