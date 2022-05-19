@@ -11,7 +11,7 @@
 + Naming specifications for test classes:  
   Tested (class, interface) name + Test
 + Test case naming specification:  
-  test + Method name,prefix the method name with test.
+  test + Method name,use test as the prefix of the method name
 
 ## Coding specification
 
