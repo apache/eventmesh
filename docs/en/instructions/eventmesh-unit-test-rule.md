@@ -5,21 +5,52 @@
 + Unit test code must be placed in the project directory: src/test/java  
   The test configuration file must also be placed in: src/test/resources  
   Example:  
-  >src/main/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBody.java
-  >src/test/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBodyTest.java
+  Business class: `src/main/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBody.java`  
+  Corresponding test class: `src/test/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBodyTest.java`  
+  Configuration file: `src/test/resources/configuration.properties`
+  
 + The package name of the test class is the same as that of the tested class
+  
 + Naming specifications for test classes:  
-  Tested (class, interface) name + Test
+  Tested (class, interface) name + Test  
+  Example:  
+  Business class name: `EventMeshUtil`  
+  Corresponding test class name: `EventMeshUtilTest`
+  
 + Test case naming specification:  
-  test + Method name,use test as the prefix of the method name
+  test + Method name,use test as the prefix of the method name  
+  Example:  
+  Business method names:
+  ```
+    public EventMeshMessage addProp(String key, String val) {
+        if (prop == null) {
+            prop = new HashMap<>();
+        }
+        prop.put(key, val);
+        return this;
+    }
+  ```
+  Corresponding test method name:
+  ```
+        public void testAddProp() {
+        EventMeshMessage message = createLiteMessage();
+        message.addProp("key3", "value3");
+        Assert.assertEquals(3L, message.getProp().size());
+        Assert.assertEquals("value1", message.getProp("key1"));
+    }
+  ```
 
 ## Coding specification
 
 + Unit tests must use assertions for verification, and are not allowed to use `System.out` output and `if` for judgmental verification (you can use log to print critical log output)
+  
 + Incremental code should ensure that the unit test passes
+  
 + Unit tests should ensure that the test granularity is small enough to help position the problem, generally at the method level  
   Note: Only with small test granularity can we locate the wrong position as soon as possible.
+  
 + Keep unit tests independent, to keep unit tests stable, reliable and maintainable, unit test cases should never call each other or depend on the order in which they are executed
+  
 + Unit tests must be repeatable and not affected by the external environment  
   Note: Unit tests are usually placed in continuous integration, and if a single unit test is dependent on an external environment, it is easy to make the integration mechanism unavailable
 
