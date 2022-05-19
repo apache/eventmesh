@@ -32,7 +32,7 @@
   ```
   Corresponding test method name:
   ```
-        public void testAddProp() {
+    public void testAddProp() {
         EventMeshMessage message = createLiteMessage();
         message.addProp("key3", "value3");
         Assert.assertEquals(3L, message.getProp().size());

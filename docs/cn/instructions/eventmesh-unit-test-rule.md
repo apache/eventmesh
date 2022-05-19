@@ -4,14 +4,41 @@
 
 + 单元测试代码必须放在工程目录下:src/test/java  
   测试的配置文件也必须放在: src/test/resources  
-  例：
-  >src/main/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBody.java
-  >src/test/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBodyTest.java
-+ 测试类所在的包名与被测试类所在的包名一致
+  例:    
+  业务类: `src/main/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBody.java`  
+  对应被测试业务类: `src/test/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBodyTest.java`  
+  测试配置文件: `src/test/resources/configuration.properties`
+  
++ 测试类所在的包名与被测试类所在的包名一致(如上所示)
+  
 + 测试类的命名规范:   
-  被测试(类、接口)名 + Test
+  被测试(类、接口)名 + Test  
+  例:  
+  业务类名: `EventMeshUtil`  
+  对应被测试业务类名: `EventMeshUtilTest`
+  
 + 测试类用例命名规范:  
-  test + 方法名, 使用test作为方法名的前缀
+  test + 方法名, 使用test作为方法名的前缀  
+  例:  
+  业务方法名:
+  ```
+    public EventMeshMessage addProp(String key, String val) {
+        if (prop == null) {
+            prop = new HashMap<>();
+        }
+        prop.put(key, val);
+        return this;
+    }
+  ```
+  对应被测试业务方法名:
+  ```
+    public void testAddProp() {
+        EventMeshMessage message = createLiteMessage();
+        message.addProp("key3", "value3");
+        Assert.assertEquals(3L, message.getProp().size());
+        Assert.assertEquals("value1", message.getProp("key1"));
+    }
+  ```
 
 ## 编码规范
 
