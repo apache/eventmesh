@@ -41,7 +41,7 @@ and easily integrate various systems consuming or producing data.
 
 ## Architecture
 
-![eventmesh-stream-arch](../../images/eventmesh-stream-arch.png)
+![eventmesh-stream-arch](/images/eventmesh-stream-arch.png)
 
 ## Design
 
@@ -88,7 +88,7 @@ The main advantage of the pipeline is that you can create complex event processi
 
 Component interface is the primary entry point, you can use Component object as a factory to create EndPoint objects.
 
-![eventmesh-stream-component-interface](../../images/features/eventmesh-stream-component-interface.png?raw=true)
+![eventmesh-stream-component-interface](/images/features/eventmesh-stream-component-interface.png)
 
 ### EndPoint
 
@@ -97,14 +97,14 @@ EndPoint which is act as factories for creating Consumer, Producer and Event obj
 - `createConsumer()` — Creates a consumer endpoint, which represents the source endpoint at the beginning of a route.
 - `createProducer()` — Creates a producer endpoint, which represents the target endpoint at the end of a route.
 
-![eventmesh-stream-component-routes](../../images/features/eventmesh-stream-component-routes.png?raw=true)
+![eventmesh-stream-component-routes](/images/features/eventmesh-stream-component-routes.png)
 
 #### Producer
 
 User can create following types of producer
 > Synchronous Producer-Processing thread blocks until the producer has finished the event processing.
 
-![eventmesh-stream-sync-producer](../../images/features/eventmesh-stream-sync-producer.png?raw=true)
+![eventmesh-stream-sync-producer](/images/features/eventmesh-stream-sync-producer.png)
 
 In future Producer Types:
 
@@ -115,7 +115,7 @@ In future Producer Types:
 User can create following types of consumer
 > Event-driven consumer-the processing of an incoming request is initiated when message binder call a method in consumer.
 
-![eventmesh-stream-event_driven-consumer](../../images/features/eventmesh-stream-event_driven-consumer.png?raw=true)
+![eventmesh-stream-event_driven-consumer](/images/features/eventmesh-stream-event_driven-consumer.png)
 
 In Future
 

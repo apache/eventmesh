@@ -11,7 +11,7 @@ store frontend, order management, payment processing, and shipment management.
 You deploy the whole system in a cloud environment. To handle high workloads, you leverage a messaging system to buffer the loads,
 and scale up multiple instances of microservices. The architecture could look similar to:
 
-![eventmesh-workflow-uc](../../images/features/eventmesh-workflow-usecase.jpg?raw=true)
+![eventmesh-workflow-uc](/images/features/eventmesh-workflow-usecase.jpg)
 
 While each microservice is acting on its own event channels, EventMesh plays a crucial role of doing Event Orchestration.
 
@@ -196,13 +196,13 @@ events:
 
 The corresponding workflow diagram is the following:
 
-![eventmesh-workflow-diag](../../images/features/eventmesh-workflow-diag.png?raw=true)
+![eventmesh-workflow-diag](/images/features/eventmesh-workflow-diag.png)
 
 ## EventMesh Workflow Engine
 
 In the following architecture diagram, the EventMesh Catalog, EventMesh Workflow Engine and EventMesh Runtime are running in three different processors.
 
-![eventmesh-workflow-arch](../../images/features/eventmesh-workflow-arch.jpg?raw=true)
+![eventmesh-workflow-arch](/images/features/eventmesh-workflow-arch.jpg)
 
 The steps running the workflow is the followings:
 

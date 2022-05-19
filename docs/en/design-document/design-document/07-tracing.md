@@ -1,4 +1,4 @@
-# HTTP Tracing
+# Distributed Tracing
 
 ## Introduction
 
