@@ -1,45 +1,45 @@
-# 单元测试准则
+# Unit test guidelines
 
-## 目录以及命名规则
+## Directory and naming rules
 
-+ 单元测试代码必须放在工程目录下:src/test/java  
-  测试的配置文件也必须放在: src/test/resources  
-  例：
++ Unit test code must be placed in the project directory: src/test/java  
+  The test configuration file must also be placed in: src/test/resources  
+  Example:  
   >src/main/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBody.java
   >src/test/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBodyTest.java
-+ 测试类所在的包名与被测试类所在的包名一致
-+ 测试类的命名规范:   
-  被测试(类、接口)名 + Test
-+ 测试类用例命名规范:  
-  test + 方法名, 使用test作为方法名的前缀
++ The package name of the test class is the same as that of the tested class
++ Naming specifications for test classes:  
+  Tested (class, interface) name + Test
++ Test case naming specification:  
+  test + Method name,prefix the method name with test.
 
-## 编码规范
+## Coding specification
 
-+ 单元测试类中必须使用assert断言来进行验证, 不允许使用System.out, if判断验证来进行验证(可以使用log打印关键日志输出)
-+ 增量代码要确保单元测试通过
-+ 单元测试要保证测试粒度足够小, 以助于精确定位问题, 一般都是方法级别  
-  注：测试粒度小才能尽快定位到错误位置
-+ 保持单元测试之间的独立性, 为了保证单元测试稳定可靠且便于维护, 单元测试用例之间绝不能互相调用，也不能依赖执行的先后次序
-+ 单元测试必须可以重复执行的, 不受外界环境影响  
-  注：单元测试通常放在持续集成中, 如果单个单元测试依赖外部环境, 那么很容易导致集成机制不可用
++ Unit tests must use assertions for verification, and are not allowed to use `System.out` output and `if` for judgmental verification (you can use log to print critical log output)
++ Incremental code should ensure that the unit test passes
++ Unit tests should ensure that the test granularity is small enough to help position the problem, generally at the method level  
+  Note: Only with small test granularity can we locate the wrong position as soon as possible.
++ Keep unit tests independent, to keep unit tests stable, reliable and maintainable, unit test cases should never call each other or depend on the order in which they are executed
++ Unit tests must be repeatable and not affected by the external environment  
+  Note: Unit tests are usually placed in continuous integration, and if a single unit test is dependent on an external environment, it is easy to make the integration mechanism unavailable
 
-## 断言的使用
+## Use of assertions
 
-**所有的测试用例的结果验证都必须使用断言模式**
+**The result verification of all test cases must use the assertion pattern**
 
-### 常规断言
+### General assertions
 
-|       方法       |       说明       |      备注      |
-| :-------------- | :---------------| ------------- |
-| assertEquals    | 判断两个对象或者两个原始类型是否相等   |  |
-| assertNotEquals | 判断两个对象或者两个原始类型是否不相等 |  |
-| assertTrue      | 判断给定的布尔值是否为真 |  |
-| assertFalse     | 判断给定的布尔值是否为假 |  |
-| assertNull      | 判断给定的对象应用是否为空   |  |
-| assertNotNull   | 判断给定的对象应用是否不为空 |  |
-| assertAll       | 多个逻辑一起处理, 只要有一个报错, 整个测试就会失败 |  |
+| Methods | Instructions | Note |
+| :-------------- | :-------------- | -------------- |
+| assertEquals    | Determines whether two objects or primitive types are equal |  |
+| assertNotEquals | Determines whether two objects or primitive types are not equal |  |
+| assertTrue      | Determines whether the given Boolean value is true |  |
+| assertFalse     | Determines whether the given Boolean value is false |  |
+| assertNull      | Determines whether the given object reference is null |  |
+| assertNotNull   | Determines whether the given object reference is not null |  |
+| assertAll       | When multiple decision logic are processed together, if only one error is reported, the whole test will fail |  |
 
-### 断言使用实例
+### Assertion Usage Examples
 
 + assertEquals()
 ```
@@ -76,7 +76,7 @@
  Assert.assertNotNull(result.get(0));
 ```
 
-+ 集合结果集中的每个对象都需要断言(以map为例)
++ Each object in the set result set needs to be asserted (using map as an example)
 ```
  Map<String, Object> headerParam = new HashMap<>();
  headerParam.put(ProtocolKey.REQUEST_CODE, 200);
