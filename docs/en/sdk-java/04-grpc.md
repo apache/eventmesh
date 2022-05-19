@@ -33,7 +33,7 @@ public interface ReceiveMsgHook<T> {
 }
 ```
 
-The `EventMeshGrpcConsumer` class implements the `registerListener`, `subscribe`, and `unsubscribe` methods. The `subscribe` method accepts a list of `SubscriptionItem` that defines the topics to be subscribed. The `registerListener` accepts an instance of a class that implements the `ReceiveMsgHook`. The `handle` method will be invoked when the consumer receives a message from the topic it subscribes to.
+The `EventMeshGrpcConsumer` class implements the `registerListener`, `subscribe`, and `unsubscribe` methods. The `subscribe` method accepts a list of `SubscriptionItem` that defines the topics to be subscribed. The `registerListener` accepts an instance of a class that implements the `ReceiveMsgHook`. The `handle` method will be invoked when the consumer receives a message from the topic it subscribes to. If the `SubscriptionType` is `SYNC`, the return value of `handle` will be sent back to the producer.
 
 ```java
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
