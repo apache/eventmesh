@@ -17,13 +17,13 @@
 EventMesh(incubating) is a dynamic event-driven application runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
 **Multi-runtime:**
-![architecture1](docs/images/eventmesh-arch3.png)
+![architecture1](docs/images/eventmesh-architecture.png)
 
-**Orchestration:**
-![architecture1](docs/images/eventmesh-orchestration.png)
+**Orchestrator:**
+![architecture1](docs/images/eventmesh-orchestrator.png)
 
-**Bridge(Federated Governance):**
-![architecture1](docs/images/eventmesh-federation.png)
+**Dynamic Router:**
+![architecture1](docs/images/eventmesh-bridge.png)
 
 **Components:**
 
