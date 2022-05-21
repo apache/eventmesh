@@ -15,10 +15,15 @@
  * limitations under the License.
  */
 
+plugins {
+    id 'java-library'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
 def grpcVersion = '1.15.0'
 
 dependencies {
-    implementation project(":eventmesh-common")
+    api project(":eventmesh-common")
 
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.fasterxml.jackson.core:jackson-core"
@@ -34,9 +39,9 @@ dependencies {
     implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     // protocol
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "io.cloudevents:cloudevents-json-jackson"
-    implementation "io.openmessaging:openmessaging-api"
+    api "io.cloudevents:cloudevents-core"
+    api "io.cloudevents:cloudevents-json-jackson"
+    api "io.openmessaging:openmessaging-api"
 
     testImplementation project(":eventmesh-common")
 
@@ -50,10 +55,9 @@ dependencies {
     implementation "io.grpc:grpc-protobuf:1.15.0"
     implementation "io.grpc:grpc-stub:1.15.0"
     implementation "com.google.protobuf:protobuf-java-util:3.5.1"
-    compileOnly 'org.projectlombok:lombok:1.18.22'
+    api 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     testCompileOnly 'org.projectlombok:lombok:1.18.22'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
-
 }
