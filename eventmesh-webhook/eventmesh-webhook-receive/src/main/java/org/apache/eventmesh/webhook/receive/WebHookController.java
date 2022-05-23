@@ -19,7 +19,7 @@ package org.apache.eventmesh.webhook.receive;
 import java.util.Map;
 
 import org.apache.eventmesh.webhook.receive.protocol.ProtocolManage;
-import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
+import org.apache.eventmesh.webhook.receive.storage.WebHookConfigOperationManage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,17 +29,17 @@ public class WebHookController {
 	
 	private ProtocolManage protocolManage = new ProtocolManage();
 	
-	private HookConfigOperationManage hookConfigOperationManage;
+	private WebHookConfigOperationManage webHookConfigOperationManage;
 	
 	public WebHookController() {
-		this.hookConfigOperationManage = new HookConfigOperationManage();
+		this.webHookConfigOperationManage = new WebHookConfigOperationManage();
 	}
 	
 	
 	/**
 	 * 1. 通过path获得webhookConfig
 	 * 2. 获得对应的厂商的处理对象,并解析协议
-	 * 3. 通过WebHookConfig获得cloudEvnet 协议对象
+	 * 3. 通过WebHookConfig获得cloudEvent 协议对象
 	 * 4. WebHookRequest 转换为cloudEvent。
 	 * @param path
 	 * @param header 需要把请求头信息重写到map里面
