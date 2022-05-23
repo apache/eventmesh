@@ -18,11 +18,11 @@ package codec
 import (
 	"bytes"
 	"encoding/binary"
-	"log"
 
 	gcommon "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
 	gutils "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/common"
 )
 
@@ -87,7 +87,7 @@ func parseFlag(in *bytes.Buffer) []byte {
 	if err != nil {
 		return nil
 	}
-	log.Printf("read %d bytes (flag) \n", n)
+	log.Infof("read %d bytes (flag) ", n)
 	return flagBytes
 }
 
@@ -98,7 +98,7 @@ func parseVersion(in *bytes.Buffer) []byte {
 	if err != nil {
 		return nil
 	}
-	log.Printf("read %d bytes (version) \n", n)
+	log.Infof("read %d bytes (version) ", n)
 	return verBytes
 }
 
@@ -106,9 +106,9 @@ func parseLength(in *bytes.Buffer) uint32 {
 	lenBytes := make([]byte, 4)
 	n, err := in.Read(lenBytes)
 	if err != nil {
-		log.Fatal("Failed to parse length")
+		log.Errorf("Failed to parse length")
 	}
-	log.Printf("read %d bytes (length) \n", n)
+	log.Infof("read %d bytes (length) ", n)
 	return binary.BigEndian.Uint32(lenBytes)
 }
 
@@ -116,9 +116,9 @@ func parseHeader(in *bytes.Buffer, headerLen int) tcp.Header {
 	headerBytes := make([]byte, headerLen)
 	n, err := in.Read(headerBytes)
 	if err != nil {
-		log.Fatal("Failed to parse header")
+		log.Errorf("Failed to parse header")
 	}
-	log.Printf("read %d bytes (header) \n", n)
+	log.Infof("read %d bytes (header) ", n)
 
 	var header tcp.Header
 	return header.Unmarshal(headerBytes)
@@ -132,9 +132,9 @@ func parseBody(in *bytes.Buffer, header tcp.Header, bodyLen int) interface{} {
 	bodyBytes := make([]byte, bodyLen)
 	n, err := in.Read(bodyBytes)
 	if err != nil {
-		log.Fatal("Failed to parse body")
+		log.Errorf("Failed to parse body")
 	}
-	log.Printf("read %d bytes (body) \n", n)
+	log.Infof("read %d bytes (body) ", n)
 
 	bodyStr := string(bodyBytes)
 	return deserializeBody(bodyStr, header)
@@ -172,7 +172,7 @@ func deserializeBody(bodyStr string, header tcp.Header) interface{} {
 		//return OBJECT_MAPPER.readValue(bodyJsonString, RedirectInfo.class);
 	default:
 		// FIXME improve codes
-		log.Printf("Invalidate TCP command: %s\n", command)
+		log.Errorf("Invalidate TCP command: %s", command)
 		return nil
 	}
 

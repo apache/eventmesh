@@ -18,9 +18,9 @@ package utils
 import (
 	gcommon "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/common"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"log"
 )
 
 func BuildPackage(message interface{}, command tcp.Command) tcp.Package {
@@ -32,7 +32,7 @@ func BuildPackage(message interface{}, command tcp.Command) tcp.Package {
 		event := message.(cloudevents.Event)
 		eventBytes, err := event.MarshalJSON()
 		if err != nil {
-			log.Fatal("Failed to marshal cloud event")
+			log.Fatalf("Failed to marshal cloud event")
 		}
 
 		pkg.Header.PutProperty(gcommon.Constants.PROTOCOL_TYPE, common.EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)

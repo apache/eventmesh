@@ -19,13 +19,13 @@ import (
 	"bufio"
 	"bytes"
 	"io"
-	"log"
 	"math/rand"
 	"net"
 	"strconv"
 
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp/codec"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/common"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/utils"
@@ -52,7 +52,7 @@ func (c *BaseTCPClient) Open() {
 	eventMeshIpAndPort := c.host + ":" + strconv.Itoa(c.port)
 	conn, err := net.Dial("tcp", eventMeshIpAndPort)
 	if err != nil {
-		log.Fatal("Failed to dial")
+		log.Errorf("Failed to dial")
 	}
 	c.conn = conn
 
@@ -63,7 +63,7 @@ func (c *BaseTCPClient) Close() {
 	if c.conn != nil {
 		err := c.conn.Close()
 		if err != nil {
-			log.Fatal("Failed to close connection")
+			log.Errorf("Failed to close connection")
 		}
 		c.Goodbye()
 	}
@@ -116,7 +116,7 @@ func (c *BaseTCPClient) read() error {
 
 func (c *BaseTCPClient) handleRead(in *bytes.Buffer) {
 	decoded := codec.DecodePackage(in)
-	log.Printf("Read from server: %v\n", decoded)
+	log.Panicf("Read from server: %v", decoded)
 	// TODO Handle according to the command
 }
 
@@ -133,7 +133,7 @@ func (c *BaseTCPClient) Send(message tcp.Package) {
 	out := codec.EncodePackage(message)
 	_, err := c.write(out.Bytes())
 	if err != nil {
-		log.Fatal("Failed to write to peer")
+		log.Fatalf("Failed to write to peer")
 	}
 }
 
