@@ -25,7 +25,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/utils"
-	"log"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	nethttp "net/http"
 	"strconv"
 	"time"
