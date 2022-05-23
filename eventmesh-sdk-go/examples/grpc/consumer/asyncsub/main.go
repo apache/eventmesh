@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
+	"io/ioutil"
+	"net/http"
 	"time"
 )
 
@@ -58,10 +60,18 @@ func main() {
 		SubscribeMode: conf.CLUSTERING,
 		SubscribeType: conf.ASYNC,
 		Topic:         "async-sub-grpc-topic",
-	}, "")
+	}, "http://localhost:8080/onmessage")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	time.Sleep(time.Hour)
+	http.HandleFunc("/onmessage", func(writer http.ResponseWriter, request *http.Request) {
+		buf, err := ioutil.ReadAll(request.Body)
+		if err != nil {
+			return
+		}
+		defer request.Body.Close()
+		fmt.Println(string(buf))
+	})
+	http.ListenAndServe(":8080", nil)
 }
