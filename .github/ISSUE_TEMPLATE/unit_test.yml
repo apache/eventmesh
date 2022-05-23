@@ -41,7 +41,7 @@ body:
     attributes:
       label: Read the unit testing guidelines
       description: >
-        Read the [unit testing guidelines]() before writing unit test code.
+        Read the [unit testing guidelines](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/instructions/eventmesh-unit-test-rule.md) before writing unit test code.
       options:
         - label: >
             I have read.
@@ -69,7 +69,6 @@ body:
         | Task Status | Class | Type |
         | :------: | :------ | :------ |
         | × | xxxxxx | xxxxxx |
-      render: bash
     validations:
       required: true
 
