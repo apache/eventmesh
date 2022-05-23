@@ -24,8 +24,9 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/utils"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"log"
+
 	nethttp "net/http"
 	"strconv"
 )
@@ -57,7 +58,7 @@ func (c *CloudEventProducer) buildCommonPostParam(event cloudevents.Event) *mode
 
 	eventBytes, err := event.MarshalJSON()
 	if err != nil {
-		log.Fatal("Failed to marshal cloudevent")
+		log.Fatalf("Failed to marshal cloudevent")
 	}
 	content := string(eventBytes)
 
