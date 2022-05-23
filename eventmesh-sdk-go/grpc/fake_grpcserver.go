@@ -18,6 +18,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/seq"
 	"io"
 	"io/ioutil"
 	"net"
@@ -30,7 +31,6 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 
-	"go.uber.org/atomic"
 	"google.golang.org/grpc"
 )
 
@@ -40,7 +40,7 @@ type fakeServer struct {
 	proto.UnimplementedPublisherServiceServer
 	proto.UnimplementedHeartbeatServiceServer
 	idg      id.Interface
-	seq      *atomic.Int64
+	seq      seq.Interface
 	closeCtx context.Context
 }
 
@@ -52,7 +52,7 @@ func runFakeServer(ctx context.Context) error {
 	}
 	f := &fakeServer{
 		idg:      id.NewUUID(),
-		seq:      atomic.NewInt64(0),
+		seq:      seq.NewAtomicSeq(),
 		closeCtx: ctx,
 	}
 	srv := grpc.NewServer()
@@ -124,7 +124,7 @@ func (f *fakeServer) SubscribeStream(srv proto.ConsumerService_SubscribeStreamSe
 				Content:       fmt.Sprintf("%v msg from fake server", index),
 				Ttl:           fmt.Sprintf("%v", time.Hour.Seconds()*24),
 				UniqueId:      f.idg.Next(),
-				SeqNum:        fmt.Sprintf("%v", f.seq.Inc()),
+				SeqNum:        f.seq.Next(),
 				Tag:           "substream-fake-tag",
 				Properties: map[string]string{
 					"from":    "fake",
@@ -188,7 +188,7 @@ func (f *fakeServer) RequestReply(ctx context.Context, rece *proto.SimpleMessage
 		Content:       "fake response for request reply" + rece.Content,
 		Ttl:           fmt.Sprintf("%v", time.Hour.Seconds()*24),
 		UniqueId:      f.idg.Next(),
-		SeqNum:        fmt.Sprintf("%v", f.seq.Inc()),
+		SeqNum:        f.seq.Next(),
 		Tag:           "fake-tag",
 		Properties: map[string]string{
 			"from":    "fake",
