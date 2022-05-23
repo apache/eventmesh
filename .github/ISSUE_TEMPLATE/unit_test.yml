@@ -16,7 +16,7 @@
 #
 
 name: Unit Test
-title: "[Unit Test] Unit Test Title"
+title: "[Unit Test] Unit test title"
 description: I want to do some unit tests for this project
 labels: ["unit test"]
 body:
