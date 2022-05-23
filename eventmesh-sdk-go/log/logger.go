@@ -135,29 +135,29 @@ type DefaultLogger struct {
 }
 
 func (s *DefaultLogger) Debugf(template string, args ...interface{}) {
-	s.SugaredLogger.Debugf(template, args, nil)
+	s.SugaredLogger.Debugf(template, args...)
 }
 
 func (s *DefaultLogger) Infof(template string, args ...interface{}) {
-	s.SugaredLogger.Infof(template, args, nil)
+	s.SugaredLogger.Infof(template, args...)
 }
 
 func (s *DefaultLogger) Warnf(template string, args ...interface{}) {
-	s.SugaredLogger.Warnf(template, args, nil)
+	s.SugaredLogger.Warnf(template, args...)
 }
 
 func (s *DefaultLogger) Errorf(template string, args ...interface{}) {
-	s.SugaredLogger.Errorf(template, args, nil)
+	s.SugaredLogger.Errorf(template, args...)
 }
 
 func (s *DefaultLogger) DPanicf(template string, args ...interface{}) {
-	s.SugaredLogger.DPanicf(template, args, nil)
+	s.SugaredLogger.DPanicf(template, args...)
 }
 
 func (s *DefaultLogger) Panicf(template string, args ...interface{}) {
-	s.SugaredLogger.Panicf(template, args, nil)
+	s.SugaredLogger.Panicf(template, args...)
 }
 
 func (s *DefaultLogger) Fatalf(template string, args ...interface{}) {
-	s.SugaredLogger.Fatalf(template, args, nil)
+	s.SugaredLogger.Fatalf(template, args...)
 }
