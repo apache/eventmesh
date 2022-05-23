@@ -20,8 +20,9 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/consumer"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -97,12 +98,12 @@ func hello(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(contentType, "application/x-www-form-urlencoded") {
 			err := r.ParseForm()
 			if err != nil {
-				log.Printf("Failed to parse post form parameter, error: %v", err)
+				log.Errorf("Failed to parse post form parameter, error: %v", err)
 			}
 			content := r.FormValue("content")
 			event := cloudevents.NewEvent()
 			utils.UnMarshalJsonString(content, &event)
-			log.Printf("Received data from eventmesh server: %v", string(event.Data()))
+			log.Infof("Received data from eventmesh server: %v", string(event.Data()))
 			return
 		}
 
