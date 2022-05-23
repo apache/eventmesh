@@ -343,8 +343,9 @@ func Test_eventMeshGRPCClient_Subscribe(t *testing.T) {
 					SubscribeType: 1,
 					Topic:         "topic-1",
 				},
-				handler: func(message *proto.SimpleMessage) {
+				handler: func(message *proto.SimpleMessage) interface{} {
 					t.Logf("receive subscribe response:%s", message.String())
+					return nil
 				},
 			},
 		},
@@ -383,8 +384,9 @@ func Test_eventMeshGRPCClient_UnSubscribe(t *testing.T) {
 		SubscribeMode: 1,
 		SubscribeType: 1,
 		Topic:         "topic-1",
-	}, func(message *proto.SimpleMessage) {
+	}, func(message *proto.SimpleMessage) interface{} {
 		t.Logf("receive subscribe response:%s", message.String())
+		return nil
 	})
 	assert.NoError(t, err, "subscribe err")
 	tests := []struct {
