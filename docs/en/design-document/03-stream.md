@@ -1,11 +1,6 @@
 # EventMesh Stream
 
-## Introduction
-
-[EventMesh(incubating)](https://github.com/apache/incubator-eventmesh) is a dynamic
-cloud-native eventing infrastructure.
-
-## An overview of Event Streaming
+## Overview of Event Streaming
 
 Event Streaming is an implementation of Pub/Sub architecture pattern,it consist of
 
@@ -41,7 +36,7 @@ and easily integrate various systems consuming or producing data.
 
 ## Architecture
 
-![eventmesh-stream-arch](/images/eventmesh-stream-arch.png)
+![Stream Architecture](/images/design-document/stream-architecture.png)
 
 ## Design
 
@@ -88,7 +83,7 @@ The main advantage of the pipeline is that you can create complex event processi
 
 Component interface is the primary entry point, you can use Component object as a factory to create EndPoint objects.
 
-![eventmesh-stream-component-interface](/images/features/eventmesh-stream-component-interface.png)
+![Stream Component Interface](/images/design-document/stream-component-interface.png)
 
 ### EndPoint
 
@@ -97,14 +92,14 @@ EndPoint which is act as factories for creating Consumer, Producer and Event obj
 - `createConsumer()` — Creates a consumer endpoint, which represents the source endpoint at the beginning of a route.
 - `createProducer()` — Creates a producer endpoint, which represents the target endpoint at the end of a route.
 
-![eventmesh-stream-component-routes](/images/features/eventmesh-stream-component-routes.png)
+![Stream Component Routes](/images/design-document/stream-component-routes.png)
 
 #### Producer
 
 User can create following types of producer
 > Synchronous Producer-Processing thread blocks until the producer has finished the event processing.
 
-![eventmesh-stream-sync-producer](/images/features/eventmesh-stream-sync-producer.png)
+![Stream Sync Producer](/images/design-document/stream-sync-producer.png)
 
 In future Producer Types:
 
@@ -115,15 +110,9 @@ In future Producer Types:
 User can create following types of consumer
 > Event-driven consumer-the processing of an incoming request is initiated when message binder call a method in consumer.
 
-![eventmesh-stream-event_driven-consumer](/images/features/eventmesh-stream-event_driven-consumer.png)
+![Stream Event-Driven Consumer](/images/design-document/stream-event-driven-consumer.png)
 
-In Future
+In the Future
 
 - Scheduled poll consumer
 - Custom polling consumer
-
-## Appendix
-
-### References
-
-- <https://donovanmuller.blog/camel-spring-cloud-stream/>
