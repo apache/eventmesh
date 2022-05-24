@@ -53,7 +53,7 @@ public class EventMeshClientUtil {
     private static final Logger logger = LoggerFactory.getLogger(EventMeshClientUtil.class);
 
     public static RequestHeader buildHeader(EventMeshGrpcClientConfig clientConfig, String protocolType) {
-        RequestHeader header = RequestHeader.newBuilder()
+        return RequestHeader.newBuilder()
             .setEnv(clientConfig.getEnv())
             .setIdc(clientConfig.getIdc())
             .setIp(IPUtils.getLocalAddress())
@@ -67,9 +67,9 @@ public class EventMeshClientUtil {
             // default CloudEvents version is V1
             .setProtocolVersion(SpecVersion.V1.toString())
             .build();
-        return header;
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T buildMessage(SimpleMessage message, String protocolType) {
         String seq = message.getSeqNum();
         String uniqueId = message.getUniqueId();
@@ -93,7 +93,7 @@ public class EventMeshClientUtil {
                     .withExtension(ProtocolKey.SEQ_NUM, message.getSeqNum())
                     .withExtension(ProtocolKey.UNIQUE_ID, message.getUniqueId());
 
-                message.getPropertiesMap().forEach((k, v) -> cloudEventBuilder.withExtension(k, v));
+                message.getPropertiesMap().forEach(cloudEventBuilder::withExtension);
 
                 return (T) cloudEventBuilder.build();
             } catch (Throwable t) {
@@ -171,6 +171,7 @@ public class EventMeshClientUtil {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> BatchMessage buildBatchMessages(List<T> messageList, EventMeshGrpcClientConfig clientConfig,
                                                       String protocolType) {
         if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
