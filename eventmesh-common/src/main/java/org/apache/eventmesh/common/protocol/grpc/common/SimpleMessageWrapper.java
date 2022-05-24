@@ -22,7 +22,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 
 public class SimpleMessageWrapper implements ProtocolTransportObject {
 
-    private SimpleMessage simpleMessage;
+    private final SimpleMessage simpleMessage;
 
     public SimpleMessageWrapper(SimpleMessage simpleMessage) {
         this.simpleMessage = simpleMessage;
