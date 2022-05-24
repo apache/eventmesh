@@ -1,18 +1,34 @@
+// Licensed to the Apache Software Foundation (ASF) under one or more
+// contributor license agreements.  See the NOTICE file distributed with
+// this work for additional information regarding copyright ownership.
+// The ASF licenses this file to You under the Apache License, Version 2.0
+// (the "License"); you may not use this file except in compliance with
+// the License.  You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package tcp
 
 import (
 	"bufio"
 	"bytes"
-	"eventmesh/common/protocol/tcp"
-	"eventmesh/common/protocol/tcp/codec"
-	"eventmesh/tcp/common"
-	"eventmesh/tcp/conf"
-	"eventmesh/tcp/utils"
 	"io"
-	"log"
 	"math/rand"
 	"net"
 	"strconv"
+
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/tcp/codec"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/common"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/conf"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/tcp/utils"
 )
 
 type BaseTCPClient struct {
@@ -36,7 +52,7 @@ func (c *BaseTCPClient) Open() {
 	eventMeshIpAndPort := c.host + ":" + strconv.Itoa(c.port)
 	conn, err := net.Dial("tcp", eventMeshIpAndPort)
 	if err != nil {
-		log.Fatal("Failed to dial")
+		log.Errorf("Failed to dial")
 	}
 	c.conn = conn
 
@@ -47,7 +63,7 @@ func (c *BaseTCPClient) Close() {
 	if c.conn != nil {
 		err := c.conn.Close()
 		if err != nil {
-			log.Fatal("Failed to close connection")
+			log.Errorf("Failed to close connection")
 		}
 		c.Goodbye()
 	}
@@ -100,7 +116,7 @@ func (c *BaseTCPClient) read() error {
 
 func (c *BaseTCPClient) handleRead(in *bytes.Buffer) {
 	decoded := codec.DecodePackage(in)
-	log.Printf("Read from server: %v\n", decoded)
+	log.Panicf("Read from server: %v", decoded)
 	// TODO Handle according to the command
 }
 
@@ -117,7 +133,7 @@ func (c *BaseTCPClient) Send(message tcp.Package) {
 	out := codec.EncodePackage(message)
 	_, err := c.write(out.Bytes())
 	if err != nil {
-		log.Fatal("Failed to write to peer")
+		log.Fatalf("Failed to write to peer")
 	}
 }
 
