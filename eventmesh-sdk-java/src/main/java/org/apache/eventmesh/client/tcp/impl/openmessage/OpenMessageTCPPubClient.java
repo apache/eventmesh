@@ -31,10 +31,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class OpenMessageTCPPubClient implements EventMeshTCPPubClient<Message> {
 
-    private final EventMeshTCPClientConfig eventMeshTCPClientConfig;
+    private final EventMeshTCPClientConfig eventMeshTcpClientConfig;
 
-    public OpenMessageTCPPubClient(final EventMeshTCPClientConfig eventMeshTCPClientConfig) {
-        this.eventMeshTCPClientConfig = eventMeshTCPClientConfig;
+    public OpenMessageTCPPubClient(final EventMeshTCPClientConfig eventMeshTcpClientConfig) {
+        this.eventMeshTcpClientConfig = eventMeshTcpClientConfig;
     }
 
     @Override
