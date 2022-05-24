@@ -22,7 +22,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 
 public class BatchMessageWrapper implements ProtocolTransportObject {
 
-    private BatchMessage batchMessage;
+    private final BatchMessage batchMessage;
 
     public BatchMessageWrapper(BatchMessage batchMessage) {
         this.batchMessage = batchMessage;
