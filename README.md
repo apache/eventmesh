@@ -1,9 +1,7 @@
-# Apache EventMesh (Incubating)
-
 <div align="center">
 
+<br /><br />
 <img src="docs/images/logo.png" width="256">
-
 <br />
 
 [![CI status](https://img.shields.io/github/workflow/status/apache/incubator-eventmesh/Continuous%20Integration?logo=github&style=for-the-badge)](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml)
@@ -18,10 +16,10 @@
 [📦 Documentation](https://eventmesh.apache.org/docs/introduction) |
 [📔 Examples](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) |
 [⚙️ Roadmap](https://eventmesh.apache.org/docs/roadmap) |
-[🖥️ 简体中文](README.zh-CN.md)
+[🌐 简体中文](README.zh-CN.md)
 </div>
 
-## What is EventMesh
+# Apache EventMesh (Incubating)
 
 **Apache EventMesh (Incubating)** is a dynamic event-driven application runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
@@ -72,7 +70,7 @@ Apache EventMesh (Incubating) enriches the <a href="https://landscape.cncf.io/se
 
 ## License
 
-Apache EventMesh (Incubating) is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
+Apache EventMesh (Incubating) is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 ## Community
 
