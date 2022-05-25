@@ -1,10 +1,6 @@
 # Distributed Tracing
 
-## Introduction
-
-[EventMesh(incubating)](https://github.com/apache/incubator-eventmesh) is a dynamic cloud-native eventing infrastructure.
-
-## An overview of OpenTelemetry
+## Overview of OpenTelemetry
 
 OpenTelemetry is a collection of tools, APIs, and SDKs. You can use it to instrument, generate, collect, and export telemetry data (metrics, logs, and traces) for analysis in order to understand your software's performance and behavior.
 
@@ -16,9 +12,9 @@ OpenTelemetry is a collection of tools, APIs, and SDKs. You can use it to instru
 
 ## Design Details
 
-- SpanProcessor:   BatchSpanProcessor
+- SpanProcessor: BatchSpanProcessor
 
-- Exporter:  log(default), would be changed from properties
+- Exporter: log(default), would be changed from properties
 
 ```java
 // Configure the batch spans processor. This span processor exports span in batches.
@@ -80,7 +76,7 @@ Additional, this will surround with try catch.If the specified exporter cannot b
 
 #### Improvement of different exporter
 
-SPI(To be completed)
+SPI (To be completed)
 
 ## Appendix
 

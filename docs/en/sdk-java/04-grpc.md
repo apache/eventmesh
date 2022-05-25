@@ -1,6 +1,6 @@
 # gRPC Protocol
 
-EventMesh SDK for Java implements the gRPC producer and consumer of synchronous, asynchronous, and broadcast messages. Both the producer and consumer requires an instance of `EventMeshGrpcClientConfig` class that specifies the configuration of EventMesh gRPC client. The `liteEventMeshAddr`, `userName`, and `password` fields should match the `eventmesh.properties` file of EventMesh runtime.
+EventMesh SDK for Java implements the gRPC producer and consumer of synchronous, asynchronous, and broadcast messages. Both the producer and consumer require an instance of `EventMeshGrpcClientConfig` class that specifies the configuration of EventMesh gRPC client. The `liteEventMeshAddr`, `userName`, and `password` fields should match the `eventmesh.properties` file of EventMesh runtime.
 
 ```java
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
@@ -33,7 +33,7 @@ public interface ReceiveMsgHook<T> {
 }
 ```
 
-The `EventMeshGrpcConsumer` class implements the `registerListener`, `subscribe`, and `unsubscribe` methods. The `subscribe` method accepts a list of `SubscriptionItem` that defines the topics to be subscribed. The `registerListener` accepts an instance of a class that implements the `ReceiveMsgHook`. The `handle` method will be invoked when the consumer receives a message from the topic it subscribes to. If the `SubscriptionType` is `SYNC`, the return value of `handle` will be sent back to the producer.
+The `EventMeshGrpcConsumer` class implements the `registerListener`, `subscribe`, and `unsubscribe` methods. The `subscribe` method accepts a list of `SubscriptionItem` that defines the topics to be subscribed to. The `registerListener` accepts an instance of a class that implements the `ReceiveMsgHook`. The `handle` method will be invoked when the consumer receives a message from the topic it subscribes. If the `SubscriptionType` is `SYNC`, the return value of `handle` will be sent back to the producer.
 
 ```java
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;

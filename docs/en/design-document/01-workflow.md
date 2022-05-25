@@ -2,46 +2,31 @@
 
 ## Business Problem
 
-Imaging you are building a simple Order Management System for an E-Commerce Store.
-The system should be able to receive and provision new orders from a store website. The provisioning process
-should be able to process all orders, handle payments, as well as process shipments.
+Imaging you are building a simple Order Management System for an E-Commerce Store. The system should be able to receive and provision new orders from a store website. The provisioning process should be able to process all orders, handle payments, as well as process shipments.
 
-For high availability and high performance, you architect the system using event-driven architecture (EDA), and build microservice apps to handle
-store frontend, order management, payment processing, and shipment management.
-You deploy the whole system in a cloud environment. To handle high workloads, you leverage a messaging system to buffer the loads,
-and scale up multiple instances of microservices. The architecture could look similar to:
+For high availability and high performance, you architect the system using event-driven architecture (EDA), and build microservice apps to handle store frontend, order management, payment processing, and shipment management. You deploy the whole system in a cloud environment. To handle high workloads, you leverage a messaging system to buffer the loads, and scale up multiple instances of microservices. The architecture could look similar to:
 
-![eventmesh-workflow-uc](/images/features/eventmesh-workflow-usecase.jpg)
+![Workflow Use Case](/images/design-document/workflow-use-case.jpg)
 
 While each microservice is acting on its own event channels, EventMesh plays a crucial role of doing Event Orchestration.
 
 We use [CNCF Serverless Workflow](https://serverlessworkflow.io/) to describe this Event Workflow Orchestration.
 
-## About CNCF Serverless Workflow
+## CNCF Serverless Workflow
 
-CNCF Serverless Workflow defines a vendor-neutral, open-source, and fully community-driven ecosystem
-for defining and running DSL-based workflows that target the Serverless technology domain.
+CNCF Serverless Workflow defines a vendor-neutral, open-source, and fully community-driven ecosystem for defining and running DSL-based workflows that target the Serverless technology domain.
 
-Serverless Workflow defines a Domain Specific Language (DSL)
-to describe stateful and stateless workflow-based orchestrations of serverless functions and microservices.
+Serverless Workflow defines a Domain Specific Language (DSL) to describe stateful and stateless workflow-based orchestrations of serverless functions and microservices.
 
-More about this can be found in its [official github site](https://github.com/serverlessworkflow/specification)
+More details could be found in its [official github site](https://github.com/serverlessworkflow/specification)
 
 ## EventMesh Workflow
 
-We leverage Serverless Workflow DSL to describe the EventMesh workflow. Based on its spec, the workflow is consists of a series of
-workflow states used to describe the control-flow logic.
-At this time we only support event related workflow states. See the supported states in [Workflow DSL Design](#workflow-dsl-design-wip).
+We leverage Serverless Workflow DSL to describe the EventMesh workflow. Based on its spec, the workflow is consists of a series of workflow states used to describe the control-flow logic. At this time we only support event related workflow states. See the supported states in [Workflow DSL Design](#workflow-dsl-design-wip).
 
-A `workflow state` can include applicable `actions`, or services/functions that should be invoked during workflow execution.
-These `actions` can reference reusable `function` definitions which define how these functions/services should be invoked.
-They can also reference events that trigger event-based service invocations, and events to wait for that denote completion of
-such event-based service invocation completion.
+A `workflow state` can include applicable `actions`, or services/functions that should be invoked during workflow execution. These `actions` can reference reusable `function` definitions which define how these functions/services should be invoked. They can also reference events that trigger event-based service invocations, and events to wait for that denote completion of such event-based service invocation completion.
 
-In EDA solution, we usually defined our event-driven microservice using AsyncAPI.
-Serverless workflow `function` definitions support defining invocation semantics using AsyncAPI.
-See [Using Funtions for AsyncAPI Service](https://github.com/serverlessworkflow/specification/blob/main/specification.md#using-functions-for-async-api-service-invocations)
-for more information.
+In EDA solution, we usually defined our event-driven microservice using AsyncAPI. Serverless workflow `function` definitions support defining invocation semantics using AsyncAPI. See [Using Funtions for AsyncAPI Service](https://github.com/serverlessworkflow/specification/blob/main/specification.md#using-functions-for-async-api-service-invocations) for more information.
 
 ### AsyncAPI
 
@@ -196,13 +181,13 @@ events:
 
 The corresponding workflow diagram is the following:
 
-![eventmesh-workflow-diag](/images/features/eventmesh-workflow-diag.png)
+![Workflow Diagram](/images/design-document/workflow-diagram.png)
 
 ## EventMesh Workflow Engine
 
 In the following architecture diagram, the EventMesh Catalog, EventMesh Workflow Engine and EventMesh Runtime are running in three different processors.
 
-![eventmesh-workflow-arch](/images/features/eventmesh-workflow-arch.jpg)
+![Workflow Architecture](/images/design-document/workflow-architecture.jpg)
 
 The steps running the workflow is the followings:
 
