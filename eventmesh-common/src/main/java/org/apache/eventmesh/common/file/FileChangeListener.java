@@ -15,28 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.common.file;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import java.nio.file.WatchEvent;
 
-import java.io.File;
+public interface FileChangeListener {
+    /**
+     * triggered when a file change occurs
+     *
+     * @param changeContext file change context
+     */
+    void onChanged(FileChangeContext changeContext);
 
-public class ConfigurationWrapperTest {
-
-    private ConfigurationWrapper wraper;
-
-    @Before
-    public void before() {
-        String file = ConfigurationWrapperTest.class.getResource("/configuration.properties").getFile();
-        File f = new File(file);
-        wraper = new ConfigurationWrapper(f.getParent(), f.getName(), false);
-    }
-
-    @Test
-    public void testGetProp() {
-        Assert.assertEquals("value1", wraper.getProp("eventMesh.server.env"));
-        Assert.assertEquals("value2", wraper.getProp("eventMesh.server.idc"));
-    }
+    /**
+     * true if support
+     *
+     * @param watchEvent {@link WatchEvent}
+     * @return true if support
+     */
+    boolean support(WatchEvent<?> watchEvent);
 }
