@@ -128,15 +128,15 @@ public enum Command {
 
 #### Sync Message
 
-![sync-msg](/images/protocol/eventmesh-sync-message.png)
+![Sync Message](/images/design-document/sync-message.png)
 
 #### Async Message
 
-![async-msg](/images/protocol/eventmesh-async-message.png)
+![Async Message](/images/design-document/async-message.png)
 
 #### Boardcast Message
 
-![broadcast-msg](/images/protocol/eventmesh-broadcast-message.png)
+![Boardcast Message](/images/design-document/broadcast-message.png)
 
 ## HTTP Protocol
 
