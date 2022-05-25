@@ -1,6 +1,6 @@
 # TCP Protocol
 
-EventMesh SDK for Java implements the TCP producer and consumer of synchronous, asynchronous, and broadcast messages. Both the producer and consumer requires an instance of `EventMeshTCPClientConfig` class that specifies the configuration of EventMesh gRPC client. The `host` and `port` fields should match the `eventmesh.properties` file of EventMesh runtime.
+EventMesh SDK for Java implements the TCP producer and consumer of synchronous, asynchronous, and broadcast messages. Both the producer and consumer require an instance of `EventMeshTCPClientConfig` class that specifies the configuration of EventMesh gRPC client. The `host` and `port` fields should match the `eventmesh.properties` file of EventMesh runtime.
 
 ```java
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
@@ -29,7 +29,7 @@ public interface ReceiveMsgHook<ProtocolMessage> {
 }
 ```
 
-The `EventMeshTCPClient` class implements the `subscribe` method. The `subscribe` method accepts the topic, the `SubscriptionMode`, and the `SubscriptionType`. The `handle` method will be invoked when the consumer receives a message from the topic it subscribes to. If the `SubscriptionType` is `SYNC`, the return value of `handle` will be sent back to the producer.
+The `EventMeshTCPClient` class implements the `subscribe` method. The `subscribe` method accepts the topic, the `SubscriptionMode`, and the `SubscriptionType`. The `handle` method will be invoked when the consumer receives a message from the topic it subscribes. If the `SubscriptionType` is `SYNC`, the return value of `handle` will be sent back to the producer.
 
 ```java
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
@@ -72,7 +72,7 @@ public class TCPConsumer implements ReceiveMsgHook<CloudEvent> {
 
 ### Asynchronous Producer
 
-The `EventMeshTCPClient` class implements the `publish` method. The `publish` method accepts the message to be published and an optional timeout value, and returns the response message from the consumer.
+The `EventMeshTCPClient` class implements the `publish` method. The `publish` method accepts the message to be published and an optional timeout value and returns the response message from the consumer.
 
 ```java
 /* ... */
@@ -93,7 +93,7 @@ client.publish(event, 1000);
 
 ### Synchronous Producer
 
-The `EventMeshTCPClient` class implements the `rr` method. The `rr` method accepts the message to be published and an optional timeout value, and returns the response message from the consumer.
+The `EventMeshTCPClient` class implements the `rr` method. The `rr` method accepts the message to be published and an optional timeout value and returns the response message from the consumer.
 
 ```java
 /* ... */

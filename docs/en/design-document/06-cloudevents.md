@@ -44,7 +44,7 @@ should be an easy way to achieve the requirements.
 
 ### Pluggable Protocols
 
-![pluggable-protocols](/images/features/cloudevents-pluggable-protocols.png)
+![Pluggable Protocols](/images/design-document/cloudevents-pluggable-protocols.png)
 
 ### Process of CloudEvents under EventMesh
 
