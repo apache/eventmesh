@@ -15,31 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.common.file;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+public class FileChangeContext {
 
-import java.io.File;
+    private String directoryPath;
 
-public class CommonConfigurationTest {
+    private String fileName;
 
-    private CommonConfiguration configuration;
-
-    @Before
-    public void before() {
-        String file = ConfigurationWrapperTest.class.getResource("/configuration.properties").getFile();
-        File f = new File(file);
-        ConfigurationWrapper wraper = new ConfigurationWrapper(f.getParent(), f.getName(), false);
-        configuration = new CommonConfiguration(wraper);
+    public String getDirectoryPath() {
+        return directoryPath;
     }
 
-    @Test
-    public void testInit() {
-        configuration.init();
-        Assert.assertEquals("value1", configuration.eventMeshEnv);
-        Assert.assertEquals("value2", configuration.eventMeshIDC);
-        Assert.assertEquals("3", configuration.sysID);
+    public void setDirectoryPath(String directoryPath) {
+        this.directoryPath = directoryPath;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 }
