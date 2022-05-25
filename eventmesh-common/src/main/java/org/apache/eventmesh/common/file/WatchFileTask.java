@@ -17,25 +17,34 @@
 
 package org.apache.eventmesh.common.file;
 
-import org.apache.eventmesh.common.exception.EventMeshException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.List;
 
-public class WatchDirectoryTask extends Thread {
+public class WatchFileTask extends Thread {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WatchDirectoryTask.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WatchFileTask.class);
 
     private static final FileSystem FILE_SYSTEM = FileSystems.getDefault();
 
     private final WatchService watchService;
 
+    private final List<FileChangeListener> fileChangeListeners = new ArrayList<>();
+
     private volatile boolean watch = true;
 
-    public WatchDirectoryTask(String directoryPath) throws EventMeshException {
+    private final String directoryPath;
+
+    public WatchFileTask(String directoryPath) {
+        this.directoryPath = directoryPath;
         final Path path = Paths.get(directoryPath);
+        if (!path.toFile().exists()) {
+            throw new IllegalArgumentException("file directory not exist: " + directoryPath);
+        }
         if (!path.toFile().isDirectory()) {
             throw new IllegalArgumentException("must be a file directory : " + directoryPath);
         }
@@ -46,8 +55,18 @@ public class WatchDirectoryTask extends Thread {
                     StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
             this.watchService = service;
         } catch (Throwable ex) {
-            throw new EventMeshException("WatchService registry fail", ex);
+            throw new UnsupportedOperationException("WatchService registry fail", ex);
         }
+    }
+
+    public void addFileChangeListener(FileChangeListener fileChangeListener) {
+        if (fileChangeListener != null) {
+            fileChangeListeners.add(fileChangeListener);
+        }
+    }
+
+    public void shutdown() {
+        watch = false;
     }
 
     @Override
@@ -63,7 +82,7 @@ public class WatchDirectoryTask extends Thread {
                 }
 
                 for (WatchEvent<?> event : events) {
-                    precessWatchEvent(event.kind());
+                    precessWatchEvent(event);
                 }
             } catch (InterruptedException ex) {
                 boolean interrupted = Thread.interrupted();
@@ -78,15 +97,18 @@ public class WatchDirectoryTask extends Thread {
         }
     }
 
-    private void precessWatchEvent(Object context) {
+    private void precessWatchEvent(WatchEvent<?> event) {
         try {
-
+            for (FileChangeListener fileChangeListener : fileChangeListeners) {
+                if (fileChangeListener.support(event)) {
+                    FileChangeContext context = new FileChangeContext();
+                    context.setDirectoryPath(directoryPath);
+                    context.setFileName(directoryPath + File.separator + event.context());
+                    fileChangeListener.onChanged(context);
+                }
+            }
         } catch (Throwable ex) {
             LOGGER.error("file change event callback error : ", ex);
         }
-    }
-
-    private void shutdown() {
-        watch = false;
     }
 }
