@@ -1,10 +1,6 @@
-# EventMesh SchemaRegistry (OpenSchema)
+# EventMesh Schema Registry (OpenSchema)
 
-## Introduction
-
-[EventMesh(incubating)](https://github.com/apache/incubator-eventmesh) is a dynamic cloud-native eventing infrastructure.
-
-## An Overview of Schema and Schema Registry
+## Overview of Schema and Schema Registry
 
 ### Schema
 
@@ -20,7 +16,7 @@ Schema Registry is a server provides RESTful interfaces. It could receive and st
 
 It could be applied to validation process and (de-)serialization process.
 
-### A Comparison of Schema Registry in Other Projects
+### Comparison of Schema Registry in Different Projects
 
 Project | Application
 :---: | :---
@@ -28,7 +24,7 @@ EMQ[[2]](#References) | Mainly in (de-)serialization process. Use "Schema Regist
 Pulsar[[3]](#References) | Mainly in validation process. Use "Schema Registry" to validate a message.
 Confluentinc[[4]](#References) | In both validation and (de-)serialization process.
 
-## An Overview of OpenSchema
+## Overview of OpenSchema
 
 OpenSchema[[5]](#References) proposes a specification for data schema when exchanging the message and event in more and more modern cloud-native applications. It designs a RESTful interface for storing and retrieving such as Avro, JSON Schema, and Protobuf3 schemas from three aspects(subject/schema/compatibility).
 
@@ -43,32 +39,32 @@ OpenSchema[[5]](#References) proposes a specification for data schema when excha
 
 ### Architecture
 
-![OpenSchema](/images/features/eventmesh-schemaregistry-arch.png)
+![OpenSchema](/images/design-document/schema-registry-architecture.png)
 
 ### Process of Transferring Messages under Schema Registry
 
-![Process](/images/features/eventmesh-schemaregistry-process.jpg)
+![Process](/images/design-document/schema-registry-process.jpg)
 
-The highlevel process of messages transmission undergoes 10 steps as follows:
+The highlevel process of messages transmission contains 10 steps as follows:
 
-- step1: Consumer subscribes "TOPIC" messages from EventMesh.
-- step2: Producer registers a schema to EventMesh.
-- step3: EventMesh registers a schema to Schema Registry.
-- step4: Schema Registry returns the id of newly created schema; EventMesh caches such id and schema.
-- step5: EventMesh returns the id of schema to Producer.
-- step6: Producer patches the id in front of messages and send messages to EventMesh.
-- step7: EventMesh validates the messages in the entry port and send it to EventStore; EventMesh retrieves messages from EventStore.
-- step8: EventMesh unpatches the id and send it to Schema Registry(if such `<id, schema>` does not exists in local cache).
-- step9: Schema Registry returns schema and EventMesh caches it.
-- step10: EventMesh patches schema in front of messages and push it to consumer.
+- 1: Consumer subscribes "TOPIC" messages from EventMesh.
+- 2: Producer registers a schema to EventMesh.
+- 3: EventMesh registers a schema to Schema Registry.
+- 4: Schema Registry returns the id of newly created schema; EventMesh caches such id and schema.
+- 5: EventMesh returns the id of schema to Producer.
+- 6: Producer patches the id in front of messages and send messages to EventMesh.
+- 7: EventMesh validates the messages in the entry port and send it to EventStore; EventMesh retrieves messages from EventStore.
+- 8: EventMesh unpatches the id and send it to Schema Registry(if such `<id, schema>` does not exists in local cache).
+- 9: Schema Registry returns schema and EventMesh caches it.
+- 10: EventMesh patches schema in front of messages and push it to consumer.
 
 ## Current Progress
 
 ### Status
 
-**Current state** : Developing
+**Current state**: Developing
 
-**Discussion thread** : ISSUE #339
+**Discussion thread**: ISSUE #339
 
 ### Proposed Changes
 
@@ -97,7 +93,7 @@ No. | Status Code | Exception Code | Description | status
 10 | 500 | 50001 | Storage Service Exception | ✔
 11 | ^ | 50002 | Timeout Exception | ✔
 
-#### API developing status
+#### API Development Status
 
 No. | Type | URL | response | exception | code | test
 --- | --- | --- | --- | --- | --- | ---
@@ -123,15 +119,15 @@ No. | Type | URL | response | exception | code | test
 
 ```CompatibilityController.java```+```CompatibilityService.java``` : ```OpenSchema 7.3.1~7.3.3 (API 11~13)``` + ```Check for Compatibility```
 
-![Project_Structure](/images/features/eventmesh-schemaregistry-projectstructure.png)
+![Project Structure](/images/design-document/schema-registry-project-structure.png)
 
 ## References
 
 [1] [schema validator (github.com)](https://github.com/search?q=schema+validator)
 
-[2] [EMQ : Schema Registry](https://www.jianshu.com/p/33e0655c642b)
+[2] [EMQ: Schema Registry](https://www.jianshu.com/p/33e0655c642b)
 
-[3] [Pulsar : Schema Registry](https://mp.weixin.qq.com/s/PaB66-Si00cX80py5ig5Mw)
+[3] [Pulsar: Schema Registry](https://mp.weixin.qq.com/s/PaB66-Si00cX80py5ig5Mw)
 
 [4] [confluentinc/schema-registry](https://github.com/confluentinc/schema-registry)
 
