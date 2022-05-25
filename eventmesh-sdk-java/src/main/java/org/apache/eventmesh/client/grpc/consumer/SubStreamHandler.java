@@ -36,15 +36,15 @@ public class SubStreamHandler<T> extends Thread {
 
     private static final Logger logger = LoggerFactory.getLogger(SubStreamHandler.class);
 
-    private CountDownLatch latch = new CountDownLatch(1);
+    private final CountDownLatch latch = new CountDownLatch(1);
 
-    private ConsumerServiceStub consumerAsyncClient;
+    private final ConsumerServiceStub consumerAsyncClient;
 
-    private EventMeshGrpcClientConfig clientConfig;
+    private final EventMeshGrpcClientConfig clientConfig;
 
     private StreamObserver<Subscription> sender;
 
-    private ReceiveMsgHook<T> listener;
+    private final ReceiveMsgHook<T> listener;
 
     public SubStreamHandler(ConsumerServiceStub consumerAsyncClient, EventMeshGrpcClientConfig clientConfig,
                             ReceiveMsgHook<T> listener) {
@@ -122,6 +122,7 @@ public class SubStreamHandler<T> extends Thread {
             .setReply(reply).build();
     }
 
+    @Override
     public void run() {
         try {
             latch.await();
