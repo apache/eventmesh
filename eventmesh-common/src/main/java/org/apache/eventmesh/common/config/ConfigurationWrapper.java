@@ -39,13 +39,13 @@ public class ConfigurationWrapper {
     
     private static final long TIME_INTERVAL = 30 * 1000L;
     
-    private String file;
+    private final String file;
 
     private Properties properties = new Properties();
 
-    private boolean reload;
+    private final boolean reload;
 
-    private ScheduledExecutorService configLoader = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-configLoader-");
+    private final ScheduledExecutorService configLoader = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-configLoader-");
 
     public ConfigurationWrapper(String file, boolean reload) {
         this.file = file;
