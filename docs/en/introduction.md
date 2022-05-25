@@ -14,17 +14,17 @@ sidebar_position: 0
 
 **Apache EventMesh (Incubating)** is a dynamic event-driven application runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
-## What is Event Mesh
+## What is EventMesh
 
-[Event Mesh](https://solace.com/what-is-an-event-mesh) is an architecture layer that provides dynamic distribution of events, thus event consumers could receive events from any event producer, no matter where the producer and consumer are attached to the mesh, without the need for configuration of event routing. It is enabled by a network of interconnected [event brokers](https://solace.com/what-is-an-event-broker/) and bridges applications and services in an [event-driven architecture](https://en.wikipedia.org/wiki/Event-driven_architecture).
+[EventMesh](https://solace.com/what-is-an-event-mesh) is an architecture layer that provides dynamic distribution of events, thus event consumers could receive events from any event producer, no matter where the producer and consumer are attached to the mesh, without the need for configuration of event routing. It is enabled by a network of interconnected [event brokers](https://solace.com/what-is-an-event-broker/) and bridges applications and services in an [event-driven architecture](https://en.wikipedia.org/wiki/Event-driven_architecture).
 
 ## Features
 
-- **Communication Protocol**: EventMesh is able to communicate with clients with TCP, HTTP, or gRPC.
-- **CloudEvents**: EventMesh supports the [CloudEvents](https://cloudevents.io) specification as the format of the events. CloudEvents is a specification for describing event data in common formats to provide interoperability across services, platforms and systems.
-- **Schema Registry**: EventMesh implements a schema registry that receives and stores schemas from clients and provides interface for other clients to retrieve schemas.
+- **Communication Protocol**: EventMesh could communicate with clients with TCP, HTTP, or gRPC.
+- **CloudEvents**: EventMesh supports the [CloudEvents](https://cloudevents.io) specification as the format of the events. CloudEvents is a specification for describing event data in common formats to provide interoperability across services, platforms, and systems.
+- **Schema Registry**: EventMesh implements a schema registry that receives and stores schemas from clients and provides an interface for other clients to retrieve schemas.
 - **Observability**: EventMesh exposed a range of metrics, such as the average latency of the HTTP protocol and the number of delivered messages. The metrics could be collected and analyzed with Prometheus or OpenTelemetry.
-- **Event Workflow Orchestration**: EventMesh Workflow is able to receive an event and decide which command to trigger next based on the workflow definitions and the current workflow state. The workflow definition could be written with the [Serverless Workflow](https://serverlessworkflow.io) DSL.
+- **Event Workflow Orchestration**: EventMesh Workflow could receive an event and decide which command to trigger next based on the workflow definitions and the current workflow state. The workflow definition could be written with the [Serverless Workflow](https://serverlessworkflow.io) DSL.
 
 ## Components
 

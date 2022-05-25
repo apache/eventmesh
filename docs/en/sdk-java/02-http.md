@@ -1,6 +1,6 @@
 # HTTP Protocol
 
-EventMesh SDK for Java implements the HTTP producer and consumer of asynchronous messages. Both the producer and consumer requires an instance of `EventMEshHttpClientConfig` class that specifies the configuration of EventMesh HTTP client. The `liteEventMeshAddr`, `userName`, and `password` fields should match the `eventmesh.properties` file of EventMesh runtime.
+EventMesh SDK for Java implements the HTTP producer and consumer of asynchronous messages. Both the producer and consumer require an instance of `EventMeshHttpClientConfig` class that specifies the configuration of EventMesh HTTP client. The `liteEventMeshAddr`, `userName`, and `password` fields should match the `eventmesh.properties` file of EventMesh runtime.
 
 ```java
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;

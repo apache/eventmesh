@@ -19,12 +19,10 @@ EventMeshSPI is an SPI declaration annotation, all extended interface that want 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface EventMeshSPI {
-
     /**
      * If true, the spi instance is singleton
      */
     boolean isSingleton() default false;
-
 }
 ```
 
@@ -38,7 +36,6 @@ EventMeshExtensionFactory is a factory used to get the SPI extension instance wh
 
 ```java
 public enum EventMeshExtensionFactory {
-  ;
     /**
      * @param extensionType extension plugin class type
      * @param extensionName extension instance name
@@ -46,7 +43,7 @@ public enum EventMeshExtensionFactory {
      * @return plugin instance
      */
     public static <T> T getExtension(Class<T> extensionType, String extensionName) {
-    ...
+        /* ... */
     }
 }
 ```
@@ -66,7 +63,6 @@ ExtensionClassLoader is used to load extension instance classed, it has two subc
  * </ul>
  */
 public interface ExtensionClassLoader {
-
     /**
      * load
      *
@@ -91,7 +87,7 @@ which indicates the MeshMQProducer is an SPI interface.
 ```java
 @EventMeshSPI(isSingleton = false)
 public interface MeshMQProducer extends Producer {
-...
+    /* ... */
 }
 ```
 
@@ -99,7 +95,7 @@ Then we create an eventmesh-connector-rocketmq module, which contains the concre
 
 ```java
 public class RocketMQProducerImpl implements MeshMQProducer {
-...
+    /* ... */
 }
 ```
 
@@ -114,5 +110,4 @@ The content of the file is the extension instance name and the corresponding ins
 rocketmq=org.apache.eventmesh.connector.rocketmq.producer.RocketMQProducerImpl
 ```
 
-At this point, an SPI expansion module is complete. We can use `EventMeshExtensionFactory.getExtension(MeshMQProducer.class, “rocketmq”)`
-to get the RocketMQProducerImpl instance.
+At this point, an SPI expansion module is complete. We can use `EventMeshExtensionFactory.getExtension(MeshMQProducer.class, "rocketmq")` to get the `RocketMQProducerImpl` instance.
