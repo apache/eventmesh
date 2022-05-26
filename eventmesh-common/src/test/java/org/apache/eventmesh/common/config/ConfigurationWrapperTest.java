@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.common.config;
 
+import java.io.File;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
 
 public class ConfigurationWrapperTest {
 
