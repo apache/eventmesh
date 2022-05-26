@@ -23,6 +23,9 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
+	public FileWebHookConfigOperation(String filePath) {
+	}
+
 	@Override
 	public Integer insertWebHookConfig(WebHookConfig webHookConfig) {
 		// TODO Auto-generated method stub

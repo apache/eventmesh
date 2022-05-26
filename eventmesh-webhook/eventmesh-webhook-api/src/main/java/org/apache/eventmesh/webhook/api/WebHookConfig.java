@@ -75,7 +75,9 @@ public class WebHookConfig {
 	private String cloudEventName;
 
 	/**
-	 * 如果是http协议就需要标记请求头 contentType的类型
+	 * 	转出数据格式 -> 指定如何将 CloudEvent 序列化为字节序列
+	 *  如果是http协议就需要标记请求头 contentType的类型
+	 *  contentType -> DataContentType
 	 */
 	private String DataContentType;
 
@@ -85,8 +87,7 @@ public class WebHookConfig {
 	private String cloudEventSource;
 
 	/**
-	 * cloudEvent需要一个id： 支持uuid 支持使用厂商id
-	 * 
+	 * cloudEvent需要一个id： 支持uuid ; 支持使用厂商id
 	 */
 	private String cloudEventIdGenerateMode;
 }
