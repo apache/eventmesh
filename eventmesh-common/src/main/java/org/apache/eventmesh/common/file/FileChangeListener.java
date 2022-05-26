@@ -17,21 +17,19 @@
 
 package org.apache.eventmesh.common.file;
 
-import java.nio.file.WatchEvent;
-
 public interface FileChangeListener {
     /**
      * triggered when a file change occurs
      *
-     * @param changeContext file change context
+     * @param changeContext file change context {@link FileChangeContext}
      */
     void onChanged(FileChangeContext changeContext);
 
     /**
      * true if support
      *
-     * @param watchEvent {@link WatchEvent}
+     * @param changeContext file change context {@link FileChangeContext}
      * @return true if support
      */
-    boolean support(WatchEvent<?> watchEvent);
+    boolean support(FileChangeContext changeContext);
 }
