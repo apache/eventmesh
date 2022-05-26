@@ -22,6 +22,9 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 public class NacosWebHookConfigOperation implements WebHookConfigOperation{
 
+	public NacosWebHookConfigOperation(String serverAddr) {
+	}
+
 	@Override
 	public Integer insertWebHookConfig(WebHookConfig webHookConfig) {
 		// TODO Auto-generated method stub
