@@ -17,11 +17,15 @@
 
 package org.apache.eventmesh.common.file;
 
+import java.nio.file.WatchEvent;
+
 public class FileChangeContext {
 
     private String directoryPath;
 
     private String fileName;
+
+    private WatchEvent<?> watchEvent;
 
     public String getDirectoryPath() {
         return directoryPath;
@@ -37,5 +41,13 @@ public class FileChangeContext {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public WatchEvent<?> getWatchEvent() {
+        return watchEvent;
+    }
+
+    public void setWatchEvent(WatchEvent<?> watchEvent) {
+        this.watchEvent = watchEvent;
     }
 }

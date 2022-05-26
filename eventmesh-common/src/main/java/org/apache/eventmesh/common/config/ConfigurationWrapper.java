@@ -29,7 +29,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.WatchEvent;
 import java.util.Properties;
 
 public class ConfigurationWrapper {
@@ -53,8 +52,8 @@ public class ConfigurationWrapper {
         }
 
         @Override
-        public boolean support(WatchEvent<?> watchEvent) {
-            return fileName.equals(watchEvent.context());
+        public boolean support(FileChangeContext changeContext) {
+            return changeContext.getWatchEvent().context().toString().contains(fileName);
         }
     };
 
@@ -70,6 +69,10 @@ public class ConfigurationWrapper {
         load();
         if (this.reload) {
             WatchFileManager.registerFileChangeListener(directoryPath, fileChangeListener);
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                logger.info("Configuration reload task closed");
+                WatchFileManager.deregisterFileChangeListener(directoryPath);
+            }));
         }
     }
 
