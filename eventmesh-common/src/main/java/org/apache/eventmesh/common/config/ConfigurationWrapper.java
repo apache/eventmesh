@@ -17,19 +17,22 @@
 
 package org.apache.eventmesh.common.config;
 
-import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.file.FileChangeContext;
 import org.apache.eventmesh.common.file.FileChangeListener;
 import org.apache.eventmesh.common.file.WatchFileManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 public class ConfigurationWrapper {
 
