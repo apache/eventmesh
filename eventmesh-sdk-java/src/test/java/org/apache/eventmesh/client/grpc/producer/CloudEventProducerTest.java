@@ -85,7 +85,7 @@ public class CloudEventProducerTest {
 
     @Test
     public void testPublishMulti() {
-        assertThat(cloudEventProducer.publish(List.of(new MockCloudEvent()))).isEqualTo(mockResponse);
+        assertThat(cloudEventProducer.publish(Collections.singletonList(new MockCloudEvent()))).isEqualTo(mockResponse);
     }
 
     @Test
