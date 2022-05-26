@@ -35,12 +35,12 @@ public class WebHookController {
     /**
      * 协议池
      */
-    private ProtocolManage protocolManage = new ProtocolManage();
+    private final ProtocolManage protocolManage = new ProtocolManage();
 
     /**
      * 配置池
      */
-    private HookConfigOperationManage hookConfigOperationManage;
+    private final HookConfigOperationManage hookConfigOperationManage;
 
     public WebHookController() {
         this.hookConfigOperationManage = new HookConfigOperationManage();
@@ -51,6 +51,7 @@ public class WebHookController {
      * 1. 通过 path 获得 webhookConfig
      * 2. 获得对应的厂商的处理对象 , 并解析协议
      * 3. 通过 WebHookConfig 和 WebHookRequest 获得 cloudEvent 协议对象
+     *
      * @param path   CallbackPath
      * @param header 需要把请求头信息重写到 map 里面
      * @param body   data
@@ -66,7 +67,12 @@ public class WebHookController {
         ManufacturerProtocol protocol = protocolManage.getManufacturerProtocol(manufacturerName);
         WebHookRequest webHookRequest = new WebHookRequest();
         webHookRequest.setData(body);
-        protocol.execute(webHookRequest, webHookConfig, header);
+        try {
+            protocol.execute(webHookRequest, webHookConfig, header);
+        } catch (Exception e) {
+            logger.error("Webhook Message Parse Failed.");
+            e.printStackTrace();
+        }
 
         // 3. 通过 WebHookConfig 和 WebHookRequest 获得 cloudEvent 协议对象
         String cloudEventId;
