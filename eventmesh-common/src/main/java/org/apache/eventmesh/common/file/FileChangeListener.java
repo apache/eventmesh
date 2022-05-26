@@ -17,6 +17,13 @@
 
 package org.apache.eventmesh.common.file;
 
+/**
+ * Users can register {@link FileChangeListener} with WatchFileManager via the
+ * {@link WatchFileManager#registerFileChangeListener(java.lang.String, org.apache.eventmesh.common.file.FileChangeListener)} method.
+ * The {@link FileChangeListener#onChanged(org.apache.eventmesh.common.file.FileChangeContext)} method fires when a file changes,
+ * and the {@link FileChangeListener#support(org.apache.eventmesh.common.file.FileChangeContext)} method let the user customize
+ * which files are supported
+ */
 public interface FileChangeListener {
     /**
      * triggered when a file change occurs
