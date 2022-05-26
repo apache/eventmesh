@@ -21,9 +21,7 @@
 
 # Apache EventMesh (Incubating)
 
-**Apache EventMesh (Incubating)** is a dynamic event-driven application runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
-
-[EventMesh](https://solace.com/what-is-an-event-mesh) is an architecture layer that provides dynamic distribution of events, thus event consumers could receive events from any event producer, no matter where the producer and consumer are attached to the mesh, without the need for configuration of event routing. It is enabled by a network of interconnected [event brokers](https://solace.com/what-is-an-event-broker/) and bridges applications and services in an [event-driven architecture](https://en.wikipedia.org/wiki/Event-driven_architecture).
+**Apache EventMesh (Incubating)** is a dynamic [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture) application [multi-runtime](https://en.wikipedia.org/wiki/Mecha) used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
 ## Features
 
@@ -45,7 +43,7 @@ Apache EventMesh (Incubating) consists of multiple components that integrate dif
 
 - **eventmesh-runtime**: The middleware that transmits events between producers and consumers, which supports cloud-native apps and microservices.
 - **eventmesh-sdk-java**: The Java SDK that supports HTTP, HTTPS, TCP, and [gRPC](https://grpc.io) protocols.
-- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache Kafka](https://kafka.apache.org), [Apache RocketMQ](https://rocketmq.apache.org), [Apache Pulsar](https://pulsar.apache.org/), and [Redis](https://redis.io).
+- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache Kafka](https://kafka.apache.org), [Apache RocketMQ](https://rocketmq.apache.org), [Apache Pulsar](https://pulsar.apache.org/), [DeFiBus](https://github.com/webankfintech/DeFiBus) and [Redis](https://redis.io).
 - **eventmesh-registry-plugin**: The collection of plugins that integrate service registries such as [Nacos](https://nacos.io) and [etcd](https://etcd.io).
 - **eventmesh-security-plugin**: The collection of plugins that implement security mechanisms, such as ACL (access control list), authentication, and authorization.
 - **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io) and [MQTT](https://mqtt.org).
