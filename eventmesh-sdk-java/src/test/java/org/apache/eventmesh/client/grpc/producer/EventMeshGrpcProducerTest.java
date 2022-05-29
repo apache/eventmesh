@@ -43,7 +43,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.internal.util.reflection.FieldSetter;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -62,8 +61,8 @@ public class EventMeshGrpcProducerTest {
     @Before
     public void setUp() throws Exception {
         producer = new EventMeshGrpcProducer(EventMeshGrpcClientConfig.builder().build());
-        FieldSetter.setField(producer, producer.getClass().getDeclaredField("cloudEventProducer"), cloudEventProducer);
-        FieldSetter.setField(producer, producer.getClass().getDeclaredField("publisherClient"), stub);
+        producer.cloudEventProducer = cloudEventProducer;
+        producer.publisherClient = stub;
         doThrow(RuntimeException.class).when(stub).publish(
             argThat(argument -> argument != null && StringUtils.equals(argument.getContent(),
                 "mockExceptionContent")));
