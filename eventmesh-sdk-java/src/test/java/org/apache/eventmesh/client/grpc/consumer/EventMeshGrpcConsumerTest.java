@@ -46,7 +46,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.internal.util.reflection.FieldSetter;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -70,12 +69,9 @@ public class EventMeshGrpcConsumerTest {
     public void setUp() throws Exception {
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(EventMeshGrpcClientConfig.builder().build());
         eventMeshGrpcConsumer.init();
-        FieldSetter.setField(eventMeshGrpcConsumer, eventMeshGrpcConsumer.getClass().getDeclaredField("consumerClient"),
-            consumerClient);
-        FieldSetter.setField(eventMeshGrpcConsumer,
-            eventMeshGrpcConsumer.getClass().getDeclaredField("consumerAsyncClient"), consumerAsyncClient);
-        FieldSetter.setField(eventMeshGrpcConsumer,
-            eventMeshGrpcConsumer.getClass().getDeclaredField("heartbeatClient"), heartbeatClient);
+        eventMeshGrpcConsumer.consumerClient = consumerClient;
+        eventMeshGrpcConsumer.consumerAsyncClient = consumerAsyncClient;
+        eventMeshGrpcConsumer.heartbeatClient = heartbeatClient;
         when(consumerClient.subscribe(any())).thenReturn(Response.getDefaultInstance());
         when(consumerClient.unsubscribe(any())).thenReturn(Response.getDefaultInstance());
         when(heartbeatClient.heartbeat(any())).thenReturn(Response.getDefaultInstance());
