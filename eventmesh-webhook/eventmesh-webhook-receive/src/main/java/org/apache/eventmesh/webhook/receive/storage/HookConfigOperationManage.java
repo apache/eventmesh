@@ -18,13 +18,17 @@ package org.apache.eventmesh.webhook.receive.storage;
 
 import java.io.*;
 import java.nio.file.*;
+import java.nio.file.WatchEvent.Kind;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.alibaba.nacos.api.PropertyKeyConst;
+import com.alibaba.nacos.api.config.ConfigFactory;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.exception.NacosException;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.webhook.admin.FileWebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.slf4j.Logger;
@@ -36,21 +40,41 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
 
     private String filePath;
 
-    private static final String FILE_SEPARATOR = File.separator;
+    private String serverAddr;
 
-    private static final String FILE_EXTENSION = ".json";
+    private Boolean filePattern;
+
+    private ConfigService configService;
+    private static final String GROUP_PREFIX = "webhook_" ;
+
+    private static final String DATA_ID_EXTENSION = ".json";
+
+    private static final Integer TIMEOUT_MS = 3*1000;
 
     /**
      * webhook 配置池 -> <CallbackPath,WebHookConfig>
      */
     private final Map<String, WebHookConfig> cacheWebHookConfig = new ConcurrentHashMap<>();
 
-    public HookConfigOperationManage() {
+    public HookConfigOperationManage() { //初始化 map
         try {
             filePatternInit(filePath);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            filePattern = false;
+            logger.error("filePatternInit failed", e);
         }
+        try {
+            nacosPatternInit(serverAddr);
+        } catch (NacosException e) {
+            logger.error("nacosPatternInit failed", e);
+        }
+    }
+
+    private void nacosPatternInit(String serverAddr) throws NacosException {
+        Properties properties = new Properties();
+
+        properties.put(PropertyKeyConst.SERVER_ADDR, serverAddr);
+        configService = ConfigFactory.createConfigService(serverAddr);
     }
 
     @Override
@@ -73,8 +97,16 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
 
     @Override
     public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
-
-        return cacheWebHookConfig.get(webHookConfig.getCallbackPath());
+        if(filePattern) return cacheWebHookConfig.get(webHookConfig.getCallbackPath());
+        else{
+            try {
+                String content = configService.getConfig(webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION, GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
+                return JsonUtils.deserialize(content, WebHookConfig.class);
+            } catch (NacosException e) {
+                logger.error("updateWebHookConfig failed", e);
+            }
+            return null;
+        }
     }
 
     @Override
@@ -83,11 +115,6 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
         return null;
     }
 
-    /**
-     * 文件模式初始化
-     *
-     * @param filePath
-     */
     public void filePatternInit(String filePath) throws FileNotFoundException {
         File webHookFileDir = new File(filePath);
         if (!webHookFileDir.isDirectory()) {
@@ -98,12 +125,12 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
         } else {
             readFunc(webHookFileDir);
         }
-        //todo 注册文件监听
+        fileWatch(filePath);
     }
 
     public void readFunc(File file) {
         File[] fs = file.listFiles();
-        for (File f : fs) {
+        for (File f : Objects.requireNonNull(fs)) {
             if (f.isDirectory()) readFunc(f);
             if (f.isFile()) cacheInit(f);
         }
@@ -117,41 +144,41 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
                 fileContent.append(line);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("cacheInit failed", e);
         }
         WebHookConfig webHookConfig = JsonUtils.deserialize(fileContent.toString(), WebHookConfig.class);
         cacheWebHookConfig.put(webHookConfig.getCallbackPath(), webHookConfig);
     }
 
-    private final WatchEvent.Kind[] kinds = {
+    private final Kind[] kinds = {
             StandardWatchEventKinds.ENTRY_CREATE,
             StandardWatchEventKinds.ENTRY_MODIFY,
             StandardWatchEventKinds.ENTRY_DELETE};
 
-    Set<String> pathSet = new LinkedHashSet<>();
+    Set<String> pathSet = new LinkedHashSet<>(); // 需要监视的子目录
 
-    Map<WatchKey, String> watchKeyPathMap = new HashMap<>();
+    Map<WatchKey, String> watchKeyPathMap = new HashMap<>(); //watchkey 对应的 path
 
     public void fileWatch(String filePath) {
         ExecutorService cachedThreadPool = Executors.newFixedThreadPool(1);
         cachedThreadPool.execute(() -> {
-            File root = new File(filePath); //根目录
-            loopDir(root, pathSet); //需要监视的子目录
+            File root = new File(filePath);
+            loopDir(root, pathSet);
 
             //获取当前文件系统的监控对象
             WatchService service = null;
             try {
                 service = FileSystems.getDefault().newWatchService();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("getWatchService failed", e);
             }
 
-            for (String path : pathSet) {
+            for (String path : pathSet) { //注册监听
                 WatchKey key = null;
                 try {
                     key = Paths.get(path).register(service, kinds);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("registerWatchKey failed", e);
                 }
                 watchKeyPathMap.put(key, path);
             }
@@ -162,54 +189,31 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
                     assert service != null;
                     key = service.take();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    logger.error("Interrupted", e);
                 }
 
                 assert key != null;
                 for (WatchEvent<?> event : key.pollEvents()) {
-                    //新增厂商
-                    if (watchKeyPathMap.get(key).equals(filePath) && StandardWatchEventKinds.ENTRY_CREATE == event.kind()) {
-                        try {
-                            key = Paths.get(filePath + event.context()).register(service, kinds);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        watchKeyPathMap.put(key, filePath + event.context());
-                    } else { //厂商配置变更
+                    String flashPath = watchKeyPathMap.get(key);
+                    //厂商变更
+                    if (flashPath.equals(filePath)) {
                         if (StandardWatchEventKinds.ENTRY_CREATE == event.kind()) {
-                            cacheInit(new File(watchKeyPathMap.get(key) + event.context()));
-                        } else if (StandardWatchEventKinds.ENTRY_DELETE == event.kind()) {
-                            deleteConfigWhenFile(filePath, key, event);
-                        } else if (StandardWatchEventKinds.ENTRY_MODIFY == event.kind()) {
-                            deleteConfigWhenFile(filePath, key, event);
-                            cacheInit(new File(watchKeyPathMap.get(key) + event.context()));
+                            try {
+                                key = Paths.get(filePath + event.context()).register(service, kinds);
+                            } catch (IOException e) {
+                                logger.error("registerWatchKey failed", e);
+                            }
+                            watchKeyPathMap.put(key, filePath + event.context());
                         }
+                    } else { //配置变更
+                        cacheInit(new File(flashPath + event.context()));
                     }
-
-                    System.out.println("event.context() = " + event.context() + "\t"
-                            + "event.kind() = " + event.kind() + "\t"
-                            + "监控目录 = " + watchKeyPathMap.get(key) + "\t"
-                            + "event.count() = " + event.count());
                 }
                 if (!key.reset()) break;
             }
         });
     }
 
-    private void deleteConfigWhenFile(String filePath, WatchKey key, WatchEvent<?> event) {
-        WebHookConfig hookConfig = new WebHookConfig();
-        String eventName = event.context().toString();
-        hookConfig.setManufacturerEventName(eventName.substring(0, eventName.length() - 5));
-        hookConfig.setManufacturerName(watchKeyPathMap.get(key).substring(filePath.length() - 1));
-        deleteWebHookConfig(hookConfig);
-    }
-
-    /**
-     * 递归目录，将子目录存到 set
-     *
-     * @param parent
-     * @param pathSet
-     */
     private void loopDir(File parent, Set<String> pathSet) {
         if (!parent.isDirectory()) {
             return;
