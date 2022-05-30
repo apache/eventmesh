@@ -432,9 +432,9 @@ subprojects {
 
             dependency "com.lmax:disruptor:3.4.2"
 
-            dependency "com.fasterxml.jackson.core:jackson-databind:2.11.0"
-            dependency "com.fasterxml.jackson.core:jackson-core:2.11.0"
-            dependency "com.fasterxml.jackson.core:jackson-annotations:2.11.0"
+            dependency "com.fasterxml.jackson.core:jackson-databind:2.13.0"
+            dependency "com.fasterxml.jackson.core:jackson-core:2.13.0"
+            dependency "com.fasterxml.jackson.core:jackson-annotations:2.13.0"
 
             dependency "org.apache.httpcomponents:httpclient:4.5.13"
 
@@ -459,7 +459,7 @@ subprojects {
             dependency "com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0"
             dependency "com.mebigfatguy.fb-contrib:fb-contrib:7.4.7"
 
-            dependency "org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE"
+            dependency "org.springframework.boot:spring-boot-starter-web:2.6.7"
             dependency "io.openmessaging:registry-server:0.0.1"
 
             dependency "junit:junit:4.13.2"

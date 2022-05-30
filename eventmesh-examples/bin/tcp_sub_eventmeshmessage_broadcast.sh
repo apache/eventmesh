@@ -42,18 +42,18 @@ function is_java8 {
 
 function get_pid {
 	local ppid=""
-	if [ -f ${DEMO_HOME}/bin/pid_http_pub.file ]; then
-		ppid=$(cat ${DEMO_HOME}/bin/pid_http_pub.file)
+	if [ -f ${EVENTMESH_HOME}/bin/pid_tcp_sub_broadcast.file ]; then
+		ppid=$(cat ${EVENTMESH_HOME}/bin/pid_tcp_sub_broadcast.file)
 	else
 		if [[ $OS =~ Msys ]]; then
 			# There is a bug on Msys that may not be able to kill the recognized process
-			ppid=`jps -v | grep -i "org.apache.eventmesh.http.demo.AsyncPublishInstance" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
+			ppid=`jps -v | grep -i "org.apache.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep java | grep -v grep | awk -F ' ' {'print $1'}`
 		elif [[ $OS =~ Darwin ]]; then
 			# Known issue: grep "java" may not be able to accurately identify the java process
-			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "org.apache.eventmesh.http.demo.AsyncPublishInstance" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+			ppid=$(/bin/ps -o user,pid,command | grep "java" | grep -i "org.apache.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		else
 			# It is required to identify the process as accurately as possible on the Linux server
-			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.http.demo.AsyncPublishInstance" | grep -Ev "^root" |awk -F ' ' {'print $2'})
+			ppid=$(ps -C java -o user,pid,command --cols 99999 | grep -w $EVENTMESH_HOME | grep -i "org.apache.eventmesh.tcp.demo.AsyncSubscribeBroadcast" | grep -Ev "^root" |awk -F ' ' {'print $2'})
 		fi
 	fi
 	echo "$ppid";
@@ -77,7 +77,7 @@ else
         exit 9;
 fi
 
-echo "http_pub_demo use java location= "$JAVA
+echo "tcp_sub_demo use java location= "$JAVA
 
 DEMO_HOME=`cd "./.." && pwd`
 
@@ -101,8 +101,8 @@ export JAVA_HOME
 
 JAVA_OPT=`cat ${DEMO_HOME}/conf/server.env | grep APP_START_JVM_OPTION::: | awk -F ':::' {'print $2'}`
 JAVA_OPT="${JAVA_OPT} -XX:+UseG1GC -XX:G1HeapRegionSize=16m -XX:G1ReservePercent=25 -XX:InitiatingHeapOccupancyPercent=30 -XX:SoftRefLRUPolicyMSPerMB=0 -XX:SurvivorRatio=8 -XX:MaxGCPauseMillis=50"
-JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${DEMO_HOME}/logs/demo_http_pub_gc_%p.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy"
-JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${DEMO_HOME}/logs -XX:ErrorFile=${EVENTMESH_HOME}/logs/hs_err_%p.log"
+JAVA_OPT="${JAVA_OPT} -verbose:gc -Xloggc:${DEMO_HOME}/logs/demo_tcp_sub_gc_%p.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintAdaptiveSizePolicy"
+JAVA_OPT="${JAVA_OPT} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${DEMO_HOME}/logs -XX:ErrorFile=${DEMO_HOME}/logs/hs_err_%p.log"
 JAVA_OPT="${JAVA_OPT} -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=30m"
 JAVA_OPT="${JAVA_OPT} -XX:-OmitStackTraceInFastThrow"
 JAVA_OPT="${JAVA_OPT} -XX:+AlwaysPreTouch"
@@ -125,15 +125,15 @@ fi
 
 make_logs_dir
 
-echo "using jdk[$JAVA]" >> ${DEMO_LOG_HOME}/demo_http_pub.out
+echo "using jdk[$JAVA]" >> ${DEMO_LOG_HOME}/demo_tcp_sub_broadcast.out
 
 
-DEMO_MAIN=org.apache.eventmesh.http.demo.AsyncPublishInstance
+DEMO_MAIN=org.apache.eventmesh.tcp.demo.sub.eventmeshmessage.AsyncSubscribeBroadcast
 if [ $DOCKER ]
 then
-	$JAVA $JAVA_OPT -classpath ${DEMO_HOME}/conf:${DEMO_HOME}/apps/*:${DEMO_HOME}/lib/* $DEMO_MAIN >> ${DEMO_LOG_HOME}/demo_http_pub.out
+	$JAVA $JAVA_OPT -classpath ${DEMO_HOME}/conf:${DEMO_HOME}/apps/*:${DEMO_HOME}/lib/* $DEMO_MAIN >> ${DEMO_LOG_HOME}/demo_tcp_sub_broadcast.out
 else
-	$JAVA $JAVA_OPT -classpath ${DEMO_HOME}/conf:${DEMO_HOME}/apps/*:${DEMO_HOME}/lib/* $DEMO_MAIN >> ${DEMO_LOG_HOME}/demo_http_pub.out 2>&1 &
-echo $!>pid_http_pub.file
+	$JAVA $JAVA_OPT -classpath ${DEMO_HOME}/conf:${DEMO_HOME}/apps/*:${DEMO_HOME}/lib/* $DEMO_MAIN >> ${DEMO_LOG_HOME}/demo_tcp_sub_broadcast.out 2>&1 &
+echo $!>pid_tcp_sub_broadcast.file
 fi
 exit 0
