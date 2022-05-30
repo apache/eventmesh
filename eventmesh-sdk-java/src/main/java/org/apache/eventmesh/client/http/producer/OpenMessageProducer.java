@@ -19,6 +19,7 @@ package org.apache.eventmesh.client.http.producer;
 
 import org.apache.eventmesh.client.http.AbstractHttpClient;
 import org.apache.eventmesh.client.http.EventMeshRetObj;
+import org.apache.eventmesh.client.http.ProtocolConstant;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.model.RequestParam;
 import org.apache.eventmesh.client.http.util.HttpUtils;
@@ -42,10 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 class OpenMessageProducer extends AbstractHttpClient implements EventMeshProtocolProducer<Message> {
-
-    private static final String PROTOCOL_TYPE = "openmessage";
-
-    private static final String PROTOCOL_DESC = "http";
 
     public OpenMessageProducer(EventMeshHttpClientConfig eventMeshHttpClientConfig)
             throws EventMeshException {
@@ -116,8 +113,8 @@ class OpenMessageProducer extends AbstractHttpClient implements EventMeshProtoco
                 .addHeader(ProtocolKey.ClientInstanceKey.USERNAME, eventMeshHttpClientConfig.getUserName())
                 .addHeader(ProtocolKey.ClientInstanceKey.PASSWD, eventMeshHttpClientConfig.getPassword())
                 .addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA)
-                .addHeader(ProtocolKey.PROTOCOL_TYPE, PROTOCOL_TYPE)
-                .addHeader(ProtocolKey.PROTOCOL_DESC, PROTOCOL_DESC)
+                .addHeader(ProtocolKey.PROTOCOL_TYPE, ProtocolConstant.OP_MESSAGE_PROTOCOL)
+                .addHeader(ProtocolKey.PROTOCOL_DESC, ProtocolConstant.PROTOCOL_DESC)
                 // todo: add producerGroup to header, set protocol type, protocol version
                 .addBody(SendMessageRequestBody.PRODUCERGROUP, eventMeshHttpClientConfig.getProducerGroup())
                 .addBody(SendMessageRequestBody.CONTENT, JsonUtils.serialize(openMessage));

@@ -40,6 +40,10 @@ dependencies {
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
 
+
+    implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
+
+
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
