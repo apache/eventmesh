@@ -24,12 +24,12 @@ public class WebHookRequest {
 	/**
 	 * 厂商事件id
 	 */
-	private String manufacturerEvnetId;
+	private String manufacturerEventId;
 	
 	/**
 	 * 厂商事件名
 	 */
-	private String manfacturerEvnetName;
+	private String manufacturerEventName;
 	
 	/**
 	 * 厂商名

@@ -35,7 +35,7 @@ public class WebHookConfig {
 	private String manufacturerEventName;
 
 	/**
-	 * http header connent type
+	 * http header content type
 	 */
 	private String contentType;
 
