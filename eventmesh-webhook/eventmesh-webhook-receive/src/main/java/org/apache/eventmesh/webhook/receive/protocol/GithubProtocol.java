@@ -45,16 +45,16 @@ public class GithubProtocol implements ManufacturerProtocol {
         //1.认证
         String fromSignature = header.get("X-Hub-Signature-256");
         if (!isValid(fromSignature, webHookRequest.getData(), webHookConfig.getSecret())) {
-            throw new Exception("webhook-GithubProtocol 鉴权失败");
+            throw new Exception("webhook-GithubProtocol authenticate failed");
         }
 
         //2.解析内容
         try {
             webHookRequest.setManufacturerEventId(header.get("X-GitHub-Delivery"));
-            webHookRequest.setManufacturerEventName(header.get("X-GitHub-Event"));
-            webHookRequest.setManufacturerSource("github");
+            webHookRequest.setManufacturerEventName(webHookConfig.getManufacturerEventName());
+            webHookRequest.setManufacturerSource(getManufacturerName());
         } catch (Exception e) {
-            throw new Exception("webhook-GithubProtocol 解析失败");
+            throw new Exception("webhook-GithubProtocol parse failed");
         }
     }
 
@@ -75,8 +75,7 @@ public class GithubProtocol implements ManufacturerProtocol {
             byte[] bytes = sha256_HMAC.doFinal(data);
             hash += byteArrayToHexString(bytes);
         } catch (Exception e) {
-            logger.error("Error HmacSHA256.");
-            e.printStackTrace();
+            logger.error("Error HmacSHA256", e);
         }
         return hash.equals(fromSignature);
     }
