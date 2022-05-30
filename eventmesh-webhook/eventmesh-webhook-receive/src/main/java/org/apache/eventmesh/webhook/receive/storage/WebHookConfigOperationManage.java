@@ -25,13 +25,13 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class HookConfigOperationManage implements WebHookConfigOperation {
+public class WebHookConfigOperationManage implements WebHookConfigOperation {
 
 	public Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	private Map<String,WebHookConfig> cacheWebHookConfig = new ConcurrentHashMap<>();
 	
-	public HookConfigOperationManage() {
+	public WebHookConfigOperationManage() {
 		
 	}
 	
