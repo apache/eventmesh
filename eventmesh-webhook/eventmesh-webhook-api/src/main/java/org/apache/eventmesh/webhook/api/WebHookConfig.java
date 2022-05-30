@@ -35,7 +35,7 @@ public class WebHookConfig {
 	private String manufacturerEventName;
 
 	/**
-	 * http header connent type
+	 * http header content type
 	 */
 	private String contentType;
 
@@ -60,7 +60,7 @@ public class WebHookConfig {
 	private String password;
 
 	/**
-	 * 协议类型。http，kakfa
+	 * 协议类型。http，kafka
 	 */
 	private String cloudEventProtocol;
 
