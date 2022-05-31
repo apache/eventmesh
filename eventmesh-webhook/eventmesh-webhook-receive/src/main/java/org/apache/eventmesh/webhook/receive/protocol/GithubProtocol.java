@@ -28,7 +28,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * @author laohu
+ * @author laohu and wff
  */
 public class GithubProtocol implements ManufacturerProtocol {
 
@@ -42,13 +42,11 @@ public class GithubProtocol implements ManufacturerProtocol {
     @Override
     public void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) throws Exception {
 
-        //1.认证
         String fromSignature = header.get("X-Hub-Signature-256");
         if (!isValid(fromSignature, webHookRequest.getData(), webHookConfig.getSecret())) {
             throw new Exception("webhook-GithubProtocol authenticate failed");
         }
 
-        //2.解析内容
         try {
             webHookRequest.setManufacturerEventId(header.get("X-GitHub-Delivery"));
             webHookRequest.setManufacturerEventName(webHookConfig.getManufacturerEventName());
@@ -59,12 +57,12 @@ public class GithubProtocol implements ManufacturerProtocol {
     }
 
     /**
-     * 鉴权
+     * Authentication
      *
-     * @param fromSignature 接收到的签名
-     * @param data          数据
-     * @param secret        秘钥
-     * @return 认证是否成功
+     * @param fromSignature Signature received
+     * @param data          data
+     * @param secret        secret key
+     * @return Authentication result
      */
     private Boolean isValid(String fromSignature, byte[] data, String secret) {
         String hash = "sha256=";
@@ -81,10 +79,10 @@ public class GithubProtocol implements ManufacturerProtocol {
     }
 
     /**
-     * 字节数组 -> 十六进制字符串
+     * byte array ->  hexadecimal character string
      *
-     * @param b 字节数组
-     * @return 十六进制字符串
+     * @param b byte array
+     * @return hexadecimal character string
      */
     private String byteArrayToHexString(byte[] b) {
         StringBuilder hs = new StringBuilder();
