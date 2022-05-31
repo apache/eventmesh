@@ -25,7 +25,7 @@ import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;
 public class ProtocolManage {
 
     /**
-     * 协议池
+     * ManufacturerProtocol pool
      */
     private final Map<String, ManufacturerProtocol> protocolMap = new HashMap<>();
 

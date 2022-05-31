@@ -22,22 +22,22 @@ import lombok.Data;
 public class WebHookRequest {
 	
 	/**
-	 * 厂商事件id
+	 * manufacturer event id
 	 */
 	private String manufacturerEventId;
 	
 	/**
-	 * 厂商事件名
+	 * manufacturer event name
 	 */
 	private String manufacturerEventName;
 	
 	/**
-	 * 厂商名
+	 * manufacturer name
 	 */
 	private String manufacturerSource;
 	
 	/**
-	 * 数据
+	 * webhook request body
 	 */
 	private byte[] data;
 }
