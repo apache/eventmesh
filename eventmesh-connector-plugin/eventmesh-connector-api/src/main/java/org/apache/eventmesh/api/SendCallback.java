@@ -23,7 +23,7 @@ import org.apache.eventmesh.api.producer.Producer;
 import io.cloudevents.CloudEvent;
 
 /**
- * Call back interface used in {@link Producer#sendAsync(CloudEvent, SendCallback)}.
+ * Call back interface used in {@link Producer#publish(CloudEvent, SendCallback)}.
  */
 public interface SendCallback {
 
