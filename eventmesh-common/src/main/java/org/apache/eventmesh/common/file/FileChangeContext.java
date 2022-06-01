@@ -15,31 +15,39 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.config;
+package org.apache.eventmesh.common.file;
 
-import java.io.File;
+import java.nio.file.WatchEvent;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+public class FileChangeContext {
 
-public class CommonConfigurationTest {
+    private String directoryPath;
 
-    private CommonConfiguration configuration;
+    private String fileName;
 
-    @Before
-    public void before() {
-        String file = ConfigurationWrapperTest.class.getResource("/configuration.properties").getFile();
-        File f = new File(file);
-        ConfigurationWrapper wraper = new ConfigurationWrapper(f.getParent(), f.getName(), false);
-        configuration = new CommonConfiguration(wraper);
+    private WatchEvent<?> watchEvent;
+
+    public String getDirectoryPath() {
+        return directoryPath;
     }
 
-    @Test
-    public void testInit() {
-        configuration.init();
-        Assert.assertEquals("value1", configuration.eventMeshEnv);
-        Assert.assertEquals("value2", configuration.eventMeshIDC);
-        Assert.assertEquals("3", configuration.sysID);
+    public void setDirectoryPath(String directoryPath) {
+        this.directoryPath = directoryPath;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public WatchEvent<?> getWatchEvent() {
+        return watchEvent;
+    }
+
+    public void setWatchEvent(WatchEvent<?> watchEvent) {
+        this.watchEvent = watchEvent;
     }
 }
