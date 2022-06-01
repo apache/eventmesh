@@ -36,7 +36,7 @@ public class ThreadPoolFactory {
 
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, final String threadName,
                                                               final boolean isDaemon) {
-        return createThreadPoolExecutor(core, max, new LinkedBlockingQueue<Runnable>(1000), threadName, isDaemon);
+        return createThreadPoolExecutor(core, max, new LinkedBlockingQueue<>(1000), threadName, isDaemon);
     }
 
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue,
@@ -47,7 +47,7 @@ public class ThreadPoolFactory {
     }
 
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, ThreadFactory threadFactory) {
-        return createThreadPoolExecutor(core, max, new LinkedBlockingQueue<Runnable>(1000), threadFactory);
+        return createThreadPoolExecutor(core, max, new LinkedBlockingQueue<>(1000), threadFactory);
     }
 
     public static ThreadPoolExecutor createThreadPoolExecutor(int core, int max, BlockingQueue<Runnable> blockingQueue,
