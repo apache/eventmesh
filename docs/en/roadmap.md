@@ -1,39 +1,27 @@
-# EventMesh Roadmap
+---
+sidebar_position: 1
+---
 
-_Note: Items in tables for each milestone do not imply an order of implementation._
+# Development Roadmap
 
-_Status description:_
+The development roadmap of Apache EventMesh (Incubating) is an overview of the planned features and milestones involved in the next several releases. The recent features and bug fixes are documented in the [release notes](https://eventmesh.apache.org/events/release-notes/v1.4.0). The order of the features listed below doesn't correspond to their priorities.
 
-| Completed | In Progress | In Planning | On Hold |
-| :--: | :--: |  :--: | :--: |
-| ✔ | ✏️ | 🚩 | ❗️|
+## List of Features and Milestones
 
-## Releases
-
-- [Roadmap for next planned release](#plan)
-- [v1.4.0 released 31 Mar 2022](https://github.com/apache/incubator-eventmesh/releases/tag/v1.4.0)
-- [v1.3.0 released 12 Dec 2021](https://github.com/apache/incubator-eventmesh/releases/tag/v1.3.0)
-- [v1.2.0 released 31 Jul 2021](https://github.com/apache/incubator-eventmesh/releases/tag/v1.2.0)
-- [v1.1.1 released 11 Nov 2020](https://github.com/apache/incubator-eventmesh/releases/tag/v1.1.1)
-- [v1.1.0 released 16 Sep 2020](https://github.com/apache/incubator-eventmesh/releases/tag/v1.1.0)
-- [v1.0.0 released 20 Aug 2020](https://github.com/apache/incubator-eventmesh/releases/tag/v1.0.0)
-
-## <a name="plan"></a> Next planned release
-
-| Status | Description | Comments |
+| Status | Description | Reference |
 | --- | --- |  --- |
-| ✔| A lightable full-featured polyglot capability support | [doc](https://github.com/apache/incubator-eventmesh/issues/417)  |
-| ✏️| Event Governance for choreography | [doc](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/features/eventmesh-workflow-design.md)  |
-| 🚩| Event Streaming | [doc](https://github.com/apache/incubator-eventmesh/issues/676)  |
-| 🚩| Federated connector | [doc](https://github.com/apache/incubator-eventmesh/issues/577)  |
-| 🚩| Dashboard | [doc](https://github.com/apache/incubator-eventmesh/issues/700)  |
-| 🚩| Transaction event | [doc](https://github.com/apache/incubator-eventmesh/issues/697)  |
-| 🚩| Event-query language(EQL)| [doc](https://github.com/apache/incubator-eventmesh/issues/778)  |
-| 🚩| Knative Eventing Infra| [doc](https://github.com/apache/incubator-eventmesh/issues/790)  |
-| 🚩| Metadata consistency persistent| [doc](https://github.com/apache/incubator-eventmesh/issues/817)  |
-| 🚩| Go sdk| [doc](https://github.com/apache/incubator-eventmesh/issues/762)  |
-| 🚩| Rust sdk| [doc](https://github.com/apache/incubator-eventmesh/issues/815)  |
-| 🚩| Wasm runtime| [doc](https://github.com/apache/incubator-eventmesh/issues/576)  |
-| 🚩| Filter Chain| [doc](https://github.com/apache/incubator-eventmesh/issues/664)  |
-| 🚩| kafka as eventStore| [doc](https://github.com/apache/incubator-eventmesh/issues/199)  |
-| 🚩| Redis as eventStore| [doc](https://github.com/apache/incubator-eventmesh/issues/389)  |
+| **Implemented** | gRPC Integration | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
+| **In Progress** | Event Governance for Choreography | [GitHub Issue](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/features/eventmesh-workflow-design.md) |
+| Planned | Knative Eventing Infrastructure | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/790), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-463) |
+| Planned | Dashboard | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/700), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-465) |
+| Planned | Event Streaming | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/676) |
+| Planned | Federated Connector | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/577) |
+| Planned | Transaction Event | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/697) |
+| Planned | Event Query Language (EQL)| [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/778) |
+| Planned | Metadata consistency persistent| [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/817)  |
+| Planned | Go SDK | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/762) |
+| Planned | Rust SDK | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/815) |
+| Planned | WebAssembly Runtime| [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/576) |
+| Planned | Filter Chain | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/664) |
+| Planned | Kafka-based EventStore| [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/199) |
+| Planned | Redis-based EventStore| [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/389) |
