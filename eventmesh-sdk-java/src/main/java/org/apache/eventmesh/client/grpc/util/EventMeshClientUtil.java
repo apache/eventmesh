@@ -36,6 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,7 +122,7 @@ public class EventMeshClientUtil {
             byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(contentType)
                 .serialize(cloudEvent);
             String content = new String(bodyByte, StandardCharsets.UTF_8);
-            String ttl = cloudEvent.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null ? "4000"
+            String ttl = cloudEvent.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
                 : cloudEvent.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL).toString();
 
             String seqNum = cloudEvent.getExtension(ProtocolKey.SEQ_NUM) == null ? RandomStringUtils.generateNum(30)
@@ -148,7 +149,7 @@ public class EventMeshClientUtil {
         } else {
             EventMeshMessage eventMeshMessage = (EventMeshMessage) message;
 
-            String ttl = eventMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null ? "4000"
+            String ttl = eventMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
                 : eventMeshMessage.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL);
             Map<String, String> props = eventMeshMessage.getProp() == null ? new HashMap<>() : eventMeshMessage.getProp();
 
@@ -188,7 +189,7 @@ public class EventMeshClientUtil {
                     .serialize(event);
                 String content = new String(bodyByte, StandardCharsets.UTF_8);
 
-                String ttl = event.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null ? "4000"
+                String ttl = event.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL) == null ? Constants.DEFAULT_EVENTMESH_MESSAGE_TTL
                     : event.getExtension(Constants.EVENTMESH_MESSAGE_CONST_TTL).toString();
 
                 BatchMessage.MessageItem messageItem = BatchMessage.MessageItem.newBuilder()
@@ -203,17 +204,19 @@ public class EventMeshClientUtil {
             }
             return messageBuilder.build();
         } else {
+            List<EventMeshMessage> eventMeshMessages = (List<EventMeshMessage>) messageList;
             BatchMessage.Builder messageBuilder = BatchMessage.newBuilder()
                 .setHeader(EventMeshClientUtil.buildHeader(clientConfig, protocolType))
-                .setProducerGroup(clientConfig.getProducerGroup());
+                .setProducerGroup(clientConfig.getProducerGroup())
+                .setTopic(eventMeshMessages.get(0).getTopic());
 
-            for (EventMeshMessage message : (List<EventMeshMessage>) messageList) {
-                messageBuilder.setTopic(message.getTopic());
+            for (EventMeshMessage message : eventMeshMessages) {
                 BatchMessage.MessageItem item = BatchMessage.MessageItem.newBuilder()
                     .setContent(message.getContent())
                     .setUniqueId(message.getUniqueId())
                     .setSeqNum(message.getBizSeqNo())
-                    .setTtl(message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL))
+                    .setTtl(
+                        Optional.ofNullable(message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL)).orElse(Constants.DEFAULT_EVENTMESH_MESSAGE_TTL))
                     .putAllProperties(message.getProp())
                     .build();
                 messageBuilder.addMessageItem(item);
