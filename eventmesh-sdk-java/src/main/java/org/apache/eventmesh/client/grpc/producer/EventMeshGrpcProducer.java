@@ -47,9 +47,9 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     private ManagedChannel channel;
 
-    private PublisherServiceBlockingStub publisherClient;
+    PublisherServiceBlockingStub publisherClient;
 
-    private CloudEventProducer cloudEventProducer;
+    CloudEventProducer cloudEventProducer;
 
     public EventMeshGrpcProducer(EventMeshGrpcClientConfig clientConfig) {
         this.clientConfig = clientConfig;
