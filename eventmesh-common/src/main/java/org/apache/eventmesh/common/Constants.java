@@ -39,6 +39,8 @@ public class Constants {
 
     public static final String EVENTMESH_MESSAGE_CONST_TTL = "ttl";
 
+    public static final String DEFAULT_EVENTMESH_MESSAGE_TTL = "4000";
+
     public static final Integer DEFAULT_CLIENT_UNACK = 12;
 
     public static final String CONSTANTS_SERVICE_DESC_ENV = "env";
