@@ -18,17 +18,16 @@
 package org.apache.eventmesh.common.loadbalance;
 
 import org.apache.commons.collections4.CollectionUtils;
-
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * This selector use the weighted round robin strategy to select from list.
  * If the weight is greater, the probability of being selected is larger.
  *
- * @param <T> Target type
+ * @param <T>
  */
 public class WeightRoundRobinLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
 

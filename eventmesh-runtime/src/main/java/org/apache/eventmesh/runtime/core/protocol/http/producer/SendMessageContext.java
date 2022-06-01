@@ -17,29 +17,27 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.producer;
 
-import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.SendResult;
-import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.apache.eventmesh.runtime.core.protocol.http.retry.RetryContext;
-
-import org.apache.commons.lang3.time.DateFormatUtils;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.openmessaging.api.Message;
+import io.openmessaging.api.OnExceptionContext;
+import io.openmessaging.api.SendCallback;
+import io.openmessaging.api.SendResult;
+
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.core.protocol.http.retry.RetryContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.cloudevents.CloudEvent;
 
 public class SendMessageContext extends RetryContext {
 
     public static Logger logger = LoggerFactory.getLogger("retry");
 
-    private CloudEvent event;
+    private Message msg;
 
     private String bizSeqNo;
 
@@ -51,11 +49,11 @@ public class SendMessageContext extends RetryContext {
 
     public EventMeshHTTPServer eventMeshHTTPServer;
 
-    private List<CloudEvent> eventList;
+    private List<Message> messageList;
 
-    public SendMessageContext(String bizSeqNo, CloudEvent event, EventMeshProducer eventMeshProducer, EventMeshHTTPServer eventMeshHTTPServer) {
+    public SendMessageContext(String bizSeqNo, Message msg, EventMeshProducer eventMeshProducer, EventMeshHTTPServer eventMeshHTTPServer) {
         this.bizSeqNo = bizSeqNo;
-        this.event = event;
+        this.msg = msg;
         this.eventMeshProducer = eventMeshProducer;
         this.eventMeshHTTPServer = eventMeshHTTPServer;
     }
@@ -79,12 +77,12 @@ public class SendMessageContext extends RetryContext {
         this.bizSeqNo = bizSeqNo;
     }
 
-    public CloudEvent getEvent() {
-        return event;
+    public Message getMsg() {
+        return msg;
     }
 
-    public void setEvent(CloudEvent event) {
-        this.event = event;
+    public void setMsg(Message msg) {
+        this.msg = msg;
     }
 
     public EventMeshProducer getEventMeshProducer() {
@@ -103,12 +101,12 @@ public class SendMessageContext extends RetryContext {
         this.createTime = createTime;
     }
 
-    public List<CloudEvent> getEventList() {
-        return eventList;
+    public List<Message> getMessageList() {
+        return messageList;
     }
 
-    public void setEventList(List<CloudEvent> eventList) {
-        this.eventList = eventList;
+    public void setMessageList(List<Message> messageList) {
+        this.messageList = messageList;
     }
 
     @Override
@@ -143,7 +141,7 @@ public class SendMessageContext extends RetryContext {
             @Override
             public void onException(OnExceptionContext context) {
                 logger.warn("", context.getException());
-                eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendBatchMsgFailed(1);
+                eventMeshHTTPServer.metrics.summaryMetrics.recordSendBatchMsgFailed(1);
             }
 
         });

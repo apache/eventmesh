@@ -18,27 +18,27 @@
 package org.apache.eventmesh.common.protocol.http.header.message;
 
 
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-import org.apache.eventmesh.common.protocol.http.header.Header;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+import org.apache.eventmesh.common.protocol.http.header.Header;
+
 public class ReplyMessageResponseHeader extends Header {
 
-    //response code, as same as the request code
+    //响应码, 与对应Request的code一致
     private int code;
 
-    //The cluster name of the EventMesh that processes the request
+    //处理该次Request请求的eventMesh的集群名
     private String eventMeshCluster;
 
-    //IP of the EventMesh that processes the request
+    //处理该次Request请求的eventMesh的IP
     private String eventMeshIp;
 
-    //Environment number of the EventMesh that processes the request
+    //处理该次Request请求的eventMesh所在的环境编号
     private String eventMeshEnv;
 
-    //IDC of the EventMesh that processes the request
+    //处理该次Request请求的eventMesh所在IDC
     private String eventMeshIdc;
 
     public int getCode() {

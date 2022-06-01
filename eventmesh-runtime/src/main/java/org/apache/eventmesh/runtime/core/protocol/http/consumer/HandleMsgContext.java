@@ -17,25 +17,24 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.consumer;
 
-import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
-import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateFormatUtils;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.openmessaging.api.Message;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.cloudevents.CloudEvent;
 
 public class HandleMsgContext {
 
@@ -55,7 +54,7 @@ public class HandleMsgContext {
 
     private SubscriptionItem subscriptionItem;
 
-    private CloudEvent event;
+    private Message msg;
 
     private int ttl;
 
@@ -72,14 +71,14 @@ public class HandleMsgContext {
     private Map<String, String> props;
 
     public HandleMsgContext(String msgRandomNo, String consumerGroup, EventMeshConsumer eventMeshConsumer,
-                            String topic, CloudEvent event, SubscriptionItem subscriptionItem,
+                            String topic, Message msg, SubscriptionItem subscriptionItem,
                             AbstractContext context, ConsumerGroupConf consumerGroupConfig,
                             EventMeshHTTPServer eventMeshHTTPServer, String bizSeqNo, String uniqueId, ConsumerGroupTopicConf consumeTopicConfig) {
         this.msgRandomNo = msgRandomNo;
         this.consumerGroup = consumerGroup;
         this.eventMeshConsumer = eventMeshConsumer;
         this.topic = topic;
-        this.event = event;
+        this.msg = msg;
         this.subscriptionItem = subscriptionItem;
         this.context = context;
         this.consumerGroupConfig = consumerGroupConfig;
@@ -87,9 +86,8 @@ public class HandleMsgContext {
         this.bizSeqNo = bizSeqNo;
         this.uniqueId = uniqueId;
         this.consumeTopicConfig = consumeTopicConfig;
-
-        String ttlStr = (String) event.getExtension(Constants.PROPERTY_MESSAGE_TIMEOUT);
-        this.ttl = StringUtils.isNumeric(ttlStr) ? Integer.parseInt(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
+        String ttlStr = msg.getUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT);
+        this.ttl = StringUtils.isNumeric(ttlStr)? Integer.parseInt(ttlStr): EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
     }
 
     public void addProp(String key, String val) {
@@ -151,12 +149,12 @@ public class HandleMsgContext {
         this.topic = topic;
     }
 
-    public CloudEvent getEvent() {
-        return event;
+    public Message getMsg() {
+        return msg;
     }
 
-    public void setEvent(CloudEvent event) {
-        this.event = event;
+    public void setMsg(Message msg) {
+        this.msg = msg;
     }
 
     public SubscriptionItem getSubscriptionItem() {
@@ -196,14 +194,14 @@ public class HandleMsgContext {
     }
 
     public void finish() {
-        if (eventMeshConsumer != null && context != null && event != null) {
+        if (eventMeshConsumer != null && context != null && msg != null) {
             if (messageLogger.isDebugEnabled()) {
-                //messageLogger.debug("messageAcked|topic={}|msgId={}|cluster={}|broker={}|queueId={}|queueOffset={}", topic,
-                //        msg.getMsgId(), msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER),
-                //        msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
-                //        msg.getQueueId(), msg.getQueueOffset());
+//                messageLogger.debug("messageAcked|topic={}|msgId={}|cluster={}|broker={}|queueId={}|queueOffset={}", topic,
+//                        msg.getMsgId(), msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_CLUSTER),
+//                        msg.getProperty(DeFiBusConstant.PROPERTY_MESSAGE_BROKER),
+//                        msg.getQueueId(), msg.getQueueOffset());
             }
-            eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Arrays.asList(event), context);
+            eventMeshConsumer.updateOffset(topic, subscriptionItem.getMode(), Arrays.asList(msg), context);
         }
     }
 

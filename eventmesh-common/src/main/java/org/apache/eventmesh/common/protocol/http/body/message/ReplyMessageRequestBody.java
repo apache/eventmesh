@@ -17,25 +17,24 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.utils.JsonUtils;
-
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class ReplyMessageRequestBody extends Body {
 
-    public static final String ORIGTOPIC = "origtopic";
-    public static final String BIZSEQNO = "bizseqno";
-    public static final String UNIQUEID = "uniqueid";
+    public static final String ORIGTOPIC = "origTopic";
+    public static final String BIZSEQNO = "bizSeqNo";
+    public static final String UNIQUEID = "uniqueId";
     public static final String CONTENT = "content";
     public static final String EXTFIELDS = "extFields";
-    public static final String PRODUCERGROUP = "producergroup";
+    public static final String PRODUCERGROUP = "producerGroup";
 
     private String bizSeqNo;
 
@@ -97,6 +96,7 @@ public class ReplyMessageRequestBody extends Body {
         this.producerGroup = producerGroup;
     }
 
+    @SuppressWarnings("unchecked")
     public static ReplyMessageRequestBody buildBody(Map<String, Object> bodyParam) {
         ReplyMessageRequestBody body = new ReplyMessageRequestBody();
         body.setBizSeqNo(MapUtils.getString(bodyParam, BIZSEQNO));
@@ -105,9 +105,7 @@ public class ReplyMessageRequestBody extends Body {
         body.setOrigTopic(MapUtils.getString(bodyParam, ORIGTOPIC));
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
         if (StringUtils.isNotBlank(extFields)) {
-            body.setExtFields(
-                    JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
-                    }));
+            body.setExtFields((HashMap<String, String>) JSONObject.parseObject(extFields, HashMap.class));
         }
         body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
         return body;
@@ -133,7 +131,7 @@ public class ReplyMessageRequestBody extends Body {
         map.put(ORIGTOPIC, origTopic);
         map.put(UNIQUEID, uniqueId);
         map.put(CONTENT, content);
-        map.put(EXTFIELDS, JsonUtils.serialize(extFields));
+        map.put(EXTFIELDS, JSON.toJSONString(extFields));
         map.put(PRODUCERGROUP, producerGroup);
         return map;
     }

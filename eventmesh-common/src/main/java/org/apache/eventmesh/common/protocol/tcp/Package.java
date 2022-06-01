@@ -15,26 +15,42 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-registry-plugin/eventmesh-registry-api/src/main/java/org/apache/eventmesh/api/registry/dto/EventMeshUnRegisterInfo.java
+package org.apache.eventmesh.api.registry.dto;
+========
 package org.apache.eventmesh.common.protocol.tcp;
+>>>>>>>> e4cff57da85093ca7a917f7edd86fa434000d5dc:eventmesh-common/src/main/java/org/apache/eventmesh/common/protocol/tcp/Package.java
 
+/**
+ * EventMeshUnRegisterInfo
+ */
+public class EventMeshUnRegisterInfo {
+    private String eventMeshClusterName;
+    private String eventMeshName;
 
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+    private String endPoint;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Package implements ProtocolTransportObject {
-
-    private Header header;
-    private Object body;
-
-    public Package(Header header) {
-        this.header = header;
+    public String getEventMeshClusterName() {
+        return eventMeshClusterName;
     }
 
+    public void setEventMeshClusterName(String eventMeshClusterName) {
+        this.eventMeshClusterName = eventMeshClusterName;
+    }
+
+    public String getEventMeshName() {
+        return eventMeshName;
+    }
+
+    public void setEventMeshName(String eventMeshName) {
+        this.eventMeshName = eventMeshName;
+    }
+
+    public String getEndPoint() {
+        return endPoint;
+    }
+
+    public void setEndPoint(String endPoint) {
+        this.endPoint = endPoint;
+    }
 }

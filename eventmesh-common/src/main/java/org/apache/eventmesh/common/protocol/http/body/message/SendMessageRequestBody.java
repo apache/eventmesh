@@ -17,27 +17,25 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.utils.JsonUtils;
-
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.alibaba.fastjson.JSONObject;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class SendMessageRequestBody extends Body {
 
     public static final String TOPIC = "topic";
-    public static final String BIZSEQNO = "bizseqno";
-    public static final String UNIQUEID = "uniqueid";
+    public static final String BIZSEQNO = "bizSeqNo";
+    public static final String UNIQUEID = "uniqueId";
     public static final String CONTENT = "content";
     public static final String TTL = "ttl";
     public static final String TAG = "tag";
     public static final String EXTFIELDS = "extFields";
-    public static final String PRODUCERGROUP = "producergroup";
+    public static final String PRODUCERGROUP = "producerGroup";
 
     private String topic;
 
@@ -119,6 +117,7 @@ public class SendMessageRequestBody extends Body {
         this.producerGroup = producerGroup;
     }
 
+    @SuppressWarnings("unchecked")
     public static SendMessageRequestBody buildBody(Map<String, Object> bodyParam) {
         SendMessageRequestBody body = new SendMessageRequestBody();
         body.setTopic(MapUtils.getString(bodyParam, TOPIC));
@@ -129,9 +128,7 @@ public class SendMessageRequestBody extends Body {
         body.setContent(MapUtils.getString(bodyParam, CONTENT));
         String extFields = MapUtils.getString(bodyParam, EXTFIELDS);
         if (StringUtils.isNotBlank(extFields)) {
-            body.setExtFields(
-                    JsonUtils.deserialize(extFields, new TypeReference<HashMap<String, String>>() {
-                    }));
+            body.setExtFields((HashMap<String, String>) JSONObject.parseObject(extFields, HashMap.class));
         }
         body.setProducerGroup(MapUtils.getString(bodyParam, PRODUCERGROUP));
         return body;
@@ -139,7 +136,7 @@ public class SendMessageRequestBody extends Body {
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<String, Object>();
         map.put(TOPIC, topic);
         map.put(BIZSEQNO, bizSeqNo);
         map.put(UNIQUEID, uniqueId);

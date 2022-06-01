@@ -18,16 +18,13 @@
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group.dispatch;
 
 
-import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-
 import java.util.Set;
 
-/**
- * DownstreamDispatchStrategy
- */
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+
 public interface DownstreamDispatchStrategy {
     /**
-     * select a SESSION
+     * 选择一个SESSION
      *
      * @param group
      * @param consumeSessions

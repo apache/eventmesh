@@ -15,50 +15,34 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.15.0'
+
+//plugins {
+//    id 'org.springframework.boot' version '2.1.6.RELEASE'
+//}
+
+
+//ext['commons-pool2.version'] = '2.6.1'
+
 
 dependencies {
-    api project(":eventmesh-common")
-
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
-    implementation "org.apache.commons:commons-collections4"
-
-    implementation "io.netty:netty-all"
-    implementation "org.apache.httpcomponents:httpclient"
-
-    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
-    implementation "io.grpc:grpc-stub:${grpcVersion}"
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
-
-    // protocol
-    api "io.cloudevents:cloudevents-core"
-    api "io.cloudevents:cloudevents-json-jackson"
-    api "io.openmessaging:openmessaging-api"
-
+    //implementation log4j2, sl4j,httpclient,netty
+    // log4j2, sl4j,httpclient,netty
+    implementation project(":eventmesh-common")
     testImplementation project(":eventmesh-common")
 
-    testImplementation "com.fasterxml.jackson.core:jackson-databind"
-    testImplementation "com.fasterxml.jackson.core:jackson-core"
-    testImplementation "com.fasterxml.jackson.core:jackson-annotations"
+//    //Spring依赖的第三方模块(2.1.6依赖的是3.8.1)
+//    compile("org.apache.commons:commons-lang3")
+//    //Spring依赖的第三方模块(2.1.6依赖的是2.6.2)指定依赖版本为2.6.1
+//    compile('org.apache.commons:commons-pool2')
+//    //未被依赖的库需要手动：我司开源的 轻代码开发框架核心包，文末源码链接
+//    compile('com.diboot:diboot-core:2.0.0')
 
-    testImplementation "io.netty:netty-all"
-    testImplementation "org.apache.httpcomponents:httpclient"
-
-    implementation "io.grpc:grpc-protobuf:1.15.0"
-    implementation "io.grpc:grpc-stub:1.15.0"
-    implementation "com.google.protobuf:protobuf-java-util:3.5.1"
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
-
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
-
-    testImplementation "org.assertj:assertj-core"
-
-    testImplementation "org.mockito:mockito-core"
-    testImplementation "org.powermock:powermock-module-junit4"
-    testImplementation "org.powermock:powermock-api-mockito2"
+//    implementation('org.springframework.boot:spring-boot-starter-web') {
+//        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+//    }
+//
+//    implementation('org.springframework.boot:spring-boot-starter') {
+//        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+//    }
 }
+

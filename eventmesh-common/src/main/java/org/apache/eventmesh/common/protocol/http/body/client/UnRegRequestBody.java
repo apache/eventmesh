@@ -17,16 +17,15 @@
 
 package org.apache.eventmesh.common.protocol.http.body.client;
 
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.utils.JsonUtils;
-
-import org.apache.commons.collections4.MapUtils;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class UnRegRequestBody extends Body {
 
@@ -57,17 +56,15 @@ public class UnRegRequestBody extends Body {
     public static UnRegRequestBody buildBody(Map<String, Object> bodyParam) {
         UnRegRequestBody body = new UnRegRequestBody();
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
-        body.setTopics(JsonUtils.deserialize(MapUtils.getString(bodyParam, TOPICS),
-                new TypeReference<List<UnRegTopicEntity>>() {
-                }));
+        body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPICS), UnRegTopicEntity.class));
         return body;
     }
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<String, Object>();
         map.put(CLIENTTYPE, clientType);
-        map.put(TOPICS, JsonUtils.serialize(topics));
+        map.put(TOPICS, JSON.toJSONString(topics));
         return map;
     }
 

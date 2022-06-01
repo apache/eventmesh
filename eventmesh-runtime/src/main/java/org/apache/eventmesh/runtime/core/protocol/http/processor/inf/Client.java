@@ -16,10 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 
 import java.util.Date;
+
+import com.alibaba.fastjson.JSONObject;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class Client {
 
@@ -44,6 +47,30 @@ public class Client {
     public String apiVersion;
 
     public Date lastUpTime;
+
+    public static Client buildClientFromJSONObject(JSONObject jsonObject) {
+        if (jsonObject == null) {
+            return null;
+        }
+
+        Client client = null;
+        try {
+            client = new Client();
+
+            client.env = StringUtils.trim(jsonObject.getString("env"));
+            client.consumerGroup = StringUtils.trim(jsonObject.getString("groupName"));
+            client.topic = StringUtils.trim(jsonObject.getString("topic"));
+            client.url = StringUtils.trim(jsonObject.getString("url"));
+            client.sys = StringUtils.trim(jsonObject.getString("sys"));
+            client.idc = StringUtils.trim(jsonObject.getString("idc"));
+            client.ip = StringUtils.trim(jsonObject.getString("ip"));
+            client.pid = StringUtils.trim(jsonObject.getString("pid"));
+            client.hostname = StringUtils.trim(jsonObject.getString("hostname"));
+            client.apiVersion = StringUtils.trim(jsonObject.getString("apiversion"));
+        } catch (Exception ex) {
+        }
+        return client;
+    }
 
     @Override
     public String toString() {

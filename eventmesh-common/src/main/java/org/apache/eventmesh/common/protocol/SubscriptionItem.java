@@ -17,32 +17,28 @@
 
 package org.apache.eventmesh.common.protocol;
 
-import java.io.Serializable;
-
-import com.google.common.base.Objects;
-
-public class SubscriptionItem implements Serializable {
+public class SubscriptionItem {
 
     private String topic;
 
     private SubscriptionMode mode;
 
-    private SubscriptionType type;
+    private SubcriptionType type;
 
     public SubscriptionItem() {
     }
 
-    public SubscriptionItem(String topic, SubscriptionMode mode, SubscriptionType type) {
+    public SubscriptionItem(String topic, SubscriptionMode mode, SubcriptionType type) {
         this.topic = topic;
         this.mode = mode;
         this.type = type;
     }
 
-    public SubscriptionType getType() {
+    public SubcriptionType getType() {
         return type;
     }
 
-    public void setType(SubscriptionType type) {
+    public void setType(SubcriptionType type) {
         this.type = type;
     }
 
@@ -64,28 +60,11 @@ public class SubscriptionItem implements Serializable {
 
     @Override
     public String toString() {
-        return "SubscriptionItem{"
-                + "topic=" + topic
-                + ", mode=" + mode
-                + ", type=" + type
-                + '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        SubscriptionItem that = (SubscriptionItem) o;
-        return Objects.equal(topic, that.topic) && mode == that.mode && type == that.type;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(topic, mode, type);
+        return "SubscriptionItem{" +
+                "topic=" + topic +
+                ", mode=" + mode +
+                ", type=" + type +
+                '}';
     }
 }
 

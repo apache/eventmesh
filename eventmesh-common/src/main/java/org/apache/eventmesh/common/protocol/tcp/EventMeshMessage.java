@@ -15,21 +15,73 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-admin/eventmesh-admin-rocketmq/src/main/java/org/apache/eventmesh/admin/rocketmq/response/TopicResponse.java
+package org.apache.eventmesh.admin.rocketmq.response;
+========
 package org.apache.eventmesh.common.protocol.tcp;
+>>>>>>>> e4cff57da85093ca7a917f7edd86fa434000d5dc:eventmesh-common/src/main/java/org/apache/eventmesh/common/protocol/tcp/EventMeshMessage.java
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+<<<<<<<< HEAD:eventmesh-admin/eventmesh-admin-rocketmq/src/main/java/org/apache/eventmesh/admin/rocketmq/response/TopicResponse.java
+public class TopicResponse {
+========
 public class EventMeshMessage {
+>>>>>>>> e4cff57da85093ca7a917f7edd86fa434000d5dc:eventmesh-common/src/main/java/org/apache/eventmesh/common/protocol/tcp/EventMeshMessage.java
 
     private String topic;
-    private Map<String, String> properties = new ConcurrentHashMap<>();
-    private String body;
+    private String createdTime;
+
+<<<<<<<< HEAD:eventmesh-admin/eventmesh-admin-rocketmq/src/main/java/org/apache/eventmesh/admin/rocketmq/response/TopicResponse.java
+    @JsonCreator
+    public TopicResponse(@JsonProperty("topic") String topic,
+                         @JsonProperty("created_time") String createdTime) {
+        super();
+========
+    public EventMeshMessage() {
+    }
+
+    public EventMeshMessage(String topic, Map<String, String> properties, String body) {
+>>>>>>>> e4cff57da85093ca7a917f7edd86fa434000d5dc:eventmesh-common/src/main/java/org/apache/eventmesh/common/protocol/tcp/EventMeshMessage.java
+        this.topic = topic;
+        this.createdTime = createdTime;
+    }
+
+    @JsonProperty("topic")
+    public String getTopic() {
+        return this.topic;
+    }
+
+    @JsonProperty("topic")
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    @JsonProperty("created_time")
+    public String getCreatedTime() {
+        return createdTime;
+    }
+
+    @JsonProperty("created_time")
+    public void setCreatedTime(String createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    @Override
+    public String toString() {
+<<<<<<<< HEAD:eventmesh-admin/eventmesh-admin-rocketmq/src/main/java/org/apache/eventmesh/admin/rocketmq/response/TopicResponse.java
+        StringBuilder sb = new StringBuilder();
+        sb.append("TopicResponse {topic=" + this.topic + ",");
+        sb.append("created_time=" + this.createdTime + "}");
+        return sb.toString();
+========
+        return "EventMeshMessage{" +
+                "topic='" + topic + '\'' +
+                ", properties=" + properties +
+                ", body='" + body + '\'' +
+                '}';
+>>>>>>>> e4cff57da85093ca7a917f7edd86fa434000d5dc:eventmesh-common/src/main/java/org/apache/eventmesh/common/protocol/tcp/EventMeshMessage.java
+    }
+
 }

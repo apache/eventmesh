@@ -17,20 +17,19 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import org.apache.eventmesh.common.protocol.http.HttpCommand;
+import io.netty.channel.ChannelHandlerContext;
+
+import org.apache.eventmesh.common.IPUtil;
+import org.apache.eventmesh.common.command.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.netty.channel.ChannelHandlerContext;
 
 public class AdminShutdownProcessor implements HttpRequestProcessor {
 
@@ -46,14 +45,14 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
     public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext) throws Exception {
 
         HttpCommand responseEventMeshCommand;
-        cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
-                RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
+        cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", RequestCode.get(Integer.valueOf(asyncContext.getRequest().getRequestCode())),
                 EventMeshConstants.PROTOCOL_HTTP,
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
+                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtil.getLocalAddress());
 
         eventMeshServer.shutdown();
 
-        responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
+        responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
+                EventMeshRetCode.SUCCESS.getRetCode(), EventMeshRetCode.SUCCESS.getErrMsg());
         asyncContext.onComplete(responseEventMeshCommand);
     }
 

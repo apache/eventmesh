@@ -17,17 +17,16 @@
 
 package org.apache.eventmesh.common.protocol.http.body.client;
 
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.utils.JsonUtils;
-
-import org.apache.commons.collections4.MapUtils;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class SubscribeRequestBody extends Body {
 
@@ -70,9 +69,7 @@ public class SubscribeRequestBody extends Body {
     public static SubscribeRequestBody buildBody(Map<String, Object> bodyParam) {
         SubscribeRequestBody body = new SubscribeRequestBody();
         body.setUrl(MapUtils.getString(bodyParam, URL));
-        body.setTopics(JsonUtils.deserialize(MapUtils.getString(bodyParam, TOPIC),
-                new TypeReference<List<SubscriptionItem>>() {
-                }));
+        body.setTopics(JSONArray.parseArray(MapUtils.getString(bodyParam, TOPIC), SubscriptionItem.class));
         body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
         return body;
     }
@@ -81,17 +78,17 @@ public class SubscribeRequestBody extends Body {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put(URL, url);
-        map.put(TOPIC, JsonUtils.serialize(topics));
+        map.put(TOPIC, JSON.toJSONString(topics));
         map.put(CONSUMERGROUP, consumerGroup);
         return map;
     }
 
     @Override
     public String toString() {
-        return "subscribeBody{"
-                + "consumerGroup='" + consumerGroup + '\''
-                + ", url='" + url + '\''
-                + ", topics=" + topics
-                + '}';
+        return "subscribeBody{" +
+                "consumerGroup='" + consumerGroup + '\'' +
+                ", url='" + url + '\'' +
+                ", topics=" + topics +
+                '}';
     }
 }

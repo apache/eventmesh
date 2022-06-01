@@ -17,16 +17,15 @@
 
 package org.apache.eventmesh.common.protocol.http.body.client;
 
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.utils.JsonUtils;
-
-import org.apache.commons.collections4.MapUtils;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.eventmesh.common.protocol.http.body.Body;
 
 public class HeartbeatRequestBody extends Body {
 
@@ -68,19 +67,16 @@ public class HeartbeatRequestBody extends Body {
         HeartbeatRequestBody body = new HeartbeatRequestBody();
         body.setClientType(MapUtils.getString(bodyParam, CLIENTTYPE));
         body.setConsumerGroup(MapUtils.getString(bodyParam, CONSUMERGROUP));
-        body.setHeartbeatEntities(JsonUtils
-                .deserialize(MapUtils.getString(bodyParam, HEARTBEATENTITIES),
-                        new TypeReference<List<HeartbeatEntity>>() {
-                        }));
+        body.setHeartbeatEntities(JSONArray.parseArray(MapUtils.getString(bodyParam, HEARTBEATENTITIES), HeartbeatEntity.class));
         return body;
     }
 
     @Override
     public Map<String, Object> toMap() {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<String, Object>();
         map.put(CLIENTTYPE, clientType);
         map.put(CONSUMERGROUP, consumerGroup);
-        map.put(HEARTBEATENTITIES, JsonUtils.serialize(heartbeatEntities));
+        map.put(HEARTBEATENTITIES, JSON.toJSONString(heartbeatEntities));
         return map;
     }
 

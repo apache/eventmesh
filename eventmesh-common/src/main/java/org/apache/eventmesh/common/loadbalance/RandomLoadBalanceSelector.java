@@ -19,17 +19,16 @@ package org.apache.eventmesh.common.loadbalance;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RandomUtils;
-
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * This selector use random strategy.
  * Each selection will randomly give one from the given list
  *
- * @param <T> Target type
+ * @param <T>
  */
 public class RandomLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
 

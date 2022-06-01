@@ -17,49 +17,48 @@
 
 package org.apache.eventmesh.common.protocol.http.header.client;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-
 public class HeartbeatRequestHeader extends Header {
 
-    //request code
+    //请求码
     private String code;
 
-    //requester language description
+    //请求方语言描述
     private String language;
 
-    //protocol version adopted by requester, default:1.0
+    //请求方采用的协议版本, 默认1.0
     private ProtocolVersion version;
 
-    //the environment number of the requester
+    //请求方所在环境编号
     private String env;
 
-    //the IDC of the requester
+    //请求方所在IDC
     private String idc;
 
-    //subsystem of the requester
+    //请求方的子系统
     private String sys;
 
-    //PID of the requester
+    //请求方的进程号
     private String pid;
 
-    //IP of the requester
+    //请求方的IP
     private String ip;
 
     private String producerGroup;
 
-    //USERNAME of the requester
+    //请求方的USERNAME
     private String username = "username";
 
-    //PASSWD of the requester
+    //请求方的PASSWD
     private String passwd = "user@123";
 
     public String getCode() {

@@ -17,58 +17,54 @@
 
 package org.apache.eventmesh.runtime.util;
 
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
-import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.constants.EventMeshVersion;
 
-import org.apache.commons.lang3.StringUtils;
+import static org.apache.eventmesh.runtime.util.OMSUtil.isOMSHeader;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.concurrent.ThreadPoolExecutor;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.cloudevents.CloudEvent;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import io.openmessaging.api.Message;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.ThreadUtil;
+import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
+import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.constants.EventMeshVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class EventMeshUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventMeshUtil.class);
-
-    private static final Logger tcpLogger = LoggerFactory.getLogger("tcpMonitor");
+    public static Logger logger = LoggerFactory.getLogger(EventMeshUtil.class);
 
     public static String buildPushMsgSeqNo() {
-        return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + RandomStringUtils.generateNum(4);
+        return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + String.valueOf(RandomStringUtils.randomNumeric(4));
     }
 
     public static String buildMeshClientID(String clientGroup, String meshCluster) {
         return StringUtils.trim(clientGroup)
                 + "(" + StringUtils.trim(meshCluster) + ")"
                 + "-" + EventMeshVersion.getCurrentVersionDesc()
-                + "-" + ThreadUtils.getPID();
+                + "-" + ThreadUtil.getPID();
     }
 
     public static String buildMeshTcpClientID(String clientSysId, String purpose, String meshCluster) {
@@ -76,7 +72,7 @@ public class EventMeshUtil {
                 + "-" + StringUtils.trim(purpose)
                 + "-" + StringUtils.trim(meshCluster)
                 + "-" + EventMeshVersion.getCurrentVersionDesc()
-                + "-" + ThreadUtils.getPID();
+                + "-" + ThreadUtil.getPID();
     }
 
     public static String buildClientGroup(String systemId) {
@@ -84,7 +80,7 @@ public class EventMeshUtil {
     }
 
     /**
-     * custom fetch stack
+     * 自定义取堆栈
      *
      * @param e
      * @return
@@ -123,7 +119,7 @@ public class EventMeshUtil {
 
 
     /**
-     * print part of the mq message
+     * 打印mq消息的一部分内容
      *
      * @param eventMeshMessage
      * @return
@@ -141,22 +137,95 @@ public class EventMeshUtil {
         return result;
     }
 
-    public static String getMessageBizSeq(CloudEvent event) {
+    public static String getMessageBizSeq(Message msg) {
+        Properties properties = msg.getSystemProperties();
 
-        String keys = (String) event.getExtension(EventMeshConstants.KEYS_UPPERCASE);
+        String keys = properties.getProperty(EventMeshConstants.KEYS_UPPERCASE);
         if (!StringUtils.isNotBlank(keys)) {
-            keys = (String) event.getExtension(EventMeshConstants.KEYS_LOWERCASE);
+            keys = properties.getProperty(EventMeshConstants.KEYS_LOWERCASE);
         }
         return keys;
     }
 
-    public static Map<String, String> getEventProp(CloudEvent event) {
-        Set<String> extensionSet = event.getExtensionNames();
-        Map<String, String> prop = new HashMap<>();
-        for (String extensionKey : extensionSet) {
-            prop.put(extensionKey, event.getExtension(extensionKey).toString());
+//    public static org.apache.rocketmq.common.message.Message decodeMessage(AccessMessage accessMessage) {
+//        org.apache.rocketmq.common.message.Message msg = new org.apache.rocketmq.common.message.Message();
+//        msg.setTopic(accessMessage.getTopic());
+//        msg.setBody(accessMessage.getBody().getBytes());
+//        msg.getProperty("init");
+//        for (Map.Entry<String, String> property : accessMessage.getProperties().entrySet()) {
+//            msg.getProperties().put(property.getKey(), property.getValue());
+//        }
+//        return msg;
+//    }
+
+    public static Message decodeMessage(EventMeshMessage eventMeshMessage) {
+        Message omsMsg = new Message();
+        omsMsg.setBody(eventMeshMessage.getBody().getBytes());
+        omsMsg.setTopic(eventMeshMessage.getTopic());
+        Properties systemProperties = new Properties();
+        Properties userProperties = new Properties();
+
+        final Set<Map.Entry<String, String>> entries = eventMeshMessage.getProperties().entrySet();
+
+        for (final Map.Entry<String, String> entry : entries) {
+            if (isOMSHeader(entry.getKey())) {
+                systemProperties.put(entry.getKey(), entry.getValue());
+            } else {
+                userProperties.put(entry.getKey(), entry.getValue());
+            }
         }
-        return prop;
+
+        systemProperties.put(Constants.PROPERTY_MESSAGE_DESTINATION, eventMeshMessage.getTopic());
+        omsMsg.setSystemProperties(systemProperties);
+        omsMsg.setUserProperties(userProperties);
+        return omsMsg;
+    }
+
+//    public static AccessMessage encodeMessage(org.apache.rocketmq.common.message.Message msg) throws Exception {
+//        AccessMessage accessMessage = new AccessMessage();
+//        accessMessage.setBody(new String(msg.getBody(), "UTF-8"));
+//        accessMessage.setTopic(msg.getTopic());
+//        for (Map.Entry<String, String> property : msg.getProperties().entrySet()) {
+//            accessMessage.getProperties().put(property.getKey(), property.getValue());
+//        }
+//        return accessMessage;
+//    }
+
+    public static EventMeshMessage encodeMessage(Message omsMessage) throws Exception {
+
+        EventMeshMessage eventMeshMessage = new EventMeshMessage();
+        eventMeshMessage.setBody(new String(omsMessage.getBody(), StandardCharsets.UTF_8));
+
+        Properties sysHeaders = omsMessage.getSystemProperties();
+        Properties userHeaders = omsMessage.getUserProperties();
+
+        //All destinations in RocketMQ use Topic
+        eventMeshMessage.setTopic(sysHeaders.getProperty(Constants.PROPERTY_MESSAGE_DESTINATION));
+
+        if (sysHeaders.containsKey("START_TIME")) {
+            long deliverTime;
+            if (StringUtils.isBlank(sysHeaders.getProperty("START_TIME"))) {
+                deliverTime = 0;
+            } else {
+                deliverTime = Long.parseLong(sysHeaders.getProperty("START_TIME"));
+            }
+
+            if (deliverTime > 0) {
+//                rmqMessage.putUserProperty(RocketMQConstants.START_DELIVER_TIME, String.valueOf(deliverTime));
+                eventMeshMessage.getProperties().put("START_TIME", String.valueOf(deliverTime));
+            }
+        }
+
+        for (String key : userHeaders.stringPropertyNames()) {
+            eventMeshMessage.getProperties().put(key, userHeaders.getProperty(key));
+        }
+
+        //System headers has a high priority
+        for (String key : sysHeaders.stringPropertyNames()) {
+            eventMeshMessage.getProperties().put(key, sysHeaders.getProperty(key));
+        }
+
+        return eventMeshMessage;
     }
 
     public static String getLocalAddr() {
@@ -177,9 +246,10 @@ public class EventMeshUtil {
                     continue;
                 } else if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
-                } else if (preferList.indexOf(networkInterface.getName())
+                }
+                //get the networkInterface that has higher priority
+                else if (preferList.indexOf(networkInterface.getName())
                         > preferList.indexOf(preferNetworkInterface.getName())) {
-                    //get the networkInterface that has higher priority
                     preferNetworkInterface = networkInterface;
                 }
             }
@@ -260,29 +330,5 @@ public class EventMeshUtil {
                 .append(client.getPid()).append("-")
                 .append(client.getHost()).append(":").append(client.getPort());
         return sb.toString();
-    }
-
-    public static void printState(ThreadPoolExecutor scheduledExecutorService) {
-        tcpLogger.info("{} [{} {} {} {}]", ((EventMeshThreadFactoryImpl) scheduledExecutorService.getThreadFactory())
-                .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
-                .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
-                .getCompletedTaskCount());
-    }
-
-    /**
-     * Perform deep clone of the given object using serialization
-     * @param object
-     * @return cloned object
-     * @throws IOException
-     * @throws ClassNotFoundException
-     */
-    public static <T> T cloneObject(T object) throws IOException, ClassNotFoundException {
-        ByteArrayOutputStream byOut = new ByteArrayOutputStream();
-        ObjectOutputStream outputStream = new ObjectOutputStream(byOut);
-        outputStream.writeObject(object);
-
-        ByteArrayInputStream byIn = new ByteArrayInputStream(byOut.toByteArray());
-        ObjectInputStream inputStream = new ObjectInputStream(byIn);
-        return (T) inputStream.readObject();
     }
 }

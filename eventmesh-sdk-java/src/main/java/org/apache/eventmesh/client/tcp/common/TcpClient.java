@@ -17,12 +17,8 @@
 
 package org.apache.eventmesh.client.tcp.common;
 
-import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
-import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
-
 import java.io.Closeable;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,41 +44,34 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 
-import com.google.common.base.Preconditions;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.common.protocol.tcp.codec.Codec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public abstract class TcpClient implements Closeable {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public final int clientNo = (new Random()).nextInt(1000);
+    public int clientNo = (new Random()).nextInt(1000);
 
-    protected final ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
+    protected ConcurrentHashMap<Object, RequestContext> contexts = new ConcurrentHashMap<>();
 
-    protected final String host;
-    protected final int port;
-    protected final UserAgent userAgent;
+    private final String host;
+    private final int port;
 
-    private final Bootstrap bootstrap = new Bootstrap();
+    private Bootstrap bootstrap = new Bootstrap();
 
-    private final EventLoopGroup workers = new NioEventLoopGroup();
+    private EventLoopGroup workers = new NioEventLoopGroup();
 
     private Channel channel;
 
-    private ScheduledFuture<?> heartTask;
+    protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(4, new EventMeshThreadFactoryImpl("TCPClientScheduler", true));
 
-    protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors(),
-            new ThreadFactoryBuilder().setNameFormat("TCPClientScheduler").setDaemon(true).build());
+    private ScheduledFuture<?> task;
 
-    public TcpClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
-        Preconditions.checkNotNull(eventMeshTcpClientConfig, "EventMeshTcpClientConfig cannot be null");
-        Preconditions.checkNotNull(eventMeshTcpClientConfig.getHost(), "Host cannot be null");
-        Preconditions.checkState(eventMeshTcpClientConfig.getPort() > 0, "port is not validated");
-        this.host = eventMeshTcpClientConfig.getHost();
-        this.port = eventMeshTcpClientConfig.getPort();
-        this.userAgent = eventMeshTcpClientConfig.getUserAgent();
+    public TcpClient(String host, int port) {
+        this.host = host;
+        this.port = port;
     }
 
     protected synchronized void open(SimpleChannelInboundHandler<Package> handler) throws Exception {
@@ -95,7 +84,7 @@ public abstract class TcpClient implements Closeable {
                 .option(ChannelOption.RCVBUF_ALLOCATOR, new AdaptiveRecvByteBufAllocator(1024, 8192, 65536))
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
-            public void initChannel(SocketChannel ch) {
+            public void initChannel(SocketChannel ch) throws Exception {
                 ch.pipeline().addLast(new Codec.Encoder(), new Codec.Decoder())
                         .addLast(handler, newExceptionHandler());
             }
@@ -104,43 +93,17 @@ public abstract class TcpClient implements Closeable {
         ChannelFuture f = bootstrap.connect(host, port).sync();
         InetSocketAddress localAddress = (InetSocketAddress) f.channel().localAddress();
         channel = f.channel();
-        log
-                .info("connected|local={}:{}|server={}", localAddress.getAddress().getHostAddress(), localAddress.getPort(),
-                        host + ":" + port);
+        logger.info("connected|local={}:{}|server={}", localAddress.getAddress().getHostAddress(), localAddress.getPort(), host + ":" + port);
     }
 
     @Override
-    public void close() {
+    public void close() throws IOException {
         try {
             channel.disconnect().sync();
-            workers.shutdownGracefully();
-            if (heartTask != null) {
-                heartTask.cancel(false);
-            }
-            goodbye();
-        } catch (Exception e) {
-            Thread.currentThread().interrupt();
-            log.warn("close tcp client failed.|remote address={}", channel.remoteAddress(), e);
+        } catch (InterruptedException e) {
+            logger.warn("close tcp client failed.|remote address={}", channel.remoteAddress(), e);
         }
-    }
-
-    protected void heartbeat() {
-        if (heartTask == null) {
-            synchronized (TcpClient.class) {
-                heartTask = scheduler.scheduleAtFixedRate(() -> {
-                    try {
-                        if (!isActive()) {
-                            reconnect();
-                        }
-                        Package msg = MessageUtils.heartBeat();
-                        io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-                        log.debug("heart beat start {}", msg);
-                    } catch (Exception ignore) {
-                        // ignore
-                    }
-                }, EventMeshCommon.HEARTBEAT, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
-            }
-        }
+        workers.shutdownGracefully();
     }
 
     protected synchronized void reconnect() throws Exception {
@@ -156,7 +119,7 @@ public abstract class TcpClient implements Closeable {
         if (channel.isWritable()) {
             channel.writeAndFlush(msg).addListener((ChannelFutureListener) future -> {
                 if (!future.isSuccess()) {
-                    log.warn("send msg failed", future.cause());
+                    logger.warn("send msg failed", future.isSuccess(), future.cause());
                 }
             });
         } else {
@@ -165,39 +128,25 @@ public abstract class TcpClient implements Closeable {
     }
 
     protected Package io(Package msg, long timeout) throws Exception {
-        Object key = RequestContext.key(msg);
+        Object key = RequestContext._key(msg);
         CountDownLatch latch = new CountDownLatch(1);
-        RequestContext c = RequestContext.context(key, msg, latch);
+        RequestContext c = RequestContext._context(key, msg, latch);
         if (!contexts.contains(c)) {
             contexts.put(key, c);
         } else {
-            log.info("duplicate key : {}", key);
+            logger.info("duplicate key : {}", key);
         }
         send(msg);
-        if (!c.getLatch().await(timeout, TimeUnit.MILLISECONDS)) {
+        if (!c.getLatch().await(timeout, TimeUnit.MILLISECONDS))
             throw new TimeoutException("operation timeout, context.key=" + c.getKey());
-        }
         return c.getResponse();
-    }
-
-    // todo: remove hello
-    protected void hello() throws Exception {
-        Package msg = MessageUtils.hello(userAgent);
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-    }
-
-    // todo: remove goodbye
-    protected void goodbye() throws Exception {
-        Package msg = MessageUtils.goodbye();
-        this.io(msg, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
     }
 
     private ChannelDuplexHandler newExceptionHandler() {
         return new ChannelDuplexHandler() {
             @Override
-            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-                log
-                        .info("exceptionCaught, close connection.|remote address={}", ctx.channel().remoteAddress(), cause);
+            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                logger.info("exceptionCaught, close connection.|remote address={}", ctx.channel().remoteAddress(), cause);
                 ctx.close();
             }
         };

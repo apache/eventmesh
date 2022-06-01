@@ -17,21 +17,20 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push;
 
-import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import java.util.List;
+
+import io.openmessaging.api.Message;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
-
-import java.util.List;
-
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.cloudevents.CloudEvent;
 
 public class ClientAckContext {
 
@@ -45,18 +44,18 @@ public class ClientAckContext {
 
     private long expireTime;
 
-    private List<CloudEvent> events;
+    private List<Message> msgs;
 
     private MQConsumerWrapper consumer;
 
-    public ClientAckContext(String seq, AbstractContext context, List<CloudEvent> events, MQConsumerWrapper consumer) {
+    public ClientAckContext(String seq, AbstractContext context, List<Message> msgs, MQConsumerWrapper consumer) {
         this.seq = seq;
         this.context = context;
-        this.events = events;
+        this.msgs = msgs;
         this.consumer = consumer;
         this.createTime = System.currentTimeMillis();
-        String ttlStr = events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL).toString();
-        long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
+        String ttlStr = msgs.get(0).getUserProperties(EventMeshConstants.PROPERTY_MESSAGE_TTL);
+        long ttl = StringUtils.isNumeric(ttlStr)? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
         this.expireTime = System.currentTimeMillis() + ttl;
     }
 
@@ -88,12 +87,12 @@ public class ClientAckContext {
         this.createTime = createTime;
     }
 
-    public List<CloudEvent> getEvents() {
-        return events;
+    public List<Message> getMsgs() {
+        return msgs;
     }
 
-    public void setEvents(List<CloudEvent> events) {
-        this.events = events;
+    public void setMsgs(List<Message> msgs) {
+        this.msgs = msgs;
     }
 
     public long getExpireTime() {
@@ -109,27 +108,24 @@ public class ClientAckContext {
     }
 
     public void ackMsg() {
-        if (consumer != null && context != null && events != null) {
-            consumer.updateOffset(events, context);
-            logger.info("ackMsg topic:{}, bizSeq:{}", events.get(0).getSubject(), EventMeshUtil.getMessageBizSeq(events.get(0)));
+        if (consumer != null && context != null && msgs != null) {
+            consumer.updateOffset(msgs, context);
+//            ConsumeMessageService consumeMessageService = consumer..getDefaultMQPushConsumerImpl().getConsumeMessageService();
+//            ((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, context);
+            logger.info("ackMsg topic:{}, bizSeq:{}", msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION), EventMeshUtil.getMessageBizSeq(msgs.get(0)));
         } else {
-            logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",
-                    consumer == null, context == null, events == null);
+            logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}", consumer == null, context == null, msgs == null);
         }
     }
 
     @Override
     public String toString() {
-        return "ClientAckContext{"
-                +
-                ",seq=" + seq
-                +
-                //TODO               ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
-                //               ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
-                ",topic=" + (CollectionUtils.size(events) > 0 ? events.get(0).getSubject() : null)
-                +
-                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
-                +
+        return "ClientAckContext{" +
+                ",seq=" + seq +
+// TODO               ",consumer=" + consumer.getDefaultMQPushConsumer().getMessageModel() +
+//                ",consumerGroup=" + consumer.getDefaultMQPushConsumer().getConsumerGroup() +
+                ",topic=" + (CollectionUtils.size(msgs) > 0 ? msgs.get(0).getSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION) : null) +
+                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT) +
                 ",expireTime=" + DateFormatUtils.format(expireTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 }

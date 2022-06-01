@@ -15,20 +15,24 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:eventmesh-connector-plugin/eventmesh-connector-api/src/main/java/org/apache/eventmesh/api/RequestReplyCallback.java
+package org.apache.eventmesh.api;
+========
 package org.apache.eventmesh.client.http.producer;
+>>>>>>>> e4cff57da85093ca7a917f7edd86fa434000d5dc:eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/http/producer/RRCallback.java
 
+import io.cloudevents.CloudEvent;
+
+<<<<<<<< HEAD:eventmesh-connector-plugin/eventmesh-connector-api/src/main/java/org/apache/eventmesh/api/RequestReplyCallback.java
 /**
- * ProtocolMessage can be
- * <ul>
- *     <li>{@link org.apache.eventmesh.common.EventMeshMessage}</li>
- *     <li>{@link io.cloudevents.CloudEvent}</li>
- *     <li>{@link io.openmessaging.api.Message}</li>
- * </ul>
+ * RequestReplyCallback
  */
-public interface RRCallback<ProtocolMessage> {
+public interface RequestReplyCallback {
+========
+import org.apache.eventmesh.common.LiteMessage;
+>>>>>>>> e4cff57da85093ca7a917f7edd86fa434000d5dc:eventmesh-sdk-java/src/main/java/org/apache/eventmesh/client/http/producer/RRCallback.java
 
-    void onSuccess(ProtocolMessage protocolMessage);
+    void onSuccess(CloudEvent event);
 
     void onException(Throwable e);
-
 }

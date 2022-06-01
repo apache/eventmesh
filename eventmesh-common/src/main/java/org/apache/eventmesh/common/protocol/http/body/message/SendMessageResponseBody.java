@@ -17,17 +17,13 @@
 
 package org.apache.eventmesh.common.protocol.http.body.message;
 
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.protocol.http.body.Body;
-import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-
-import org.apache.commons.lang3.time.DateFormatUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.Builder;
-import lombok.Data;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.http.body.Body;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 
 public class SendMessageResponseBody extends Body {
 
@@ -88,11 +84,15 @@ public class SendMessageResponseBody extends Body {
         return map;
     }
 
-    @Data
-    @Builder
     public static class ReplyMessage {
         public String topic;
         public String body;
         public Map<String, String> properties;
+
+        public ReplyMessage(String topic, String body, Map<String, String> properties) {
+            this.topic = topic;
+            this.body = body;
+            this.properties = properties;
+        }
     }
 }

@@ -17,21 +17,19 @@
 
 package org.apache.eventmesh.runtime.core.consumergroup;
 
-import org.apache.eventmesh.common.protocol.SubscriptionItem;
-
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public class ConsumerGroupTopicConf implements Serializable {
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class ConsumerGroupTopicConf {
 
     public static Logger logger = LoggerFactory.getLogger(ConsumerGroupTopicConf.class);
 
@@ -46,35 +44,22 @@ public class ConsumerGroupTopicConf implements Serializable {
 
     /**
      * PUSH URL
-     * Map key:IDC value:URL list in IDC
      */
-    private Map<String, List<String>> idcUrls = Maps.newConcurrentMap();
+    private Map<String /** IDC*/, List<String> /** IDC内URL列表*/> idcUrls = Maps.newConcurrentMap();
 
     /**
      * ALL IDC URLs
      */
     private Set<String> urls = Sets.newConcurrentHashSet();
 
-    /**
-     * url auth type
-     */
-    private Map<String, String> httpAuthTypeMap = Maps.newConcurrentMap();
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         ConsumerGroupTopicConf that = (ConsumerGroupTopicConf) o;
-        return consumerGroup.equals(that.consumerGroup)
-                &&
-                Objects.equals(topic, that.topic)
-                &&
-                Objects.equals(subscriptionItem, that.subscriptionItem)
-                &&
+        return consumerGroup.equals(that.consumerGroup) &&
+                Objects.equals(topic, that.topic) &&
+                Objects.equals(subscriptionItem, that.subscriptionItem) &&
                 Objects.equals(idcUrls, that.idcUrls);
     }
 
@@ -131,9 +116,5 @@ public class ConsumerGroupTopicConf implements Serializable {
 
     public void setUrls(Set<String> urls) {
         this.urls = urls;
-    }
-
-    public Map<String, String> getHttpAuthTypeMap() {
-        return httpAuthTypeMap;
     }
 }

@@ -14,7 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+<<<<<<<< HEAD:eventmesh-registry-plugin/build.gradle
+========
 
 dependencies {
-    implementation project(":eventmesh-runtime")
+    implementation project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
+    testImplementation project(":eventmesh-runtime"), project(":eventmesh-connector-rocketmq")
+    //testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
+>>>>>>>> e4cff57da85093ca7a917f7edd86fa434000d5dc:eventmesh-starter/build.gradle

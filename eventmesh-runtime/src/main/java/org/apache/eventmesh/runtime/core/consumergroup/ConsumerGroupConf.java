@@ -17,13 +17,12 @@
 
 package org.apache.eventmesh.runtime.core.consumergroup;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
 import com.google.common.collect.Maps;
 
-public class ConsumerGroupConf implements Serializable {
+public class ConsumerGroupConf {
     //eg . 5013-1A0
     private String consumerGroup;
 
@@ -51,16 +50,10 @@ public class ConsumerGroupConf implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         ConsumerGroupConf that = (ConsumerGroupConf) o;
-
-        return consumerGroup.equals(that.consumerGroup)
-                &&
+        return consumerGroup.equals(that.consumerGroup) &&
                 Objects.equals(consumerGroupTopicConf, that.consumerGroupTopicConf);
     }
 

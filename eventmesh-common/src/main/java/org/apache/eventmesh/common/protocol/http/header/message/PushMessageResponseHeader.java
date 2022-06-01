@@ -18,45 +18,45 @@
 package org.apache.eventmesh.common.protocol.http.header.message;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class PushMessageResponseHeader extends Header {
 
-    //response code
+    //响应码
     private int code;
 
-    //requester language description
+    //请求方语言描述
     private String language;
 
-    //protocol version adopted by requester, default:1.0
+    //请求方采用的协议版本, 默认1.0
     private ProtocolVersion version;
 
-    //the environment number of the requester
+    //请求方所在环境编号
     private String env;
 
-    //the IDC of the requester
+    //请求方所在IDC
     private String idc;
 
-    //subsystem of the requester
+    //请求方的子系统
     private String sys;
 
-    //PID of the requester
+    //请求方的进程号
     private String pid;
 
-    //IP of the requester
+    //请求方的IP
     private String ip;
 
-    //USERNAME of the requester
-    private String username;
+    //请求方的USERNAME
+    private String username = "username";
 
-    //PASSWD of the requester
-    private String passwd;
+    //请求方的PASSWD
+    private String passwd = "user@123";
 
     public String getUsername() {
         return username;

@@ -17,35 +17,26 @@
 
 package org.apache.eventmesh.runtime.core.plugin;
 
-import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.api.EventListener;
-import org.apache.eventmesh.api.consumer.Consumer;
-import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
-
 import java.util.List;
 import java.util.Properties;
+import java.util.ServiceLoader;
 
+import io.openmessaging.api.AsyncMessageListener;
+import io.openmessaging.api.Message;
+
+import org.apache.eventmesh.api.AbstractContext;
+import org.apache.eventmesh.api.consumer.MeshMQPushConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.cloudevents.CloudEvent;
-
 public class MQConsumerWrapper extends MQWrapper {
 
-    public final Logger logger = LoggerFactory.getLogger(this.getClass());
+    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected Consumer meshMQPushConsumer;
+    protected MeshMQPushConsumer meshMQPushConsumer;
 
-    public MQConsumerWrapper(String connectorPluginType) {
-        this.meshMQPushConsumer = ConnectorPluginFactory.getMeshMQPushConsumer(connectorPluginType);
-        if (meshMQPushConsumer == null) {
-            logger.error("can't load the meshMQPushConsumer plugin, please check.");
-            throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
-        }
-    }
-
-    public void subscribe(String topic) throws Exception {
-        meshMQPushConsumer.subscribe(topic);
+    public void subscribe(String topic, AsyncMessageListener listener) throws Exception {
+        meshMQPushConsumer.subscribe(topic, listener);
     }
 
     public void unsubscribe(String topic) throws Exception {
@@ -53,9 +44,22 @@ public class MQConsumerWrapper extends MQWrapper {
     }
 
     public synchronized void init(Properties keyValue) throws Exception {
+        meshMQPushConsumer = getMeshMQPushConsumer();
+        if (meshMQPushConsumer == null) {
+            logger.error("can't load the meshMQPushConsumer plugin, please check.");
+            throw new RuntimeException("doesn't load the meshMQPushConsumer plugin, please check.");
+        }
 
         meshMQPushConsumer.init(keyValue);
         inited.compareAndSet(false, true);
+    }
+
+    private MeshMQPushConsumer getMeshMQPushConsumer() {
+        ServiceLoader<MeshMQPushConsumer> meshMQPushConsumerServiceLoader = ServiceLoader.load(MeshMQPushConsumer.class);
+        if (meshMQPushConsumerServiceLoader.iterator().hasNext()) {
+            return meshMQPushConsumerServiceLoader.iterator().next();
+        }
+        return null;
     }
 
     public synchronized void start() throws Exception {
@@ -69,11 +73,11 @@ public class MQConsumerWrapper extends MQWrapper {
         started.compareAndSet(false, true);
     }
 
-    public void registerEventListener(EventListener listener) {
-        meshMQPushConsumer.registerEventListener(listener);
-    }
+//    public void registerMessageListener(MessageListenerConcurrently messageListenerConcurrently) {
+//        meshMQPushConsumer.registerMessageListener(messageListenerConcurrently);
+//    }
 
-    public void updateOffset(List<CloudEvent> events, AbstractContext eventMeshConsumeConcurrentlyContext) {
-        meshMQPushConsumer.updateOffset(events, eventMeshConsumeConcurrentlyContext);
+    public void updateOffset(List<Message> msgs, AbstractContext eventMeshConsumeConcurrentlyContext) {
+        meshMQPushConsumer.updateOffset(msgs, eventMeshConsumeConcurrentlyContext);
     }
 }

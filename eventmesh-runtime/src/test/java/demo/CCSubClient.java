@@ -1,0 +1,72 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.eventmesh.runtime.demo;
+
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+import org.apache.eventmesh.runtime.client.common.MessageUtils;
+import org.apache.eventmesh.runtime.client.common.UserAgentUtils;
+import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
+import org.apache.eventmesh.runtime.client.impl.SubClientImpl;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.netty.channel.ChannelHandlerContext;
+<<<<<<<< HEAD:eventmesh-runtime/src/test/java/org/apache/eventmesh/runtime/demo/CCSubClient.java
+========
+
+import org.apache.eventmesh.common.protocol.SubcriptionType;
+import org.apache.eventmesh.common.protocol.tcp.Command;
+import org.apache.eventmesh.common.protocol.tcp.Package;
+
+import client.common.MessageUtils;
+import client.common.UserAgentUtils;
+import client.hook.ReceiveMsgHook;
+import client.impl.SubClientImpl;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+>>>>>>>> e4cff57da85093ca7a917f7edd86fa434000d5dc:eventmesh-runtime/src/test/java/demo/CCSubClient.java
+
+public class CCSubClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(CCSubClient.class);
+
+    public static void main(String[] args) throws Exception {
+        SubClientImpl subClient = new SubClientImpl("127.0.0.1", 10000, UserAgentUtils.createUserAgent());
+        subClient.init();
+        subClient.heartbeat();
+        subClient.listen();
+<<<<<<<< HEAD:eventmesh-runtime/src/test/java/org/apache/eventmesh/runtime/demo/CCSubClient.java
+        subClient.justSubscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubscriptionType.SYNC);
+========
+        subClient.justSubscribe("TEST-TOPIC-TCP-SYNC", SubscriptionMode.CLUSTERING, SubcriptionType.SYNC);
+>>>>>>>> e4cff57da85093ca7a917f7edd86fa434000d5dc:eventmesh-runtime/src/test/java/demo/CCSubClient.java
+        subClient.registerBusiHandler(new ReceiveMsgHook() {
+            @Override
+            public void handle(Package msg, ChannelHandlerContext ctx) {
+                logger.error("Received message: -----------------------------------------" + msg.toString());
+                if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
+                    Package rrResponse = MessageUtils.rrResponse(msg);
+                    ctx.writeAndFlush(rrResponse);
+                }
+            }
+        });
+    }
+}

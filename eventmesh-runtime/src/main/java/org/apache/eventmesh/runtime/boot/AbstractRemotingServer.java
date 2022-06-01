@@ -17,16 +17,15 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import org.apache.eventmesh.common.utils.ThreadUtils;
-
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+
+import org.apache.eventmesh.common.ThreadUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractRemotingServer {
 
@@ -68,7 +67,7 @@ public abstract class AbstractRemotingServer {
         return ioGroup;
     }
 
-    private EventLoopGroup initWorkerGroup(String threadPrefix) {
+    private EventLoopGroup initWokerGroup(String threadPrefix) {
         workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), new ThreadFactory() {
             AtomicInteger count = new AtomicInteger(0);
 
@@ -84,7 +83,7 @@ public abstract class AbstractRemotingServer {
     public void init(String threadPrefix) throws Exception {
         initBossGroup(threadPrefix);
         initIOGroup(threadPrefix);
-        initWorkerGroup(threadPrefix);
+        initWokerGroup(threadPrefix);
     }
 
     public void shutdown() throws Exception {
@@ -93,7 +92,7 @@ public abstract class AbstractRemotingServer {
             logger.info("shutdown bossGroup");
         }
 
-        ThreadUtils.randomSleep(30);
+        ThreadUtil.randomSleep(30);
 
         if (ioGroup != null) {
             ioGroup.shutdownGracefully();
