@@ -47,9 +47,9 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     private ManagedChannel channel;
 
-    private PublisherServiceBlockingStub publisherClient;
+    PublisherServiceBlockingStub publisherClient;
 
-    private CloudEventProducer cloudEventProducer;
+    CloudEventProducer cloudEventProducer;
 
     public EventMeshGrpcProducer(EventMeshGrpcClientConfig clientConfig) {
         this.clientConfig = clientConfig;
@@ -77,6 +77,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> Response publish(List<T> messageList) {
         logger.info("BatchPublish message " + messageList.toString());
 
@@ -125,6 +126,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
         }
     }
 
+    @Override
     public void close() {
         channel.shutdown();
     }

@@ -101,14 +101,6 @@ public class HelloTask extends AbstractTask {
             throw new Exception("client version cannot be null");
         }
 
-        //if (user.getUsername() == null) {
-        //    throw new Exception("client EventMeshUser cannot be null");
-        //}
-        //
-        //if (user.getPassword() == null) {
-        //    throw new Exception("client EventMeshPasswd cannot be null");
-        //}
-
         if (!(StringUtils.equals(EventMeshConstants.PURPOSE_PUB, user.getPurpose()) || StringUtils.equals(
                 EventMeshConstants.PURPOSE_SUB, user.getPurpose()))) {
 

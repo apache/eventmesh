@@ -43,7 +43,7 @@ body:
       description: Describe the environment.
       options:
         - Mac
-        - Window
+        - Windows
         - Linux
         - Other
     validations:
@@ -55,6 +55,7 @@ body:
       description: Describe the EventMesh version.
       options:
         - master
+        - 1.4.0
         - 1.3.0
         - 1.2.0
         - Other

@@ -1,84 +1,87 @@
+<div align="center">
+
+<br /><br />
+<img src="docs/images/logo.png" width="256">
+<br />
+
+[![CI status](https://img.shields.io/github/workflow/status/apache/incubator-eventmesh/Continuous%20Integration?logo=github&style=for-the-badge)](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml)
+[![CodeCov](https://img.shields.io/codecov/c/gh/apache/incubator-eventmesh/master?logo=codecov&style=for-the-badge)](https://codecov.io/gh/apache/incubator-eventmesh)
+[![Code Quality: Java](https://img.shields.io/lgtm/grade/java/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/apache/incubator-eventmesh/context:java)
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18&style=for-the-badge)](https://lgtm.com/projects/g/apache/incubator-eventmesh/alerts/)
+
+[![License](https://img.shields.io/github/license/apache/incubator-eventmesh?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0.html)
+[![GitHub Release](https://img.shields.io/github/v/release/apache/eventmesh?style=for-the-badge)](https://github.com/apache/incubator-eventmesh/releases)
+[![Slack Status](https://img.shields.io/badge/slack-join_chat-blue.svg?logo=slack&style=for-the-badge)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-16y1n77va-q~JepYy3RqpkygDYmQaQbw)
+
+[📦 Documentation](https://eventmesh.apache.org/docs/introduction) |
+[📔 Examples](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) |
+[⚙️ Roadmap](https://eventmesh.apache.org/docs/roadmap) |
+[🌐 简体中文](README.zh-CN.md)
+</div>
+
 # Apache EventMesh (Incubating)
 
-[![CI status](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml/badge.svg)](https://github.com/apache/incubator-eventmesh/actions/workflows/ci.yml)
-[![CodeCov](https://codecov.io/gh/apache/incubator-eventmesh/branch/develop/graph/badge.svg)](https://codecov.io/gh/apache/incubator-eventmesh)
-[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/context:java)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/apache/incubator-eventmesh.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/apache/incubator-eventmesh/alerts/)
-[![GitHub release](https://img.shields.io/badge/release-download-orange.svg)](https://github.com/apache/incubator-eventmesh/releases)
-[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-[![Slack Status](https://img.shields.io/badge/slack-join_chat-white.svg?logo=slack&style=social)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-11974dndy-cn3Aq638eleKwKPWP9tkLg)
+**Apache EventMesh (Incubating)** is a dynamic [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture) application [multi-runtime](https://en.wikipedia.org/wiki/Mecha) used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
-[点我查看中文版](README.zh-CN.md)
+## Features
 
-![logo](docs/images/logo2.png)
+### Multi-Runtime Architecture
 
-## What is EventMesh?
+![EventMesh Architecture](docs/images/eventmesh-architecture.png)
 
-EventMesh(incubating) is a dynamic event-driven application runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
+### Orchestration
 
-**Multi-runtime:**
-![architecture1](docs/images/eventmesh-arch3.png)
+![EventMesh Orchestration](docs/images/eventmesh-orchestration.png)
 
-**Orchestration:**
-![architecture1](docs/images/eventmesh-orchestration.png)
+### Data Mesh
 
-**Federation:**
-![architecture1](docs/images/eventmesh-federation.png)
+![EventMesh Data Mesh](docs/images/eventmesh-bridge.png)
 
-**Components:**
+## Components
 
-* **eventmesh-runtime** : an middleware to transmit events between event producers and consumers, support cloud native apps and microservices.
-* **eventmesh-sdk-java** : currently supports HTTP and TCP protocols.
-* **eventmesh-connector-plugin** : plugins for connect a middleware such as RocketMQ/Kafka/Redis/Pulsar etc.
-* **eventmesh-registry-plugin** : plugins for registry adapter, such as Nacos/Etcd.
-* **eventmesh-security-plugin** : plugins for security adpater, such as ACL/Authentication/Authorization.
-* **eventmesh-protocol-plugin** : plugins for protocol adapter, such as CloudEvents/MQTT.
-* **eventmesh-admin** : clients,topics,subscriptions and other management.
+Apache EventMesh (Incubating) consists of multiple components that integrate different middlewares and messaging protocols to enhance the functionalities of the application runtime.
 
-## Quick Start
-
-1. [Store quickstart](docs/en/instructions/eventmesh-store-quickstart.md)
-2. [Runtime quickstart](docs/en/instructions/eventmesh-runtime-quickstart.md) or [Runtime quickstart with docker](docs/en/instructions/eventmesh-runtime-quickstart-with-docker.md).
-3. [Java SDK examples](docs/en/instructions/eventmesh-sdk-java-quickstart.md).
-
-## Documentation
-
-See EventMesh [Documentation](docs/en/intro.md) for all documents.
-
-## Roadmap
-
-See EventMesh [Roadmap](docs/en/roadmap.md) for details.
+- **eventmesh-runtime**: The middleware that transmits events between producers and consumers, which supports cloud-native apps and microservices.
+- **eventmesh-sdk-java**: The Java SDK that supports HTTP, HTTPS, TCP, and [gRPC](https://grpc.io) protocols.
+- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache Kafka](https://kafka.apache.org), [Apache RocketMQ](https://rocketmq.apache.org), [Apache Pulsar](https://pulsar.apache.org/), [DeFiBus](https://github.com/webankfintech/DeFiBus) and [Redis](https://redis.io).
+- **eventmesh-registry-plugin**: The collection of plugins that integrate service registries such as [Nacos](https://nacos.io) and [etcd](https://etcd.io).
+- **eventmesh-security-plugin**: The collection of plugins that implement security mechanisms, such as ACL (access control list), authentication, and authorization.
+- **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io) and [MQTT](https://mqtt.org).
+- **eventmesh-admin**: The control plane that manages clients, topics, and subscriptions.
 
 ## Contributing
 
-Contributions are always welcomed! Please see [CONTRIBUTING](CONTRIBUTING.md) for detailed guidelines.
+Each contributor has played an important role in promoting the robust development of Apache EventMesh (Incubating). We sincerely appreciate all contributors who have contributed code and documents.
 
-You can start with the issues labeled with good first issue.
-[GitHub Issues](https://github.com/apache/incubator-eventmesh/issues)
+- [Contributing Guideline](https://eventmesh.apache.org/docs/contribute/contribute)
+- [List of Contributors](https://github.com/apache/incubator-eventmesh/graphs/contributors)
+- [Good First Issues](https://github.com/apache/incubator-eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 
-## Landscape
+## CNCF Landscape
 
-<p align="center">
-<br/><br/>
-<img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>&nbsp;&nbsp;<img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
-<br/><br/>
-EventMesh enriches the <a href="https://landscape.cncf.io/serverless?license=apache-license-2-0">CNCF CLOUD NATIVE Landscape.</a>
-</p>
+<div align="center">
+
+<img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>
+<img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
+
+Apache EventMesh (Incubating) enriches the <a href="https://landscape.cncf.io/serverless?license=apache-license-2-0">CNCF Cloud Native Landscape.</a>
+
+</div>
 
 ## License
 
-[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) Copyright (C) Apache Software Foundation.
+Apache EventMesh (Incubating) is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 ## Community
 
-|              WeChat Assistant                           |                WeChat public account                   | Slack                                                  |
-| :----------------------------------------------------:  | :----------------------------------------------------: | :----------------------------------------------------: |
-| ![wechat_qr](docs/images/mesh-helper.jpg) | ![wechat_official_qr](docs/images/wechat-official.png) |[Join slack chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-11974dndy-cn3Aq638eleKwKPWP9tkLg) |
+|WeChat Assistant|WeChat Official Account|Slack|
+|-|-|-|
+|<img src="docs/images/contact/wechat-assistant.jpg" width="128"/>|<img src="docs/images/contact/wechat-official.jpg" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-16y1n77va-q~JepYy3RqpkygDYmQaQbw)|
 
-Mailing Lists:
+### Mailing List
 
-| Name | Description |Subscribe |Unsubscribe|Archive
-| ----    | ----    |----    | ----    | ----    |
-|Users |User support and questions mailing list| [Subscribe](mailto:users-subscribe@eventmesh.incubator.apache.org) |[Unsubscribe](mailto:users-unsubscribe@eventmesh.incubator.apache.org) |[Mail Archives](https://lists.apache.org/list.html?users@eventmesh.apache.org)|
-|Development |Development related discussions| [Subscribe](mailto:dev-subscribe@eventmesh.incubator.apache.org) |[Unsubscribe](mailto:dev-unsubscribe@eventmesh.incubator.apache.org) |[Mail Archives](https://lists.apache.org/list.html?dev@eventmesh.apache.org)|
-|Commits |All commits to repositories| [Subscribe](mailto:commits-subscribe@eventmesh.incubator.apache.org) |[Unsubscribe](mailto:commits-unsubscribe@eventmesh.incubator.apache.org) |[Mail Archives](https://lists.apache.org/list.html?commits@eventmesh.apache.org)|
+|Name|Description|Subscribe|Unsubscribe|Archive
+|-|-|-|-|-|
+|Users|User discussion|[Subscribe](mailto:users-subscribe@eventmesh.incubator.apache.org)|[Unsubscribe](mailto:users-unsubscribe@eventmesh.incubator.apache.org)|[Mail Archives](https://lists.apache.org/list.html?users@eventmesh.apache.org)|
+|Development|Development discussion (Design Documents, Issues, etc.)|[Subscribe](mailto:dev-subscribe@eventmesh.incubator.apache.org)|[Unsubscribe](mailto:dev-unsubscribe@eventmesh.incubator.apache.org)|[Mail Archives](https://lists.apache.org/list.html?dev@eventmesh.apache.org)|
+|Commits|Commits to related repositories| [Subscribe](mailto:commits-subscribe@eventmesh.incubator.apache.org) |[Unsubscribe](mailto:commits-unsubscribe@eventmesh.incubator.apache.org) |[Mail Archives](https://lists.apache.org/list.html?commits@eventmesh.apache.org)|

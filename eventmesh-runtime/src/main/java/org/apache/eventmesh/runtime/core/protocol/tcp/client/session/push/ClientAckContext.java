@@ -111,8 +111,6 @@ public class ClientAckContext {
     public void ackMsg() {
         if (consumer != null && context != null && events != null) {
             consumer.updateOffset(events, context);
-            //ConsumeMessageService consumeMessageService = consumer..getDefaultMQPushConsumerImpl().getConsumeMessageService();
-            //((ConsumeMessageConcurrentlyService)consumeMessageService).updateOffset(msgs, context);
             logger.info("ackMsg topic:{}, bizSeq:{}", events.get(0).getSubject(), EventMeshUtil.getMessageBizSeq(events.get(0)));
         } else {
             logger.warn("ackMsg failed,consumer is null:{}, context is null:{} , msgs is null:{}",
