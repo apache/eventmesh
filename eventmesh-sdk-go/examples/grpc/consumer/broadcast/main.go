@@ -24,7 +24,7 @@ import (
 
 func main() {
 	cli, err := grpc.New(&conf.GRPCConfig{
-		Host:         "101.43.84.47",
+		Host:         "127.0.0.1",
 		Port:         10205,
 		ENV:          "go-grpc-test-env",
 		Region:       "sh",
@@ -58,7 +58,7 @@ func main() {
 		SubscribeMode: conf.BROADCASTING,
 		SubscribeType: conf.ASYNC,
 		Topic:         "grpc-broadcast-topic",
-	}, "")
+	}, "http://localhost:18080/onmessage")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
