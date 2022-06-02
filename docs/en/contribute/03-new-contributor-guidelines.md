@@ -20,7 +20,7 @@ For IDEA, you can import check style file by:
 
 If you can't see CheckStyle Configuration section under Import Scheme, you can install CheckStyle-IDEA plugin first, and you will see it.
 
-You can also use `./gradlew check` to check the code style.
+You can also use `./gradlew check` to check the code style.  
 (Note: this command will check all file in project, when you submit a pr, the ci will only check the file has been changed in this pr).
 
 ## Explanation
