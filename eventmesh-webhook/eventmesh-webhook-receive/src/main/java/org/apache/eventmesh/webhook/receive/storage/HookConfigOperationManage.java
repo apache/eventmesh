@@ -52,11 +52,11 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     private static final Integer TIMEOUT_MS = 3*1000;
 
     /**
-     * webhook 配置池 -> <CallbackPath,WebHookConfig>
+     * webhook config pool -> <CallbackPath,WebHookConfig>
      */
     private final Map<String, WebHookConfig> cacheWebHookConfig = new ConcurrentHashMap<>();
 
-    public HookConfigOperationManage() { //初始化 map
+    public HookConfigOperationManage() {
         try {
             filePatternInit(filePath);
         } catch (FileNotFoundException e) {
@@ -71,9 +71,6 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     }
 
     private void nacosPatternInit(String serverAddr) throws NacosException {
-        Properties properties = new Properties();
-
-        properties.put(PropertyKeyConst.SERVER_ADDR, serverAddr);
         configService = ConfigFactory.createConfigService(serverAddr);
     }
 
@@ -155,9 +152,9 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
             StandardWatchEventKinds.ENTRY_MODIFY,
             StandardWatchEventKinds.ENTRY_DELETE};
 
-    Set<String> pathSet = new LinkedHashSet<>(); // 需要监视的子目录
+    Set<String> pathSet = new LinkedHashSet<>(); // monitored subdirectory
 
-    Map<WatchKey, String> watchKeyPathMap = new HashMap<>(); //watchkey 对应的 path
+    Map<WatchKey, String> watchKeyPathMap = new HashMap<>(); //WatchKey's path
 
     public void fileWatch(String filePath) {
         ExecutorService cachedThreadPool = Executors.newFixedThreadPool(1);
@@ -165,7 +162,6 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
             File root = new File(filePath);
             loopDir(root, pathSet);
 
-            //获取当前文件系统的监控对象
             WatchService service = null;
             try {
                 service = FileSystems.getDefault().newWatchService();
@@ -173,7 +169,7 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
                 logger.error("getWatchService failed", e);
             }
 
-            for (String path : pathSet) { //注册监听
+            for (String path : pathSet) {
                 WatchKey key = null;
                 try {
                     key = Paths.get(path).register(service, kinds);
@@ -195,7 +191,7 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
                 assert key != null;
                 for (WatchEvent<?> event : key.pollEvents()) {
                     String flashPath = watchKeyPathMap.get(key);
-                    //厂商变更
+                    //manufacturer change
                     if (flashPath.equals(filePath)) {
                         if (StandardWatchEventKinds.ENTRY_CREATE == event.kind()) {
                             try {
@@ -205,7 +201,7 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
                             }
                             watchKeyPathMap.put(key, filePath + event.context());
                         }
-                    } else { //配置变更
+                    } else { //config change
                         cacheInit(new File(flashPath + event.context()));
                     }
                 }
