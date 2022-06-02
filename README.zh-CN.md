@@ -44,10 +44,13 @@
 - **eventmesh-runtime**: 在生产者和消费者之间传输事件的中间件，它支持云原生应用程序和微服务。
 - **eventmesh-sdk-java**: 支持HTTP、HTTPS、TCP和[gRPC](https://grpc.io)协议的Java SDK。
 - **eventmesh-connector-plugin**: 连接[Apache Kafka](https://kafka.apache.org)、[Apache RocketMQ](https://rocketmq.apache.org)、[Apache Pulsar](https://pulsar.apache.org/)、[DeFiBus](https://github.com/webankfintech/DeFiBus)和[Redis](https://redis.io)等中间件的插件集合。
-- **eventmesh-registry-plugin**: The collection of plugins that integrate service registries such as [Nacos](https://nacos.io) and [etcd](https://etcd.io).
-- **eventmesh-security-plugin**: The collection of plugins that implement security mechanisms, such as ACL (access control list), authentication, and authorization.
-- **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io) and [MQTT](https://mqtt.org).
-- **eventmesh-admin**: The control plane that manages clients, topics, and subscriptions.
+- **eventmesh-registry-plugin**: 集成服务注册表的插件集合，如[Nacos](https://nacos.io)和[etcd](https://etcd.io)。
+
+- **eventmesh-security-plugin**: 实现安全机制的插件的集合，如ACL（访问控制列表）、认证和授权。
+
+- **eventmesh-protocol-plugin**: 实现消息传递协议的插件集合，如[CloudEvents](https://cloudevents.io)和[MQTT](https://mqtt.org)。
+
+- **eventmesh-admin**: 客户端管理、主题管理、订阅管理和其他管理。
 
 ## 贡献这个项目
 
