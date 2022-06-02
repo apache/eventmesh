@@ -108,7 +108,7 @@ git rebase upstream_develop
 
 - If your change is about a typo or small optimize, you needn't create an Issue, just submit a PR and title with [MINOR].
 
-[Note]:
+**Note:**
 
  - A single pull request should not be too large. If heavy changes are required, it's better to separate the changes to a few individual PRs.
  
