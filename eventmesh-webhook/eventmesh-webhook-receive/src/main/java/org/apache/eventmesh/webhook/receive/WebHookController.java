@@ -33,12 +33,12 @@ public class WebHookController {
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
-     * 协议池
+     * protocol pool
      */
     private final ProtocolManage protocolManage = new ProtocolManage();
 
     /**
-     * 配置池
+     * config pool
      */
     private final HookConfigOperationManage hookConfigOperationManage;
 
@@ -48,21 +48,21 @@ public class WebHookController {
 
 
     /**
-     * 1. 通过 path 获得 webhookConfig
-     * 2. 获得对应的厂商的处理对象 , 并解析协议
-     * 3. 通过 WebHookConfig 和 WebHookRequest 获得 cloudEvent 协议对象
+     * 1. get webhookConfig from path
+     * 2. get ManufacturerProtocol and execute
+     * 3. convert to cloudEvent obj
      *
      * @param path   CallbackPath
-     * @param header 需要把请求头信息重写到 map 里面
+     * @param header map of webhook request header
      * @param body   data
      */
     public void execute(String path, Map<String, String> header, byte[] body) {
-        // 1. 通过 path 获得 webhookConfig
+        // 1. get webhookConfig from path
         WebHookConfig webHookConfig = new WebHookConfig();
         webHookConfig.setCallbackPath(path);
         webHookConfig = hookConfigOperationManage.queryWebHookConfigById(webHookConfig);
 
-        // 2. 获得对应的厂商的处理对象 , 并解析协议
+        // 2. get ManufacturerProtocol and execute
         String manufacturerName = webHookConfig.getManufacturerName();
         ManufacturerProtocol protocol = protocolManage.getManufacturerProtocol(manufacturerName);
         WebHookRequest webHookRequest = new WebHookRequest();
@@ -74,7 +74,7 @@ public class WebHookController {
             e.printStackTrace();
         }
 
-        // 3. 通过 WebHookConfig 和 WebHookRequest 获得 cloudEvent 协议对象
+        // 3. convert to cloudEvent obj
         String cloudEventId;
         if (webHookConfig.getCloudEventIdGenerateMode().equals("uuid")) {
             cloudEventId = UUID.randomUUID().toString();
@@ -83,12 +83,12 @@ public class WebHookController {
         }
         String eventType = manufacturerName + "." + webHookConfig.getManufacturerEventName();
         CloudEvent event = CloudEventBuilder.v1()
-                .withId(cloudEventId) // 事件id
-                .withSubject(webHookConfig.getCloudEventName()) // 事件主题
-                .withSource(URI.create(webHookConfig.getCloudEventSource())) //事件源 uri
-                .withDataContentType(webHookConfig.getDataContentType()) //转出数据格式
-                .withType(eventType) //事件类型
-                .withData(body) //数据
+                .withId(cloudEventId)
+                .withSubject(webHookConfig.getCloudEventName())
+                .withSource(URI.create(webHookConfig.getCloudEventSource()))
+                .withDataContentType(webHookConfig.getDataContentType())
+                .withType(eventType)
+                .withData(body)
                 .build();
     }
 

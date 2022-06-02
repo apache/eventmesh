@@ -22,22 +22,17 @@ import org.apache.eventmesh.webhook.api.WebHookConfig;
 
 public interface ManufacturerProtocol {
 
-    /**
-     * 获取厂商名
-     *
-     * @return 厂商名，如 github
-     */
     public String getManufacturerName();
 
 
     /**
-     * - 1.认证
-     * - 2.解析内容：将 请求数据 转换为 WebHookRequest
+     * - 1.authentication
+     * - 2.parse webhook content to WebHookRequest
      *
-     * @param webHookRequest 要转换的请求
-     * @param webHookConfig  对应的配置
-     * @param header         webhook 请求头
-     * @throws Exception 认证失败，或 协议解析失败，抛出异常
+     * @param webHookRequest formatted data
+     * @param webHookConfig  webhook config
+     * @param header         webhook content header
+     * @throws Exception authenticate failed ,or content parse failed
      */
     public void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) throws Exception;
 }
