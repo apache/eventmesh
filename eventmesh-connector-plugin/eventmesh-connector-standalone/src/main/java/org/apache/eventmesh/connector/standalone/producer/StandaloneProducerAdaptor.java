@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.standalone.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.producer.Producer;
 
 import java.util.Properties;
@@ -59,11 +58,6 @@ public class StandaloneProducerAdaptor implements Producer {
     }
 
     @Override
-    public SendResult publish(CloudEvent cloudEvent) {
-        return standaloneProducer.publish(cloudEvent);
-    }
-
-    @Override
     public void publish(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
         standaloneProducer.publish(cloudEvent, sendCallback);
     }
@@ -71,11 +65,6 @@ public class StandaloneProducerAdaptor implements Producer {
     @Override
     public void sendOneway(CloudEvent cloudEvent) {
         standaloneProducer.sendOneway(cloudEvent);
-    }
-
-    @Override
-    public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
-        standaloneProducer.sendAsync(cloudEvent, sendCallback);
     }
 
     @Override

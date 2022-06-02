@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.rocketmq.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
@@ -84,11 +83,6 @@ public class RocketMQProducerImpl implements Producer {
     }
 
     @Override
-    public SendResult publish(CloudEvent message) {
-        return producer.send(message);
-    }
-
-    @Override
     public void request(CloudEvent message, RequestReplyCallback rrCallback, long timeout)
             throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         producer.request(message, rrCallback, timeout);
@@ -116,11 +110,4 @@ public class RocketMQProducerImpl implements Producer {
     public void sendOneway(CloudEvent message) {
         producer.sendOneway(message);
     }
-
-    @Override
-    public void sendAsync(CloudEvent message, SendCallback sendCallback) {
-        producer.sendAsync(message, sendCallback);
-    }
-
-
 }
