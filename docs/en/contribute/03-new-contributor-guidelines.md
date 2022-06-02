@@ -15,6 +15,20 @@ So fork the original EventMesh repository into your own repository.
 
 - We recommend that you create a new branch in your repository for development and submit the branch to the master branch of eventmesh.
 
+## Contribution Categories
+
+### Bug feedback or bug fixes
+
+- Whether it's a bug feedback or a fix, an issue needs to be created first to describe the bug in detail, so that the community can easily find and view the problem and code through the issue record. bug feedback issues usually need to contain a complete description of the bug information and reproducible scenarios.
+
+### Implementation of functions, refactoring
+
+- If you plan to implement a new feature (or refactoring), be sure to communicate with the eventmesh core development team via an Issue or other means, and describe the new feature (or refactoring), mechanism and scenario in detail during the communication process.
+
+### Documentation Improvement
+
+- You can find the eventmesh documentation at [evenmesh-docs](https://github.com/apache/incubator-eventmesh/tree/master/docs), and the documentation is supplemented or improved in a way that is also essential for eventmesh.
+
 ## Contribution method
 
 There are two ways for new contributors to contribute to the eventmesh community:
