@@ -14,10 +14,6 @@ sidebar_position: 0
 
 **Apache EventMesh (Incubating)** is a dynamic event-driven application runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
-## What is EventMesh
-
-[EventMesh](https://solace.com/what-is-an-event-mesh) is an architecture layer that provides dynamic distribution of events, thus event consumers could receive events from any event producer, no matter where the producer and consumer are attached to the mesh, without the need for configuration of event routing. It is enabled by a network of interconnected [event brokers](https://solace.com/what-is-an-event-broker/) and bridges applications and services in an [event-driven architecture](https://en.wikipedia.org/wiki/Event-driven_architecture).
-
 ## Features
 
 - **Communication Protocol**: EventMesh could communicate with clients with TCP, HTTP, or gRPC.
