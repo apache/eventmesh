@@ -11,7 +11,7 @@ If you are a new contributor who wants to contribute to the eventmesh community,
 
 ### Code Style
 
-Import [EventMesh CheckStyle](./style/checkStyle.xml) file to your IDEA.
+Import [EventMesh CheckStyle](https://github.com/apache/incubator-eventmesh/blob/master/style/checkStyle.xml) file to your IDEA.
 
 For IDEA, you can import check style file by:
 ```shell
@@ -120,7 +120,7 @@ git rebase upstream_develop
 
 All code should be well reviewed by one or more committers. Some principles:
 
-- Readability: Important code should be well-documented. Comply with our [code style](./style/checkStyle.xml).
+- Readability: Important code should be well-documented. Comply with our [code style](https://github.com/apache/incubator-eventmesh/blob/master/style/checkStyle.xml).
   
 - Elegance: New functions, classes or components should be well-designed.
   
