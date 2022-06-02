@@ -19,7 +19,7 @@
 [🌐 简体中文](README.zh-CN.md)
 </div>
 
-# Apache EventMesh (孵化期)
+# Apache EventMesh (Incubating)
 
 **Apache EventMesh (Incubating)** 是一个用于解耦应用和后端中间件层的的动态云原生[事件驱动](https://en.wikipedia.org/wiki/Event-driven_architecture)架构基础设施。它支持广泛的用例，包括复杂的混合云、使用了不同技术栈的分布式架构。
 
