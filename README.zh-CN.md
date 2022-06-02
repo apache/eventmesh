@@ -79,8 +79,8 @@ Apache EventMesh (Incubating) is licensed under the [Apache License, Version 2.0
 
 ### 邮件名单
 
-|列表名称|描述|点击订阅|点击取消订阅|邮件列表存档
-|-|-|-|-|-|
-|用户|用户支持与用户问题|[点击订阅](mailto:users-点击订阅@eventmesh.incubator.apache.org)|[点击取消订阅](mailto:users-点击取消订阅@eventmesh.incubator.apache.org)|[邮件列表存档](https://lists.apache.org/list.html?users@eventmesh.apache.org)|
-|开发|有关开发的讨论，例如设计文件，Issues|[点击订阅](mailto:dev-点击订阅@eventmesh.incubator.apache.org)|[点击取消订阅](mailto:dev-点击取消订阅@eventmesh.incubator.apache.org)|[邮件列表存档](https://lists.apache.org/list.html?dev@eventmesh.apache.org)|
-|Commits|相关的Commits| [点击订阅](mailto:commits-点击订阅@eventmesh.incubator.apache.org) |[点击取消订阅](mailto:commits-点击取消订阅@eventmesh.incubator.apache.org) |[邮件列表存档](https://lists.apache.org/list.html?commits@eventmesh.apache.org)|
+| 列表名称 | 描述 |订阅 |取消订阅|邮件列表存档
+| ----    | ----    |----    | ----    | ----    |
+|用户 |用户支持与用户问题| [点击订阅](mailto:users-subscribe@eventmesh.incubator.apache.org) |[点击取消订阅](mailto:users-unsubscribe@eventmesh.incubator.apache.org) |[邮件列表存档](https://lists.apache.org/list.html?users@eventmesh.apache.org)|
+|开发 |开发相关| [点击订阅](mailto:dev-subscribe@eventmesh.incubator.apache.org) |[点击取消订阅](mailto:dev-unsubscribe@eventmesh.incubator.apache.org) |[邮件列表存档](https://lists.apache.org/list.html?dev@eventmesh.apache.org)|
+|Commits |所有与仓库相关的commits信息通知| [点击订阅](mailto:commits-subscribe@eventmesh.incubator.apache.org) |[点击取消订阅](mailto:commits-unsubscribe@eventmesh.incubator.apache.org) |[邮件列表存档](https://lists.apache.org/list.html?commits@eventmesh.apache.org)|
