@@ -17,12 +17,12 @@
 
 package org.apache.eventmesh.registry.consul.service;
 
-import com.ecwid.consul.v1.ConsulClient;
-import com.ecwid.consul.v1.ConsulRawClient;
-import com.ecwid.consul.v1.agent.model.NewService;
-import com.ecwid.consul.v1.agent.model.Service;
-import com.ecwid.consul.v1.health.HealthServicesRequest;
-import org.apache.commons.lang3.StringUtils;
+import static org.apache.eventmesh.registry.consul.constant.ConsulConstant.DEFAULT_CONNECTION_TIMEOUT;
+import static org.apache.eventmesh.registry.consul.constant.ConsulConstant.DEFAULT_MAX_CONNECTIONS;
+import static org.apache.eventmesh.registry.consul.constant.ConsulConstant.DEFAULT_MAX_PER_ROUTE_CONNECTIONS;
+import static org.apache.eventmesh.registry.consul.constant.ConsulConstant.DEFAULT_READ_TIMEOUT;
+import static org.apache.eventmesh.registry.consul.constant.ConsulConstant.IP_PORT_SEPARATOR;
+
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
@@ -30,12 +30,12 @@ import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,7 +43,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.eventmesh.registry.consul.constant.ConsulConstant.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.ecwid.consul.v1.ConsulClient;
+import com.ecwid.consul.v1.ConsulRawClient;
+import com.ecwid.consul.v1.agent.model.NewService;
+import com.ecwid.consul.v1.agent.model.Service;
+import com.ecwid.consul.v1.health.HealthServicesRequest;
 
 public class ConsulRegistryService implements RegistryService {
 
@@ -129,13 +136,14 @@ public class ConsulRegistryService implements RegistryService {
         List<EventMeshDataInfo> eventMeshDataInfos = new ArrayList<>();
         agentServices.forEach((k, v) -> {
             String[] split = v.getId().split("-");
-            eventMeshDataInfos.add(new EventMeshDataInfo(split[0], split[1], v.getAddress() + ":" + v.getPort(),0));
+            eventMeshDataInfos.add(new EventMeshDataInfo(split[0], split[1], v.getAddress() + ":" + v.getPort(), 0));
         });
         return eventMeshDataInfos;
     }
 
     @Override
-    public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose) throws RegistryException {
+    public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose)
+        throws RegistryException {
         return Collections.emptyMap();
     }
 
@@ -146,15 +154,15 @@ public class ConsulRegistryService implements RegistryService {
         connectionManager.setDefaultMaxPerRoute(DEFAULT_MAX_PER_ROUTE_CONNECTIONS);
 
         RequestConfig requestConfig = RequestConfig.custom().
-                setConnectTimeout(DEFAULT_CONNECTION_TIMEOUT).
-                setConnectionRequestTimeout(DEFAULT_CONNECTION_TIMEOUT).
-                setSocketTimeout(DEFAULT_READ_TIMEOUT).
-                build();
+            setConnectTimeout(DEFAULT_CONNECTION_TIMEOUT).
+            setConnectionRequestTimeout(DEFAULT_CONNECTION_TIMEOUT).
+            setSocketTimeout(DEFAULT_READ_TIMEOUT).
+            build();
 
         HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().
-                setConnectionManager(connectionManager).
-                setDefaultRequestConfig(requestConfig).
-                useSystemProperties();
+            setConnectionManager(connectionManager).
+            setDefaultRequestConfig(requestConfig).
+            useSystemProperties();
 
         return httpClientBuilder.build();
     }
