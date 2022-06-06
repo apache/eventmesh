@@ -21,6 +21,10 @@ import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.registry.consul.service.ConsulRegistryService;
+
+import java.lang.reflect.Field;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,9 +33,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.lang.reflect.Field;
-import java.util.List;
 
 /**
  * @author huyuanxin
@@ -105,7 +106,7 @@ public class ConsulRegistryServiceTest {
         consulRegistryService.start();
         consulRegistryService.register(eventMeshRegisterInfo);
         List<EventMeshDataInfo> eventmesh = consulRegistryService.findEventMeshInfoByCluster("eventmesh");
-        Assert.assertEquals(1,eventmesh.size());
+        Assert.assertEquals(1, eventmesh.size());
     }
 
     @Test
@@ -114,7 +115,7 @@ public class ConsulRegistryServiceTest {
         consulRegistryService.start();
         consulRegistryService.unRegister(eventMeshUnRegisterInfo);
         List<EventMeshDataInfo> eventmesh = consulRegistryService.findEventMeshInfoByCluster("eventmesh");
-        Assert.assertEquals(0,eventmesh.size());
+        Assert.assertEquals(0, eventmesh.size());
     }
 
     @Test
@@ -123,7 +124,7 @@ public class ConsulRegistryServiceTest {
         consulRegistryService.start();
         consulRegistryService.register(eventMeshRegisterInfo);
         List<EventMeshDataInfo> eventmesh = consulRegistryService.findEventMeshInfoByCluster("eventmesh");
-        Assert.assertEquals(1,eventmesh.size());
+        Assert.assertEquals(1, eventmesh.size());
         consulRegistryService.unRegister(eventMeshUnRegisterInfo);
     }
 }
