@@ -23,6 +23,35 @@ If you can't see CheckStyle Configuration section under Import Scheme, you can i
 You can also use `./gradlew check` to check the code style.  
 (Note: this command will check all file in project, when you submit a pr, the ci will only check the file has been changed in this pr).
 
+### Workflow
+
+Here are the workflow for contributors:
+
+1. Fork to your own
+
+2. Clone fork to local repository
+```git
+git clone git@github.com:yourgithub/incubator-eventmesh.git
+```
+
+3. Create a new branch and work on it
+```git
+git checkout -b fix_patch_xx
+```
+
+4. Keep your branch in sync
+```git
+git remote add upstream git@github.com:apache/incubator-eventmesh.git
+git fetch upstream develop:upstream_develop
+git rebase upstream_develop
+```
+
+5. Commit your changes (make sure your commit message concise)
+
+6. Push your commits to your forked repository
+
+7. Create a pull request
+
 ## Explanation
 
 The original warehouse: https://github.com/apache/incubator-eventmesh The apache warehouse of eventmesh is called the original warehouse in the text.
@@ -58,35 +87,6 @@ There are two ways for new contributors to contribute to the eventmesh community
 - If you find a bug in the eventmesh code that you want to fix, or if you provide a new feature for the eventmesh, submit an issue in the eventmesh and submit a pr to the eventmesh.
 
 - Other contributors in the eventmesh community have raised issues, the [`issue for first-time contributors`](https://github.com/apache/incubator-eventmesh/issues/888) sorted out by the community here are relatively simple PR, which can help you familiarize yourself with the process of making contributions to the eventmesh community.
-
-## Workflow
-
-Here are the workflow for contributors:
-
-1. Fork to your own
-   
-2. Clone fork to local repository
-```git
-git clone git@github.com:yourgithub/incubator-eventmesh.git
-```
-
-3. Create a new branch and work on it
-```git
-git checkout -b fix_patch_xx
-```
-
-4. Keep your branch in sync
-```git
-git remote add upstream git@github.com:apache/incubator-eventmesh.git
-git fetch upstream develop:upstream_develop
-git rebase upstream_develop
-```
-
-5. Commit your changes (make sure your commit message concise)
-   
-6. Push your commits to your forked repository
-   
-7. Create a pull request
 
 ## Submit issue guidelines
 
