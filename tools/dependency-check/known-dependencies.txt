@@ -132,3 +132,4 @@ snakeyaml-1.30.jar
 bcpkix-jdk15on-1.69.jar
 bcprov-jdk15on-1.69.jar
 bcutil-jdk15on-1.69.jar
+consul-api-1.4.5.jar
