@@ -153,16 +153,17 @@ public class ConsulRegistryService implements RegistryService {
         connectionManager.setMaxTotal(DEFAULT_MAX_CONNECTIONS);
         connectionManager.setDefaultMaxPerRoute(DEFAULT_MAX_PER_ROUTE_CONNECTIONS);
 
-        RequestConfig requestConfig = RequestConfig.custom().
-            setConnectTimeout(DEFAULT_CONNECTION_TIMEOUT).
-            setConnectionRequestTimeout(DEFAULT_CONNECTION_TIMEOUT).
-            setSocketTimeout(DEFAULT_READ_TIMEOUT).
-            build();
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setConnectTimeout(DEFAULT_CONNECTION_TIMEOUT)
+            .setConnectionRequestTimeout(DEFAULT_CONNECTION_TIMEOUT)
+            .setSocketTimeout(DEFAULT_READ_TIMEOUT)
+            .build();
 
-        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().
-            setConnectionManager(connectionManager).
-            setDefaultRequestConfig(requestConfig).
-            useSystemProperties();
+        HttpClientBuilder httpClientBuilder = HttpClientBuilder
+            .create()
+            .setConnectionManager(connectionManager)
+            .setDefaultRequestConfig(requestConfig)
+            .useSystemProperties();
 
         return httpClientBuilder.build();
     }
