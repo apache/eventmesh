@@ -253,7 +253,7 @@ func (d *eventMeshConsumer) SubscribeWithStream(item conf.SubscribeItem, handler
 		SubscriptionItems: []*proto.Subscription_SubscriptionItem{subItem},
 	}
 
-	log.Infof("success subscribe stream with topic:%s, resp:%s", item.Topic)
+	log.Infof("success subscribe stream with topic:%s", item.Topic)
 	return nil
 }
 
