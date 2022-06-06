@@ -34,9 +34,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-/**
- * @author huyuanxin
- */
 @RunWith(MockitoJUnitRunner.class)
 public class ConsulRegistryServiceTest {
 
