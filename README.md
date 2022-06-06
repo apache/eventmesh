@@ -53,7 +53,7 @@ Apache EventMesh (Incubating) consists of multiple components that integrate dif
 
 Each contributor has played an important role in promoting the robust development of Apache EventMesh (Incubating). We sincerely appreciate all contributors who have contributed code and documents.
 
-- [Contributing Guideline](https://eventmesh.apache.org/docs/contribute/contribute)
+- [Contributing Guideline](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/contribute/03-new-contributor-guidelines.md)
 - [List of Contributors](https://github.com/apache/incubator-eventmesh/graphs/contributors)
 - [Good First Issues](https://github.com/apache/incubator-eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 
