@@ -25,7 +25,7 @@ import (
 
 func main() {
 	cfg := &conf.GRPCConfig{
-		Host:         "101.43.84.47",
+		Host:         "127.0.0.1",
 		Port:         10205,
 		ENV:          "go-grpc-test-env",
 		Region:       "sh",

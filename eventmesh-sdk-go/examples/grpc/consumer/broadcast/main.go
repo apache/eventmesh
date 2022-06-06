@@ -19,8 +19,6 @@ import (
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
-	"io/ioutil"
-	"net/http"
 	"time"
 )
 
@@ -40,7 +38,7 @@ func main() {
 		},
 		ConsumerConfig: conf.ConsumerConfig{
 			Enabled:       true,
-			ConsumerGroup: "test-async-consumer-group-subscribe",
+			ConsumerGroup: "test-broadcast-consumer-group-subscribe",
 			PoolSize:      5,
 		},
 		HeartbeatConfig: conf.HeartbeatConfig{
@@ -57,21 +55,13 @@ func main() {
 		}
 	}()
 	err = cli.SubscribeWebhook(conf.SubscribeItem{
-		SubscribeMode: conf.CLUSTERING,
+		SubscribeMode: conf.BROADCASTING,
 		SubscribeType: conf.ASYNC,
-		Topic:         "async-sub-grpc-topic",
-	}, "http://localhost:8080/onmessage")
+		Topic:         "grpc-broadcast-topic",
+	}, "http://localhost:18080/onmessage")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	http.HandleFunc("/onmessage", func(writer http.ResponseWriter, request *http.Request) {
-		buf, err := ioutil.ReadAll(request.Body)
-		if err != nil {
-			return
-		}
-		defer request.Body.Close()
-		fmt.Println(string(buf))
-	})
-	http.ListenAndServe(":8080", nil)
+	time.Sleep(time.Hour)
 }
