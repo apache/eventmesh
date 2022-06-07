@@ -46,8 +46,9 @@ func Test_messageDispatcher_addHandler(t *testing.T) {
 			},
 			args: args{
 				topic: "handler-1",
-				hdl: func(message *proto.SimpleMessage) {
+				hdl: func(message *proto.SimpleMessage) interface{} {
 					t.Logf("handle message")
+					return nil
 				},
 			},
 		},
