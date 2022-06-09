@@ -56,7 +56,7 @@ public class WebHookController {
      * @param header map of webhook request header
      * @param body   data
      */
-    public void execute(String path, Map<String, String> header, byte[] body) {
+    public void execute(String path, Map<String, String> header, byte[] body) throws Exception {
         // 1. get webhookConfig from path
         WebHookConfig webHookConfig = new WebHookConfig();
         webHookConfig.setCallbackPath(path);
@@ -70,8 +70,7 @@ public class WebHookController {
         try {
             protocol.execute(webHookRequest, webHookConfig, header);
         } catch (Exception e) {
-            logger.error("Webhook Message Parse Failed.");
-            e.printStackTrace();
+            throw new Exception("Webhook Message Parse Failed.");
         }
 
         // 3. convert to cloudEvent obj
