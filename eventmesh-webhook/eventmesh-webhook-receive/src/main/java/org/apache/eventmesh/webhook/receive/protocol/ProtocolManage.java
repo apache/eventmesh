@@ -24,18 +24,20 @@ import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;
 
 public class ProtocolManage {
 
-	
-	private Map<String,ManufacturerProtocol> protocolMap = new HashMap<>();
-	
-	{
-		this.register( new GithubProtocol());
-	}
-	
-	void register(ManufacturerProtocol manufacturerProtocol){
-		protocolMap.put(manufacturerProtocol.getManufacturerName(), manufacturerProtocol);
-	}
-	
-	public ManufacturerProtocol getManufacturerProtocol(String manufacturerName) {
-		return protocolMap.get(manufacturerName);
-	}
+    /**
+     * ManufacturerProtocol pool
+     */
+    private final Map<String, ManufacturerProtocol> protocolMap = new HashMap<>();
+
+    {
+        this.register(new GithubProtocol());
+    }
+
+    void register(ManufacturerProtocol manufacturerProtocol) {
+        protocolMap.put(manufacturerProtocol.getManufacturerName(), manufacturerProtocol);
+    }
+
+    public ManufacturerProtocol getManufacturerProtocol(String manufacturerName) {
+        return protocolMap.get(manufacturerName);
+    }
 }

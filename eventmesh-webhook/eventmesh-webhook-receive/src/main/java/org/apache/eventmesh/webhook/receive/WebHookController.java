@@ -16,37 +16,80 @@
  */
 package org.apache.eventmesh.webhook.receive;
 
+import java.net.URI;
 import java.util.Map;
+import java.util.UUID;
 
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.protocol.ProtocolManage;
-import org.apache.eventmesh.webhook.receive.storage.WebHookConfigOperationManage;
+import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WebHookController {
-	
-	public Logger logger = LoggerFactory.getLogger(this.getClass());
-	
-	private ProtocolManage protocolManage = new ProtocolManage();
-	
-	private WebHookConfigOperationManage webHookConfigOperationManage;
-	
-	public WebHookController() {
-		this.webHookConfigOperationManage = new WebHookConfigOperationManage();
-	}
-	
-	
-	/**
-	 * 1. 通过path获得webhookConfig
-	 * 2. 获得对应的厂商的处理对象,并解析协议
-	 * 3. 通过WebHookConfig获得cloudEvent 协议对象
-	 * 4. WebHookRequest 转换为cloudEvent。
-	 * @param path
-	 * @param header 需要把请求头信息重写到map里面
-	 * @param body
-	 */
-	public void execute(String path,Map<String,String> header,byte[] body) {
-		
-	}
+
+    public Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    /**
+     * protocol pool
+     */
+    private final ProtocolManage protocolManage = new ProtocolManage();
+
+    /**
+     * config pool
+     */
+    private final HookConfigOperationManage hookConfigOperationManage;
+
+    public WebHookController() {
+        this.hookConfigOperationManage = new HookConfigOperationManage();
+    }
+
+
+    /**
+     * 1. get webhookConfig from path
+     * 2. get ManufacturerProtocol and execute
+     * 3. convert to cloudEvent obj
+     *
+     * @param path   CallbackPath
+     * @param header map of webhook request header
+     * @param body   data
+     */
+    public void execute(String path, Map<String, String> header, byte[] body) {
+        // 1. get webhookConfig from path
+        WebHookConfig webHookConfig = new WebHookConfig();
+        webHookConfig.setCallbackPath(path);
+        webHookConfig = hookConfigOperationManage.queryWebHookConfigById(webHookConfig);
+
+        // 2. get ManufacturerProtocol and execute
+        String manufacturerName = webHookConfig.getManufacturerName();
+        ManufacturerProtocol protocol = protocolManage.getManufacturerProtocol(manufacturerName);
+        WebHookRequest webHookRequest = new WebHookRequest();
+        webHookRequest.setData(body);
+        try {
+            protocol.execute(webHookRequest, webHookConfig, header);
+        } catch (Exception e) {
+            logger.error("Webhook Message Parse Failed.");
+            e.printStackTrace();
+        }
+
+        // 3. convert to cloudEvent obj
+        String cloudEventId;
+        if (webHookConfig.getCloudEventIdGenerateMode().equals("uuid")) {
+            cloudEventId = UUID.randomUUID().toString();
+        } else {
+            cloudEventId = webHookRequest.getManufacturerEventId();
+        }
+        String eventType = manufacturerName + "." + webHookConfig.getManufacturerEventName();
+        CloudEvent event = CloudEventBuilder.v1()
+                .withId(cloudEventId)
+                .withSubject(webHookConfig.getCloudEventName())
+                .withSource(URI.create(webHookConfig.getCloudEventSource()))
+                .withDataContentType(webHookConfig.getDataContentType())
+                .withType(eventType)
+                .withData(body)
+                .build();
+    }
 
 }
