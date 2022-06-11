@@ -25,12 +25,12 @@ public class WebHookConfig {
 	private String callbackPath;
 
 	/**
-	 * 厂商名
+	 * manufacturer name ,like github
 	 */
 	private String manufacturerName;
 
 	/**
-	 * 厂商的事件名
+	 * webhook event name ,like rep-push
 	 */
 	private String manufacturerEventName;
 
@@ -40,53 +40,53 @@ public class WebHookConfig {
 	private String contentType;
 
 	/**
-	 * 说明
+	 * description of this WebHookConfig
 	 */
 	private String description;
 
 	/**
-	 * 密钥，github需要密钥
+	 * secret key ,for authentication
 	 */
 	private String secret;
 
 	/**
-	 * 认证的用户名
+	 * userName ,for HTTP authentication
 	 */
 	private String userName;
 
 	/**
-	 * 认证的密码
+	 * password ,for HTTP authentication
 	 */
 	private String password;
 
 	/**
-	 * 协议类型。http，kakfa
+	 * roll out protocol ,like http/kafka
 	 */
 	private String cloudEventProtocol;
 
 	/**
-	 * 服务地址
+	 * roll out addr
 	 */
 	private String cloudEventServiceAddress;
 
 	/**
-	 * 事件名 消息队列就是topic
+	 * roll out event name ,like topic to mq
 	 */
 	private String cloudEventName;
 
 	/**
-	 * 如果是http协议就需要标记请求头 contentType的类型
+	 * 	roll out data format -> CloudEvent serialization mode
+	 *  If HTTP protocol is used, the request header contentType needs to be marked
 	 */
-	private String DataContentType;
+	private String dataContentType;
 
 	/**
-	 * 事件的来源
+	 * source of event
 	 */
 	private String cloudEventSource;
 
 	/**
-	 * cloudEvent需要一个id： 支持uuid 支持使用厂商id
-	 * 
+	 * id of cloudEvent ,like uuid/manufacturerEventId
 	 */
 	private String cloudEventIdGenerateMode;
 }

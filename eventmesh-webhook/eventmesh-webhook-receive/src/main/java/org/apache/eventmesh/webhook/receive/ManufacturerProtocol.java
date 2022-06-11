@@ -22,14 +22,17 @@ import org.apache.eventmesh.webhook.api.WebHookConfig;
 
 public interface ManufacturerProtocol {
 
-	
-	public String getManufacturerName();
-	
-	/**
-	 * 如果认证识别，或则协议解析失败，请抛出异常
-	 * @param webHookRequest
-	 * @param header
-	 * @return
-	 */
-	public void execute(WebHookRequest webHookRequest,WebHookConfig webHookConfig,Map<String, String> header);
+    public String getManufacturerName();
+
+
+    /**
+     * - 1.authentication
+     * - 2.parse webhook content to WebHookRequest
+     *
+     * @param webHookRequest formatted data
+     * @param webHookConfig  webhook config
+     * @param header         webhook content header
+     * @throws Exception authenticate failed ,or content parse failed
+     */
+    public void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) throws Exception;
 }

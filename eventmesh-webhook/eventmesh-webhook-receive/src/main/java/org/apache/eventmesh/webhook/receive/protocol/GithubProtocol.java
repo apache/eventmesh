@@ -21,25 +21,78 @@ import java.util.Map;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;
 import org.apache.eventmesh.webhook.receive.WebHookRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
- * @author laohu
- *
+ * @author laohu and wff
  */
 public class GithubProtocol implements ManufacturerProtocol {
 
-	/* (non-Javadoc)
-	 * @see org.apache.eventmesh.webhook.receive.ManufacturerProtocol#execute(org.apache.eventmesh.webhook.receive.WebHookRequest, org.apache.eventmesh.webhook.api.WebHookConfig, java.util.Map)
-	 */
-	@Override
-	public void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) {
-		
+    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	}
+    @Override
+    public String getManufacturerName() {
+        return "github";
+    }
 
-	@Override
-	public String getManufacturerName() {
-		return "github";
-	}
+    @Override
+    public void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) throws Exception {
 
+        String fromSignature = header.get("X-Hub-Signature-256");
+        if (!isValid(fromSignature, webHookRequest.getData(), webHookConfig.getSecret())) {
+            throw new Exception("webhook-GithubProtocol authenticate failed");
+        }
+
+        try {
+            webHookRequest.setManufacturerEventId(header.get("X-GitHub-Delivery"));
+            webHookRequest.setManufacturerEventName(webHookConfig.getManufacturerEventName());
+            webHookRequest.setManufacturerSource(getManufacturerName());
+        } catch (Exception e) {
+            throw new Exception("webhook-GithubProtocol parse failed");
+        }
+    }
+
+    /**
+     * Authentication
+     *
+     * @param fromSignature Signature received
+     * @param data          data
+     * @param secret        secret key
+     * @return Authentication result
+     */
+    private Boolean isValid(String fromSignature, byte[] data, String secret) {
+        String hash = "sha256=";
+        try {
+            Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secret_key = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+            sha256_HMAC.init(secret_key);
+            byte[] bytes = sha256_HMAC.doFinal(data);
+            hash += byteArrayToHexString(bytes);
+        } catch (Exception e) {
+            logger.error("Error HmacSHA256", e);
+        }
+        return hash.equals(fromSignature);
+    }
+
+    /**
+     * byte array ->  hexadecimal character string
+     *
+     * @param b byte array
+     * @return hexadecimal character string
+     */
+    private String byteArrayToHexString(byte[] b) {
+        StringBuilder hs = new StringBuilder();
+        String stmp;
+        for (int n = 0; b != null && n < b.length; n++) {
+            stmp = Integer.toHexString(b[n] & 0XFF);
+            if (stmp.length() == 1)
+                hs.append('0');
+            hs.append(stmp);
+        }
+        return hs.toString().toLowerCase();
+    }
 }
