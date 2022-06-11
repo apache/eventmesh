@@ -28,9 +28,11 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.common.utils.MD5Utils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
+import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,16 +42,11 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
 
     private String filePath;
 
-    private String serverAddr;
+    private Properties nacosProperties;
 
     private Boolean filePattern;
 
     private ConfigService configService;
-    private static final String GROUP_PREFIX = "webhook_" ;
-
-    private static final String DATA_ID_EXTENSION = ".json";
-
-    private static final Integer TIMEOUT_MS = 3*1000;
 
     /**
      * webhook config pool -> <CallbackPath,WebHookConfig>
@@ -64,14 +61,14 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
             logger.error("filePatternInit failed", e);
         }
         try {
-            nacosPatternInit(serverAddr);
+            nacosPatternInit(nacosProperties);
         } catch (NacosException e) {
             logger.error("nacosPatternInit failed", e);
         }
     }
 
-    private void nacosPatternInit(String serverAddr) throws NacosException {
-        configService = ConfigFactory.createConfigService(serverAddr);
+    private void nacosPatternInit(Properties nacosProperties) throws NacosException {
+        configService = ConfigFactory.createConfigService(nacosProperties);
     }
 
     @Override
@@ -97,10 +94,10 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
         if(filePattern) return cacheWebHookConfig.get(webHookConfig.getCallbackPath());
         else{
             try {
-                String content = configService.getConfig(webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION, GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
+                String content = configService.getConfig(MD5Utils.md5Hex(webHookConfig.getCallbackPath(), "UTF_8") + WebHookOperationConstant.DATA_ID_EXTENSION, WebHookOperationConstant.GROUP_PREFIX + webHookConfig.getManufacturerName(), WebHookOperationConstant.TIMEOUT_MS);
                 return JsonUtils.deserialize(content, WebHookConfig.class);
             } catch (NacosException e) {
-                logger.error("updateWebHookConfig failed", e);
+                logger.error("queryWebHookConfigById failed", e);
             }
             return null;
         }
