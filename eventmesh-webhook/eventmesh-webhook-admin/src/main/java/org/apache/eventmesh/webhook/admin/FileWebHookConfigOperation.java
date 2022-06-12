@@ -21,6 +21,7 @@ import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alibaba.nacos.common.utils.MD5Utils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -123,13 +124,32 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 	}
 
 	private synchronized boolean writeToFile(File webhookConfigFile, WebHookConfig webHookConfig) {
-		try (FileOutputStream fos = new FileOutputStream(webhookConfigFile); BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos))) {
-			FileLock lock = fos.getChannel().lock();
+		FileOutputStream fos = null;
+		BufferedWriter bw = null;
+		FileLock lock = null;
+		try {
+			fos = new FileOutputStream(webhookConfigFile);
+			bw = new BufferedWriter(new OutputStreamWriter(fos));
+			// lock this file
+			lock = fos.getChannel().lock();
 			bw.write(JsonUtils.serialize(webHookConfig));
-			lock.release();
 		} catch (IOException e) {
 			logger.error("write webhookConfig {} to file error", webHookConfig.getCallbackPath());
 			return false;
+		} finally {
+			try {
+				if (fos != null) {
+					fos.close();
+				}
+				if (bw != null) {
+					bw.close();
+				}
+				if (lock != null) {
+					lock.release();
+				}
+			} catch (IOException e) {
+				logger.warn("writeToFile finally caught an exception", e);
+			}
 		}
 		return true;
 	}
@@ -139,7 +159,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 	}
 
 	private String getWebhookConfigFilePath(WebHookConfig webHookConfig) {
-		return this.getWebhookConfigManuDir(webHookConfig) + WebHookOperationConstant.FILE_SEPARATOR + webHookConfig.getCallbackPath() + WebHookOperationConstant.FILE_EXTENSION;
+		return this.getWebhookConfigManuDir(webHookConfig) + WebHookOperationConstant.FILE_SEPARATOR + MD5Utils.md5Hex(webHookConfig.getCallbackPath(), "UTF_8") + WebHookOperationConstant.FILE_EXTENSION;
 	}
 
 
