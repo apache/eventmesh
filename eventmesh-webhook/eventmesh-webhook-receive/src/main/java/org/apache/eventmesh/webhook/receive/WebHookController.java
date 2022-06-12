@@ -16,12 +16,24 @@
  */
 package org.apache.eventmesh.webhook.receive;
 
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
+
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
+import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.protocol.ProtocolManage;
 import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
@@ -46,11 +58,11 @@ public class WebHookController {
         this.hookConfigOperationManage = new HookConfigOperationManage();
     }
 
-
     /**
      * 1. get webhookConfig from path
      * 2. get ManufacturerProtocol and execute
      * 3. convert to cloudEvent obj
+     * 4. send cloudEvent
      *
      * @param path   CallbackPath
      * @param header map of webhook request header
@@ -81,14 +93,44 @@ public class WebHookController {
             cloudEventId = webHookRequest.getManufacturerEventId();
         }
         String eventType = manufacturerName + "." + webHookConfig.getManufacturerEventName();
-        CloudEvent event = CloudEventBuilder.v1()
-                .withId(cloudEventId)
-                .withSubject(webHookConfig.getCloudEventName())
-                .withSource(URI.create(webHookConfig.getCloudEventSource()))
-                .withDataContentType(webHookConfig.getDataContentType())
-                .withType(eventType)
-                .withData(body)
+
+        // 4. send cloudEvent
+        Properties properties;
+        try (final InputStream inputStream = WebHookController.class.getClassLoader().getResourceAsStream("eventmesh.properties")) {
+            properties = new Properties();
+            properties.load(inputStream);
+        }
+        final String eventMeshIp = properties.getProperty("eventMesh.server.ip");
+        final String eventMeshHttpPort = properties.getProperty("eventMesh.server.http.port");
+
+        String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
+
+        // Both the producer and consumer require an instance of EventMeshHttpClientConfig class
+        // that specifies the configuration of EventMesh HTTP client.
+        EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
+                .liteEventMeshAddr(eventMeshIPPort)
+                .producerGroup("eventMesh.webhook.producerGroup")
+                .env(properties.getProperty("eventMesh.server.env"))
+                .idc(properties.getProperty("eventMesh.server.idc"))
+                .ip(properties.getProperty("eventMesh.server.ip"))
+                .sys(properties.getProperty("eventMesh.sysid"))
+                .pid(String.valueOf(ThreadUtils.getPID()))
+                .userName(properties.getProperty("eventMesh.server.http.username"))
+                .password(properties.getProperty("eventMesh.server.http.password"))
                 .build();
+
+        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig)) {
+
+            CloudEvent event = CloudEventBuilder.v1()
+                    .withId(cloudEventId)
+                    .withSubject(webHookConfig.getCloudEventName())
+                    .withSource(URI.create(webHookConfig.getCloudEventSource()))
+                    .withDataContentType(webHookConfig.getDataContentType())
+                    .withType(eventType)
+                    .withData(body)
+                    .build();
+            eventMeshHttpProducer.publish(event);
+        }
     }
 
 }
