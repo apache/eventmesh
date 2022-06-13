@@ -14,30 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.webhook.receive;
 
 import lombok.Data;
 
 @Data
 public class WebHookRequest {
-	
-	/**
-	 * manufacturer event id
-	 */
-	private String manufacturerEventId;
-	
-	/**
-	 * manufacturer event name
-	 */
-	private String manufacturerEventName;
-	
-	/**
-	 * manufacturer name
-	 */
-	private String manufacturerSource;
-	
-	/**
-	 * webhook request body
-	 */
-	private byte[] data;
+
+    /**
+     * manufacturer event id
+     */
+    private String manufacturerEventId;
+
+    /**
+     * manufacturer event name
+     */
+    private String manufacturerEventName;
+
+    /**
+     * manufacturer name
+     */
+    private String manufacturerSource;
+
+    /**
+     * webhook request body
+     */
+    private byte[] data;
 }

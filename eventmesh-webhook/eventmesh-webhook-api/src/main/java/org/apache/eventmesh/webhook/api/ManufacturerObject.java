@@ -14,19 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.webhook.api;
 
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * 厂商信息汇总实体
+ * Manufacturer information summary entity
  */
 public class ManufacturerObject {
 
     private Set<String> manufacturerList = new HashSet<>();
 
-    private Map<String , List<String>> manufacturerEventMap = new HashMap<>();
+    private Map<String, List<String>> manufacturerEventMap = new HashMap<>();
 
 
     public Set<String> getManufacturerList() {
