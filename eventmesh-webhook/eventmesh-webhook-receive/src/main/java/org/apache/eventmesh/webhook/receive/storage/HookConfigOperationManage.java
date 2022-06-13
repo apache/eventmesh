@@ -14,25 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.webhook.receive.storage;
 
-import java.io.*;
-import java.nio.file.*;
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.webhook.api.WebHookConfig;
+import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.FileSystems;
+import java.nio.file.Paths;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
-import java.util.*;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.alibaba.nacos.api.PropertyKeyConst;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
-import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.webhook.api.WebHookConfig;
-import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class HookConfigOperationManage implements WebHookConfigOperation {
 
@@ -45,14 +62,14 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     private Boolean filePattern;
 
     private ConfigService configService;
-    private static final String GROUP_PREFIX = "webhook_" ;
+    private static final String GROUP_PREFIX = "webhook_";
 
     private static final String DATA_ID_EXTENSION = ".json";
 
-    private static final Integer TIMEOUT_MS = 3*1000;
+    private static final Integer TIMEOUT_MS = 3 * 1000;
 
     /**
-     * webhook config pool -> <CallbackPath,WebHookConfig>
+     * webhook config pool -> key is CallbackPath
      */
     private final Map<String, WebHookConfig> cacheWebHookConfig = new ConcurrentHashMap<>();
 
@@ -94,10 +111,13 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
 
     @Override
     public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
-        if(filePattern) return cacheWebHookConfig.get(webHookConfig.getCallbackPath());
-        else{
+        if (filePattern) {
+            return cacheWebHookConfig.get(webHookConfig.getCallbackPath());
+        } else {
             try {
-                String content = configService.getConfig(webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION, GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
+                String content = configService
+                    .getConfig(webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION, GROUP_PREFIX + webHookConfig.getManufacturerName(),
+                        TIMEOUT_MS);
                 return JsonUtils.deserialize(content, WebHookConfig.class);
             } catch (NacosException e) {
                 logger.error("updateWebHookConfig failed", e);
@@ -128,8 +148,12 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     public void readFunc(File file) {
         File[] fs = file.listFiles();
         for (File f : Objects.requireNonNull(fs)) {
-            if (f.isDirectory()) readFunc(f);
-            if (f.isFile()) cacheInit(f);
+            if (f.isDirectory()) {
+                readFunc(f);
+            }
+            if (f.isFile()) {
+                cacheInit(f);
+            }
         }
     }
 
@@ -148,9 +172,9 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     }
 
     private final Kind[] kinds = {
-            StandardWatchEventKinds.ENTRY_CREATE,
-            StandardWatchEventKinds.ENTRY_MODIFY,
-            StandardWatchEventKinds.ENTRY_DELETE};
+        StandardWatchEventKinds.ENTRY_CREATE,
+        StandardWatchEventKinds.ENTRY_MODIFY,
+        StandardWatchEventKinds.ENTRY_DELETE};
 
     Set<String> pathSet = new LinkedHashSet<>(); // monitored subdirectory
 
@@ -205,7 +229,9 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
                         cacheInit(new File(flashPath + event.context()));
                     }
                 }
-                if (!key.reset()) break;
+                if (!key.reset()) {
+                    break;
+                }
             }
         });
     }
