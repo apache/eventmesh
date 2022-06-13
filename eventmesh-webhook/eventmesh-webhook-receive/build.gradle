@@ -20,6 +20,7 @@ dependencies {
 	compileOnly project(":eventmesh-common")
 	implementation project(":eventmesh-webhook:eventmesh-webhook-api")
     compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     implementation project(":eventmesh-sdk-java")
 
