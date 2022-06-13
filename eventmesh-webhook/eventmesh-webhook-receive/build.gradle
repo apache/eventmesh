@@ -23,7 +23,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     implementation project(":eventmesh-sdk-java")
-
+    implementation "io.openmessaging:openmessaging-api"
 
     implementation "io.cloudevents:cloudevents-core"
     implementation "io.cloudevents:cloudevents-json-jackson"
