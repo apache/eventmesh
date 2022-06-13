@@ -14,12 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.eventmesh.webhook.receive;
 
-import java.util.Map;
+package org.apache.eventmesh.webhook.receive;
 
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 
+import java.util.Map;
+
+/**
+ * Information and protocol resolution methods for different manufacturers
+ */
 public interface ManufacturerProtocol {
 
     public String getManufacturerName();
