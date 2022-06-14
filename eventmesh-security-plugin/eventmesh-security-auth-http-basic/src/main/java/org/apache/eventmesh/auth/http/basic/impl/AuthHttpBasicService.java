@@ -51,7 +51,7 @@ public class AuthHttpBasicService implements AuthService {
             init();
         }
 
-        String token = Base64.getEncoder().encodeToString((authConfigs.username + authConfigs.password)
+        String token = Base64.getEncoder().encodeToString((authConfigs.getUsername() + authConfigs.getPassword())
             .getBytes(StandardCharsets.UTF_8));
 
         Map authParams = new HashMap();

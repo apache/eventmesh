@@ -30,4 +30,49 @@ public class EventMeshUtilTest {
         Assert.assertTrue(Pattern.compile("\\d{17}").matcher(seq).matches());
         Assert.assertEquals(17, seq.length());
     }
+
+    public void testTestBuildPushMsgSeqNo() {
+    }
+
+    public void testBuildMeshClientID() {
+    }
+
+    public void testBuildMeshTcpClientID() {
+    }
+
+    public void testBuildClientGroup() {
+    }
+
+    public void testStackTrace() {
+    }
+
+    public void testTestStackTrace() {
+    }
+
+    public void testCreateJsoner() {
+    }
+
+    public void testPrintMqMessage() {
+    }
+
+    public void testGetMessageBizSeq() {
+    }
+
+    public void testGetEventProp() {
+    }
+
+    public void testGetLocalAddr() {
+    }
+
+    public void testNormalizeHostAddress() {
+    }
+
+    public void testBuildUserAgentClientId() {
+    }
+
+    public void testPrintState() {
+    }
+
+    public void testCloneObject() {
+    }
 }
