@@ -23,9 +23,9 @@ import java.util.Properties;
 
 public class AuthConfigs {
 
-    public String username;
+    private String username;
 
-    public String password;
+    private String password;
 
     private static AuthConfigs instance;
 
@@ -37,5 +37,21 @@ public class AuthConfigs {
             instance.password = props.getProperty("auth.password");
         }
         return instance;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
