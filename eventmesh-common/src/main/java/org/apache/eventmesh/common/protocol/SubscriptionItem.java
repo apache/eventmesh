@@ -19,14 +19,17 @@ package org.apache.eventmesh.common.protocol;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Objects;
 
 public class SubscriptionItem implements Serializable {
 
     private String topic;
 
+    @JsonDeserialize(converter = SubscriptionModeConverter.class)
     private SubscriptionMode mode;
 
+    @JsonDeserialize(converter = SubscriptionTypeConverter.class)
     private SubscriptionType type;
 
     public SubscriptionItem() {
