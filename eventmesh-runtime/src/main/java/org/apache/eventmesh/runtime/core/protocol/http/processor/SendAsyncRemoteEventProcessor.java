@@ -117,7 +117,7 @@ public class SendAsyncRemoteEventProcessor implements EventProcessor {
         String bizNo = requestHeaderMap.getOrDefault(ProtocolKey.ClientInstanceKey.BIZSEQNO, RandomStringUtils.generateNum(30)).toString();
         String uniqueId = requestHeaderMap.getOrDefault(ProtocolKey.ClientInstanceKey.UNIQUEID, RandomStringUtils.generateNum(30)).toString();
         String ttl = requestHeaderMap.getOrDefault(Constants.EVENTMESH_MESSAGE_CONST_TTL, 4 * 1000).toString();
-        String protocolType = requestHeaderMap.getOrDefault(ProtocolKey.PROTOCOL_TYPE, "http").toString();
+
 
         requestWrapper.getSysHeaderMap().putIfAbsent(ProtocolKey.ClientInstanceKey.BIZSEQNO, bizNo);
         requestWrapper.getSysHeaderMap().putIfAbsent(ProtocolKey.ClientInstanceKey.UNIQUEID, uniqueId);
@@ -125,21 +125,26 @@ public class SendAsyncRemoteEventProcessor implements EventProcessor {
 
         Map<String, Object> responseHeaderMap = new HashMap<>();
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         Map<String, Object> responseBodyMap = new HashMap<>();
 
         Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
         Iterator<Map.Entry<String, Object>> it = requestHeaderMap.entrySet().iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             String key = it.next().getKey();
             if (sysHeaderMap.containsKey(key)) {
                 it.remove();
             }
         }
+
+        String protocolType = requestHeaderMap.getOrDefault(ProtocolKey.PROTOCOL_TYPE, "http").toString();
 
         ProtocolAdaptor<ProtocolTransportObject> httpProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent event = httpProtocolAdaptor.toCloudEvent(requestWrapper);
@@ -318,7 +323,8 @@ public class SendAsyncRemoteEventProcessor implements EventProcessor {
                 @Override
                 public void onException(OnExceptionContext context) {
                     responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode());
-                    responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(context.getException(), 2));
+                    responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg()
+                        + EventMeshUtil.stackTrace(context.getException(), 2));
 
                     HttpEventWrapper err = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
                     asyncContext.onComplete(err, handler);
