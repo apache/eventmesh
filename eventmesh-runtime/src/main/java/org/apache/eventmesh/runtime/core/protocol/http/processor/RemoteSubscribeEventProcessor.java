@@ -31,7 +31,6 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.EventProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
@@ -39,8 +38,6 @@ import org.apache.eventmesh.runtime.util.WebhookUtil;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
@@ -51,8 +48,6 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,10 +55,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.channel.ChannelHandlerContext;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
-
-import io.netty.channel.ChannelHandlerContext;
 
 public class RemoteSubscribeEventProcessor implements EventProcessor {
 
@@ -300,8 +295,8 @@ public class RemoteSubscribeEventProcessor implements EventProcessor {
     }
 
     public static String post(CloseableHttpClient client, String uri,
-                            Map<String, String> requestHeader, Map<String, Object> requestBody,
-                            ResponseHandler<String> responseHandler) throws IOException {
+                              Map<String, String> requestHeader, Map<String, Object> requestBody,
+                              ResponseHandler<String> responseHandler) throws IOException {
         Preconditions.checkState(client != null, "client can't be null");
         Preconditions.checkState(StringUtils.isNotBlank(uri), "uri can't be null");
         Preconditions.checkState(requestHeader != null, "requestParam can't be null");
