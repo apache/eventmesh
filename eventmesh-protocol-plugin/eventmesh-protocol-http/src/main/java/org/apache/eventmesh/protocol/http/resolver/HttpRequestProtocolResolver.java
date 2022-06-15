@@ -21,18 +21,18 @@ import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.v1.CloudEventBuilder;
 
-import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 public class HttpRequestProtocolResolver {
 
