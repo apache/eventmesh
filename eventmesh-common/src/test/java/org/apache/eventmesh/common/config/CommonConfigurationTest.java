@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.config;
 
+import java.io.File;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +30,8 @@ public class CommonConfigurationTest {
     @Before
     public void before() {
         String file = ConfigurationWrapperTest.class.getResource("/configuration.properties").getFile();
-        ConfigurationWrapper wraper = new ConfigurationWrapper(file, false);
+        File f = new File(file);
+        ConfigurationWrapper wraper = new ConfigurationWrapper(f.getParent(), f.getName(), false);
         configuration = new CommonConfiguration(wraper);
     }
 

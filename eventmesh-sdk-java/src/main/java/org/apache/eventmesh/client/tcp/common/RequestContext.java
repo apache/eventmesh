@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class RequestContext {
 
-    private static Logger logger = LoggerFactory.getLogger(RequestContext.class);
+    private static final Logger logger = LoggerFactory.getLogger(RequestContext.class);
 
     private Object key;
     private Package request;
