@@ -34,6 +34,7 @@ header:
     - '**/*.ini'
     - '**/*.crt'
     - '**/*.pem'
+    - '**/go.sum'
     - 'LICENSE'
     - 'NOTICE'
     - 'DISCLAIMER-WIP'
