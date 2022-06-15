@@ -93,10 +93,14 @@ public class LocalUnSubscribeEventProcessor implements EventProcessor {
 
         Map<String, Object> responseHeaderMap = new HashMap<>();
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP,
+            IPUtils.getLocalAddress());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
 
@@ -132,8 +136,6 @@ public class LocalUnSubscribeEventProcessor implements EventProcessor {
         String unSubscribeUrl = requestBodyMap.get("url").toString();
         String consumerGroup = requestBodyMap.get("consumerGroup").toString();
         String topic = JsonUtils.serialize(requestBodyMap.get("topic"));
-        System.out.println("topic before: " + requestBodyMap.get("topic"));
-        System.out.println("topic after: " + topic);
 
         // SubscriptionItem
         List<String> unSubTopicList = JsonUtils.deserialize(topic, new TypeReference<List<String>>() {
