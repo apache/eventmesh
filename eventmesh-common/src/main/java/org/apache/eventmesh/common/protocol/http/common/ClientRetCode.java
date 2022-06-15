@@ -24,6 +24,7 @@ public enum ClientRetCode {
      * next, try again several times to achieve grayscale, reserve
      */
 
+    REMOTE_OK(0, "REMOTE Process OK"),
     OK(1, "OK. SDK returns."),
     RETRY(2, "RETRY. SDK returns. Retry at most max(default, config) times."),
     FAIL(3, "FAIL. SDK returns."),
