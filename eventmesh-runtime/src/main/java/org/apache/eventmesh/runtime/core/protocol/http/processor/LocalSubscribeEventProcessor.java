@@ -96,10 +96,14 @@ public class LocalSubscribeEventProcessor implements EventProcessor {
 
         Map<String, Object> responseHeaderMap = new HashMap<>();
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
-        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP,
+            IPUtils.getLocalAddress());
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
+        responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
+            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
 
         Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
 
