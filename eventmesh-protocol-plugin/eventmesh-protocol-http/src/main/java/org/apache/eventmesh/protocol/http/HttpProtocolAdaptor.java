@@ -71,12 +71,6 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
     @Override
     public List<CloudEvent> toBatchCloudEvent(ProtocolTransportObject protocol)
         throws ProtocolHandleException {
-//        if (protocol instanceof BatchMessageWrapper) {
-//            BatchMessage batchMessage = ((BatchMessageWrapper) protocol).getMessage();
-//            return GrpcMessageProtocolResolver.buildBatchEvents(batchMessage);
-//        } else {
-//            throw new ProtocolHandleException(String.format("protocol class: %s", protocol.getClass()));
-//        }
         return null;
     }
 
@@ -97,8 +91,8 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
         }
         httpEventWrapper.setSysHeaderMap(sysHeaderMap);
         // ce data
-        Map<String, Object> dataContentMap = JsonUtils.deserialize(new String(cloudEvent.getData().toBytes()), new TypeReference<Map<String, Object>>() {
-        });
+        Map<String, Object> dataContentMap = JsonUtils.deserialize(new String(cloudEvent.getData().toBytes()),
+            new TypeReference<Map<String, Object>>() {});
 
         String requestHeader = JsonUtils.serialize(dataContentMap.get("headers"));
         byte[] requestBody = JsonUtils.serialize(dataContentMap.get("body")).getBytes(StandardCharsets.UTF_8);
