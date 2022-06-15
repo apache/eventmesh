@@ -15,14 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.acl;
+package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 
-public class AclPropertyKeys {
-    public static final String CLIENT_IP = "clientIp";
-    public static final String USER = "user";
-    public static final String PASSWORD = "pwd";
-    public static final String SUBSYSTEM = "subsystem";
-    public static final String TOPIC = "topic";
-    public static final String REQUEST_CODE = "requestCode";
-    public static final String REQUEST_URI = "requestURI";
+import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
+import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
+
+import io.netty.channel.ChannelHandlerContext;
+
+/**
+ * EventProcessor
+ */
+public interface EventProcessor {
+
+    void processRequest(final ChannelHandlerContext ctx, final AsyncContext<HttpEventWrapper> asyncContext)
+            throws Exception;
+
+    boolean rejectRequest();
+
 }
