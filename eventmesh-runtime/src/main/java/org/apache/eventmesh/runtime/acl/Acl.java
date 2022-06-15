@@ -86,9 +86,19 @@ public class Acl {
         aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
     }
 
+    public static void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic,
+                                            String requestURI) throws AclException {
+        aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
+    }
+
     public static void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
                                                int requestCode) throws AclException {
         aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestCode));
+    }
+
+    public static void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
+                                               String requestURI) throws AclException {
+        aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
     }
 
     public static void doAclCheckInHttpHeartbeat(String remoteAddr, String user, String pass, String subsystem, String topic,
@@ -104,6 +114,20 @@ public class Acl {
         aclProperties.put(AclPropertyKeys.PASSWORD, pass);
         aclProperties.put(AclPropertyKeys.SUBSYSTEM, subsystem);
         aclProperties.put(AclPropertyKeys.REQUEST_CODE, requestCode);
+        if (StringUtils.isNotBlank(topic)) {
+            aclProperties.put(AclPropertyKeys.TOPIC, topic);
+        }
+        return aclProperties;
+    }
+
+    private static Properties buildHttpAclProperties(String remoteAddr, String user, String pass, String subsystem,
+                                                     String topic, String requestURI) {
+        Properties aclProperties = new Properties();
+        aclProperties.put(AclPropertyKeys.CLIENT_IP, remoteAddr);
+        aclProperties.put(AclPropertyKeys.USER, user);
+        aclProperties.put(AclPropertyKeys.PASSWORD, pass);
+        aclProperties.put(AclPropertyKeys.SUBSYSTEM, subsystem);
+        aclProperties.put(AclPropertyKeys.REQUEST_URI, requestURI);
         if (StringUtils.isNotBlank(topic)) {
             aclProperties.put(AclPropertyKeys.TOPIC, topic);
         }
