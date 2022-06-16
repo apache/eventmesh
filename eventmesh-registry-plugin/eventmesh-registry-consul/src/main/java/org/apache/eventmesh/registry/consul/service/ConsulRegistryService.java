@@ -17,12 +17,6 @@
 
 package org.apache.eventmesh.registry.consul.service;
 
-import static org.apache.eventmesh.registry.consul.constant.ConsulConstant.DEFAULT_CONNECTION_TIMEOUT;
-import static org.apache.eventmesh.registry.consul.constant.ConsulConstant.DEFAULT_MAX_CONNECTIONS;
-import static org.apache.eventmesh.registry.consul.constant.ConsulConstant.DEFAULT_MAX_PER_ROUTE_CONNECTIONS;
-import static org.apache.eventmesh.registry.consul.constant.ConsulConstant.DEFAULT_READ_TIMEOUT;
-import static org.apache.eventmesh.registry.consul.constant.ConsulConstant.IP_PORT_SEPARATOR;
-
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.RegistryService;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
@@ -32,10 +26,6 @@ import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +43,8 @@ import com.ecwid.consul.v1.agent.model.Service;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 
 public class ConsulRegistryService implements RegistryService {
+
+    public static final String IP_PORT_SEPARATOR = ":";
 
     private static final Logger logger = LoggerFactory.getLogger(ConsulRegistryService.class);
 
@@ -90,7 +82,7 @@ public class ConsulRegistryService implements RegistryService {
 
     @Override
     public void start() throws RegistryException {
-        consulClient = new ConsulClient(new ConsulRawClient(consulHost, Integer.parseInt(consulPort), getHttpClient()));
+        consulClient = new ConsulClient(new ConsulRawClient(consulHost, Integer.parseInt(consulPort)));
     }
 
     @Override
@@ -107,7 +99,7 @@ public class ConsulRegistryService implements RegistryService {
             NewService service = new NewService();
             service.setPort(Integer.parseInt(ipPort[1]));
             service.setAddress(ipPort[0]);
-            service.setName(eventMeshRegisterInfo.getEventMeshClusterName());
+            service.setName(eventMeshRegisterInfo.getEventMeshName());
             service.setId(eventMeshRegisterInfo.getEventMeshClusterName() + "-" + eventMeshRegisterInfo.getEventMeshName());
             consulClient.agentServiceRegister(service);
         } catch (Exception e) {
@@ -145,27 +137,6 @@ public class ConsulRegistryService implements RegistryService {
     public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose)
         throws RegistryException {
         return Collections.emptyMap();
-    }
-
-
-    private HttpClient getHttpClient() {
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-        connectionManager.setMaxTotal(DEFAULT_MAX_CONNECTIONS);
-        connectionManager.setDefaultMaxPerRoute(DEFAULT_MAX_PER_ROUTE_CONNECTIONS);
-
-        RequestConfig requestConfig = RequestConfig.custom()
-            .setConnectTimeout(DEFAULT_CONNECTION_TIMEOUT)
-            .setConnectionRequestTimeout(DEFAULT_CONNECTION_TIMEOUT)
-            .setSocketTimeout(DEFAULT_READ_TIMEOUT)
-            .build();
-
-        HttpClientBuilder httpClientBuilder = HttpClientBuilder
-            .create()
-            .setConnectionManager(connectionManager)
-            .setDefaultRequestConfig(requestConfig)
-            .useSystemProperties();
-
-        return httpClientBuilder.build();
     }
 
     public ConsulClient getConsulClient() {
