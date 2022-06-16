@@ -17,30 +17,17 @@
  * under the License.
  */
 
-/* eslint-disable react/jsx-props-no-spreading */
-import '@fontsource/inter';
-import { ChakraProvider, extendTheme } from '@chakra-ui/react';
-import axios from 'axios';
-import type { AppProps } from 'next/app';
-import Sidebar from '../components/Sidebar';
+import Head from 'next/head';
+import type { NextPage } from 'next';
+import ClientTable from '../components/client/ClientTable';
 
-axios.defaults.baseURL = 'http://localhost:10106';
-
-const theme = extendTheme({
-  initialColorMode: 'light',
-  useSystemColorMode: true,
-  fonts: {
-    heading: 'Inter, sans-serif',
-    body: 'Inter, sans-serif',
-  },
-});
-
-const Application = ({ Component, pageProps }: AppProps) => (
-  <ChakraProvider theme={theme}>
-    <Sidebar>
-      <Component {...pageProps} />
-    </Sidebar>
-  </ChakraProvider>
+const Client: NextPage = () => (
+  <>
+    <Head>
+      <title>Client | Apache EventMesh Dashboard</title>
+    </Head>
+    <ClientTable />
+  </>
 );
 
-export default Application;
+export default Client;
