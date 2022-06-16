@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.protocol.cloudevents;
+package org.apache.eventmesh.common.protocol;
 
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
-import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.databind.util.Converter;
 
-import org.junit.Assert;
-import org.junit.Test;
+public class SubscriptionModeConverter implements Converter<String, SubscriptionMode> {
+    @Override
+    public SubscriptionMode convert(String value) {
+        return SubscriptionMode.valueOf(value);
+    }
 
-public class CloudEventsProtocolAdaptorTest {
+    @Override
+    public JavaType getInputType(TypeFactory typeFactory) {
+        return typeFactory.constructType(String.class);
+    }
 
-    @Test
-    public void loadPlugin() {
-        ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
-                ProtocolPluginFactory.getProtocolAdaptor(CloudEventsProtocolConstant.PROTOCOL_NAME);
-
-        Assert.assertNotNull(protocolAdaptor);
-        Assert.assertEquals(
-                CloudEventsProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
-        Assert.assertEquals(CloudEventsProtocolAdaptor.class, protocolAdaptor.getClass());
+    @Override
+    public JavaType getOutputType(TypeFactory typeFactory) {
+        return typeFactory.constructType(SubscriptionMode.class);
     }
 }

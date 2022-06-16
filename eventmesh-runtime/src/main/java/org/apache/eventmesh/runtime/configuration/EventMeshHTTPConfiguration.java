@@ -47,6 +47,8 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public int eventMeshServerSendMsgThreadNum = 8;
 
+    public int eventMeshServerRemoteMsgThreadNum = 8;
+
     public int eventMeshServerPushMsgThreadNum = 8;
 
     public int eventMeshServerReplyMsgThreadNum = 8;
@@ -68,6 +70,8 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
     public int eventMeshServerBatchBlockQSize = 1000;
 
     public int eventMeshServerSendMsgBlockQSize = 1000;
+
+    public int eventMeshServerRemoteMsgBlockQSize = 1000;
 
     public int eventMeshServerPushMsgBlockQSize = 1000;
 
@@ -140,6 +144,14 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
                     && StringUtils.isNumeric(eventMeshServerSendMsgThreadNumStr)) {
                 eventMeshServerSendMsgThreadNum =
                         Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerSendMsgThreadNumStr));
+            }
+
+            String eventMeshServerRemoteMsgThreadNumStr =
+                configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REMOTEMSG_THREAD_NUM);
+            if (StringUtils.isNotEmpty(eventMeshServerRemoteMsgThreadNumStr)
+                && StringUtils.isNumeric(eventMeshServerRemoteMsgThreadNumStr)) {
+                eventMeshServerRemoteMsgThreadNum =
+                    Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerRemoteMsgThreadNumStr));
             }
 
             String eventMeshServerReplyMsgThreadNumStr =
@@ -322,6 +334,8 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
         public static String KEY_EVENTMESH_BUSY_CHECK_INTERVAL = "eventMesh.server.busy.check.interval";
 
         public static String KEYS_EVENTMESH_SENDMSG_THREAD_NUM = "eventMesh.server.sendmsg.threads.num";
+
+        public static String KEYS_EVENTMESH_REMOTEMSG_THREAD_NUM = "eventMesh.server.remotemsg.threads.num";
 
         public static String KEYS_EVENTMESH_REPLYMSG_THREAD_NUM = "eventMesh.server.replymsg.threads.num";
 
