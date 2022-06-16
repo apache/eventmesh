@@ -15,14 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.acl;
-
-public class AclPropertyKeys {
-    public static final String CLIENT_IP = "clientIp";
-    public static final String USER = "user";
-    public static final String PASSWORD = "pwd";
-    public static final String SUBSYSTEM = "subsystem";
-    public static final String TOPIC = "topic";
-    public static final String REQUEST_CODE = "requestCode";
-    public static final String REQUEST_URI = "requestURI";
+dependencies {
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
+    implementation "io.cloudevents:cloudevents-core"
+    implementation "com.google.guava:guava"
+    implementation "io.cloudevents:cloudevents-json-jackson"
+    implementation "io.grpc:grpc-protobuf:1.15.0"
 }

@@ -15,14 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.acl;
+package org.apache.eventmesh.common.protocol;
 
-public class AclPropertyKeys {
-    public static final String CLIENT_IP = "clientIp";
-    public static final String USER = "user";
-    public static final String PASSWORD = "pwd";
-    public static final String SUBSYSTEM = "subsystem";
-    public static final String TOPIC = "topic";
-    public static final String REQUEST_CODE = "requestCode";
-    public static final String REQUEST_URI = "requestURI";
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.databind.util.Converter;
+
+public class SubscriptionTypeConverter implements Converter<String, SubscriptionType> {
+    @Override
+    public SubscriptionType convert(String value) {
+        return SubscriptionType.valueOf(value);
+    }
+
+    @Override
+    public JavaType getInputType(TypeFactory typeFactory) {
+        return typeFactory.constructType(String.class);
+    }
+
+    @Override
+    public JavaType getOutputType(TypeFactory typeFactory) {
+        return typeFactory.constructType(SubscriptionType.class);
+    }
 }
