@@ -22,6 +22,7 @@ import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
+import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
@@ -35,7 +36,10 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.AdminMetricsPro
 import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessageV2Processor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.HeartBeatProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalSubscribeEventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalUnSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.ReplyMessageProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendSyncMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SubscribeProcessor;
@@ -105,6 +109,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public ThreadPoolExecutor sendMsgExecutor;
 
+    public ThreadPoolExecutor remoteMsgExecutor;
+
     public ThreadPoolExecutor replyMsgExecutor;
 
     public ThreadPoolExecutor pushMsgExecutor;
@@ -124,6 +130,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         adminExecutor.shutdown();
         clientManageExecutor.shutdown();
         sendMsgExecutor.shutdown();
+        remoteMsgExecutor.shutdown();
         pushMsgExecutor.shutdown();
         replyMsgExecutor.shutdown();
     }
@@ -143,6 +150,13 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerSendMsgThreadNum,
                 eventMeshHttpConfiguration.eventMeshServerSendMsgThreadNum, sendMsgThreadPoolQueue,
                 "eventMesh-sendMsg-", true);
+
+        BlockingQueue<Runnable> remoteMsgThreadPoolQueue =
+            new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.eventMeshServerRemoteMsgBlockQSize);
+        remoteMsgExecutor =
+            ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerRemoteMsgThreadNum,
+                eventMeshHttpConfiguration.eventMeshServerRemoteMsgThreadNum, remoteMsgThreadPoolQueue,
+                "eventMesh-remoteMsg-", true);
 
         BlockingQueue<Runnable> pushMsgThreadPoolQueue =
             new LinkedBlockingQueue<Runnable>(eventMeshHttpConfiguration.eventMeshServerPushMsgBlockQSize);
@@ -332,6 +346,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         SendAsyncMessageProcessor sendAsyncMessageProcessor = new SendAsyncMessageProcessor(this);
         registerProcessor(RequestCode.MSG_SEND_ASYNC.getRequestCode(), sendAsyncMessageProcessor, sendMsgExecutor);
 
+        SendAsyncEventProcessor sendAsyncEventProcessor = new SendAsyncEventProcessor(this);
+        registerProcessor(RequestURI.PUBLISH.getRequestURI(), sendAsyncEventProcessor, sendMsgExecutor);
+
         AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
         registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor, adminExecutor);
 
@@ -341,8 +358,14 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         SubscribeProcessor subscribeProcessor = new SubscribeProcessor(this);
         registerProcessor(RequestCode.SUBSCRIBE.getRequestCode(), subscribeProcessor, clientManageExecutor);
 
+        LocalSubscribeEventProcessor localSubscribeEventProcessor = new LocalSubscribeEventProcessor(this);
+        registerProcessor(RequestURI.SUBSCRIBE_LOCAL.getRequestURI(), localSubscribeEventProcessor, clientManageExecutor);
+
         UnSubscribeProcessor unSubscribeProcessor = new UnSubscribeProcessor(this);
         registerProcessor(RequestCode.UNSUBSCRIBE.getRequestCode(), unSubscribeProcessor, clientManageExecutor);
+
+        LocalUnSubscribeEventProcessor localUnSubscribeEventProcessor = new LocalUnSubscribeEventProcessor(this);
+        registerProcessor(RequestURI.UNSUBSCRIBE_LOCAL.getRequestURI(), localUnSubscribeEventProcessor, clientManageExecutor);
 
         ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);

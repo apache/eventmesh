@@ -15,14 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.api.acl;
+package org.apache.eventmesh.protocol.http;
 
-public class AclPropertyKeys {
-    public static final String CLIENT_IP = "clientIp";
-    public static final String USER = "user";
-    public static final String PASSWORD = "pwd";
-    public static final String SUBSYSTEM = "subsystem";
-    public static final String TOPIC = "topic";
-    public static final String REQUEST_CODE = "requestCode";
-    public static final String REQUEST_URI = "requestURI";
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+public class HttpProtocolAdaptorTest {
+
+    @Test
+    public void loadPlugin() {
+        ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor =
+                ProtocolPluginFactory.getProtocolAdaptor(HttpProtocolConstant.PROTOCOL_NAME);
+
+        Assert.assertNotNull(protocolAdaptor);
+        Assert.assertEquals(
+                HttpProtocolConstant.PROTOCOL_NAME, protocolAdaptor.getProtocolType());
+        Assert.assertEquals(HttpProtocolAdaptor.class, protocolAdaptor.getClass());
+    }
 }
