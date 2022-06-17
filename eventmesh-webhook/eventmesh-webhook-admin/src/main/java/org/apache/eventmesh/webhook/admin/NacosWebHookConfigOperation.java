@@ -53,11 +53,9 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
     private static Map<String, String> manufacturerMap = new ConcurrentHashMap<>();
 
 
-    public NacosWebHookConfigOperation(String serverAddr) throws NacosException {
-        Properties properties = new Properties();
+    public NacosWebHookConfigOperation(Properties configProperties) throws NacosException {
 
-        properties.put(PropertyKeyConst.SERVER_ADDR, serverAddr);
-        configService = ConfigFactory.createConfigService(serverAddr);
+        configService = ConfigFactory.createConfigService(configProperties);
 
         String manufacturers = configService.getConfig("manufacturers" + DATA_ID_EXTENSION, "webhook", TIMEOUT_MS);
         if (manufacturers == null) {
