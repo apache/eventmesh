@@ -67,10 +67,10 @@ public class GithubProtocol implements ManufacturerProtocol {
     private Boolean isValid(String fromSignature, byte[] data, String secret) {
         String hash = "sha256=";
         try {
-            Mac sha256HMAC = Mac.getInstance("HmacSHA256");
+            Mac sha = Mac.getInstance("HmacSHA256");
             SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
-            sha256HMAC.init(secretKey);
-            byte[] bytes = sha256HMAC.doFinal(data);
+            sha.init(secretKey);
+            byte[] bytes = sha.doFinal(data);
             hash += byteArrayToHexString(bytes);
         } catch (Exception e) {
             logger.error("Error HmacSHA256", e);

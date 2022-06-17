@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public interface ManufacturerProtocol {
 
-    public String getManufacturerName();
+    String getManufacturerName();
 
 
     /**
@@ -38,5 +38,5 @@ public interface ManufacturerProtocol {
      * @param header         webhook content header
      * @throws Exception authenticate failed ,or content parse failed
      */
-    public void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) throws Exception;
+    void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) throws Exception;
 }
