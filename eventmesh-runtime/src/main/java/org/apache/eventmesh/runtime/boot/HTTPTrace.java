@@ -16,6 +16,7 @@ import org.apache.eventmesh.runtime.trace.SpanKey;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 import org.apache.eventmesh.trace.api.TraceService;
 
+import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 
 public class HTTPTrace {
@@ -24,6 +25,7 @@ public class HTTPTrace {
     private boolean useTrace = false;
 
     //重载初始化方法
+    //TODO 初始化给本地ip和端口，待完成
     public void initTrace(Tracer tracer, TextMapPropagator textMapPropagator, boolean useTrace) {
         this.tracer = tracer;
         this.textMapPropagator = textMapPropagator;
@@ -71,24 +73,16 @@ public class HTTPTrace {
         private final Span span;
         private final boolean useTrace;
 
-        public void errorEnd() {
+        public void endTrace() {
             if (useTrace) {
-                try (Scope ignored = context.makeCurrent()) {
-                    span.setStatus(StatusCode.ERROR);
-                    span.end();
-                }
-            }
-        }
-
-        public void end() {
-            if (useTrace) {
+                // TODO 此处context.makeCurrent()是否有必要，待确认，如无必要，可以不需要context
                 try (Scope ignored = context.makeCurrent()) {
                     span.end();
                 }
             }
         }
 
-        public void httpReqTrace(HttpRequest httpRequest) {
+        public void requestInfoTrace(HttpRequest httpRequest) {
             if (useTrace) {
                 span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
                 span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
@@ -96,12 +90,15 @@ public class HTTPTrace {
             }
         }
 
-        public void exceptionTrace(Exception ex) {
+        public void exceptionTrace(@Nullable Exception ex) {
             if (useTrace) {
-                span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage());
-                span.setStatus(StatusCode.ERROR, ex.getMessage());
-                span.recordException(ex);
-                span.end();
+                try (Scope ignored = context.makeCurrent()) {
+                    ex = ex != null ? ex : new RuntimeException("exception for trace");
+                    span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage());
+                    span.setStatus(StatusCode.ERROR, ex.getMessage());
+                    span.recordException(ex);
+                    span.end();
+                }
             }
         }
     }
