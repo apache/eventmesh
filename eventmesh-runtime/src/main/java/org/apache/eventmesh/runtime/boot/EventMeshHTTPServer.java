@@ -38,9 +38,12 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessag
 import org.apache.eventmesh.runtime.core.protocol.http.processor.HeartBeatProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalUnSubscribeEventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteSubscribeEventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteUnSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.ReplyMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncMessageProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncRemoteEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendSyncMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.UnSubscribeProcessor;
@@ -349,6 +352,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         SendAsyncEventProcessor sendAsyncEventProcessor = new SendAsyncEventProcessor(this);
         registerProcessor(RequestURI.PUBLISH.getRequestURI(), sendAsyncEventProcessor, sendMsgExecutor);
 
+        SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new SendAsyncRemoteEventProcessor(this);
+        registerProcessor(RequestURI.PUBLISH_BRIDGE.getRequestURI(), sendAsyncRemoteEventProcessor, remoteMsgExecutor);
+
         AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
         registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor, adminExecutor);
 
@@ -361,11 +367,17 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         LocalSubscribeEventProcessor localSubscribeEventProcessor = new LocalSubscribeEventProcessor(this);
         registerProcessor(RequestURI.SUBSCRIBE_LOCAL.getRequestURI(), localSubscribeEventProcessor, clientManageExecutor);
 
+        RemoteSubscribeEventProcessor remoteSubscribeEventProcessor = new RemoteSubscribeEventProcessor(this);
+        registerProcessor(RequestURI.SUBSCRIBE_REMOTE.getRequestURI(), remoteSubscribeEventProcessor, clientManageExecutor);
+
         UnSubscribeProcessor unSubscribeProcessor = new UnSubscribeProcessor(this);
         registerProcessor(RequestCode.UNSUBSCRIBE.getRequestCode(), unSubscribeProcessor, clientManageExecutor);
 
         LocalUnSubscribeEventProcessor localUnSubscribeEventProcessor = new LocalUnSubscribeEventProcessor(this);
         registerProcessor(RequestURI.UNSUBSCRIBE_LOCAL.getRequestURI(), localUnSubscribeEventProcessor, clientManageExecutor);
+
+        RemoteUnSubscribeEventProcessor remoteUnSubscribeEventProcessor = new RemoteUnSubscribeEventProcessor(this);
+        registerProcessor(RequestURI.UNSUBSCRIBE_REMOTE.getRequestURI(), remoteUnSubscribeEventProcessor, clientManageExecutor);
 
         ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);
