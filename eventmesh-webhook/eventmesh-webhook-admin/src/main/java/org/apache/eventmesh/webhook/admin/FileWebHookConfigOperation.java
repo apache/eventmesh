@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,8 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     private static final String FILE_EXTENSION = ".json";
 
-    public FileWebHookConfigOperation(String filePath) throws FileNotFoundException {
+    public FileWebHookConfigOperation(Properties configProperties) throws FileNotFoundException {
+        String filePath = configProperties.getProperty("eventMesh.webHook.fileMode.filePath");
         File webHookFileDir = new File(filePath);
         if (!webHookFileDir.isDirectory()) {
             throw new FileNotFoundException("File path " + filePath + " is not directory");

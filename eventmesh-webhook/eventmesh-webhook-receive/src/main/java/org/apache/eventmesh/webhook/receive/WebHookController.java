@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.webhook.receive;
 
-import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
-import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
+import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.protocol.ProtocolManage;
@@ -54,10 +55,14 @@ public class WebHookController {
      */
     private final HookConfigOperationManage hookConfigOperationManage;
 
+    private final WebHookMQProducer webHookMQProducer;
+
     private Properties configProperties;
 
     public WebHookController() throws IOException, NacosException {
         readConfigFromConfigFile();
+
+        webHookMQProducer = new WebHookMQProducer(configProperties.getProperty("eventMesh.webHook.producer.connector"));
 
         this.hookConfigOperationManage =
             new HookConfigOperationManage(configProperties.getProperty("eventMesh.webHook.operationMode"),
@@ -119,29 +124,19 @@ public class WebHookController {
             .withData(body)
             .build();
 
-
         // 4. send cloudEvent
+        webHookMQProducer.send(event, new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
 
-        String eventMeshIPPort = configProperties.getProperty("eventMesh.server.ip")
-            + ":" + configProperties.getProperty("eventMesh.server.http.port");
+            }
 
-        // Both the producer and consumer require an instance of EventMeshHttpClientConfig class
-        // that specifies the configuration of EventMesh HTTP client.
-        EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-            .liteEventMeshAddr(eventMeshIPPort)
-            .producerGroup("eventMesh.webhook.producerGroup")
-            .env(configProperties.getProperty("eventMesh.server.env"))
-            .idc(configProperties.getProperty("eventMesh.server.idc"))
-            .ip(configProperties.getProperty("eventMesh.server.ip"))
-            .sys(configProperties.getProperty("eventMesh.sysid"))
-            .pid(String.valueOf(ThreadUtils.getPID()))
-            .userName(configProperties.getProperty("eventMesh.server.http.username"))
-            .password(configProperties.getProperty("eventMesh.server.http.password"))
-            .build();
+            @Override
+            public void onException(OnExceptionContext context) {
+                logger.warn("", context.getException());
+            }
 
-        try (EventMeshHttpProducer eventMeshHttpProducer = new EventMeshHttpProducer(eventMeshClientConfig)) {
-            eventMeshHttpProducer.publish(event);
-        }
+        });
     }
 
 }
