@@ -93,18 +93,23 @@ public class HTTP {
 }
 ```
 
-## Using Post Man
+## Using Curl Command
 
 You can also publish/subscribe event without eventmesh SDK.
 
 ### Publish
 
-![image-post-man-publish](../../images/examples/post-man-publish.png)
+```shell
+curl -H "Content-Type:application/json" -X POST -d '{"name": "admin", "pass":"12345678"}' http://127.0.0.1:10105/eventmesh/publish/TEST-TOPIC-HTTP-ASYNC
+```
 
-After you start the eventmesh runtime server, you can use the post man publish the event to the specify topic with the HTTP POST method and the package body must be in JSON format. The publish url like (http://127.0.0.1:10105/eventmesh/publish/TEST-TOPIC-HTTP-ASYNC), and you will get the publish successful result.
+After you start the eventmesh runtime server, you can use the curl command publish the event to the specific topic with the HTTP POST method and the package body must be in JSON format. The publish url like (http://127.0.0.1:10105/eventmesh/publish/TEST-TOPIC-HTTP-ASYNC), and you will get the publish successful result.
 
 ### Subscribe
 
-![image-post-man-subscribe](../../images/examples/post-man-subscribe.png)
+```shell
+curl -H "Content-Type:application/json" -X POST -d '{"url": "http://127.0.0.1:8088/sub/test", "consumerGroup":"TEST-GROUP", "topic":[{"mode":"CLUSTERING","topic":"TEST-TOPIC-HTTP-ASYNC","type":"ASYNC"}]}' http://127.0.0.1:10105/eventmesh/subscribe/local
+```
 
-After you start the eventmesh runtime server, you can use the post man to subscribe the specify topic list  with the HTTP POST method, and the package body must be in JSON format. The subscribe url like (http://127.0.0.1:10105/eventmesh/subscribe/local), and you will get the subscribe successful result. You should pay attention to the `url` field in the package body, which means you need to set up an HTTP service at the specified URL, you can see the example in the `eventmesh-examples` module.
+After you start the eventmesh runtime server, you can use the curl command to subscribe the specific topic list with the HTTP POST method, and the package body must be in JSON format. The subscribe url like (http://127.0.0.1:10105/eventmesh/subscribe/local), and you will get the subscribe successful result. You should pay attention to the `url` field in the package body, which means you need to set up an HTTP service at the specified URL, you can see the example in the `eventmesh-examples` module.
+
