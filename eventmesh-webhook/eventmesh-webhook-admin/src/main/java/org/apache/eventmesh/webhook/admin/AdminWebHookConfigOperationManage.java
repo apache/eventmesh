@@ -55,7 +55,7 @@ public class AdminWebHookConfigOperationManage {
             throw new IllegalStateException("operationMode is not supported.");
         }
 
-        Constructor<? extends WebHookConfigOperation> constructor = map.get(operationMode).getDeclaredConstructor(String.class);
+        Constructor<? extends WebHookConfigOperation> constructor = map.get(operationMode).getDeclaredConstructor(Properties.class);
         constructor.setAccessible(true);
         try {
             return constructor.newInstance(configProperties);
