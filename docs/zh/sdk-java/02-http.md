@@ -93,7 +93,7 @@ public class HTTP {
 }
 ```
 
-## 使用Post Man
+## 使用Curl 命令
 
 也可以不通过Event Mesh SDK来体验事件的收发功能
 
