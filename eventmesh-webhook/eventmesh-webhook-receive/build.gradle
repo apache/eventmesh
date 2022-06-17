@@ -17,12 +17,11 @@
 
 dependencies {
 
-	compileOnly project(":eventmesh-common")
-	implementation project(":eventmesh-webhook:eventmesh-webhook-api")
+    compileOnly project(":eventmesh-common")
+    implementation project(":eventmesh-webhook:eventmesh-webhook-api")
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
-    implementation project(":eventmesh-sdk-java")
     implementation "io.openmessaging:openmessaging-api"
 
     implementation "io.cloudevents:cloudevents-core"
@@ -32,7 +31,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core"
     implementation "com.fasterxml.jackson.core:jackson-annotations"
 
-    testImplementation project(":eventmesh-webhook:eventmesh-webhook-api")   
+    testImplementation project(":eventmesh-webhook:eventmesh-webhook-api")
 
 
 }
