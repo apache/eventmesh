@@ -17,11 +17,12 @@
 package org.apache.eventmesh.webhook.admin;
 
 import java.io.*;
+import java.net.URLEncoder;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
-import com.alibaba.nacos.common.utils.MD5Utils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -33,29 +34,36 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
 	private static final Logger logger = LoggerFactory.getLogger(FileWebHookConfigOperation.class);
 
-	private final String filePath;
+	private final String webHookFilePath;
 
+	private static final String FILE_PROPERTIES_PREFIX = "eventMesh.webHook.fileMode.";
 
-	public FileWebHookConfigOperation(String filePath) throws FileNotFoundException {
-		File webHookFileDir = new File(filePath);
+	public FileWebHookConfigOperation(Properties properties) throws FileNotFoundException {
+		String webHookFilePath = properties.getProperty(FILE_PROPERTIES_PREFIX + "filePath");
+		assert webHookFilePath != null;
+		File webHookFileDir = new File(webHookFilePath);
 		if (!webHookFileDir.isDirectory()) {
-			throw new FileNotFoundException("File path " + filePath + " is not directory");
+			throw new FileNotFoundException("File path " + webHookFilePath + " is not directory");
 		}
 		if (!webHookFileDir.exists()) {
 			webHookFileDir.mkdirs();
 		}
-		this.filePath = filePath;
+		this.webHookFilePath = webHookFilePath;
 	}
 
 	@Override
 	public Integer insertWebHookConfig(WebHookConfig webHookConfig) {
+		if (!webHookConfig.getCallbackPath().startsWith(WebHookOperationConstant.CALLBACK_PATH_PREFIX)) {
+			logger.error("webhookConfig callback path must start with {}", WebHookOperationConstant.CALLBACK_PATH_PREFIX);
+			return 0;
+		}
 		File manuDir = new File(getWebhookConfigManuDir(webHookConfig));
 		if (!manuDir.exists()) {
 			manuDir.mkdir();
 		}
-		File webhookConfigFile = new File(getWebhookConfigFilePath(webHookConfig));
+		File webhookConfigFile = getWebhookConfigFile(webHookConfig);
 		if (webhookConfigFile.exists()) {
-			logger.error("webhookConfig " + webHookConfig.getCallbackPath() + " is existed");
+			logger.error("webhookConfig {} is existed", webHookConfig.getCallbackPath());
 			return 0;
 		}
 		return writeToFile(webhookConfigFile, webHookConfig) ? 1 : 0;
@@ -63,9 +71,9 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
 	@Override
 	public Integer updateWebHookConfig(WebHookConfig webHookConfig) {
-		File webhookConfigFile = new File(getWebhookConfigFilePath(webHookConfig));
+		File webhookConfigFile = getWebhookConfigFile(webHookConfig);
 		if (!webhookConfigFile.exists()) {
-			logger.error("webhookConfig " + webHookConfig.getCallbackPath() + " is not existed");
+			logger.error("webhookConfig {} is not existed", webHookConfig.getCallbackPath());
 			return 0;
 		}
 		return writeToFile(webhookConfigFile, webHookConfig) ? 1 : 0;
@@ -73,9 +81,9 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
 	@Override
 	public Integer deleteWebHookConfig(WebHookConfig webHookConfig) {
-		File webhookConfigFile = new File(getWebhookConfigFilePath(webHookConfig));
+		File webhookConfigFile = getWebhookConfigFile(webHookConfig);
 		if (!webhookConfigFile.exists()) {
-			logger.error("webhookConfig " + webHookConfig.getCallbackPath() + " is not existed");
+			logger.error("webhookConfig {} is not existed", webHookConfig.getCallbackPath());
 			return 0;
 		}
 		return webhookConfigFile.delete() ? 1 : 0;
@@ -83,9 +91,9 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
 	@Override
 	public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
-		File webhookConfigFile = new File(getWebhookConfigFilePath(webHookConfig));
+		File webhookConfigFile = getWebhookConfigFile(webHookConfig);
 		if (!webhookConfigFile.exists()) {
-			logger.error("webhookConfig " + webHookConfig.getCallbackPath() + " is not existed");
+			logger.error("webhookConfig {} is not existed", webHookConfig.getCallbackPath());
 			return null;
 		}
 		return getWebHookConfigFromFile(webhookConfigFile);
@@ -94,9 +102,10 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 	@Override
 	public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
 			Integer pageSize) {
-		File manuDir = new File(getWebhookConfigManuDir(webHookConfig));
+		String manuDirPath = getWebhookConfigManuDir(webHookConfig);
+		File manuDir = new File(manuDirPath);
 		if (!manuDir.exists()) {
-			logger.warn("webhookConfig dir " + getWebhookConfigManuDir(webHookConfig) + " is not existed");
+			logger.warn("webhookConfig dir {} is not existed", manuDirPath);
 			return new ArrayList<>();
 		}
 		File[] webhookFiles = manuDir.listFiles();
@@ -111,25 +120,22 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 	}
 
 	private WebHookConfig getWebHookConfigFromFile(File webhookConfigFile) {
-		String fileContent = "";
+		StringBuffer fileContent = new StringBuffer();
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(webhookConfigFile)))) {
 			String line = null;
 			while ((line = br.readLine()) != null) {
-				fileContent += line;
+				fileContent.append(line);
 			}
 		} catch (IOException e) {
 			logger.error("get webhook from file {} error", webhookConfigFile.getPath(), e);
+			return null;
 		}
-		return JsonUtils.deserialize(fileContent, WebHookConfig.class);
+		return JsonUtils.deserialize(fileContent.toString(), WebHookConfig.class);
 	}
 
-	private synchronized boolean writeToFile(File webhookConfigFile, WebHookConfig webHookConfig) {
-		FileOutputStream fos = null;
-		BufferedWriter bw = null;
+	private boolean writeToFile(File webhookConfigFile, WebHookConfig webHookConfig) {
 		FileLock lock = null;
-		try {
-			fos = new FileOutputStream(webhookConfigFile);
-			bw = new BufferedWriter(new OutputStreamWriter(fos));
+		try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos))){
 			// lock this file
 			lock = fos.getChannel().lock();
 			bw.write(JsonUtils.serialize(webHookConfig));
@@ -138,12 +144,6 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 			return false;
 		} finally {
 			try {
-				if (fos != null) {
-					fos.close();
-				}
-				if (bw != null) {
-					bw.close();
-				}
 				if (lock != null) {
 					lock.release();
 				}
@@ -155,11 +155,18 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 	}
 
 	private String getWebhookConfigManuDir(WebHookConfig webHookConfig) {
-		return filePath + WebHookOperationConstant.FILE_SEPARATOR + webHookConfig.getCloudEventName();
+		return webHookFilePath + WebHookOperationConstant.FILE_SEPARATOR + webHookConfig.getManufacturerName();
 	}
 
-	private String getWebhookConfigFilePath(WebHookConfig webHookConfig) {
-		return this.getWebhookConfigManuDir(webHookConfig) + WebHookOperationConstant.FILE_SEPARATOR + MD5Utils.md5Hex(webHookConfig.getCallbackPath(), "UTF_8") + WebHookOperationConstant.FILE_EXTENSION;
+	private File getWebhookConfigFile(WebHookConfig webHookConfig) {
+		String webhookConfigFilePath = null;
+		try {
+			webhookConfigFilePath = this.getWebhookConfigManuDir(webHookConfig) + WebHookOperationConstant.FILE_SEPARATOR + URLEncoder.encode(webHookConfig.getCallbackPath(), "UTF-8") + WebHookOperationConstant.FILE_EXTENSION;
+		} catch (UnsupportedEncodingException e) {
+			logger.error("get webhookConfig file path {} failed", webHookConfig.getCallbackPath(), e);
+		}
+		assert webhookConfigFilePath != null;
+		return new File(webhookConfigFilePath);
 	}
 
 
