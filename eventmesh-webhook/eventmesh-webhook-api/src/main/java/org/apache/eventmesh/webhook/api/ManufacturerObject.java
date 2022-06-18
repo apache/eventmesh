@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.eventmesh.webhook.api;
 
 import java.util.ArrayList;
@@ -26,26 +25,27 @@ import java.util.Set;
 
 /**
  * Manufacturer information summary entity
+ * @author Jelly Mai
  */
 public class ManufacturerObject {
 
-    private Set<String> manufacturerList = new HashSet<>();
+    private Set<String> manufacturerSet = new HashSet<>();
 
     private Map<String, List<String>> manufacturerEventMap = new HashMap<>();
 
 
-    public Set<String> getManufacturerList() {
-        return manufacturerList;
+    public Set<String> getManufacturerSet() {
+        return manufacturerSet;
     }
 
     public Set<String> addManufacturer(String manufacturer) {
-        manufacturerList.add(manufacturer);
-        return manufacturerList;
+        manufacturerSet.add(manufacturer);
+        return manufacturerSet;
     }
 
     public Set<String> removeManufacturer(String manufacturer) {
-        manufacturerList.remove(manufacturer);
-        return manufacturerList;
+        manufacturerSet.remove(manufacturer);
+        return manufacturerSet;
     }
 
     public Map<String, List<String>> getManufacturerEventMap() {
