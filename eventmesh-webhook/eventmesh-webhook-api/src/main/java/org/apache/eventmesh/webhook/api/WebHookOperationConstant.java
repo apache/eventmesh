@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.webhook.api;
 
 import java.io.File;
@@ -28,7 +29,7 @@ public class WebHookOperationConstant {
 
     public static final String FILE_EXTENSION = ".json";
 
-    public static final String GROUP_PREFIX = "webhook_" ;
+    public static final String GROUP_PREFIX = "webhook_";
 
     public static final String CALLBACK_PATH_PREFIX = "/webhook" ;
 

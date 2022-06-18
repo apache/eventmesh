@@ -18,39 +18,42 @@ package org.apache.eventmesh.webhook.api;
 
 import java.util.List;
 
+/**
+ * Define the operation of webhook configuration
+ */
 public interface WebHookConfigOperation {
 
-	/**
-	 * 添加配置
-	 * 
-	 * @return
-	 */
-	public Integer insertWebHookConfig(WebHookConfig webHookConfig);
+    /**
+     * Add the configuration
+     *
+     * @return
+     */
+    public Integer insertWebHookConfig(WebHookConfig webHookConfig);
 
-	/**
-	 * 修改配置
-	 * 
-	 * @return
-	 */
-	public Integer updateWebHookConfig(WebHookConfig webHookConfig);
+    /**
+     * Modify the configuration
+     *
+     * @return
+     */
+    public Integer updateWebHookConfig(WebHookConfig webHookConfig);
 
-	/**
-	 * 删除配置
-	 * 
-	 * @return
-	 */
-	public Integer deleteWebHookConfig(WebHookConfig webHookConfig);
+    /**
+     * Delete the configuration
+     *
+     * @return
+     */
+    public Integer deleteWebHookConfig(WebHookConfig webHookConfig);
 
-	/**
-	 * 通过id查询配置
-	 * 
-	 * @return
-	 */
-	public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig);
+    /**
+     * Query the configuration by ID
+     *
+     * @return
+     */
+    public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig);
 
-	/**
-	 * 通过厂商查询配置
-	 */
-	public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
-			Integer pageSize);
+    /**
+     * Query configurations through the manufacturer
+     */
+    public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
+                                                                Integer pageSize);
 }

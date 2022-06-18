@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.webhook.receive.protocol;
 
+import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;
 
 public class ProtocolManage {
 
