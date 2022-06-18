@@ -16,19 +16,22 @@ package org.apache.eventmesh.webhook.admin;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.common.utils.MD5Utils;
 import com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.ManufacturerObject;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.*;
 
+import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,12 +41,17 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation{
 
 	private static final Logger logger = LoggerFactory.getLogger(NacosWebHookConfigOperation.class);
 
-
-
 	private ConfigService configService;
 
+	private static final String NACOS_PROPERTIES_PREFIX = "eventMesh.webHook.nacosMode.";
+
 	public NacosWebHookConfigOperation(Properties properties) throws NacosException {
-		configService = ConfigFactory.createConfigService(properties);
+		Properties nacosProperties = new Properties();
+		nacosProperties.put(PropertyKeyConst.SERVER_ADDR, properties.getProperty(NACOS_PROPERTIES_PREFIX + PropertyKeyConst.SERVER_ADDR));
+		nacosProperties.put(PropertyKeyConst.NAMESPACE, properties.getProperty(NACOS_PROPERTIES_PREFIX + PropertyKeyConst.NAMESPACE));
+		nacosProperties.put(PropertyKeyConst.USERNAME, properties.getProperty(NACOS_PROPERTIES_PREFIX + PropertyKeyConst.USERNAME));
+		nacosProperties.put(PropertyKeyConst.PASSWORD, properties.getProperty(NACOS_PROPERTIES_PREFIX + PropertyKeyConst.PASSWORD));
+		configService = ConfigFactory.createConfigService(nacosProperties);
 
 		String manufacturers= configService.getConfig(MANUFACTURERS_DATA_ID, "webhook", TIMEOUT_MS);
 		if (manufacturers == null) {
@@ -54,22 +62,24 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation{
 
 	@Override
 	public Integer insertWebHookConfig(WebHookConfig webHookConfig) {
-		Boolean result = false;
+		if (!webHookConfig.getCallbackPath().startsWith(WebHookOperationConstant.CALLBACK_PATH_PREFIX)) {
+			logger.error("webhookConfig callback path must start with {}", WebHookOperationConstant.CALLBACK_PATH_PREFIX);
+			return 0;
+		}
+		Boolean result;
 		String manufacturerName = webHookConfig.getManufacturerName();
 		try {
-			// 判断配置是否已存在
 			if (configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), TIMEOUT_MS) != null) {
 				logger.error("insertWebHookConfig failed, config has existed");
 				return 0;
 			}
-			// 厂商名作为groupId
 			result = configService.publishConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), JsonUtils.serialize(webHookConfig), ConfigType.JSON.getType());
 		} catch (NacosException e) {
 			logger.error("insertWebHookConfig failed", e);
 			return 0;
 		}
 		if (result) {
-			//更新集合
+			// update manufacturer config
 			try {
 				ManufacturerObject manufacturerObject = getManufacturersInfo();
 				manufacturerObject.addManufacturer(manufacturerName);
@@ -77,6 +87,12 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation{
 				configService.publishConfig(MANUFACTURERS_DATA_ID, "webhook", JsonUtils.serialize(manufacturerObject), ConfigType.JSON.getType());
 			} catch (NacosException e) {
 				logger.error("update manufacturersInfo error", e);
+				//rollback insert
+				try {
+					configService.removeConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig));
+				} catch (NacosException ex) {
+					logger.error("rollback insertWebHookConfig failed", e);
+				}
 			}
 		}
 		return result ? 1 : 0;
@@ -86,7 +102,6 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation{
 	public Integer updateWebHookConfig(WebHookConfig webHookConfig) {
 		Boolean result = false;
 		try {
-			// 判断配置是否存在
 			if (configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), TIMEOUT_MS) == null) {
 				logger.error("updateWebHookConfig failed, config is not existed");
 				return 0;
@@ -103,7 +118,6 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation{
 		Boolean result = false;
 		String manufacturerName = webHookConfig.getManufacturerName();
 		try {
-			// 厂商名作为groupId，厂商事件名作为dataId
 			result = configService.removeConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig));
 		} catch (NacosException e) {
 			logger.error("deleteWebHookConfig failed", e);
@@ -137,14 +151,14 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation{
 			Integer pageSize) {
 		List<WebHookConfig> webHookConfigs = new ArrayList<>();
 		String manufacturerName = webHookConfig.getManufacturerName();
-		// 查出厂商的所有事件名称
+		// get manufacturer event list
 		try {
 			ManufacturerObject manufacturerObject = getManufacturersInfo();
 			List<String> manufacturerEvents = manufacturerObject.getManufacturerEvents(manufacturerName);
 			int startIndex = (pageNum-1)*pageSize, endIndex = pageNum*pageSize-1;
 			if (manufacturerEvents.size() > startIndex) {
+				// nacos API is not able to get all config, so use foreach
 				for (int i=startIndex; i<endIndex && i<manufacturerEvents.size(); i++) {
-					//由于nacos API无提供批量获取配置接口，只能遍历查询
 					String content = configService.getConfig(manufacturerEvents.get(i)+ DATA_ID_EXTENSION, getManuGroupId(webHookConfig), TIMEOUT_MS);
 					webHookConfigs.add(JsonUtils.deserialize(content, WebHookConfig.class));
 				}
@@ -156,12 +170,16 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation{
 	}
 
 	/**
-	 * 由于nacos配置名不可包含特殊字符，使用callbackPath的MD5值作为dataId
 	 * @param webHookConfig
 	 * @return
 	 */
 	private String getWebHookConfigDataId(WebHookConfig webHookConfig) {
-		return MD5Utils.md5Hex(webHookConfig.getCallbackPath(), "UTF_8") + DATA_ID_EXTENSION;
+		try {
+			return URLEncoder.encode(webHookConfig.getCallbackPath(), "UTF-8") + DATA_ID_EXTENSION;
+		} catch (UnsupportedEncodingException e) {
+			logger.error("get webhookConfig dataId {} failed", webHookConfig.getCallbackPath(), e);
+		}
+		return webHookConfig.getCallbackPath() + DATA_ID_EXTENSION;
 	}
 
 	private String getManuGroupId(WebHookConfig webHookConfig) {
