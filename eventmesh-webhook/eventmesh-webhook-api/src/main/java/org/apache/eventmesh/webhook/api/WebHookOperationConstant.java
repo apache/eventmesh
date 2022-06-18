@@ -15,30 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.webhook.receive;
+package org.apache.eventmesh.webhook.api;
 
-import lombok.Data;
+import java.io.File;
 
-@Data
-public class WebHookRequest {
+/**
+ * Webhook constant class
+ */
+public class WebHookOperationConstant {
 
-    /**
-     * manufacturer event id
-     */
-    private String manufacturerEventId;
+    public static final String FILE_SEPARATOR = File.separator;
 
-    /**
-     * manufacturer event name
-     */
-    private String manufacturerEventName;
+    public static final String FILE_EXTENSION = ".json";
 
-    /**
-     * manufacturer name
-     */
-    private String manufacturerSource;
+    public static final String GROUP_PREFIX = "webhook_";
 
-    /**
-     * webhook request body
-     */
-    private byte[] data;
+    public static final String DATA_ID_EXTENSION = ".json";
+
+    public static final String MANUFACTURERS_DATA_ID = "manufacturers" + DATA_ID_EXTENSION;
+
+    public static final Integer TIMEOUT_MS = 3 * 1000;
+
 }
