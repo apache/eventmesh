@@ -15,30 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.webhook.receive;
+package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import lombok.Data;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
 
-@Data
-public class WebHookRequest {
+public interface HttpProcessor {
+    String[] paths();
 
-    /**
-     * manufacturer event id
-     */
-    private String manufacturerEventId;
+    HttpResponse handler(HttpRequest httpRequest);
 
-    /**
-     * manufacturer event name
-     */
-    private String manufacturerEventName;
-
-    /**
-     * manufacturer name
-     */
-    private String manufacturerSource;
-
-    /**
-     * webhook request body
-     */
-    private byte[] data;
 }
