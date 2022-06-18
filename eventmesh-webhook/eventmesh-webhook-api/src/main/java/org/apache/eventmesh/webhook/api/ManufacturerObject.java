@@ -20,27 +20,28 @@ package org.apache.eventmesh.webhook.api;
 import java.util.*;
 
 /**
- * 厂商信息汇总实体
+ * Manufacturer information summary entity
+ * @author Jelly Mai
  */
 public class ManufacturerObject {
 
-    private Set<String> manufacturerList = new HashSet<>();
+    private Set<String> manufacturerSet = new HashSet<>();
 
-    private Map<String , List<String>> manufacturerEventMap = new HashMap<>();
+    private Map<String, List<String>> manufacturerEventMap = new HashMap<>();
 
 
-    public Set<String> getManufacturerList() {
-        return manufacturerList;
+    public Set<String> getManufacturerSet() {
+        return manufacturerSet;
     }
 
     public Set<String> addManufacturer(String manufacturer) {
-        manufacturerList.add(manufacturer);
-        return manufacturerList;
+        manufacturerSet.add(manufacturer);
+        return manufacturerSet;
     }
 
     public Set<String> removeManufacturer(String manufacturer) {
-        manufacturerList.remove(manufacturer);
-        return manufacturerList;
+        manufacturerSet.remove(manufacturer);
+        return manufacturerSet;
     }
 
     public Map<String, List<String>> getManufacturerEventMap() {
