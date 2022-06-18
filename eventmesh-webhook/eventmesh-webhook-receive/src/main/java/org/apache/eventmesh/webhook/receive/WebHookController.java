@@ -66,7 +66,7 @@ public class WebHookController {
 
         this.hookConfigOperationManage =
             new HookConfigOperationManage(configProperties.getProperty("eventMesh.webHook.operationMode"),
-                configProperties.getProperty("eventMesh.webHook.fileMode.filePath"));
+                configProperties);
     }
 
     /**

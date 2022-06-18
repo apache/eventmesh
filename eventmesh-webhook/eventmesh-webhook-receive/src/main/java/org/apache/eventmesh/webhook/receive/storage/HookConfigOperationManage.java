@@ -28,6 +28,7 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -58,20 +59,21 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
      * Initialize according to operationMode
      *
      * @param operationMode file/nacos...
-     * @param path          filePath/serverAddr
+     * @param config        Parameters required to initialize the behavior
      */
-    public HookConfigOperationManage(String operationMode, String path) throws FileNotFoundException, NacosException {
+    public HookConfigOperationManage(String operationMode, Properties config) throws FileNotFoundException, NacosException {
 
         this.operationMode = operationMode;
 
         if ("file".equals(operationMode)) {
-            new WebhookFileListener(path, cacheWebHookConfig);
+            new WebhookFileListener(config.getProperty("eventMesh.webHook.fileMode.filePath"), cacheWebHookConfig);
         } else if ("nacos".equals(operationMode)) {
-            nacosModeInit(path);
+            nacosModeInit(config);
         }
     }
 
-    private void nacosModeInit(String serverAddr) throws NacosException {
+    private void nacosModeInit(Properties config) throws NacosException {
+        String serverAddr = config.getProperty("eventMesh.webHook.nacos.server-addr");
         nacosConfigService = ConfigFactory.createConfigService(serverAddr);
     }
 
