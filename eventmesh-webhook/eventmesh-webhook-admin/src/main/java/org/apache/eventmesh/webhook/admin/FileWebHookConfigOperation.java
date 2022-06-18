@@ -175,6 +175,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 	private File getWebhookConfigFile(WebHookConfig webHookConfig) {
 		String webhookConfigFilePath = null;
 		try {
+			// use URLEncoder.encode before, because the path may contain some speacial char like '/', which is illegal as a file name.
 			webhookConfigFilePath = this.getWebhookConfigManuDir(webHookConfig) + WebHookOperationConstant.FILE_SEPARATOR + URLEncoder.encode(webHookConfig.getCallbackPath(), "UTF-8") + WebHookOperationConstant.FILE_EXTENSION;
 		} catch (UnsupportedEncodingException e) {
 			logger.error("get webhookConfig file path {} failed", webHookConfig.getCallbackPath(), e);
