@@ -37,6 +37,7 @@ public class AdminWebHookConfigOperationManage {
 
     private static final Map<String, Class<? extends WebHookConfigOperation>> map = new HashMap<>();
 
+    // todo 单例懒加载
     static {
         map.put("file", FileWebHookConfigOperation.class);
         map.put("nacos", NacosWebHookConfigOperation.class);
