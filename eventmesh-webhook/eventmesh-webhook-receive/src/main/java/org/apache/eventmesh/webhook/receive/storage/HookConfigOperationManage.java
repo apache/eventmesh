@@ -14,61 +14,89 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.webhook.receive.storage;
 
-import java.io.*;
-import java.nio.file.*;
-import java.nio.file.WatchEvent.Kind;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.DATA_ID_EXTENSION;
+import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.GROUP_PREFIX;
+import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.TIMEOUT_MS;
 
-import com.alibaba.nacos.api.PropertyKeyConst;
-import com.alibaba.nacos.api.config.ConfigFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.common.utils.MD5Utils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
-import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
+
+import java.io.FileNotFoundException;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.alibaba.nacos.api.config.ConfigFactory;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.exception.NacosException;
 
 public class HookConfigOperationManage implements WebHookConfigOperation {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private String filePath;
+    private String operationMode;
 
-    private Properties nacosProperties;
-
-    private Boolean filePattern;
-
-    private ConfigService configService;
+    private ConfigService nacosConfigService;
 
     /**
-     * webhook config pool -> <CallbackPath,WebHookConfig>
+     * webhook config pool -> key is CallbackPath
      */
     private final Map<String, WebHookConfig> cacheWebHookConfig = new ConcurrentHashMap<>();
 
     public HookConfigOperationManage() {
-        try {
-            filePatternInit(filePath);
-        } catch (FileNotFoundException e) {
-            filePattern = false;
-            logger.error("filePatternInit failed", e);
-        }
-        try {
-            nacosPatternInit(nacosProperties);
-        } catch (NacosException e) {
-            logger.error("nacosPatternInit failed", e);
+    }
+
+    /**
+     * Initialize according to operationMode
+     *
+     * @param operationMode file/nacos...
+     * @param config        Parameters required to initialize the behavior
+     */
+    public HookConfigOperationManage(String operationMode, Properties config) throws FileNotFoundException, NacosException {
+
+        this.operationMode = operationMode;
+
+        if ("file".equals(operationMode)) {
+            new WebhookFileListener(config.getProperty("eventMesh.webHook.fileMode.filePath"), cacheWebHookConfig);
+        } else if ("nacos".equals(operationMode)) {
+            nacosModeInit(config);
         }
     }
 
-    private void nacosPatternInit(Properties nacosProperties) throws NacosException {
-        configService = ConfigFactory.createConfigService(nacosProperties);
+    private void nacosModeInit(Properties config) throws NacosException {
+        String serverAddr = config.getProperty("eventMesh.webHook.nacos.server-addr");
+        nacosConfigService = ConfigFactory.createConfigService(serverAddr);
+    }
+
+    @Override
+    public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
+        if ("file".equals(operationMode)) {
+            return cacheWebHookConfig.get(webHookConfig.getCallbackPath());
+        } else if ("nacos".equals(operationMode)) {
+            try {
+                String content = nacosConfigService.getConfig(webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION,
+                    GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);
+                return JsonUtils.deserialize(content, WebHookConfig.class);
+            } catch (NacosException e) {
+                logger.error("queryWebHookConfigById failed", e);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
+                                                                Integer pageSize) {
+        return null;
     }
 
     @Override
@@ -87,134 +115,6 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     public Integer deleteWebHookConfig(WebHookConfig webHookConfig) {
         cacheWebHookConfig.remove(webHookConfig.getCallbackPath());
         return 1;
-    }
-
-    @Override
-    public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
-        if(filePattern) return cacheWebHookConfig.get(webHookConfig.getCallbackPath());
-        else{
-            try {
-                String content = configService.getConfig(MD5Utils.md5Hex(webHookConfig.getCallbackPath(), "UTF_8") + WebHookOperationConstant.DATA_ID_EXTENSION, WebHookOperationConstant.GROUP_PREFIX + webHookConfig.getManufacturerName(), WebHookOperationConstant.TIMEOUT_MS);
-                return JsonUtils.deserialize(content, WebHookConfig.class);
-            } catch (NacosException e) {
-                logger.error("queryWebHookConfigById failed", e);
-            }
-            return null;
-        }
-    }
-
-    @Override
-    public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
-                                                                Integer pageSize) {
-        return null;
-    }
-
-    public void filePatternInit(String filePath) throws FileNotFoundException {
-        File webHookFileDir = new File(filePath);
-        if (!webHookFileDir.isDirectory()) {
-            throw new FileNotFoundException("File path " + filePath + " is not directory");
-        }
-        if (!webHookFileDir.exists()) {
-            webHookFileDir.mkdirs();
-        } else {
-            readFunc(webHookFileDir);
-        }
-        fileWatch(filePath);
-    }
-
-    public void readFunc(File file) {
-        File[] fs = file.listFiles();
-        for (File f : Objects.requireNonNull(fs)) {
-            if (f.isDirectory()) readFunc(f);
-            if (f.isFile()) cacheInit(f);
-        }
-    }
-
-    public void cacheInit(File webhookConfigFile) {
-        StringBuilder fileContent = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(webhookConfigFile)))) {
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                fileContent.append(line);
-            }
-        } catch (IOException e) {
-            logger.error("cacheInit failed", e);
-        }
-        WebHookConfig webHookConfig = JsonUtils.deserialize(fileContent.toString(), WebHookConfig.class);
-        cacheWebHookConfig.put(webHookConfig.getCallbackPath(), webHookConfig);
-    }
-
-    private final Kind[] kinds = {
-            StandardWatchEventKinds.ENTRY_CREATE,
-            StandardWatchEventKinds.ENTRY_MODIFY,
-            StandardWatchEventKinds.ENTRY_DELETE};
-
-    Set<String> pathSet = new LinkedHashSet<>(); // monitored subdirectory
-
-    Map<WatchKey, String> watchKeyPathMap = new HashMap<>(); //WatchKey's path
-
-    public void fileWatch(String filePath) {
-        ExecutorService cachedThreadPool = Executors.newFixedThreadPool(1);
-        cachedThreadPool.execute(() -> {
-            File root = new File(filePath);
-            loopDir(root, pathSet);
-
-            WatchService service = null;
-            try {
-                service = FileSystems.getDefault().newWatchService();
-            } catch (Exception e) {
-                logger.error("getWatchService failed", e);
-            }
-
-            for (String path : pathSet) {
-                WatchKey key = null;
-                try {
-                    key = Paths.get(path).register(service, kinds);
-                } catch (IOException e) {
-                    logger.error("registerWatchKey failed", e);
-                }
-                watchKeyPathMap.put(key, path);
-            }
-
-            while (true) {
-                WatchKey key = null;
-                try {
-                    assert service != null;
-                    key = service.take();
-                } catch (InterruptedException e) {
-                    logger.error("Interrupted", e);
-                }
-
-                assert key != null;
-                for (WatchEvent<?> event : key.pollEvents()) {
-                    String flashPath = watchKeyPathMap.get(key);
-                    //manufacturer change
-                    if (flashPath.equals(filePath)) {
-                        if (StandardWatchEventKinds.ENTRY_CREATE == event.kind()) {
-                            try {
-                                key = Paths.get(filePath + event.context()).register(service, kinds);
-                            } catch (IOException e) {
-                                logger.error("registerWatchKey failed", e);
-                            }
-                            watchKeyPathMap.put(key, filePath + event.context());
-                        }
-                    } else { //config change
-                        cacheInit(new File(flashPath + event.context()));
-                    }
-                }
-                if (!key.reset()) break;
-            }
-        });
-    }
-
-    private void loopDir(File parent, Set<String> pathSet) {
-        if (!parent.isDirectory()) {
-            return;
-        }
-        pathSet.add(parent.getPath());
-        for (File child : Objects.requireNonNull(parent.listFiles())) {
-            loopDir(child, pathSet);
-        }
     }
 
 }

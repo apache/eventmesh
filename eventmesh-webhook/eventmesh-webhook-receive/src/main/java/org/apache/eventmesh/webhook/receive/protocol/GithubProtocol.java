@@ -14,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.webhook.receive.protocol;
 
-import java.util.Map;
 
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;
 import org.apache.eventmesh.webhook.receive.WebHookRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-/**
- * @author laohu and wff
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class GithubProtocol implements ManufacturerProtocol {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -67,10 +67,10 @@ public class GithubProtocol implements ManufacturerProtocol {
     private Boolean isValid(String fromSignature, byte[] data, String secret) {
         String hash = "sha256=";
         try {
-            Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secret_key = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
-            sha256_HMAC.init(secret_key);
-            byte[] bytes = sha256_HMAC.doFinal(data);
+            Mac sha = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+            sha.init(secretKey);
+            byte[] bytes = sha.doFinal(data);
             hash += byteArrayToHexString(bytes);
         } catch (Exception e) {
             logger.error("Error HmacSHA256", e);
@@ -89,8 +89,9 @@ public class GithubProtocol implements ManufacturerProtocol {
         String stmp;
         for (int n = 0; b != null && n < b.length; n++) {
             stmp = Integer.toHexString(b[n] & 0XFF);
-            if (stmp.length() == 1)
+            if (stmp.length() == 1) {
                 hs.append('0');
+            }
             hs.append(stmp);
         }
         return hs.toString().toLowerCase();
