@@ -18,7 +18,11 @@
 package org.apache.eventmesh.runtime.admin.controller;
 
 import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
+import org.apache.eventmesh.runtime.admin.handler.DeleteWebHookConfigHandler;
+import org.apache.eventmesh.runtime.admin.handler.InsertWebHookConfigHandler;
 import org.apache.eventmesh.runtime.admin.handler.QueryRecommendEventMeshHandler;
+import org.apache.eventmesh.runtime.admin.handler.QueryWebHookConfigByIdHandler;
+import org.apache.eventmesh.runtime.admin.handler.QueryWebHookConfigByManufacturerHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientByIpPortHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientByPathHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientBySubSystemHandler;
@@ -28,6 +32,7 @@ import org.apache.eventmesh.runtime.admin.handler.RejectClientBySubSystemHandler
 import org.apache.eventmesh.runtime.admin.handler.ShowClientBySystemHandler;
 import org.apache.eventmesh.runtime.admin.handler.ShowClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.ShowListenClientByTopicHandler;
+import org.apache.eventmesh.runtime.admin.handler.UpdateWebHookConfigHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 
 import java.io.IOException;
@@ -63,6 +68,11 @@ public class ClientManageController {
         server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler(eventMeshTCPServer));
         server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler(eventMeshTCPServer));
         server.createContext("/eventMesh/recommend", new QueryRecommendEventMeshHandler(eventMeshTCPServer));
+        server.createContext("/webhook/insertWebHookConfig", new InsertWebHookConfigHandler());
+        server.createContext("/webhook/updateWebHookConfig", new UpdateWebHookConfigHandler());
+        server.createContext("/webhook/deleteWebHookConfig", new DeleteWebHookConfigHandler());
+        server.createContext("/webhook/queryWebHookConfigById", new QueryWebHookConfigByIdHandler());
+        server.createContext("/webhook/queryWebHookConfigByManufacturer", new QueryWebHookConfigByManufacturerHandler());
 
         adminController = new AdminController();
         adminController.run(server);
