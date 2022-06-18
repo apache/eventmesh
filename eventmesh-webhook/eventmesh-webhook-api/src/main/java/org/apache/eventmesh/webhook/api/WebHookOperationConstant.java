@@ -21,6 +21,7 @@ import java.io.File;
 
 /**
  * Webhook constant class
+ * @author Jelly Mai
  */
 public class WebHookOperationConstant {
 
@@ -30,10 +31,12 @@ public class WebHookOperationConstant {
 
     public static final String GROUP_PREFIX = "webhook_";
 
+    public static final String CALLBACK_PATH_PREFIX = "/webhook" ;
+
     public static final String DATA_ID_EXTENSION = ".json";
 
     public static final String MANUFACTURERS_DATA_ID = "manufacturers" + DATA_ID_EXTENSION;
 
-    public static final Integer TIMEOUT_MS = 3 * 1000;
+    public static final long TIMEOUT_MS = 3 * 1000L;
 
 }
