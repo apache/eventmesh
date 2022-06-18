@@ -175,6 +175,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation{
 	 */
 	private String getWebHookConfigDataId(WebHookConfig webHookConfig) {
 		try {
+			// use URLEncoder.encode before, because the path may contain some speacial char like '/', which is illegal as a data id.
 			return URLEncoder.encode(webHookConfig.getCallbackPath(), "UTF-8") + DATA_ID_EXTENSION;
 		} catch (UnsupportedEncodingException e) {
 			logger.error("get webhookConfig dataId {} failed", webHookConfig.getCallbackPath(), e);
