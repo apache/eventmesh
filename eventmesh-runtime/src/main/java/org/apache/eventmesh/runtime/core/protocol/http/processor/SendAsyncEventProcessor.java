@@ -253,19 +253,16 @@ public class SendAsyncEventProcessor implements EventProcessor {
 
         long startTime = System.currentTimeMillis();
 
-        final CompleteHandler<HttpEventWrapper> handler = new CompleteHandler<HttpEventWrapper>() {
-            @Override
-            public void onResponse(HttpEventWrapper httpEventWrapper) {
-                try {
-                    if (httpLogger.isDebugEnabled()) {
-                        httpLogger.debug("{}", httpEventWrapper);
-                    }
-                    eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
-                            System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
-                } catch (Exception ex) {
-                    //ignore
+        final CompleteHandler<HttpEventWrapper> handler = httpEventWrapper -> {
+            try {
+                if (httpLogger.isDebugEnabled()) {
+                    httpLogger.debug("{}", httpEventWrapper);
                 }
+                eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
+                eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
+                    System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+            } catch (Exception ex) {
+                //ignore
             }
         };
 
@@ -320,8 +317,6 @@ public class SendAsyncEventProcessor implements EventProcessor {
             eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
             eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
         }
-
-        return;
     }
 
     @Override
