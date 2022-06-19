@@ -15,28 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.webhook.api;
+package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import java.io.File;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
 
-/**
- * Webhook constant class
- * @author Jelly Mai
- */
-public class WebHookOperationConstant {
+public interface HttpProcessor {
+    String[] paths();
 
-    public static final String FILE_SEPARATOR = File.separator;
-
-    public static final String FILE_EXTENSION = ".json";
-
-    public static final String GROUP_PREFIX = "webhook_";
-
-    public static final String CALLBACK_PATH_PREFIX = "/webhook" ;
-
-    public static final String DATA_ID_EXTENSION = ".json";
-
-    public static final String MANUFACTURERS_DATA_ID = "manufacturers" + DATA_ID_EXTENSION;
-
-    public static final long TIMEOUT_MS = 3 * 1000L;
+    HttpResponse handler(HttpRequest httpRequest);
 
 }
