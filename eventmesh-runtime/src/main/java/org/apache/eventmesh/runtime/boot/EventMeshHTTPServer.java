@@ -41,6 +41,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncMessag
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendSyncMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.UnSubscribeProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.WebHookProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
@@ -49,7 +50,7 @@ import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 import org.apache.eventmesh.trace.api.TraceService;
-
+import org.apache.eventmesh.webhook.receive.WebHookController;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -113,6 +114,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     public ThreadPoolExecutor clientManageExecutor;
 
     public ThreadPoolExecutor adminExecutor;
+    
+    public ThreadPoolExecutor webhookExecutor;
 
     private RateLimiter msgRateLimiter;
 
@@ -170,6 +173,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerReplyMsgThreadNum,
                 eventMeshHttpConfiguration.eventMeshServerReplyMsgThreadNum, replyMessageThreadPoolQueue,
                 "eventMesh-replyMsg-", true);
+       
+
     }
 
     public ThreadPoolExecutor getBatchMsgExecutor() {
@@ -235,7 +240,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         this.handlerService = new HandlerService();
         this.handlerService.setMetrics(metrics);
         
-        registerHTTPRequestProcessor();
+        
 
         //get the trace-plugin
         if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.eventMeshTracePluginType) && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
@@ -246,8 +251,14 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             super.tracer = traceService.getTracer(super.getClass().toString());
             super.textMapPropagator = traceService.getTextMapPropagator();
             super.useTrace = true;
+            
         }
-
+        HTTPTrace httpTrace = new HTTPTrace();
+        httpTrace.initTrace(tracer, textMapPropagator, useTrace);
+        this.handlerService.setHttpTrace(httpTrace);
+        
+        registerHTTPRequestProcessor();
+        this.initWebhook();
         logger.info("--------------------------EventMeshHTTPServer inited");
     }
 
@@ -322,7 +333,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         }
     }
 
-    public void registerHTTPRequestProcessor() {
+    public void registerHTTPRequestProcessor()  throws Exception{
         BatchSendMessageProcessor batchSendMessageProcessor = new BatchSendMessageProcessor(this);
         registerProcessor(RequestCode.MSG_BATCH_SEND.getRequestCode(), batchSendMessageProcessor, batchMsgExecutor);
 
@@ -350,6 +361,26 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);
+        
+
+    }
+    
+    private void initWebhook() throws Exception {
+    	
+    	
+    	
+        BlockingQueue<Runnable> webhookThreadPoolQueue = new LinkedBlockingQueue<Runnable>(100);
+        webhookExecutor =
+            ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerWebhookThreadNum,
+                eventMeshHttpConfiguration.eventMeshServerWebhookThreadNum, webhookThreadPoolQueue,
+                "eventMesh-webhook-", true);
+        WebHookProcessor webHookProcessor = new WebHookProcessor();
+        
+        WebHookController webHookController = new WebHookController();
+        webHookController.setConfigurationWrapper(eventMeshHttpConfiguration.getConfigurationWrapper());
+        webHookController.init();
+        webHookProcessor.setWebHookController(webHookController);
+        this.handlerService.register(webHookProcessor, webhookExecutor);
     }
 
     public ConsumerManager getConsumerManager() {

@@ -58,6 +58,8 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
     public int eventMeshServerAdminThreadNum = 2;
 
     public int eventMeshServerRetryThreadNum = 2;
+    
+    public int eventMeshServerWebhookThreadNum = 4;
 
     public int eventMeshServerPullRegistryInterval = 30000;
 

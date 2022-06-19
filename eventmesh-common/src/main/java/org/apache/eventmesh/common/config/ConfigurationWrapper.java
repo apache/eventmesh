@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 
 public class ConfigurationWrapper {
@@ -93,4 +95,29 @@ public class ConfigurationWrapper {
         }
         return Boolean.parseBoolean(configValue);
     }
+    
+    private String removePrefix(String key ,String prefix, boolean removePrefix ) {
+    	return removePrefix? key.replace(prefix, "") : key;
+    }
+    
+    public Properties getPropertiesByConfig(String prefix , boolean removePrefix) {
+    	Properties properties = new Properties();
+    	prefix = prefix.endsWith(".") ? prefix : prefix + ".";
+    	for( Entry<Object, Object> entry: this.properties.entrySet()) {
+    		String key = (String)entry.getKey();
+    		if(key.startsWith(prefix)) {
+    			properties.put(removePrefix(key ,prefix, removePrefix), entry.getValue());
+    		}
+    	}
+    	return properties;
+    }
+    
+    @SuppressWarnings("unchecked")
+	public <T>T getPropertiesByConfig(String prefix , Class<?> clazz, boolean removePrefix) {
+    	ObjectMapper objectMapper = new ObjectMapper();
+    	return (T)objectMapper.convertValue(getPropertiesByConfig(prefix, removePrefix), clazz);
+    }
+    
+    
+    
 }

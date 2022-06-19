@@ -22,6 +22,8 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.apache.eventmesh.runtime.boot.HTTPTrace;
+import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
@@ -45,6 +47,9 @@ public class HandlerService {
 
     @Setter
     private HTTPMetricsServer metrics;
+    
+    @Setter
+    private HTTPTrace httpTrace;
 	
     
 	public void init() {
@@ -98,6 +103,8 @@ public class HandlerService {
 	public void handler(ChannelHandlerContext ctx, HttpRequest httpRequest) {
 		
 		
+		TraceOperation traceOperation = httpTrace.getTraceOperation(httpRequest, ctx.channel());
+		
 		ProcessorWrapper processorWrapper = getProcessorWrapper(httpRequest);
 		if(Objects.isNull(processorWrapper)) {
 			this.sendResponse(ctx, HttpResponseUtils.createNotFound());
@@ -106,6 +113,7 @@ public class HandlerService {
 			HandlerSpecific handlerSpecific = new HandlerSpecific();
 			handlerSpecific.httpRequest = httpRequest;
 			handlerSpecific.ctx = ctx;
+			handlerSpecific.traceOperation = traceOperation;
 			processorWrapper.threadPoolExecutor.execute(handlerSpecific);
 		}catch(Exception e) {
 			httpServerLogger.error(e.getMessage(),e);
@@ -130,9 +138,17 @@ public class HandlerService {
 	}
 	
 	class HandlerSpecific implements Runnable{
-		ChannelHandlerContext ctx;
-		HttpRequest httpRequest;
-		HttpResponse response;
+		
+		private TraceOperation traceOperation;
+		
+		private ChannelHandlerContext ctx;
+		
+		private HttpRequest httpRequest;
+		
+		private HttpResponse response;
+		
+		private Throwable exception;
+		
 		long requestTime = System.currentTimeMillis();
 		
 		
@@ -150,6 +166,7 @@ public class HandlerService {
 			}catch(Throwable e) {
 				httpServerLogger.error("{},{}");
 				httpServerLogger.error(e.getMessage(),e);
+				exception = e;
 				this.errer();
 			}
 		}
@@ -162,6 +179,7 @@ public class HandlerService {
 	        if(Objects.isNull(response)) {
 				this.response = HttpResponseUtils.createSuccess();
 			}
+	        this.traceOperation.endTrace();
 	        this.sendResponse(this.response);
 		}
 
@@ -173,6 +191,7 @@ public class HandlerService {
 		}
 
 		private void errer() {
+			this.traceOperation.exceptionTrace(this.exception);
 			metrics.getSummaryMetrics().recordHTTPDiscard();
 			metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
 			this.sendResponse(HttpResponseUtils.createInternalServerError());
