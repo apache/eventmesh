@@ -39,6 +39,12 @@ public class QueryWebHookConfigByManufacturerHandler implements HttpHandler {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final EventMeshTCPServer eventMeshTCPServer;
+
+    public QueryWebHookConfigByManufacturerHandler(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
+    }
+
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         httpExchange.sendResponseHeaders(200, 0);
@@ -51,7 +57,8 @@ public class QueryWebHookConfigByManufacturerHandler implements HttpHandler {
         Integer pageNum = Integer.parseInt(node.get("pageNum").toString());
         Integer pageSize = Integer.parseInt(node.get("pageSize").toString());
 
-        AdminWebHookConfigOperationManage manage = new AdminWebHookConfigOperationManage();
+        AdminWebHookConfigOperationManage manage = eventMeshTCPServer.getAdminWebHookConfigOperationManage();
+
         try (OutputStream out = httpExchange.getResponseBody()) {
             WebHookConfigOperation operation = manage.getHookConfigOperationManage();
             List<WebHookConfig> result = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result

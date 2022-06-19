@@ -68,11 +68,11 @@ public class ClientManageController {
         server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler(eventMeshTCPServer));
         server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler(eventMeshTCPServer));
         server.createContext("/eventMesh/recommend", new QueryRecommendEventMeshHandler(eventMeshTCPServer));
-        server.createContext("/webhook/insertWebHookConfig", new InsertWebHookConfigHandler());
-        server.createContext("/webhook/updateWebHookConfig", new UpdateWebHookConfigHandler());
-        server.createContext("/webhook/deleteWebHookConfig", new DeleteWebHookConfigHandler());
-        server.createContext("/webhook/queryWebHookConfigById", new QueryWebHookConfigByIdHandler());
-        server.createContext("/webhook/queryWebHookConfigByManufacturer", new QueryWebHookConfigByManufacturerHandler());
+        server.createContext("/webhook/insertWebHookConfig", new InsertWebHookConfigHandler(eventMeshTCPServer));
+        server.createContext("/webhook/updateWebHookConfig", new UpdateWebHookConfigHandler(eventMeshTCPServer));
+        server.createContext("/webhook/deleteWebHookConfig", new DeleteWebHookConfigHandler(eventMeshTCPServer));
+        server.createContext("/webhook/queryWebHookConfigById", new QueryWebHookConfigByIdHandler(eventMeshTCPServer));
+        server.createContext("/webhook/queryWebHookConfigByManufacturer", new QueryWebHookConfigByManufacturerHandler(eventMeshTCPServer));
 
         adminController = new AdminController();
         adminController.run(server);

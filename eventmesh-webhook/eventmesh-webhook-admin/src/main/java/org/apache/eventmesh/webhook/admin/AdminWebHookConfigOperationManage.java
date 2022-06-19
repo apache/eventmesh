@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.webhook.admin;
 
+import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
@@ -36,8 +37,8 @@ public class AdminWebHookConfigOperationManage {
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final Map<String, Class<? extends WebHookConfigOperation>> map = new HashMap<>();
+    private static final Map<String, WebHookConfigOperation> instanceMap = new HashMap<>();
 
-    // todo 单例懒加载
     static {
         map.put("file", FileWebHookConfigOperation.class);
         map.put("nacos", NacosWebHookConfigOperation.class);
@@ -56,14 +57,23 @@ public class AdminWebHookConfigOperationManage {
             throw new IllegalStateException("operationMode is not supported.");
         }
 
-        Constructor<? extends WebHookConfigOperation> constructor = map.get(operationMode).getDeclaredConstructor(Properties.class);
-        constructor.setAccessible(true);
-        try {
-            return constructor.newInstance(configProperties);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            logger.error("can't find WebHookConfigOperation implementation");
-            throw new Exception("can't find WebHookConfigOperation implementation");
+        if (!instanceMap.containsKey(operationMode)) {
+            synchronized (AdminWebHookConfigOperationManage.class) {
+                if (!instanceMap.containsKey(operationMode)) {
+                    Constructor<? extends WebHookConfigOperation> constructor = map.get(operationMode).getDeclaredConstructor(Properties.class);
+                    constructor.setAccessible(true);
+                    try {
+                        WebHookConfigOperation result = constructor.newInstance(configProperties);
+                        instanceMap.put(operationMode, result);
+                        return result;
+                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                        logger.error("can't find WebHookConfigOperation implementation");
+                        throw new Exception("can't find WebHookConfigOperation implementation");
+                    }
+                }
+            }
         }
+        return instanceMap.get(operationMode);
     }
 
     /**

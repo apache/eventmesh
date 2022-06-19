@@ -37,6 +37,13 @@ public class QueryWebHookConfigByIdHandler implements HttpHandler {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final EventMeshTCPServer eventMeshTCPServer;
+
+    public QueryWebHookConfigByIdHandler(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
+    }
+
+
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         httpExchange.sendResponseHeaders(200, 0);
@@ -46,7 +53,8 @@ public class QueryWebHookConfigByIdHandler implements HttpHandler {
         String requestBody = NetUtils.parsePostBody(httpExchange);
         WebHookConfig webHookConfig = JsonUtils.toObject(requestBody, WebHookConfig.class);
 
-        AdminWebHookConfigOperationManage manage = new AdminWebHookConfigOperationManage();
+        AdminWebHookConfigOperationManage manage = eventMeshTCPServer.getAdminWebHookConfigOperationManage();
+
         try (OutputStream out = httpExchange.getResponseBody()) {
             WebHookConfigOperation operation = manage.getHookConfigOperationManage();
             WebHookConfig result = operation.queryWebHookConfigById(webHookConfig); // operating result

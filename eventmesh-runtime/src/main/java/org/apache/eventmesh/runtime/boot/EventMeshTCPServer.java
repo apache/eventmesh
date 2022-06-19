@@ -39,6 +39,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.Event
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.runtime.util.EventMeshThreadFactoryImpl;
+import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManage;
 
 import java.util.List;
 import java.util.Optional;
@@ -88,6 +89,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
     private Registry registry;
 
     private EventMeshRebalanceService eventMeshRebalanceService;
+
+    private AdminWebHookConfigOperationManage adminWebHookConfigOperationManage;
 
     public void setClientSessionGroupMapping(ClientSessionGroupMapping clientSessionGroupMapping) {
         this.clientSessionGroupMapping = clientSessionGroupMapping;
@@ -230,6 +233,9 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
                 new EventmeshRebalanceImpl(this));
             eventMeshRebalanceService.init();
         }
+
+        adminWebHookConfigOperationManage = new AdminWebHookConfigOperationManage();
+
         logger.info("--------------------------EventMeshTCPServer Inited");
     }
 
@@ -398,5 +404,13 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     public EventMeshRebalanceService getEventMeshRebalanceService() {
         return eventMeshRebalanceService;
+    }
+
+    public AdminWebHookConfigOperationManage getAdminWebHookConfigOperationManage() {
+        return adminWebHookConfigOperationManage;
+    }
+
+    public void setAdminWebHookConfigOperationManage(AdminWebHookConfigOperationManage adminWebHookConfigOperationManage) {
+        this.adminWebHookConfigOperationManage = adminWebHookConfigOperationManage;
     }
 }
