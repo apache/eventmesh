@@ -306,6 +306,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         	
         	if(Objects.nonNull(handlerService) && handlerService.isProcessorWrapper(httpRequest)) {
         		handlerService.handler(ctx, httpRequest);
+        		return;
         	}
         	
             Context context = null;

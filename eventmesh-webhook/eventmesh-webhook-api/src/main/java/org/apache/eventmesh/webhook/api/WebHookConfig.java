@@ -22,71 +22,71 @@ import lombok.Data;
 @Data
 public class WebHookConfig {
 
-	private String callbackPath;
+    private String callbackPath;
 
-	/**
-	 * manufacturer name ,like github
-	 */
-	private String manufacturerName;
+    /**
+     * manufacturer name ,like github
+     */
+    private String manufacturerName;
 
-	/**
-	 * webhook event name ,like rep-push
-	 */
-	private String manufacturerEventName;
+    /**
+     * webhook event name ,like rep-push
+     */
+    private String manufacturerEventName;
 
-	/**
-	 * http header content type
-	 */
-	private String contentType;
+    /**
+     * http header content type
+     */
+    private String contentType;
 
-	/**
-	 * description of this WebHookConfig
-	 */
-	private String description;
+    /**
+     * description of this WebHookConfig
+     */
+    private String description;
 
-	/**
-	 * secret key ,for authentication
-	 */
-	private String secret;
+    /**
+     * secret key ,for authentication
+     */
+    private String secret;
 
-	/**
-	 * userName ,for HTTP authentication
-	 */
-	private String userName;
+    /**
+     * userName ,for HTTP authentication
+     */
+    private String userName;
 
-	/**
-	 * password ,for HTTP authentication
-	 */
-	private String password;
+    /**
+     * password ,for HTTP authentication
+     */
+    private String password;
 
-	/**
-	 * roll out protocol ,like http/kafka
-	 */
-	private String cloudEventProtocol;
+    /**
+     * roll out protocol ,like http/kafka
+     */
+    private String cloudEventProtocol;
 
-	/**
-	 * roll out addr
-	 */
-	private String cloudEventServiceAddress;
+    /**
+     * roll out addr
+     */
+    private String cloudEventServiceAddress;
 
-	/**
-	 * roll out event name ,like topic to mq
-	 */
-	private String cloudEventName;
+    /**
+     * roll out event name ,like topic to mq
+     */
+    private String cloudEventName;
 
-	/**
-	 * 	roll out data format -> CloudEvent serialization mode
-	 *  If HTTP protocol is used, the request header contentType needs to be marked
-	 */
-	private String dataContentType;
+    /**
+     * roll out data format -> CloudEvent serialization mode
+     * If HTTP protocol is used, the request header contentType needs to be marked
+     */
+    private String dataContentType;
 
-	/**
-	 * source of event
-	 */
-	private String cloudEventSource;
+    /**
+     * source of event
+     */
+    private String cloudEventSource;
 
-	/**
-	 * id of cloudEvent ,like uuid/manufacturerEventId
-	 */
-	private String cloudEventIdGenerateMode;
+    /**
+     * id of cloudEvent ,like uuid/manufacturerEventId
+     */
+    private String cloudEventIdGenerateMode;
 }
