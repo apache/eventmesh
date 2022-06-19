@@ -17,6 +17,21 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.body.Body;
@@ -28,29 +43,16 @@ import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.runtime.common.Pair;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.trace.AttributeKeys;
 import org.apache.eventmesh.runtime.trace.SpanKey;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
@@ -94,13 +96,13 @@ import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
-import com.google.common.base.Preconditions;
-
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     public Logger httpServerLogger = LoggerFactory.getLogger(this.getClass());
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
+    
+    protected HandlerService handlerService;
 
     public HTTPMetricsServer metrics;
 
@@ -301,6 +303,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) {
+        	
+        	if(Objects.nonNull(handlerService) && handlerService.isProcessorWrapper(httpRequest)) {
+        		handlerService.handler(ctx, httpRequest);
+        	}
+        	
             Context context = null;
             Span span = null;
             if (useTrace) {
