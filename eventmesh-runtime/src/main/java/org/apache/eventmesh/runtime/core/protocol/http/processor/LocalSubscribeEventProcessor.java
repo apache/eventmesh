@@ -40,6 +40,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.EventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
+import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.WebhookUtil;
@@ -54,6 +55,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +66,8 @@ import io.netty.channel.ChannelHandlerContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 public class LocalSubscribeEventProcessor implements EventProcessor {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger("LocalSubscribeEventProcessor");
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
@@ -316,6 +321,30 @@ public class LocalSubscribeEventProcessor implements EventProcessor {
                 eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
                 eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
             }
+
+            // Update service metadata
+            this.updateMetadata();
+        }
+    }
+
+    /**
+     * Add a topic with subscribers to the service's metadata.
+     */
+    private void updateMetadata() {
+        try {
+            Map<String, String> metadata = new HashMap<>(1 << 4);
+            for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap : eventMeshHTTPServer.localConsumerGroupMapping.entrySet()) {
+                ConsumerGroupConf consumerGroupConf = consumerGroupMap.getValue();
+                Map<String, ConsumerGroupTopicConf> consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf();
+                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry : consumerGroupTopicConf.entrySet()) {
+                    ConsumerGroupTopicConf groupTopicConf = consumerGroupTopicConfEntry.getValue();
+                    metadata.put(groupTopicConf.getTopic(), String.join(",", groupTopicConf.getUrls()));
+                }
+            }
+            Registry registry = eventMeshHTTPServer.getRegistry();
+            registry.registerMetadata(metadata);
+        } catch (Exception e) {
+            LOGGER.error("[LocalSubscribeEventProcessor] update eventmesh metadata error", e);
         }
     }
 
