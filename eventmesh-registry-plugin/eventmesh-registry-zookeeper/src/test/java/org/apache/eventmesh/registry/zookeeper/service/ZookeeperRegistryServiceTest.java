@@ -37,18 +37,18 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ZKRegistryServiceTest {
+public class ZookeeperRegistryServiceTest {
 
     @Mock
     private EventMeshRegisterInfo eventMeshRegisterInfo;
     @Mock
     private EventMeshUnRegisterInfo eventMeshUnRegisterInfo;
 
-    private ZKRegistryService zkRegistryService;
+    private ZookeeperRegistryService zkRegistryService;
 
     @Before
     public void setUp() {
-        zkRegistryService = new ZKRegistryService();
+        zkRegistryService = new ZookeeperRegistryService();
         CommonConfiguration configuration = new CommonConfiguration(null);
         configuration.namesrvAddr = "10.11.12.66:1500";
         configuration.eventMeshRegistryPluginPassword = "zookeeper";
@@ -95,7 +95,7 @@ public class ZKRegistryServiceTest {
         zkRegistryService.start();
         zkRegistryService.shutdown();
 
-        Class<ZKRegistryService> zkRegistryServiceClass = ZKRegistryService.class;
+        Class<ZookeeperRegistryService> zkRegistryServiceClass = ZookeeperRegistryService.class;
         Field initStatus = zkRegistryServiceClass.getDeclaredField("INIT_STATUS");
         initStatus.setAccessible(true);
         Object initStatusField = initStatus.get(zkRegistryService);
