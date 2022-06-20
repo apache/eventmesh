@@ -44,6 +44,8 @@ public interface RegistryService {
     Map<String/*eventMeshName*/, Map<String/*purpose*/, Integer/*num*/>> findEventMeshClientDistributionData(
         String clusterName, String group, String purpose) throws RegistryException;
 
+    void registerMetadata(Map<String, String> metadataMap);
+
     boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws RegistryException;
 
     boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws RegistryException;

@@ -213,6 +213,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         return batchRateLimiter;
     }
 
+    public Registry getRegistry() {
+        return registry;
+    }
+
     public void init() throws Exception {
         logger.info("==================EventMeshHTTPServer Initialing==================");
         super.init("eventMesh-http");

@@ -58,6 +58,10 @@ public class Registry {
         return registryService.findEventMeshClientDistributionData(clusterName, group, purpose);
     }
 
+    public void registerMetadata(Map<String, String> metadata) {
+        registryService.registerMetadata(metadata);
+    }
+
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws Exception {
         return registryService.register(eventMeshRegisterInfo);
     }
