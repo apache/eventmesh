@@ -33,7 +33,7 @@ import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
-import org.apache.eventmesh.registry.zookeeper.constant.ZKConstant;
+import org.apache.eventmesh.registry.zookeeper.constant.ZookeeperConstant;
 import org.apache.eventmesh.registry.zookeeper.util.JsonUtils;
 import org.apache.zookeeper.CreateMode;
 import org.slf4j.Logger;
@@ -48,9 +48,9 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-public class ZKRegistryService implements RegistryService {
+public class ZookeeperRegistryService implements RegistryService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ZKRegistryService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperRegistryService.class);
 
     private static final AtomicBoolean INIT_STATUS = new AtomicBoolean(false);
 
@@ -92,14 +92,14 @@ public class ZKRegistryService implements RegistryService {
 
             zkClient = CuratorFrameworkFactory.builder()
                     .connectString(serverAddr)
-                    .sessionTimeoutMs(ZKConstant.SESSION_TIME_OUT)
+                    .sessionTimeoutMs(ZookeeperConstant.SESSION_TIME_OUT)
                     .retryPolicy(retryPolicy)
-                    .namespace(ZKConstant.NAMESPACE)
+                    .namespace(ZookeeperConstant.NAMESPACE)
                     .build();
             zkClient.start();
 
         } catch (Exception e) {
-            logger.error("[ZKRegistryService][start] error", e);
+            logger.error("[ZookeeperRegistryService][start] error", e);
             throw new RegistryException(e.getMessage());
         }
     }
@@ -111,10 +111,10 @@ public class ZKRegistryService implements RegistryService {
         try {
             zkClient.close();
         } catch (Exception e) {
-            logger.error("[ZKRegistryService][shutdown] error", e);
+            logger.error("[ZookeeperRegistryService][shutdown] error", e);
             throw new RegistryException(e.getMessage());
         }
-        logger.info("ZKRegistryService close");
+        logger.info("ZookeeperRegistryService close");
     }
 
     @Override
@@ -142,7 +142,7 @@ public class ZKRegistryService implements RegistryService {
                         .collect(Collectors.toList());
 
             } catch (Exception e) {
-                logger.error("[ZKRegistryService][findEventMeshInfoByCluster] error", e);
+                logger.error("[ZookeeperRegistryService][findEventMeshInfoByCluster] error", e);
                 throw new RegistryException(e.getMessage());
             }
 
@@ -161,7 +161,7 @@ public class ZKRegistryService implements RegistryService {
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws RegistryException {
         try {
 
-            String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(ZKConstant.IP_PORT_SEPARATOR);
+            String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(ZookeeperConstant.IP_PORT_SEPARATOR);
             String ip = ipPort[0];
             Integer port = Integer.valueOf(ipPort[1]);
             String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
@@ -183,7 +183,7 @@ public class ZKRegistryService implements RegistryService {
                     .forPath(path, JsonUtils.toJSON(dataMap).getBytes(Charset.forName("utf-8")));
 
         } catch (Exception e) {
-            logger.error("[ZKRegistryService][register] error", e);
+            logger.error("[ZookeeperRegistryService][register] error", e);
             throw new RegistryException(e.getMessage());
         }
         logger.info("EventMesh successfully registered to zookeeper");
@@ -200,7 +200,7 @@ public class ZKRegistryService implements RegistryService {
 
             zkClient.delete().forPath(path);
         } catch (Exception e) {
-            logger.error("[ZKRegistryService][unRegister] error", e);
+            logger.error("[ZookeeperRegistryService][unRegister] error", e);
             throw new RegistryException(e.getMessage());
         }
         logger.info("EventMesh successfully logout to zookeeper");
@@ -208,14 +208,14 @@ public class ZKRegistryService implements RegistryService {
     }
 
     private String formatInstancePath(String clusterName, String serviceName, String endPoint){
-        return ZKConstant.PATH_SEPARATOR.concat(clusterName)
-                .concat(ZKConstant.PATH_SEPARATOR).concat(serviceName)
-                .concat(ZKConstant.PATH_SEPARATOR).concat(endPoint);
+        return ZookeeperConstant.PATH_SEPARATOR.concat(clusterName)
+                .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName)
+                .concat(ZookeeperConstant.PATH_SEPARATOR).concat(endPoint);
     }
 
     private String formatServicePath(String clusterName,String serviceName){
-        return ZKConstant.PATH_SEPARATOR.concat(clusterName)
-                .concat(ZKConstant.PATH_SEPARATOR).concat(serviceName);
+        return ZookeeperConstant.PATH_SEPARATOR.concat(clusterName)
+                .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName);
     }
 
     public String getServerAddr() {
