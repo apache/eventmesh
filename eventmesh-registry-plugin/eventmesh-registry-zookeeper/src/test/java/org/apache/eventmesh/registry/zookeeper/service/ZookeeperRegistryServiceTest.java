@@ -24,6 +24,9 @@ import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+
+import org.apache.curator.test.TestingServer;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -46,22 +49,23 @@ public class ZookeeperRegistryServiceTest {
 
     private ZookeeperRegistryService zkRegistryService;
 
+    private TestingServer testingServer;
+
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        testingServer = new TestingServer(1500, true);
+        testingServer.start();
+
         zkRegistryService = new ZookeeperRegistryService();
         CommonConfiguration configuration = new CommonConfiguration(null);
-        configuration.namesrvAddr = "10.11.12.66:1500";
-        configuration.eventMeshRegistryPluginPassword = "zookeeper";
-        configuration.eventMeshRegistryPluginUsername = "zookeeper";
+        configuration.namesrvAddr = "127.0.0.1:1500";
         configuration.eventMeshName = "eventmesh";
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
-
 
         Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmeshCluster");
         Mockito.when(eventMeshRegisterInfo.getEventMeshName()).thenReturn("eventmesh-" + ConfigurationContextUtil.HTTP);
         Mockito.when(eventMeshRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:8848");
         Mockito.when(eventMeshRegisterInfo.getEventMeshInstanceNumMap()).thenReturn(Maps.newHashMap());
-
 
         Mockito.when(eventMeshUnRegisterInfo.getEventMeshClusterName()).thenReturn("eventmeshCluster");
         Mockito.when(eventMeshUnRegisterInfo.getEventMeshName()).thenReturn("eventmesh-" + ConfigurationContextUtil.HTTP);
@@ -69,10 +73,10 @@ public class ZookeeperRegistryServiceTest {
     }
 
     @After
-    public void after() {
+    public void after() throws Exception {
         zkRegistryService.shutdown();
+        testingServer.close();
     }
-
 
     @Test
     public void testInit() {
@@ -86,7 +90,6 @@ public class ZookeeperRegistryServiceTest {
         zkRegistryService.init();
         zkRegistryService.start();
         Assert.assertNotNull(zkRegistryService.getZkClient());
-
     }
 
     @Test
@@ -103,7 +106,6 @@ public class ZookeeperRegistryServiceTest {
         Field startStatus = zkRegistryServiceClass.getDeclaredField("START_STATUS");
         startStatus.setAccessible(true);
         Object startStatusField = startStatus.get(zkRegistryService);
-
 
         Assert.assertFalse((Boolean.parseBoolean(initStatusField.toString())));
         Assert.assertFalse((Boolean.parseBoolean(startStatusField.toString())));
@@ -143,7 +145,4 @@ public class ZookeeperRegistryServiceTest {
 
         Assert.assertTrue(unRegister);
     }
-
-
-
 }
