@@ -29,7 +29,7 @@ export LC_ALL=en_US.UTF-8
 TMP_JAVA_HOME="/nemo/jdk1.8.0_152"
 
 #detect operating system.
-OS=$(uname -o)
+OS=$(uname)
 
 function is_java8 {
         local _java="$1"
