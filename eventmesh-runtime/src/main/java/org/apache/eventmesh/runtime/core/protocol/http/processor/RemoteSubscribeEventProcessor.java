@@ -232,7 +232,7 @@ public class RemoteSubscribeEventProcessor implements EventProcessor {
             Map<String, Object> remoteBodyMap = new HashMap<>();
             remoteBodyMap.put("url", localUrl);
             remoteBodyMap.put("consumerGroup", meshGroup);
-            remoteBodyMap.put("topic", topic);
+            remoteBodyMap.put("topic", requestBodyMap.get("topic"));
 
             String targetMesh = requestBodyMap.get("remoteMesh").toString();
 
