@@ -28,6 +28,8 @@ public class EventMeshRegisterInfo {
     private String endPoint;
     private Map<String, Map<String, Integer>> eventMeshInstanceNumMap;
 
+    private Map<String, String> metadata;
+
     public String getEventMeshClusterName() {
         return eventMeshClusterName;
     }
@@ -58,5 +60,13 @@ public class EventMeshRegisterInfo {
 
     public void setEventMeshInstanceNumMap(Map<String, Map<String, Integer>> eventMeshInstanceNumMap) {
         this.eventMeshInstanceNumMap = eventMeshInstanceNumMap;
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
     }
 }
