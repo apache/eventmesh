@@ -20,7 +20,7 @@ package org.apache.eventmesh.registry.zookeeper.constant;
 /**
  * ZookeeperConstant.
  */
-public class ZKConstant {
+public class ZookeeperConstant {
 
     public static final String NAMESPACE = "eventmesh-zcy";
 
