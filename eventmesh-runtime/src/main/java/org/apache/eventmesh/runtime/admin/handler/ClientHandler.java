@@ -18,11 +18,15 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
-import org.apache.eventmesh.runtime.admin.response.Client;
+import org.apache.eventmesh.runtime.admin.response.ClientResponse;
+import org.apache.eventmesh.runtime.admin.response.Error;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
+import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
@@ -32,6 +36,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,42 +70,89 @@ public class ClientHandler implements HttpHandler {
      */
     void list(HttpExchange httpExchange) throws IOException {
         OutputStream out = httpExchange.getResponseBody();
+        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
         try {
+            // Get the list of TCP clients
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             Map<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            List<Client> clientList = new ArrayList<Client>();
+            List<ClientResponse> clientResponseList = new ArrayList<>();
             for (Session session : sessionMap.values()) {
                 UserAgent userAgent = session.getClient();
-                Client client = new Client(
-                        userAgent.getEnv(),
-                        userAgent.getSubsystem(),
-                        userAgent.getPath(),
-                        userAgent.getPid(),
-                        userAgent.getHost(),
+                ClientResponse clientResponse = new ClientResponse(
+                        Optional.ofNullable(userAgent.getEnv()).orElse(""),
+                        Optional.ofNullable(userAgent.getSubsystem()).orElse(""),
+                        Optional.ofNullable(userAgent.getPath()).orElse(""),
+                        String.valueOf(userAgent.getPid()),
+                        Optional.ofNullable(userAgent.getHost()).orElse(""),
                         userAgent.getPort(),
-                        userAgent.getVersion(),
-                        userAgent.getIdc(),
-                        userAgent.getGroup(),
-                        userAgent.getPurpose(),
+                        Optional.ofNullable(userAgent.getVersion()).orElse(""),
+                        Optional.ofNullable(userAgent.getIdc()).orElse(""),
+                        Optional.ofNullable(userAgent.getGroup()).orElse(""),
+                        Optional.ofNullable(userAgent.getPurpose()).orElse(""),
                         "TCP"
                 );
-                clientList.add(client);
+                clientResponseList.add(clientResponse);
             }
 
-            clientList.sort((lhs, rhs) -> {
+            // Get the list of HTTP clients
+            for (List<Client> clientList : eventMeshHTTPServer.localClientInfoMapping.values()) {
+                for (Client client : clientList) {
+                    ClientResponse clientResponse = new ClientResponse(
+                            Optional.ofNullable(client.env).orElse(""),
+                            Optional.ofNullable(client.sys).orElse(""),
+                            Optional.ofNullable(client.url).orElse(""),
+                            "0",
+                            Optional.ofNullable(client.hostname).orElse(""),
+                            0,
+                            Optional.ofNullable(client.apiVersion).orElse(""),
+                            Optional.ofNullable(client.idc).orElse(""),
+                            Optional.ofNullable(client.consumerGroup).orElse(""),
+                            "",
+                            "gRPC"
+                    );
+                    clientResponseList.add(clientResponse);
+                }
+            }
+
+            // Get the list of gRPC clients
+            ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
+            Map<String, List<ConsumerGroupClient>> clientTable = consumerManager.getClientTable();
+            for (List<ConsumerGroupClient> clientList : clientTable.values()) {
+                for (ConsumerGroupClient client : clientList) {
+                    ClientResponse clientResponse = new ClientResponse(
+                            Optional.ofNullable(client.env).orElse(""),
+                            Optional.ofNullable(client.sys).orElse(""),
+                            Optional.ofNullable(client.url).orElse(""),
+                            "0",
+                            Optional.ofNullable(client.hostname).orElse(""),
+                            0,
+                            Optional.ofNullable(client.apiVersion).orElse(""),
+                            Optional.ofNullable(client.idc).orElse(""),
+                            Optional.ofNullable(client.consumerGroup).orElse(""),
+                            "",
+                            "gRPC"
+                    );
+                    clientResponseList.add(clientResponse);
+                }
+            }
+
+            clientResponseList.sort((lhs, rhs) -> {
                 if (lhs.host.equals(rhs.host)) {
                     return lhs.host.compareTo(rhs.host);
                 }
                 return Integer.compare(rhs.port, lhs.port);
             });
 
-            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-            httpExchange.sendResponseHeaders(200, 0);
-            String result = JsonUtils.toJson(clientList);
+            String result = JsonUtils.toJson(clientResponseList);
+            httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
-            httpExchange.sendResponseHeaders(500, 0);
+            Error error = new Error(e.toString());
+            String result = JsonUtils.toJson(error);
+            httpExchange.sendResponseHeaders(500, result.getBytes().length);
+            out.write(result.getBytes());
         } finally {
             if (out != null) {
                 try {
@@ -110,7 +162,6 @@ public class ClientHandler implements HttpHandler {
                 }
             }
         }
-
     }
 
     @Override

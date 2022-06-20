@@ -61,6 +61,10 @@ public class ConsumerManager {
         this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
+    public Map<String, List<ConsumerGroupClient>> getClientTable() {
+        return clientTable;
+    }
+
     public void init() throws Exception {
         logger.info("Grpc ConsumerManager initialized......");
     }

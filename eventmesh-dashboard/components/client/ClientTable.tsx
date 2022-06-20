@@ -66,61 +66,6 @@ const ClientRow = ({
   </Tr>
 );
 
-const fakeClient = [
-  {
-    env: 'test',
-    subsystem: '5023',
-    path: '/data/app/umg_proxy',
-    pid: 32893,
-    host: '172.17.0.1',
-    port: 61140,
-    version: '2.0.11',
-    idc: 'FT',
-    group: 'EventmeshTestGroup',
-    purpose: 'pub',
-    protocol: 'TCP',
-  },
-  {
-    env: 'test',
-    subsystem: '5023',
-    path: '/data/app/umg_proxy',
-    pid: 32893,
-    host: '172.17.0.1',
-    port: 61142,
-    version: '2.0.11',
-    idc: 'FT',
-    group: 'EventmeshTestGroup',
-    purpose: 'pub',
-    protocol: 'TCP',
-  },
-  {
-    env: 'test',
-    subsystem: '5017',
-    path: '/data/app/umg_proxy',
-    pid: 42893,
-    host: '172.17.0.1',
-    port: 61148,
-    version: '2.0.11',
-    idc: 'FT',
-    group: 'EventmeshTestGroup',
-    purpose: 'sub',
-    protocol: 'TCP',
-  },
-  {
-    env: 'test',
-    subsystem: '5017',
-    path: '/data/app/umg_proxy',
-    pid: 42893,
-    host: '172.17.0.1',
-    port: 61150,
-    version: '2.0.11',
-    idc: 'FT',
-    group: 'EventmeshTestGroup',
-    purpose: 'sub',
-    protocol: 'TCP',
-  },
-];
-
 const ClientTable = () => {
   const [searchInput, setsearchInput] = useState<string>('');
   const handleSearchInputChange = (event: React.FormEvent<HTMLInputElement>) => {
@@ -138,7 +83,7 @@ const ClientTable = () => {
     setGroupFilter(event.currentTarget.value);
   };
 
-  const [clientList, setClientList] = useState<Client[]>(fakeClient);
+  const [clientList, setClientList] = useState<Client[]>([]);
   const toast = useToast();
   useEffect(() => {
     const fetch = async () => {
@@ -147,7 +92,7 @@ const ClientTable = () => {
         setClientList(data);
 
         const nextGroupSet = new Set<string>();
-        clientList.forEach(({ group }) => {
+        data.forEach(({ group }) => {
           nextGroupSet.add(group);
         });
         setGroupSet(nextGroupSet);

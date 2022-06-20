@@ -18,13 +18,14 @@
 package org.apache.eventmesh.runtime.admin.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Client {
+public class ClientResponse {
     public String env;
     public String subsystem;
     public String path;
-    public int pid;
+    public String pid;
     public String host;
     public int port;
     public String version;
@@ -34,11 +35,11 @@ public class Client {
     public String protocol;
 
     @JsonCreator
-    public Client(
+    public ClientResponse(
             @JsonProperty("env") String env,
             @JsonProperty("subsystem") String subsystem,
             @JsonProperty("path") String path,
-            @JsonProperty("pid") int pid,
+            @JsonProperty("pid") String pid,
             @JsonProperty("host") String host,
             @JsonProperty("port") int port,
             @JsonProperty("version") String version,
