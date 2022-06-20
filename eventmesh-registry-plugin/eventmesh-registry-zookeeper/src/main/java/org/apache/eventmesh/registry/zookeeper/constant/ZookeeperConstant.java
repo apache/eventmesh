@@ -22,7 +22,7 @@ package org.apache.eventmesh.registry.zookeeper.constant;
  */
 public class ZookeeperConstant {
 
-    public static final String NAMESPACE = "eventmesh-zcy";
+    public static final String NAMESPACE = "eventmesh";
 
     public static final String IP_PORT_SEPARATOR = ":";
 
