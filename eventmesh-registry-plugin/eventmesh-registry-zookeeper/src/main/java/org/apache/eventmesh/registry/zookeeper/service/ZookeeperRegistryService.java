@@ -92,7 +92,6 @@ public class ZookeeperRegistryService implements RegistryService {
 
             zkClient = CuratorFrameworkFactory.builder()
                     .connectString(serverAddr)
-                    .sessionTimeoutMs(ZookeeperConstant.SESSION_TIME_OUT)
                     .retryPolicy(retryPolicy)
                     .namespace(ZookeeperConstant.NAMESPACE)
                     .build();
