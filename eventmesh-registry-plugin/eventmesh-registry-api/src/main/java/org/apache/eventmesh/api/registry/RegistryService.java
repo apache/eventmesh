@@ -41,6 +41,8 @@ public interface RegistryService {
 
     List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws RegistryException;
 
+    List<EventMeshDataInfo> findAllEventMeshInfo() throws RegistryException;
+
     Map<String/*eventMeshName*/, Map<String/*purpose*/, Integer/*num*/>> findEventMeshClientDistributionData(
         String clusterName, String group, String purpose) throws RegistryException;
 
