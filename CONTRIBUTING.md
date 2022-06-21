@@ -92,7 +92,7 @@ EventMesh follows [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.
 have the Apache License header added to the file header. EventMesh uses the [apache/skywalking-eyes](https://github.com/apache/skywalking-eyes) to check 
 the source file header.
 
-EventMesh uses [check-dependencies.sh](tools/third-party-dependencies/check-dependencies.sh) script to check for third-part dependencies. 
+EventMesh uses [check-dependencies.sh](tools/dependency-check/check-dependencies.sh) script to check for third-part dependencies. 
 When you need to add a three-part dependency, you need to register the newly added dependency in tool/license/known-dependencies.txt. The newly added three-part libraries need to meet [ASF 3RD PARTY LICENSE POLICY](https://apache.org/legal/resolved.html). 
 It is highly recommended communicating with EventMesh community before you need to add a three-part library.
 
