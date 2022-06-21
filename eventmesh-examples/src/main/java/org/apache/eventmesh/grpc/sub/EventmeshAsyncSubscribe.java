@@ -22,6 +22,7 @@ import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -39,21 +40,19 @@ public class EventmeshAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage>
     public static EventmeshAsyncSubscribe handler = new EventmeshAsyncSubscribe();
 
     public static void main(String[] args) throws InterruptedException {
-        Properties properties = Utils.readPropertiesFile("application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
-
-        final String topic = "TEST-TOPIC-GRPC-ASYNC";
+        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup("EventMeshTest-consumerGroup")
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
             .env("env").idc("idc")
             .sys("1234").build();
 
         SubscriptionItem subscriptionItem = new SubscriptionItem();
-        subscriptionItem.setTopic(topic);
+        subscriptionItem.setTopic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC);
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
@@ -71,7 +70,7 @@ public class EventmeshAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage>
 
     @Override
     public Optional<EventMeshMessage> handle(EventMeshMessage msg) {
-        log.info("receive async msg====================={}", msg);
+        log.info("receive async msg: {}", msg);
         return Optional.empty();
     }
 

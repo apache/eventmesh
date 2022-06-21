@@ -61,9 +61,11 @@ public class ZipkinTraceService implements EventMeshTraceService {
     private int eventMeshTraceExportTimeout;
     private int eventMeshTraceMaxExportSize;
     private int eventMeshTraceMaxQueueSize;
-    private SdkTracerProvider sdkTracerProvider;
+    protected SdkTracerProvider sdkTracerProvider;
 
-    private OpenTelemetry openTelemetry;
+    protected OpenTelemetry openTelemetry;
+
+    protected Thread shutdownHook;
 
     private Tracer tracer;
     private TextMapPropagator textMapPropagator;
@@ -108,7 +110,8 @@ public class ZipkinTraceService implements EventMeshTraceService {
         tracer = openTelemetry.getTracer(serviceName);
         textMapPropagator = openTelemetry.getPropagators().getTextMapPropagator();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(sdkTracerProvider::close));
+        shutdownHook = new Thread(sdkTracerProvider::close);
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
     }
 
     @Override

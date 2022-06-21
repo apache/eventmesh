@@ -21,6 +21,7 @@ package org.apache.eventmesh.grpc.sub.app.service;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -46,14 +47,14 @@ public class SubService implements InitializingBean {
 
     private EventMeshGrpcConsumer eventMeshGrpcConsumer;
 
-    final Properties properties = Utils.readPropertiesFile("application.properties");
+    final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
 
     final SubscriptionItem subscriptionItem = new SubscriptionItem();
 
     final String localIp = IPUtils.getLocalAddress();
     final String localPort = properties.getProperty("server.port");
-    final String eventMeshIp = properties.getProperty("eventmesh.ip");
-    final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
+    final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+    final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
     final String url = "http://" + localIp + ":" + localPort + "/sub/test";
     final String env = "P";
     final String idc = "FT";
@@ -68,14 +69,14 @@ public class SubService implements InitializingBean {
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup("EventMeshTest-consumerGroup2")
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
             .env(env).idc(idc)
             .sys(subsys).build();
 
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();
 
-        subscriptionItem.setTopic("TEST-TOPIC-GRPC-ASYNC");
+        subscriptionItem.setTopic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC);
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.ASYNC);
 
@@ -114,8 +115,8 @@ public class SubService implements InitializingBean {
      * Count the message already consumed
      */
     public void consumeMessage(String msg) {
-        logger.info("consume message {}", msg);
+        logger.info("consume message: {}", msg);
         countDownLatch.countDown();
-        logger.info("remaining number of messages to be consumed {}", countDownLatch.getCount());
+        logger.info("remaining number of messages to be consumed: {}", countDownLatch.getCount());
     }
 }

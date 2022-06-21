@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.client.http.producer.RRCallback;
 import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -39,23 +40,22 @@ public class AsyncSyncRequestInstance {
 
     public static void main(String[] args) throws Exception {
 
-        Properties properties = Utils.readPropertiesFile("application.properties");
-        Preconditions.checkNotNull(properties, "application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
+        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        Preconditions.checkNotNull(properties, ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
 
         EventMeshHttpProducer eventMeshHttpProducer = null;
         try {
             String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
-            final String topic = "TEST-TOPIC-TCP-ASYNC";
             if (StringUtils.isBlank(eventMeshIPPort)) {
                 // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-                eventMeshIPPort = "127.0.0.1:10105";
+                eventMeshIPPort = ExampleConstants.DEFAULT_EVENTMESH_IP_PORT;
             }
 
             EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
                     .liteEventMeshAddr(eventMeshIPPort)
-                    .producerGroup("EventMeshTest-producerGroup")
+                    .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
                     .env("env")
                     .idc("idc")
                     .ip(IPUtils.getLocalAddress())
@@ -68,13 +68,13 @@ public class AsyncSyncRequestInstance {
             final EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                     .bizSeqNo(RandomStringUtils.generateNum(30))
                     .content("testAsyncMessage")
-                    .topic(topic)
+                    .topic(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
                     .uniqueId(RandomStringUtils.generateNum(30)).build();
 
             eventMeshHttpProducer.request(eventMeshMessage, new RRCallback<EventMeshMessage>() {
                 @Override
                 public void onSuccess(EventMeshMessage o) {
-                    log.debug("sendmsg : {}, return : {}, cost:{}ms", eventMeshMessage.getContent(), o.getContent(),
+                    log.debug("sendmsg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(),
                             System.currentTimeMillis() - startTime);
                 }
 

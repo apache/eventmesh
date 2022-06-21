@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -40,24 +41,21 @@ public class CloudEventsSubscribeReply implements ReceiveMsgHook<CloudEvent> {
     public static CloudEventsSubscribeReply handler = new CloudEventsSubscribeReply();
 
     public static void main(String[] args) throws InterruptedException {
-        Properties properties = Utils.readPropertiesFile("application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
-
-        final String topic = "TEST-TOPIC-GRPC-RR";
+        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup("EventMeshTest-consumerGroup")
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
             .env("env").idc("idc")
             .sys("1234").build();
 
         SubscriptionItem subscriptionItem = new SubscriptionItem();
-        subscriptionItem.setTopic(topic);
+        subscriptionItem.setTopic(ExampleConstants.EVENTMESH_GRPC_RR_TEST_TOPIC);
         subscriptionItem.setMode(SubscriptionMode.CLUSTERING);
         subscriptionItem.setType(SubscriptionType.SYNC);
-
 
         EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
 
@@ -73,7 +71,7 @@ public class CloudEventsSubscribeReply implements ReceiveMsgHook<CloudEvent> {
 
     @Override
     public Optional<CloudEvent> handle(CloudEvent msg) {
-        log.info("receive request-reply msg====================={}", msg);
+        log.info("receive request-reply msg: {}", msg);
         if (msg != null) {
             return Optional.of(msg);
         } else {

@@ -40,6 +40,10 @@ dependencies {
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
     implementation project(":eventmesh-admin:eventmesh-admin-rocketmq")
 
+
+    implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
+
+
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
@@ -54,9 +58,10 @@ dependencies {
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-http")
 
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-api")
-    implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-opentelemetry")
+    implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-prometheus")
 
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")

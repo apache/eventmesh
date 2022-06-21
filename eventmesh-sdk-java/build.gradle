@@ -38,9 +38,9 @@ dependencies {
     implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
     // protocol
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "io.cloudevents:cloudevents-json-jackson"
-    implementation "io.openmessaging:openmessaging-api"
+    api "io.cloudevents:cloudevents-core"
+    api "io.cloudevents:cloudevents-json-jackson"
+    api "io.openmessaging:openmessaging-api"
 
     testImplementation project(":eventmesh-common")
     testImplementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
@@ -64,4 +64,9 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.22'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
+    testImplementation "org.assertj:assertj-core"
+
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.powermock:powermock-module-junit4"
+    testImplementation "org.powermock:powermock-api-mockito2"
 }

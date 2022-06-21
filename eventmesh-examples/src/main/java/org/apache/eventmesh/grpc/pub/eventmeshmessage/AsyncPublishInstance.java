@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.util.Utils;
@@ -39,16 +40,14 @@ public class AsyncPublishInstance {
 
     public static void main(String[] args) throws Exception {
 
-        Properties properties = Utils.readPropertiesFile("application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final String eventMeshGrpcPort = properties.getProperty("eventmesh.grpc.port");
-
-        final String topic = "TEST-TOPIC-GRPC-ASYNC";
+        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .producerGroup("EventMeshTest-producerGroup")
+            .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
             .env("env").idc("idc")
             .sys("1234").build();
 
@@ -62,7 +61,7 @@ public class AsyncPublishInstance {
         for (int i = 0; i < messageSize; i++) {
             EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                 .content(JsonUtils.serialize(content))
-                .topic(topic)
+                .topic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)
                 .uniqueId(RandomStringUtils.generateNum(30))
                 .bizSeqNo(RandomStringUtils.generateNum(30))
                 .build()

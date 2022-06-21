@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.EventMeshMessage;
+import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
@@ -42,23 +43,21 @@ public class AsyncPublishInstance {
     public static int messageSize = 5;
 
     public static void main(String[] args) throws Exception {
-        Properties properties = Utils.readPropertiesFile("application.properties");
-        final String eventMeshIp = properties.getProperty("eventmesh.ip");
-        final String eventMeshHttpPort = properties.getProperty("eventmesh.http.port");
+        Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
+        final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
+        final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
 
         final String eventMeshIPPort;
         if (StringUtils.isBlank(eventMeshIp) || StringUtils.isBlank(eventMeshHttpPort)) {
             // if has multi value, can config as: 127.0.0.1:10105;127.0.0.2:10105
-            eventMeshIPPort = "127.0.0.1:10105";
+            eventMeshIPPort = ExampleConstants.DEFAULT_EVENTMESH_IP_PORT;
         } else {
             eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
         }
 
-        final String topic = "TEST-TOPIC-HTTP-ASYNC";
-
         EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
                 .liteEventMeshAddr(eventMeshIPPort)
-                .producerGroup("EventMeshTest-producerGroup")
+                .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
                 .env("env")
                 .idc("idc")
                 .ip(IPUtils.getLocalAddress())
@@ -76,7 +75,7 @@ public class AsyncPublishInstance {
                 EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                         .bizSeqNo(RandomStringUtils.generateNum(30))
                         .content(JsonUtils.serialize(content))
-                        .topic(topic)
+                        .topic(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC)
                         .uniqueId(RandomStringUtils.generateNum(30))
                         .build()
                         .addProp(Constants.EVENTMESH_MESSAGE_CONST_TTL, String.valueOf(4 * 1000));

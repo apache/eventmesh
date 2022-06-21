@@ -84,7 +84,6 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         SendMessageRequestHeader sendMessageRequestHeader = (SendMessageRequestHeader) asyncContext.getRequest().getHeader();
-        //SendMessageRequestBody sendMessageRequestBody = (SendMessageRequestBody) asyncContext.getRequest().getBody();
 
         SendMessageResponseHeader sendMessageResponseHeader =
                 SendMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
@@ -237,31 +236,11 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         }
 
         try {
-            // body
-            //omsMsg.setBody(sendMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
-            //// topic
-            //omsMsg.setTopic(sendMessageRequestBody.getTopic());
-            //omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_DESTINATION, sendMessageRequestBody.getTopic());
-            //
-            //if (!StringUtils.isBlank(sendMessageRequestBody.getTag())) {
-            //    omsMsg.putUserProperties(EventMeshConstants.TAG, sendMessageRequestBody.getTag());
-            //}
-            // ttl
-            //omsMsg.putUserProperties(Constants.PROPERTY_MESSAGE_TIMEOUT, ttl);
-            //// bizNo
-            //omsMsg.putSystemProperties(Constants.PROPERTY_MESSAGE_SEARCH_KEYS, sendMessageRequestBody.getBizSeqNo());
             event = CloudEventBuilder.from(event)
                     .withExtension("msgtype", "persistent")
                     .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .build();
-            //omsMsg.putUserProperties("msgType", "persistent");
-            //omsMsg.putUserProperties(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-            //omsMsg.putUserProperties(Constants.RMB_UNIQ_ID, sendMessageRequestBody.getUniqueId());
-            //omsMsg.putUserProperties(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
-
-            // new rocketmq client can't support put DeFiBusConstant.PROPERTY_MESSAGE_TTL
-            //rocketMQMsg.putUserProperty(DeFiBusConstant.PROPERTY_MESSAGE_TTL, ttl);
 
             if (messageLogger.isDebugEnabled()) {
                 messageLogger.debug("msg2MQMsg suc, bizSeqNo={}, topic={}", bizNo, topic);

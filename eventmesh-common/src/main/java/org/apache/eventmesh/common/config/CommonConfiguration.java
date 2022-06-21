@@ -23,32 +23,34 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 
 public class CommonConfiguration {
-    public String eventMeshEnv                 = "P";
-    public String eventMeshIDC                 = "FT";
-    public String eventMeshCluster             = "LS";
-    public String eventMeshName                = "";
-    public String sysID                        = "5477";
+    public String eventMeshEnv = "P";
+    public String eventMeshIDC = "FT";
+    public String eventMeshCluster = "LS";
+    public String eventMeshName = "";
+    public String sysID = "5477";
     public String eventMeshConnectorPluginType = "rocketmq";
     public String eventMeshSecurityPluginType  = "security";
     public String eventMeshRegistryPluginType  = "namesrv";
     public String eventMeshTracePluginType  = "trace";
 
     public List<String> eventMeshMetricsPluginType;
-
-    public    String               namesrvAddr                        = "";
-    public    Integer              eventMeshRegisterIntervalInMills   = 10 * 1000;
-    public    Integer              eventMeshFetchRegistryAddrInterval = 10 * 1000;
-    public    String               eventMeshServerIp                  = null;
-    public    boolean              eventMeshServerSecurityEnable      = false;
-    public    boolean              eventMeshServerRegistryEnable      = false;
-    public    boolean              eventMeshServerTraceEnable      = false;
+    public String namesrvAddr = "";
+    public String eventMeshRegistryPluginUsername = "";
+    public String eventMeshRegistryPluginPassword = "";
+    public Integer eventMeshRegisterIntervalInMills = 10 * 1000;
+    public Integer eventMeshFetchRegistryAddrInterval = 10 * 1000;
+    public String eventMeshServerIp = null;
+    public boolean eventMeshServerSecurityEnable = false;
+    public boolean eventMeshServerRegistryEnable = false;
+    public boolean eventMeshServerTraceEnable = false;
     protected ConfigurationWrapper configurationWrapper;
-
     public String eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
 
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
@@ -58,66 +60,35 @@ public class CommonConfiguration {
     public void init() {
 
         if (configurationWrapper != null) {
-            String eventMeshEnvStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_ENV);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshEnvStr),
-                    String.format("%s error", ConfKeys.KEYS_EVENTMESH_ENV));
-            eventMeshEnv = StringUtils.deleteWhitespace(eventMeshEnvStr);
+            eventMeshEnv = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_ENV);
 
-            String sysIdStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
-            Preconditions.checkState(StringUtils.isNotEmpty(sysIdStr) && StringUtils.isNumeric(sysIdStr),
-                    String.format("%s error", ConfKeys.KEYS_EVENTMESH_SYSID));
-            sysID = StringUtils.deleteWhitespace(sysIdStr);
+            sysID = checkNumeric(ConfKeys.KEYS_EVENTMESH_SYSID);
 
-            String eventMeshClusterStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshClusterStr),
-                    String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER));
-            eventMeshCluster = StringUtils.deleteWhitespace(eventMeshClusterStr);
+            eventMeshCluster = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
 
-            String eventMeshNameStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshNameStr),
-                    String.format("%s error", ConfKeys.KEYS_EVENTMESH_SERVER_NAME));
-            eventMeshName = StringUtils.deleteWhitespace(eventMeshNameStr);
+            eventMeshName = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_SERVER_NAME);
 
-            String eventMeshIdcStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_IDC);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshIdcStr),
-                    String.format("%s error", ConfKeys.KEYS_EVENTMESH_IDC));
-            eventMeshIDC = StringUtils.deleteWhitespace(eventMeshIdcStr);
+            eventMeshIDC = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_IDC);
 
-            eventMeshServerIp =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP);
-            if (StringUtils.isBlank(eventMeshServerIp)) {
-                eventMeshServerIp = IPUtils.getLocalAddress();
-            }
+            eventMeshServerIp = get(ConfKeys.KEYS_EVENTMESH_SERVER_HOST_IP, IPUtils::getLocalAddress);
 
-            eventMeshConnectorPluginType =
-                    configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshConnectorPluginType),
-                    String.format("%s error", ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE));
+            eventMeshConnectorPluginType = checkNotEmpty(ConfKeys.KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE);
 
-            String eventMeshServerAclEnableStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED);
-            if (StringUtils.isNotBlank(eventMeshServerAclEnableStr)) {
-                eventMeshServerSecurityEnable =
-                        Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerAclEnableStr));
-            }
+            eventMeshServerSecurityEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_SECURITY_ENABLED, () -> "false"));
 
-            eventMeshSecurityPluginType =
-                    configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshSecurityPluginType),
-                    String.format("%s error", ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE));
+            eventMeshSecurityPluginType = checkNotEmpty(ConfKeys.KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE);
 
-            String eventMeshServerRegistryEnableStr =
-                    configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED);
-            if (StringUtils.isNotBlank(eventMeshServerRegistryEnableStr)) {
-                eventMeshServerRegistryEnable =
-                    Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerRegistryEnableStr));
-            }
+            eventMeshServerRegistryEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_REGISTRY_ENABLED, () -> "false"));
 
+            eventMeshRegistryPluginType = checkNotEmpty(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
+
+            namesrvAddr = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_SERVER_ADDR);
+
+            eventMeshRegistryPluginUsername =
+                Optional.ofNullable(configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_USERNAME)).orElse("");
+
+            eventMeshRegistryPluginPassword =
+                Optional.ofNullable(configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_PASSWORD)).orElse("");
             String eventMeshServerTraceEnableStr =
                 configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_ENABLED);
             if (StringUtils.isNotBlank(eventMeshServerTraceEnableStr)) {
@@ -138,12 +109,35 @@ public class CommonConfiguration {
                     .collect(Collectors.toList());
             }
 
-            String eventMeshTracePluginTypeStr =
-                configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE);
-            Preconditions.checkState(StringUtils.isNotEmpty(eventMeshTracePluginTypeStr),
-                String.format("%s error", ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE));
-            eventMeshTracePluginType = StringUtils.deleteWhitespace(eventMeshTracePluginTypeStr);
+            eventMeshServerTraceEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_TRACE_ENABLED, () -> "false"));
+            eventMeshTracePluginType = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE);
         }
+    }
+
+    private String checkNotEmpty(String key) {
+        String value = configurationWrapper.getProp(key);
+        if (value != null) {
+            value = StringUtils.deleteWhitespace(value);
+        }
+        Preconditions.checkState(StringUtils.isNotEmpty(value), key + " is invalidated");
+        return value;
+    }
+
+    private String checkNumeric(String key) {
+        String value = configurationWrapper.getProp(key);
+        if (value != null) {
+            value = StringUtils.deleteWhitespace(value);
+        }
+        Preconditions.checkState(StringUtils.isNotEmpty(value) && StringUtils.isNumeric(value), key + " is invalidated");
+        return value;
+    }
+
+    private String get(String key, Supplier<String> defaultValueSupplier) {
+        String value = configurationWrapper.getProp(key);
+        if (value != null) {
+            value = StringUtils.deleteWhitespace(value);
+        }
+        return StringUtils.isEmpty(value) ? defaultValueSupplier.get() : value;
     }
 
     static class ConfKeys {
@@ -160,10 +154,10 @@ public class CommonConfiguration {
         public static String KEYS_EVENTMESH_SERVER_HOST_IP = "eventMesh.server.hostIp";
 
         public static String KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL =
-                "eventMesh.server.registry.registerIntervalInMills";
+            "eventMesh.server.registry.registerIntervalInMills";
 
         public static String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL =
-                "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
+            "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
 
         public static String KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE = "eventMesh.connector.plugin.type";
 
@@ -171,14 +165,22 @@ public class CommonConfiguration {
 
         public static String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
 
-        public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.server.registry.enabled";
+        public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.registry.plugin.enabled";
 
         public static String KEYS_EVENTMESH_TRACE_ENABLED = "eventMesh.server.trace.enabled";
 
         public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
 
-        public static String KEYS_EVENTMESH_METRICS_PLUGIN_TYPE = "eventmesh.metrics.plugin";
+        public static String KEYS_EVENTMESH_REGISTRY_PULGIN_SERVER_ADDR = "eventMesh.registry.plugin.server-addr";
 
-        public static String KEYS_EVENTMESH_TRACE_PLUGIN_TYPE = "eventmesh.trace.plugin";
+        public static String KEYS_EVENTMESH_REGISTRY_PULGIN_USERNAME = "eventMesh.registry.plugin.username";
+
+        public static String KEYS_EVENTMESH_REGISTRY_PULGIN_PASSWORD = "eventMesh.registry.plugin.password";
+
+        public static String KEYS_EVENTMESH_METRICS_PLUGIN_TYPE = "eventMesh.metrics.plugin";
+
+        public static String KEYS_EVENTMESH_TRACE_ENABLED = "eventMesh.server.trace.enabled";
+
+        public static String KEYS_EVENTMESH_TRACE_PLUGIN_TYPE = "eventMesh.trace.plugin";
     }
 }
