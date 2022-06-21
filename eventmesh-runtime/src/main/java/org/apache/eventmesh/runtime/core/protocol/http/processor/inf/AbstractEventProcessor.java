@@ -29,6 +29,8 @@ import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
 import org.apache.eventmesh.runtime.registry.Registry;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,8 +87,11 @@ public abstract class AbstractEventProcessor implements EventProcessor {
     }
 
 
-    protected String getTargetMesh(List<SubscriptionItem> subscriptionList, CommonConfiguration httpConfiguration) throws Exception {
+    protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList)
+        throws Exception {
         // Currently only supports http
+        CommonConfiguration httpConfiguration = ConfigurationContextUtil.get(ConfigurationContextUtil.HTTP);
+
         String targetMesh = "";
         Registry registry = eventMeshHTTPServer.getRegistry();
         List<EventMeshDataInfo> allEventMeshInfo = registry.findAllEventMeshInfo();
@@ -100,8 +105,16 @@ public abstract class AbstractEventProcessor implements EventProcessor {
                 continue;
             }
             Map<String, String> metadata = eventMeshDataInfo.getMetadata();
+            String topicMetadataJson = metadata.get(consumerGroup);
+            if (StringUtils.isBlank(topicMetadataJson)) {
+                continue;
+            }
+
+            ConsumerGroupMetadata consumerGroupMetadata = JsonUtils.deserialize(topicMetadataJson, ConsumerGroupMetadata.class);
+            Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap = consumerGroupMetadata.getConsumerGroupTopicMetadataMap();
+
             for (SubscriptionItem subscriptionItem : subscriptionList) {
-                if (metadata.containsKey(subscriptionItem.getTopic())) {
+                if (consumerGroupTopicMetadataMap.containsKey(subscriptionItem.getTopic())) {
                     targetMesh = "http://" + eventMeshDataInfo.getEndpoint() + "/eventmesh/subscribe/local";
                     break;
                 }
