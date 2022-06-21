@@ -116,13 +116,14 @@ public class SessionSender {
                     }
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
 
-                    Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event), EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
-                    try(Scope scope = span.makeCurrent()) {
+                    Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
+                        EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
+                    try {
                         session.getClientGroupWrapper().get()
                             .request(upStreamMsgContext, initSyncRRCallback(header,
                                 startTime, taskExecuteTime, event), ttl);
                         upstreamBuff.release();
-                    }finally {
+                    } finally {
                         TraceUtils.finishSpan(span, event);
                     }
                 } else if (Command.RESPONSE_TO_SERVER == cmd) {
@@ -139,11 +140,12 @@ public class SessionSender {
                 } else {
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
 
-                    Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event), EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
-                    try(Scope scope = span.makeCurrent()) {
+                    Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
+                        EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
+                    try {
                         session.getClientGroupWrapper().get()
                             .send(upStreamMsgContext, sendCallback);
-                    }finally {
+                    } finally {
                         TraceUtils.finishSpan(span, event);
                     }
                 }

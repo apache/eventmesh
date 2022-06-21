@@ -113,6 +113,8 @@ public class EventMeshConsumer {
 
                     event = CloudEventBuilder.from(event)
                         .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                        .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
+                            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerIp)
                         .build();
                     if (messageLogger.isDebugEnabled()) {
                         messageLogger.debug("message|mq2eventMesh|topic={}|event={}", topic, event);
@@ -151,7 +153,7 @@ public class EventMeshConsumer {
                         }
                         eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                     }
-                }finally {
+                } finally {
                     TraceUtils.finishSpan(span, event);
                 }
             }
@@ -182,6 +184,8 @@ public class EventMeshConsumer {
                     event = CloudEventBuilder.from(event)
                         .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
                             String.valueOf(System.currentTimeMillis()))
+                        .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
+                            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerIp)
                         .build();
 
                     String topic = event.getSubject();
@@ -235,7 +239,7 @@ public class EventMeshConsumer {
                         }
                         eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
                     }
-                }finally {
+                } finally {
                     TraceUtils.finishSpan(span, event);
                 }
             }

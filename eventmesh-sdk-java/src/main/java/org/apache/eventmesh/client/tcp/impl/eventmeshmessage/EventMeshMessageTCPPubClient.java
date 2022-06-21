@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.netty.channel.ChannelHandlerContext;
 
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Scope;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -85,15 +85,15 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         Package msg = null;
         try {
             msg = MessageUtils.buildPackage(eventMeshMessage, Command.REQUEST_TO_SERVER);
-            span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
+            //span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
 
             log.info("{}|rr|send|type={}|msg={}", clientNo, msg, msg);
             Package resp = io(msg, timeout);
 
-            TraceUtils.finishSpan(span, msg.getHeader().getProperties());
+            //TraceUtils.finishSpan(span, msg.getHeader().getProperties());
             return resp;
         } catch (Exception ex) {
-            TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "rr error", ex);
+            //TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "rr error", ex);
 
             throw new EventMeshException("rr error");
         }
@@ -106,15 +106,15 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         Package msg = null;
         try {
             msg = MessageUtils.buildPackage(eventMeshMessage, Command.REQUEST_TO_SERVER);
-            span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
+            //span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
 
             super.send(msg);
             this.callbackConcurrentHashMap.put((String) RequestContext.key(msg), callback);
 
-            TraceUtils.finishSpan(span, msg.getHeader().getProperties());
+            //TraceUtils.finishSpan(span, msg.getHeader().getProperties());
         } catch (Exception ex) {
             // should trigger callback?
-            TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "asyncRR error", ex);
+            //TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "asyncRR error", ex);
 
             throw new EventMeshException("asyncRR error", ex);
         }
@@ -126,7 +126,7 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
         Package msg = null;
         try {
             msg = MessageUtils.buildPackage(eventMeshMessage, Command.ASYNC_MESSAGE_TO_SERVER);
-            span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
+            //span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
 
             log.info(
                 "SimplePubClientImpl em message|{}|publish|send|type={}|protocol={}|msg={}",
@@ -134,11 +134,11 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
                 msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             Package resp = io(msg, timeout);
 
-            TraceUtils.finishSpan(span, msg.getHeader().getProperties());
+            //TraceUtils.finishSpan(span, msg.getHeader().getProperties());
 
             return resp;
         } catch (Exception ex) {
-            TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "publish error", ex);
+            //TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "publish error", ex);
 
             throw new EventMeshException("publish error", ex);
         }
@@ -152,15 +152,15 @@ class EventMeshMessageTCPPubClient extends TcpClient implements EventMeshTCPPubC
             // todo: transform EventMeshMessage to Package
             msg = MessageUtils.buildPackage(eventMeshMessage, Command.BROADCAST_MESSAGE_TO_SERVER);
 
-            span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
+            //span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
 
             log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCmd(),
                     msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             super.send(msg);
 
-            TraceUtils.finishSpan(span, msg.getHeader().getProperties());
+            //TraceUtils.finishSpan(span, msg.getHeader().getProperties());
         } catch (Exception ex) {
-            TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "Broadcast message error", ex);
+            //TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "Broadcast message error", ex);
 
             throw new EventMeshException("Broadcast message error", ex);
         }

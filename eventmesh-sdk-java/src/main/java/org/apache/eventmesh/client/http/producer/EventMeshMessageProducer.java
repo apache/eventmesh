@@ -117,6 +117,7 @@ class EventMeshMessageProducer extends AbstractHttpClient implements EventMeshPr
 
     private RequestParam buildCommonPostParam(EventMeshMessage message) {
         RequestParam requestParam = new RequestParam(HttpMethod.POST);
+        message.getProp().put("sendtimestamp", String.valueOf(System.currentTimeMillis()));
         requestParam
                 .addHeader(ProtocolKey.ClientInstanceKey.ENV, eventMeshHttpClientConfig.getEnv())
                 .addHeader(ProtocolKey.ClientInstanceKey.IDC, eventMeshHttpClientConfig.getIdc())
@@ -137,7 +138,8 @@ class EventMeshMessageProducer extends AbstractHttpClient implements EventMeshPr
                 .addBody(SendMessageRequestBody.CONTENT, message.getContent())
                 .addBody(SendMessageRequestBody.TTL, message.getProp(Constants.EVENTMESH_MESSAGE_CONST_TTL))
                 .addBody(SendMessageRequestBody.BIZSEQNO, message.getBizSeqNo())
-                .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId());
+                .addBody(SendMessageRequestBody.UNIQUEID, message.getUniqueId())
+                .addBody(SendMessageRequestBody.EXTFIELDS, JsonUtils.serialize(message.getProp()));
         return requestParam;
     }
 

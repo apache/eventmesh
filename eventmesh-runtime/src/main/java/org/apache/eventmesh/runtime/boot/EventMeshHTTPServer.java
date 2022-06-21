@@ -50,8 +50,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.registry.Registry;
-import org.apache.eventmesh.trace.api.TracePluginFactory;
-import org.apache.eventmesh.trace.api.TraceService;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -75,8 +73,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
-//    private TraceService traceService;
-
     private Registry registry;
 
     public final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
@@ -87,7 +83,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public EventMeshHTTPServer(EventMeshServer eventMeshServer,
                                EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
-        super(eventMeshHttpConfiguration.httpServerPort, eventMeshHttpConfiguration.eventMeshServerUseTls);
+        super(eventMeshHttpConfiguration.httpServerPort, eventMeshHttpConfiguration.eventMeshServerUseTls, eventMeshHttpConfiguration);
         this.eventMeshServer = eventMeshServer;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.registry = eventMeshServer.getRegistry();
@@ -275,10 +271,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         super.shutdown();
 
         metrics.shutdown();
-
-//        if (traceService != null) {
-//            traceService.shutdown();
-//        }
 
         consumerManager.shutdown();
 

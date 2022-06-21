@@ -300,12 +300,17 @@ public class EventMeshUtil {
 
     public static Map<String, Object> getCloudEventExtensionMap(String protocolVersion,
                                                                 CloudEvent cloudEvent) {
-        EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
-        if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
-            ((CloudEventV1) cloudEvent).readContext(eventMeshCloudEventWriter);
-        } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
-            ((CloudEventV03) cloudEvent).readContext(eventMeshCloudEventWriter);
+        try {
+            EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
+            if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
+                ((CloudEventV1) cloudEvent).readContext(eventMeshCloudEventWriter);
+            } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
+                ((CloudEventV03) cloudEvent).readContext(eventMeshCloudEventWriter);
+            }
+            return eventMeshCloudEventWriter.getExtensionMap();
+        } catch (Throwable e) {
+            logger.warn("getCloudEventExtensionMap fail", e);
+            return null;
         }
-        return eventMeshCloudEventWriter.getExtensionMap();
     }
 }

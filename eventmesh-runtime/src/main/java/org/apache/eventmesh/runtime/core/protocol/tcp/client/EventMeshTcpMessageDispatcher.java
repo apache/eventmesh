@@ -24,6 +24,7 @@ import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionState;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.GoodbyeTask;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.task.HeartBeatTask;
@@ -45,7 +46,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.opentelemetry.api.trace.Span;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<Package> {
@@ -70,11 +70,17 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
         try {
             Runnable task;
 
-            if(isNeedTrace(cmd)) {
+            if (isNeedTrace(cmd)) {
                 pkg.getHeader().getProperties()
                     .put(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, startTime);
                 pkg.getHeader().getProperties().put(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
                     eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp);
+                Session session = eventMeshTCPServer.getClientSessionGroupMapping().getSession(ctx);
+
+                pkg.getHeader().getProperties().put(EventMeshConstants.REQ_SYS, session.getClient().getSubsystem());
+                pkg.getHeader().getProperties().put(EventMeshConstants.REQ_IP, session.getClient().getHost());
+                pkg.getHeader().getProperties().put(EventMeshConstants.REQ_IDC, session.getClient().getIdc());
+                pkg.getHeader().getProperties().put(EventMeshConstants.REQ_GROUP, session.getClient().getGroup());
             }
 
             if (cmd.equals(Command.RECOMMEND_REQUEST)) {
@@ -120,7 +126,8 @@ public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<P
     }
 
     private boolean isNeedTrace(Command cmd) {
-        if (cmd != null && (Command.REQUEST_TO_SERVER == cmd
+        if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable
+            && cmd != null && (Command.REQUEST_TO_SERVER == cmd
             || Command.ASYNC_MESSAGE_TO_SERVER == cmd
             || Command.BROADCAST_MESSAGE_TO_SERVER == cmd)) {
             return true;

@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -89,6 +90,11 @@ public class SendMessageRequestProtocolResolver {
                 if (StringUtils.isNotEmpty(sendMessageRequestBody.getTag())) {
                     cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag());
                 }
+                if (sendMessageRequestBody.getExtFields() != null && sendMessageRequestBody.getExtFields().size() > 0) {
+                    for (Map.Entry<String, String> entry : sendMessageRequestBody.getExtFields().entrySet()) {
+                        cloudEventBuilder = cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
+                    }
+                }
                 event = cloudEventBuilder.build();
             } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
                 cloudEventBuilder = CloudEventBuilder.v03();
@@ -117,6 +123,11 @@ public class SendMessageRequestProtocolResolver {
                         .withExtension(SendMessageRequestBody.TTL, sendMessageRequestBody.getTtl());
                 if (StringUtils.isNotEmpty(sendMessageRequestBody.getTag())) {
                     cloudEventBuilder = cloudEventBuilder.withExtension(SendMessageRequestBody.TAG, sendMessageRequestBody.getTag());
+                }
+                if (sendMessageRequestBody.getExtFields() != null && sendMessageRequestBody.getExtFields().size() > 0) {
+                    for (Map.Entry<String, String> entry : sendMessageRequestBody.getExtFields().entrySet()) {
+                        cloudEventBuilder = cloudEventBuilder.withExtension(entry.getKey(), entry.getValue());
+                    }
                 }
                 event = cloudEventBuilder.build();
             }

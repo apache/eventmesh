@@ -104,6 +104,7 @@ public class MessageUtils {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME);
             msg.getHeader().putProperty(Constants.PROTOCOL_VERSION, SpecVersion.V1.toString());
             msg.getHeader().putProperty(Constants.PROTOCOL_DESC, "tcp");
+            msg.getHeader().putProperty("sendtimestamp", System.currentTimeMillis());
             msg.setBody(message);
         } else if (message instanceof Message) {
             msg.getHeader().putProperty(Constants.PROTOCOL_TYPE, EventMeshCommon.OPEN_MESSAGE_PROTOCOL_NAME);

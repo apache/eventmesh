@@ -89,12 +89,6 @@ public class CommonConfiguration {
 
             eventMeshRegistryPluginPassword =
                 Optional.ofNullable(configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REGISTRY_PULGIN_PASSWORD)).orElse("");
-            String eventMeshServerTraceEnableStr =
-                configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_TRACE_ENABLED);
-            if (StringUtils.isNotBlank(eventMeshServerTraceEnableStr)) {
-                eventMeshServerTraceEnable =
-                    Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerTraceEnableStr));
-            }
 
             eventMeshRegistryPluginType =
                 configurationWrapper.getProp(ConfKeys.KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE);
@@ -166,8 +160,6 @@ public class CommonConfiguration {
         public static String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
 
         public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.registry.plugin.enabled";
-
-        public static String KEYS_EVENTMESH_TRACE_ENABLED = "eventMesh.server.trace.enabled";
 
         public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
 

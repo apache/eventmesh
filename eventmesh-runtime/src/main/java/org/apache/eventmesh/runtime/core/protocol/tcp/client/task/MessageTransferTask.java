@@ -78,17 +78,14 @@ public class MessageTransferTask extends AbstractTask {
         Command cmd = pkg.getHeader().getCmd();
 
         try {
-            if (!RESPONSE_TO_SERVER.equals(cmd)) {
-                Span span = null;
-                Context parentContext = EventMeshServer.getTrace()
-                    .extractFrom(Context.current(), pkg.getHeader().getProperties());
-                span = EventMeshServer.getTrace()
-                    .createSpan(EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
-                        SpanKind.SERVER, startTime, TimeUnit.MILLISECONDS, parentContext, true);
+            if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable && !RESPONSE_TO_SERVER.equals(cmd)) {
                 //attach the span to the server context
-                parentContext = parentContext.with(SpanKey.SERVER_KEY, span);
+                Span span = TraceUtils.prepareServerSpan(pkg.getHeader().getProperties(),
+                    EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
+                    startTime, TimeUnit.MILLISECONDS, true);
+                Context context = Context.current().with(SpanKey.SERVER_KEY, span);
                 //put the context in channel
-                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(parentContext);
+                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
             }
         } catch (Throwable ex) {
             logger.warn("upload trace fail in MessageTransferTask[server-span-start]", ex);
@@ -179,7 +176,7 @@ public class MessageTransferTask extends AbstractTask {
 
             if (!cmd.equals(RESPONSE_TO_SERVER)) {
                 msg.setHeader(
-                    new Header(replyCmd, OPStatus.FAIL.getCode(), e.getStackTrace().toString(),
+                    new Header(replyCmd, OPStatus.FAIL.getCode(), e.toString(),
                         pkg.getHeader()
                             .getSeq()));
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);

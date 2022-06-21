@@ -55,11 +55,17 @@ public class Trace {
         if (!useTrace) {
             return null;
         }
+        if (map == null) {
+            return context;
+        }
         return eventMeshTraceService.extractFrom(context, map);
     }
 
-    public void inject(Context context, Map map) {
+    public void inject(Context context, Map<String, Object> map) {
         if (!useTrace) {
+            return;
+        }
+        if (context == null || map == null) {
             return;
         }
         eventMeshTraceService.inject(context, map);

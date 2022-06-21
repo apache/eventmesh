@@ -37,7 +37,7 @@ public class TraceUtils {
         try {
             Context traceContext = EventMeshServer.getTrace().extractFrom(Context.current(), map);
             span = EventMeshServer.getTrace()
-                .createSpan(spanName, SpanKind.SERVER, traceContext, false);
+                .createSpan(spanName, SpanKind.SERVER, traceContext, isSpanFinishInOtherThread);
         } catch (Throwable ex) {
             logger.warn("upload trace fail when prepareSpan", ex);
         }
@@ -52,10 +52,10 @@ public class TraceUtils {
             if (startTime > 0) {
                 span = EventMeshServer.getTrace()
                     .createSpan(spanName, SpanKind.SERVER, startTime, timeUnit, traceContext,
-                        false);
+                        isSpanFinishInOtherThread);
             } else {
                 span = EventMeshServer.getTrace()
-                    .createSpan(spanName, SpanKind.SERVER, traceContext, false);
+                    .createSpan(spanName, SpanKind.SERVER, traceContext, isSpanFinishInOtherThread);
             }
         } catch (Throwable ex) {
             logger.warn("upload trace fail when prepareSpan", ex);
@@ -66,6 +66,7 @@ public class TraceUtils {
 
     public static void finishSpan(Span span, CloudEvent event) {
         try {
+            logger.debug("finishSpan with event:{}", event);
             EventMeshServer.getTrace().addTraceInfoToSpan(span, event);
             EventMeshServer.getTrace().finishSpan(span, StatusCode.OK);
         } catch (Throwable ex) {
@@ -76,6 +77,7 @@ public class TraceUtils {
 
     public static void finishSpan(ChannelHandlerContext ctx, CloudEvent event) {
         try {
+            logger.debug("finishSpan with event:{}", event);
             EventMeshServer.getTrace().addTraceInfoToSpan(ctx, event);
             EventMeshServer.getTrace().finishSpan(ctx, StatusCode.OK);
         } catch (Throwable ex) {
@@ -87,6 +89,7 @@ public class TraceUtils {
     public static void finishSpanWithException(ChannelHandlerContext ctx, CloudEvent event,
                                                String errMsg, Throwable e) {
         try {
+            logger.debug("finishSpanWithException with event:{}", event);
             EventMeshServer.getTrace().addTraceInfoToSpan(ctx, event);
             EventMeshServer.getTrace().finishSpan(ctx, StatusCode.ERROR, errMsg, e);
         } catch (Throwable ex) {
@@ -97,6 +100,7 @@ public class TraceUtils {
     public static void finishSpanWithException(Span span, Map<String, Object> map, String errMsg,
                                                Throwable e) {
         try {
+            logger.debug("finishSpanWithException with map:{}", map);
             EventMeshServer.getTrace().addTraceInfoToSpan(span, map);
             EventMeshServer.getTrace().finishSpan(span, StatusCode.ERROR, errMsg, e);
         } catch (Throwable ex) {

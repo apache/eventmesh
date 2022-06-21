@@ -28,6 +28,7 @@ import org.apache.eventmesh.common.protocol.http.common.RequestCode;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.common.Pair;
+import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.EventProcessor;
@@ -88,13 +89,6 @@ import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.TextMapGetter;
-import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -116,9 +110,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     public Boolean useTrace = false; //Determine whether trace is enabled
 
-//    public TextMapPropagator textMapPropagator;
-//
-//    public Tracer tracer;
+    private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
     public ThreadPoolExecutor asyncContextCompleteHandler =
             ThreadPoolFactory.createThreadPoolExecutor(10, 10, "EventMesh-http-asyncContext-");
@@ -133,9 +125,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
     protected final Map<String/* request uri */, Pair<EventProcessor, ThreadPoolExecutor>>
         eventProcessorTable = new HashMap<>(64);
 
-    public AbstractHTTPServer(int port, boolean useTLS) {
+    public AbstractHTTPServer(int port, boolean useTLS, EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
         this.port = port;
         this.useTLS = useTLS;
+        this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
     }
 
     public void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
@@ -259,6 +252,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
      * @param httpRequest
      */
     private void preProcessHttpRequestHeader(ChannelHandlerContext ctx, HttpRequest httpRequest) {
+        long startTime = System.currentTimeMillis();
         HttpHeaders requestHeaders = httpRequest.headers();
         requestHeaders.set(ProtocolKey.ClientInstanceKey.IP,
                 RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
@@ -267,6 +261,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         if (StringUtils.isBlank(protocolVersion)) {
             requestHeaders.set(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
         }
+        requestHeaders.set(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, startTime);
+        requestHeaders.set(EventMeshConstants.REQ_SEND_EVENTMESH_IP, eventMeshHttpConfiguration.eventMeshServerIp);
     }
 
     /**
