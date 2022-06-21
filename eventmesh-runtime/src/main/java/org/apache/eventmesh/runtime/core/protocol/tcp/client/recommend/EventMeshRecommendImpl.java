@@ -38,7 +38,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
 
     protected final Logger logger = LoggerFactory.getLogger(EventMeshRecommendImpl.class);
 
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     public EventMeshRecommendImpl(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;

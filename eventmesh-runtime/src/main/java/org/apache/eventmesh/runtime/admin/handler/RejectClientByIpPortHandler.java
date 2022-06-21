@@ -44,7 +44,7 @@ public class RejectClientByIpPortHandler implements HttpHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(RejectClientByIpPortHandler.class);
 
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     public RejectClientByIpPortHandler(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;

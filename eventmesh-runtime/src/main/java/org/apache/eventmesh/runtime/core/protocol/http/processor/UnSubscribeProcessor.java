@@ -58,7 +58,7 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public UnSubscribeProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;

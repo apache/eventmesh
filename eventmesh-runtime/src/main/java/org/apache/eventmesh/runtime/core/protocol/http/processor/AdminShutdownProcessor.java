@@ -36,7 +36,7 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
 
     public Logger cmdLogger = LoggerFactory.getLogger("cmd");
 
-    private EventMeshServer eventMeshServer;
+    private final EventMeshServer eventMeshServer;
 
     public AdminShutdownProcessor(EventMeshServer eventMeshServer) {
         this.eventMeshServer = eventMeshServer;

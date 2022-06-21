@@ -33,7 +33,7 @@ public class MQProducerWrapper extends MQWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected Producer meshMQProducer;
+    protected final Producer meshMQProducer;
 
     public MQProducerWrapper(String connectorPluginType) {
         this.meshMQProducer = ConnectorPluginFactory.getMeshMQProducer(connectorPluginType);

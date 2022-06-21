@@ -34,7 +34,7 @@ public class MQConsumerWrapper extends MQWrapper {
 
     public final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected Consumer meshMQPushConsumer;
+    protected final Consumer meshMQPushConsumer;
 
     public MQConsumerWrapper(String connectorPluginType) {
         this.meshMQPushConsumer = ConnectorPluginFactory.getMeshMQPushConsumer(connectorPluginType);

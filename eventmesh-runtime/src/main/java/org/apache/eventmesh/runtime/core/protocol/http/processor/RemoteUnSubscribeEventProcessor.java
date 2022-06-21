@@ -66,7 +66,7 @@ public class RemoteUnSubscribeEventProcessor implements EventProcessor {
 
     public Logger aclLogger = LoggerFactory.getLogger("acl");
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public RemoteUnSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;

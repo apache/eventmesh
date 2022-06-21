@@ -65,7 +65,7 @@ public class HandleMsgContext {
 
     private ConsumerGroupConf consumerGroupConfig;
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     private ConsumerGroupTopicConf consumeTopicConfig;
 

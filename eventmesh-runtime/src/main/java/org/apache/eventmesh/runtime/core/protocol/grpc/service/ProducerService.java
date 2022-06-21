@@ -51,6 +51,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         this.threadPoolExecutor = threadPoolExecutor;
     }
 
+    @Override
     public void publish(SimpleMessage request, StreamObserver<Response> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "AsyncPublish",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
@@ -69,6 +70,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         });
     }
 
+    @Override
     public void requestReply(SimpleMessage request, StreamObserver<SimpleMessage> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "RequestReply",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
@@ -87,6 +89,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         });
     }
 
+    @Override
     public void batchPublish(BatchMessage request, StreamObserver<Response> responseObserver) {
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "BatchPublish",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),

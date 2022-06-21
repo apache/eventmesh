@@ -52,9 +52,9 @@ public class DownStreamMsgContext extends RetryContext {
 
     public long lastPushTime;
 
-    private long createTime;
+    private final long createTime;
 
-    private long expireTime;
+    private final long expireTime;
 
     public boolean msgFromOtherEventMesh;
 

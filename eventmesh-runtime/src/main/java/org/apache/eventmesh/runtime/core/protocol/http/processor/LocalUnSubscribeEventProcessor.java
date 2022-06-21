@@ -65,7 +65,7 @@ public class LocalUnSubscribeEventProcessor implements EventProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public LocalUnSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;

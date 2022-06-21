@@ -42,7 +42,7 @@ import com.sun.net.httpserver.HttpHandler;
  */
 public class ShowListenClientByTopicHandler implements HttpHandler {
 
-    private Logger logger = LoggerFactory.getLogger(ShowListenClientByTopicHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(ShowListenClientByTopicHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 

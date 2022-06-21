@@ -74,7 +74,7 @@ public class ClientGroupWrapper {
 
     private EventMeshTCPConfiguration eventMeshTCPConfiguration;
 
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     private EventMeshTcpRetryer eventMeshTcpRetryer;
 
@@ -107,7 +107,7 @@ public class ClientGroupWrapper {
 
     public AtomicBoolean producerStarted = new AtomicBoolean(Boolean.FALSE);
 
-    private MQProducerWrapper mqProducerWrapper;
+    private final MQProducerWrapper mqProducerWrapper;
 
     public ClientGroupWrapper(String sysId, String group,
                               EventMeshTCPServer eventMeshTCPServer,

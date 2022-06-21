@@ -66,7 +66,7 @@ public class RemoteSubscribeEventProcessor implements EventProcessor {
 
     public Logger aclLogger = LoggerFactory.getLogger("acl");
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public RemoteSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;

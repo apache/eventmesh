@@ -32,7 +32,7 @@ public class PushContext {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private SessionPusher sessionPusher;
+    private final SessionPusher sessionPusher;
 
     public AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
@@ -40,7 +40,7 @@ public class PushContext {
 
     private ConcurrentHashMap<String /** seq */, DownStreamMsgContext> unAckMsg = new ConcurrentHashMap<String, DownStreamMsgContext>();
 
-    private long createTime = System.currentTimeMillis();
+    private final long createTime = System.currentTimeMillis();
 
     public PushContext(SessionPusher sessionPusher) {
         this.sessionPusher = sessionPusher;

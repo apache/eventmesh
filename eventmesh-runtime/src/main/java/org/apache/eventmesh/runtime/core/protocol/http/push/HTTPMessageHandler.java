@@ -40,11 +40,11 @@ public class HTTPMessageHandler implements MessageHandler {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private EventMeshConsumer eventMeshConsumer;
+    private final EventMeshConsumer eventMeshConsumer;
 
     private static final ScheduledExecutorService SCHEDULER = ThreadPoolFactory.createSingleScheduledExecutor("eventMesh-pushMsgTimeout-");
 
-    private ThreadPoolExecutor pushExecutor;
+    private final ThreadPoolExecutor pushExecutor;
 
     private static final Integer CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD = 10000;
 

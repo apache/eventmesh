@@ -87,8 +87,8 @@ public class Acl {
     }
 
     public static void doAclCheckInHttpSend(String remoteAddr, String user, String pass, String subsystem, String topic,
-                                            String requestURI) throws AclException {
-        aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
+                                            String requestUri) throws AclException {
+        aclService.doAclCheckInSend(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestUri));
     }
 
     public static void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
@@ -97,8 +97,8 @@ public class Acl {
     }
 
     public static void doAclCheckInHttpReceive(String remoteAddr, String user, String pass, String subsystem, String topic,
-                                               String requestURI) throws AclException {
-        aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestURI));
+                                               String requestUri) throws AclException {
+        aclService.doAclCheckInReceive(buildHttpAclProperties(remoteAddr, user, pass, subsystem, topic, requestUri));
     }
 
     public static void doAclCheckInHttpHeartbeat(String remoteAddr, String user, String pass, String subsystem, String topic,

@@ -47,7 +47,7 @@ public class ClientAckContext {
 
     private List<CloudEvent> events;
 
-    private MQConsumerWrapper consumer;
+    private final MQConsumerWrapper consumer;
 
     public ClientAckContext(String seq, AbstractContext context, List<CloudEvent> events, MQConsumerWrapper consumer) {
         this.seq = seq;

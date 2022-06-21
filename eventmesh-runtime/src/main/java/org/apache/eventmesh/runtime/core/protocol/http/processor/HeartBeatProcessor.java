@@ -56,7 +56,7 @@ public class HeartBeatProcessor implements HttpRequestProcessor {
 
     public Logger aclLogger = LoggerFactory.getLogger("acl");
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HeartBeatProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;

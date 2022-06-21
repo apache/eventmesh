@@ -68,7 +68,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
     public Logger aclLogger = LoggerFactory.getLogger("acl");
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public BatchSendMessageProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;

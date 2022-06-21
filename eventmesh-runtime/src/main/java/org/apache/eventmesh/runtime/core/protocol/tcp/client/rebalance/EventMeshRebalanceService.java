@@ -32,11 +32,11 @@ import org.slf4j.LoggerFactory;
 public class EventMeshRebalanceService {
     protected final Logger logger = LoggerFactory.getLogger(EventMeshRebalanceService.class);
 
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     private Integer rebalanceIntervalMills;
 
-    private EventMeshRebalanceStrategy rebalanceStrategy;
+    private final EventMeshRebalanceStrategy rebalanceStrategy;
 
     private ScheduledExecutorService serviceRebalanceScheduler;
 

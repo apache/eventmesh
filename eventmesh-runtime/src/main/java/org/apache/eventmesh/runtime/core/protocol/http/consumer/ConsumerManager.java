@@ -48,7 +48,7 @@ import com.google.common.eventbus.Subscribe;
 
 public class ConsumerManager {
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     /**
      * consumerGroup to ConsumerGroupManager.

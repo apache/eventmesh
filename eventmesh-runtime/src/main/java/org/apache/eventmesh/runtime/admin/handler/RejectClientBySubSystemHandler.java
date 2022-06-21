@@ -44,7 +44,7 @@ public class RejectClientBySubSystemHandler implements HttpHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(RejectClientBySubSystemHandler.class);
 
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     public RejectClientBySubSystemHandler(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;

@@ -45,7 +45,7 @@ public class RedirectClientByPathHandler implements HttpHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(RedirectClientByPathHandler.class);
 
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     public RedirectClientByPathHandler(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;

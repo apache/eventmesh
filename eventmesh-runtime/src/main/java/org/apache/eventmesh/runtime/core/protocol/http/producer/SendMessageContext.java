@@ -49,7 +49,7 @@ public class SendMessageContext extends RetryContext {
 
     private Map<String, String> props;
 
-    public EventMeshHTTPServer eventMeshHTTPServer;
+    public final EventMeshHTTPServer eventMeshHTTPServer;
 
     private List<CloudEvent> eventList;
 

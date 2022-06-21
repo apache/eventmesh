@@ -40,7 +40,7 @@ import com.sun.net.httpserver.HttpHandler;
  */
 public class QueryRecommendEventMeshHandler implements HttpHandler {
 
-    private Logger logger = LoggerFactory.getLogger(QueryRecommendEventMeshHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(QueryRecommendEventMeshHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 

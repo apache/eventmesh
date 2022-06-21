@@ -33,9 +33,9 @@ public class ConsumerGroupManager {
 
     protected AtomicBoolean inited = new AtomicBoolean(Boolean.FALSE);
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
-    private EventMeshConsumer eventMeshConsumer;
+    private final EventMeshConsumer eventMeshConsumer;
 
     private ConsumerGroupConf consumerGroupConfig;
 

@@ -168,13 +168,9 @@ public class ClientSessionGroupMapping {
 
             if (session.getContext() != null) {
                 logger.info("begin to close channel to remote address[{}]", remoteAddress);
-                session.getContext().channel().close().addListener(new ChannelFutureListener() {
-                    @Override
-                    public void operationComplete(ChannelFuture future) throws Exception {
-                        logger.info("close the connection to remote address[{}] result: {}", remoteAddress,
-                                future.isSuccess());
-                    }
-                });
+                session.getContext().channel().close().addListener((ChannelFutureListener) future
+                        -> logger.info("close the connection to remote address[{}] result: {}", remoteAddress,
+                        future.isSuccess()));
             }
         }
     }
@@ -212,7 +208,7 @@ public class ClientSessionGroupMapping {
                 throw new Exception("client purpose config is error");
             }
 
-            session.setClientGroupWrapper(new WeakReference<ClientGroupWrapper>(cgw));
+            session.setClientGroupWrapper(new WeakReference<>(cgw));
         }
     }
 
@@ -385,25 +381,21 @@ public class ClientSessionGroupMapping {
 
     private void initDownStreamMsgContextCleaner() {
         eventMeshTCPServer.getScheduler().scheduleAtFixedRate(
-                new Runnable() {
-                    @Override
-                    public void run() {
-
-                        //scan non-broadcast msg
-                        Iterator<Session> sessionIterator = sessionTable.values().iterator();
-                        while (sessionIterator.hasNext()) {
-                            Session tmp = sessionIterator.next();
-                            for (Map.Entry<String, DownStreamMsgContext> entry : tmp.getPusher().getUnAckMsg().entrySet()) {
-                                String seqKey = entry.getKey();
-                                DownStreamMsgContext downStreamMsgContext = entry.getValue();
-                                if (!downStreamMsgContext.isExpire()) {
-                                    continue;
-                                }
-                                downStreamMsgContext.ackMsg();
-                                tmp.getPusher().getUnAckMsg().remove(seqKey);
-                                logger.warn("remove expire downStreamMsgContext, session:{}, topic:{}, seq:{}", tmp,
-                                        downStreamMsgContext.event.getSubject(), seqKey);
+                () -> {
+                    //scan non-broadcast msg
+                    Iterator<Session> sessionIterator = sessionTable.values().iterator();
+                    while (sessionIterator.hasNext()) {
+                        Session tmp = sessionIterator.next();
+                        for (Map.Entry<String, DownStreamMsgContext> entry : tmp.getPusher().getUnAckMsg().entrySet()) {
+                            String seqKey = entry.getKey();
+                            DownStreamMsgContext downStreamMsgContext = entry.getValue();
+                            if (!downStreamMsgContext.isExpire()) {
+                                continue;
                             }
+                            downStreamMsgContext.ackMsg();
+                            tmp.getPusher().getUnAckMsg().remove(seqKey);
+                            logger.warn("remove expire downStreamMsgContext, session:{}, topic:{}, seq:{}", tmp,
+                                    downStreamMsgContext.event.getSubject(), seqKey);
                         }
                     }
                 }, 1000, 5 * 1000, TimeUnit.MILLISECONDS);

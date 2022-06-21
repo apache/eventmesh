@@ -53,7 +53,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class EventMeshConsumer {
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     private AtomicBoolean started4Persistent = new AtomicBoolean(Boolean.FALSE);
 
@@ -67,11 +67,11 @@ public class EventMeshConsumer {
 
     public Logger messageLogger = LoggerFactory.getLogger("message");
 
-    private ConsumerGroupConf consumerGroupConf;
+    private final ConsumerGroupConf consumerGroupConf;
 
-    private MQConsumerWrapper persistentMqConsumer;
+    private final MQConsumerWrapper persistentMqConsumer;
 
-    private MQConsumerWrapper broadcastMqConsumer;
+    private final MQConsumerWrapper broadcastMqConsumer;
 
     public EventMeshConsumer(EventMeshHTTPServer eventMeshHTTPServer, ConsumerGroupConf consumerGroupConf) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;

@@ -29,7 +29,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class AdminMetricsProcessor implements HttpRequestProcessor {
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public AdminMetricsProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;

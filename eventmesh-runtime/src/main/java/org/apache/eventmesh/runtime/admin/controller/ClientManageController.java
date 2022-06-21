@@ -42,7 +42,7 @@ public class ClientManageController {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientManageController.class);
 
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     private AdminController adminController;
 

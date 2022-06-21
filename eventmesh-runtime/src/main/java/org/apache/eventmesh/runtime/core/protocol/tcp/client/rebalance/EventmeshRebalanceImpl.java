@@ -42,7 +42,7 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
 
     protected final Logger logger = LoggerFactory.getLogger(EventmeshRebalanceImpl.class);
 
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     public EventmeshRebalanceImpl(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;

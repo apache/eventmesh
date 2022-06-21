@@ -31,11 +31,11 @@ import org.slf4j.LoggerFactory;
 
 public class HttpRetryer {
 
-    private Logger retryLogger = LoggerFactory.getLogger("retry");
+    private final Logger retryLogger = LoggerFactory.getLogger("retry");
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
 
     public HttpRetryer(EventMeshHTTPServer eventMeshHTTPServer) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;

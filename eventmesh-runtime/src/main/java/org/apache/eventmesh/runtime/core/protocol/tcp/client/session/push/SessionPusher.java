@@ -56,7 +56,7 @@ public class SessionPusher {
 
     private ConcurrentHashMap<String /** seq */, DownStreamMsgContext> downStreamMap = new ConcurrentHashMap<String, DownStreamMsgContext>();
 
-    private Session session;
+    private final Session session;
 
     public SessionPusher(Session session) {
         this.session = session;
