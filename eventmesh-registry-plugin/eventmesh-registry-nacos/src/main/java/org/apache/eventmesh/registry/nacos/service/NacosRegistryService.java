@@ -62,7 +62,7 @@ public class NacosRegistryService implements RegistryService {
 
     private NamingService namingService;
 
-    private Map<String,EventMeshRegisterInfo> eventMeshRegisterInfoMap;
+    private Map<String, EventMeshRegisterInfo> eventMeshRegisterInfoMap;
 
     @Override
     public void init() throws RegistryException {
@@ -168,7 +168,6 @@ public class NacosRegistryService implements RegistryService {
     public boolean register(EventMeshRegisterInfo eventMeshRegisterInfo) throws RegistryException {
         try {
             String[] ipPort = eventMeshRegisterInfo.getEndPoint().split(NacosConstant.IP_PORT_SEPARATOR);
-            String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
             String eventMeshClusterName = eventMeshRegisterInfo.getEventMeshClusterName();
             Map<String, String> metadata = eventMeshRegisterInfo.getMetadata();
 
@@ -178,6 +177,8 @@ public class NacosRegistryService implements RegistryService {
             instance.setWeight(1.0);
             instance.setClusterName(eventMeshClusterName);
             instance.setMetadata(metadata);
+
+            String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
             namingService.registerInstance(eventMeshName, NacosConstant.DEFAULT_GROUP, instance);
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
         } catch (NacosException e) {
