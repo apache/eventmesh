@@ -21,9 +21,12 @@ import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicMetadata;
 import org.apache.eventmesh.runtime.registry.Registry;
 
 import java.util.HashMap;
@@ -53,12 +56,26 @@ public abstract class AbstractEventProcessor implements EventProcessor {
         try {
             Map<String, String> metadata = new HashMap<>(1 << 4);
             for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap : eventMeshHTTPServer.localConsumerGroupMapping.entrySet()) {
+                String consumerGroupKey = consumerGroupMap.getKey();
                 ConsumerGroupConf consumerGroupConf = consumerGroupMap.getValue();
-                Map<String, ConsumerGroupTopicConf> consumerGroupTopicConf = consumerGroupConf.getConsumerGroupTopicConf();
-                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry : consumerGroupTopicConf.entrySet()) {
-                    ConsumerGroupTopicConf groupTopicConf = consumerGroupTopicConfEntry.getValue();
-                    metadata.put(groupTopicConf.getTopic(), String.join(",", groupTopicConf.getUrls()));
+
+                ConsumerGroupMetadata consumerGroupMetadata = new ConsumerGroupMetadata();
+                consumerGroupMetadata.setConsumerGroup(consumerGroupKey);
+
+                Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap = new HashMap<>(1 << 4);
+                for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry : consumerGroupConf.getConsumerGroupTopicConf()
+                    .entrySet()) {
+                    final String topic = consumerGroupTopicConfEntry.getKey();
+                    ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
+                    ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
+                    consumerGroupTopicMetadata.setConsumerGroup(consumerGroupTopicConf.getConsumerGroup());
+                    consumerGroupTopicMetadata.setTopic(consumerGroupTopicConf.getTopic());
+                    consumerGroupTopicMetadata.setUrls(consumerGroupTopicConf.getUrls());
+
+                    consumerGroupTopicMetadataMap.put(topic, consumerGroupTopicMetadata);
                 }
+                consumerGroupMetadata.setConsumerGroupTopicMetadataMap(consumerGroupTopicMetadataMap);
+                metadata.put(consumerGroupKey, JsonUtils.serialize(consumerGroupMetadata));
             }
             Registry registry = eventMeshHTTPServer.getRegistry();
             registry.registerMetadata(metadata);
