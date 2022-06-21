@@ -17,12 +17,17 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor.inf;
 
+import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.registry.Registry;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -60,5 +65,32 @@ public abstract class AbstractEventProcessor implements EventProcessor {
         } catch (Exception e) {
             LOGGER.error("[LocalSubscribeEventProcessor] update eventmesh metadata error", e);
         }
+    }
+
+
+    protected String getTargetMesh(List<SubscriptionItem> subscriptionList, CommonConfiguration httpConfiguration) throws Exception {
+        // Currently only supports http
+        String targetMesh = "";
+        Registry registry = eventMeshHTTPServer.getRegistry();
+        List<EventMeshDataInfo> allEventMeshInfo = registry.findAllEventMeshInfo();
+        String httpServiceName =
+            httpConfiguration.eventMeshCluster + "@@" + httpConfiguration.eventMeshName + "-" + ConfigurationContextUtil.HTTP;
+        for (EventMeshDataInfo eventMeshDataInfo : allEventMeshInfo) {
+            if (!eventMeshDataInfo.getEventMeshName().equals(httpServiceName)) {
+                continue;
+            }
+            if (httpConfiguration.eventMeshCluster.equals(eventMeshDataInfo.getEventMeshClusterName())) {
+                continue;
+            }
+            Map<String, String> metadata = eventMeshDataInfo.getMetadata();
+            for (SubscriptionItem subscriptionItem : subscriptionList) {
+                if (metadata.containsKey(subscriptionItem.getTopic())) {
+                    targetMesh = "http://" + eventMeshDataInfo.getEndpoint() + "/eventmesh/subscribe/local";
+                    break;
+                }
+            }
+            break;
+        }
+        return targetMesh;
     }
 }
