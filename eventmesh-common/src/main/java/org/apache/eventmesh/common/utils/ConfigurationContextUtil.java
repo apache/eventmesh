@@ -20,6 +20,7 @@ package org.apache.eventmesh.common.utils;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Lists;
@@ -46,6 +47,9 @@ public class ConfigurationContextUtil {
      * @param configuration
      */
     public static void putIfAbsent(String key, CommonConfiguration configuration) {
+        if (Objects.isNull(configuration)) {
+            return;
+        }
         CONFIGURATION_MAP.putIfAbsent(key, configuration);
     }
 

@@ -54,6 +54,10 @@ public class Registry {
         return registryService.findEventMeshInfoByCluster(clusterName);
     }
 
+    public List<EventMeshDataInfo> findAllEventMeshInfo() throws Exception {
+        return registryService.findAllEventMeshInfo();
+    }
+
     public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose) throws Exception {
         return registryService.findEventMeshClientDistributionData(clusterName, group, purpose);
     }
