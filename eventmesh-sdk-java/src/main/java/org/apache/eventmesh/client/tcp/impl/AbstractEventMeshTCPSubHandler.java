@@ -29,8 +29,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 
 import com.google.common.base.Preconditions;
 
-import io.opentelemetry.api.trace.Span;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -49,7 +47,6 @@ public abstract class AbstractEventMeshTCPSubHandler<ProtocolMessage> extends Si
         Command cmd = msg.getHeader().getCmd();
         log.info("|receive|type={}|msg={}", cmd, msg);
 
-        Span span = null;
         switch (cmd) {
             case REQUEST_TO_CLIENT:
                 callback(getProtocolMessage(msg), ctx);
