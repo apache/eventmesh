@@ -33,4 +33,7 @@ public class NacosConstant {
     public static final String IP_PORT_SEPARATOR = ":";
 
     public static final String DEFAULT_GROUP = "DEFAULT_GROUP";
+
+    public static final String GROUP = "GROUP";
+
 }
