@@ -37,12 +37,12 @@ public class DeleteWebHookConfigHandler implements HttpHandler {
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private WebHookConfigOperation operation;
-    
+
     public DeleteWebHookConfigHandler(WebHookConfigOperation operation) {
-    	this.operation = operation;
+        this.operation = operation;
     }
-    
-    
+
+
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         httpExchange.sendResponseHeaders(200, 0);
@@ -52,7 +52,7 @@ public class DeleteWebHookConfigHandler implements HttpHandler {
         WebHookConfig webHookConfig = JsonUtils.toObject(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
-          
+
             Integer code = operation.deleteWebHookConfig(webHookConfig); // operating result
             String result = 1 == code ? "deleteWebHookConfig Succeed!" : "deleteWebHookConfig Failed!";
             out.write(result.getBytes());

@@ -17,20 +17,21 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.webhook.receive.WebHookController;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
+
 import lombok.Setter;
 
 public class WebHookProcessor implements HttpProcessor {
 
-	@Setter
+    @Setter
     private WebHookController webHookController;
 
     @Override
@@ -40,7 +41,7 @@ public class WebHookProcessor implements HttpProcessor {
 
     @Override
     public HttpResponse handler(HttpRequest httpRequest) {
-    	try {
+        try {
             Map<String, String> header = new HashMap<>();
             for (Map.Entry<String, String> entry : httpRequest.headers().entries()) {
                 header.put(entry.getKey().toLowerCase(), entry.getValue());
@@ -49,7 +50,7 @@ public class WebHookProcessor implements HttpProcessor {
             webHookController.execute(httpRequest.uri(), header, bytes);
             return HttpResponseUtils.createSuccess();
         } catch (Exception e) {
-        	throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 }
