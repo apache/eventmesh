@@ -42,94 +42,91 @@ import lombok.Setter;
 
 public class WebHookController {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+	public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    /**
-     * protocol pool
-     */
-    private final ProtocolManage protocolManage = new ProtocolManage();
+	/**
+	 * protocol pool
+	 */
+	private final ProtocolManage protocolManage = new ProtocolManage();
 
-    /**
-     * config pool
-     */
-    private HookConfigOperationManage hookConfigOperationManage;
+	/**
+	 * config pool
+	 */
+	private HookConfigOperationManage hookConfigOperationManage;
 
-    private WebHookMQProducer webHookMQProducer;
+	private WebHookMQProducer webHookMQProducer;
 
-    private ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor;
-    
-    @Setter
-    private ConfigurationWrapper configurationWrapper;
+	private ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor;
 
-    
-    public void init() throws IOException, NacosException{
-    	this.webHookMQProducer = new WebHookMQProducer(configurationWrapper.getProp("eventMesh.webHook.producer.connector"));
-    	this.hookConfigOperationManage =new HookConfigOperationManage(configurationWrapper);
-    	this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("webhookProtocolAdaptor");
-    	
-    }
+	@Setter
+	private ConfigurationWrapper configurationWrapper;
 
-    /**
-     * 1. get webhookConfig from path
-     * 2. get ManufacturerProtocol and execute
-     * 3. convert to cloudEvent obj
-     * 4. send cloudEvent
-     *
-     * @param path   CallbackPath
-     * @param header map of webhook request header
-     * @param body   data
-     */
-    public void execute(String path, Map<String, String> header, byte[] body) throws Exception {
-    	
-        // 1. get webhookConfig from path
-        WebHookConfig webHookConfig = new WebHookConfig();
-        webHookConfig.setCallbackPath(path);
-        webHookConfig = hookConfigOperationManage.queryWebHookConfigById(webHookConfig);
-        if (webHookConfig == null) {
-            throw new Exception("No matching webhookConfig.");
-        }
-        
-        if(!Objects.equals(webHookConfig.getContentType(), header.get("content-type"))) {
-        	throw new Exception("http request header content-type value is mismatch。 current value " + header.get("content-type"));
-    	}
+	public void init() throws IOException, NacosException {
+		this.webHookMQProducer = new WebHookMQProducer(
+				configurationWrapper.getProp("eventMesh.webHook.producer.connector"));
+		this.hookConfigOperationManage = new HookConfigOperationManage(configurationWrapper);
+		this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("webhookProtocolAdaptor");
 
-        // 2. get ManufacturerProtocol and execute
-        String manufacturerName = webHookConfig.getManufacturerName();
-        ManufacturerProtocol protocol = protocolManage.getManufacturerProtocol(manufacturerName);
-        WebHookRequest webHookRequest = new WebHookRequest();
-        webHookRequest.setData(body);
-        try {
-            protocol.execute(webHookRequest, webHookConfig, header);
-        } catch (Exception e) {
-            throw new Exception("Webhook Message Parse Failed.");
-        }
+	}
 
-        // 3. convert to cloudEvent obj
-        String cloudEventId = "uuid".equals(webHookConfig.getCloudEventIdGenerateMode())
-            ? UUID.randomUUID().toString() : webHookRequest.getManufacturerEventId();
-        String eventType = manufacturerName + "." + webHookConfig.getManufacturerEventName();
+	/**
+	 * 1. get webhookConfig from path 2. get ManufacturerProtocol and execute 3.
+	 * convert to cloudEvent obj 4. send cloudEvent
+	 *
+	 * @param path   CallbackPath
+	 * @param header map of webhook request header
+	 * @param body   data
+	 */
+	public void execute(String path, Map<String, String> header, byte[] body) throws Exception {
 
-        WebhookProtocolTransportObject webhookProtocolTransportObject = WebhookProtocolTransportObject.builder()
-        	.cloudEventId(cloudEventId).eventType(eventType)
-        	.cloudEventName(webHookConfig.getCloudEventName())
-        	.dataContentType(webHookConfig.getDataContentType())
-        	.body(body).build();
+		// 1. get webhookConfig from path
+		WebHookConfig webHookConfig = new WebHookConfig();
+		webHookConfig.setCallbackPath(path);
+		webHookConfig = hookConfigOperationManage.queryWebHookConfigById(webHookConfig);
+		if (webHookConfig == null) {
+			throw new Exception("No matching webhookConfig.");
+		}
 
-        // 4. send cloudEvent
-        webHookMQProducer.send(this.protocolAdaptor .toCloudEvent(webhookProtocolTransportObject), new SendCallback() {
-            @Override
-            public void onSuccess(SendResult sendResult) {
-            	if(logger.isDebugEnabled()) {
-            		logger.debug(sendResult.toString());
-            	}
-            }
+		if (!Objects.equals(webHookConfig.getContentType(), header.get("content-type"))) {
+			throw new Exception(
+					"http request header content-type value is mismatch。 current value " + header.get("content-type"));
+		}
 
-            @Override
-            public void onException(OnExceptionContext context) {
-                logger.warn("", context.getException());
-            }
+		// 2. get ManufacturerProtocol and execute
+		String manufacturerName = webHookConfig.getManufacturerName();
+		ManufacturerProtocol protocol = protocolManage.getManufacturerProtocol(manufacturerName);
+		WebHookRequest webHookRequest = new WebHookRequest();
+		webHookRequest.setData(body);
+		try {
+			protocol.execute(webHookRequest, webHookConfig, header);
+		} catch (Exception e) {
+			throw new Exception("Webhook Message Parse Failed.");
+		}
 
-        });
-    }
+		// 3. convert to cloudEvent obj
+		String cloudEventId = "uuid".equals(webHookConfig.getCloudEventIdGenerateMode()) ? UUID.randomUUID().toString()
+				: webHookRequest.getManufacturerEventId();
+		String eventType = manufacturerName + "." + webHookConfig.getManufacturerEventName();
+
+		WebhookProtocolTransportObject webhookProtocolTransportObject = WebhookProtocolTransportObject.builder()
+				.cloudEventId(cloudEventId).eventType(eventType).cloudEventName(webHookConfig.getCloudEventName())
+				.dataContentType(webHookConfig.getDataContentType()).body(body).build();
+
+		// 4. send cloudEvent
+		webHookMQProducer.send(this.protocolAdaptor.toCloudEvent(webhookProtocolTransportObject), new SendCallback() {
+			@Override
+			public void onSuccess(SendResult sendResult) {
+				if (logger.isDebugEnabled()) {
+					logger.debug(sendResult.toString());
+				}
+			}
+
+			@Override
+			public void onException(OnExceptionContext context) {
+				logger.warn("", context.getException());
+			}
+
+		});
+	}
 
 }
