@@ -37,11 +37,11 @@ public class EventMeshStartup {
                             EventMeshConstants.EVENTMESH_CONF_FILE, false);
             EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(configurationWrapper);
             eventMeshHttpConfiguration.init();
-            EventMeshTCPConfiguration eventMeshTCPConfiguration = new EventMeshTCPConfiguration(configurationWrapper);
-            eventMeshTCPConfiguration.init();
+            EventMeshTCPConfiguration eventMeshTcpConfiguration = new EventMeshTCPConfiguration(configurationWrapper);
+            eventMeshTcpConfiguration.init();
             EventMeshGrpcConfiguration eventMeshGrpcConfiguration = new EventMeshGrpcConfiguration(configurationWrapper);
             eventMeshGrpcConfiguration.init();
-            EventMeshServer server = new EventMeshServer(eventMeshHttpConfiguration, eventMeshTCPConfiguration, eventMeshGrpcConfiguration);
+            EventMeshServer server = new EventMeshServer(eventMeshHttpConfiguration, eventMeshTcpConfiguration, eventMeshGrpcConfiguration);
             server.init();
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
