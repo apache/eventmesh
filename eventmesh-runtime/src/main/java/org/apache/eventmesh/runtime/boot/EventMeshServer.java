@@ -26,6 +26,7 @@ import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.runtime.trace.Trace;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,42 +45,44 @@ public class EventMeshServer {
 
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
-    private EventMeshTCPConfiguration eventMeshTcpConfiguration;
+    private EventMeshTCPConfiguration eventMeshTCPConfiguration;
 
     private Acl acl;
 
     private Registry registry;
+
+    private static Trace trace;
 
     private ConnectorResource connectorResource;
 
     private ServiceState serviceState;
 
     public EventMeshServer(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
-                           EventMeshTCPConfiguration eventMeshTcpConfiguration,
+                           EventMeshTCPConfiguration eventMeshTCPConfiguration,
                            EventMeshGrpcConfiguration eventMeshGrpcConfiguration) {
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
-        this.eventMeshTcpConfiguration = eventMeshTcpConfiguration;
+        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
         this.acl = new Acl();
         this.registry = new Registry();
+        this.trace = new Trace(eventMeshHttpConfiguration.eventMeshServerTraceEnable);
         this.connectorResource = new ConnectorResource();
 
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.TCP, eventMeshTcpConfiguration);
+        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.TCP, eventMeshTCPConfiguration);
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, eventMeshGrpcConfiguration);
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, eventMeshHttpConfiguration);
     }
 
     public void init() throws Exception {
-
         if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable) {
             acl.init(eventMeshHttpConfiguration.eventMeshSecurityPluginType);
         }
 
         // registry init
-        if (eventMeshTcpConfiguration != null
-            && eventMeshTcpConfiguration.eventMeshTcpServerEnabled
-            && eventMeshTcpConfiguration.eventMeshServerRegistryEnable) {
-            registry.init(eventMeshTcpConfiguration.eventMeshRegistryPluginType);
+        if (eventMeshTCPConfiguration != null
+            && eventMeshTCPConfiguration.eventMeshTcpServerEnabled
+            && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+            registry.init(eventMeshTCPConfiguration.eventMeshRegistryPluginType);
         }
 
         if (eventMeshGrpcConfiguration != null && eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
@@ -88,6 +91,10 @@ public class EventMeshServer {
 
         if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
             registry.init(eventMeshHttpConfiguration.eventMeshRegistryPluginType);
+        }
+
+        if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
+            trace.init(eventMeshHttpConfiguration.eventMeshTracePluginType);
         }
 
         connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
@@ -103,9 +110,9 @@ public class EventMeshServer {
             eventMeshHTTPServer.init();
         }
 
-        if (eventMeshTcpConfiguration != null) {
-            eventMeshTCPServer = new EventMeshTCPServer(this, eventMeshTcpConfiguration, registry);
-            if (eventMeshTcpConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTCPConfiguration != null) {
+            eventMeshTCPServer = new EventMeshTCPServer(this, eventMeshTCPConfiguration, registry);
+            if (eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
                 eventMeshTCPServer.init();
             }
         }
@@ -123,9 +130,9 @@ public class EventMeshServer {
             acl.start();
         }
         // registry start
-        if (eventMeshTcpConfiguration != null
-            && eventMeshTcpConfiguration.eventMeshTcpServerEnabled
-            && eventMeshTcpConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshTCPConfiguration != null
+            && eventMeshTCPConfiguration.eventMeshTcpServerEnabled
+            && eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             registry.start();
         }
         if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
@@ -142,7 +149,7 @@ public class EventMeshServer {
         if (eventMeshHttpConfiguration != null) {
             eventMeshHTTPServer.start();
         }
-        if (eventMeshTcpConfiguration != null && eventMeshTcpConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.start();
         }
         serviceState = ServiceState.RUNNING;
@@ -153,7 +160,7 @@ public class EventMeshServer {
         serviceState = ServiceState.STOPING;
         logger.info("server state:{}", serviceState);
         eventMeshHTTPServer.shutdown();
-        if (eventMeshTcpConfiguration != null && eventMeshTcpConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTCPConfiguration != null && eventMeshTCPConfiguration.eventMeshTcpServerEnabled) {
             eventMeshTCPServer.shutdown();
         }
 
@@ -166,6 +173,11 @@ public class EventMeshServer {
         if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable) {
             acl.shutdown();
         }
+
+        if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
+            trace.shutdown();
+        }
+
 
         ConfigurationContextUtil.clear();
         serviceState = ServiceState.STOPED;
@@ -182,6 +194,10 @@ public class EventMeshServer {
 
     public EventMeshTCPServer getEventMeshTCPServer() {
         return eventMeshTCPServer;
+    }
+
+    public static Trace getTrace() {
+        return trace;
     }
 
     public ServiceState getServiceState() {
