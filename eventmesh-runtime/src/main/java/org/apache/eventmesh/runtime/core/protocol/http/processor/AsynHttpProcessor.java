@@ -22,11 +22,14 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService.
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
+/**
+ * aysn http processor
+ */
 public interface AsynHttpProcessor extends HttpProcessor {
 
-	public default HttpResponse handler(HttpRequest httpRequest) {
-		return null;
-	}
-	
-	public  void  handler(HandlerSpecific handlerSpecific , HttpRequest httpRequest);
+    public default HttpResponse handler(HttpRequest httpRequest) {
+        return null;
+    }
+
+    public void handler(HandlerSpecific handlerSpecific, HttpRequest httpRequest);
 }

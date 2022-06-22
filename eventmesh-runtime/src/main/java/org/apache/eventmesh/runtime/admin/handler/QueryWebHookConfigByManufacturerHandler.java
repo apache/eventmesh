@@ -39,12 +39,12 @@ public class QueryWebHookConfigByManufacturerHandler implements HttpHandler {
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private WebHookConfigOperation operation;
-    
+
     public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation) {
-    	this.operation = operation;
+        this.operation = operation;
     }
-    
-    
+
+
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         httpExchange.sendResponseHeaders(200, 0);

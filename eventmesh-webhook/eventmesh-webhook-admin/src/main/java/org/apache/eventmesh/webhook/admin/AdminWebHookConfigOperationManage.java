@@ -37,37 +37,29 @@ public class AdminWebHookConfigOperationManage {
 
     private static final Map<String, Class<? extends WebHookConfigOperation>> map = new HashMap<>();
 
-    // todo 单例懒加载
     static {
         map.put("file", FileWebHookConfigOperation.class);
         map.put("nacos", NacosWebHookConfigOperation.class);
     }
 
     private ConfigurationWrapper configurationWrapper;
-    
+
     private WebHookConfigOperation webHookConfigOperation;
-    
+
     public void setConfigurationWrapper(ConfigurationWrapper configurationWrapper) {
-		this.configurationWrapper = configurationWrapper;
-	}
-    
-	public WebHookConfigOperation getWebHookConfigOperation() {
-		return webHookConfigOperation;
-	}
+        this.configurationWrapper = configurationWrapper;
+    }
 
+    public WebHookConfigOperation getWebHookConfigOperation() {
+        return webHookConfigOperation;
+    }
 
-
-	/**
-     * Create it in ClientManageController
-     *
-     * @return WebHookConfigOperation implementation
-     */
     public void init() throws Exception {
-    	
-    	if(!configurationWrapper.getBoolProp(WebHookOperationConstant.ADMIN_START_CONFIG_NAME, false)) {
-    		return;
-    	}
-    	
+
+        if (!configurationWrapper.getBoolProp(WebHookOperationConstant.ADMIN_START_CONFIG_NAME, false)) {
+            return;
+        }
+
         String operationMode = configurationWrapper.getProp(WebHookOperationConstant.OPERATION_MODE_CONFIG_NAME);
 
         if (!map.containsKey(operationMode)) {
@@ -77,9 +69,9 @@ public class AdminWebHookConfigOperationManage {
         Constructor<? extends WebHookConfigOperation> constructor = map.get(operationMode).getDeclaredConstructor(Properties.class);
         constructor.setAccessible(true);
         try {
-        	Properties properties = configurationWrapper.getPropertiesByConfig("eventMesh.webHook."+operationMode+"Mode", true);
-        	logger.info("operationMode is {}  properties is {} " , operationMode, properties);
-            this.webHookConfigOperation =  constructor.newInstance(properties);
+            Properties properties = configurationWrapper.getPropertiesByConfig("eventMesh.webHook." + operationMode + "Mode", true);
+            logger.info("operationMode is {}  properties is {} ", operationMode, properties);
+            this.webHookConfigOperation = constructor.newInstance(properties);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             logger.error("can't find WebHookConfigOperation implementation");
             throw new Exception("can't find WebHookConfigOperation implementation");

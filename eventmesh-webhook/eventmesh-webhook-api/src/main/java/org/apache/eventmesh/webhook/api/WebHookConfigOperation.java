@@ -14,46 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.webhook.api;
 
 import java.util.List;
 
 /**
- * Define the operation of webhook configuration
+ * WebHookConfigOperation
  */
 public interface WebHookConfigOperation {
 
-    /**
-     * Add the configuration
-     *
-     * @return
-     */
     public Integer insertWebHookConfig(WebHookConfig webHookConfig);
 
-    /**
-     * Modify the configuration
-     *
-     * @return
-     */
     public Integer updateWebHookConfig(WebHookConfig webHookConfig);
 
-    /**
-     * Delete the configuration
-     *
-     * @return
-     */
     public Integer deleteWebHookConfig(WebHookConfig webHookConfig);
 
-    /**
-     * Query the configuration by ID
-     *
-     * @return
-     */
     public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig);
 
-    /**
-     * Query configurations through the manufacturer
-     */
     public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
                                                                 Integer pageSize);
 }

@@ -37,87 +37,87 @@ import com.google.common.base.Preconditions;
 
 public class ConfigurationWrapper {
 
-	public Logger logger = LoggerFactory.getLogger(this.getClass());
+    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private static final long TIME_INTERVAL = 30 * 1000L;
+    private static final long TIME_INTERVAL = 30 * 1000L;
 
-	private String file;
+    private String file;
 
-	private Properties properties = new Properties();
+    private Properties properties = new Properties();
 
-	private boolean reload;
+    private boolean reload;
 
-	private ScheduledExecutorService configLoader = ThreadPoolFactory
-			.createSingleScheduledExecutor("eventMesh-configLoader-");
+    private ScheduledExecutorService configLoader = ThreadPoolFactory
+            .createSingleScheduledExecutor("eventMesh-configLoader-");
 
-	public ConfigurationWrapper(String file, boolean reload) {
-		this.file = file;
-		this.reload = reload;
-		init();
-	}
+    public ConfigurationWrapper(String file, boolean reload) {
+        this.file = file;
+        this.reload = reload;
+        init();
+    }
 
-	private void init() {
-		load();
-		if (this.reload) {
-			configLoader.scheduleAtFixedRate(this::load, TIME_INTERVAL, TIME_INTERVAL, TimeUnit.MILLISECONDS);
-			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-				logger.info("Configuration reload task closed");
-				configLoader.shutdownNow();
-			}));
-		}
-	}
+    private void init() {
+        load();
+        if (this.reload) {
+            configLoader.scheduleAtFixedRate(this::load, TIME_INTERVAL, TIME_INTERVAL, TimeUnit.MILLISECONDS);
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                logger.info("Configuration reload task closed");
+                configLoader.shutdownNow();
+            }));
+        }
+    }
 
-	private void load() {
-		try {
-			logger.info("loading config: {}", file);
-			properties.load(new BufferedReader(new FileReader(file)));
-		} catch (IOException e) {
-			logger.error("loading properties [{}] error", file, e);
-		}
-	}
+    private void load() {
+        try {
+            logger.info("loading config: {}", file);
+            properties.load(new BufferedReader(new FileReader(file)));
+        } catch (IOException e) {
+            logger.error("loading properties [{}] error", file, e);
+        }
+    }
 
-	public String getProp(String key) {
-		return StringUtils.isEmpty(key) ? null : properties.getProperty(key, null);
-	}
+    public String getProp(String key) {
+        return StringUtils.isEmpty(key) ? null : properties.getProperty(key, null);
+    }
 
-	public int getIntProp(String configKey, int defaultValue) {
-		String configValue = StringUtils.deleteWhitespace(getProp(configKey));
-		if (StringUtils.isEmpty(configValue)) {
-			return defaultValue;
-		}
-		Preconditions.checkState(StringUtils.isNumeric(configValue),
-				String.format("key:%s, value:%s error", configKey, configValue));
-		return Integer.parseInt(configValue);
-	}
+    public int getIntProp(String configKey, int defaultValue) {
+        String configValue = StringUtils.deleteWhitespace(getProp(configKey));
+        if (StringUtils.isEmpty(configValue)) {
+            return defaultValue;
+        }
+        Preconditions.checkState(StringUtils.isNumeric(configValue),
+                String.format("key:%s, value:%s error", configKey, configValue));
+        return Integer.parseInt(configValue);
+    }
 
-	public boolean getBoolProp(String configKey, boolean defaultValue) {
-		String configValue = StringUtils.deleteWhitespace(getProp(configKey));
-		if (StringUtils.isEmpty(configValue)) {
-			return defaultValue;
-		}
-		return Boolean.parseBoolean(configValue);
-	}
+    public boolean getBoolProp(String configKey, boolean defaultValue) {
+        String configValue = StringUtils.deleteWhitespace(getProp(configKey));
+        if (StringUtils.isEmpty(configValue)) {
+            return defaultValue;
+        }
+        return Boolean.parseBoolean(configValue);
+    }
 
-	private String removePrefix(String key, String prefix, boolean removePrefix) {
-		return removePrefix ? key.replace(prefix, "") : key;
-	}
+    private String removePrefix(String key, String prefix, boolean removePrefix) {
+        return removePrefix ? key.replace(prefix, "") : key;
+    }
 
-	public Properties getPropertiesByConfig(String prefix, boolean removePrefix) {
-		Properties properties = new Properties();
-		prefix = prefix.endsWith(".") ? prefix : prefix + ".";
-		for (Entry<Object, Object> entry : this.properties.entrySet()) {
-			String key = (String) entry.getKey();
-			if (key.startsWith(prefix)) {
-				properties.put(removePrefix(key, prefix, removePrefix), entry.getValue());
-			}
-		}
-		return properties;
-	}
+    public Properties getPropertiesByConfig(String prefix, boolean removePrefix) {
+        Properties properties = new Properties();
+        prefix = prefix.endsWith(".") ? prefix : prefix + ".";
+        for (Entry<Object, Object> entry : this.properties.entrySet()) {
+            String key = (String) entry.getKey();
+            if (key.startsWith(prefix)) {
+                properties.put(removePrefix(key, prefix, removePrefix), entry.getValue());
+            }
+        }
+        return properties;
+    }
 
-	@SuppressWarnings("unchecked")
-	public <T> T getPropertiesByConfig(String prefix, Class<?> clazz, boolean removePrefix) {
-		ObjectMapper objectMapper = new ObjectMapper();
-		return (T) objectMapper.convertValue(getPropertiesByConfig(prefix, removePrefix), clazz);
-	}
+    @SuppressWarnings("unchecked")
+    public <T> T getPropertiesByConfig(String prefix, Class<?> clazz, boolean removePrefix) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return (T) objectMapper.convertValue(getPropertiesByConfig(prefix, removePrefix), clazz);
+    }
 
 }

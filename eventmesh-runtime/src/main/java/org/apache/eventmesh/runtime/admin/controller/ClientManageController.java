@@ -17,10 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.controller;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.Objects;
-
 import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
 import org.apache.eventmesh.runtime.admin.handler.DeleteWebHookConfigHandler;
 import org.apache.eventmesh.runtime.admin.handler.InsertWebHookConfigHandler;
@@ -40,6 +36,11 @@ import org.apache.eventmesh.runtime.admin.handler.UpdateWebHookConfigHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManage;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +56,7 @@ public class ClientManageController {
     private EventMeshTCPServer eventMeshTCPServer;
 
     private AdminController adminController;
-    
+
     @Setter
     private AdminWebHookConfigOperationManage adminWebHookConfigOperationManage;
 
@@ -63,8 +64,8 @@ public class ClientManageController {
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 
-    
-	public void start() throws IOException {
+
+    public void start() throws IOException {
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/clientManage/showClient", new ShowClientHandler(eventMeshTCPServer));
@@ -77,16 +78,16 @@ public class ClientManageController {
         server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler(eventMeshTCPServer));
         server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler(eventMeshTCPServer));
         server.createContext("/eventMesh/recommend", new QueryRecommendEventMeshHandler(eventMeshTCPServer));
-        
-        if(Objects.nonNull(adminWebHookConfigOperationManage.getWebHookConfigOperation())) {
-        	WebHookConfigOperation webHookConfigOperation = adminWebHookConfigOperationManage.getWebHookConfigOperation();
-        	server.createContext("/webhook/insertWebHookConfig", new InsertWebHookConfigHandler(webHookConfigOperation));
-        	server.createContext("/webhook/updateWebHookConfig", new UpdateWebHookConfigHandler(webHookConfigOperation));
-        	server.createContext("/webhook/deleteWebHookConfig", new DeleteWebHookConfigHandler(webHookConfigOperation));
-        	server.createContext("/webhook/queryWebHookConfigById", new QueryWebHookConfigByIdHandler(webHookConfigOperation));
-        	server.createContext("/webhook/queryWebHookConfigByManufacturer", new QueryWebHookConfigByManufacturerHandler(webHookConfigOperation));
+
+        if (Objects.nonNull(adminWebHookConfigOperationManage.getWebHookConfigOperation())) {
+            WebHookConfigOperation webHookConfigOperation = adminWebHookConfigOperationManage.getWebHookConfigOperation();
+            server.createContext("/webhook/insertWebHookConfig", new InsertWebHookConfigHandler(webHookConfigOperation));
+            server.createContext("/webhook/updateWebHookConfig", new UpdateWebHookConfigHandler(webHookConfigOperation));
+            server.createContext("/webhook/deleteWebHookConfig", new DeleteWebHookConfigHandler(webHookConfigOperation));
+            server.createContext("/webhook/queryWebHookConfigById", new QueryWebHookConfigByIdHandler(webHookConfigOperation));
+            server.createContext("/webhook/queryWebHookConfigByManufacturer", new QueryWebHookConfigByManufacturerHandler(webHookConfigOperation));
         }
-        
+
         adminController = new AdminController();
         adminController.run(server);
 

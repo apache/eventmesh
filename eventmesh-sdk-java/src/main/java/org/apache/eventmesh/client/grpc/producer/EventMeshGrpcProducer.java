@@ -41,7 +41,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     private static final Logger logger = LoggerFactory.getLogger(EventMeshGrpcProducer.class);
 
-    private static final  String PROTOCOL_TYPE = EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME;
+    private static final String PROTOCOL_TYPE = EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME;
 
     private final EventMeshGrpcClientConfig clientConfig;
 
@@ -57,7 +57,7 @@ public class EventMeshGrpcProducer implements AutoCloseable {
 
     public void init() {
         channel = ManagedChannelBuilder.forAddress(clientConfig.getServerAddr(), clientConfig.getServerPort())
-            .usePlaintext().build();
+                .usePlaintext().build();
         publisherClient = PublisherServiceGrpc.newBlockingStub(channel);
 
         cloudEventProducer = new CloudEventProducer(clientConfig, publisherClient);
