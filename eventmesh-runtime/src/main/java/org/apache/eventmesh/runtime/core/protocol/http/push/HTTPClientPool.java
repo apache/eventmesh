@@ -79,6 +79,7 @@ public class HTTPClientPool {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public CloseableHttpClient getHttpClient(int maxTotal, int idleTimeInSeconds, SSLContext sslContext) {
         try {
             if (sslContext == null) {
@@ -93,20 +94,20 @@ public class HTTPClientPool {
 
         SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
         Registry<ConnectionSocketFactory> socketFactoryRegistry
-            = RegistryBuilder.<ConnectionSocketFactory>create()
-            .register("http", PlainConnectionSocketFactory.getSocketFactory())
-            .register("https", sslsf).build();
+                = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", sslsf).build();
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
 
         connectionManager.setDefaultMaxPerRoute(maxTotal);
         connectionManager.setMaxTotal(maxTotal);
         return HttpClients.custom()
-            .setConnectionManager(connectionManager)
-            .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy())
-            .evictIdleConnections(idleTimeInSeconds, TimeUnit.SECONDS)
-            .setConnectionReuseStrategy(new DefaultConnectionReuseStrategy())
-            .setRetryHandler(new DefaultHttpRequestRetryHandler())
-            .build();
+                .setConnectionManager(connectionManager)
+                .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy())
+                .evictIdleConnections(idleTimeInSeconds, TimeUnit.SECONDS)
+                .setConnectionReuseStrategy(new DefaultConnectionReuseStrategy())
+                .setRetryHandler(new DefaultHttpRequestRetryHandler())
+                .build();
     }
 
     public static class TheTrustStrategy implements TrustStrategy {
