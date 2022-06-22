@@ -15,18 +15,19 @@
  * limitations under the License.
  */
 
-dependencies {
-    api project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
-    api 'io.cloudevents:cloudevents-core'
+package org.apache.eventmesh.trace.api.common;
 
-    implementation 'io.opentelemetry:opentelemetry-api'
-    implementation 'io.opentelemetry:opentelemetry-sdk'
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+public class EventMeshTraceConstants {
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
-    testImplementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
+    public static final String TRACE_EVENTMESH_SDK_CLIENT_SPAN = "eventmesh-sdk-client-span";
+
+    public static final String TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN = "upstream-eventmesh-server-span";
+    public static final String TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN = "upstream-eventmesh-client-span";
+
+    public static final String TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN = "downstream-eventmesh-server-span";
+    public static final String TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN = "downstream-eventmesh-client-span";
+
+    public static final String TRACE_EVENTMESH_SDK_SERVER_SPAN = "eventmesh-sdk-server-span";
+
 }
