@@ -32,10 +32,10 @@ public class ConfigurationContextUtil {
 
     private static final ConcurrentHashMap<String, CommonConfiguration> CONFIGURATION_MAP = new ConcurrentHashMap<>();
 
-    public static final String HTTP = "http";
+    public static final String HTTP = "HTTP";
 
-    public static final String TCP = "tcp";
-    public static final String GRPC = "grpc";
+    public static final String TCP = "TCP";
+    public static final String GRPC = "GRPC";
 
     public static final List<String> KEYS = Lists.newArrayList(HTTP, TCP, GRPC);
 
