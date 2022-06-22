@@ -159,7 +159,7 @@ public class NacosRegistryService implements RegistryService {
             String eventMeshName = configuration.eventMeshName;
             try {
                 List<Instance> instances =
-                    namingService.selectInstances(eventMeshName + "-" + key, configuration.eventMeshCluster, null,
+                    namingService.selectInstances(eventMeshName + "-" + key, key + "-" + NacosConstant.GROUP, null,
                         true);
                 if (CollectionUtils.isEmpty(instances)) {
                     continue;
@@ -210,7 +210,7 @@ public class NacosRegistryService implements RegistryService {
             instance.setMetadata(metadata);
 
             String eventMeshName = eventMeshRegisterInfo.getEventMeshName();
-            namingService.registerInstance(eventMeshName, eventMeshClusterName, instance);
+            namingService.registerInstance(eventMeshName, eventMeshRegisterInfo.getProtocolType() + "-" + NacosConstant.GROUP, instance);
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
         } catch (NacosException e) {
             logger.error("[NacosRegistryService][register] error", e);
@@ -230,7 +230,7 @@ public class NacosRegistryService implements RegistryService {
             String eventMeshName = eventMeshUnRegisterInfo.getEventMeshName();
             String eventMeshClusterName = eventMeshUnRegisterInfo.getEventMeshClusterName();
             instance.setClusterName(eventMeshClusterName);
-            namingService.deregisterInstance(eventMeshName, eventMeshClusterName, instance);
+            namingService.deregisterInstance(eventMeshName, eventMeshUnRegisterInfo.getProtocolType() + "-" + NacosConstant.GROUP, instance);
         } catch (NacosException e) {
             logger.error("[NacosRegistryService][unRegister] error", e);
             throw new RegistryException(e.getMessage());

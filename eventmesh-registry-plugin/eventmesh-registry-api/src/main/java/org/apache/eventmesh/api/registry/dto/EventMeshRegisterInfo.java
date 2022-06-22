@@ -30,6 +30,8 @@ public class EventMeshRegisterInfo {
 
     private Map<String, String> metadata;
 
+    private String protocolType;
+
     public String getEventMeshClusterName() {
         return eventMeshClusterName;
     }
@@ -68,5 +70,13 @@ public class EventMeshRegisterInfo {
 
     public void setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
+    }
+
+    public String getProtocolType() {
+        return protocolType;
+    }
+
+    public void setProtocolType(String protocolType) {
+        this.protocolType = protocolType;
     }
 }
