@@ -13,6 +13,7 @@ logs
 build
 .classpath
 .project
+.checkstyle
 test-output
 dist
 .pmd
