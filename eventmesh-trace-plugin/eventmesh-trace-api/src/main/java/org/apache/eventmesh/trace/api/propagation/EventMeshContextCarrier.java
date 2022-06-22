@@ -15,18 +15,12 @@
  * limitations under the License.
  */
 
-dependencies {
-    api project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
-    api 'io.cloudevents:cloudevents-core'
+package org.apache.eventmesh.trace.api.propagation;
 
-    implementation 'io.opentelemetry:opentelemetry-api'
-    implementation 'io.opentelemetry:opentelemetry-sdk'
+import java.util.Map;
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
-
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
-    testImplementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
+public interface EventMeshContextCarrier {
+    void extractFromMap(Map<String, String> carrier);
+    void injectIntoMap(Map<String, String> carrier);
+    Map<String, String> getContext();
 }
