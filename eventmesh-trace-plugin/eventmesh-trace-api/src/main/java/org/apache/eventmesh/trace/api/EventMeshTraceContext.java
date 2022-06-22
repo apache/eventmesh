@@ -17,27 +17,14 @@
 
 package org.apache.eventmesh.trace.api;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+public class EventMeshTraceContext {
+    private EventMeshSpan span;
 
-import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+    public EventMeshSpan getSpan() {
+        return span;
+    }
 
-import lombok.experimental.UtilityClass;
-
-/**
- * to get the trace service
- */
-@UtilityClass
-public class TracePluginFactory {
-    /**
-     * to get TraceService
-     *
-     * @param traceServiceType
-     * @return
-     */
-    public static EventMeshTraceService getEventMeshTraceService(String traceServiceType) {
-        checkNotNull(traceServiceType, "traceServiceType cannot be null");
-
-        EventMeshTraceService eventMeshTraceService = EventMeshExtensionFactory.getExtension(EventMeshTraceService.class, traceServiceType);
-        return checkNotNull(eventMeshTraceService, "traceServiceType: " + traceServiceType + " is not supported");
+    public void setSpan(EventMeshSpan span) {
+        this.span = span;
     }
 }
