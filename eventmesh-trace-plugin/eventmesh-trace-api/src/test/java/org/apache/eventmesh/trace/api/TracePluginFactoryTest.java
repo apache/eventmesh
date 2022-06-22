@@ -29,18 +29,18 @@ public class TracePluginFactoryTest {
 
     @Test
     public void testFailedGetTraceService() {
-        NullPointerException nullPointerException1 = Assert.assertThrows(NullPointerException.class, () -> TracePluginFactory.getTraceService(null));
+        NullPointerException nullPointerException1 = Assert.assertThrows(NullPointerException.class, () -> TracePluginFactory.getEventMeshTraceService(null));
         MatcherAssert.assertThat(nullPointerException1.getMessage(), is("traceServiceType cannot be null"));
 
         String traceServiceType = "non-Existing";
         NullPointerException nullPointerException2 =
-            Assert.assertThrows(NullPointerException.class, () -> TracePluginFactory.getTraceService(traceServiceType));
+            Assert.assertThrows(NullPointerException.class, () -> TracePluginFactory.getEventMeshTraceService(traceServiceType));
         MatcherAssert.assertThat(nullPointerException2.getMessage(), is("traceServiceType: " + traceServiceType + " is not supported"));
     }
 
     @Test
     public void testSuccessfulGetTraceService() {
-        TraceService zipkinTraceService = TracePluginFactory.getTraceService("zipkin");
+        EventMeshTraceService zipkinTraceService = TracePluginFactory.getEventMeshTraceService("zipkin");
         Assert.assertNotNull(zipkinTraceService);
         Assert.assertTrue(zipkinTraceService instanceof ZipkinTraceService);
     }

@@ -15,29 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.trace.api;
+package org.apache.eventmesh.trace.api.exception;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+public class TraceException extends RuntimeException {
 
-import org.apache.eventmesh.spi.EventMeshExtensionFactory;
+    public TraceException(String message) {
+        super(message);
+    }
 
-import lombok.experimental.UtilityClass;
-
-/**
- * to get the trace service
- */
-@UtilityClass
-public class TracePluginFactory {
-    /**
-     * to get TraceService
-     *
-     * @param traceServiceType
-     * @return
-     */
-    public static EventMeshTraceService getEventMeshTraceService(String traceServiceType) {
-        checkNotNull(traceServiceType, "traceServiceType cannot be null");
-
-        EventMeshTraceService eventMeshTraceService = EventMeshExtensionFactory.getExtension(EventMeshTraceService.class, traceServiceType);
-        return checkNotNull(eventMeshTraceService, "traceServiceType: " + traceServiceType + " is not supported");
+    public TraceException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
