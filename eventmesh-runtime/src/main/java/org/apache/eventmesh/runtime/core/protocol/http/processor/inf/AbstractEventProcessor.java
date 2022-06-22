@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.registry.nacos.constant.NacosConstant;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupMetadata;
@@ -96,7 +97,7 @@ public abstract class AbstractEventProcessor implements EventProcessor {
         Registry registry = eventMeshHTTPServer.getRegistry();
         List<EventMeshDataInfo> allEventMeshInfo = registry.findAllEventMeshInfo();
         String httpServiceName =
-            httpConfiguration.eventMeshCluster + "@@" + httpConfiguration.eventMeshName + "-" + ConfigurationContextUtil.HTTP;
+            ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.eventMeshName + "-" + ConfigurationContextUtil.HTTP;
         for (EventMeshDataInfo eventMeshDataInfo : allEventMeshInfo) {
             if (!eventMeshDataInfo.getEventMeshName().equals(httpServiceName)) {
                 continue;
