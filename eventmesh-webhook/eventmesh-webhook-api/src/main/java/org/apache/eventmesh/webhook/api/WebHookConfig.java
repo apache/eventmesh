@@ -22,44 +22,58 @@ import lombok.Data;
 @Data
 public class WebHookConfig {
 
+	/**
+	 * 厂商调用的path。厂商事件调用地址、 [http or https ]://[域名 or IP 【厂商可以被调用】]:[端口]/webhook/[callbackPath]
+	 * 比如：http://127.0.0.1:10504/webhook/test/event 需要把全完url填入厂商调用输入中
+	 * callbackPath 是唯一
+	 * manufacturer callback path
+	 */
     private String callbackPath;
 
     /**
+     * 厂商的名字
      * manufacturer name ,like github
      */
     private String manufacturerName;
 
     /**
+     * 厂商的事件名
      * webhook event name ,like rep-push
      */
     private String manufacturerEventName;
 
     /**
+     * 
      * http header content type
      */
-    private String contentType;
+    private String contentType = "application/json";
 
     /**
+     * 说明
      * description of this WebHookConfig
      */
     private String description;
 
     /**
+     * 有一些厂商使用验签方式，
      * secret key ,for authentication
      */
     private String secret;
 
     /**
+     *  有一些厂商使用验签方式，使用账户密码方式
      * userName ,for HTTP authentication
      */
     private String userName;
 
     /**
+     *  有一些厂商使用验签方式，使用账户密码方式
      * password ,for HTTP authentication
      */
     private String password;
 
     /**
+     * 
      * roll out protocol ,like http/kafka
      */
     private String cloudEventProtocol;
@@ -70,6 +84,7 @@ public class WebHookConfig {
     private String cloudEventServiceAddress;
 
     /**
+     * 事件发送到那个topic
      * roll out event name ,like topic to mq
      */
     private String cloudEventName;
@@ -78,7 +93,7 @@ public class WebHookConfig {
      * roll out data format -> CloudEvent serialization mode
      * If HTTP protocol is used, the request header contentType needs to be marked
      */
-    private String dataContentType;
+    private String dataContentType = "application/json";;
 
     /**
      * source of event
@@ -86,7 +101,8 @@ public class WebHookConfig {
     private String cloudEventSource;
 
     /**
+     * cloudEvent事件对象唯一标识符识别方式，uuid或者厂商id
      * id of cloudEvent ,like uuid/manufacturerEventId
      */
-    private String cloudEventIdGenerateMode;
+    private String cloudEventIdGenerateMode = "manufacturerEventId";
 }
