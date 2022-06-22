@@ -19,37 +19,30 @@ package org.apache.eventmesh.trace.api;
 
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
+import org.apache.eventmesh.trace.api.exception.TraceException;
 
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
-/**
- * The top-level interface of trace
- */
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
+
 @EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.TRACE)
-public interface TraceService {
-    /**
-     * init the trace service
-     */
-    void init();
+public interface EventMeshTraceService {
+    void init() throws TraceException;
 
-    /**
-     * close the trace service
-     */
-    void shutdown();
+    //extract attr from carrier to context
+    Context extractFrom(Context context, Map<String, Object> carrier) throws TraceException;
 
-    /**
-     * get the tracer
-     *
-     * @param instrumentationName
-     * @return
-     */
-    Tracer getTracer(String instrumentationName);
+    //inject attr from context to carrier
+    void inject(Context context, Map<String, Object> carrier);
 
-    /**
-     * get TextMapPropagator
-     *
-     * @return
-     */
-    TextMapPropagator getTextMapPropagator();
+    Span createSpan(String spanName, SpanKind spanKind, long startTimestamp, TimeUnit timeUnit,
+                    Context context, boolean isSpanFinishInOtherThread) throws TraceException;
+
+    Span createSpan(String spanName, SpanKind spanKind, Context context,
+                    boolean isSpanFinishInOtherThread) throws TraceException;
+
+    void shutdown() throws TraceException;
 }
