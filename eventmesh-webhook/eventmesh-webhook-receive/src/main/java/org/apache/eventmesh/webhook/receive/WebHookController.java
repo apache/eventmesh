@@ -18,14 +18,18 @@
 package org.apache.eventmesh.webhook.receive;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.http.WebhookProtocolTransportObject;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.protocol.ProtocolManage;
 import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
@@ -34,8 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.nacos.api.exception.NacosException;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 import lombok.Setter;
 
 public class WebHookController {
@@ -54,16 +56,16 @@ public class WebHookController {
 
     private WebHookMQProducer webHookMQProducer;
 
+    private ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor;
     
     @Setter
     private ConfigurationWrapper configurationWrapper;
 
     
     public void init() throws IOException, NacosException{
-    	//webHookMQProducer = new WebHookMQProducer(configurationWrapper.getProp("eventMesh.webHook.producer.connector"));
-    	
-    	this.hookConfigOperationManage =
-    			new HookConfigOperationManage(configurationWrapper);
+    	this.webHookMQProducer = new WebHookMQProducer(configurationWrapper.getProp("eventMesh.webHook.producer.connector"));
+    	this.hookConfigOperationManage =new HookConfigOperationManage(configurationWrapper);
+    	this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("webhookProtocolAdaptor");
     	
     }
 
@@ -78,6 +80,7 @@ public class WebHookController {
      * @param body   data
      */
     public void execute(String path, Map<String, String> header, byte[] body) throws Exception {
+    	
         // 1. get webhookConfig from path
         WebHookConfig webHookConfig = new WebHookConfig();
         webHookConfig.setCallbackPath(path);
@@ -85,6 +88,10 @@ public class WebHookController {
         if (webHookConfig == null) {
             throw new Exception("No matching webhookConfig.");
         }
+        
+        if(!Objects.equals(webHookConfig.getContentType(), header.get("content-type"))) {
+        	throw new Exception("http request header content-type value is mismatch。 current value " + header.get("content-type"));
+    	}
 
         // 2. get ManufacturerProtocol and execute
         String manufacturerName = webHookConfig.getManufacturerName();
@@ -102,17 +109,14 @@ public class WebHookController {
             ? UUID.randomUUID().toString() : webHookRequest.getManufacturerEventId();
         String eventType = manufacturerName + "." + webHookConfig.getManufacturerEventName();
 
-        CloudEvent event = CloudEventBuilder.v1()
-            .withId(cloudEventId)
-            .withSubject(webHookConfig.getCloudEventName())
-            .withSource(URI.create(webHookConfig.getCloudEventSource()))
-            .withDataContentType(webHookConfig.getDataContentType())
-            .withType(eventType)
-            .withData(body)
-            .build();
+        WebhookProtocolTransportObject webhookProtocolTransportObject = WebhookProtocolTransportObject.builder()
+        	.cloudEventId(cloudEventId).eventType(eventType)
+        	.cloudEventName(webHookConfig.getCloudEventName())
+        	.dataContentType(webHookConfig.getDataContentType())
+        	.body(body).build();
 
         // 4. send cloudEvent
-        webHookMQProducer.send(event, new SendCallback() {
+        webHookMQProducer.send(this.protocolAdaptor .toCloudEvent(webhookProtocolTransportObject), new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
             	if(logger.isDebugEnabled()) {
