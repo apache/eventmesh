@@ -25,12 +25,10 @@ import org.apache.eventmesh.client.tcp.common.RequestContext;
 import org.apache.eventmesh.client.tcp.common.TcpClient;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.client.tcp.impl.AbstractEventMeshTCPPubHandler;
-import org.apache.eventmesh.client.trace.TraceUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Package;
-import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +41,6 @@ import io.netty.channel.ChannelHandlerContext;
 
 import com.google.common.base.Preconditions;
 
-import io.opentelemetry.api.trace.Span;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -83,18 +80,13 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
 
     @Override
     public Package rr(CloudEvent event, long timeout) throws EventMeshException {
-        Span span = null;
         Package msg = null;
         try {
             msg = MessageUtils.buildPackage(event, Command.REQUEST_TO_SERVER);
-            span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
             log.info("{}|rr|send|type={}|msg={}", clientNo, msg, msg);
             Package resp = io(msg, timeout);
-
-            TraceUtils.finishSpan(span, msg.getHeader().getProperties());
             return resp;
         } catch (Exception ex) {
-            TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "rr error", ex);
             throw new EventMeshException("rr error", ex);
         }
     }
@@ -102,53 +94,38 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     @Override
     public void asyncRR(CloudEvent event, AsyncRRCallback callback, long timeout) throws EventMeshException {
         Package msg = null;
-        Span span = null;
         try {
             msg = MessageUtils.buildPackage(event, Command.REQUEST_TO_SERVER);
-            span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
             super.send(msg);
             this.callbackConcurrentHashMap.put((String) RequestContext.key(msg), callback);
-
-            TraceUtils.finishSpan(span, msg.getHeader().getProperties());
         } catch (Exception ex) {
-            TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "asyncRR error", ex);
             throw new EventMeshException("asyncRR error", ex);
         }
     }
 
     @Override
     public Package publish(CloudEvent cloudEvent, long timeout) throws EventMeshException {
-        Span span = null;
         Package msg = null;
         try {
             msg = MessageUtils.buildPackage(cloudEvent, Command.ASYNC_MESSAGE_TO_SERVER);
-            span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
             log.info("SimplePubClientImpl cloud event|{}|publish|send|type={}|protocol={}|msg={}",
                     clientNo, msg.getHeader().getCmd(), msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             Package resp = io(msg, timeout);
-
-            TraceUtils.finishSpan(span, msg.getHeader().getProperties());
-
             return resp;
         } catch (Exception ex) {
-            TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "publish error", ex);
             throw new EventMeshException("publish error", ex);
         }
     }
 
     @Override
     public void broadcast(CloudEvent cloudEvent, long timeout) throws EventMeshException {
-        Span span = null;
         Package msg = null;
         try {
             msg = MessageUtils.buildPackage(cloudEvent, Command.BROADCAST_MESSAGE_TO_SERVER);
-            span = TraceUtils.prepareClientSpan(msg.getHeader().getProperties(), EventMeshTraceConstants.TRACE_EVENTMESH_SDK_CLIENT_SPAN, false);
             log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCmd(),
                     msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             super.send(msg);
-            TraceUtils.finishSpan(span, msg.getHeader().getProperties());
         } catch (Exception ex) {
-            TraceUtils.finishSpanWithException(span, msg != null ? msg.getHeader().getProperties() : null, "Broadcast message error", ex);
             throw new EventMeshException("Broadcast message error", ex);
         }
     }

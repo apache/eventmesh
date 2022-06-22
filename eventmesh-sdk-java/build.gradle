@@ -18,11 +18,7 @@
 def grpcVersion = '1.15.0'
 
 dependencies {
-    implementation project(":eventmesh-common")
-    implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
-    implementation 'io.opentelemetry:opentelemetry-api'
-    implementation 'io.opentelemetry:opentelemetry-sdk'
-    implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
+    api project(":eventmesh-common")
 
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.fasterxml.jackson.core:jackson-core"
@@ -43,10 +39,6 @@ dependencies {
     api "io.openmessaging:openmessaging-api"
 
     testImplementation project(":eventmesh-common")
-    testImplementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
-    testImplementation 'io.opentelemetry:opentelemetry-api'
-    testImplementation 'io.opentelemetry:opentelemetry-sdk'
-    testImplementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
 
     testImplementation "com.fasterxml.jackson.core:jackson-databind"
     testImplementation "com.fasterxml.jackson.core:jackson-core"

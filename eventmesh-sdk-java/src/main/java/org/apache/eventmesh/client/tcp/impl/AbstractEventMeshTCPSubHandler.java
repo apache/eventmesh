@@ -52,41 +52,14 @@ public abstract class AbstractEventMeshTCPSubHandler<ProtocolMessage> extends Si
         Span span = null;
         switch (cmd) {
             case REQUEST_TO_CLIENT:
-                //                span = TraceUtils.prepareServerSpan(msg.getHeader().getProperties(),
-                //                    EventMeshTraceConstants.TRACE_EVENTMESH_SDK_SERVER_SPAN, false);
-                //
-                //                try(Scope scope = span.makeCurrent()) {
-                //                    callback(getProtocolMessage(msg), ctx);
-                //                    response(MessageUtils.requestToClientAck(msg));
-                //                }finally {
-                //                    TraceUtils.finishSpan(span, msg.getHeader().getProperties());
-                //                }
                 callback(getProtocolMessage(msg), ctx);
                 response(MessageUtils.requestToClientAck(msg));
                 break;
             case ASYNC_MESSAGE_TO_CLIENT:
-                //                span = TraceUtils.prepareServerSpan(msg.getHeader().getProperties(),
-                //                    EventMeshTraceConstants.TRACE_EVENTMESH_SDK_SERVER_SPAN, false);
-                //
-                //                try(Scope scope = span.makeCurrent()) {
-                //                    callback(getProtocolMessage(msg), ctx);
-                //                    response(MessageUtils.asyncMessageAck(msg));
-                //                }finally {
-                //                    TraceUtils.finishSpan(span, msg.getHeader().getProperties());
-                //                }
                 callback(getProtocolMessage(msg), ctx);
                 response(MessageUtils.asyncMessageAck(msg));
                 break;
             case BROADCAST_MESSAGE_TO_CLIENT:
-                //                span = TraceUtils.prepareServerSpan(msg.getHeader().getProperties(),
-                //                    EventMeshTraceConstants.TRACE_EVENTMESH_SDK_SERVER_SPAN, false);
-                //
-                //                try(Scope scope = span.makeCurrent()) {
-                //                    callback(getProtocolMessage(msg), ctx);
-                //                    response(MessageUtils.broadcastMessageAck(msg));
-                //                }finally {
-                //                    TraceUtils.finishSpan(span, msg.getHeader().getProperties());
-                //                }
                 callback(getProtocolMessage(msg), ctx);
                 response(MessageUtils.broadcastMessageAck(msg));
                 break;
