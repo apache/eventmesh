@@ -18,6 +18,7 @@
 dependencies {
 
     compileOnly project(":eventmesh-common")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     compileOnly 'org.projectlombok:lombok:1.18.22'

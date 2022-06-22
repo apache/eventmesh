@@ -43,7 +43,7 @@ public class WebHookProcessor implements HttpProcessor {
     	try {
             Map<String, String> header = new HashMap<>();
             for (Map.Entry<String, String> entry : httpRequest.headers().entries()) {
-                header.put(entry.getKey(), entry.getValue());
+                header.put(entry.getKey().toLowerCase(), entry.getValue());
             }
             byte[] bytes = ((DefaultFullHttpRequest) httpRequest).content().array();
             webHookController.execute(httpRequest.uri(), header, bytes);
