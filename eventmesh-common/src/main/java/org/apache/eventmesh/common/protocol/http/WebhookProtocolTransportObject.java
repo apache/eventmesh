@@ -21,25 +21,24 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import lombok.Builder;
 import lombok.Data;
 
-
 @Data
 @Builder
-public class WebhookProtocolTransportObject implements ProtocolTransportObject{
+public class WebhookProtocolTransportObject implements ProtocolTransportObject {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -7247618154228090320L;
-	
+
 	private String cloudEventId;
-	
+
 	private String eventType;
-	
+
 	private String cloudEventName;
-	
+
 	private String cloudEventSource;
-	
+
 	private String dataContentType;
-	
+
 	private byte[] body;
 }
