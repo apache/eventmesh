@@ -26,18 +26,12 @@ import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
-import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
-import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.trace.TraceUtils;
-import org.apache.eventmesh.runtime.util.EventMeshCloudEventWriter;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.Utils;
-import org.apache.eventmesh.trace.api.EventMeshSpan;
-import org.apache.eventmesh.trace.api.EventMeshTraceContext;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
-import org.apache.eventmesh.trace.api.propagation.EventMeshContextCarrier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -51,16 +45,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import io.cloudevents.core.v03.CloudEventV03;
-import io.cloudevents.core.v1.CloudEventV1;
-import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
-import io.opentelemetry.api.trace.StatusCode;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 
 public class SessionSender {
 
