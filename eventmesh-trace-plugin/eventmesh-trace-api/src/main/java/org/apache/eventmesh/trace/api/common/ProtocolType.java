@@ -15,18 +15,9 @@
  * limitations under the License.
  */
 
-dependencies {
-    api project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
-    api 'io.cloudevents:cloudevents-core'
+package org.apache.eventmesh.trace.api.common;
 
-    implementation 'io.opentelemetry:opentelemetry-api'
-    implementation 'io.opentelemetry:opentelemetry-sdk'
-
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
-
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
-    testImplementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
+public enum ProtocolType {
+    TCP,
+    HTTP
 }
