@@ -30,41 +30,83 @@ import {
   TableContainer,
   useToast,
   Box,
+  Button,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 interface Client {
-  'env': string,
-  'subsystem': string,
-  'path': string,
-  'pid': number,
-  'host': string,
-  'port': number,
-  'version': string,
-  'idc': string,
-  'group': string,
-  'purpose': string,
-  'protocol': string,
+  env: string,
+  subsystem: string,
+  path: string,
+  pid: number,
+  host: string,
+  port: number,
+  version: string,
+  idc: string,
+  group: string,
+  purpose: string,
+  protocol: string,
 }
 
 interface ClientProps {
-  'host': string,
-  'port': number,
-  'group': string,
-  'protocol': string,
+  host: string,
+  port: number,
+  group: string,
+  protocol: string,
+}
+
+interface RemoveClientRequest {
+  host: string,
+  port: number,
+  protocol: string,
 }
 
 const ClientRow = ({
   host, port, group, protocol,
-}: ClientProps) => (
-  <Tr>
-    <Td>{host}</Td>
-    <Td isNumeric>{port}</Td>
-    <Td>{group}</Td>
-    <Td>{protocol}</Td>
-  </Tr>
-);
+}: ClientProps) => {
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
+  const onRemoveClick = async () => {
+    try {
+      setLoading(true);
+      await axios.delete<RemoveClientRequest>('/client', {
+        data: { host, port, protocol },
+      });
+      setLoading(false);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast({
+          title: 'Failed to remove the client',
+          description: error.message,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    }
+  };
+
+  return (
+    <Tr>
+      <Td>{host}</Td>
+      <Td isNumeric>{port}</Td>
+      <Td>{group}</Td>
+      <Td>{protocol}</Td>
+      <Td>
+        <HStack>
+          <Button
+            colorScheme="red"
+            isLoading={loading}
+            onClick={onRemoveClick}
+          >
+            Remove
+          </Button>
+        </HStack>
+      </Td>
+    </Tr>
+  );
+};
 
 const ClientTable = () => {
   const [searchInput, setsearchInput] = useState<string>('');
@@ -156,6 +198,7 @@ const ClientTable = () => {
               <Th isNumeric>Port</Th>
               <Th>Group</Th>
               <Th>Protocol</Th>
+              <Th>Action</Th>
             </Tr>
           </Thead>
           <Tbody>

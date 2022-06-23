@@ -18,10 +18,9 @@
 package org.apache.eventmesh.runtime.admin.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ClientResponse {
+public class GetClientResponse {
     public String env;
     public String subsystem;
     public String path;
@@ -35,7 +34,7 @@ public class ClientResponse {
     public String protocol;
 
     @JsonCreator
-    public ClientResponse(
+    public GetClientResponse(
             @JsonProperty("env") String env,
             @JsonProperty("subsystem") String subsystem,
             @JsonProperty("path") String path,
