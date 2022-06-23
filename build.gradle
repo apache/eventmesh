@@ -312,8 +312,8 @@ subprojects {
                 }
             }
             copy {
-                into "${rootDir}/dist/licenses"
-                from "${rootDir}/tools/third-party-licenses/licenses"
+                into "${rootDir}/dist"
+                from "${rootDir}/tools/third-party-licenses"
             }
         }
     }
