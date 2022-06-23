@@ -39,14 +39,14 @@ import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.opentelemetry.api.trace.Span;
-
-import java.util.concurrent.TimeUnit;
 
 public class EventMeshTcpMessageDispatcher extends SimpleChannelInboundHandler<Package> {
 
