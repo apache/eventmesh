@@ -29,7 +29,8 @@ public class TracePluginFactoryTest {
 
     @Test
     public void testFailedGetTraceService() {
-        NullPointerException nullPointerException1 = Assert.assertThrows(NullPointerException.class, () -> TracePluginFactory.getEventMeshTraceService(null));
+        NullPointerException nullPointerException1 = Assert.assertThrows(NullPointerException.class,
+            () -> TracePluginFactory.getEventMeshTraceService(null));
         MatcherAssert.assertThat(nullPointerException1.getMessage(), is("traceServiceType cannot be null"));
 
         String traceServiceType = "non-Existing";
