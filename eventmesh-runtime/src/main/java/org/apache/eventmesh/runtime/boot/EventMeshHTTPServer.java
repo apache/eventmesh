@@ -53,8 +53,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.registry.Registry;
-import org.apache.eventmesh.trace.api.TracePluginFactory;
-import org.apache.eventmesh.trace.api.TraceService;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -77,8 +75,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     public ServiceState serviceState;
 
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
-
-    private TraceService traceService;
 
     private Registry registry;
 
@@ -253,11 +249,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         //get the trace-plugin
         if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.eventMeshTracePluginType) && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
 
-            traceService =
-                TracePluginFactory.getTraceService(eventMeshHttpConfiguration.eventMeshTracePluginType);
-            traceService.init();
-            super.tracer = traceService.getTracer(super.getClass().toString());
-            super.textMapPropagator = traceService.getTextMapPropagator();
             super.useTrace = true;
         }
 
@@ -283,10 +274,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         super.shutdown();
 
         metrics.shutdown();
-
-        if (traceService != null) {
-            traceService.shutdown();
-        }
 
         consumerManager.shutdown();
 

@@ -15,41 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.trace.api;
+package org.apache.eventmesh.trace.api.common;
 
-import org.apache.eventmesh.spi.EventMeshExtensionType;
-import org.apache.eventmesh.spi.EventMeshSPI;
 
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.propagation.TextMapPropagator;
+public class EventMeshTraceConstants {
 
-/**
- * The top-level interface of trace
- */
-@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.TRACE)
-public interface TraceService {
-    /**
-     * init the trace service
-     */
-    void init();
+    public static final String TRACE_EVENTMESH_SDK_CLIENT_SPAN = "eventmesh-sdk-client-span";
 
-    /**
-     * close the trace service
-     */
-    void shutdown();
+    public static final String TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN = "upstream-eventmesh-server-span";
+    public static final String TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN = "upstream-eventmesh-client-span";
 
-    /**
-     * get the tracer
-     *
-     * @param instrumentationName
-     * @return
-     */
-    Tracer getTracer(String instrumentationName);
+    public static final String TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN = "downstream-eventmesh-server-span";
+    public static final String TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN = "downstream-eventmesh-client-span";
 
-    /**
-     * get TextMapPropagator
-     *
-     * @return
-     */
-    TextMapPropagator getTextMapPropagator();
+    public static final String TRACE_EVENTMESH_SDK_SERVER_SPAN = "eventmesh-sdk-server-span";
+
 }
