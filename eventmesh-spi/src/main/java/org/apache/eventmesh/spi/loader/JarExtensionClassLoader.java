@@ -48,11 +48,13 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(JarExtensionClassLoader.class);
 
+    private static final String EVENT_MESH_PLUGIN_DIR = "eventMeshPluginDir";
+
     private static final ConcurrentHashMap<Class<?>, Map<String, Class<?>>> EXTENSION_CLASS_CACHE =
             new ConcurrentHashMap<>(16);
 
     private static final String EVENTMESH_EXTENSION_PLUGIN_DIR =
-            System.getProperty("eventMeshPluginDir",
+            System.getProperty(EVENT_MESH_PLUGIN_DIR,
                     Joiner.on(File.separator).join(Lists.newArrayList(".", "plugin")));
 
     @Override
