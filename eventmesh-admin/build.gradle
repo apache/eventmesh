@@ -25,7 +25,7 @@ task copyEventMeshAdmin(dependsOn: ['jar']) {
             into('../eventmesh-admin/dist/apps/')
             from project.jar.getArchivePath()
             exclude {
-                "eventmesh-admin-${version}.jar"                
+                "eventmesh-admin-${version}.jar"
             }
         }
         copy {
