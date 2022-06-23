@@ -28,6 +28,9 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 
+/**
+ * EventMeshTraceService
+ */
 @EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.TRACE)
 public interface EventMeshTraceService {
     void init() throws TraceException;
