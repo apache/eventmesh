@@ -337,9 +337,9 @@ public class ClientSessionGroupMapping {
                 && (session.getClientGroupWrapper().get().getGroupProducerSessions().size() == 0)) {
             shutdownClientGroupProducer(session);
 
-            clientGroupMap.remove(session.getClientGroupWrapper().get().getSysId());
-            lockMap.remove(session.getClientGroupWrapper().get().getSysId());
-            logger.info("remove clientGroupWrapper subsystem[{}]", session.getClientGroupWrapper().get().getSysId());
+            clientGroupMap.remove(session.getClientGroupWrapper().get().getGroup());
+            lockMap.remove(session.getClientGroupWrapper().get().getGroup());
+            logger.info("remove clientGroupWrapper group[{}]", session.getClientGroupWrapper().get().getGroup());
         }
     }
 
