@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.push;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Scope;
-
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.runtime.core.protocol.http.consumer.EventMeshConsumer;
@@ -40,6 +37,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.opentelemetry.api.trace.Span;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -89,13 +88,13 @@ public class HTTPMessageHandler implements MessageHandler {
                 String protocolVersion = Objects.requireNonNull(handleMsgContext.getEvent().getExtension(
                     Constants.PROTOCOL_VERSION)).toString();
 
-                Span span = TraceUtils.prepareClientSpan(
-                    EventMeshUtil.getCloudEventExtensionMap(protocolVersion, handleMsgContext.getEvent()), EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
+                Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, handleMsgContext.getEvent()),
+                    EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
 
-                try(Scope scope = span.makeCurrent()){
+                try {
                     AsyncHTTPPushRequest asyncPushRequest = new AsyncHTTPPushRequest(handleMsgContext, waitingRequests);
                     asyncPushRequest.tryHTTPRequest();
-                }finally {
+                } finally {
                     TraceUtils.finishSpan(span, handleMsgContext.getEvent());
                 }
 
