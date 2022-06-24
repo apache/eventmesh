@@ -56,6 +56,9 @@ public abstract class AbstractEventProcessor implements EventProcessor {
      * Add a topic with subscribers to the service's metadata.
      */
     protected void updateMetadata() {
+        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRegistryEnable) {
+            return;
+        }
         try {
             Map<String, String> metadata = new HashMap<>(1 << 4);
             for (Map.Entry<String, ConsumerGroupConf> consumerGroupMap : eventMeshHTTPServer.localConsumerGroupMapping.entrySet()) {
@@ -91,7 +94,10 @@ public abstract class AbstractEventProcessor implements EventProcessor {
     protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList)
         throws Exception {
         // Currently only supports http
-        CommonConfiguration httpConfiguration = ConfigurationContextUtil.get(ConfigurationContextUtil.HTTP);
+        CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
+        if (!httpConfiguration.eventMeshServerRegistryEnable){
+            return "";
+        }
 
         String targetMesh = "";
         Registry registry = eventMeshHTTPServer.getRegistry();
