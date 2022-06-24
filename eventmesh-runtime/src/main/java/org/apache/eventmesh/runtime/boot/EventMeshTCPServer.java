@@ -298,12 +298,13 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         try {
             String endPoints = IPUtils.getLocalAddress()
                 + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshTCPConfiguration.eventMeshTcpServerPort;
-            EventMeshRegisterInfo self = new EventMeshRegisterInfo();
-            self.setEventMeshClusterName(eventMeshTCPConfiguration.eventMeshCluster);
-            self.setEventMeshName(eventMeshTCPConfiguration.eventMeshName + "-" + ConfigurationContextUtil.TCP);
-            self.setEndPoint(endPoints);
-            self.setEventMeshInstanceNumMap(clientSessionGroupMapping.prepareProxyClientDistributionData());
-            registerResult = registry.register(self);
+            EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
+            eventMeshRegisterInfo.setEventMeshClusterName(eventMeshTCPConfiguration.eventMeshCluster);
+            eventMeshRegisterInfo.setEventMeshName(eventMeshTCPConfiguration.eventMeshName + "-" + ConfigurationContextUtil.TCP);
+            eventMeshRegisterInfo.setEndPoint(endPoints);
+            eventMeshRegisterInfo.setEventMeshInstanceNumMap(clientSessionGroupMapping.prepareProxyClientDistributionData());
+            eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.TCP);
+            registerResult = registry.register(eventMeshRegisterInfo);
         } catch (Exception e) {
             logger.warn("eventMesh register to registry failed", e);
         }
@@ -318,6 +319,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshTCPConfiguration.eventMeshCluster);
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshTCPConfiguration.eventMeshName);
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
+        eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.TCP);
         boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);
         if (!registerResult) {
             throw new EventMeshException("eventMesh fail to unRegister");

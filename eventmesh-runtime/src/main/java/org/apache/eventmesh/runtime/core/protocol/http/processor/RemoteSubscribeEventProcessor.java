@@ -18,11 +18,13 @@
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.http.common.RequestURI;
+import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
@@ -31,7 +33,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.EventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.AbstractEventProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.WebhookUtil;
@@ -60,16 +62,15 @@ import io.netty.channel.ChannelHandlerContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
 
-public class RemoteSubscribeEventProcessor implements EventProcessor {
+public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
     public Logger aclLogger = LoggerFactory.getLogger("acl");
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
 
     public RemoteSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
+        super(eventMeshHTTPServer);
     }
 
     @Override
@@ -205,8 +206,6 @@ public class RemoteSubscribeEventProcessor implements EventProcessor {
         try {
             // request to remote
 
-            //todo: find target mesh by nacos
-
             String env = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv;
             String idc = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC;
             String cluster = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster;
@@ -234,7 +233,14 @@ public class RemoteSubscribeEventProcessor implements EventProcessor {
             remoteBodyMap.put("consumerGroup", meshGroup);
             remoteBodyMap.put("topic", requestBodyMap.get("topic"));
 
-            String targetMesh = requestBodyMap.get("remoteMesh").toString();
+            String targetMesh = requestBodyMap.get("remoteMesh") == null ? "" : requestBodyMap.get("remoteMesh").toString();
+
+            // Get mesh address from registry
+            String meshAddress = getTargetMesh(consumerGroup, subscriptionList);
+            if (StringUtils.isNotBlank(meshAddress)) {
+                targetMesh = meshAddress;
+            }
+
 
             CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.httpClientPool.getClient();
 
@@ -244,19 +250,16 @@ public class RemoteSubscribeEventProcessor implements EventProcessor {
             Map<String, String> remoteResultMap = JsonUtils.deserialize(remoteResult, new TypeReference<Map<String, String>>() {
             });
 
-            final CompleteHandler<HttpEventWrapper> handler = new CompleteHandler<HttpEventWrapper>() {
-                @Override
-                public void onResponse(HttpEventWrapper httpEventWrapper) {
-                    try {
-                        if (httpLogger.isDebugEnabled()) {
-                            httpLogger.debug("{}", httpEventWrapper);
-                        }
-                        eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
-                        eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
-                            System.currentTimeMillis() - requestWrapper.getReqTime());
-                    } catch (Exception ex) {
-                        // ignore
+            final CompleteHandler<HttpEventWrapper> handler = httpEventWrapper -> {
+                try {
+                    if (httpLogger.isDebugEnabled()) {
+                        httpLogger.debug("{}", httpEventWrapper);
                     }
+                    eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
+                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
+                        System.currentTimeMillis() - requestWrapper.getReqTime());
+                } catch (Exception ex) {
+                    // ignore
                 }
             };
 

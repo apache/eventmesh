@@ -15,25 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.registry.nacos.constant;
+package org.apache.eventmesh.runtime.util;
 
-/**
- * NacosConstant.
- */
-public class NacosConstant {
+import java.util.HashMap;
+import java.util.Map;
 
-    public static final String SERVER_ADDR = "serverAddr";
+import io.cloudevents.rw.CloudEventContextWriter;
+import io.cloudevents.rw.CloudEventRWException;
 
-    public static final String NAMESPACE = "namespace";
+public class EventMeshCloudEventWriter implements CloudEventContextWriter {
+    private Map<String, Object> extensionMap = null;
 
-    public static final String USERNAME = "username";
+    public EventMeshCloudEventWriter() {
+        extensionMap = new HashMap<String, Object>();
+    }
 
-    public static final String PASSWORD = "password";
+    @Override
+    public CloudEventContextWriter withContextAttribute(String key, String value)
+        throws CloudEventRWException {
+        extensionMap.put(key, value);
+        return this;
+    }
 
-    public static final String IP_PORT_SEPARATOR = ":";
-
-    public static final String DEFAULT_GROUP = "DEFAULT_GROUP";
-
-    public static final String GROUP = "GROUP";
-
+    public Map<String, Object> getExtensionMap() {
+        return extensionMap;
+    }
 }
