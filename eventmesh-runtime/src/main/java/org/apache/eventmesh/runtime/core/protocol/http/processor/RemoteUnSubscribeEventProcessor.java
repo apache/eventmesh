@@ -26,15 +26,13 @@ import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.EventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.AbstractEventProcessor;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-import org.apache.eventmesh.runtime.util.WebhookUtil;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -51,6 +49,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,16 +59,14 @@ import io.netty.channel.ChannelHandlerContext;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
 
-public class RemoteUnSubscribeEventProcessor implements EventProcessor {
+public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
     public Logger aclLogger = LoggerFactory.getLogger("acl");
 
-    private EventMeshHTTPServer eventMeshHTTPServer;
-
     public RemoteUnSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
-        this.eventMeshHTTPServer = eventMeshHTTPServer;
+        super(eventMeshHTTPServer);
     }
 
     @Override
@@ -168,8 +165,21 @@ public class RemoteUnSubscribeEventProcessor implements EventProcessor {
             remoteBodyMap.put("consumerGroup", meshGroup);
             remoteBodyMap.put("topic", requestBodyMap.get("topic"));
 
-            //todo: find target mesh by nacos
+            List<String> unSubTopicList = JsonUtils.deserialize(topic, new TypeReference<List<String>>() {
+            });
+
             String targetMesh = requestBodyMap.get("remoteMesh").toString();
+
+            List<SubscriptionItem> subscriptionList = unSubTopicList.stream().map(s -> {
+                SubscriptionItem subscriptionItem = new SubscriptionItem();
+                subscriptionItem.setTopic(s);
+                return subscriptionItem;
+            }).collect(Collectors.toList());
+            // Get mesh address from registry
+            String meshAddress = getTargetMesh(consumerGroup, subscriptionList);
+            if (StringUtils.isNotBlank(meshAddress)) {
+                targetMesh = meshAddress;
+            }
 
             CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.httpClientPool.getClient();
 
@@ -179,19 +189,16 @@ public class RemoteUnSubscribeEventProcessor implements EventProcessor {
             Map<String, String> remoteResultMap = JsonUtils.deserialize(remoteResult, new TypeReference<Map<String, String>>() {
             });
 
-            final CompleteHandler<HttpEventWrapper> handler = new CompleteHandler<HttpEventWrapper>() {
-                @Override
-                public void onResponse(HttpEventWrapper httpEventWrapper) {
-                    try {
-                        if (httpLogger.isDebugEnabled()) {
-                            httpLogger.debug("{}", httpEventWrapper);
-                        }
-                        eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
-                        eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
-                            System.currentTimeMillis() - requestWrapper.getReqTime());
-                    } catch (Exception ex) {
-                        // ignore
+            final CompleteHandler<HttpEventWrapper> handler = httpEventWrapper -> {
+                try {
+                    if (httpLogger.isDebugEnabled()) {
+                        httpLogger.debug("{}", httpEventWrapper);
                     }
+                    eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
+                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
+                        System.currentTimeMillis() - requestWrapper.getReqTime());
+                } catch (Exception ex) {
+                    // ignore
                 }
             };
 
@@ -230,8 +237,8 @@ public class RemoteUnSubscribeEventProcessor implements EventProcessor {
     }
 
     public static String post(CloseableHttpClient client, String uri,
-                            Map<String, String> requestHeader, Map<String, Object> requestBody,
-                            ResponseHandler<String> responseHandler) throws IOException {
+                              Map<String, String> requestHeader, Map<String, Object> requestBody,
+                              ResponseHandler<String> responseHandler) throws IOException {
         Preconditions.checkState(client != null, "client can't be null");
         Preconditions.checkState(StringUtils.isNotBlank(uri), "uri can't be null");
         Preconditions.checkState(requestHeader != null, "requestParam can't be null");

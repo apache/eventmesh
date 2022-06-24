@@ -155,11 +155,12 @@ public class EventMeshGrpcServer {
         try {
             String endPoints = IPUtils.getLocalAddress()
                 + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.grpcServerPort;
-            EventMeshRegisterInfo self = new EventMeshRegisterInfo();
-            self.setEventMeshClusterName(eventMeshGrpcConfiguration.eventMeshCluster);
-            self.setEventMeshName(eventMeshGrpcConfiguration.eventMeshName + "-" + ConfigurationContextUtil.GRPC);
-            self.setEndPoint(endPoints);
-            registerResult = registry.register(self);
+            EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
+            eventMeshRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.eventMeshCluster);
+            eventMeshRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.eventMeshName + "-" + ConfigurationContextUtil.GRPC);
+            eventMeshRegisterInfo.setEndPoint(endPoints);
+            eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.GRPC);
+            registerResult = registry.register(eventMeshRegisterInfo);
         } catch (Exception e) {
             logger.warn("eventMesh register to registry failed", e);
         }
@@ -174,6 +175,7 @@ public class EventMeshGrpcServer {
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.eventMeshCluster);
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.eventMeshName);
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
+        eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.GRPC);
         boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);
         if (!registerResult) {
             throw new EventMeshException("eventMesh fail to unRegister");
