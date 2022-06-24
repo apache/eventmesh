@@ -125,7 +125,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         String consumerGroup = requestBodyMap.get("consumerGroup").toString();
         String topic = JsonUtils.serialize(requestBodyMap.get("topic"));
 
-        // SubscriptionItem
+        // unSubscriptionItem
         List<String> unSubTopicList = JsonUtils.deserialize(topic, new TypeReference<List<String>>() {
         });
 
