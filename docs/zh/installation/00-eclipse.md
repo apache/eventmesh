@@ -11,7 +11,7 @@ eclipse 已安装gradle插件或者eclipse自带gradle插件
 ### 下载源码
 git init  
 
-git clone https://github.com/apache/incubator-eventmesh.git 
+git clone https://github.com/apache/incubator-eventmesh.git
 
 ### 项目编译eclipse环境
 
