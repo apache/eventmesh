@@ -236,12 +236,9 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             String targetMesh = requestBodyMap.get("remoteMesh") == null ? "" : requestBodyMap.get("remoteMesh").toString();
 
             // Get mesh address from registry
-            CommonConfiguration httpConfiguration = ConfigurationContextUtil.get(ConfigurationContextUtil.HTTP);
-            if (httpConfiguration.eventMeshServerRegistryEnable) {
-                String meshAddress = getTargetMesh(consumerGroup, subscriptionList);
-                if (StringUtils.isNotBlank(meshAddress)) {
-                    targetMesh = meshAddress;
-                }
+            String meshAddress = getTargetMesh(consumerGroup, subscriptionList);
+            if (StringUtils.isNotBlank(meshAddress)) {
+                targetMesh = meshAddress;
             }
 
 
