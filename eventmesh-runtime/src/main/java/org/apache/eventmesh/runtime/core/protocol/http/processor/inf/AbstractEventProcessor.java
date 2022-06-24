@@ -95,7 +95,7 @@ public abstract class AbstractEventProcessor implements EventProcessor {
         throws Exception {
         // Currently only supports http
         CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
-        if (!httpConfiguration.eventMeshServerRegistryEnable){
+        if (!httpConfiguration.eventMeshServerRegistryEnable) {
             return "";
         }
 
