@@ -216,6 +216,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         return batchRateLimiter;
     }
 
+    public Registry getRegistry() {
+        return registry;
+    }
+
     public void init() throws Exception {
         logger.info("==================EventMeshHTTPServer Initialing==================");
         super.init("eventMesh-http");
@@ -297,11 +301,12 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         try {
             String endPoints = IPUtils.getLocalAddress()
                 + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.httpServerPort;
-            EventMeshRegisterInfo self = new EventMeshRegisterInfo();
-            self.setEventMeshClusterName(eventMeshHttpConfiguration.eventMeshCluster);
-            self.setEventMeshName(eventMeshHttpConfiguration.eventMeshName + "-" + ConfigurationContextUtil.HTTP);
-            self.setEndPoint(endPoints);
-            registerResult = registry.register(self);
+            EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
+            eventMeshRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.eventMeshCluster);
+            eventMeshRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.eventMeshName + "-" + ConfigurationContextUtil.HTTP);
+            eventMeshRegisterInfo.setEndPoint(endPoints);
+            eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
+            registerResult = registry.register(eventMeshRegisterInfo);
         } catch (Exception e) {
             logger.warn("eventMesh register to registry failed", e);
         }
@@ -316,6 +321,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.eventMeshCluster);
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.eventMeshName);
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
+        eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
         boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);
         if (!registerResult) {
             throw new EventMeshException("eventMesh fail to unRegister");
