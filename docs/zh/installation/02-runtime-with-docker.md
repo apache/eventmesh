@@ -2,55 +2,30 @@
 
 本篇快速入门将详细介绍使用 docker 部署 EventMesh，以 RocketMQ 作为对接的中间件。
 
-可选语言: [英文版本](../../en/instructions/eventmesh-runtime-quickstart-with-docker.md)，[中文版本](eventmesh-runtime-quickstart-with-docker.md)。
+可选语言: [英文版本](../../en/instructions/eventmesh-runtime-quickstart-with-docker.md)，[中文版本](02-runtime-with-docker.md)。
 
 ## 前提
 
-1. 建议使用64位的 linux 系统。
-2. 请预先安装 Docker Engine。 Docker 的安装过程可以参考 [docker 官方文档](https://docs.docker.com/engine/install/).
-3. 建议掌握基础的 docker 概念和命令行，例如注册中心、挂载等等。不过这不是必须的，因为所有使用到的命令行都列出来了。
-4. [RocketMQ 成功的在运行](https://rocketmq.apache.org/docs/quick-start/) 并且可以使用 ip 地址访问到。
+1. 建议使用64位的 linux 系统；
+2. 请预先安装 Docker Engine。 Docker 的安装过程可以参考 [docker 官方文档](https://docs.docker.com/engine/install/)；
+3. 建议掌握基础的 docker 概念和命令行，例如注册中心、挂载等等。不过这不是必须的，因为本次操作所需的命令都已为您列出；
+4. 若您选择非standalone模式，请确保 [RocketMQ 已成功启动](https://rocketmq.apache.org/docs/quick-start/) 并且可以使用 ip 地址访问到；若您选择standalone模式，则无需启动 RocketMQ 。
 
 ## 获取 EventMesh 镜像
 
 首先，你可以打开一个命令行，并且使用下面的 ```pull``` 命令从 [Docker Hub](https://registry.hub.docker.com/r/eventmesh/eventmesh/tags) 中下载[最新发布的 EventMesh](https://eventmesh.apache.org/events/release-notes/v1.3.0/) 。
 
 ```shell
-sudo docker pull eventmesh/eventmesh:v1.3.0
+sudo docker pull eventmesh/eventmesh:v1.4.0
 ```
 
-在下载过程中和下载结束后，你可以看到命令行中显示以下的文字：
-
-```shell
-ubuntu@VM-16-4-ubuntu:~$ sudo docker pull eventmesh/eventmesh:v1.3.0
-v1.3.0: Pulling from eventmesh/eventmesh
-2d473b07cdd5: Downloading [======>                                            ]  9.649MB/76.1MB
-2b97b2e51c1a: Pulling fs layer
-ccef593d4fe7: Pulling fs layer
-70beb7ae51cd: Waiting
-0a2cf32321af: Waiting
-5d764ea8950d: Waiting
-71d02dcd996d: Waiting
-v1.3.0: Pulling from eventmesh/eventmesh
-2d473b07cdd5: Pull complete
-2b97b2e51c1a: Pull complete
-ccef593d4fe7: Pull complete
-70beb7ae51cd: Pull complete
-0a2cf32321af: Pull complete
-5d764ea8950d: Pull complete
-71d02dcd996d: Pull complete
-Digest: sha256:267a93a761e999790f8bd132b09541f0ffab551e8618097a4adce8e3e66bbe4e
-Status: Downloaded newer image for eventmesh/eventmesh:v1.3.0
-docker.io/eventmesh/eventmesh:v1.3.0
-```
-
-接下来，你可以使用以下命令列出并查看本地已有的镜像。
+您可以使用以下命令列出并查看本地已有的镜像。
 
 ```shell
 sudo docker images
 ```
 
-终端中会显示如下所示的镜像信息，可以发现 EventMesh 镜像已经成功下载到本地了。
+如果终端显示如下所示的镜像信息，则说明 EventMesh 镜像已经成功下载到本地。
 
 ```shell
 ubuntu@VM-16-4-ubuntu:~$ sudo docker images
@@ -58,11 +33,9 @@ REPOSITORY               TAG         IMAGE ID       CREATED        SIZE
 eventmesh/eventmesh      v1.3.0      da0008c1d03b   7 days ago     922MB
 ```
 
-## 准备配置文件
+## 创建配置文件
 
-在根据 EventMesh 镜像运行对应容器之前，你需要创建一些配置文件。
-
-本篇入门指导使用 RocketMQ 作为对接的中间件，所以需要两个配置文件，分别是：```eventMesh.properties``` 和 ```rocketmq-client.properties```。
+在根据 EventMesh 镜像运行对应容器之前，你需要创建两个配置文件，分别是：```eventMesh.properties``` 和 ```rocketmq-client.properties```。
 
 首先，你需要使用下面的命令创建这两个文件。
 
@@ -77,15 +50,15 @@ sudo touch rocketmq-client.properties
 
 这个配置文件中包含 EventMesh 运行时环境和集成进来的其他插件所需的参数。
 
-使用下面的 ```vi``` 命令编辑 ```eventmesh.properties```。
+使用下面的 ```vim``` 命令编辑 ```eventmesh.properties```。
 
 ```shell
-sudo vi eventmesh.properties
+sudo vim eventmesh.properties
 ```
 
-在快速入门的阶段，你可以直接将 GitHub 仓库中的对应配置文件中的内容复制过来，链接为：<https://github.com/apache/incubator-eventmesh/blob/1.3.0/eventmesh-runtime/conf/eventmesh.properties> 。
+你可以直接将 GitHub 仓库中的对应配置文件中的内容复制过来，链接为：<https://github.com/apache/incubator-eventmesh/blob/1.3.0/eventmesh-runtime/conf/eventmesh.properties> 。
 
-其中的一些默认属性键值对如下所示：
+请检查配置文件里的默认端口是否已被占用，如果被占用请修改成未被占用的端口：
 
 | 属性                         | 默认值   | 备注                         |
 |----------------------------|-------|----------------------------|
@@ -95,17 +68,17 @@ sudo vi eventmesh.properties
 
 ### 配置 rocketmq-client.properties
 
-这个配置文件中包含 RocketMQ nameserver 的一些信息。
+这个配置文件中包含 RocketMQ nameserver 的信息。
 
-使用下面的 ```vi``` 命令编辑 ```rocketmq-client.properties```。
+使用下面的 ```vim``` 命令编辑 ```rocketmq-client.properties```。
 
 ```shell
-sudo vi rocketmq-client.properties
+sudo vim rocketmq-client.properties
 ```
 
-在快速入门的阶段，你可以直接将 GitHub 仓库中的对应配置文件中的内容复制过来，链接为：<https://github.com/apache/incubator-eventmesh/blob/1.3.0/eventmesh-runtime/conf/rocketmq-client.properties> 。但要记得将默认值改为一个实际正在运行的 nameserver 地址。
+你可以直接将 GitHub 仓库中的对应配置文件中的内容复制过来，链接为：<https://github.com/apache/incubator-eventmesh/blob/1.3.0/eventmesh-runtime/conf/rocketmq-client.properties> 。请注意，如果您正在运行的 namesetver 地址不是配置文件中的默认值，请将其修改为实际正在运行的nameserver地址。
 
-默认的键值对示例如下所示：
+请检查配置文件里的默认namesrvAddr是否已被占用，如果被占用请修改成未被占用的地址：
 
 | 属性                                    | 默认值                           | 备注                               |
 |---------------------------------------|-------------------------------|----------------------------------|
@@ -127,7 +100,7 @@ sudo docker run -d \
     -p 10000:10000 -p 10105:10105 \
     -v /data/eventmesh/rocketmq/conf/eventMesh.properties:/data/app/eventmesh/conf/eventMesh.properties \
     -v /data/eventmesh/rocketmq/conf/rocketmq-client.properties:/data/app/eventmesh/conf/rocketmq-client.properties \
-    eventmesh/eventmesh:v1.3.0
+    eventmesh/eventmesh:v1.4.0
 ```
 
 如果运行命令之后看到新输出一行字符串，那么运行 EventMesh 镜像的容器就启动成功了。
@@ -142,10 +115,10 @@ sudo docker ps
 
 ```shell
 CONTAINER ID   IMAGE                        COMMAND                  CREATED              STATUS              PORTS                                                                                          NAMES
-d1e1a335d4a9   eventmesh/eventmesh:v1.3.0   "/bin/sh -c 'sh star…"   About a minute ago   Up About a minute   0.0.0.0:10000->10000/tcp, :::10000->10000/tcp, 0.0.0.0:10105->10105/tcp, :::10105->10105/tcp   focused_bartik
+d1e1a335d4a9   eventmesh/eventmesh:v1.4.0   "/bin/sh -c 'sh star…"   About a minute ago   Up About a minute   0.0.0.0:10000->10000/tcp, :::10000->10000/tcp, 0.0.0.0:10105->10105/tcp, :::10105->10105/tcp   focused_bartik
 ```
 
-从这个信息中可以看出，```container id``` 是 ```d1e1a335d4a9```，随机 ```name``` 是 ```focused_bartik```，它们都可以用来唯一标识这个容器。**注意**：在你的电脑中，它们的值可能跟这里的不同。
+从这个信息中可以看出，```container id``` 是 ```d1e1a335d4a9```，```name``` 是 ```focused_bartik```，它们都可以用来唯一标识这个容器。**注意**：在你的电脑中，它们的值可能跟这里的不同。
 
 ## 管理 EventMesh 容器
 
