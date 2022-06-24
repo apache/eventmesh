@@ -26,6 +26,7 @@ import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.connector.ConnectorResource;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.runtime.trace.Trace;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,8 @@ public class EventMeshServer {
 
     private Registry registry;
 
+    private static Trace trace;
+
     private ConnectorResource connectorResource;
 
     private ServiceState serviceState;
@@ -62,6 +65,7 @@ public class EventMeshServer {
         this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
         this.acl = new Acl();
         this.registry = new Registry();
+        this.trace = new Trace(eventMeshHttpConfiguration.eventMeshServerTraceEnable);
         this.connectorResource = new ConnectorResource();
 
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.TCP, eventMeshTcpConfiguration);
@@ -70,7 +74,6 @@ public class EventMeshServer {
     }
 
     public void init() throws Exception {
-
         if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerSecurityEnable) {
             acl.init(eventMeshHttpConfiguration.eventMeshSecurityPluginType);
         }
@@ -88,6 +91,10 @@ public class EventMeshServer {
 
         if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
             registry.init(eventMeshHttpConfiguration.eventMeshRegistryPluginType);
+        }
+
+        if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
+            trace.init(eventMeshHttpConfiguration.eventMeshTracePluginType);
         }
 
         connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
@@ -167,6 +174,11 @@ public class EventMeshServer {
             acl.shutdown();
         }
 
+        if (eventMeshHttpConfiguration != null && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
+            trace.shutdown();
+        }
+
+
         ConfigurationContextUtil.clear();
         serviceState = ServiceState.STOPED;
         logger.info("server state:{}", serviceState);
@@ -182,6 +194,10 @@ public class EventMeshServer {
 
     public EventMeshTCPServer getEventMeshTCPServer() {
         return eventMeshTCPServer;
+    }
+
+    public static Trace getTrace() {
+        return trace;
     }
 
     public ServiceState getServiceState() {

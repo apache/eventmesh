@@ -48,6 +48,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
+import io.cloudevents.core.v03.CloudEventV03;
+import io.cloudevents.core.v1.CloudEventV1;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -284,5 +287,21 @@ public class EventMeshUtil {
         ByteArrayInputStream byIn = new ByteArrayInputStream(byOut.toByteArray());
         ObjectInputStream inputStream = new ObjectInputStream(byIn);
         return (T) inputStream.readObject();
+    }
+
+    public static Map<String, Object> getCloudEventExtensionMap(String protocolVersion,
+                                                                CloudEvent cloudEvent) {
+        try {
+            EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
+            if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
+                ((CloudEventV1) cloudEvent).readContext(eventMeshCloudEventWriter);
+            } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
+                ((CloudEventV03) cloudEvent).readContext(eventMeshCloudEventWriter);
+            }
+            return eventMeshCloudEventWriter.getExtensionMap();
+        } catch (Throwable e) {
+            logger.warn("getCloudEventExtensionMap fail", e);
+            return null;
+        }
     }
 }
