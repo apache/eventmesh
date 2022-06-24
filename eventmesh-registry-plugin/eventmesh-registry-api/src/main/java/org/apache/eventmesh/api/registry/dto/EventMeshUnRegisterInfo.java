@@ -26,6 +26,8 @@ public class EventMeshUnRegisterInfo {
 
     private String endPoint;
 
+    private String protocolType;
+
     public String getEventMeshClusterName() {
         return eventMeshClusterName;
     }
@@ -48,5 +50,13 @@ public class EventMeshUnRegisterInfo {
 
     public void setEndPoint(String endPoint) {
         this.endPoint = endPoint;
+    }
+
+    public String getProtocolType() {
+        return protocolType;
+    }
+
+    public void setProtocolType(String protocolType) {
+        this.protocolType = protocolType;
     }
 }
