@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.api.registry.dto;
 
+import java.util.Map;
+
 /**
  * EventMeshDataInfo
  */
@@ -26,11 +28,15 @@ public class EventMeshDataInfo {
     private String endpoint;
     private long lastUpdateTimestamp;
 
-    public EventMeshDataInfo(String eventMeshClusterName, String eventMeshName, String endpoint, long lastUpdateTimestamp) {
+    private Map<String, String> metadata;
+
+    public EventMeshDataInfo(String eventMeshClusterName, String eventMeshName, String endpoint, long lastUpdateTimestamp,
+                             Map<String, String> metadata) {
         this.eventMeshClusterName = eventMeshClusterName;
         this.eventMeshName = eventMeshName;
         this.endpoint = endpoint;
         this.lastUpdateTimestamp = lastUpdateTimestamp;
+        this.metadata = metadata;
     }
 
     public String getEventMeshClusterName() {
@@ -63,5 +69,13 @@ public class EventMeshDataInfo {
 
     public void setLastUpdateTimestamp(long lastUpdateTimestamp) {
         this.lastUpdateTimestamp = lastUpdateTimestamp;
+    }
+
+    public Map<String, String> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, String> metadata) {
+        this.metadata = metadata;
     }
 }
