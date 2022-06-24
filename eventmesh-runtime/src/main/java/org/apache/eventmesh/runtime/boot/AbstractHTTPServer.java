@@ -51,10 +51,13 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
@@ -297,43 +300,43 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) {
-//            Context context = null;
-//            Span span = null;
-//            if (useTrace) {
-//
-//                //if the client injected span context,this will extract the context from httpRequest or it will be null
-//                context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>() {
-//                    @Override
-//                    public Iterable<String> keys(HttpRequest carrier) {
-//                        return carrier.headers().names();
-//                    }
-//
-//                    @Override
-//                    public String get(HttpRequest carrier, String key) {
-//                        return carrier.headers().get(key);
-//                    }
-//                });
-//
-//                span = tracer.spanBuilder("HTTP " + httpRequest.method())
-//                        .setParent(context)
-//                        .setSpanKind(SpanKind.SERVER)
-//                        .startSpan();
-//                //attach the span to the server context
-//                context = context.with(SpanKey.SERVER_KEY, span);
-//                //put the context in channel
-//                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
-//            }
+            //            Context context = null;
+            //            Span span = null;
+            //            if (useTrace) {
+            //
+            //                //if the client injected span context,this will extract the context from httpRequest or it will be null
+            //                context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>() {
+            //                    @Override
+            //                    public Iterable<String> keys(HttpRequest carrier) {
+            //                        return carrier.headers().names();
+            //                    }
+            //
+            //                    @Override
+            //                    public String get(HttpRequest carrier, String key) {
+            //                        return carrier.headers().get(key);
+            //                    }
+            //                });
+            //
+            //                span = tracer.spanBuilder("HTTP " + httpRequest.method())
+            //                        .setParent(context)
+            //                        .setSpanKind(SpanKind.SERVER)
+            //                        .startSpan();
+            //                //attach the span to the server context
+            //                context = context.with(SpanKey.SERVER_KEY, span);
+            //                //put the context in channel
+            //                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
+            //            }
 
 
 
             Span span = null;
-//            Context context = null;
-//            context = EventMeshServer.getTrace().extractFrom();
-//            span = EventMeshServer.getTrace().createSpan("", context);
-//            //attach the span to the server context
-//            context = context.with(SpanKey.SERVER_KEY, span);
-//            //put the context in channel
-//            ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
+            //            Context context = null;
+            //            context = EventMeshServer.getTrace().extractFrom();
+            //            span = EventMeshServer.getTrace().createSpan("", context);
+            //            //attach the span to the server context
+            //            context = context.with(SpanKey.SERVER_KEY, span);
+            //            //put the context in channel
+            //            ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
 
             try {
                 preProcessHttpRequestHeader(ctx, httpRequest);
@@ -384,11 +387,11 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     requestCommand.setHttpVersion(httpRequest.protocolVersion().protocolName());
                     requestCommand.setRequestCode(requestCode);
 
-//                if (useTrace) {
-//                    span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
-//                    span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
-//                    span.setAttribute(String.valueOf(SemanticAttributes.HTTP_STATUS_CODE), requestCode);
-//                }
+                    //                if (useTrace) {
+                    //                    span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
+                    //                    span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
+                    //                    span.setAttribute(String.valueOf(SemanticAttributes.HTTP_STATUS_CODE), requestCode);
+                    //                }
 
                     HttpCommand responseCommand = null;
 
@@ -428,8 +431,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
             } catch (Exception ex) {
                 httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
-
-//                EventMeshServer.getTrace().finishSpan(span, null, null, ex);
             }
         }
 
@@ -514,8 +515,10 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                                 sendResponse(ctx, responseCommand.httpResponse());
 
                                 Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
-                                Span span = TraceUtils.prepareServerSpan(traceMap, EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, false);
-                                TraceUtils.finishSpanWithException(span, traceMap, EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR.getErrMsg(), null);
+                                Span span = TraceUtils.prepareServerSpan(traceMap, EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
+                                    false);
+                                TraceUtils.finishSpanWithException(span, traceMap,
+                                    EventMeshRetCode.EVENTMESH_REJECT_BY_PROCESSOR_ERROR.getErrMsg(), null);
                             }
                             return;
                         }
@@ -534,8 +537,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
                         sendResponse(ctx, asyncContext.getResponse().httpResponse());
 
-//                        EventMeshServer.getTrace().finishSpan(ctx, StatusCode.OK);
-
                     } catch (Exception e) {
                         httpServerLogger.error("process error", e);
                     }
@@ -551,7 +552,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     Map<String, Object> traceMap = asyncContext.getRequest().getHeader().toMap();
                     Span span = TraceUtils.prepareServerSpan(traceMap, EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN, false);
                     TraceUtils.finishSpanWithException(span, traceMap, EventMeshRetCode.EVENTMESH_RUNTIME_ERR.getErrMsg(), re);
-//                    EventMeshServer.getTrace().finishSpan(ctx, StatusCode.ERROR, EventMeshRetCode.OVERLOAD.getErrMsg(), re);
                 } catch (Exception e) {
                     httpServerLogger.error("processEventMeshRequest fail", re);
                 }
@@ -574,7 +574,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             }
         }
 
-        Map<String, String> extractFromRequest(HttpRequest httpRequest){
+        Map<String, String> extractFromRequest(HttpRequest httpRequest) {
             return null;
         }
     }
