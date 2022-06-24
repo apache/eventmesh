@@ -28,9 +28,8 @@ sudo docker images
 如果终端显示如下所示的镜像信息，则说明 EventMesh 镜像已经成功下载到本地。
 
 ```shell
-ubuntu@VM-16-4-ubuntu:~$ sudo docker images
-REPOSITORY               TAG         IMAGE ID       CREATED        SIZE
-eventmesh/eventmesh      v1.3.0      da0008c1d03b   7 days ago     922MB
+REPOSITORY               TAG           IMAGE ID           CREATED          SIZE
+eventmesh/eventmesh      v1.4.0	       6e2964599c78	  3 months ago     936.73 MB
 ```
 
 ## 创建配置文件

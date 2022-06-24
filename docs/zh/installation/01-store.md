@@ -1,4 +1,4 @@
-# Eventmesh-store 快速入门说明
+# eventmesh-store 快速入门说明
 
 ## 依赖
 
@@ -11,15 +11,14 @@ eventmesh在非standalone模式下，依赖RocketMQ作为存储层；若采用st
 ```
 
 
-
 ## 下载
 
-从[RocketMQ官方网站](https://rocketmq.apache.org/dowloading/releases/)下载源代码（推荐使用4.9.*版本），这里以4.9.2为例
+从[RocketMQ官方网站](https://rocketmq.apache.org/dowloading/releases/) 下载Binary代码（推荐使用4.9.*版本），这里以4.9.2为例
 
 ```
+unzip rocketmq-all-4.9.2-bin-release.zip
 cd rocketmq-4.9.2/
 ```
-
 
 
 ## 部署
@@ -41,4 +40,12 @@ tail -f ~/logs/rocketmqlogs/broker.log
 ```
 
 如果在看到The broker boot success...，则说明Broker启动成功
+
+至此eventmesh-store的部署已完成，请转至下一步完成eventmesh-runtime的部署
+
+
+## 参考
+关于RocketMQ的其他更多资料，请参考 <https://rocketmq.apache.org/docs/quick-start/>
+
+
 
