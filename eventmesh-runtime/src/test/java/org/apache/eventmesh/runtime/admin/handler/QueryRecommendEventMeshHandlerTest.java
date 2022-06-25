@@ -49,6 +49,7 @@ public class QueryRecommendEventMeshHandlerTest {
         when(uri.getQuery()).thenReturn("group=group&purpose=purpose");
         when(httpExchange.getRequestURI()).thenReturn(uri);
 
+        // mock eventMeshTCPServer
         EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
         EventMeshTCPConfiguration tcpConfiguration = mock(EventMeshTCPConfiguration.class);
         doNothing().when(tcpConfiguration).init();
