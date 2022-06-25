@@ -17,13 +17,23 @@
 
 package org.apache.eventmesh.runtime.util;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class EventMeshThreadFactoryImplTest extends TestCase {
+public class EventMeshThreadFactoryImplTest {
 
+    @Test
     public void testGetThreadNamePrefix() {
+        final String threadNamePrefix = "threadNamePrefix";
+        EventMeshThreadFactoryImpl factory = new EventMeshThreadFactoryImpl(threadNamePrefix, false);
+        Assert.assertEquals(threadNamePrefix, factory.getThreadNamePrefix());
     }
 
+    @Test
     public void testNewThread() {
+        final String threadNamePrefix = "threadNamePrefix";
+        EventMeshThreadFactoryImpl factory = new EventMeshThreadFactoryImpl(threadNamePrefix, true);
+        Thread t = factory.newThread(() -> {});
+        Assert.assertNotNull(t);
     }
 }
