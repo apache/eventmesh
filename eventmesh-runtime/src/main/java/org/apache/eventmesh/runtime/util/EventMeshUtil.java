@@ -259,7 +259,6 @@ public class EventMeshUtil {
         }
         StringBuilder sb = new StringBuilder();
         sb.append(client.getSubsystem()).append("-")
-                .append("-")
                 .append(client.getPid()).append("-")
                 .append(client.getHost()).append(":").append(client.getPort());
         return sb.toString();
