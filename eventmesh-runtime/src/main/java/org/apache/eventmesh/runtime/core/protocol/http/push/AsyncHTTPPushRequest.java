@@ -121,6 +121,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         CloudEvent event = CloudEventBuilder.from(handleMsgContext.getEvent())
             .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
                 String.valueOf(System.currentTimeMillis()))
+            .withExtension(EventMeshConstants.RSP_URL, currPushUrl)
+            .withExtension(EventMeshConstants.RSP_GROUP, handleMsgContext.getConsumerGroup())
             .build();
         handleMsgContext.setEvent(event);
 
