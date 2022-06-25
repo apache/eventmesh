@@ -86,7 +86,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public EventMeshHTTPServer(EventMeshServer eventMeshServer,
                                EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
-        super(eventMeshHttpConfiguration.httpServerPort, eventMeshHttpConfiguration.eventMeshServerUseTls);
+        super(eventMeshHttpConfiguration.httpServerPort, eventMeshHttpConfiguration.eventMeshServerUseTls, eventMeshHttpConfiguration);
         this.eventMeshServer = eventMeshServer;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.registry = eventMeshServer.getRegistry();
@@ -253,7 +253,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         //get the trace-plugin
         if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.eventMeshTracePluginType) && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
 
-            super.useTrace = true;
+            super.useTrace = eventMeshHttpConfiguration.eventMeshServerTraceEnable;
         }
 
         logger.info("--------------------------EventMeshHTTPServer inited");
