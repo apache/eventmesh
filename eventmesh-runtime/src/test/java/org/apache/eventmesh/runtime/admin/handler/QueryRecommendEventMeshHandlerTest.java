@@ -44,6 +44,7 @@ public class QueryRecommendEventMeshHandlerTest {
     @Test
     public void testHandle() throws Exception {
         HttpExchange httpExchange = mock(HttpExchange.class);
+        // mock uri
         URI uri = mock(URI.class);
         when(uri.getQuery()).thenReturn("group=group&purpose=purpose");
         when(httpExchange.getRequestURI()).thenReturn(uri);
