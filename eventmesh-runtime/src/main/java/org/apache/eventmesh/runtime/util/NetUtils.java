@@ -67,6 +67,10 @@ public class NetUtils {
         for (InetSocketAddress addr : clients) {
             sb.append(addr).append("|");
         }
+        // remove last '|' character
+        if (sb.length() > 0) {
+            return sb.substring(0, sb.length() - 1);
+        }
         return sb.toString();
     }
 }
