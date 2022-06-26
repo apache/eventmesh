@@ -55,7 +55,8 @@ public class WebhookUtilTest {
         AuthService authService = mock(AuthService.class);
         doNothing().when(authService).init();
         Map<String, String> authParams = new HashMap<>();
-        String key = "Authorization", value = "Basic ****";
+        String key = "Authorization";
+        String value = "Basic ****";
         authParams.put(key, value);
         Mockito.when(authService.getAuthParams()).thenReturn(authParams);
 

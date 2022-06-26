@@ -121,18 +121,20 @@ public class EventMeshUtilTest {
 
     @Test
     public void testNormalizeHostAddress() throws UnknownHostException {
-       InetAddress localAddress = InetAddress.getLocalHost();
+        InetAddress localAddress = InetAddress.getLocalHost();
         String result = EventMeshUtil.normalizeHostAddress(localAddress);
         Assert.assertEquals(result, "127.0.0.1");
     }
 
     @Test
     public void testBuildUserAgentClientId() {
-        String subSystem = "subsystem", host = "127.0.0.1";
-        int pid = 1, port = 8080;
+        String subSystem = "subsystem";
+        String host = "127.0.0.1";
+        int pid = 1;
+        int port = 8080;
         UserAgent agent = UserAgent.builder().subsystem(subSystem).host(host)
-                .pid(pid).port(port).build();
+            .pid(pid).port(port).build();
         String result = EventMeshUtil.buildUserAgentClientId(agent);
-        Assert.assertEquals(result, String.format("%s-%d-%s:%d", subSystem, pid, host, port));
+        Assert.assertEquals(result, String.format("%s--%d-%s:%d", subSystem, pid, host, port));
     }
 }
