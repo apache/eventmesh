@@ -69,17 +69,17 @@ public class EventMeshUtil {
 
     public static String buildMeshClientID(String clientGroup, String meshCluster) {
         return StringUtils.trim(clientGroup)
-                + "(" + StringUtils.trim(meshCluster) + ")"
-                + "-" + EventMeshVersion.getCurrentVersionDesc()
-                + "-" + ThreadUtils.getPID();
+            + "(" + StringUtils.trim(meshCluster) + ")"
+            + "-" + EventMeshVersion.getCurrentVersionDesc()
+            + "-" + ThreadUtils.getPID();
     }
 
     public static String buildMeshTcpClientID(String clientSysId, String purpose, String meshCluster) {
         return StringUtils.trim(clientSysId)
-                + "-" + StringUtils.trim(purpose)
-                + "-" + StringUtils.trim(meshCluster)
-                + "-" + EventMeshVersion.getCurrentVersionDesc()
-                + "-" + ThreadUtils.getPID();
+            + "-" + StringUtils.trim(purpose)
+            + "-" + StringUtils.trim(meshCluster)
+            + "-" + EventMeshVersion.getCurrentVersionDesc()
+            + "-" + ThreadUtils.getPID();
     }
 
     public static String buildClientGroup(String systemId) {
@@ -140,7 +140,7 @@ public class EventMeshUtil {
         }
 
         String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage.getTopic(),
-                properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), keys);
+            properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), keys);
         return result;
     }
 
@@ -181,7 +181,7 @@ public class EventMeshUtil {
                 } else if (preferNetworkInterface == null) {
                     preferNetworkInterface = networkInterface;
                 } else if (preferList.indexOf(networkInterface.getName())
-                        > preferList.indexOf(preferNetworkInterface.getName())) {
+                    > preferList.indexOf(preferNetworkInterface.getName())) {
                     //get the networkInterface that has higher priority
                     preferNetworkInterface = networkInterface;
                 }
@@ -240,7 +240,7 @@ public class EventMeshUtil {
     }
 
     private static void getIpResult(ArrayList<String> ipv4Result, ArrayList<String> ipv6Result,
-                                    Enumeration<InetAddress> en) {
+        Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
             if (!address.isLoopbackAddress()) {
@@ -259,20 +259,22 @@ public class EventMeshUtil {
         }
         StringBuilder sb = new StringBuilder();
         sb.append(client.getSubsystem()).append("-")
-                .append(client.getPid()).append("-")
-                .append(client.getHost()).append(":").append(client.getPort());
+            .append("-")
+            .append(client.getPid()).append("-")
+            .append(client.getHost()).append(":").append(client.getPort());
         return sb.toString();
     }
 
     public static void printState(ThreadPoolExecutor scheduledExecutorService) {
         tcpLogger.info("{} [{} {} {} {}]", ((EventMeshThreadFactoryImpl) scheduledExecutorService.getThreadFactory())
-                .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
-                .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
-                .getCompletedTaskCount());
+            .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
+            .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
+            .getCompletedTaskCount());
     }
 
     /**
      * Perform deep clone of the given object using serialization
+     *
      * @param object
      * @return cloned object
      * @throws IOException
@@ -289,7 +291,7 @@ public class EventMeshUtil {
     }
 
     public static Map<String, Object> getCloudEventExtensionMap(String protocolVersion,
-                                                                CloudEvent cloudEvent) {
+        CloudEvent cloudEvent) {
         try {
             EventMeshCloudEventWriter eventMeshCloudEventWriter = new EventMeshCloudEventWriter();
             if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {

@@ -44,9 +44,9 @@ public class IOTinyUtilsTest {
         int count = 10;
         char[] buffer = new char[1 << 12];
         doNothing().when(output).write(buffer, 0, count);
-        when(input.read(buffer)).thenReturn(10, 10 , -1);
+        when(input.read(buffer)).thenReturn(10, 10, -1);
         long result = IOTinyUtils.copy(input, output);
-        Assert.assertEquals(result, count*2);
+        Assert.assertEquals(result, count * 2);
     }
 
     @Test

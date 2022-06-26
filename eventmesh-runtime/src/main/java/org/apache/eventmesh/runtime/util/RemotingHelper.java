@@ -50,9 +50,6 @@ public class RemotingHelper {
 
     public static SocketAddress string2SocketAddress(final String addr) {
         int split = addr.lastIndexOf(":");
-        if (split == -1) {
-            return null;
-        }
         String host = addr.substring(0, split);
         String port = addr.substring(split + 1);
         InetSocketAddress isa = new InetSocketAddress(host, Integer.parseInt(port));
