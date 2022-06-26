@@ -47,6 +47,6 @@ public class NetUtilsTest {
         InetSocketAddress localAddress = new InetSocketAddress(80);
         clients.add(localAddress);
         result = NetUtils.addressToString(clients);
-        Assert.assertEquals(result, localAddress.toString());
+        Assert.assertEquals(result, localAddress + "|");
     }
 }

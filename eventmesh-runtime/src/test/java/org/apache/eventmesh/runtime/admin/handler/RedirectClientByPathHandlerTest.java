@@ -64,7 +64,7 @@ public class RedirectClientByPathHandlerTest {
 
     @Test
     public void testHandle() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
+        final OutputStream outputStream = new ByteArrayOutputStream();
 
         ClientSessionGroupMapping mapping = mock(ClientSessionGroupMapping.class);
         when(eventMeshTCPServer.getClientSessionGroupMapping()).thenReturn(mapping);
