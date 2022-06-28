@@ -29,10 +29,4 @@ dependencies {
     implementation 'io.opentelemetry:opentelemetry-exporter-prometheus'
     implementation 'io.prometheus:simpleclient'
     implementation 'io.prometheus:simpleclient_httpserver'
-
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
-
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }

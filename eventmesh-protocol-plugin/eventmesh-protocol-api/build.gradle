@@ -25,10 +25,4 @@ dependencies {
     testImplementation project(":eventmesh-common")
 
     testImplementation "io.cloudevents:cloudevents-core"
-
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
-
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }

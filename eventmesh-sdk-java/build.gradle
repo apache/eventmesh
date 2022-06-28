@@ -50,11 +50,6 @@ dependencies {
     implementation "io.grpc:grpc-protobuf:1.15.0"
     implementation "io.grpc:grpc-stub:1.15.0"
     implementation "com.google.protobuf:protobuf-java-util:3.5.1"
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
-
-    testCompileOnly 'org.projectlombok:lombok:1.18.22'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     testImplementation "org.assertj:assertj-core"
 
