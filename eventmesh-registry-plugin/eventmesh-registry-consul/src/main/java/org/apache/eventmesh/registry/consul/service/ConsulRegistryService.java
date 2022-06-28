@@ -58,6 +58,8 @@ public class ConsulRegistryService implements RegistryService {
 
     private ConsulClient consulClient;
 
+    private String token;
+
     @Override
     public void init() throws RegistryException {
         if (INIT_STATUS.compareAndSet(false, true)) {
@@ -101,7 +103,7 @@ public class ConsulRegistryService implements RegistryService {
             service.setAddress(ipPort[0]);
             service.setName(eventMeshRegisterInfo.getEventMeshName());
             service.setId(eventMeshRegisterInfo.getEventMeshClusterName() + "-" + eventMeshRegisterInfo.getEventMeshName());
-            consulClient.agentServiceRegister(service);
+            consulClient.agentServiceRegister(service, token);
         } catch (Exception e) {
             throw new RegistryException(e.getMessage());
         }
@@ -112,7 +114,8 @@ public class ConsulRegistryService implements RegistryService {
     @Override
     public boolean unRegister(EventMeshUnRegisterInfo eventMeshUnRegisterInfo) throws RegistryException {
         try {
-            consulClient.agentServiceDeregister(eventMeshUnRegisterInfo.getEventMeshClusterName() + "-" + eventMeshUnRegisterInfo.getEventMeshName());
+            consulClient.agentServiceDeregister(eventMeshUnRegisterInfo.getEventMeshClusterName() + "-" + eventMeshUnRegisterInfo.getEventMeshName(),
+                token);
         } catch (Exception e) {
             throw new RegistryException(e.getMessage());
         }
@@ -123,7 +126,7 @@ public class ConsulRegistryService implements RegistryService {
     @Override
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws RegistryException {
         Map<String, Service> agentServices = consulClient.getAgentServices().getValue();
-        HealthServicesRequest request = HealthServicesRequest.newBuilder().setPassing(true).build();
+        HealthServicesRequest request = HealthServicesRequest.newBuilder().setPassing(true).setToken(token).build();
         consulClient.getHealthServices(clusterName, request);
         List<EventMeshDataInfo> eventMeshDataInfos = new ArrayList<>();
         agentServices.forEach((k, v) -> {
