@@ -55,8 +55,6 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
-    private final EventMeshHTTPServer eventMeshHTTPServer;
-
     public LocalUnSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
     }

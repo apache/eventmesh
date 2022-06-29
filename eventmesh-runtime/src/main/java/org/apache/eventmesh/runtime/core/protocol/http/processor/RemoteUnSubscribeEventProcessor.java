@@ -65,8 +65,6 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
 
     public Logger aclLogger = LoggerFactory.getLogger("acl");
 
-    private final EventMeshHTTPServer eventMeshHTTPServer;
-
     public RemoteUnSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
     }
