@@ -49,6 +49,17 @@ Apache EventMesh (Incubating) consists of multiple components that integrate dif
 - **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io) and [MQTT](https://mqtt.org).
 - **eventmesh-admin**: The control plane that manages clients, topics, and subscriptions.
 
+## Downloads
+
+Please go to the [release page](https://eventmesh.apache.org/download) to get the release of Apache EventMesh (Incubating).
+
+## Compiling
+You can use below command to compile EventMesh
+```shell
+./gradlew clean dist
+```
+All distribution are under dist/
+
 ## Quick start
 
 [Http pub/sub](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/sdk-java/02-http.md#using-curl-command)
