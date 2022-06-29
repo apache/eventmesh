@@ -29,7 +29,9 @@ import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
+import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -43,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.opentelemetry.api.trace.Span;
 
 public class SessionPusher {
 
@@ -65,12 +68,12 @@ public class SessionPusher {
     @Override
     public String toString() {
         return "SessionPusher{"
-                +
-                "deliveredMsgsCount=" + deliveredMsgsCount.longValue()
-                +
-                ",deliverFailCount=" + deliverFailMsgsCount.longValue()
-                +
-                ",unAckMsg=" + CollectionUtils.size(downStreamMap) + '}';
+            +
+            "deliveredMsgsCount=" + deliveredMsgsCount.longValue()
+            +
+            ",deliverFailCount=" + deliverFailMsgsCount.longValue()
+            +
+            ",unAckMsg=" + CollectionUtils.size(downStreamMap) + '}';
     }
 
     public void push(final DownStreamMsgContext downStreamMsgContext) {
@@ -90,8 +93,12 @@ public class SessionPusher {
         Package pkg = new Package();
 
         downStreamMsgContext.event = CloudEventBuilder.from(downStreamMsgContext.event)
-                .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
-                .build();
+            .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+            .withExtension(EventMeshConstants.RSP_SYS, session.getClient().getSubsystem())
+            .withExtension(EventMeshConstants.RSP_GROUP, session.getClient().getGroup())
+            .withExtension(EventMeshConstants.RSP_IDC, session.getClient().getIdc())
+            .withExtension(EventMeshConstants.RSP_IP, session.getClient().getHost())
+            .build();
         EventMeshMessage body = null;
         int retCode = 0;
         String retMsg = null;
@@ -107,31 +114,38 @@ public class SessionPusher {
         } finally {
             session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
 
-            session.getContext().writeAndFlush(pkg).addListener(
+            //TODO uploadTrace
+            String protocolVersion = Objects.requireNonNull(downStreamMsgContext.event.getExtension(Constants.PROTOCOL_VERSION)).toString();
+
+            Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, downStreamMsgContext.event),
+                EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
+
+            try {
+                session.getContext().writeAndFlush(pkg).addListener(
                     new ChannelFutureListener() {
                         @Override
                         public void operationComplete(ChannelFuture future) throws Exception {
                             if (!future.isSuccess()) {
                                 logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, event:{}", downStreamMsgContext.seq,
-                                        downStreamMsgContext.retryTimes, downStreamMsgContext.event);
+                                    downStreamMsgContext.retryTimes, downStreamMsgContext.event);
                                 deliverFailMsgsCount.incrementAndGet();
 
                                 //how long to isolate client when push fail
                                 long isolateTime = System.currentTimeMillis()
-                                        + session.getEventMeshTCPConfiguration().eventMeshTcpPushFailIsolateTimeInMills;
+                                    + session.getEventMeshTCPConfiguration().eventMeshTcpPushFailIsolateTimeInMills;
                                 session.setIsolateTime(isolateTime);
                                 logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
                                 //retry
                                 long delayTime = SubscriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
-                                        ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
-                                        : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
+                                    ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
+                                    : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
                                 downStreamMsgContext.delay(delayTime);
                                 session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {
                                 deliveredMsgsCount.incrementAndGet();
                                 logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
-                                        downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.event));
+                                    downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.event));
 
                                 if (session.isIsolated()) {
                                     logger.info("cancel isolated,client:{}", session.getClient());
@@ -140,7 +154,11 @@ public class SessionPusher {
                             }
                         }
                     }
-            );
+                );
+            } finally {
+                TraceUtils.finishSpan(span, downStreamMsgContext.event);
+            }
+
         }
     }
 

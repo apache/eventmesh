@@ -24,6 +24,7 @@ import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -38,8 +39,10 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.push.DownSt
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.retry.EventMeshTcpRetryer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.UpStreamMsgContext;
 import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
+import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.HttpTinyClient;
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +64,8 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 
 import com.google.common.base.Preconditions;
 
@@ -181,7 +186,8 @@ public class ClientGroupWrapper {
         return mqProducerWrapper;
     }
 
-    public boolean addSubscription(SubscriptionItem subscriptionItem, Session session) throws Exception {
+    public boolean addSubscription(SubscriptionItem subscriptionItem, Session session)
+        throws Exception {
         if (subscriptionItem == null) {
             logger.error("addSubscription param error,subscriptionItem is null", session);
             return false;
@@ -416,75 +422,86 @@ public class ClientGroupWrapper {
         persistentMsgConsumer.init(keyValue);
 
         EventListener listener = (event, context) -> {
-            eventMeshTcpMonitor.getTcpSummaryMetrics().getMq2eventMeshMsgNum()
-                .incrementAndGet();
-            event = CloudEventBuilder.from(event)
-                .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
-                    String.valueOf(System.currentTimeMillis()))
-                .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
-                    eventMeshTCPConfiguration.eventMeshServerIp).build();
-            String topic = event.getSubject();
+            String protocolVersion =
+                Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_VERSION)).toString();
 
-            EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
-                (EventMeshAsyncConsumeContext) context;
-            Session session = downstreamDispatchStrategy
-                .select(group, topic, groupConsumerSessions);
-            String bizSeqNo = EventMeshUtil.getMessageBizSeq(event);
-            if (session == null) {
-                try {
-                    Integer sendBackTimes = 0;
-                    String sendBackFromEventMeshIp = "";
-                    if (StringUtils.isNotBlank(Objects.requireNonNull(event.getExtension(
-                        EventMeshConstants.EVENTMESH_SEND_BACK_TIMES)).toString())) {
-                        sendBackTimes = (Integer) event.getExtension(
-                            EventMeshConstants.EVENTMESH_SEND_BACK_TIMES);
-                    }
-                    if (StringUtils.isNotBlank(Objects.requireNonNull(event.getExtension(
-                        EventMeshConstants.EVENTMESH_SEND_BACK_IP)).toString())) {
-                        sendBackFromEventMeshIp = (String) event.getExtension(
-                            EventMeshConstants.EVENTMESH_SEND_BACK_IP);
-                    }
+            Span span = TraceUtils.prepareServerSpan(
+                EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
+                EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
 
-                    logger.error(
-                        "found no session to downstream msg,groupName:{}, topic:{}, "
-                            + "bizSeqNo:{}, sendBackTimes:{}, sendBackFromEventMeshIp:{}",
-                        group, topic, bizSeqNo, sendBackTimes,
-                        sendBackFromEventMeshIp);
+            try (Scope scope = span.makeCurrent()) {
+                eventMeshTcpMonitor.getTcpSummaryMetrics().getMq2eventMeshMsgNum()
+                    .incrementAndGet();
+                event = CloudEventBuilder.from(event)
+                    .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
+                        String.valueOf(System.currentTimeMillis()))
+                    .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
+                        eventMeshTCPConfiguration.eventMeshServerIp).build();
+                String topic = event.getSubject();
 
-                    if (sendBackTimes >= eventMeshTCPServer
-                        .getEventMeshTCPConfiguration().eventMeshTcpSendBackMaxTimes) {
+                EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
+                    (EventMeshAsyncConsumeContext) context;
+                Session session = downstreamDispatchStrategy
+                    .select(group, topic, groupConsumerSessions);
+                String bizSeqNo = EventMeshUtil.getMessageBizSeq(event);
+                if (session == null) {
+                    try {
+                        Integer sendBackTimes = 0;
+                        String sendBackFromEventMeshIp = "";
+                        if (StringUtils.isNotBlank(Objects.requireNonNull(event.getExtension(
+                            EventMeshConstants.EVENTMESH_SEND_BACK_TIMES)).toString())) {
+                            sendBackTimes = (Integer) event.getExtension(
+                                EventMeshConstants.EVENTMESH_SEND_BACK_TIMES);
+                        }
+                        if (StringUtils.isNotBlank(Objects.requireNonNull(event.getExtension(
+                            EventMeshConstants.EVENTMESH_SEND_BACK_IP)).toString())) {
+                            sendBackFromEventMeshIp = (String) event.getExtension(
+                                EventMeshConstants.EVENTMESH_SEND_BACK_IP);
+                        }
+
                         logger.error(
-                            "sendBack to broker over max times:{}, groupName:{}, topic:{}, "
-                                + "bizSeqNo:{}", eventMeshTCPServer
-                                .getEventMeshTCPConfiguration()
-                                .eventMeshTcpSendBackMaxTimes,
-                            group, topic, bizSeqNo);
-                    } else {
-                        sendBackTimes++;
-                        event = CloudEventBuilder.from(event)
-                            .withExtension(EventMeshConstants.EVENTMESH_SEND_BACK_TIMES,
-                                sendBackTimes.toString())
-                            .withExtension(EventMeshConstants.EVENTMESH_SEND_BACK_IP,
-                                eventMeshTCPConfiguration.eventMeshServerIp).build();
-                        sendMsgBackToBroker(event, bizSeqNo);
+                            "found no session to downstream msg,groupName:{}, topic:{}, "
+                                + "bizSeqNo:{}, sendBackTimes:{}, sendBackFromEventMeshIp:{}",
+                            group, topic, bizSeqNo, sendBackTimes,
+                            sendBackFromEventMeshIp);
+
+                        if (sendBackTimes >= eventMeshTCPServer
+                            .getEventMeshTCPConfiguration().eventMeshTcpSendBackMaxTimes) {
+                            logger.error(
+                                "sendBack to broker over max times:{}, groupName:{}, topic:{}, "
+                                    + "bizSeqNo:{}", eventMeshTCPServer
+                                    .getEventMeshTCPConfiguration()
+                                    .eventMeshTcpSendBackMaxTimes,
+                                group, topic, bizSeqNo);
+                        } else {
+                            sendBackTimes++;
+                            event = CloudEventBuilder.from(event)
+                                .withExtension(EventMeshConstants.EVENTMESH_SEND_BACK_TIMES,
+                                    sendBackTimes.toString())
+                                .withExtension(EventMeshConstants.EVENTMESH_SEND_BACK_IP,
+                                    eventMeshTCPConfiguration.eventMeshServerIp).build();
+                            sendMsgBackToBroker(event, bizSeqNo);
+                        }
+                    } catch (Exception e) {
+                        logger.warn("handle msg exception when no session found", e);
                     }
-                } catch (Exception e) {
-                    logger.warn("handle msg exception when no session found", e);
+
+                    eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
+                    return;
                 }
 
-                eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
-                return;
+                SubscriptionItem subscriptionItem = subscriptions.get(topic);
+                DownStreamMsgContext downStreamMsgContext =
+                    new DownStreamMsgContext(event, session, persistentMsgConsumer,
+                        eventMeshAsyncConsumeContext.getAbstractContext(), false,
+                        subscriptionItem);
+                //msg put in eventmesh,waiting client ack
+                session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
+                session.downstreamMsg(downStreamMsgContext);
+                eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
+            } finally {
+                TraceUtils.finishSpan(span, event);
             }
-
-            SubscriptionItem subscriptionItem = subscriptions.get(topic);
-            DownStreamMsgContext downStreamMsgContext =
-                new DownStreamMsgContext(event, session, persistentMsgConsumer,
-                    eventMeshAsyncConsumeContext.getAbstractContext(), false,
-                    subscriptionItem);
-            //msg put in eventmesh,waiting client ack
-            session.getPusher().unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
-            session.downstreamMsg(downStreamMsgContext);
-            eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
         };
         persistentMsgConsumer.registerEventListener(listener);
 
@@ -515,57 +532,67 @@ public class ClientGroupWrapper {
         broadCastMsgConsumer.init(keyValue);
 
         EventListener listener = (event, context) -> {
+            String protocolVersion =
+                Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_VERSION)).toString();
 
-            eventMeshTcpMonitor.getTcpSummaryMetrics().getMq2eventMeshMsgNum()
-                .incrementAndGet();
-            event = CloudEventBuilder.from(event)
-                .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
-                    String.valueOf(System.currentTimeMillis()))
-                .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
-                    eventMeshTCPConfiguration.eventMeshServerIp).build();
-            String topic = event.getSubject();
+            Span span = TraceUtils.prepareServerSpan(
+                EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
+                EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
+            try (Scope scope = span.makeCurrent()) {
+                eventMeshTcpMonitor.getTcpSummaryMetrics().getMq2eventMeshMsgNum()
+                    .incrementAndGet();
+                event = CloudEventBuilder.from(event)
+                    .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
+                        String.valueOf(System.currentTimeMillis()))
+                    .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
+                        eventMeshTCPConfiguration.eventMeshServerIp).build();
+                String topic = event.getSubject();
 
-            EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
-                (EventMeshAsyncConsumeContext) context;
-            if (CollectionUtils.isEmpty(groupConsumerSessions)) {
-                logger.warn("found no session to downstream broadcast msg");
-                eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
-                return;
-            }
-
-            Iterator<Session> sessionsItr = groupConsumerSessions.iterator();
-
-            SubscriptionItem subscriptionItem = subscriptions.get(topic);
-            DownStreamMsgContext downStreamMsgContext =
-                new DownStreamMsgContext(event, null, broadCastMsgConsumer,
-                    eventMeshAsyncConsumeContext.getAbstractContext(), false,
-                    subscriptionItem);
-
-            while (sessionsItr.hasNext()) {
-                Session session = sessionsItr.next();
-
-                if (!session.isAvailable(topic)) {
-                    logger
-                        .warn("downstream broadcast msg,session is not available,client:{}",
-                            session.getClient());
-                    continue;
+                EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext =
+                    (EventMeshAsyncConsumeContext) context;
+                if (CollectionUtils.isEmpty(groupConsumerSessions)) {
+                    logger.warn("found no session to downstream broadcast msg");
+                    eventMeshAsyncConsumeContext.commit(EventMeshAction.CommitMessage);
+                    return;
                 }
 
-                downStreamMsgContext.session = session;
+                Iterator<Session> sessionsItr = groupConsumerSessions.iterator();
 
-                //downstream broadcast msg asynchronously
-                eventMeshTCPServer.getBroadcastMsgDownstreamExecutorService()
-                    .submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            //msg put in eventmesh,waiting client ack
-                            session.getPusher()
-                                .unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
-                            session.downstreamMsg(downStreamMsgContext);
-                        }
-                    });
+                SubscriptionItem subscriptionItem = subscriptions.get(topic);
+                DownStreamMsgContext downStreamMsgContext =
+                    new DownStreamMsgContext(event, null, broadCastMsgConsumer,
+                        eventMeshAsyncConsumeContext.getAbstractContext(), false,
+                        subscriptionItem);
+
+                while (sessionsItr.hasNext()) {
+                    Session session = sessionsItr.next();
+
+                    if (!session.isAvailable(topic)) {
+                        logger
+                            .warn("downstream broadcast msg,session is not available,client:{}",
+                                session.getClient());
+                        continue;
+                    }
+
+                    downStreamMsgContext.session = session;
+
+                    //downstream broadcast msg asynchronously
+                    eventMeshTCPServer.getBroadcastMsgDownstreamExecutorService()
+                        .submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                //msg put in eventmesh,waiting client ack
+                                session.getPusher()
+                                    .unAckMsg(downStreamMsgContext.seq, downStreamMsgContext);
+                                session.downstreamMsg(downStreamMsgContext);
+                            }
+                        });
+                }
+
+                eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
+            } finally {
+                TraceUtils.finishSpan(span, event);
             }
-            eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
         };
         broadCastMsgConsumer.registerEventListener(listener);
 

@@ -15,41 +15,51 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.trace.api;
+package org.apache.eventmesh.runtime.core.consumergroup;
 
-import org.apache.eventmesh.spi.EventMeshExtensionType;
-import org.apache.eventmesh.spi.EventMeshSPI;
+import java.util.Set;
 
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.propagation.TextMapPropagator;
 
-/**
- * The top-level interface of trace
- */
-@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.TRACE)
-public interface TraceService {
+import com.google.common.collect.Sets;
+
+public class ConsumerGroupTopicMetadata {
     /**
-     * init the trace service
+     * consumer group
      */
-    void init();
+    private String consumerGroup;
 
     /**
-     * close the trace service
+     * subscribed topic
      */
-    void shutdown();
+    private String topic;
 
     /**
-     * get the tracer
-     *
-     * @param instrumentationName
-     * @return
+     * ALL IDC URLs
      */
-    Tracer getTracer(String instrumentationName);
+    private Set<String> urls = Sets.newConcurrentHashSet();
 
-    /**
-     * get TextMapPropagator
-     *
-     * @return
-     */
-    TextMapPropagator getTextMapPropagator();
+
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public void setConsumerGroup(String consumerGroup) {
+        this.consumerGroup = consumerGroup;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public Set<String> getUrls() {
+        return urls;
+    }
+
+    public void setUrls(Set<String> urls) {
+        this.urls = urls;
+    }
 }
