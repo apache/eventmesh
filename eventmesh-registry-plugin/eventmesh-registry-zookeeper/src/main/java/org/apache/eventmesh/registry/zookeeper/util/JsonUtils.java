@@ -13,4 +13,14 @@ public class JsonUtils {
             return null;
         }
     }
+
+    public static <T> T parseJson(String json, Class<T> c) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+
+            return objectMapper.readValue(json, c);
+        } catch (JsonProcessingException e) {
+            return null;
+        }
+    }
 }

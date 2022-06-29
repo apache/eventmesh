@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.registry.zookeeper.service;
 
-import com.google.common.collect.Maps;
-
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -26,6 +24,11 @@ import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 
 import org.apache.curator.test.TestingServer;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -36,8 +39,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.lang.reflect.Field;
-import java.util.List;
+import com.google.common.collect.Maps;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZookeeperRegistryServiceTest {
@@ -66,6 +68,10 @@ public class ZookeeperRegistryServiceTest {
         Mockito.when(eventMeshRegisterInfo.getEventMeshName()).thenReturn("eventmesh-" + ConfigurationContextUtil.HTTP);
         Mockito.when(eventMeshRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:8848");
         Mockito.when(eventMeshRegisterInfo.getEventMeshInstanceNumMap()).thenReturn(Maps.newHashMap());
+        HashMap<String, String> metaData = Maps.newHashMap();
+        metaData.put("test","a");
+        Mockito.when(eventMeshRegisterInfo.getMetadata()).thenReturn(metaData);
+
 
         Mockito.when(eventMeshUnRegisterInfo.getEventMeshClusterName()).thenReturn("eventmeshCluster");
         Mockito.when(eventMeshUnRegisterInfo.getEventMeshName()).thenReturn("eventmesh-" + ConfigurationContextUtil.HTTP);
@@ -117,13 +123,35 @@ public class ZookeeperRegistryServiceTest {
         zkRegistryService.init();
         zkRegistryService.start();
         zkRegistryService.register(eventMeshRegisterInfo);
-        // Setup
-        // Run the test
 
         final List<EventMeshDataInfo> result = zkRegistryService.findEventMeshInfoByCluster(eventMeshRegisterInfo.getEventMeshClusterName());
 
-        // Verify the results
         Assert.assertNotNull(result);
+    }
+
+    @Test
+    public void testFindAllEventMeshInfo() {
+        zkRegistryService.init();
+        zkRegistryService.start();
+        zkRegistryService.register(eventMeshRegisterInfo);
+
+         List<EventMeshDataInfo> result = zkRegistryService.findAllEventMeshInfo();
+
+        Assert.assertNotNull(result);
+    }
+
+    @Test
+    public void testRegisterMetadata(){
+        zkRegistryService.init();
+        zkRegistryService.start();
+        zkRegistryService.register(eventMeshRegisterInfo);
+        Map<String, String> metaData = Maps.newConcurrentMap();
+        metaData.put("test","a");
+        zkRegistryService.registerMetadata(metaData);
+        List<EventMeshDataInfo> infoList =
+            zkRegistryService.findEventMeshInfoByCluster(eventMeshRegisterInfo.getEventMeshClusterName());
+
+        Assert.assertNotNull(infoList);
     }
 
     @Test()

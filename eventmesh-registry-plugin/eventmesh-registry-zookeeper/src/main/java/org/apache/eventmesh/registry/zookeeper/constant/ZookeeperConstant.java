@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.registry.zookeeper.constant;
 
+import java.nio.charset.Charset;
+
 /**
  * ZookeeperConstant.
  */
@@ -26,9 +28,7 @@ public class ZookeeperConstant {
 
     public static final String IP_PORT_SEPARATOR = ":";
 
-    public static final int SESSION_TIME_OUT = 2000;
-
-    public static final String DEFAULT_GROUP = "DEFAULT_GROUP";
-
     public static final String PATH_SEPARATOR = "/";
+
+    public static final Charset CHARSET_UTF8 = Charset.forName("utf-8");
 }
