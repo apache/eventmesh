@@ -60,8 +60,6 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
 
     public Logger aclLogger = LoggerFactory.getLogger("acl");
 
-    private final EventMeshHTTPServer eventMeshHTTPServer;
-
     public LocalSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
     }
