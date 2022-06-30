@@ -14,20 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.eventmesh.registry.zookeeper.pojo;
 
-dependencies {
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+import java.io.Serializable;
+import java.util.Map;
 
-    implementation 'org.apache.zookeeper:zookeeper'
-    implementation 'org.apache.curator:curator-client'
-    implementation 'org.apache.curator:curator-framework'
-    implementation 'org.apache.curator:curator-recipes'
+import lombok.Data;
 
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    implementation project(":eventmesh-common")
+@Data
+public class EventMeshInstance implements Serializable {
 
-    testImplementation 'org.mockito:mockito-core'
-    testImplementation 'org.apache.curator:curator-test'
+    private static final long serialVersionUID = -7953085707514834697L;
+
+    private String ip;
+
+    private int port;
+
+    private Map<String, Map<String, Integer>> instanceNumMap;
+
+    private Map<String, String> metaData;
+
+
 }
