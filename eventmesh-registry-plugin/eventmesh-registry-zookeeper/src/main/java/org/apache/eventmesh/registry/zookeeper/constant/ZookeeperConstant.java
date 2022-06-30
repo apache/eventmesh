@@ -17,11 +17,7 @@
 
 package org.apache.eventmesh.registry.zookeeper.constant;
 
-import java.nio.charset.Charset;
 
-/**
- * ZookeeperConstant.
- */
 public class ZookeeperConstant {
 
     public static final String NAMESPACE = "eventmesh";
@@ -30,5 +26,4 @@ public class ZookeeperConstant {
 
     public static final String PATH_SEPARATOR = "/";
 
-    public static final Charset CHARSET_UTF8 = Charset.forName("utf-8");
 }
