@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *  * Licensed to the Apache Software Foundation (ASF) under one or more
+ *  * contributor license agreements.  See the NOTICE file distributed with
+ *  * this work for additional information regarding copyright ownership.
+ *  * The ASF licenses this file to You under the Apache License, Version 2.0
+ *  * (the "License"); you may not use this file except in compliance with
+ *  * the License.  You may obtain a copy of the License at
+ *  *
+ *  *     http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 package org.apache.eventmesh.registry.zookeeper.service;
@@ -69,7 +71,7 @@ public class ZookeeperRegistryServiceTest {
         Mockito.when(eventMeshRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:8848");
         Mockito.when(eventMeshRegisterInfo.getEventMeshInstanceNumMap()).thenReturn(Maps.newHashMap());
         HashMap<String, String> metaData = Maps.newHashMap();
-        metaData.put("test","a");
+        metaData.put("test", "a");
         Mockito.when(eventMeshRegisterInfo.getMetadata()).thenReturn(metaData);
 
 
@@ -135,18 +137,18 @@ public class ZookeeperRegistryServiceTest {
         zkRegistryService.start();
         zkRegistryService.register(eventMeshRegisterInfo);
 
-         List<EventMeshDataInfo> result = zkRegistryService.findAllEventMeshInfo();
+        List<EventMeshDataInfo> result = zkRegistryService.findAllEventMeshInfo();
 
         Assert.assertNotNull(result);
     }
 
     @Test
-    public void testRegisterMetadata(){
+    public void testRegisterMetadata() {
         zkRegistryService.init();
         zkRegistryService.start();
         zkRegistryService.register(eventMeshRegisterInfo);
         Map<String, String> metaData = Maps.newConcurrentMap();
-        metaData.put("test","a");
+        metaData.put("test", "a");
         zkRegistryService.registerMetadata(metaData);
         List<EventMeshDataInfo> infoList =
             zkRegistryService.findEventMeshInfoByCluster(eventMeshRegisterInfo.getEventMeshClusterName());
