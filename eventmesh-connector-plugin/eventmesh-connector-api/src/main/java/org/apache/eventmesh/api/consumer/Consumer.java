@@ -31,7 +31,7 @@ import io.cloudevents.CloudEvent;
 /**
  * Consumer Interface.
  */
-@EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
 public interface Consumer extends LifeCycle {
 
     void init(Properties keyValue) throws Exception;
