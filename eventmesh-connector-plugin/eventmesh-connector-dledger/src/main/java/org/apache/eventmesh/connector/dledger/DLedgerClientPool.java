@@ -1,5 +1,6 @@
 package org.apache.eventmesh.connector.dledger;
 
+import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.connector.dledger.exception.DLedgerConnectorException;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
@@ -44,13 +45,16 @@ public class DLedgerClientPool extends GenericObjectPool<DLedgerClient> {
         return clientPool;
     }
 
-    public long add(DLedgerEventWrapper eventWrapper) throws Exception {
-        AppendEntryResponse response = clientPool.borrowObject()
-            .append(eventWrapper.toString().getBytes(StandardCharsets.UTF_8));
+    public SendResult append(String topic, byte[] body) throws Exception {
+        AppendEntryResponse response = clientPool.borrowObject().append(body);
         if (DLedgerResponseCode.SUCCESS.getCode() != response.getCode()) {
             throw new DLedgerConnectorException(String.format("Error code: %d", response.getCode()));
         }
-        return response.getIndex();
+
+        SendResult sendResult = new SendResult();
+        sendResult.setTopic(topic);
+        sendResult.setMessageId(String.valueOf(response.getIndex()));
+        return sendResult;
     }
 
     public List<DLedgerEntry> get(long index) throws Exception {

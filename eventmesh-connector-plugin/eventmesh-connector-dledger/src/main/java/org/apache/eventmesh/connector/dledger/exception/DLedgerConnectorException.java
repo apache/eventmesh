@@ -6,4 +6,8 @@ public class DLedgerConnectorException extends ConnectorRuntimeException {
     public DLedgerConnectorException(String message) {
         super(message);
     }
+
+    public DLedgerConnectorException(Throwable throwable) {
+        super(throwable);
+    }
 }
