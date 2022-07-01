@@ -11,7 +11,7 @@
 
 [![License](https://img.shields.io/github/license/apache/incubator-eventmesh?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![GitHub Release](https://img.shields.io/github/v/release/apache/eventmesh?style=for-the-badge)](https://github.com/apache/incubator-eventmesh/releases)
-[![Slack Status](https://img.shields.io/badge/slack-join_chat-blue.svg?logo=slack&style=for-the-badge)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-16y1n77va-q~JepYy3RqpkygDYmQaQbw)
+[![Slack Status](https://img.shields.io/badge/slack-join_chat-blue.svg?logo=slack&style=for-the-badge)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1blhcbedu-9b7yvwAQcDs3fddZxnZXag)
 
 [📦 Documentation](https://eventmesh.apache.org/docs/introduction) |
 [📔 Examples](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) |
@@ -49,6 +49,10 @@ Apache EventMesh (Incubating) consists of multiple components that integrate dif
 - **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io) and [MQTT](https://mqtt.org).
 - **eventmesh-admin**: The control plane that manages clients, topics, and subscriptions.
 
+## Quick start
+
+[Http pub/sub](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/sdk-java/02-http.md#using-curl-command)
+
 ## Contributing
 
 Each contributor has played an important role in promoting the robust development of Apache EventMesh (Incubating). We sincerely appreciate all contributors who have contributed code and documents.
@@ -76,7 +80,7 @@ Apache EventMesh (Incubating) is licensed under the [Apache License, Version 2.0
 
 |WeChat Assistant|WeChat Official Account|Slack|
 |-|-|-|
-|<img src="docs/images/contact/wechat-assistant.jpg" width="128"/>|<img src="docs/images/contact/wechat-official.jpg" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-16y1n77va-q~JepYy3RqpkygDYmQaQbw)|
+|<img src="docs/images/contact/wechat-assistant.jpg" width="128"/>|<img src="docs/images/contact/wechat-official.jpg" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1blhcbedu-9b7yvwAQcDs3fddZxnZXag)|
 
 ### Mailing List
 
