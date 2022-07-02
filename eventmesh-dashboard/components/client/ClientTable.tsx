@@ -38,7 +38,7 @@ import { useEffect, useState } from 'react';
 interface Client {
   env: string,
   subsystem: string,
-  path: string,
+  url: string,
   pid: number,
   host: string,
   port: number,
@@ -54,16 +54,18 @@ interface ClientProps {
   port: number,
   group: string,
   protocol: string,
+  url: string,
 }
 
 interface RemoveClientRequest {
   host: string,
   port: number,
   protocol: string,
+  url: string,
 }
 
 const ClientRow = ({
-  host, port, group, protocol,
+  host, port, group, protocol, url,
 }: ClientProps) => {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
@@ -71,7 +73,12 @@ const ClientRow = ({
     try {
       setLoading(true);
       await axios.delete<RemoveClientRequest>('/client', {
-        data: { host, port, protocol },
+        data: {
+          host,
+          port,
+          protocol,
+          url,
+        },
       });
       setLoading(false);
     } catch (error) {
@@ -89,13 +96,14 @@ const ClientRow = ({
 
   return (
     <Tr>
-      <Td>{host}</Td>
-      <Td isNumeric>{port}</Td>
+      {protocol === 'TCP' && <Td>{`${host}:${port}`}</Td>}
+      {(protocol === 'HTTP' || protocol === 'gRPC') && <Td>{url}</Td>}
       <Td>{group}</Td>
       <Td>{protocol}</Td>
       <Td>
         <HStack>
           <Button
+            isDisabled
             colorScheme="red"
             isLoading={loading}
             onClick={onRemoveClick}
@@ -109,9 +117,9 @@ const ClientRow = ({
 };
 
 const ClientTable = () => {
-  const [searchInput, setsearchInput] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
   const handleSearchInputChange = (event: React.FormEvent<HTMLInputElement>) => {
-    setsearchInput(event.currentTarget.value);
+    setSearchInput(event.currentTarget.value);
   };
 
   const [protocolFilter, setProtocolFilter] = useState<string>('');
@@ -147,6 +155,7 @@ const ClientTable = () => {
             duration: 3000,
             isClosable: true,
           });
+          setClientList([]);
         }
       }
     };
@@ -161,10 +170,10 @@ const ClientTable = () => {
       borderWidth="1px"
       borderRadius="md"
       overflow="hidden"
+      p="4"
     >
       <HStack
         spacing="2"
-        margin="2"
       >
         <Input
           w="200%"
@@ -194,8 +203,7 @@ const ClientTable = () => {
         <Table variant="simple">
           <Thead>
             <Tr>
-              <Th>Host</Th>
-              <Th isNumeric>Port</Th>
+              <Th>Host or url</Th>
               <Th>Group</Th>
               <Th>Protocol</Th>
               <Th>Action</Th>
@@ -217,13 +225,14 @@ const ClientTable = () => {
               }
               return true;
             }).map(({
-              host, port, group, protocol,
+              host, port, group, protocol, url,
             }) => (
               <ClientRow
                 host={host}
                 port={port}
                 group={group}
                 protocol={protocol}
+                url={url}
               />
             ))}
           </Tbody>

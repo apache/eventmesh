@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class GetClientResponse {
     public String env;
     public String subsystem;
-    public String path;
+    public String url;
     public String pid;
     public String host;
     public int port;
@@ -37,7 +37,7 @@ public class GetClientResponse {
     public GetClientResponse(
             @JsonProperty("env") String env,
             @JsonProperty("subsystem") String subsystem,
-            @JsonProperty("path") String path,
+            @JsonProperty("url") String url,
             @JsonProperty("pid") String pid,
             @JsonProperty("host") String host,
             @JsonProperty("port") int port,
@@ -50,7 +50,7 @@ public class GetClientResponse {
         super();
         this.env = env;
         this.subsystem = subsystem;
-        this.path = path;
+        this.url = url;
         this.pid = pid;
         this.host = host;
         this.port = port;

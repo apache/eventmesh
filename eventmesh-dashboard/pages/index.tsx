@@ -19,13 +19,14 @@
 
 import Head from 'next/head';
 import type { NextPage } from 'next';
+import Endpoint from '../components/index/Endpoint';
 
 const Index: NextPage = () => (
   <>
     <Head>
       <title>Apache EventMesh Dashboard</title>
     </Head>
-    <text>Apache EventMesh Dashboard</text>
+    <Endpoint />
   </>
 );
 

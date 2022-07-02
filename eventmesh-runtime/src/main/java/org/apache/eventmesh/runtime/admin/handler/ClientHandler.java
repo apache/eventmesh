@@ -85,51 +85,66 @@ public class ClientHandler implements HttpHandler {
      * DELETE /client
      */
     void delete(HttpExchange httpExchange) throws IOException {
-        String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
-        DeleteClientRequest deleteClientRequest = JsonUtils.toObject(request, DeleteClientRequest.class);
-        String host = deleteClientRequest.host;
-        int port = deleteClientRequest.port;
-        String protocol = deleteClientRequest.protocol;
-
-        if (Objects.equals(protocol, "tcp")) {
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
-            ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            if (!sessionMap.isEmpty()) {
-                for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
-                    if (entry.getKey().getHostString().equals(host) && entry.getKey().getPort() == port) {
-                        EventMeshTcp2Client.serverGoodby2Client(
-                                eventMeshTCPServer,
-                                entry.getValue(),
-                                clientSessionGroupMapping
-                        );
-                    }
-                }
-            }
-        }
-
-        if (Objects.equals(protocol, "http")) {
-            for (List<Client> clientList : eventMeshHTTPServer.localClientInfoMapping.values()) {
-                clientList.removeIf(client -> Objects.equals(client.hostname, host));
-            }
-        }
-
-        if (Objects.equals(protocol, "gRPC")) {
-            ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
-            Map<String, List<ConsumerGroupClient>> clientTable = consumerManager.getClientTable();
-            for (List<ConsumerGroupClient> clientList : clientTable.values()) {
-                for (ConsumerGroupClient client : clientList) {
-                    if (Objects.equals(client.getHostname(), host)) {
-                        consumerManager.deregisterClient(client);
-                    }
-                }
-            }
-        }
-
-        httpExchange.getResponseHeaders().add("Content-Type", "application/json");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        httpExchange.sendResponseHeaders(200, 0);
         OutputStream out = httpExchange.getResponseBody();
-        out.close();
+        try {
+            String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
+            DeleteClientRequest deleteClientRequest = JsonUtils.toObject(request, DeleteClientRequest.class);
+            String host = deleteClientRequest.host;
+            int port = deleteClientRequest.port;
+            String protocol = deleteClientRequest.protocol;
+            String url = deleteClientRequest.url;
+
+            if (Objects.equals(protocol, "TCP")) {
+                ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
+                ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
+                if (!sessionMap.isEmpty()) {
+                    for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
+                        if (entry.getKey().getHostString().equals(host) && entry.getKey().getPort() == port) {
+                            EventMeshTcp2Client.serverGoodby2Client(
+                                    eventMeshTCPServer,
+                                    entry.getValue(),
+                                    clientSessionGroupMapping
+                            );
+                        }
+                    }
+                }
+            }
+
+            if (Objects.equals(protocol, "HTTP")) {
+                for (List<Client> clientList : eventMeshHTTPServer.localClientInfoMapping.values()) {
+                    clientList.removeIf(client -> Objects.equals(client.url, url));
+                }
+            }
+
+            if (Objects.equals(protocol, "gRPC")) {
+                ConsumerManager consumerManager = eventMeshGrpcServer.getConsumerManager();
+                Map<String, List<ConsumerGroupClient>> clientTable = consumerManager.getClientTable();
+                for (List<ConsumerGroupClient> clientList : clientTable.values()) {
+                    for (ConsumerGroupClient client : clientList) {
+                        if (Objects.equals(client.getUrl(), url)) {
+                            consumerManager.deregisterClient(client);
+                        }
+                    }
+                }
+            }
+
+            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+            httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+            httpExchange.sendResponseHeaders(200, 0);
+        } catch (Exception e) {
+            Error error = new Error(e.toString());
+            String result = JsonUtils.toJson(error);
+            httpExchange.sendResponseHeaders(500, result.getBytes().length);
+            out.write(result.getBytes());
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    logger.warn("out close failed...", e);
+                }
+            }
+        }
     }
 
     /**
@@ -178,7 +193,7 @@ public class ClientHandler implements HttpHandler {
                             Optional.ofNullable(client.idc).orElse(""),
                             Optional.ofNullable(client.consumerGroup).orElse(""),
                             "",
-                            "gRPC"
+                            "HTTP"
                     );
                     getClientResponseList.add(getClientResponse);
                 }

@@ -26,16 +26,19 @@ public class DeleteClientRequest {
     public String host;
     public int port;
     public String protocol;
+    public String url;
 
     @JsonCreator
     public DeleteClientRequest(
             @JsonProperty("host") String host,
             @JsonProperty("port") int port,
-            @JsonProperty("protocol") String protocol
+            @JsonProperty("protocol") String protocol,
+            @JsonProperty("url") String url
     ) {
         super();
         this.host = host;
         this.port = port;
         this.protocol = protocol;
+        this.url = url;
     }
 }
