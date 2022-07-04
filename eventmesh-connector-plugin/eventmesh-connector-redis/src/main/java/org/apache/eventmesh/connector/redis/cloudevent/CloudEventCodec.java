@@ -1,7 +1,5 @@
 package org.apache.eventmesh.connector.redis.cloudevent;
 
-import java.nio.charset.StandardCharsets;
-
 import org.redisson.client.codec.BaseCodec;
 import org.redisson.client.protocol.Decoder;
 import org.redisson.client.protocol.Encoder;
