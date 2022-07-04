@@ -4,6 +4,7 @@ import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 import org.apache.eventmesh.connector.redis.consumer.RedisConsumer;
 import org.apache.eventmesh.connector.redis.consumer.RedisConsumerTest;
 import org.apache.eventmesh.connector.redis.producer.RedisProducer;
@@ -20,7 +21,7 @@ import org.junit.Test;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-public class UnitTest {
+public class UnitTest extends AbstractRedisServer {
 
     private RedisProducer redisProducer;
 
