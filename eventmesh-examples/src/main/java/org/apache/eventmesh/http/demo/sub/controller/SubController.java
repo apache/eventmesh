@@ -70,4 +70,9 @@ public class SubController {
         return JsonUtils.serialize(map);
     }
 
+    @RequestMapping("/")
+    public String test() {
+        return "Greetings from Spring Boot!";
+    }
+
 }
