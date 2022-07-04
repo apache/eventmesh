@@ -61,7 +61,7 @@ public class RedisProducer implements Producer {
     public synchronized void shutdown() {
         if (started) {
             try {
-                redisson.shutdown();
+                redisson = null;
             } finally {
                 started = false;
             }
