@@ -17,27 +17,12 @@
 
 package org.apache.eventmesh.connector.redis.client;
 
+import org.apache.eventmesh.connector.redis.AbstractRedisServer;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import redis.embedded.RedisServer;
-
-public class RedissonClientTest {
-
-    private static RedisServer redisServer;
-
-//    @BeforeClass
-//    public static void setup() {
-//        redisServer = new RedisServer(6379);
-//        if (!redisServer.isActive()) {
-//            redisServer.start();
-//        }
-//    }
-//
-//    @AfterClass
-//    public static void shutdown() {
-//        redisServer.stop();
-//    }
+public class RedissonClientTest extends AbstractRedisServer {
 
     @Test
     public void testInstance() {

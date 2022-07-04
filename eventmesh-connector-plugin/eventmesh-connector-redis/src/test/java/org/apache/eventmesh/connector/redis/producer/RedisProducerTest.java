@@ -3,6 +3,7 @@ package org.apache.eventmesh.connector.redis.producer;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 import org.apache.eventmesh.connector.redis.client.RedissonClient;
 
 import java.net.URI;
@@ -15,12 +16,11 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.redisson.api.RTopic;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-public class RedisProducerTest {
+public class RedisProducerTest extends AbstractRedisServer {
 
     private RedisProducer redisProducer;
 
@@ -89,15 +89,15 @@ public class RedisProducerTest {
             .withData("data".getBytes())
             .build();
 
-        RTopic rTopic = RedissonClient.INSTANCE.getTopic(topic);
-        rTopic.addListenerAsync(CloudEvent.class, (channel, msg) -> {
-            Assert.assertEquals(cloudEvent.getSubject(), msg.getSubject());
-            Assert.assertEquals(cloudEvent.getId(), msg.getId());
-            Assert.assertEquals(cloudEvent.getSpecVersion(), msg.getSpecVersion());
-            Assert.assertEquals(cloudEvent.getData(), msg.getData());
+        RedissonClient.INSTANCE.getTopic(topic)
+            .addListenerAsync(CloudEvent.class, (channel, msg) -> {
+                Assert.assertEquals(cloudEvent.getSubject(), msg.getSubject());
+                Assert.assertEquals(cloudEvent.getId(), msg.getId());
+                Assert.assertEquals(cloudEvent.getSpecVersion(), msg.getSpecVersion());
+                Assert.assertEquals(cloudEvent.getData(), msg.getData());
 
-            downLatch.countDown();
-        });
+                downLatch.countDown();
+            });
 
         redisProducer.sendOneway(cloudEvent);
 

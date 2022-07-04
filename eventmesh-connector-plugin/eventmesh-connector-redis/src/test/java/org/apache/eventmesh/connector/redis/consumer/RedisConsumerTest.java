@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.redis.consumer;
 
 import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 import org.apache.eventmesh.connector.redis.client.RedissonClient;
 
 import java.net.URI;
@@ -33,7 +34,7 @@ import org.redisson.api.RTopic;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-public class RedisConsumerTest {
+public class RedisConsumerTest extends AbstractRedisServer {
 
     private RedisConsumer redisConsumer;
 
@@ -65,7 +66,7 @@ public class RedisConsumerTest {
 
         redisConsumer.subscribe(topic);
 
-        RTopic rTopic = RedissonClient.INSTANCE.getTopic(topic);
+        RTopic redissonTopic = RedissonClient.INSTANCE.getTopic(topic);
         for (int i = 0; i < expectedCount; i++) {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
                 .withId(String.valueOf(i))
@@ -77,7 +78,7 @@ public class RedisConsumerTest {
                 .withData("data".getBytes())
                 .build();
 
-            rTopic.publish(cloudEvent);
+            redissonTopic.publish(cloudEvent);
         }
 
         downLatch.await();
