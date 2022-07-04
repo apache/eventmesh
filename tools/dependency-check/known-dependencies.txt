@@ -132,3 +132,5 @@ snakeyaml-1.30.jar
 bcpkix-jdk15on-1.69.jar
 bcprov-jdk15on-1.69.jar
 bcutil-jdk15on-1.69.jar
+redisson-3.17.3.jar
+redis-mock-0.1.6.jar
