@@ -133,4 +133,13 @@ bcpkix-jdk15on-1.69.jar
 bcprov-jdk15on-1.69.jar
 bcutil-jdk15on-1.69.jar
 redisson-3.17.3.jar
-redis-mock-0.1.6.jar
+rxjava-3.0.12.jar
+reactor-core-3.4.13.jar
+reactive-streams-1.0.3.jar
+cache-api-1.1.1.jar
+byte-buddy-1.11.0.jar
+jackson-dataformat-yaml-2.13.2.jar
+jboss-marshalling-2.0.11.Final.jar
+jboss-marshalling-river-2.0.11.Final.jar
+jodd-bean-5.1.6.jar
+jodd-core-5.1.6.jar
