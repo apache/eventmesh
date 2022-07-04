@@ -24,7 +24,18 @@ dependencies {
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
 
     // redisson
-    implementation 'org.redisson:redisson:3.17.3'
+    implementation('org.redisson:redisson:3.17.3') {
+        exclude group: 'io.netty', module: 'netty-common'
+        exclude group: 'io.netty', module: 'netty-buffer'
+        exclude group: 'io.netty', module: 'netty-codec'
+        exclude group: 'io.netty', module: 'netty-transport'
+        exclude group: 'io.netty', module: 'netty-resolver'
+        exclude group: 'io.netty', module: 'netty-resolver-dns'
+        exclude group: 'io.netty', module: 'netty-handler'
+    }
+
+    // netty
+    implementation "io.netty:netty-all"
 
     // auxiliary serialize
     api 'io.cloudevents:cloudevents-json-jackson'
