@@ -38,5 +38,7 @@ header:
     - 'LICENSE'
     - 'NOTICE'
     - 'DISCLAIMER-WIP'
+    - 'gradlew'
+    - 'gradlew.bat'
 
   comment: on-failure
