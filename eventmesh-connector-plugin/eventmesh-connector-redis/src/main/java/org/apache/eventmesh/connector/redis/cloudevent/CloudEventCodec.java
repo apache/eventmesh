@@ -33,7 +33,7 @@ public class CloudEventCodec extends BaseCodec {
 
     private static final JsonFormat jsonFormat = new JsonFormat(Boolean.FALSE, Boolean.TRUE);
 
-    private final Encoder encoder = in -> {
+    private static final Encoder encoder = in -> {
         ByteBuf out = ByteBufAllocator.DEFAULT.buffer();
         if (in instanceof CloudEvent) {
             out.writeBytes(jsonFormat.serialize((CloudEvent) in));
@@ -42,7 +42,7 @@ public class CloudEventCodec extends BaseCodec {
         throw new IllegalStateException("Illegal object type: " + in.getClass().getSimpleName());
     };
 
-    private final Decoder<Object> decoder = (buf, state) -> {
+    private static final Decoder<Object> decoder = (buf, state) -> {
         final byte[] bytes = new byte[buf.readableBytes()];
         buf.getBytes(buf.readerIndex(), bytes);
         return jsonFormat.deserialize(bytes);

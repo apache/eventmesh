@@ -32,12 +32,17 @@ import org.redisson.Redisson;
 import org.redisson.config.Config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 public final class RedissonClient {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public static final Redisson INSTANCE;
 
     static {
+        OBJECT_MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, Boolean.FALSE);
+
         INSTANCE = create();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -102,7 +107,7 @@ public final class RedissonClient {
         String serverPassword = properties.getServerPassword();
         String masterName = properties.getServerMasterName();
 
-        Config config = new ObjectMapper().convertValue(properties.getRedissonProperties(), Config.class);
+        Config config = OBJECT_MAPPER.convertValue(properties.getRedissonProperties(), Config.class);
 
         if (config == null) {
             config = new Config();
