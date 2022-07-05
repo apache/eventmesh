@@ -30,8 +30,10 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -102,6 +104,6 @@ public class UnitTest extends AbstractRedisServer {
             });
         }
 
-        downLatch.await();
+        Assert.assertTrue(downLatch.await(5, TimeUnit.MINUTES));
     }
 }

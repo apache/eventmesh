@@ -28,6 +28,7 @@ import java.time.OffsetDateTime;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -118,6 +119,6 @@ public class RedisProducerTest extends AbstractRedisServer {
 
         redisProducer.sendOneway(cloudEvent);
 
-        downLatch.await();
+        Assert.assertTrue(downLatch.await(5, TimeUnit.MINUTES));
     }
 }
