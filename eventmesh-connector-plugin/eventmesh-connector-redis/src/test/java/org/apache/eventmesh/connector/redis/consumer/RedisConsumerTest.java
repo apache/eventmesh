@@ -25,8 +25,10 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.redisson.api.RTopic;
@@ -81,7 +83,7 @@ public class RedisConsumerTest extends AbstractRedisServer {
             redissonTopic.publish(cloudEvent);
         }
 
-        downLatch.await();
+        Assert.assertTrue(downLatch.await(5, TimeUnit.MINUTES));
 
         redisConsumer.unsubscribe(topic);
     }
