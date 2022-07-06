@@ -53,8 +53,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.registry.Registry;
-import org.apache.eventmesh.trace.api.TracePluginFactory;
-import org.apache.eventmesh.trace.api.TraceService;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -78,8 +76,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
-    private TraceService traceService;
-
     private Registry registry;
 
     public final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
@@ -90,7 +86,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
     public EventMeshHTTPServer(EventMeshServer eventMeshServer,
                                EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
-        super(eventMeshHttpConfiguration.httpServerPort, eventMeshHttpConfiguration.eventMeshServerUseTls);
+        super(eventMeshHttpConfiguration.httpServerPort, eventMeshHttpConfiguration.eventMeshServerUseTls, eventMeshHttpConfiguration);
         this.eventMeshServer = eventMeshServer;
         this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
         this.registry = eventMeshServer.getRegistry();
@@ -220,6 +216,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         return batchRateLimiter;
     }
 
+    public Registry getRegistry() {
+        return registry;
+    }
+
     public void init() throws Exception {
         logger.info("==================EventMeshHTTPServer Initialing==================");
         super.init("eventMesh-http");
@@ -253,12 +253,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         //get the trace-plugin
         if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.eventMeshTracePluginType) && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
 
-            traceService =
-                TracePluginFactory.getTraceService(eventMeshHttpConfiguration.eventMeshTracePluginType);
-            traceService.init();
-            super.tracer = traceService.getTracer(super.getClass().toString());
-            super.textMapPropagator = traceService.getTextMapPropagator();
-            super.useTrace = true;
+            super.useTrace = eventMeshHttpConfiguration.eventMeshServerTraceEnable;
         }
 
         logger.info("--------------------------EventMeshHTTPServer inited");
@@ -284,10 +279,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         metrics.shutdown();
 
-        if (traceService != null) {
-            traceService.shutdown();
-        }
-
         consumerManager.shutdown();
 
         shutdownThreadPool();
@@ -310,11 +301,12 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         try {
             String endPoints = IPUtils.getLocalAddress()
                 + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshHttpConfiguration.httpServerPort;
-            EventMeshRegisterInfo self = new EventMeshRegisterInfo();
-            self.setEventMeshClusterName(eventMeshHttpConfiguration.eventMeshCluster);
-            self.setEventMeshName(eventMeshHttpConfiguration.eventMeshName + "-" + ConfigurationContextUtil.HTTP);
-            self.setEndPoint(endPoints);
-            registerResult = registry.register(self);
+            EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
+            eventMeshRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.eventMeshCluster);
+            eventMeshRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.eventMeshName + "-" + ConfigurationContextUtil.HTTP);
+            eventMeshRegisterInfo.setEndPoint(endPoints);
+            eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
+            registerResult = registry.register(eventMeshRegisterInfo);
         } catch (Exception e) {
             logger.warn("eventMesh register to registry failed", e);
         }
@@ -329,6 +321,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshHttpConfiguration.eventMeshCluster);
         eventMeshUnRegisterInfo.setEventMeshName(eventMeshHttpConfiguration.eventMeshName);
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
+        eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.HTTP);
         boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);
         if (!registerResult) {
             throw new EventMeshException("eventMesh fail to unRegister");
