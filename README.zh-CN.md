@@ -52,6 +52,17 @@
 
 - **eventmesh-admin**: 客户端管理、主题管理、订阅管理和其他管理。
 
+## 下载
+
+你可以在这个页面 [release page](https://eventmesh.apache.org/download) 获取所有的历史发布版本。
+
+## 编译
+你可以通过以下命令来编译EventMesh：
+```shell
+./gradlew clean dist
+```
+你可以在dist目录下找到生成的二进制jar包。
+
 ## 贡献这个项目
 
 每一名贡献者都在这个项目的发展上都是至关重要的。我们真诚地感谢所有对代码和文档的贡献者！想要尝试贡献的可以看看以下三个链接。
