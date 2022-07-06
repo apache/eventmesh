@@ -45,7 +45,7 @@ Gradle is the build automation tool used by Apache EventMesh (Incubating). Pleas
 Download and extract the source code of the latest release from [EventMesh download](https://eventmesh.apache.org/download).
 
 ```console
-wget https://dlcdn.apache.org/incubator/eventmesh/{version}-incubating/apache-eventmesh-{version}-source.tar.gz
+wget https://dlcdn.apache.org/incubator/eventmesh/{version}-incubating/apache-eventmesh-{version}-incubating-source.tar.gz
 
 tar -xvzf apache-eventmesh-{version}-incubating-source.tar.gz
 ```
