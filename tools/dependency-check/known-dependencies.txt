@@ -132,3 +132,11 @@ snakeyaml-1.30.jar
 bcpkix-jdk15on-1.69.jar
 bcprov-jdk15on-1.69.jar
 bcutil-jdk15on-1.69.jar
+curator-client-4.0.1.jar
+curator-framework-4.0.1.jar
+curator-recipes-4.0.1.jar
+zookeeper-3.4.6.jar
+jline-0.9.94.jar
+log4j-1.2.16.jar
+netty-3.7.0.Final.jar
+slf4j-log4j12-1.6.1.jar
