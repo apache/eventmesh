@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.client.tcp.impl.eventmeshmessage;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
@@ -30,8 +32,6 @@ import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 
 import com.google.common.base.Preconditions;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMessage> {
 
@@ -120,7 +120,7 @@ public class EventMeshMessageTCPClient implements EventMeshTCPClient<EventMeshMe
 
     private void validateMessage(EventMeshMessage message) {
         Preconditions.checkNotNull(message, "Message cannot be null");
-        Preconditions.checkArgument(StringUtils.isNotBlank(message.getTopic()), "Message's topic cannot be null and blank");
-        Preconditions.checkArgument(StringUtils.isNotBlank(message.getBody()), "Message's body cannot be null and blank");
+        Preconditions.checkArgument(isNotBlank(message.getTopic()), "Message's topic cannot be null and blank");
+        Preconditions.checkArgument(isNotBlank(message.getBody()), "Message's body cannot be null and blank");
     }
 }
