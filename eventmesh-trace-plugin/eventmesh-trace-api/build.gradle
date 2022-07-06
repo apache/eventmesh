@@ -18,6 +18,7 @@
 dependencies {
     api project(":eventmesh-spi")
     implementation project(":eventmesh-common")
+    api 'io.cloudevents:cloudevents-core'
 
     implementation 'io.opentelemetry:opentelemetry-api'
     implementation 'io.opentelemetry:opentelemetry-sdk'
