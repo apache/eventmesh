@@ -17,7 +17,7 @@ docker pull openjdk:8-jdk
 
 ## Install Executable Binaries
 
-Download and extract the executable binaries of the latest release (v1.4.0) from [GitHub releases](https://github.com/apache/incubator-eventmesh/releases).
+Download and extract the executable binaries of the latest release from [EventMesh download](https://eventmesh.apache.org/download).
 
 ```console
 wget https://github.com/apache/incubator-eventmesh/releases/download/v1.4.0/apache-eventmesh-1.4.0-incubating-bin.tar.gz
@@ -42,20 +42,21 @@ bash bin/start.sh
 
 Gradle is the build automation tool used by Apache EventMesh (Incubating). Please refer to the [offical guide](https://docs.gradle.org/current/userguide/installation.html) to install the latest release of Gradle.
 
-Download and extract the source code of the latest release (v1.4.0) from [GitHub releases](https://github.com/apache/incubator-eventmesh/releases).
+Download and extract the source code of the latest release from [EventMesh download](https://eventmesh.apache.org/download).
 
 ```console
-wget https://github.com/apache/incubator-eventmesh/archive/refs/tags/v1.4.0.tar.gz
+wget https://dlcdn.apache.org/incubator/eventmesh/{version}-incubating/apache-eventmesh-{version}-incubating-source.tar.gz
 
-tar -xvzf v1.4.0.tar.gz
+tar -xvzf apache-eventmesh-{version}-incubating-source.tar.gz
 ```
 
 Build the source code with Gradle.
 
 ```console
-cd incubator-eventmesh-1.4.0
-gradle clean build
+cd apache-eventmesh-{version}-incubating-source
+gradle clean dist
 ```
+Note: Make sure your gradle version is higher than 7.0
 
 Edit the `eventmesh.properties` to change the configuration (e.g. TCP port, client blacklist) of EventMesh Runtime.
 

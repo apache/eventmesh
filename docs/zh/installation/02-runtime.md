@@ -12,8 +12,7 @@ Gradle至少为7.0, 推荐 7.0.*
 
 ### 1.2 下载源码
 
-[https://github.com/apache/incubator-eventmesh](https://github.com/apache/incubator-eventmesh)
-您将获得**EventMesh-master.zip**
+在[EventMesh download](https://eventmesh.apache.org/download) 页面选择某个版本进行下载, 您将获得**EventMesh-master.zip**
 
 ### 1.3 构建源码
 
