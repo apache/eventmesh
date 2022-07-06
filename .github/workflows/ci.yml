@@ -80,4 +80,4 @@ jobs:
 
       - name: Check third party dependencies
         run: | 
-        ./gradlew clean jar dist -x test -x checkstyleMain -x javaDoc && ./gradlew installPlugin && ./gradlew tar && sh tools/dependency-check/check-dependencies.sh && echo "Thirty party dependencies check success"
+        ./gradlew clean jar dist && ./gradlew installPlugin && ./gradlew tar && sh tools/dependency-check/check-dependencies.sh && echo "Thirty party dependencies check success"
