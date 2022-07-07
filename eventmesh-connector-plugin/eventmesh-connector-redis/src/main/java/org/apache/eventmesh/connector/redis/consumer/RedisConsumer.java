@@ -74,6 +74,7 @@ public class RedisConsumer implements Consumer {
 
     @Override
     public void init(Properties keyValue) {
+        // Currently, 'keyValue' does not pass useful configuration information.
         redisson = RedissonClient.INSTANCE;
     }
 
@@ -85,6 +86,7 @@ public class RedisConsumer implements Consumer {
     @Override
     public void subscribe(String topic) {
         Preconditions.checkNotNull(topic);
+        Preconditions.checkNotNull(messageListener);
 
         redisson.getTopic(topic).addListenerAsync(CloudEvent.class, messageListener);
     }
@@ -92,6 +94,7 @@ public class RedisConsumer implements Consumer {
     @Override
     public void unsubscribe(String topic) {
         Preconditions.checkNotNull(topic);
+        Preconditions.checkNotNull(messageListener);
 
         redisson.getTopic(topic).removeListenerAsync(messageListener);
     }
