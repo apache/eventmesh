@@ -58,6 +58,7 @@ public class EventMeshStartup {
         } catch (Throwable e) {
             logger.error("EventMesh start fail.", e);
             e.printStackTrace();
+            System.exit(-1);
         }
 
     }
