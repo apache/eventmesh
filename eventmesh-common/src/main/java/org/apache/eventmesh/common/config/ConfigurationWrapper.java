@@ -61,9 +61,13 @@ public class ConfigurationWrapper {
     };
 
     public ConfigurationWrapper(String directoryPath, String fileName, boolean reload) {
-        this.directoryPath = directoryPath;
+        this.directoryPath = directoryPath
+                .replace('/', File.separator.charAt(0))
+                .replace('\\', File.separator.charAt(0));
         this.fileName = fileName;
-        this.file = directoryPath + File.separator + fileName;
+        this.file = (directoryPath + File.separator + fileName)
+                .replace('/', File.separator.charAt(0))
+                .replace('\\', File.separator.charAt(0));
         this.reload = reload;
         init();
     }
