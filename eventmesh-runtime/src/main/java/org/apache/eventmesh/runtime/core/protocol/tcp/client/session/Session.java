@@ -40,6 +40,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -271,6 +272,11 @@ public class Session {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(client, context, sessionState);
     }
 
     public WeakReference<ClientGroupWrapper> getClientGroupWrapper() {
