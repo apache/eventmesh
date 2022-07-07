@@ -45,7 +45,6 @@ public enum EventMeshExtensionFactory {
      * @return plugin instance
      */
     public static <T> T getExtension(Class<T> extensionType, String extensionName) {
-    ...
     }
 }
 ```
