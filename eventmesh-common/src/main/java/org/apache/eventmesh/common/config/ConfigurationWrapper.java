@@ -84,9 +84,9 @@ public class ConfigurationWrapper {
     }
 
     private void load() {
-        try {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             logger.info("loading config: {}", file);
-            properties.load(new BufferedReader(new FileReader(file)));
+            properties.load(reader);
         } catch (IOException e) {
             logger.error("loading properties [{}] error", file, e);
         }
