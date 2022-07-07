@@ -12,8 +12,7 @@ Gradle至少为7.0, 推荐 7.0.*
 
 ### 1.2 下载源码
 
-[https://github.com/apache/incubator-eventmesh](https://github.com/apache/incubator-eventmesh)
-您将获得**EventMesh-master.zip**
+在[EventMesh download](https://eventmesh.apache.org/download) 页面选择某个版本进行下载, 您将获得**EventMesh-master.zip**
 
 ### 1.3 构建源码
 
@@ -54,7 +53,6 @@ sh start.sh
 
 **2.3.1 项目结构说明：**
 
-![project-structure](../../images/project-structure.png)
 
 - eventmesh-common : eventmesh公共类与方法模块
 - eventmesh-connector-api : eventmesh connector插件接口定义模块
@@ -76,7 +74,7 @@ sh start.sh
 
 - classpath加载：本地开发可以通过在eventmesh-starter模块build.gradle中进行声明，例如声明使用rocketmq插件
 
-```java
+```gradle
    implementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
 ```
 
@@ -98,7 +96,7 @@ eventMesh.connector.plugin.type=rocketmq
 
 **2.3.3 配置VM启动参数**
 
-```java
+```properties
 -Dlog4j.configurationFile=eventmesh-runtime/conf/log4j2.xml
 -Deventmesh.log.home=eventmesh-runtime/logs
 -Deventmesh.home=eventmesh-runtime
@@ -185,102 +183,3 @@ docker run -d -p 10000:10000 -p 10105:10105 -v /data/eventmesh/rocketmq/conf/eve
 
 ![image-docker-exec](../../images/docker/docker-exec.png)
 
-### 3.4 测试
-
-**预先准备** ：RocketMQ Namesrv & Broker
-
-你可以通过[这里](https://github.com/apache/rocketmq-docker)来构建rocketmq镜像或者从 docker hub上获取rocketmq镜像.
-
-```shell
-#获取namesrv镜像
-docker pull rocketmqinc/rocketmq-namesrv:4.5.0-alpine
-#获取broker镜像
-docker pull rocketmqinc/rocketmq-broker:4.5.0-alpine
-
-#运行namerv容器
-docker run -d -p 9876:9876 -v `pwd` /data/namesrv/logs:/root/logs -v `pwd`/data/namesrv/store:/root/store --name rmqnamesrv  rocketmqinc/rocketmq-namesrv:4.5.0-alpine sh mqnamesrv
-
-#运行broker容器
-docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq-broker:4.5.0-alpine sh mqbroker -c ../conf/broker.conf
-```
-
-这里 **rocketmq-broker ip** 是 **pod ip**, 如果你想修改这个ip, 可以通过挂载容器中 **broker.conf** 文件的方式并修改文件中的 **brokerIP1** 配置项为自定义值
-
-**3.4.1 运行示例**
-
-Windows
-
-- Windows系统下运行示例可以参考[这里](https://github.com/apache/incubator-eventmesh/blob/develop/docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
-
-Linux
-
-- **获取 eventmesh-test_1.3.0-release.tar.gz**
-
-  你可以从我们的 **releases** 获取或者**通过源码的方式进行构建**
-
-  **通过源码的方式进行构建**：
-
-  ```shell
-  cd /* Your Deploy Path */EventMesh/eventmesh-test
-  gradle clean testdist testtar -x test`
-  ```
-
-  可以在 `/eventmesh-test/build` 目录下获得 **eventmesh-test_1.3.0-release.tar.gz**
-
-- **修改配置文件**
-
-  ```shell
-  #上传
-  upload eventmesh-test_1.3.0-release.tar.gz
-  #解压
-  tar -zxvf eventmesh-test_1.3.0-release.tar.gz
-  #配置
-  cd conf
-  config your application.properties
-  ```
-
-- **运行**
-
-  TCP Sub
-
-  ```shell
-  cd bin
-  sh tcp_sub.sh
-  ```
-
-  TCP Pub
-
-  ```shell
-  cd bin
-  sh tcp_pub.sh
-  ```
-
-  TCP Sub Broadcast
-
-  ```shell
-  cd bin
-  sh tcp_sub_broadcast.sh
-  ```
-
-  TCP Pub Broadcast
-
-  ```shell
-  cd bin
-  sh tcp_pub_broadcast.sh
-  ```
-
-  HTTP Sub
-
-  ```shell
-  cd bin
-  sh http_sub.sh
-  ```
-
-  HTTP Pub
-
-  ```shell
-  cd bin
-  sh http_pub.sh
-  ```
-
-  之后 , 你可以在 `/logs` 目录下面看到不同模式的运行日志
