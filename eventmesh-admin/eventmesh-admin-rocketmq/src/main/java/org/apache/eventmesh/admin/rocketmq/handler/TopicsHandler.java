@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,7 @@ public class TopicsHandler implements HttpHandler {
         httpExchange.sendResponseHeaders(500, 0);
         String result = String.format("Please check your request url");
         logger.error(result);
-        out.write(result.getBytes());
+        out.write(result.getBytes(StandardCharsets.UTF_8));
         return;
     }
 
@@ -68,7 +69,7 @@ public class TopicsHandler implements HttpHandler {
             if (StringUtils.isBlank(topic)) {
                 result = "Create topic failed. Parameter topic not found.";
                 logger.error(result);
-                out.write(result.getBytes());
+                out.write(result.getBytes(StandardCharsets.UTF_8));
                 return;
             }
 
@@ -80,13 +81,13 @@ public class TopicsHandler implements HttpHandler {
                 httpExchange.sendResponseHeaders(200, 0);
                 result = JsonUtils.toJson(topicResponse);
                 logger.info(result);
-                out.write(result.getBytes());
+                out.write(result.getBytes(StandardCharsets.UTF_8));
                 return;
             } else {
                 httpExchange.sendResponseHeaders(500, 0);
                 result = String.format("create topic failed! Server side error");
                 logger.error(result);
-                out.write(result.getBytes());
+                out.write(result.getBytes(StandardCharsets.UTF_8));
                 return;
             }
         } catch (Exception e) {
@@ -94,7 +95,7 @@ public class TopicsHandler implements HttpHandler {
             httpExchange.sendResponseHeaders(500, 0);
             result = String.format("create topic failed! Server side error");
             logger.error(result);
-            out.write(result.getBytes());
+            out.write(result.getBytes(StandardCharsets.UTF_8));
             return;
         } finally {
             if (out != null) {

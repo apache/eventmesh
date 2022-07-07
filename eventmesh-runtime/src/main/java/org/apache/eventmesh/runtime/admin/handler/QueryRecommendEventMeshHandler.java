@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -63,7 +64,7 @@ public class QueryRecommendEventMeshHandler implements HttpHandler {
             if (StringUtils.isBlank(group) || StringUtils.isBlank(purpose)) {
                 httpExchange.sendResponseHeaders(200, 0);
                 result = "params illegal!";
-                out.write(result.getBytes());
+                out.write(result.getBytes(StandardCharsets.UTF_8));
                 return;
             }
 
@@ -72,7 +73,7 @@ public class QueryRecommendEventMeshHandler implements HttpHandler {
             result = (recommendEventMeshResult == null) ? "null" : recommendEventMeshResult;
             logger.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             logger.error("QueryRecommendEventMeshHandler fail...", e);
         } finally {

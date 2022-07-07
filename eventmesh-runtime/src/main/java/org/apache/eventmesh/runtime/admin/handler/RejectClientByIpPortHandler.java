@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,7 @@ public class RejectClientByIpPortHandler implements HttpHandler {
             if (StringUtils.isBlank(ip) || StringUtils.isBlank(port)) {
                 httpExchange.sendResponseHeaders(200, 0);
                 result = "params illegal!";
-                out.write(result.getBytes());
+                out.write(result.getBytes(StandardCharsets.UTF_8));
                 return;
             }
             logger.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
@@ -87,14 +88,14 @@ public class RejectClientByIpPortHandler implements HttpHandler {
                 result = String.format("rejectClientByIpPort fail! {ip=%s port=%s}, had reject {%s}, errorMsg : %s", ip,
                         port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
                 httpExchange.sendResponseHeaders(200, 0);
-                out.write(result.getBytes());
+                out.write(result.getBytes(StandardCharsets.UTF_8));
                 return;
             }
 
             result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
                     NetUtils.addressToString(successRemoteAddrs));
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             logger.error("rejectClientByIpPort fail...", e);
         } finally {

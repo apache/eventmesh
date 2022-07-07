@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ public class ConfigurationWrapper {
     private void load() {
         try {
             logger.info("loading config: {}", file);
-            properties.load(new BufferedReader(new FileReader(file)));
+            properties.load(new BufferedReader(new FileReader(file, StandardCharsets.UTF_8)));
         } catch (IOException e) {
             logger.error("loading properties [{}] error", file, e);
         }

@@ -72,7 +72,7 @@ public class HttpRequestProtocolResolver {
 
             byte[] requestBody = httpEventWrapper.getBody();
 
-            Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody), new TypeReference<HashMap<String, Object>>() {
+            Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, StandardCharsets.UTF_8), new TypeReference<HashMap<String, Object>>() {
             });
 
             String requestURI = httpEventWrapper.getRequestURI();

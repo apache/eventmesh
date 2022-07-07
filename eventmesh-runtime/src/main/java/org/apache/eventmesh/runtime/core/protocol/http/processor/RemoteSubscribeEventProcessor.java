@@ -50,6 +50,7 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +122,7 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
-        Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody), new TypeReference<HashMap<String, Object>>() {
+        Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, StandardCharsets.UTF_8), new TypeReference<HashMap<String, Object>>() {
         });
 
 

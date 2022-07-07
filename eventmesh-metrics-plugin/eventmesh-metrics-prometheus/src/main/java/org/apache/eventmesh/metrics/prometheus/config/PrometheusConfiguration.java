@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import lombok.experimental.UtilityClass;
@@ -71,7 +72,7 @@ public class PrometheusConfiguration {
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONFIG_FILE;
             if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
+                properties.load(new BufferedReader(new FileReader(configPath, StandardCharsets.UTF_8)));
             }
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", CONFIG_FILE));

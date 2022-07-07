@@ -27,6 +27,7 @@ import org.apache.eventmesh.runtime.util.NetUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -75,7 +76,7 @@ public class ShowClientBySystemHandler implements HttpHandler {
                 }
             }
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             logger.error("ShowClientBySystemAndHandler fail...", e);
         } finally {

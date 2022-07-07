@@ -108,7 +108,7 @@ public class SendAsyncRemoteEventProcessor implements EventProcessor {
         requestWrapper.buildSysHeaderForCE();
 
         // process remote event body
-        Map<String, Object> bodyMap = JsonUtils.deserialize(new String(requestWrapper.getBody()), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> bodyMap = JsonUtils.deserialize(new String(requestWrapper.getBody(), StandardCharsets.UTF_8), new TypeReference<Map<String, Object>>() {
         });
 
         byte[] convertedBody = bodyMap.get("content").toString().getBytes(StandardCharsets.UTF_8);

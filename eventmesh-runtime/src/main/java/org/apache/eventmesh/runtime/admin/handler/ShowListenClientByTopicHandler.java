@@ -27,6 +27,7 @@ import org.apache.eventmesh.runtime.util.NetUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,7 +78,7 @@ public class ShowListenClientByTopicHandler implements HttpHandler {
                 }
             }
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             logger.error("ShowListenClientByTopicHandler fail...", e);
         } finally {

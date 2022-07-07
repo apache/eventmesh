@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -65,7 +66,7 @@ public class RedirectClientByIpPortHandler implements HttpHandler {
                     || !StringUtils.isNumeric(destEventMeshPort)) {
                 httpExchange.sendResponseHeaders(200, 0);
                 result = "params illegal!";
-                out.write(result.getBytes());
+                out.write(result.getBytes(StandardCharsets.UTF_8));
                 return;
             }
             logger.info("redirectClientByIpPort in admin,ip:{},port:{},destIp:{},destPort:{}====================", ip,
@@ -95,7 +96,7 @@ public class RedirectClientByIpPortHandler implements HttpHandler {
                         sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult, e
                                 .getMessage());
                 httpExchange.sendResponseHeaders(200, 0);
-                out.write(result.getBytes());
+                out.write(result.getBytes(StandardCharsets.UTF_8));
                 return;
             }
             result = String.format("redirectClientByIpPort success! sessionMap size {%d}, {ip=%s port=%s "
@@ -103,7 +104,7 @@ public class RedirectClientByIpPortHandler implements HttpHandler {
                             "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
                     sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult);
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             logger.error("redirectClientByIpPort fail...", e);
         } finally {

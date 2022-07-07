@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ public class ConfigurationWrapper {
         logger.info("loading auth config: {}", configFilePath);
         Properties properties = new Properties();
         try {
-            properties.load(new BufferedReader(new FileReader(configFilePath)));
+            properties.load(new BufferedReader(new FileReader(configFilePath, StandardCharsets.UTF_8)));
         } catch (IOException e) {
             throw new IllegalArgumentException(
                     String.format("Cannot load RocketMQ configuration file from :%s", configFilePath));

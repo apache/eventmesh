@@ -24,6 +24,7 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -77,7 +78,7 @@ public class ShowClientHandler implements HttpHandler {
             }
 
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             logger.error("ShowClientHandler fail...", e);
         } finally {

@@ -604,7 +604,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 if (length > 0) {
                     byte[] body = new byte[length];
                     fullHttpRequest.content().readBytes(body);
-                    JsonUtils.deserialize(new String(body), new TypeReference<Map<String, Object>>() {
+                    JsonUtils.deserialize(new String(body, StandardCharsets.UTF_8), new TypeReference<Map<String, Object>>() {
                     }).forEach(bodyMap::put);
                 }
             } else {

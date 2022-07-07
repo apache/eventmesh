@@ -35,6 +35,7 @@ import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -109,7 +110,7 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor {
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
-        Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody), new TypeReference<HashMap<String, Object>>() {
+        Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, StandardCharsets.UTF_8), new TypeReference<HashMap<String, Object>>() {
         });
 
         if (requestBodyMap.get("url") == null || requestBodyMap.get("topic") == null || requestBodyMap.get("consumerGroup") == null) {

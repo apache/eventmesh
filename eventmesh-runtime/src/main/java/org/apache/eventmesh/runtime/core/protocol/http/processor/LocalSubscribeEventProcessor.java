@@ -39,6 +39,7 @@ import org.apache.eventmesh.runtime.util.WebhookUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -116,7 +117,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor {
         //validate body
         byte[] requestBody = requestWrapper.getBody();
 
-        Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody), new TypeReference<HashMap<String, Object>>() {
+        Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, StandardCharsets.UTF_8), new TypeReference<HashMap<String, Object>>() {
         });
 
 

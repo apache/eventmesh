@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import lombok.experimental.UtilityClass;
@@ -97,7 +98,7 @@ public class ExporterConfiguration {
         if (resource != null) {
             try (InputStream inputStream = resource.openStream()) {
                 if (inputStream.available() > 0) {
-                    properties.load(new BufferedReader(new InputStreamReader(inputStream)));
+                    properties.load(new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)));
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Load exporter.properties file from classpath error");
@@ -108,7 +109,7 @@ public class ExporterConfiguration {
             String configPath =
                 System.getProperty("confPath", System.getenv("confPath")) + File.separator + CONFIG_FILE;
             if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
+                properties.load(new BufferedReader(new FileReader(configPath, StandardCharsets.UTF_8)));
             }
         } catch (IOException e) {
             throw new IllegalArgumentException("Cannot load exporter.properties file from conf");

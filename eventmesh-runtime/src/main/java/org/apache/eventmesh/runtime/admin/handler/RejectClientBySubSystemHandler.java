@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,7 @@ public class RejectClientBySubSystemHandler implements HttpHandler {
             if (StringUtils.isBlank(subSystem)) {
                 httpExchange.sendResponseHeaders(200, 0);
                 result = "params illegal!";
-                out.write(result.getBytes());
+                out.write(result.getBytes(StandardCharsets.UTF_8));
                 return;
             }
 
@@ -104,14 +105,14 @@ public class RejectClientBySubSystemHandler implements HttpHandler {
                         +
                         "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs), subSystem, e.getMessage());
                 httpExchange.sendResponseHeaders(200, 0);
-                out.write(result.getBytes());
+                out.write(result.getBytes(StandardCharsets.UTF_8));
                 return;
             }
             result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
                     +
                     "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             logger.error("rejectClientBySubSystem fail...", e);
         } finally {

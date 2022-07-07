@@ -26,6 +26,7 @@ import org.apache.eventmesh.runtime.util.NetUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -77,13 +78,13 @@ public class RejectAllClientHandler implements HttpHandler {
                 result = String.format("rejectAllClient fail! sessionMap size {%d}, had reject {%s}, errorMsg : %s",
                         sessionMap.size(), NetUtils.addressToString(successRemoteAddrs), e.getMessage());
                 httpExchange.sendResponseHeaders(200, 0);
-                out.write(result.getBytes());
+                out.write(result.getBytes(StandardCharsets.UTF_8));
                 return;
             }
             result = String.format("rejectAllClient success! sessionMap size {%d}, had reject {%s}", sessionMap.size(),
                     NetUtils.addressToString(successRemoteAddrs));
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
             logger.error("rejectAllClient fail...", e);
         } finally {
