@@ -70,6 +70,7 @@ public class RedisProducer implements Producer {
 
     @Override
     public void init(Properties properties) {
+        // Currently, 'properties' does not pass useful configuration information.
         redisson = RedissonClient.INSTANCE;
     }
 
@@ -118,7 +119,7 @@ public class RedisProducer implements Producer {
 
     @Override
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) {
-        throw new ConnectorRuntimeException("Reply is not supported");
+        throw new ConnectorRuntimeException("Request is not supported");
     }
 
     @Override
@@ -128,7 +129,7 @@ public class RedisProducer implements Producer {
 
     @Override
     public void checkTopicExist(String topic) {
-
+        // Because redis has the feature of creating topics when used, there is no need to check existence.
     }
 
     @Override

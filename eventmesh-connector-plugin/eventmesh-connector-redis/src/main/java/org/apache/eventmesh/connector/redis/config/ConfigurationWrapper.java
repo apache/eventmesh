@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.redis.config;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.PropertiesUtils;
-import org.apache.eventmesh.connector.redis.constants.RedisConstants;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,6 +32,8 @@ import java.util.Optional;
 import java.util.Properties;
 
 public class ConfigurationWrapper {
+
+    private static final String CONF_FILE = "redis-client.properties";
 
     private static final Properties properties = new Properties();
 
@@ -58,20 +59,20 @@ public class ConfigurationWrapper {
 
     private static void loadProperties() {
         try (InputStream resourceAsStream = ConfigurationWrapper.class.getResourceAsStream(
-            "/" + RedisConstants.CONF_FILE)) {
+            "/" + CONF_FILE)) {
             if (resourceAsStream != null) {
                 properties.load(resourceAsStream);
             }
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Load %s file from classpath error", RedisConstants.CONF_FILE));
+            throw new RuntimeException(String.format("Load %s file from classpath error", CONF_FILE));
         }
         try {
-            String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + RedisConstants.CONF_FILE;
+            String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONF_FILE;
             if (new File(configPath).exists()) {
                 properties.load(new BufferedReader(new FileReader(configPath)));
             }
         } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Cannot load %s file from conf", RedisConstants.CONF_FILE));
+            throw new IllegalArgumentException(String.format("Cannot load %s file from conf", CONF_FILE));
         }
     }
 }

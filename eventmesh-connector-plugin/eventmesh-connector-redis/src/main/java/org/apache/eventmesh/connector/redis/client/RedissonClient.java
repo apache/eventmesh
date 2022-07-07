@@ -34,6 +34,10 @@ import org.redisson.config.Config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+/**
+ * Within EventMesh's JVM, there is no multi-connector server, and redisson itself is pooled management,
+ * so a single instance is fine, and it can save resources and improve performance.
+ */
 public final class RedissonClient {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
