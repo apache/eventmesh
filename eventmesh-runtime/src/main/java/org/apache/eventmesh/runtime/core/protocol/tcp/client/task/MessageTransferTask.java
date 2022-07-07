@@ -100,7 +100,7 @@ public class MessageTransferTask extends AbstractTask {
         CloudEvent event = null;
 
         try {
-            String protocolType = "EventMeshMessage";
+            String protocolType = "eventmeshmessage";
             if (pkg.getHeader().getProperties() != null
                 && pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE) != null) {
                 protocolType = (String) pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE);
