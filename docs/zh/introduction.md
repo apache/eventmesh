@@ -36,9 +36,9 @@ Event Mesh允许将来自一个应用程序的事件动态路由到任何其他�
 
 ## 快速开始
 
-1. 构建并部署 event-store(RocketMQ), 请参见[说明](installation/01-store.md)
-2. 构建并部署 eventmesh-runtime，请参见[说明](installation/02-runtime.md)
-3. 运行 eventmesh-sdk-java 演示，请参见[说明](installation/03-demo.md)
+1. 构建并部署 event-store(RocketMQ), 请参见[说明](instruction/01-store.md)
+2. 构建并部署 eventmesh-runtime，请参见[说明](instruction/02-runtime.md)
+3. 运行 eventmesh-sdk-java 演示，请参见[说明](instruction/03-demo.md)
 
 ## 贡献
 
