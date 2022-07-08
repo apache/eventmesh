@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rocketmq.cloudevent;
+package org.apache.eventmesh.connector.kafka.cloudevent;
 
 import java.util.Map;
 
