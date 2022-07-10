@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CloudEventsRequestInstance {
 
     // This messageSize is also used in SubService.java (Subscriber)
-    public static int messageSize = 5;
+    public static final int MESSAGE_SIZE = 5;
 
     public static void main(String[] args) throws Exception {
 
@@ -63,7 +63,7 @@ public class CloudEventsRequestInstance {
         Map<String, String> content = new HashMap<>();
         content.put("content", "testRequestReplyMessage");
 
-        for (int i = 0; i < messageSize; i++) {
+        for (int i = 0; i < MESSAGE_SIZE; i++) {
             CloudEvent event = CloudEventBuilder.v1()
                 .withId(UUID.randomUUID().toString())
                 .withSubject(ExampleConstants.EVENTMESH_GRPC_RR_TEST_TOPIC)

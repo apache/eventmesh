@@ -66,7 +66,7 @@ public class SubService implements InitializingBean {
     final String subsys = "1234";
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
-    private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
+    private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.MESSAGE_SIZE);
 
     @Override
     public void afterPropertiesSet() throws Exception {

@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AsyncPublishInstance {
 
     // This messageSize is also used in SubService.java (Subscriber)
-    public static int messageSize = 5;
+    public static final int MESSAGE_SIZE = 5;
 
     public static void main(String[] args) throws Exception {
 
@@ -58,7 +58,7 @@ public class AsyncPublishInstance {
         Map<String, String> content = new HashMap<>();
         content.put("content", "testAsyncMessage");
 
-        for (int i = 0; i < messageSize; i++) {
+        for (int i = 0; i < MESSAGE_SIZE; i++) {
             EventMeshMessage eventMeshMessage = EventMeshMessage.builder()
                 .content(JsonUtils.serialize(content))
                 .topic(ExampleConstants.EVENTMESH_GRPC_ASYNC_TEST_TOPIC)

@@ -112,7 +112,7 @@ public class EventMeshConstants {
 
     public static final String EVENTMESH_REGISTRY_ADDR_KEY = "eventMeshRegistryAddr";
 
-    public static int DEFAULT_TIME_OUT_MILLS = 5 * 1000;
+    public static final int DEFAULT_TIME_OUT_MILLS = 5 * 1000;
 
     public static final String RR_REPLY_TOPIC = "rr-reply-topic";
 
