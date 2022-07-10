@@ -14,7 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.appache.eventmesh.connector.redis.consumer;
 
-public class RedisConsumerImpl {
+package org.apache.eventmesh.connector.redis.config;
+
+
+
+public class ClientConfig {
+
+    public String host;
+
+    public int port;
+
+    public String username;
+
+    public String password;
+
+    public int index;
+
+    public String masterId;
 }

@@ -50,4 +50,6 @@ include 'eventmesh-trace-plugin'
 include 'eventmesh-trace-plugin:eventmesh-trace-api'
 include 'eventmesh-trace-plugin:eventmesh-trace-zipkin'
 include 'eventmesh-redis'
+include 'eventmesh-connector-plugin:eventmesh-connector-redis'
+findProject(':eventmesh-connector-plugin:eventmesh-connector-redis')?.name = 'eventmesh-connector-redis'
 

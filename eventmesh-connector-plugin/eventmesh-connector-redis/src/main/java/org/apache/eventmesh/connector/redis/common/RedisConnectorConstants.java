@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.appache.eventmesh.connector.redis.producer;
 
-public class RedisProducerImpl {
+package org.apache.eventmesh.connector.redis.common;
+
+public class RedisConnectorConstants {
+
+    public static final String EVENTMESH_CONF_FILE = "redis-client.properties";
 }

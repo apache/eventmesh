@@ -14,7 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.appache.eventmesh.connector.redis.config;
 
-public class RedisConfig {
+package org.apache.eventmesh.connector.redis.consumer;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
+public class PushConsumerImplTest {
+
+    @Mock
+    private RedisConsumerImpl consumer;
+
+    @Before
+    public void before() {
+        consumer = new RedisConsumerImpl();
+        consumer.start();
+    }
+
+    @After
+    public void after() {
+        consumer.shutdown();
+    }
+
+    @Test
+    public void testConsumeMessage() throws Exception {
+        final byte[] testBody = new byte[]{'a', 'b'};
+
+        consumer.subscribe("HELLO_QUEUE");
+
+    }
 }
