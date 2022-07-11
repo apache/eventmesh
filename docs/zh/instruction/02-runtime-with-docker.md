@@ -1,4 +1,4 @@
-# 使用 Docker 快速入门 EventMesh
+# 使用 Docker 快速入门 EventMesh（暂时只支持到1.4.0版本）
 
 本篇快速入门将详细介绍使用 docker 部署 EventMesh，以 RocketMQ 作为对接的中间件。
 
