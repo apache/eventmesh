@@ -80,11 +80,11 @@ public class HandlerService {
             processorWrapper.httpProcessor = httpProcessor;
         }
         httpProcessorMap.put(path, processorWrapper);
-        httpServerLogger.info("path is {}  proocessor name is", path, httpProcessor.getClass().getSimpleName());
+        httpServerLogger.info("path is {}  proocessor name is {}", path, httpProcessor.getClass().getSimpleName());
     }
 
     public boolean isProcessorWrapper(HttpRequest httpRequest) {
-        return this.getProcessorWrapper(httpRequest) == null ? false : true;
+        return Objects.nonNull(this.getProcessorWrapper(httpRequest));
     }
 
     private ProcessorWrapper getProcessorWrapper(HttpRequest httpRequest) {
@@ -164,7 +164,6 @@ public class HandlerService {
 
                 this.preHandler();
             } catch (Throwable e) {
-                httpServerLogger.error("{},{}");
                 httpServerLogger.error(e.getMessage(), e);
                 exception = e;
                 this.errer();
