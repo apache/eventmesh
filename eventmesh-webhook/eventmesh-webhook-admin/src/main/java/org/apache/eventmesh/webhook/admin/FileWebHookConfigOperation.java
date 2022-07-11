@@ -119,10 +119,15 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
             logger.warn("webhookConfig dir {} is not existed", manuDirPath);
             return new ArrayList<>();
         }
+        List<WebHookConfig> webHookConfigs = new ArrayList<>();
+        
         File[] webhookFiles = manuDir.listFiles();
+        if(webhookFiles == null || webhookFiles.length == 0) {
+        	return webHookConfigs;
+        }
+        
         int startIndex = (pageNum - 1) * pageSize;
         int endIndex = pageNum * pageSize - 1;
-        List<WebHookConfig> webHookConfigs = new ArrayList<>();
         if (webhookFiles.length > startIndex) {
             for (int i = startIndex; i < endIndex && i < webhookFiles.length; i++) {
                 webHookConfigs.add(getWebHookConfigFromFile(webhookFiles[i]));

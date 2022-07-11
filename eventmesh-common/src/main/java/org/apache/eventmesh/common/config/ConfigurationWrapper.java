@@ -47,7 +47,7 @@ public class ConfigurationWrapper {
 
     private boolean reload;
 
-    private ScheduledExecutorService configLoader = ThreadPoolFactory
+    private final ScheduledExecutorService configLoader = ThreadPoolFactory
             .createSingleScheduledExecutor("eventMesh-configLoader-");
 
     public ConfigurationWrapper(String file, boolean reload) {

@@ -51,7 +51,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
 
     private static final Logger logger = LoggerFactory.getLogger(NacosWebHookConfigOperation.class);
 
-    private ConfigService configService;
+    private final ConfigService configService;
 
 
     public NacosWebHookConfigOperation(Properties properties) throws NacosException {
