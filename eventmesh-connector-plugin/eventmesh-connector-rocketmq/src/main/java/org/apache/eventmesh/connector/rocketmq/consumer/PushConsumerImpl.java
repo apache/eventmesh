@@ -18,7 +18,6 @@
 package org.apache.eventmesh.connector.rocketmq.consumer;
 
 import org.apache.eventmesh.api.AbstractContext;
-import org.apache.eventmesh.api.AsyncConsumeContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
@@ -47,9 +46,7 @@ import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
