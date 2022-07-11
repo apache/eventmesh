@@ -20,6 +20,8 @@ configurations {
 }
 
 dependencies {
+    implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+    implementation project(":eventmesh-common")
     // https://mavenlibs.com/maven/dependency/io.cloudevents/cloudevents-kafka
     implementation group: 'io.cloudevents', name: 'cloudevents-kafka', version: '2.2.1'
 
