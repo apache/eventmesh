@@ -29,7 +29,7 @@ public class KafkaConsumerImpl implements Consumer {
 
     @Override
     public void subscribe(String topic) throws Exception {
-        consumer.subscribe(topic, "*");
+        consumer.subscribe(topic);
     }
 
     @Override

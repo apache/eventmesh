@@ -101,7 +101,7 @@ public class ConsumerImpl {
         return kafkaConsumer;
     }
 
-    public void subscribe(String topic, String subExpression) {
+    public void subscribe(String topic) {
         try {
             this.kafkaConsumer.subscribe(Arrays.asList(topic));
         } catch (Exception e) {
