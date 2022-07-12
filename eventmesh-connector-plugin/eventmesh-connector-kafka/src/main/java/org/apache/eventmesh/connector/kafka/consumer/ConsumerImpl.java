@@ -17,33 +17,27 @@
 
 package org.apache.eventmesh.connector.kafka.consumer;
 
-import org.apache.eventmesh.api.AbstractContext;
+import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.EventListener;
-import org.apache.eventmesh.api.EventMeshAction;
-import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
-import org.apache.eventmesh.common.Constants;
 
 import java.time.Duration;
-import java.util.*;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.kafka.CloudEventDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.eventmesh.connector.kafka.common.EventMeshConstants;
 
-import org.apache.commons.lang3.StringUtils;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.cloudevents.core.builder.CloudEventBuilder;
-
 public class ConsumerImpl {
-    private final KafkaConsumer kafkaConsumer;
+    private final KafkaConsumer<String, CloudEvent> kafkaConsumer;
     private final Properties properties;
     private AtomicBoolean started = new AtomicBoolean(false);
     private EventListener eventListener;
@@ -60,7 +54,7 @@ public class ConsumerImpl {
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         this.properties = props;
-        this.kafkaConsumer = new KafkaConsumer<String,String>(props);
+        this.kafkaConsumer = new KafkaConsumer<String, CloudEvent>(props);
     }
 
     public Properties attributes() {
@@ -97,7 +91,7 @@ public class ConsumerImpl {
         return !this.isStarted();
     }
 
-    public KafkaConsumer getKafkaConsumer() {
+    public KafkaConsumer<String, CloudEvent> getKafkaConsumer() {
         return kafkaConsumer;
     }
 
@@ -113,8 +107,8 @@ public class ConsumerImpl {
     public void unsubscribe(String topic) {
         try {
             // Get the current subscription
-            Map<String,List<PartitionInfo>> topicsAndParition = this.kafkaConsumer.listTopics();
-            Set<String> topicsSet = topicsAndParition.keySet();
+            Map<String, List<PartitionInfo>> topicsAndPartition = this.kafkaConsumer.listTopics();
+            Set<String> topicsSet = topicsAndPartition.keySet();
             List<String> topics = new ArrayList<>();
             topics.addAll(topicsSet);
             this.kafkaConsumer.unsubscribe();
