@@ -17,14 +17,20 @@
 
 package org.apache.eventmesh.connector.kafka.config;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.connector.kafka.common.EventMeshConstants;
 
-import java.io.*;
-import java.util.Properties;
 
 @Slf4j
 @UtilityClass
@@ -46,7 +52,7 @@ public class ConfigurationWrapper {
      */
     private void loadProperties() {
         try (InputStream resourceAsStream = ConfigurationWrapper.class.getResourceAsStream(
-            "/" + EventMeshConstants.EVENTMESH_CONF_FILE)) {
+                "/" + EventMeshConstants.EVENTMESH_CONF_FILE)) {
             if (resourceAsStream != null) {
                 properties.load(resourceAsStream);
             }
