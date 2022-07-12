@@ -129,44 +129,44 @@ public class CommonConfiguration {
     }
 
     static class ConfKeys {
-        public static String KEYS_EVENTMESH_ENV = "eventMesh.server.env";
+        public static final String KEYS_EVENTMESH_ENV = "eventMesh.server.env";
 
-        public static String KEYS_EVENTMESH_IDC = "eventMesh.server.idc";
+        public static final String KEYS_EVENTMESH_IDC = "eventMesh.server.idc";
 
-        public static String KEYS_EVENTMESH_SYSID = "eventMesh.sysid";
+        public static final String KEYS_EVENTMESH_SYSID = "eventMesh.sysid";
 
-        public static String KEYS_EVENTMESH_SERVER_CLUSTER = "eventMesh.server.cluster";
+        public static final String KEYS_EVENTMESH_SERVER_CLUSTER = "eventMesh.server.cluster";
 
-        public static String KEYS_EVENTMESH_SERVER_NAME = "eventMesh.server.name";
+        public static final String KEYS_EVENTMESH_SERVER_NAME = "eventMesh.server.name";
 
-        public static String KEYS_EVENTMESH_SERVER_HOST_IP = "eventMesh.server.hostIp";
+        public static final String KEYS_EVENTMESH_SERVER_HOST_IP = "eventMesh.server.hostIp";
 
-        public static String KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL =
+        public static final String KEYS_EVENTMESH_SERVER_REGISTER_INTERVAL =
             "eventMesh.server.registry.registerIntervalInMills";
 
-        public static String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL =
+        public static final String KEYS_EVENTMESH_SERVER_FETCH_REGISTRY_ADDR_INTERVAL =
             "eventMesh.server.registry.fetchRegistryAddrIntervalInMills";
 
-        public static String KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE = "eventMesh.connector.plugin.type";
+        public static final String KEYS_ENENTMESH_CONNECTOR_PLUGIN_TYPE = "eventMesh.connector.plugin.type";
 
-        public static String KEYS_EVENTMESH_SECURITY_ENABLED = "eventMesh.server.security.enabled";
+        public static final String KEYS_EVENTMESH_SECURITY_ENABLED = "eventMesh.server.security.enabled";
 
-        public static String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
+        public static final String KEYS_ENENTMESH_SECURITY_PLUGIN_TYPE = "eventMesh.security.plugin.type";
 
-        public static String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.registry.plugin.enabled";
+        public static final String KEYS_EVENTMESH_REGISTRY_ENABLED = "eventMesh.registry.plugin.enabled";
 
-        public static String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
+        public static final String KEYS_ENENTMESH_REGISTRY_PLUGIN_TYPE = "eventMesh.registry.plugin.type";
 
-        public static String KEYS_EVENTMESH_REGISTRY_PULGIN_SERVER_ADDR = "eventMesh.registry.plugin.server-addr";
+        public static final String KEYS_EVENTMESH_REGISTRY_PULGIN_SERVER_ADDR = "eventMesh.registry.plugin.server-addr";
 
-        public static String KEYS_EVENTMESH_REGISTRY_PULGIN_USERNAME = "eventMesh.registry.plugin.username";
+        public static final String KEYS_EVENTMESH_REGISTRY_PULGIN_USERNAME = "eventMesh.registry.plugin.username";
 
-        public static String KEYS_EVENTMESH_REGISTRY_PULGIN_PASSWORD = "eventMesh.registry.plugin.password";
+        public static final String KEYS_EVENTMESH_REGISTRY_PULGIN_PASSWORD = "eventMesh.registry.plugin.password";
 
-        public static String KEYS_EVENTMESH_METRICS_PLUGIN_TYPE = "eventMesh.metrics.plugin";
+        public static final String KEYS_EVENTMESH_METRICS_PLUGIN_TYPE = "eventMesh.metrics.plugin";
 
-        public static String KEYS_EVENTMESH_TRACE_ENABLED = "eventMesh.server.trace.enabled";
+        public static final String KEYS_EVENTMESH_TRACE_ENABLED = "eventMesh.server.trace.enabled";
 
-        public static String KEYS_EVENTMESH_TRACE_PLUGIN_TYPE = "eventMesh.trace.plugin";
+        public static final String KEYS_EVENTMESH_TRACE_PLUGIN_TYPE = "eventMesh.trace.plugin";
     }
 }
