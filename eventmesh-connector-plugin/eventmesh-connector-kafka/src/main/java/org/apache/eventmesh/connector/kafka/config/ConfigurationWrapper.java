@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.connector.kafka.config;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.connector.kafka.common.EventMeshConstants;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -26,11 +31,6 @@ import java.util.Properties;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.connector.kafka.common.EventMeshConstants;
-
 
 @Slf4j
 @UtilityClass

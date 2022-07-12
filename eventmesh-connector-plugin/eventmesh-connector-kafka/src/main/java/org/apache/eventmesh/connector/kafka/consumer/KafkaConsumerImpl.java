@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.kafka.consumer;
 
-import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
@@ -25,11 +24,13 @@ import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
+import java.util.List;
+import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Properties;
+import io.cloudevents.CloudEvent;
 
 public class KafkaConsumerImpl implements Consumer {
     public Logger messageLogger = LoggerFactory.getLogger("message");
