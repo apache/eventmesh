@@ -22,25 +22,25 @@ public class EventMeshCommon {
     /**
      * CLIENT heartbeat interval
      */
-    public static int HEARTBEAT = 30 * 1000;
+    public static final int HEARTBEAT = 30 * 1000;
 
     /**
      * Timeout time shared by the server
      */
-    public static int DEFAULT_TIME_OUT_MILLS = 20 * 1000;
+    public static final int DEFAULT_TIME_OUT_MILLS = 20 * 1000;
 
     /**
      * USERAGENT for PUB
      */
-    public static String USER_AGENT_PURPOSE_PUB = "pub";
+    public static final String USER_AGENT_PURPOSE_PUB = "pub";
 
     /**
      * USERAGENT for SUB
      */
-    public static String USER_AGENT_PURPOSE_SUB = "sub";
+    public static final String USER_AGENT_PURPOSE_SUB = "sub";
 
     // protocol type
-    public static String CLOUD_EVENTS_PROTOCOL_NAME = "cloudevents";
-    public static String EM_MESSAGE_PROTOCOL_NAME = "eventmeshmessage";
-    public static String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
+    public static final String CLOUD_EVENTS_PROTOCOL_NAME = "cloudevents";
+    public static final String EM_MESSAGE_PROTOCOL_NAME = "eventmeshmessage";
+    public static final String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
 }
