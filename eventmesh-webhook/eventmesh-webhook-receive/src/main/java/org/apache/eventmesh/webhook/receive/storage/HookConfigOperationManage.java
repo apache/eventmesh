@@ -60,8 +60,7 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     /**
      * Initialize according to operationMode
      *
-     * @param operationMode file/nacos...
-     * @param config        Parameters required to initialize the behavior
+     * @param configurationWrapper 
      */
     public HookConfigOperationManage(ConfigurationWrapper configurationWrapper) throws FileNotFoundException, NacosException {
 

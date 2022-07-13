@@ -74,10 +74,8 @@ public class HandlerService {
         ProcessorWrapper processorWrapper = new ProcessorWrapper();
         processorWrapper.threadPoolExecutor = threadPoolExecutor;
         processorWrapper.httpProcessor = httpProcessor;
-        if (httpProcessor instanceof AsynHttpProcessor) {
-            processorWrapper.asyn = (AsynHttpProcessor) httpProcessor;
-        } else {
-            processorWrapper.httpProcessor = httpProcessor;
+        if (httpProcessor instanceof AsyncHttpProcessor) {
+            processorWrapper.asyn = (AsyncHttpProcessor) httpProcessor;
         }
         httpProcessorMap.put(path, processorWrapper);
         httpServerLogger.info("path is {}  proocessor name is {}", path, httpProcessor.getClass().getSimpleName());
@@ -226,7 +224,7 @@ public class HandlerService {
 
         private HttpProcessor httpProcessor;
 
-        private AsynHttpProcessor asyn;
+        private AsyncHttpProcessor asyn;
     }
 
 }
