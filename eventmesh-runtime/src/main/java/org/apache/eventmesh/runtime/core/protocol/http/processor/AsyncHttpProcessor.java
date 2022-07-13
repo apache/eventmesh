@@ -23,7 +23,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
 /**
- * aysn http processor
+ * aysnc http processor
  */
 public interface AsyncHttpProcessor extends HttpProcessor {
 
