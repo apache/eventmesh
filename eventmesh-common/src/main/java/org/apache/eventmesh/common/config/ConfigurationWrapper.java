@@ -20,7 +20,6 @@ package org.apache.eventmesh.common.config;
 import org.apache.eventmesh.common.file.FileChangeContext;
 import org.apache.eventmesh.common.file.FileChangeListener;
 import org.apache.eventmesh.common.file.WatchFileManager;
-import org.apache.eventmesh.common.utils.PropertiesUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -108,13 +107,5 @@ public class ConfigurationWrapper {
             return defaultValue;
         }
         return Boolean.parseBoolean(configValue);
-    }
-
-    public Properties getPropertiesByPrefix(String prefix) {
-        return PropertiesUtils.getPropertiesByPrefix(this.properties, new Properties(), prefix);
-    }
-
-    public Properties getPropertiesByPrefix(String prefix, final Properties to) {
-        return PropertiesUtils.getPropertiesByPrefix(this.properties, to, prefix);
     }
 }

@@ -25,11 +25,11 @@ import java.util.Properties;
 
 public class PropertiesUtils {
 
-    public static Properties getPropertiesByPrefix(final Properties form, final Properties to, String prefix) {
-        if (StringUtils.isBlank(prefix) || form == null) {
+    public static Properties getPropertiesByPrefix(final Properties from, final Properties to, String prefix) {
+        if (StringUtils.isBlank(prefix) || from == null) {
             return to;
         }
-        form.forEach((key, value) -> {
+        from.forEach((key, value) -> {
                 String keyStr = String.valueOf(key);
                 if (StringUtils.startsWith(keyStr, prefix)) {
                     String realKey = StringUtils.substring(keyStr, prefix.length());

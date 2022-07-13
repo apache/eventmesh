@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
-import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
@@ -36,7 +35,6 @@ public class EventMeshStartup {
             ConfigurationWrapper configurationWrapper =
                     new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
                             EventMeshConstants.EVENTMESH_CONF_FILE, false);
-            ConfigurationContextUtil.setBaseConfigurationWrapper(configurationWrapper);
             EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(configurationWrapper);
             eventMeshHttpConfiguration.init();
             EventMeshTCPConfiguration eventMeshTcpConfiguration = new EventMeshTCPConfiguration(configurationWrapper);
