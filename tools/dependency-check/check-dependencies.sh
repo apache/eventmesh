@@ -51,6 +51,6 @@ if [ $compareCode -eq 0 ]
 then
   echo "Dependencies check success"
 else
-  echo "Dependencies check failed, please check if you add unknown dependencies"
+  echo "Dependencies check failed, please check if you add known dependencies"
   exit $compareCode
 fi
