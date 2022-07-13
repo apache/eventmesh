@@ -87,4 +87,42 @@ public class Constants {
 
     public static final String EVENTMESH_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
+    public static String CLOUD_EVENTS_PROTOCOL_NAME = "cloudevents";
+
+    public static String EM_MESSAGE_PROTOCOL_NAME = "eventmeshmessage";
+
+    public static String OPEN_MESSAGE_PROTOCOL_NAME = "openmessage";
+
+    // delimiter define
+    public static final String COMMA = ",";
+
+    public static final String VERTICAL_LINE = "|";
+
+    public static final String COLON = ":";
+
+    public static final String HYPHEN = "-";
+
+    public static final String DOT = ".";
+
+    public static final String POUND = "#";
+
+    public static final String ASTERISK = "*";
+
+    public static final String UNDER_LINE = "_";
+
+    public static final String LEFT_PARENTHESIS = "(";
+
+    public static final String RIGHT_PARENTHESIS = ")";
+
+    public static final String LINE_BREAK = "\n";
+
+    public static final String TAB = "\t";
+
+    public static final String AT = "@";
+
+    public static final String QUESTION_MARK = "?";
+
+    public static final String AND = "&";
+
+    public static final String EMPTY = "";
 }
