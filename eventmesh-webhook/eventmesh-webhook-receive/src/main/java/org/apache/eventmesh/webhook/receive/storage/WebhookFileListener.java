@@ -71,9 +71,8 @@ public class WebhookFileListener {
     /**
      * Read the directory and register the listener
      *
-     * @throws FileNotFoundException
      */
-    public void filePatternInit() throws FileNotFoundException {
+    public void filePatternInit()  {
         File webHookFileDir = new File(filePath);
         if (!webHookFileDir.exists()) {
             webHookFileDir.mkdirs();
