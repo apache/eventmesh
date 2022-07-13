@@ -18,7 +18,6 @@
 package org.apache.eventmesh.connector.redis.config;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.PropertiesUtils;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +27,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
 import java.util.Properties;
 
 public class ConfigurationWrapper {
@@ -43,9 +41,7 @@ public class ConfigurationWrapper {
 
     public static String getProperty(String key) {
         return StringUtils.isEmpty(key)
-            ? null :
-            Optional.ofNullable(ConfigurationContextUtil.getProp(key))
-                .orElse(properties.getProperty(key));
+            ? null : properties.getProperty(key, null);
     }
 
     public static Properties getPropertiesByPrefix(String prefix) {
@@ -53,8 +49,7 @@ public class ConfigurationWrapper {
             return null;
         }
         Properties to = new Properties();
-        PropertiesUtils.getPropertiesByPrefix(properties, to, prefix);
-        return ConfigurationContextUtil.getPropertiesByPrefix(prefix, to);
+        return PropertiesUtils.getPropertiesByPrefix(properties, to, prefix);
     }
 
     private static void loadProperties() {
