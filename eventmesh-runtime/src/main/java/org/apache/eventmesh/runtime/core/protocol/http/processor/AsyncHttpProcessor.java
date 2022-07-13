@@ -25,7 +25,7 @@ import io.netty.handler.codec.http.HttpResponse;
 /**
  * aysn http processor
  */
-public interface AsynHttpProcessor extends HttpProcessor {
+public interface AsyncHttpProcessor extends HttpProcessor {
 
     public default HttpResponse handler(HttpRequest httpRequest) {
         return null;
