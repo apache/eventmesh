@@ -79,11 +79,19 @@ public class TcpMessageProtocolResolver {
                 .withData(content.getBytes(StandardCharsets.UTF_8));
 
         for (String propKey : header.getProperties().keySet()) {
-            cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
+            try {
+                cloudEventBuilder.withExtension(propKey, header.getProperty(propKey).toString());
+            } catch (Exception e) {
+                throw new ProtocolHandleException(String.format("Abnormal propKey: %s", propKey), e);
+            }
         }
 
         for (String propKey : message.getProperties().keySet()) {
-            cloudEventBuilder.withExtension(propKey, message.getProperties().get(propKey));
+            try {
+                cloudEventBuilder.withExtension(propKey, message.getProperties().get(propKey));
+            } catch (Exception e) {
+                throw new ProtocolHandleException(String.format("Abnormal propKey: %s", propKey), e);
+            }
         }
 
         return cloudEventBuilder.build();
