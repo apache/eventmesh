@@ -106,6 +106,7 @@ public class HandlerService {
         ProcessorWrapper processorWrapper = getProcessorWrapper(httpRequest);
         if (Objects.isNull(processorWrapper)) {
             this.sendResponse(ctx, HttpResponseUtils.createNotFound());
+            return;
         }
         try {
             HandlerSpecific handlerSpecific = new HandlerSpecific();
