@@ -23,14 +23,14 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.producer.Producer;
-import org.apache.eventmesh.connector.dledger.config.DLedgerClientConfiguration;
+import org.apache.eventmesh.connector.dledger.CloudEventMessage;
 import org.apache.eventmesh.connector.dledger.DLedgerClientFactory;
 import org.apache.eventmesh.connector.dledger.DLedgerClientPool;
+import org.apache.eventmesh.connector.dledger.DLedgerMessageIndexStore;
+import org.apache.eventmesh.connector.dledger.config.DLedgerClientConfiguration;
 import org.apache.eventmesh.connector.dledger.exception.DLedgerConnectorException;
 
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.assertj.core.util.Preconditions;
@@ -46,8 +46,8 @@ public class DLedgerProducer implements Producer {
     private static final Logger LOGGER = LoggerFactory.getLogger(DLedgerProducer.class);
 
     private DLedgerClientPool clientPool;
+    private DLedgerMessageIndexStore messageIndexStore;
     private final AtomicBoolean started = new AtomicBoolean(false);
-    private final ConcurrentMap<String, Long> messageTopicAndIndexMap = new ConcurrentHashMap<>();
 
     @Override
     public void init(Properties properties) throws Exception {
@@ -56,9 +56,11 @@ public class DLedgerProducer implements Producer {
         String group = properties.getProperty("producerGroup", "default");
         String peers = clientConfiguration.getPeers();
         int poolSize = clientConfiguration.getClientPoolSize();
+        int queueSize = clientConfiguration.getQueueSize();
 
         DLedgerClientFactory factory = new DLedgerClientFactory(group, peers);
         clientPool = DLedgerClientPool.getInstance(factory, poolSize);
+        messageIndexStore = DLedgerMessageIndexStore.getInstance(queueSize);
     }
 
     @Override
@@ -92,9 +94,10 @@ public class DLedgerProducer implements Producer {
         Preconditions.checkNotNull(cloudEvent);
         Preconditions.checkNotNull(sendCallback);
 
+        CloudEventMessage message = new CloudEventMessage(cloudEvent.getSubject(), cloudEvent);
         try {
-            SendResult sendResult = clientPool.append(cloudEvent.getSubject(), cloudEvent.getData().toBytes());
-            messageTopicAndIndexMap.putIfAbsent(sendResult.getTopic(), Long.valueOf(sendResult.getMessageId()));
+            SendResult sendResult = clientPool.append(message.getTopic(), CloudEventMessage.toByteArray(message));
+            messageIndexStore.put(sendResult.getTopic(), Long.parseLong(sendResult.getMessageId()));
             sendCallback.onSuccess(sendResult);
         } catch (Exception ex) {
             OnExceptionContext onExceptionContext = OnExceptionContext.builder()
@@ -110,7 +113,7 @@ public class DLedgerProducer implements Producer {
     public void sendOneway(CloudEvent cloudEvent) {
         try {
             SendResult sendResult = clientPool.append(cloudEvent.getSubject(), cloudEvent.getData().toBytes());
-            messageTopicAndIndexMap.putIfAbsent(sendResult.getTopic(), Long.valueOf(sendResult.getMessageId()));
+            messageIndexStore.put(sendResult.getTopic(), Long.parseLong(sendResult.getMessageId()));
         } catch (Exception e) {
             throw new DLedgerConnectorException(e);
         }
@@ -119,6 +122,7 @@ public class DLedgerProducer implements Producer {
     @Override
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
         // TODO request asynchronously, see RocketMQ Connector implementation
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -129,7 +133,7 @@ public class DLedgerProducer implements Producer {
 
     @Override
     public void checkTopicExist(String topic) throws Exception {
-        boolean exist = messageTopicAndIndexMap.containsKey(topic);
+        boolean exist = messageIndexStore.contain(topic);
         if (!exist) {
             throw new DLedgerConnectorException(String.format("topic: %s is not exist.", topic));
         }
@@ -137,6 +141,6 @@ public class DLedgerProducer implements Producer {
 
     @Override
     public void setExtFields() {
-
+        throw new UnsupportedOperationException();
     }
 }
