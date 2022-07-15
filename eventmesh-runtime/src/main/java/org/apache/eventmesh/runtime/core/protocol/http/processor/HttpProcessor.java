@@ -20,9 +20,12 @@ package org.apache.eventmesh.runtime.core.protocol.http.processor;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
+/**
+ * http processor
+ */
 public interface HttpProcessor {
-    String[] paths();
 
-    HttpResponse handler(HttpRequest httpRequest);
+    public String[] paths();
 
+    public HttpResponse handler(HttpRequest httpRequest);
 }

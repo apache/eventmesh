@@ -19,8 +19,6 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
 import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManage;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -35,9 +33,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+@SuppressWarnings("restriction")
 public class QueryWebHookConfigByManufacturerHandler implements HttpHandler {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private WebHookConfigOperation operation;
+
+    public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation) {
+        this.operation = operation;
+    }
+
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -51,9 +57,7 @@ public class QueryWebHookConfigByManufacturerHandler implements HttpHandler {
         Integer pageNum = Integer.parseInt(node.get("pageNum").toString());
         Integer pageSize = Integer.parseInt(node.get("pageSize").toString());
 
-        AdminWebHookConfigOperationManage manage = new AdminWebHookConfigOperationManage();
         try (OutputStream out = httpExchange.getResponseBody()) {
-            WebHookConfigOperation operation = manage.getHookConfigOperationManage();
             List<WebHookConfig> result = operation.queryWebHookConfigByManufacturer(webHookConfig, pageNum, pageSize); // operating result
             out.write(JsonUtils.toJson(result).getBytes());
         } catch (Exception e) {

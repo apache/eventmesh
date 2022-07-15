@@ -15,23 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.webhook.api;
+package org.apache.eventmesh.common.protocol.http;
 
-import java.util.List;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 
-/**
- * WebHookConfigOperation
- */
-public interface WebHookConfigOperation {
+import lombok.Builder;
+import lombok.Data;
 
-    public Integer insertWebHookConfig(WebHookConfig webHookConfig);
 
-    public Integer updateWebHookConfig(WebHookConfig webHookConfig);
+@Data
+@Builder
+public class WebhookProtocolTransportObject implements ProtocolTransportObject {
 
-    public Integer deleteWebHookConfig(WebHookConfig webHookConfig);
+    private static final long serialVersionUID = -7247618154228090320L;
 
-    public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig);
+    private String cloudEventId;
 
-    public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
-                                                                Integer pageSize);
+    private String eventType;
+
+    private String cloudEventName;
+
+    private String cloudEventSource;
+
+    private String dataContentType;
+
+    private byte[] body;
 }
