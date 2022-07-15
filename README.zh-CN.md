@@ -16,7 +16,7 @@
 [📦 文档 (英文)](https://eventmesh.apache.org/docs/introduction) |
 [📔 例子](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) |
 [⚙️ 路线图](https://eventmesh.apache.org/docs/roadmap) |
-[🌐 简体中文](README.zh-CN.md)
+[🌐 英文版](README.md)
 </div>
 
 # Apache EventMesh (Incubating)
@@ -42,8 +42,9 @@
 **Apache EventMesh (Incubating)** 由多个组件组成，这些组件集成了不同的中间件和消息传输协议，以增强应用程序运行时的功能。
 
 - **eventmesh-runtime**: 在生产者和消费者之间传输事件的中间件，它支持云原生应用程序和微服务。
-- **eventmesh-sdk-java**: 支持 HTTP、HTTPS、TCP 和 [gRPC](https://grpc.io) 协议的 Java SDK。
-- **eventmesh-connector-plugin**: 连接 [Apache Kafka](https://kafka.apache.org)、[Apache RocketMQ](https://rocketmq.apache.org)、[Apache Pulsar](https://pulsar.apache.org/)、[DeFiBus](https://github.com/webankfintech/DeFiBus) 和 [Redis](https://redis.io) 等中间件的插件集合。
+- **eventmesh-sdk-java**: 支持 HTTP、TCP 和 [gRPC](https://grpc.io) 协议的 Java SDK。
+- **eventmesh-sdk-go**: 支持 HTTP、TCP 和 [gRPC](https://grpc.io) 协议的 Golang SDK。
+- **eventmesh-connector-plugin**: 连接 [Apache RocketMQ](https://rocketmq.apache.org)、 [Apache Kafka](https://kafka.apache.org)、[Apache Pulsar](https://pulsar.apache.org/) 和 [Redis](https://redis.io) 等中间件的插件集合。
 - **eventmesh-registry-plugin**: 集成服务注册表的插件集合，如 [Nacos](https://nacos.io) 和 [etcd](https://etcd.io)。
 
 - **eventmesh-security-plugin**: 实现安全机制的插件的集合，如 ACL（访问控制列表）、认证和授权。
@@ -56,12 +57,23 @@
 
 你可以在这个页面 [release page](https://eventmesh.apache.org/download) 获取所有的历史发布版本。
 
-## 编译
-你可以通过以下命令来编译EventMesh：
-```shell
-./gradlew clean dist
-```
-你可以在dist目录下找到生成的二进制jar包。
+## 快速开始指引
+
+[Step 1: Deploy eventmesh-store](docs/zh/instruction/01-store.md)
+
+[Step 2: Start eventmesh-runtime](docs/zh/instruction/01-store.md)
+
+[Step 3: Run our demos](docs/zh/instruction/01-store.md)
+
+除此之外，我们还提供了 Docker 版本的快速开始指引，方便您借助 Docker 来初探我们的项目:
+
+[Step 1: Deploy eventmesh-store using docker](docs/zh/instruction/01-store-with-docker.md)
+
+[Step 2: Start eventmesh-runtime using docker](docs/zh/instruction/01-store-with-docker.md)
+
+[Step 3: Run our demos](docs/zh/instruction/01-store.md)
+
+
 
 ## 贡献这个项目
 
