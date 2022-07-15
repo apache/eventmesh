@@ -19,6 +19,7 @@ def grpcVersion = '1.15.0'
 
 dependencies {
     api project(":eventmesh-common")
+    implementation project(":eventmesh-spi")
 
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.fasterxml.jackson.core:jackson-core"
@@ -37,6 +38,12 @@ dependencies {
     api "io.cloudevents:cloudevents-core"
     api "io.cloudevents:cloudevents-json-jackson"
     api "io.openmessaging:openmessaging-api"
+
+    //nameResolver
+    compileOnly 'org.apache.zookeeper:zookeeper'
+    compileOnly 'org.apache.curator:curator-client'
+    compileOnly 'org.apache.curator:curator-framework'
+    compileOnly 'org.apache.curator:curator-recipes'
 
     testImplementation project(":eventmesh-common")
 
