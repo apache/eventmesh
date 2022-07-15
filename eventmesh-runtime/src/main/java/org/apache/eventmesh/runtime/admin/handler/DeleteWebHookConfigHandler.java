@@ -19,8 +19,6 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
 import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
-import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManage;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -33,9 +31,17 @@ import org.slf4j.LoggerFactory;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
+@SuppressWarnings("restriction")
 public class DeleteWebHookConfigHandler implements HttpHandler {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private WebHookConfigOperation operation;
+
+    public DeleteWebHookConfigHandler(WebHookConfigOperation operation) {
+        this.operation = operation;
+    }
+
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -45,9 +51,8 @@ public class DeleteWebHookConfigHandler implements HttpHandler {
         String requestBody = NetUtils.parsePostBody(httpExchange);
         WebHookConfig webHookConfig = JsonUtils.toObject(requestBody, WebHookConfig.class);
 
-        AdminWebHookConfigOperationManage manage = new AdminWebHookConfigOperationManage();
         try (OutputStream out = httpExchange.getResponseBody()) {
-            WebHookConfigOperation operation = manage.getHookConfigOperationManage();
+
             Integer code = operation.deleteWebHookConfig(webHookConfig); // operating result
             String result = 1 == code ? "deleteWebHookConfig Succeed!" : "deleteWebHookConfig Failed!";
             out.write(result.getBytes());

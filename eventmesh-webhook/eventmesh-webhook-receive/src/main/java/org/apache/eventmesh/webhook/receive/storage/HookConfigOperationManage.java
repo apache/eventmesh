@@ -21,9 +21,11 @@ import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.DATA_ID_
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.GROUP_PREFIX;
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.TIMEOUT_MS;
 
+import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
+import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -58,23 +60,21 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     /**
      * Initialize according to operationMode
      *
-     * @param operationMode file/nacos...
-     * @param config        Parameters required to initialize the behavior
+     * @param configurationWrapper 
      */
-    public HookConfigOperationManage(String operationMode, Properties config) throws FileNotFoundException, NacosException {
+    public HookConfigOperationManage(ConfigurationWrapper configurationWrapper) throws FileNotFoundException, NacosException {
 
-        this.operationMode = operationMode;
+        this.operationMode = configurationWrapper.getProp(WebHookOperationConstant.OPERATION_MODE_CONFIG_NAME);
 
         if ("file".equals(operationMode)) {
-            new WebhookFileListener(config.getProperty("eventMesh.webHook.fileMode.filePath"), cacheWebHookConfig);
+            new WebhookFileListener(configurationWrapper.getProp("eventMesh.webHook.fileMode.filePath"), cacheWebHookConfig);
         } else if ("nacos".equals(operationMode)) {
-            nacosModeInit(config);
+            nacosModeInit(configurationWrapper.getPropertiesByConfig("eventMesh.webHook.nacosMode", true));
         }
     }
 
     private void nacosModeInit(Properties config) throws NacosException {
-        String serverAddr = config.getProperty("eventMesh.webHook.nacos.server-addr");
-        nacosConfigService = ConfigFactory.createConfigService(serverAddr);
+        nacosConfigService = ConfigFactory.createConfigService(config);
     }
 
     @Override

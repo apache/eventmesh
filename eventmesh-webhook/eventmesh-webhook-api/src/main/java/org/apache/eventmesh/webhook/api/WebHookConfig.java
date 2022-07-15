@@ -22,6 +22,9 @@ import lombok.Data;
 @Data
 public class WebHookConfig {
 
+    /**
+     * manufacturer callback path
+     */
     private String callbackPath;
 
     /**
@@ -37,7 +40,7 @@ public class WebHookConfig {
     /**
      * http header content type
      */
-    private String contentType;
+    private String contentType = "application/json";
 
     /**
      * description of this WebHookConfig
@@ -78,7 +81,7 @@ public class WebHookConfig {
      * roll out data format -> CloudEvent serialization mode
      * If HTTP protocol is used, the request header contentType needs to be marked
      */
-    private String dataContentType;
+    private String dataContentType = "application/json";
 
     /**
      * source of event
@@ -88,5 +91,5 @@ public class WebHookConfig {
     /**
      * id of cloudEvent ,like uuid/manufacturerEventId
      */
-    private String cloudEventIdGenerateMode;
+    private String cloudEventIdGenerateMode = "manufacturerEventId";
 }
