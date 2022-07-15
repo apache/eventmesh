@@ -47,7 +47,7 @@ public class ProducerGroupConf {
             return false;
         }
         ProducerGroupConf that = (ProducerGroupConf) o;
-        return groupName == that.groupName;
+        return groupName.equals(that.groupName);
     }
 
     @Override
