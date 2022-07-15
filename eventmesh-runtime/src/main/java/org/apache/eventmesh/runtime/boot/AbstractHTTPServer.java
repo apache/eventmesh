@@ -28,6 +28,7 @@ import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.runtime.common.Pair;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.trace.AttributeKeys;
@@ -41,6 +42,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -102,6 +104,8 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
+    protected HandlerService handlerService;
+
     public HTTPMetricsServer metrics;
 
     public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
@@ -162,7 +166,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
                 httpLogger.warn("send response to [{}] fail, will close this channel",
-                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                        RemotingHelper.parseChannelRemoteAddr(f.channel()));
                 f.channel().close();
             }
         });
@@ -301,6 +305,12 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) {
+
+            if (Objects.nonNull(handlerService) && handlerService.isProcessorWrapper(httpRequest)) {
+                handlerService.handler(ctx, httpRequest);
+                return;
+            }
+
             Context context = null;
             Span span = null;
             if (useTrace) {

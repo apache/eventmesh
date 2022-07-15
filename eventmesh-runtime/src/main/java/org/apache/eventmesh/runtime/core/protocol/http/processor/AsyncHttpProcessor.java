@@ -15,23 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.webhook.api;
+package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
-import java.util.List;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService.HandlerSpecific;
+
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
 
 /**
- * WebHookConfigOperation
+ * aysnc http processor
  */
-public interface WebHookConfigOperation {
+public interface AsyncHttpProcessor extends HttpProcessor {
 
-    public Integer insertWebHookConfig(WebHookConfig webHookConfig);
+    public default HttpResponse handler(HttpRequest httpRequest) {
+        return null;
+    }
 
-    public Integer updateWebHookConfig(WebHookConfig webHookConfig);
-
-    public Integer deleteWebHookConfig(WebHookConfig webHookConfig);
-
-    public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig);
-
-    public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
-                                                                Integer pageSize);
+    public void handler(HandlerSpecific handlerSpecific, HttpRequest httpRequest);
 }

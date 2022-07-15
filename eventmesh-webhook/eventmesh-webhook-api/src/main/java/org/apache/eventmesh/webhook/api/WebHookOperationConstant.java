@@ -19,10 +19,6 @@ package org.apache.eventmesh.webhook.api;
 
 import java.io.File;
 
-/**
- * Webhook constant class
- * @author Jelly Mai
- */
 public class WebHookOperationConstant {
 
     public static final String FILE_SEPARATOR = File.separator;
@@ -31,12 +27,25 @@ public class WebHookOperationConstant {
 
     public static final String GROUP_PREFIX = "webhook_";
 
-    public static final String CALLBACK_PATH_PREFIX = "/webhook" ;
+    public static final String CALLBACK_PATH_PREFIX = "/webhook";
 
     public static final String DATA_ID_EXTENSION = ".json";
 
     public static final String MANUFACTURERS_DATA_ID = "manufacturers" + DATA_ID_EXTENSION;
 
     public static final long TIMEOUT_MS = 3 * 1000L;
+
+    public static final String ADMIN_START_CONFIG_NAME = "eventMesh.webHook.admin.start";
+
+    public static final String OPERATION_MODE_CONFIG_NAME = "eventMesh.webHook.operationMode";
+
+    public static final String getFilePath(String filePath) {
+        if (filePath.startsWith("#{eventMeshHome}")) {
+            String configPath = System.getProperty("confPath", System.getenv("confPath"));
+           
+            filePath = filePath.replace("#{eventMeshHome}", configPath.substring(0,  configPath.lastIndexOf('/')));
+        }
+        return filePath;
+    }
 
 }

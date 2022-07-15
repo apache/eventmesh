@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.webhook.admin;
 
+import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
+import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -37,20 +37,30 @@ public class AdminWebHookConfigOperationManage {
 
     private static final Map<String, Class<? extends WebHookConfigOperation>> map = new HashMap<>();
 
-    // todo 单例懒加载
     static {
         map.put("file", FileWebHookConfigOperation.class);
         map.put("nacos", NacosWebHookConfigOperation.class);
     }
 
-    /**
-     * Create it in ClientManageController
-     *
-     * @return WebHookConfigOperation implementation
-     */
-    public WebHookConfigOperation getHookConfigOperationManage() throws Exception {
-        Properties configProperties = readConfigFromConfigFile();
-        String operationMode = configProperties.getProperty("eventMesh.webHook.operationMode");
+    private ConfigurationWrapper configurationWrapper;
+
+    private WebHookConfigOperation webHookConfigOperation;
+
+    public void setConfigurationWrapper(ConfigurationWrapper configurationWrapper) {
+        this.configurationWrapper = configurationWrapper;
+    }
+
+    public WebHookConfigOperation getWebHookConfigOperation() {
+        return webHookConfigOperation;
+    }
+
+    public void init() throws Exception {
+
+        if (!configurationWrapper.getBoolProp(WebHookOperationConstant.ADMIN_START_CONFIG_NAME, false)) {
+            return;
+        }
+
+        String operationMode = configurationWrapper.getProp(WebHookOperationConstant.OPERATION_MODE_CONFIG_NAME);
 
         if (!map.containsKey(operationMode)) {
             throw new IllegalStateException("operationMode is not supported.");
@@ -59,24 +69,12 @@ public class AdminWebHookConfigOperationManage {
         Constructor<? extends WebHookConfigOperation> constructor = map.get(operationMode).getDeclaredConstructor(Properties.class);
         constructor.setAccessible(true);
         try {
-            return constructor.newInstance(configProperties);
+            Properties properties = configurationWrapper.getPropertiesByConfig("eventMesh.webHook." + operationMode + "Mode", true);
+            logger.info("operationMode is {}  properties is {} ", operationMode, properties);
+            this.webHookConfigOperation = constructor.newInstance(properties);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             logger.error("can't find WebHookConfigOperation implementation");
             throw new Exception("can't find WebHookConfigOperation implementation");
         }
     }
-
-    /**
-     * Read webHook related configurations from the global configuration file
-     */
-    public Properties readConfigFromConfigFile() throws IOException {
-        Properties configProperties;
-        try (final InputStream inputStream =
-                 WebHookConfigOperation.class.getClassLoader().getResourceAsStream("eventmesh.properties")) {
-            configProperties = new Properties();
-            configProperties.load(inputStream);
-        }
-        return configProperties;
-    }
-
 }

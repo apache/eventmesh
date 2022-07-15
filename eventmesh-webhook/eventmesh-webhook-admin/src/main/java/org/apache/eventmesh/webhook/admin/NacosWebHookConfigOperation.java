@@ -16,182 +16,190 @@ package org.apache.eventmesh.webhook.admin;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.alibaba.nacos.api.PropertyKeyConst;
+
+import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.DATA_ID_EXTENSION;
+import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.GROUP_PREFIX;
+import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.MANUFACTURERS_DATA_ID;
+import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.TIMEOUT_MS;
+
+
+
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.webhook.api.ManufacturerObject;
+import org.apache.eventmesh.webhook.api.WebHookConfig;
+import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
+import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alibaba.nacos.api.config.ConfigFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.shaded.io.grpc.netty.shaded.io.netty.util.internal.StringUtil;
-import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.webhook.api.ManufacturerObject;
-import org.apache.eventmesh.webhook.api.WebHookConfig;
-import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.*;
 
-import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public class NacosWebHookConfigOperation implements WebHookConfigOperation {
 
-import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.*;
+    private static final Logger logger = LoggerFactory.getLogger(NacosWebHookConfigOperation.class);
 
-public class NacosWebHookConfigOperation implements WebHookConfigOperation{
+    private final ConfigService configService;
 
-	private static final Logger logger = LoggerFactory.getLogger(NacosWebHookConfigOperation.class);
 
-	private ConfigService configService;
+    public NacosWebHookConfigOperation(Properties properties) throws NacosException {
+        configService = ConfigFactory.createConfigService(properties);
 
-	private static final String NACOS_PROPERTIES_PREFIX = "eventMesh.webHook.nacosMode.";
+        String manufacturers = configService.getConfig(MANUFACTURERS_DATA_ID, "webhook", TIMEOUT_MS);
+        if (manufacturers == null) {
+            configService.publishConfig(MANUFACTURERS_DATA_ID, "webhook", JsonUtils.serialize(new ManufacturerObject()), ConfigType.JSON.getType());
+        }
 
-	public NacosWebHookConfigOperation(Properties properties) throws NacosException {
-		Properties nacosProperties = new Properties();
-		nacosProperties.put(PropertyKeyConst.SERVER_ADDR, properties.getProperty(NACOS_PROPERTIES_PREFIX + PropertyKeyConst.SERVER_ADDR));
-		nacosProperties.put(PropertyKeyConst.NAMESPACE, properties.getProperty(NACOS_PROPERTIES_PREFIX + PropertyKeyConst.NAMESPACE));
-		nacosProperties.put(PropertyKeyConst.USERNAME, properties.getProperty(NACOS_PROPERTIES_PREFIX + PropertyKeyConst.USERNAME));
-		nacosProperties.put(PropertyKeyConst.PASSWORD, properties.getProperty(NACOS_PROPERTIES_PREFIX + PropertyKeyConst.PASSWORD));
-		configService = ConfigFactory.createConfigService(nacosProperties);
+    }
 
-		String manufacturers= configService.getConfig(MANUFACTURERS_DATA_ID, "webhook", TIMEOUT_MS);
-		if (manufacturers == null) {
-			configService.publishConfig(MANUFACTURERS_DATA_ID, "webhook", JsonUtils.serialize(new ManufacturerObject()), ConfigType.JSON.getType());
-		}
+    @Override
+    public Integer insertWebHookConfig(WebHookConfig webHookConfig) {
+        if (!webHookConfig.getCallbackPath().startsWith(WebHookOperationConstant.CALLBACK_PATH_PREFIX)) {
+            logger.error("webhookConfig callback path must start with {}", WebHookOperationConstant.CALLBACK_PATH_PREFIX);
+            return 0;
+        }
+        Boolean result;
+        String manufacturerName = webHookConfig.getManufacturerName();
+        try {
+            if (configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), TIMEOUT_MS) != null) {
+                logger.error("insertWebHookConfig failed, config has existed");
+                return 0;
+            }
+            result = configService.publishConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig),
+                    JsonUtils.serialize(webHookConfig), ConfigType.JSON.getType());
+        } catch (NacosException e) {
+            logger.error("insertWebHookConfig failed", e);
+            return 0;
+        }
+        if (result) {
+            // update manufacturer config
+            try {
+                ManufacturerObject manufacturerObject = getManufacturersInfo();
+                manufacturerObject.addManufacturer(manufacturerName);
+                manufacturerObject.getManufacturerEvents(manufacturerName).add(getWebHookConfigDataId(webHookConfig));
+                configService.publishConfig(MANUFACTURERS_DATA_ID, "webhook",
+                        JsonUtils.serialize(manufacturerObject), ConfigType.JSON.getType());
+            } catch (NacosException e) {
+                logger.error("update manufacturersInfo error", e);
+                //rollback insert
+                try {
+                    configService.removeConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig));
+                } catch (NacosException ex) {
+                    logger.error("rollback insertWebHookConfig failed", e);
+                }
+            }
+        }
+        return result ? 1 : 0;
+    }
 
-	}
+    @Override
+    public Integer updateWebHookConfig(WebHookConfig webHookConfig) {
+        Boolean result = false;
+        try {
+            if (configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), TIMEOUT_MS) == null) {
+                logger.error("updateWebHookConfig failed, config is not existed");
+                return 0;
+            }
+            result = configService.publishConfig(getWebHookConfigDataId(webHookConfig),
+                    getManuGroupId(webHookConfig), JsonUtils.serialize(webHookConfig), ConfigType.JSON.getType());
+        } catch (NacosException e) {
+            logger.error("updateWebHookConfig failed", e);
+        }
+        return result ? 1 : 0;
+    }
 
-	@Override
-	public Integer insertWebHookConfig(WebHookConfig webHookConfig) {
-		if (!webHookConfig.getCallbackPath().startsWith(WebHookOperationConstant.CALLBACK_PATH_PREFIX)) {
-			logger.error("webhookConfig callback path must start with {}", WebHookOperationConstant.CALLBACK_PATH_PREFIX);
-			return 0;
-		}
-		Boolean result;
-		String manufacturerName = webHookConfig.getManufacturerName();
-		try {
-			if (configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), TIMEOUT_MS) != null) {
-				logger.error("insertWebHookConfig failed, config has existed");
-				return 0;
-			}
-			result = configService.publishConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), JsonUtils.serialize(webHookConfig), ConfigType.JSON.getType());
-		} catch (NacosException e) {
-			logger.error("insertWebHookConfig failed", e);
-			return 0;
-		}
-		if (result) {
-			// update manufacturer config
-			try {
-				ManufacturerObject manufacturerObject = getManufacturersInfo();
-				manufacturerObject.addManufacturer(manufacturerName);
-				manufacturerObject.getManufacturerEvents(manufacturerName).add(getWebHookConfigDataId(webHookConfig));
-				configService.publishConfig(MANUFACTURERS_DATA_ID, "webhook", JsonUtils.serialize(manufacturerObject), ConfigType.JSON.getType());
-			} catch (NacosException e) {
-				logger.error("update manufacturersInfo error", e);
-				//rollback insert
-				try {
-					configService.removeConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig));
-				} catch (NacosException ex) {
-					logger.error("rollback insertWebHookConfig failed", e);
-				}
-			}
-		}
-		return result ? 1 : 0;
-	}
+    @Override
+    public Integer deleteWebHookConfig(WebHookConfig webHookConfig) {
+        Boolean result = false;
+        String manufacturerName = webHookConfig.getManufacturerName();
+        try {
+            result = configService.removeConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig));
+        } catch (NacosException e) {
+            logger.error("deleteWebHookConfig failed", e);
+        }
+        if (result) {
+            try {
+                ManufacturerObject manufacturerObject = getManufacturersInfo();
+                manufacturerObject.getManufacturerEvents(manufacturerName).remove(getWebHookConfigDataId(webHookConfig));
+                configService.publishConfig(MANUFACTURERS_DATA_ID, "webhook",
+                        JsonUtils.serialize(manufacturerObject), ConfigType.JSON.getType());
+            } catch (NacosException e) {
+                logger.error("update manufacturersInfo error", e);
+            }
+        }
+        return result ? 1 : 0;
+    }
 
-	@Override
-	public Integer updateWebHookConfig(WebHookConfig webHookConfig) {
-		Boolean result = false;
-		try {
-			if (configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), TIMEOUT_MS) == null) {
-				logger.error("updateWebHookConfig failed, config is not existed");
-				return 0;
-			}
-			result = configService.publishConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), JsonUtils.serialize(webHookConfig), ConfigType.JSON.getType());
-		} catch (NacosException e) {
-			logger.error("updateWebHookConfig failed", e);
-		}
-		return result ? 1 : 0;
-	}
+    @Override
+    public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
+        try {
+            String content = configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), TIMEOUT_MS);
+            return JsonUtils.deserialize(content, WebHookConfig.class);
+        } catch (NacosException e) {
+            logger.error("queryWebHookConfigById failed", e);
+        }
+        return null;
+    }
 
-	@Override
-	public Integer deleteWebHookConfig(WebHookConfig webHookConfig) {
-		Boolean result = false;
-		String manufacturerName = webHookConfig.getManufacturerName();
-		try {
-			result = configService.removeConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig));
-		} catch (NacosException e) {
-			logger.error("deleteWebHookConfig failed", e);
-		}
-		if (result) {
-			//更新集合
-			try {
-				ManufacturerObject manufacturerObject = getManufacturersInfo();
-				manufacturerObject.getManufacturerEvents(manufacturerName).remove(getWebHookConfigDataId(webHookConfig));
-				configService.publishConfig(MANUFACTURERS_DATA_ID, "webhook", JsonUtils.serialize(manufacturerObject), ConfigType.JSON.getType());
-			} catch (NacosException e) {
-				logger.error("update manufacturersInfo error", e);
-			}
-		}
-		return result ? 1 : 0;
-	}
+    @Override
+    public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
+                                                                Integer pageSize) {
+        List<WebHookConfig> webHookConfigs = new ArrayList<>();
+        String manufacturerName = webHookConfig.getManufacturerName();
+        // get manufacturer event list
+        try {
+            ManufacturerObject manufacturerObject = getManufacturersInfo();
+            List<String> manufacturerEvents = manufacturerObject.getManufacturerEvents(manufacturerName);
+            int startIndex = (pageNum - 1) * pageSize;
+            int endIndex = pageNum * pageSize - 1;
+            if (manufacturerEvents.size() > startIndex) {
+                // nacos API is not able to get all config, so use foreach
+                for (int i = startIndex; i < endIndex && i < manufacturerEvents.size(); i++) {
+                    String content = configService.getConfig(manufacturerEvents.get(i) + DATA_ID_EXTENSION,
+                            getManuGroupId(webHookConfig), TIMEOUT_MS);
+                    webHookConfigs.add(JsonUtils.deserialize(content, WebHookConfig.class));
+                }
+            }
+        } catch (NacosException e) {
+            logger.error("queryWebHookConfigByManufacturer failed", e);
+        }
+        return webHookConfigs;
+    }
 
-	@Override
-	public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
-		try {
-			String content = configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), TIMEOUT_MS);
-			return JsonUtils.deserialize(content, WebHookConfig.class);
-		} catch (NacosException e) {
-			logger.error("queryWebHookConfigById failed", e);
-		}
-		return null;
-	}
+    /**
+     * @param webHookConfig
+     * @return
+     */
+    private String getWebHookConfigDataId(WebHookConfig webHookConfig) {
+        try {
+            // use URLEncoder.encode before, because the path may contain some speacial char like '/', which is illegal as a data id.
+            return URLEncoder.encode(webHookConfig.getCallbackPath(), "UTF-8") + DATA_ID_EXTENSION;
+        } catch (UnsupportedEncodingException e) {
+            logger.error("get webhookConfig dataId {} failed", webHookConfig.getCallbackPath(), e);
+        }
+        return webHookConfig.getCallbackPath() + DATA_ID_EXTENSION;
+    }
 
-	@Override
-	public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
-			Integer pageSize) {
-		List<WebHookConfig> webHookConfigs = new ArrayList<>();
-		String manufacturerName = webHookConfig.getManufacturerName();
-		// get manufacturer event list
-		try {
-			ManufacturerObject manufacturerObject = getManufacturersInfo();
-			List<String> manufacturerEvents = manufacturerObject.getManufacturerEvents(manufacturerName);
-			int startIndex = (pageNum-1)*pageSize, endIndex = pageNum*pageSize-1;
-			if (manufacturerEvents.size() > startIndex) {
-				// nacos API is not able to get all config, so use foreach
-				for (int i=startIndex; i<endIndex && i<manufacturerEvents.size(); i++) {
-					String content = configService.getConfig(manufacturerEvents.get(i)+ DATA_ID_EXTENSION, getManuGroupId(webHookConfig), TIMEOUT_MS);
-					webHookConfigs.add(JsonUtils.deserialize(content, WebHookConfig.class));
-				}
-			}
-		} catch (NacosException e) {
-			logger.error("queryWebHookConfigByManufacturer failed", e);
-		}
-		return webHookConfigs;
-	}
+    private String getManuGroupId(WebHookConfig webHookConfig) {
+        return GROUP_PREFIX + webHookConfig.getManufacturerName();
+    }
 
-	/**
-	 * @param webHookConfig
-	 * @return
-	 */
-	private String getWebHookConfigDataId(WebHookConfig webHookConfig) {
-		try {
-			// use URLEncoder.encode before, because the path may contain some speacial char like '/', which is illegal as a data id.
-			return URLEncoder.encode(webHookConfig.getCallbackPath(), "UTF-8") + DATA_ID_EXTENSION;
-		} catch (UnsupportedEncodingException e) {
-			logger.error("get webhookConfig dataId {} failed", webHookConfig.getCallbackPath(), e);
-		}
-		return webHookConfig.getCallbackPath() + DATA_ID_EXTENSION;
-	}
-
-	private String getManuGroupId(WebHookConfig webHookConfig) {
-		return GROUP_PREFIX + webHookConfig.getManufacturerName();
-	}
-
-	private ManufacturerObject getManufacturersInfo() throws NacosException {
-		String manufacturersContent = configService.getConfig(MANUFACTURERS_DATA_ID, "webhook", TIMEOUT_MS);
-		return StringUtil.isNullOrEmpty(manufacturersContent) ?
-				new ManufacturerObject():
-				JsonUtils.deserialize(manufacturersContent, ManufacturerObject.class);
-	}
+    private ManufacturerObject getManufacturersInfo() throws NacosException {
+        String manufacturersContent = configService.getConfig(MANUFACTURERS_DATA_ID, "webhook", TIMEOUT_MS);
+        return StringUtil.isNullOrEmpty(manufacturersContent)
+                ? new ManufacturerObject() : JsonUtils.deserialize(manufacturersContent, ManufacturerObject.class);
+    }
 
 }

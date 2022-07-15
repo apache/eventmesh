@@ -17,6 +17,15 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.runtime.trace.SpanKey;
+import org.apache.eventmesh.trace.api.TracePluginFactory;
+import org.apache.eventmesh.trace.api.TraceService;
+
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Nullable;
+
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpRequest;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
@@ -27,22 +36,24 @@ import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.runtime.trace.SpanKey;
-import org.apache.eventmesh.trace.api.TracePluginFactory;
-import org.apache.eventmesh.trace.api.TraceService;
 
-import javax.annotation.Nullable;
-import java.net.InetSocketAddress;
+import lombok.AllArgsConstructor;
+import lombok.Setter;
 
 public class HTTPTrace {
+
     private TextMapPropagator textMapPropagator;
+
     private Tracer tracer;
+
     private boolean useTrace = false;
 
-    //重载初始化方法
-    //TODO 初始化给本地ip和端口，待完成
+    @Setter
+    private String serviceAddress;
+
+    @Setter
+    private String servicePort;
+
     public void initTrace(Tracer tracer, TextMapPropagator textMapPropagator, boolean useTrace) {
         this.tracer = tracer;
         this.textMapPropagator = textMapPropagator;
@@ -59,7 +70,11 @@ public class HTTPTrace {
         }
     }
 
-    public TraceOperation getTraceOperation(HttpRequest httpRequest, InetSocketAddress inetSocket) {
+    public TraceOperation getTraceOperation(HttpRequest httpRequest, Channel chnanle) {
+        if (!useTrace) {
+            return new TraceOperation(null, null, useTrace);
+        }
+
         Context context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>() {
             @Override
             public Iterable<String> keys(HttpRequest carrier) {
@@ -71,51 +86,46 @@ public class HTTPTrace {
                 return carrier.headers().get(key);
             }
         });
-        String ip = inetSocket.getAddress().getHostAddress();
-        String port = String.valueOf(inetSocket.getPort());
-        //使用IP和PORT
-        Span span = tracer.spanBuilder(ip + ":" + port + "/" + httpRequest.method())
+
+        Span span = tracer.spanBuilder("HTTP " + httpRequest.uri() + " " + httpRequest.method().toString())
                 .setParent(context)
                 .setSpanKind(SpanKind.SERVER)
                 .startSpan();
         context = context.with(SpanKey.SERVER_KEY, span);
 
+        span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
+        span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
+        span.setAttribute(String.valueOf(SemanticAttributes.HTTP_URL), httpRequest.uri());
         return new TraceOperation(context, span, useTrace);
     }
 
     @AllArgsConstructor
-    static class TraceOperation {
+    public static class TraceOperation {
 
         private final Context context;
         private final Span span;
         private final boolean useTrace;
 
         public void endTrace() {
-            if (useTrace) {
-                // TODO 此处context.makeCurrent()是否有必要，待确认，如无必要，可以不需要context
-                try (Scope ignored = context.makeCurrent()) {
-                    span.end();
-                }
+            if (!useTrace) {
+                return;
+            }
+
+            try (Scope ignored = context.makeCurrent()) {
+                span.end();
             }
         }
 
-        public void requestInfoTrace(HttpRequest httpRequest) {
-            if (useTrace) {
-                span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
-                span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
-                span.setAttribute(String.valueOf(SemanticAttributes.HTTP_URL), httpRequest.getUri());
+        public void exceptionTrace(@Nullable Throwable ex) {
+            if (!useTrace) {
+                return;
             }
-        }
-
-        public void exceptionTrace(@Nullable Exception ex) {
-            if (useTrace) {
-                try (Scope ignored = context.makeCurrent()) {
-                    ex = ex != null ? ex : new RuntimeException("exception for trace");
-                    span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage());
-                    span.setStatus(StatusCode.ERROR, ex.getMessage());
-                    span.recordException(ex);
-                    span.end();
-                }
+            try (Scope ignored = context.makeCurrent()) {
+                ex = ex != null ? ex : new RuntimeException("exception for trace");
+                span.setAttribute(SemanticAttributes.EXCEPTION_MESSAGE, ex.getMessage());
+                span.setStatus(StatusCode.ERROR, ex.getMessage());
+                span.recordException(ex);
+                span.end();
             }
         }
     }

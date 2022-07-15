@@ -23,6 +23,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
+import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,7 +63,7 @@ public class WebhookFileListener {
     }
 
     public WebhookFileListener(String filePath, Map<String, WebHookConfig> cacheWebHookConfig) throws FileNotFoundException {
-        this.filePath = filePath;
+        this.filePath = WebHookOperationConstant.getFilePath(filePath);
         this.cacheWebHookConfig = cacheWebHookConfig;
         filePatternInit();
     }
@@ -70,13 +71,9 @@ public class WebhookFileListener {
     /**
      * Read the directory and register the listener
      *
-     * @throws FileNotFoundException
      */
-    public void filePatternInit() throws FileNotFoundException {
+    public void filePatternInit()  {
         File webHookFileDir = new File(filePath);
-        if (!webHookFileDir.isDirectory()) {
-            throw new FileNotFoundException("File path " + filePath + " is not directory");
-        }
         if (!webHookFileDir.exists()) {
             webHookFileDir.mkdirs();
         } else {
