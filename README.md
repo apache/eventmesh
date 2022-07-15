@@ -42,8 +42,9 @@
 Apache EventMesh (Incubating) consists of multiple components that integrate different middlewares and messaging protocols to enhance the functionalities of the application runtime.
 
 - **eventmesh-runtime**: The middleware that transmits events between producers and consumers, which supports cloud-native apps and microservices.
-- **eventmesh-sdk-java**: The Java SDK that supports HTTP, HTTPS, TCP, and [gRPC](https://grpc.io) protocols.
-- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache Kafka](https://kafka.apache.org), [Apache RocketMQ](https://rocketmq.apache.org), [Apache Pulsar](https://pulsar.apache.org/), [DeFiBus](https://github.com/webankfintech/DeFiBus) and [Redis](https://redis.io).
+- **eventmesh-sdk-java**: The Java SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
+- **eventmesh-sdk-go**: The Golang SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
+- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache RocketMQ](https://rocketmq.apache.org) (implemented) [Apache Kafka](https://kafka.apache.org) (in progress), [Apache Pulsar](https://pulsar.apache.org/) (in progress), and [Redis](https://redis.io) (in progress).
 - **eventmesh-registry-plugin**: The collection of plugins that integrate service registries such as [Nacos](https://nacos.io) and [etcd](https://etcd.io).
 - **eventmesh-security-plugin**: The collection of plugins that implement security mechanisms, such as ACL (access control list), authentication, and authorization.
 - **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io) and [MQTT](https://mqtt.org).
@@ -53,16 +54,22 @@ Apache EventMesh (Incubating) consists of multiple components that integrate dif
 
 Please go to the [release page](https://eventmesh.apache.org/download) to get the release of Apache EventMesh (Incubating).
 
-## Compiling
-You can use below command to compile EventMesh
-```shell
-./gradlew clean dist
-```
-All distribution are under dist/
-
 ## Quick start
+Here are the guidelines:
 
-[Http pub/sub](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/sdk-java/02-http.md#using-curl-command)
+[Step 1: Deploy eventmesh-store](docs/zh/instruction/01-store.md)
+
+[Step 2: Start eventmesh-runtime](docs/zh/instruction/01-store.md)
+
+[Step 3: Run our demos](docs/zh/instruction/01-store.md)
+
+Besides, we also provide the docker-version guidelines for you if you prefer Docker:
+
+[Step 1: Deploy eventmesh-store using docker](docs/zh/instruction/01-store-with-docker.md)
+
+[Step 2: Start eventmesh-runtime using docker](docs/zh/instruction/01-store-with-docker.md)
+
+[Step 3: Run our demos](docs/zh/instruction/01-store.md)
 
 ## Contributing
 
