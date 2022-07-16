@@ -45,7 +45,7 @@ public class KnativeProducerImplTest {
         producer.init(properties);
 
         // Set CloudEvent message data:
-        String s = "Hello Knative from EventMeshfada!";
+        String s = "Hello Knative from EventMesh!";
 
         // Send CloudEvent message to cloudevents-player:
         producer.sendOneway(KnativeMessageFactory.createWriter(s));
