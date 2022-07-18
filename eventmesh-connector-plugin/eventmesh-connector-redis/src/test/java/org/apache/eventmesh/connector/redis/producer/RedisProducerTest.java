@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.redis.producer;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -36,7 +35,7 @@ import org.junit.Test;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-public class RedisProducerTest extends AbstractRedisServer {
+public class RedisProducerTest {
 
     private RedisProducer redisProducer;
 

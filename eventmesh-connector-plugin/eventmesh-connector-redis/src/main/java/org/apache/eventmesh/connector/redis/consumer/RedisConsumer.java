@@ -22,12 +22,10 @@ import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.api.consumer.Consumer;
-import org.apache.eventmesh.connector.redis.client.RedissonClient;
+import org.apache.eventmesh.connector.redis.connector.RedisPubSubConnector;
 
 import java.util.List;
 import java.util.Properties;
-
-import org.redisson.Redisson;
 import org.redisson.api.listener.MessageListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,46 +34,29 @@ import io.cloudevents.CloudEvent;
 
 import com.google.common.base.Preconditions;
 
-public class RedisConsumer implements Consumer {
+public class RedisConsumer extends RedisPubSubConnector implements Consumer {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisConsumer.class);
 
-    private Redisson redisson;
-
     private EventMeshMessageListener messageListener;
 
-    private volatile boolean started = false;
 
     @Override
-    public boolean isStarted() {
-        return started;
-    }
-
-    @Override
-    public boolean isClosed() {
-        return !isStarted();
-    }
-
-    @Override
-    public synchronized void start() {
-        if (!started) {
-            started = true;
-        }
-    }
-
-    @Override
-    public synchronized void shutdown() {
-        if (started) {
-            redisson = null;
-            messageListener = null;
-            started = false;
-        }
-    }
-
-    @Override
-    public void init(Properties keyValue) {
+    public void init(Properties properties) {
         // Currently, 'keyValue' does not pass useful configuration information.
-        redisson = RedissonClient.INSTANCE;
+        super.init(properties);
+    }
+
+    @Override
+    public void shutdown() {
+        if (isStarted()) {
+            try {
+                redisson = null;
+                messageListener = null;
+            } finally {
+                this.started.compareAndSet(true, false);
+            }
+        }
     }
 
     @Override

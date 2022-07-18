@@ -17,15 +17,19 @@
 
 package org.apache.eventmesh.connector.redis.client;
 
-import org.apache.eventmesh.connector.redis.AbstractRedisServer;
+import org.apache.eventmesh.connector.redis.producer.RedisProducer;
+
+import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-public class RedissonClientTest extends AbstractRedisServer {
+public class RedissonClientTest {
 
     @Test
     public void testInstance() {
-        Assert.assertNotNull(RedissonClient.INSTANCE);
+        RedisProducer redisProducer = new RedisProducer();
+        redisProducer.init(new Properties());
+        Assert.assertNotNull(redisProducer.getRedisson());
     }
 }

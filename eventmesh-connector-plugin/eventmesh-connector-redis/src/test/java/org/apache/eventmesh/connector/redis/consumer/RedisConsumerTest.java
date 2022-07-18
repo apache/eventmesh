@@ -18,12 +18,12 @@
 package org.apache.eventmesh.connector.redis.consumer;
 
 import org.apache.eventmesh.api.EventMeshAction;
-import org.apache.eventmesh.connector.redis.AbstractRedisServer;
-import org.apache.eventmesh.connector.redis.client.RedissonClient;
+import org.apache.eventmesh.connector.redis.producer.RedisProducer;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -31,17 +31,21 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.redisson.api.RTopic;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-public class RedisConsumerTest extends AbstractRedisServer {
+public class RedisConsumerTest {
 
     private RedisConsumer redisConsumer;
+    private RedisProducer redisProducer;
 
     @Before
     public void setup() {
+        redisProducer = new RedisProducer();
+        redisProducer.init(new Properties());
+        redisProducer.start();
+
         redisConsumer = new RedisConsumer();
         redisConsumer.init(new Properties());
         redisConsumer.start();
@@ -49,6 +53,8 @@ public class RedisConsumerTest extends AbstractRedisServer {
 
     @After
     public void shutdown() {
+        redisProducer.shutdown();
+
         redisConsumer.shutdown();
     }
 
@@ -68,19 +74,17 @@ public class RedisConsumerTest extends AbstractRedisServer {
 
         redisConsumer.subscribe(topic);
 
-        RTopic redissonTopic = RedissonClient.INSTANCE.getTopic(topic);
         for (int i = 0; i < expectedCount; i++) {
             CloudEvent cloudEvent = CloudEventBuilder.v1()
-                .withId(String.valueOf(i))
+                .withId(UUID.randomUUID().toString())
                 .withTime(OffsetDateTime.now())
                 .withSource(URI.create("testsource"))
-                .withSubject("topic")
+                .withSubject(topic)
                 .withType(String.class.getCanonicalName())
                 .withDataContentType("text/plain")
                 .withData("data".getBytes())
                 .build();
-
-            redissonTopic.publish(cloudEvent);
+            redisProducer.sendOneway(cloudEvent);
         }
 
         Assert.assertTrue(downLatch.await(5, TimeUnit.MINUTES));

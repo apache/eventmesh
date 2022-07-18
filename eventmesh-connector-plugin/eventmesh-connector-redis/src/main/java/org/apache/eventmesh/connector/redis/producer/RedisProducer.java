@@ -23,55 +23,19 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.producer.Producer;
-import org.apache.eventmesh.connector.redis.client.RedissonClient;
+import org.apache.eventmesh.connector.redis.connector.RedisPubSubConnector;
 
 import java.util.Properties;
-
-import org.redisson.Redisson;
 import org.redisson.api.RTopic;
-
 import io.cloudevents.CloudEvent;
-
 import com.google.common.base.Preconditions;
 
-public class RedisProducer implements Producer {
-
-    private Redisson redisson;
-
-    private volatile boolean started = false;
-
-    @Override
-    public boolean isStarted() {
-        return started;
-    }
-
-    @Override
-    public boolean isClosed() {
-        return !isStarted();
-    }
-
-    @Override
-    public synchronized void start() {
-        if (!started) {
-            started = true;
-        }
-    }
-
-    @Override
-    public synchronized void shutdown() {
-        if (started) {
-            try {
-                redisson = null;
-            } finally {
-                started = false;
-            }
-        }
-    }
+public class RedisProducer extends RedisPubSubConnector implements Producer {
 
     @Override
     public void init(Properties properties) {
         // Currently, 'properties' does not pass useful configuration information.
-        redisson = RedissonClient.INSTANCE;
+        super.init(properties);
     }
 
     @Override
