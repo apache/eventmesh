@@ -38,9 +38,9 @@ public class OpenMessageTCPClient implements EventMeshTCPClient<Message> {
     private final EventMeshTCPPubClient<Message> eventMeshTCPPubClient;
     private final EventMeshTCPSubClient<Message> eventMeshTCPSubClient;
 
-    public OpenMessageTCPClient(EventMeshTCPClientConfig eventMeshTCPClientConfig) {
-        eventMeshTCPPubClient = new OpenMessageTCPPubClient(eventMeshTCPClientConfig);
-        eventMeshTCPSubClient = new OpenMessageTCPSubClient(eventMeshTCPClientConfig);
+    public OpenMessageTCPClient(EventMeshTCPClientConfig eventMeshTcpClientConfig) {
+        eventMeshTCPPubClient = new OpenMessageTCPPubClient(eventMeshTcpClientConfig);
+        eventMeshTCPSubClient = new OpenMessageTCPSubClient(eventMeshTcpClientConfig);
     }
 
     @Override

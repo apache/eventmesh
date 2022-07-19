@@ -63,9 +63,9 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         new ThreadFactoryBuilder().setNameFormat("GRPCClientScheduler").setDaemon(true).build());
 
     private ManagedChannel channel;
-    private ConsumerServiceBlockingStub consumerClient;
-    private ConsumerServiceStub consumerAsyncClient;
-    private HeartbeatServiceBlockingStub heartbeatClient;
+    ConsumerServiceBlockingStub consumerClient;
+    ConsumerServiceStub consumerAsyncClient;
+    HeartbeatServiceBlockingStub heartbeatClient;
 
     private ReceiveMsgHook<?> listener;
     private SubStreamHandler<?> subStreamHandler;

@@ -53,6 +53,17 @@ public class EventMeshConstants {
     public static final String RSP_SEND_EVENTMESH_IP = "rspsendeventmeship";
     public static final String RSP_RECEIVE_EVENTMESH_IP = "rspreceiveeventmeship";
 
+    public static final String RSP_SYS = "rsp0sys";
+    public static final String RSP_IP = "rsp0ip";
+    public static final String RSP_IDC = "rsp0idc";
+    public static final String RSP_GROUP = "rsp0group";
+    public static final String RSP_URL = "rsp0url";
+
+    public static final String REQ_SYS = "req0sys";
+    public static final String REQ_IP = "req0ip";
+    public static final String REQ_IDC = "req0idc";
+    public static final String REQ_GROUP = "req0group";
+
     //default TTL 4 hours
     public static final Integer DEFAULT_MSG_TTL_MILLS = 14400000;
 
@@ -101,7 +112,7 @@ public class EventMeshConstants {
 
     public static final String EVENTMESH_REGISTRY_ADDR_KEY = "eventMeshRegistryAddr";
 
-    public static int DEFAULT_TIME_OUT_MILLS = 5 * 1000;
+    public static final int DEFAULT_TIME_OUT_MILLS = 5 * 1000;
 
     public static final String RR_REPLY_TOPIC = "rr-reply-topic";
 

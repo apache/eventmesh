@@ -23,8 +23,6 @@ import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
-import java.io.File;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,16 +33,15 @@ public class EventMeshStartup {
     public static void main(String[] args) throws Exception {
         try {
             ConfigurationWrapper configurationWrapper =
-                    new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME
-                            + File.separator
-                            + EventMeshConstants.EVENTMESH_CONF_FILE, false);
+                    new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
+                            EventMeshConstants.EVENTMESH_CONF_FILE, false);
             EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(configurationWrapper);
             eventMeshHttpConfiguration.init();
-            EventMeshTCPConfiguration eventMeshTCPConfiguration = new EventMeshTCPConfiguration(configurationWrapper);
-            eventMeshTCPConfiguration.init();
+            EventMeshTCPConfiguration eventMeshTcpConfiguration = new EventMeshTCPConfiguration(configurationWrapper);
+            eventMeshTcpConfiguration.init();
             EventMeshGrpcConfiguration eventMeshGrpcConfiguration = new EventMeshGrpcConfiguration(configurationWrapper);
             eventMeshGrpcConfiguration.init();
-            EventMeshServer server = new EventMeshServer(eventMeshHttpConfiguration, eventMeshTCPConfiguration, eventMeshGrpcConfiguration);
+            EventMeshServer server = new EventMeshServer(eventMeshHttpConfiguration, eventMeshTcpConfiguration, eventMeshGrpcConfiguration);
             server.init();
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -61,6 +58,7 @@ public class EventMeshStartup {
         } catch (Throwable e) {
             logger.error("EventMesh start fail.", e);
             e.printStackTrace();
+            System.exit(-1);
         }
 
     }
