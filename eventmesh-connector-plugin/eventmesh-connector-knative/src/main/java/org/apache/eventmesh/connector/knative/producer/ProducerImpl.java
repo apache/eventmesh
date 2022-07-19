@@ -47,7 +47,6 @@ public class ProducerImpl extends AbstractProducer {
     public void send(CloudEvent cloudEvent, SendCallback sendCallback) {
         // Set HTTP header, body and send CloudEvent message:
         try {
-            System.out.println(KnativeMessageFactory.createReader(cloudEvent));
             ListenableFuture<Response> execute = super.getAsyncHttpClient().preparePost(this.attributes().getProperty("url"))
                     .addHeader(KnativeHeaders.CONTENT_TYPE, cloudEvent.getDataContentType())
                     .addHeader(KnativeHeaders.CE_ID, cloudEvent.getId())
