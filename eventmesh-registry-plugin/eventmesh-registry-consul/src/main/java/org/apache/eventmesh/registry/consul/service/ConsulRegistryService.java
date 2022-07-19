@@ -41,6 +41,7 @@ import com.ecwid.consul.v1.ConsulRawClient;
 import com.ecwid.consul.v1.agent.model.NewService;
 import com.ecwid.consul.v1.agent.model.Service;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
+import com.ecwid.consul.v1.health.model.HealthService;
 
 public class ConsulRegistryService implements RegistryService {
 
@@ -125,13 +126,24 @@ public class ConsulRegistryService implements RegistryService {
 
     @Override
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws RegistryException {
-        Map<String, Service> agentServices = consulClient.getAgentServices().getValue();
         HealthServicesRequest request = HealthServicesRequest.newBuilder().setPassing(true).setToken(token).build();
-        consulClient.getHealthServices(clusterName, request);
+        List<HealthService> healthServices = consulClient.getHealthServices(clusterName, request).getValue();
+        List<EventMeshDataInfo> eventMeshDataInfos = new ArrayList<>();
+        healthServices.forEach(healthService -> {
+            HealthService.Service service = healthService.getService();
+            String[] split = service.getId().split("-");
+            eventMeshDataInfos.add(new EventMeshDataInfo(split[0], split[1], service.getAddress() + ":" + service.getPort(), 0, service.getMeta()));
+        });
+        return eventMeshDataInfos;
+    }
+
+    @Override
+    public List<EventMeshDataInfo> findAllEventMeshInfo() throws RegistryException {
+        Map<String, Service> agentServices = consulClient.getAgentServices().getValue();
         List<EventMeshDataInfo> eventMeshDataInfos = new ArrayList<>();
         agentServices.forEach((k, v) -> {
             String[] split = v.getId().split("-");
-            eventMeshDataInfos.add(new EventMeshDataInfo(split[0], split[1], v.getAddress() + ":" + v.getPort(), 0));
+            eventMeshDataInfos.add(new EventMeshDataInfo(split[0], split[1], v.getAddress() + ":" + v.getPort(), 0, v.getMeta()));
         });
         return eventMeshDataInfos;
     }
@@ -140,6 +152,11 @@ public class ConsulRegistryService implements RegistryService {
     public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose)
         throws RegistryException {
         return Collections.emptyMap();
+    }
+
+    @Override
+    public void registerMetadata(Map<String, String> metadataMap) {
+
     }
 
     public ConsulClient getConsulClient() {
