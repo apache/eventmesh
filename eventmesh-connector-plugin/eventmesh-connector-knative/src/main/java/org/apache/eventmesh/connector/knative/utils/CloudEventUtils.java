@@ -15,25 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.knative.cloudevent;
+package org.apache.eventmesh.connector.knative.utils;
 
 import io.cloudevents.CloudEvent;
-import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeMessageWriter;
+import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
+public class CloudEventUtils {
 
-public final class KnativeMessageFactory {
-
-    private KnativeMessageFactory() {
-        // prevent instantiation
-    }
-
-    public static String createReader(final CloudEvent message) {
-        return new String(message.getData().toBytes(), StandardCharsets.UTF_8);
-    }
-
-    public static CloudEvent createWriter(Properties properties) {
-        return new KnativeMessageWriter(properties).message;
+    public static SendResult convertSendResult(CloudEvent cloudEvent) {
+        SendResult sendResult = new SendResult();
+        sendResult.setTopic(KnativeMessageFactory.createReader(cloudEvent));
+        sendResult.setMessageId(cloudEvent.getId());
+        return sendResult;
     }
 }
