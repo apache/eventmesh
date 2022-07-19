@@ -40,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AsyncPublishInstance {
 
     // This messageSize is also used in SubService.java (Subscriber)
-    public static int messageSize = 5;
+    public static final int messageSize = 5;
 
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);

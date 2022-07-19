@@ -175,32 +175,32 @@ public class EventMeshTCPConfiguration extends CommonConfiguration {
 
     static class ConfKeys {
 
-        public static String KEYS_EVENTMESH_SERVER_TCP_PORT = "eventMesh.server.tcp.port";
-        public static String KEYS_EVENTMESH_SERVER_READER_IDLE_SECONDS = "eventMesh.server.tcp.readerIdleSeconds";
-        public static String KEYS_EVENTMESH_SERVER_WRITER_IDLE_SECONDS = "eventMesh.server.tcp.writerIdleSeconds";
-        public static String KEYS_EVENTMESH_SERVER_ALL_IDLE_SECONDS = "eventMesh.server.tcp.allIdleSeconds";
-        public static String KEYS_EVENTMESH_SERVER_CLIENT_MAX_NUM = "eventMesh.server.tcp.clientMaxNum";
-        public static String KEYS_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECONDS = "eventMesh.server.tcp.msgReqnumPerSecond";
-        public static String KEYS_EVENTMESH_SERVER_TCP_REBALANCE_INTERVAL = "eventMesh.server.tcp.RebalanceIntervalInMills";
-        public static String KEYS_EVENTMESH_SERVER_GLOBAL_SCHEDULER = "eventMesh.server.global.scheduler";
-        public static String KEYS_EVENTMESH_SERVER_TCP_TASK_HANDLE_POOL_SIZE = "eventMesh.server.tcp.taskHandleExecutorPoolSize";
-        public static String KEYS_EVENTMESH_SERVER_TCP_MSG_DOWNSTREAM_POOL_SIZE = "eventMesh.server.tcp.msgDownStreamExecutorPoolSize";
-        public static String KEYS_EVENTMESH_SERVER_SESSION_EXPIRED_TIME = "eventMesh.server.session.expiredInMills";
-        public static String KEYS_EVENTMESH_SERVER_SESSION_UPSTREAM_BUFFER_SIZE = "eventMesh.server.session.upstreamBufferSize";
-        public static String KEYS_EVENTMESH_SERVER_SESSION_DOWNSTREAM_UNACK_SIZE = "eventMesh.server.session.downstreamUnackSize";
-        public static String KEYS_EVENTMESH_SERVER_RETRY_ASYNC_PUSH_RETRY_TIMES = "eventMesh.server.retry.async.pushRetryTimes";
-        public static String KEYS_EVENTMESH_SERVER_RETRY_SYNC_PUSH_RETRY_TIMES = "eventMesh.server.retry.sync.pushRetryTimes";
-        public static String KEYS_EVENTMESH_SERVER_RETRY_ASYNC_PUSH_RETRY_DELAY = "eventMesh.server.retry.async.pushRetryDelayInMills";
-        public static String KEYS_EVENTMESH_SERVER_RETRY_SYNC_PUSH_RETRY_DELAY = "eventMesh.server.retry.sync.pushRetryDelayInMills";
-        public static String KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_QUEUE_SIZE = "eventMesh.server.retry.pushRetryQueueSize";
-        public static String KEYS_EVENTMESH_SERVER_ADMIN_HTTP_PORT = "eventMesh.server.admin.http.port";
-        public static String KEYS_EVENTMESH_TCP_SERVER_ENABLED = "eventMesh.server.tcp.enabled";
-        public static String KEYS_EVENTMESH_TCP_SEND_BACK_ENABLED = "eventMesh.server.tcp.sendBack.enabled";
-        public static String KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME = "eventMesh.server.tcp.pushFailIsolateTimeInMills";
-        public static String KEYS_EVENTMESH_SERVER_GRACEFUL_SHUTDOWN_SLEEP_TIME = "eventMesh.server.gracefulShutdown.sleepIntervalInMills";
-        public static String KEYS_EVENTMESH_SERVER_REBALANCE_REDIRECT_SLEEP_TIME = "eventMesh.server.rebalanceRedirect.sleepIntervalInM";
-        public static String KEYS_EVENTMESH_SERVER_EVENTSIZE = "eventMesh.server.maxEventSize";
-        public static String KEYS_EVENTMESH_SERVER_EVENT_BATCHSIZE = "eventMesh.server.maxEventBatchSize";
+        public static final String KEYS_EVENTMESH_SERVER_TCP_PORT = "eventMesh.server.tcp.port";
+        public static final String KEYS_EVENTMESH_SERVER_READER_IDLE_SECONDS = "eventMesh.server.tcp.readerIdleSeconds";
+        public static final String KEYS_EVENTMESH_SERVER_WRITER_IDLE_SECONDS = "eventMesh.server.tcp.writerIdleSeconds";
+        public static final String KEYS_EVENTMESH_SERVER_ALL_IDLE_SECONDS = "eventMesh.server.tcp.allIdleSeconds";
+        public static final String KEYS_EVENTMESH_SERVER_CLIENT_MAX_NUM = "eventMesh.server.tcp.clientMaxNum";
+        public static final String KEYS_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECONDS = "eventMesh.server.tcp.msgReqnumPerSecond";
+        public static final String KEYS_EVENTMESH_SERVER_TCP_REBALANCE_INTERVAL = "eventMesh.server.tcp.RebalanceIntervalInMills";
+        public static final String KEYS_EVENTMESH_SERVER_GLOBAL_SCHEDULER = "eventMesh.server.global.scheduler";
+        public static final String KEYS_EVENTMESH_SERVER_TCP_TASK_HANDLE_POOL_SIZE = "eventMesh.server.tcp.taskHandleExecutorPoolSize";
+        public static final String KEYS_EVENTMESH_SERVER_TCP_MSG_DOWNSTREAM_POOL_SIZE = "eventMesh.server.tcp.msgDownStreamExecutorPoolSize";
+        public static final String KEYS_EVENTMESH_SERVER_SESSION_EXPIRED_TIME = "eventMesh.server.session.expiredInMills";
+        public static final String KEYS_EVENTMESH_SERVER_SESSION_UPSTREAM_BUFFER_SIZE = "eventMesh.server.session.upstreamBufferSize";
+        public static final String KEYS_EVENTMESH_SERVER_SESSION_DOWNSTREAM_UNACK_SIZE = "eventMesh.server.session.downstreamUnackSize";
+        public static final String KEYS_EVENTMESH_SERVER_RETRY_ASYNC_PUSH_RETRY_TIMES = "eventMesh.server.retry.async.pushRetryTimes";
+        public static final String KEYS_EVENTMESH_SERVER_RETRY_SYNC_PUSH_RETRY_TIMES = "eventMesh.server.retry.sync.pushRetryTimes";
+        public static final String KEYS_EVENTMESH_SERVER_RETRY_ASYNC_PUSH_RETRY_DELAY = "eventMesh.server.retry.async.pushRetryDelayInMills";
+        public static final String KEYS_EVENTMESH_SERVER_RETRY_SYNC_PUSH_RETRY_DELAY = "eventMesh.server.retry.sync.pushRetryDelayInMills";
+        public static final String KEYS_EVENTMESH_SERVER_RETRY_PUSH_RETRY_QUEUE_SIZE = "eventMesh.server.retry.pushRetryQueueSize";
+        public static final String KEYS_EVENTMESH_SERVER_ADMIN_HTTP_PORT = "eventMesh.server.admin.http.port";
+        public static final String KEYS_EVENTMESH_TCP_SERVER_ENABLED = "eventMesh.server.tcp.enabled";
+        public static final String KEYS_EVENTMESH_TCP_SEND_BACK_ENABLED = "eventMesh.server.tcp.sendBack.enabled";
+        public static final String KEYS_EVENTMESH_SERVER_PUSH_FAIL_ISOLATE_TIME = "eventMesh.server.tcp.pushFailIsolateTimeInMills";
+        public static final String KEYS_EVENTMESH_SERVER_GRACEFUL_SHUTDOWN_SLEEP_TIME = "eventMesh.server.gracefulShutdown.sleepIntervalInMills";
+        public static final String KEYS_EVENTMESH_SERVER_REBALANCE_REDIRECT_SLEEP_TIME = "eventMesh.server.rebalanceRedirect.sleepIntervalInM";
+        public static final String KEYS_EVENTMESH_SERVER_EVENTSIZE = "eventMesh.server.maxEventSize";
+        public static final String KEYS_EVENTMESH_SERVER_EVENT_BATCHSIZE = "eventMesh.server.maxEventBatchSize";
     }
 
     public static class TrafficShapingConfig {

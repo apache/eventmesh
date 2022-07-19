@@ -47,6 +47,8 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public int eventMeshServerSendMsgThreadNum = 8;
 
+    public int eventMeshServerRemoteMsgThreadNum = 8;
+
     public int eventMeshServerPushMsgThreadNum = 8;
 
     public int eventMeshServerReplyMsgThreadNum = 8;
@@ -70,6 +72,8 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
     public int eventMeshServerBatchBlockQSize = 1000;
 
     public int eventMeshServerSendMsgBlockQSize = 1000;
+
+    public int eventMeshServerRemoteMsgBlockQSize = 1000;
 
     public int eventMeshServerPushMsgBlockQSize = 1000;
 
@@ -142,6 +146,14 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
                     && StringUtils.isNumeric(eventMeshServerSendMsgThreadNumStr)) {
                 eventMeshServerSendMsgThreadNum =
                         Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerSendMsgThreadNumStr));
+            }
+
+            String eventMeshServerRemoteMsgThreadNumStr =
+                configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_REMOTEMSG_THREAD_NUM);
+            if (StringUtils.isNotEmpty(eventMeshServerRemoteMsgThreadNumStr)
+                && StringUtils.isNumeric(eventMeshServerRemoteMsgThreadNumStr)) {
+                eventMeshServerRemoteMsgThreadNum =
+                    Integer.parseInt(StringUtils.deleteWhitespace(eventMeshServerRemoteMsgThreadNumStr));
             }
 
             String eventMeshServerReplyMsgThreadNumStr =
@@ -311,56 +323,58 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     static class ConfKeys {
 
-        public static String KEYS_EVENTMESH_SERVER_HTTP_PORT = "eventMesh.server.http.port";
+        public static final String KEYS_EVENTMESH_SERVER_HTTP_PORT = "eventMesh.server.http.port";
 
-        public static String KEYS_EVENTMESH_BATCHMSG_THREAD_NUM = "eventMesh.server.batchmsg.threads.num";
+        public static final String KEYS_EVENTMESH_BATCHMSG_THREAD_NUM = "eventMesh.server.batchmsg.threads.num";
 
-        public static String KEYS_EVENTMESH_BATCHMSG_REQ_NUM_PER_SECOND = "eventMesh.server.batchmsg.reqNumPerSecond";
+        public static final String KEYS_EVENTMESH_BATCHMSG_REQ_NUM_PER_SECOND = "eventMesh.server.batchmsg.reqNumPerSecond";
 
-        public static String KEYS_EVENTMESH_BATCHMSG_BATCH_ENABLED = "eventMesh.server.batchmsg.batch.enabled";
+        public static final String KEYS_EVENTMESH_BATCHMSG_BATCH_ENABLED = "eventMesh.server.batchmsg.batch.enabled";
 
-        public static String KEYS_EVENTMESH_ASYNC_ACCUMULATION_THRESHOLD = "eventMesh.server.async.accumulation.threshold";
+        public static final String KEYS_EVENTMESH_ASYNC_ACCUMULATION_THRESHOLD = "eventMesh.server.async.accumulation.threshold";
 
-        public static String KEY_EVENTMESH_BUSY_CHECK_INTERVAL = "eventMesh.server.busy.check.interval";
+        public static final String KEY_EVENTMESH_BUSY_CHECK_INTERVAL = "eventMesh.server.busy.check.interval";
 
-        public static String KEYS_EVENTMESH_SENDMSG_THREAD_NUM = "eventMesh.server.sendmsg.threads.num";
+        public static final String KEYS_EVENTMESH_SENDMSG_THREAD_NUM = "eventMesh.server.sendmsg.threads.num";
 
-        public static String KEYS_EVENTMESH_REPLYMSG_THREAD_NUM = "eventMesh.server.replymsg.threads.num";
+        public static final String KEYS_EVENTMESH_REMOTEMSG_THREAD_NUM = "eventMesh.server.remotemsg.threads.num";
 
-        public static String KEYS_EVENTMESH_PUSHMSG_THREAD_NUM = "eventMesh.server.pushmsg.threads.num";
+        public static final String KEYS_EVENTMESH_REPLYMSG_THREAD_NUM = "eventMesh.server.replymsg.threads.num";
 
-        public static String KEYS_EVENTMESH_REGISTRY_THREAD_NUM = "eventMesh.server.registry.threads.num";
+        public static final String KEYS_EVENTMESH_PUSHMSG_THREAD_NUM = "eventMesh.server.pushmsg.threads.num";
 
-        public static String KEYS_EVENTMESH_CLIENTMANAGE_THREAD_NUM = "eventMesh.server.clientmanage.threads.num";
+        public static final String KEYS_EVENTMESH_REGISTRY_THREAD_NUM = "eventMesh.server.registry.threads.num";
 
-        public static String KEYS_EVENTMESH_ADMIN_THREAD_NUM = "eventMesh.server.admin.threads.num";
+        public static final String KEYS_EVENTMESH_CLIENTMANAGE_THREAD_NUM = "eventMesh.server.clientmanage.threads.num";
 
-        public static String KEY_EVENTMESH_RETRY_THREAD_NUM = "eventMesh.server.retry.threads.num";
+        public static final String KEYS_EVENTMESH_ADMIN_THREAD_NUM = "eventMesh.server.admin.threads.num";
 
-        public static String KEYS_EVENTMESH_PULL_REGISTRY_INTERVAL = "eventMesh.server.pull.registry.interval";
+        public static final String KEY_EVENTMESH_RETRY_THREAD_NUM = "eventMesh.server.retry.threads.num";
 
-        public static String KEY_EVENTMESH_RETRY_BLOCKQ_SIZE = "eventMesh.server.retry.blockQ.size";
+        public static final String KEYS_EVENTMESH_PULL_REGISTRY_INTERVAL = "eventMesh.server.pull.registry.interval";
 
-        public static String KEY_EVENTMESH_BATCHMSG_BLOCKQ_SIZE = "eventMesh.server.batchmsg.blockQ.size";
+        public static final String KEY_EVENTMESH_RETRY_BLOCKQ_SIZE = "eventMesh.server.retry.blockQ.size";
 
-        public static String KEY_EVENTMESH_SENDMSG_BLOCKQ_SIZE = "eventMesh.server.sendmsg.blockQ.size";
+        public static final String KEY_EVENTMESH_BATCHMSG_BLOCKQ_SIZE = "eventMesh.server.batchmsg.blockQ.size";
 
-        public static String KEY_EVENTMESH_PUSHMSG_BLOCKQ_SIZE = "eventMesh.server.pushmsg.blockQ.size";
+        public static final String KEY_EVENTMESH_SENDMSG_BLOCKQ_SIZE = "eventMesh.server.sendmsg.blockQ.size";
 
-        public static String KEY_EVENTMESH_CLIENTM_BLOCKQ_SIZE = "eventMesh.server.clientM.blockQ.size";
+        public static final String KEY_EVENTMESH_PUSHMSG_BLOCKQ_SIZE = "eventMesh.server.pushmsg.blockQ.size";
 
-        public static String KEY_EVENTMESH_CONSUMER_ENABLED = "eventMesh.server.consumer.enabled";
+        public static final String KEY_EVENTMESH_CLIENTM_BLOCKQ_SIZE = "eventMesh.server.clientM.blockQ.size";
 
-        public static String KEY_EVENTMESH_HTTPS_ENABLED = "eventMesh.server.useTls.enabled";
+        public static final String KEY_EVENTMESH_CONSUMER_ENABLED = "eventMesh.server.consumer.enabled";
 
-        public static String KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND = "eventMesh.server.http.msgReqnumPerSecond";
+        public static final String KEY_EVENTMESH_HTTPS_ENABLED = "eventMesh.server.useTls.enabled";
 
-        public static String KEY_EVENTMESH_SERVER_EVENTSIZE = "eventMesh.server.maxEventSize";
+        public static final String KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND = "eventMesh.server.http.msgReqnumPerSecond";
 
-        public static String KEY_EVENTMESH_SERVER_EVENT_BATCHSIZE = "eventMesh.server.maxEventBatchSize";
+        public static final String KEY_EVENTMESH_SERVER_EVENTSIZE = "eventMesh.server.maxEventSize";
 
-        public static String KEY_EVENTMESH_SERVER_IPV4_BLACK_LIST = "eventMesh.server.blacklist.ipv4";
+        public static final String KEY_EVENTMESH_SERVER_EVENT_BATCHSIZE = "eventMesh.server.maxEventBatchSize";
 
-        public static String KEY_EVENTMESH_SERVER_IPV6_BLACK_LIST = "eventMesh.server.blacklist.ipv6";
+        public static final String KEY_EVENTMESH_SERVER_IPV4_BLACK_LIST = "eventMesh.server.blacklist.ipv4";
+
+        public static final String KEY_EVENTMESH_SERVER_IPV6_BLACK_LIST = "eventMesh.server.blacklist.ipv6";
     }
 }
