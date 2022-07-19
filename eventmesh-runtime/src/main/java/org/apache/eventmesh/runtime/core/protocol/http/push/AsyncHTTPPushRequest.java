@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.exception.JsonException;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
+import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.body.message.PushMessageRequestBody;
 import org.apache.eventmesh.common.protocol.http.common.ClientRetCode;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
@@ -120,6 +121,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         CloudEvent event = CloudEventBuilder.from(handleMsgContext.getEvent())
             .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
                 String.valueOf(System.currentTimeMillis()))
+            .withExtension(EventMeshConstants.RSP_URL, currPushUrl)
+            .withExtension(EventMeshConstants.RSP_GROUP, handleMsgContext.getConsumerGroup())
             .build();
         handleMsgContext.setEvent(event);
 
@@ -131,7 +134,19 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
 
             ProtocolTransportObject protocolTransportObject =
                 protocolAdaptor.fromCloudEvent(handleMsgContext.getEvent());
-            content = ((HttpCommand) protocolTransportObject).getBody().toMap().get("content").toString();
+            if (protocolTransportObject instanceof HttpCommand) {
+                content = ((HttpCommand) protocolTransportObject).getBody().toMap().get("content").toString();
+            } else {
+                HttpEventWrapper httpEventWrapper = (HttpEventWrapper) protocolTransportObject;
+                Map<String, Object> sysHeaderMap = httpEventWrapper.getSysHeaderMap();
+                content = new String(httpEventWrapper.getBody(), StandardCharsets.UTF_8);
+                for (String header : sysHeaderMap.keySet()) {
+                    if (!builder.containsHeader(header)) {
+                        builder.addHeader(header, sysHeaderMap.get(header).toString());
+                    }
+                }
+            }
+
         } catch (Exception ex) {
             return;
         }
@@ -204,7 +219,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
                                 + "|uniqueId={}|cost={}",
                             result, currPushUrl, handleMsgContext.getTopic(),
                             handleMsgContext.getBizSeqNo(), handleMsgContext.getUniqueId(), cost);
-                        if (result == ClientRetCode.OK) {
+                        if (result == ClientRetCode.OK || result == ClientRetCode.REMOTE_OK) {
                             complete();
                             if (isComplete()) {
                                 handleMsgContext.finish();

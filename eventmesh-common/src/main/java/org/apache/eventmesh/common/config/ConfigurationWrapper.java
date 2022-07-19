@@ -17,17 +17,18 @@
 
 package org.apache.eventmesh.common.config;
 
-import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.file.FileChangeContext;
+import org.apache.eventmesh.common.file.FileChangeListener;
+import org.apache.eventmesh.common.file.WatchFileManager;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,19 +40,39 @@ public class ConfigurationWrapper {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final long TIME_INTERVAL = 30 * 1000L;
+    private final String directoryPath;
 
-    private String file;
+    private final String fileName;
 
-    private Properties properties = new Properties();
+    private final Properties properties = new Properties();
 
-    private boolean reload;
+    private final String file;
+
+    private final boolean reload;
 
     private final ScheduledExecutorService configLoader = ThreadPoolFactory
             .createSingleScheduledExecutor("eventMesh-configLoader-");
 
-    public ConfigurationWrapper(String file, boolean reload) {
-        this.file = file;
+    private final FileChangeListener fileChangeListener = new FileChangeListener() {
+        @Override
+        public void onChanged(FileChangeContext changeContext) {
+            load();
+        }
+
+        @Override
+        public boolean support(FileChangeContext changeContext) {
+            return changeContext.getWatchEvent().context().toString().contains(fileName);
+        }
+    };
+
+    public ConfigurationWrapper(String directoryPath, String fileName, boolean reload) {
+        this.directoryPath = directoryPath
+                .replace('/', File.separator.charAt(0))
+                .replace('\\', File.separator.charAt(0));
+        this.fileName = fileName;
+        this.file = (directoryPath + File.separator + fileName)
+                .replace('/', File.separator.charAt(0))
+                .replace('\\', File.separator.charAt(0));
         this.reload = reload;
         init();
     }
@@ -59,18 +80,18 @@ public class ConfigurationWrapper {
     private void init() {
         load();
         if (this.reload) {
-            configLoader.scheduleAtFixedRate(this::load, TIME_INTERVAL, TIME_INTERVAL, TimeUnit.MILLISECONDS);
+            WatchFileManager.registerFileChangeListener(directoryPath, fileChangeListener);
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 logger.info("Configuration reload task closed");
-                configLoader.shutdownNow();
+                WatchFileManager.deregisterFileChangeListener(directoryPath);
             }));
         }
     }
 
     private void load() {
-        try {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             logger.info("loading config: {}", file);
-            properties.load(new BufferedReader(new FileReader(file)));
+            properties.load(reader);
         } catch (IOException e) {
             logger.error("loading properties [{}] error", file, e);
         }

@@ -20,6 +20,7 @@ package org.apache.eventmesh.common.protocol.http.common;
 public class ProtocolKey {
 
     public static final String REQUEST_CODE = "code";
+    public static final String REQUEST_URI = "uri";
     public static final String LANGUAGE = "language";
     public static final String VERSION = "version";
 
@@ -42,6 +43,8 @@ public class ProtocolKey {
         public static final String PASSWD = "passwd";
         public static final String BIZSEQNO = "bizseqno";
         public static final String UNIQUEID = "uniqueid";
+        public static final String PRODUCERGROUP = "producergroup";
+        public static final String CONSUMERGROUP = "consumergroup";
     }
 
 
@@ -51,6 +54,13 @@ public class ProtocolKey {
         public static final String EVENTMESHIP = "eventmeship";
         public static final String EVENTMESHENV = "eventmeshenv";
         public static final String EVENTMESHIDC = "eventmeshidc";
+    }
+
+    public static class CloudEventsKey {
+        public static final String ID = "id";
+        public static final String SOURCE = "source";
+        public static final String SUBJECT = "subject";
+        public static final String TYPE = "type";
     }
 
 

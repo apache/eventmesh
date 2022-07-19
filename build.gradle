@@ -316,8 +316,8 @@ subprojects {
                 }
             }
             copy {
-                into "${rootDir}/dist/licenses"
-                from "${rootDir}/tools/third-party-licenses/licenses"
+                into "${rootDir}/dist"
+                from "${rootDir}/tools/third-party-licenses"
             }
         }
     }
@@ -469,7 +469,8 @@ subprojects {
             dependency "com.github.stefanbirkner:system-rules:1.16.1"
             dependency "org.assertj:assertj-core:2.6.0"
 
-            dependency "org.mockito:mockito-core:2.23.0"
+            dependency "org.mockito:mockito-core:3.8.0"
+            dependency "org.mockito:mockito-inline:3.8.0"
             dependency "org.powermock:powermock-module-junit4:2.0.2"
             dependency "org.powermock:powermock-api-mockito2:2.0.2"
 

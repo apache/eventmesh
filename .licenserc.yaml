@@ -34,8 +34,11 @@ header:
     - '**/*.ini'
     - '**/*.crt'
     - '**/*.pem'
+    - '**/go.sum'
     - 'LICENSE'
     - 'NOTICE'
     - 'DISCLAIMER-WIP'
+    - 'gradlew'
+    - 'gradlew.bat'
 
   comment: on-failure

@@ -155,46 +155,46 @@ public class ClientConfiguration {
 
     static class ConfKeys {
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_NAMESRV_ADDR = "eventMesh.server.rocketmq.namesrvAddr";
+        public static final String KEYS_EVENTMESH_ROCKETMQ_NAMESRV_ADDR = "eventMesh.server.rocketmq.namesrvAddr";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_USERNAME = "eventMesh.server.rocketmq.username";
+        public static final String KEYS_EVENTMESH_ROCKETMQ_USERNAME = "eventMesh.server.rocketmq.username";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_PASSWORD = "eventMesh.server.rocketmq.password";
+        public static final String KEYS_EVENTMESH_ROCKETMQ_PASSWORD = "eventMesh.server.rocketmq.password";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MIN =
+        public static final String KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MIN =
                 "eventMesh.server.rocketmq.client.consumeThreadMin";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MAX =
+        public static final String KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_MAX =
                 "eventMesh.server.rocketmq.client.consumeThreadMax";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_QUEUESIZE =
+        public static final String KEYS_EVENTMESH_ROCKETMQ_CONSUME_THREADPOOL_QUEUESIZE =
                 "eventMesh.server.rocketmq.client.consumeThreadPoolQueueSize";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_ACK_WINDOW = "eventMesh.server.rocketmq.client.ackwindow";
+        public static final String KEYS_EVENTMESH_ROCKETMQ_CLIENT_ACK_WINDOW = "eventMesh.server.rocketmq.client.ackwindow";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_PUB_WINDOW = "eventMesh.server.rocketmq.client.pubwindow";
+        public static final String KEYS_EVENTMESH_ROCKETMQ_CLIENT_PUB_WINDOW = "eventMesh.server.rocketmq.client.pubwindow";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_CONSUME_TIMEOUT =
+        public static final String KEYS_EVENTMESH_ROCKETMQ_CLIENT_CONSUME_TIMEOUT =
                 "eventMesh.server.rocketmq.client.comsumeTimeoutInMin";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_PULL_BATCHSIZE =
+        public static final String KEYS_EVENTMESH_ROCKETMQ_CLIENT_PULL_BATCHSIZE =
                 "eventMesh.server.rocketmq.client.pullBatchSize";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL =
+        public static final String KEYS_EVENTMESH_ROCKETMQ_CLIENT_POLL_NAMESRV_INTERVAL =
                 "eventMesh.server.rocketmq.client.pollNameServerInterval";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVAL =
+        public static final String KEYS_EVENTMESH_ROCKETMQ_CLIENT_HEARTBEAT_BROKER_INTERVAL =
                 "eventMesh.server.rocketmq.client.heartbeatBrokerInterval";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_CLIENT_REBALANCE_INTERVAL =
+        public static final String KEYS_EVENTMESH_ROCKETMQ_CLIENT_REBALANCE_INTERVAL =
                 "eventMesh.server.rocketmq.client.rebalanceInterval";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_CLUSTER = "eventMesh.server.rocketmq.cluster";
+        public static final String KEYS_EVENTMESH_ROCKETMQ_CLUSTER = "eventMesh.server.rocketmq.cluster";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_ACCESS_KEY =
+        public static final String KEYS_EVENTMESH_ROCKETMQ_ACCESS_KEY =
                 "eventMesh.server.rocketmq.accessKey";
 
-        public static String KEYS_EVENTMESH_ROCKETMQ_SECRET_KEY =
+        public static final String KEYS_EVENTMESH_ROCKETMQ_SECRET_KEY =
                 "eventMesh.server.rocketmq.secretKey";
 
     }
