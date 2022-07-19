@@ -29,18 +29,19 @@ import io.cloudevents.rw.CloudEventWriter;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 public class KnativeMessageWriter implements MessageWriter<CloudEventWriter<String>, String>, CloudEventWriter<String> {
 
     public CloudEvent message;
 
-    public KnativeMessageWriter(String data) {
-        String s = "{ \"msg\": [\"" + data + "\"]}";
+    public KnativeMessageWriter(Properties properties) {
+        String s = "{ \"msg\": [\"" + properties.get("data") + "\"]}";
         this.message = new CloudEventBuilder()
-                .withId("my-id")
-                .withSource(URI.create("/myClient"))
-                .withType("dev.knative.cronjob.event")
-                .withDataContentType("application/json")
+                .withId(properties.getProperty(KnativeHeaders.CE_ID))
+                .withSource(URI.create(properties.getProperty(KnativeHeaders.CE_SOURCE)))
+                .withType(properties.getProperty(KnativeHeaders.CE_TYPE))
+                .withDataContentType(properties.getProperty(KnativeHeaders.CONTENT_TYPE))
                 .withData(s.getBytes(StandardCharsets.UTF_8))
                 .build();
     }

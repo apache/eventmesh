@@ -17,33 +17,33 @@
 
 package org.apache.eventmesh.connector.knative.producer;
 
-import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeHeaders;
+import io.cloudevents.CloudEvent;
+import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
+import org.apache.eventmesh.api.producer.Producer;
+import org.asynchttpclient.AsyncHttpClient;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class AbstractProducer {
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+
+public abstract class AbstractProducer implements Producer {
 
     final Properties properties;
-    HttpURLConnection httpUrlConnection;
+    AsyncHttpClient asyncHttpClient;
     protected final AtomicBoolean started = new AtomicBoolean(false);
 
     AbstractProducer(final Properties properties) throws IOException {
         this.properties = properties;
-        URL url = new URL(properties.getProperty("url"));
-        this.httpUrlConnection = (HttpURLConnection) url.openConnection();
-        httpUrlConnection.setDoOutput(true);
-        httpUrlConnection.setDoInput(true);
+        this.asyncHttpClient = asyncHttpClient();
+    }
 
-        // Set HTTP header for CloudEvent:
-        this.httpUrlConnection.setRequestProperty(KnativeHeaders.CONTENT_TYPE, properties.getProperty(KnativeHeaders.CONTENT_TYPE));
-        this.httpUrlConnection.setRequestProperty(KnativeHeaders.CE_ID, properties.getProperty(KnativeHeaders.CE_ID));
-        this.httpUrlConnection.setRequestProperty(KnativeHeaders.CE_SPECVERSION, properties.getProperty(KnativeHeaders.CE_SPECVERSION));
-        this.httpUrlConnection.setRequestProperty(KnativeHeaders.CE_TYPE, properties.getProperty(KnativeHeaders.CE_TYPE));
-        this.httpUrlConnection.setRequestProperty(KnativeHeaders.CE_SOURCE, properties.getProperty(KnativeHeaders.CE_SOURCE));
+    ConnectorRuntimeException checkProducerException(CloudEvent cloudEvent) {
+        if (cloudEvent.getData() == null) {
+            return new ConnectorRuntimeException(String.format("CloudEvent message data does not exist."));
+        }
+        return  new ConnectorRuntimeException(String.format("Unknown connector runtime exception."));
     }
 
     public boolean isStarted() {
@@ -54,7 +54,7 @@ public abstract class AbstractProducer {
         return !this.isStarted();
     }
 
-    public HttpURLConnection getHttpUrlConnection() {
-        return httpUrlConnection;
+    public AsyncHttpClient getAsyncHttpClient() {
+        return asyncHttpClient;
     }
 }
