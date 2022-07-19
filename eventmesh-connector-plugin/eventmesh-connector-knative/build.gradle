@@ -27,6 +27,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.asynchttpclient:async-http-client:2.12.0'
+
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
 

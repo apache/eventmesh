@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.knative.producer;
 import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.producer.Producer;
 
 import java.util.Properties;
@@ -34,6 +35,11 @@ public class KnativeProducerImpl implements Producer {
     }
 
     @Override
+    public void publish(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
+        producer.sendAsync(cloudEvent, sendCallback);
+    }
+
+    @Override
     public boolean isStarted() {
         return producer.isStarted();
     }
@@ -44,42 +50,37 @@ public class KnativeProducerImpl implements Producer {
     }
 
     @Override
-    public void sendOneway(CloudEvent cloudEvent) {
-        producer.sendOneway(cloudEvent);
-    }
-
-    @Override
     public void start() {
-
+        throw new ConnectorRuntimeException("Start is not supported");
     }
 
     @Override
     public void shutdown() {
-
+        throw new ConnectorRuntimeException("Shutdown is not supported");
     }
 
     @Override
-    public void publish(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-
+    public void sendOneway(CloudEvent cloudEvent) {
+        throw new ConnectorRuntimeException("SendOneWay is not supported");
     }
 
     @Override
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
-
+        throw new ConnectorRuntimeException("Request is not supported");
     }
 
     @Override
     public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-        return false;
+        throw new ConnectorRuntimeException("Reply is not supported");
     }
 
     @Override
     public void checkTopicExist(String topic) throws Exception {
-
+        throw new ConnectorRuntimeException("CheckTopicExist is not supported");
     }
 
     @Override
     public void setExtFields() {
-
+        throw new ConnectorRuntimeException("SetExtFields is not supported");
     }
 }

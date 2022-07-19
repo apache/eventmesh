@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.connector.knative.producer;
 
+import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
 import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeHeaders;
 import org.junit.jupiter.api.Test;
@@ -40,14 +43,24 @@ public class KnativeProducerImplTest {
         properties.put(KnativeHeaders.CE_TYPE, "some-type");
         properties.put(KnativeHeaders.CE_SOURCE, "java-client");
 
+        // Set CloudEvent message data:
+        properties.put("data", "Hello Knative from EventMesh!");
+
         // Initialize a Knative producer:
         KnativeProducerImpl producer = new KnativeProducerImpl();
         producer.init(properties);
 
-        // Set CloudEvent message data:
-        String s = "Hello Knative from EventMesh!";
-
         // Send CloudEvent message to cloudevents-player:
-        producer.sendOneway(KnativeMessageFactory.createWriter(s));
+        producer.publish(KnativeMessageFactory.createWriter(properties), new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                System.out.println("Send cloudevent message successfully.");
+            }
+
+            @Override
+            public void onException(OnExceptionContext context) {
+                System.out.println("Send cloudevent message exception.");
+            }
+        });
     }
 }
