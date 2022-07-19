@@ -15,31 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.client.common.constant;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * @Author: moxing
+ * @Date: 2022/7/18 14:03
+ * @Description:
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    NAMERESOLVER("nameResolver"),
-    LOADBALANCE("loadBAlance"),
-    ;
+public class ZooKeeperConstant {
 
-    private final String extensionTypeName;
+    public static final String SESSION_TIMEOUT_MS = "sessionTimeoutMs";
+    public static final String CONNECTION_TIMEOUT_MS = "connectionTimeoutMs";
+    public static final String SLEEP_MS_BETWEEN_RETRIES = "sleepMsBetweenRetries";
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    public static final String NAME_SPACE = "eventmesh";
 
-    public String getExtensionTypeName() {
-        return this.extensionTypeName;
-    }
+    public static final String SEPARATOR = "/";
+
+    public static final int SPLIT_LENGTH = 3;
+
+    public static final Long INIT_TIMEOUT = 10 * 1000L;
 
 }

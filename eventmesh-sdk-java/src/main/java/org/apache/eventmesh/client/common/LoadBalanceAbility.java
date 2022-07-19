@@ -15,31 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.client.common;
+
+
+import java.util.List;
 
 /**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
+ * @param <T> client
  */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    NAMERESOLVER("nameResolver"),
-    LOADBALANCE("loadBAlance"),
-    ;
+public interface LoadBalanceAbility<T extends LoadBalanceClient> extends AutoCloseable{
 
-    private final String extensionTypeName;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+    List<T> initClient();
 
-    public String getExtensionTypeName() {
-        return this.extensionTypeName;
-    }
+
+    T select();
 
 }

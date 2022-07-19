@@ -17,12 +17,17 @@
 
 package org.apache.eventmesh.client.grpc.config;
 
+import org.apache.eventmesh.client.common.ClientConfig;
+
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
-public class EventMeshGrpcClientConfig {
+@SuperBuilder
+@EqualsAndHashCode(callSuper = false)
+public class EventMeshGrpcClientConfig extends ClientConfig {
 
     @Builder.Default
     private String serverAddr = "127.0.0.1";
@@ -61,16 +66,16 @@ public class EventMeshGrpcClientConfig {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("ClientConfig={")
-                .append("ServerAddr=").append(serverAddr).append(",")
-                .append("ServerPort=").append(serverPort).append(",")
-                .append("env=").append(env).append(",")
-                .append("idc=").append(idc).append(",")
-                .append("producerGroup=").append(producerGroup).append(",")
-                .append("consumerGroup=").append(consumerGroup).append(",")
-                .append("sys=").append(sys).append(",")
-                .append("userName=").append(userName).append(",")
+                .append("ServerAddr=").append(this.serverAddr).append(",")
+                .append("ServerPort=").append(this.serverPort).append(",")
+                .append("env=").append(this.env).append(",")
+                .append("idc=").append(this.idc).append(",")
+                .append("producerGroup=").append(this.producerGroup).append(",")
+                .append("consumerGroup=").append(this.consumerGroup).append(",")
+                .append("sys=").append(this.sys).append(",")
+                .append("userName=").append(this.userName).append(",")
                 .append("password=").append("***").append(",")
-                .append("useTls=").append(useTls).append("}");
+                .append("useTls=").append(this.useTls).append("}");
         return sb.toString();
     }
 }

@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.client.grpc.producer;
 
+import org.apache.eventmesh.client.common.LoadBalanceClient;
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
@@ -37,11 +38,11 @@ import io.cloudevents.CloudEvent;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
-public class EventMeshGrpcProducer implements AutoCloseable {
+public class EventMeshGrpcProducer implements LoadBalanceClient, AutoCloseable {
 
     private static final Logger logger = LoggerFactory.getLogger(EventMeshGrpcProducer.class);
 
-    private static final  String PROTOCOL_TYPE = EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME;
+    private static final String PROTOCOL_TYPE = EventMeshCommon.EM_MESSAGE_PROTOCOL_NAME;
 
     private final EventMeshGrpcClientConfig clientConfig;
 
@@ -129,5 +130,11 @@ public class EventMeshGrpcProducer implements AutoCloseable {
     @Override
     public void close() {
         channel.shutdown();
+    }
+
+    @Override
+    public boolean shutdown() {
+        this.close();
+        return true;
     }
 }

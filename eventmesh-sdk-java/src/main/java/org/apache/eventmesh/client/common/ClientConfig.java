@@ -15,31 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.client.common;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    NAMERESOLVER("nameResolver"),
-    LOADBALANCE("loadBAlance"),
-    ;
 
-    private final String extensionTypeName;
+import java.net.URI;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
-    public String getExtensionTypeName() {
-        return this.extensionTypeName;
-    }
+@Data
+@SuperBuilder
+public abstract class ClientConfig implements Cloneable{
 
+    private URI registerUri;
+
+    private String nameResolverName;
+
+    private String loadBalanceStrategyName;
 }

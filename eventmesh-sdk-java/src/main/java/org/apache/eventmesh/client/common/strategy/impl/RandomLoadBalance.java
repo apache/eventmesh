@@ -15,31 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.client.common.strategy.impl;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    NAMERESOLVER("nameResolver"),
-    LOADBALANCE("loadBAlance"),
-    ;
+import org.apache.eventmesh.client.common.strategy.ClientLoadBalanceStrategy;
 
-    private final String extensionTypeName;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.RandomUtils;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
+public class RandomLoadBalance<T> implements ClientLoadBalanceStrategy<T> {
+
+    private final Logger logger = LoggerFactory.getLogger(RandomLoadBalance.class);
+
+
+    @Override
+    public T select(List<T> serverList) {
+        if (CollectionUtils.isEmpty(serverList)) {
+            this.logger.warn("[RandomLoadBalance.select] No servers available");
+            return null;
+        }
+
+        return serverList.get(RandomUtils.nextInt(0, serverList.size()));
     }
-
-    public String getExtensionTypeName() {
-        return this.extensionTypeName;
-    }
-
 }

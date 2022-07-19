@@ -15,31 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.client.common.resolver;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    NAMERESOLVER("nameResolver"),
-    LOADBALANCE("loadBAlance"),
-    ;
+import org.apache.eventmesh.client.common.EventMeshAddress;
 
-    private final String extensionTypeName;
+import java.util.Set;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
 
-    public String getExtensionTypeName() {
-        return this.extensionTypeName;
-    }
+public interface ServerListener {
+
+    void refresh(Set<EventMeshAddress> serverList);
 
 }

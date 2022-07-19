@@ -15,31 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.spi;
+package org.apache.eventmesh.client.common.strategy;
 
-/**
- * An Extension can be defined by extensionTypeName and extensionInstanceName
- */
-public enum EventMeshExtensionType {
-    UNKNOWN("unknown"),
-    CONNECTOR("connector"),
-    REGISTRY("registry"),
-    SECURITY("security"),
-    PROTOCOL("protocol"),
-    METRICS("metrics"),
-    TRACE("trace"),
-    NAMERESOLVER("nameResolver"),
-    LOADBALANCE("loadBAlance"),
-    ;
+import org.apache.eventmesh.spi.EventMeshExtensionType;
+import org.apache.eventmesh.spi.EventMeshSPI;
 
-    private final String extensionTypeName;
+import java.util.List;
 
-    EventMeshExtensionType(String extensionTypeName) {
-        this.extensionTypeName = extensionTypeName;
-    }
+@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.LOADBALANCE)
+public interface ClientLoadBalanceStrategy<T> {
 
-    public String getExtensionTypeName() {
-        return this.extensionTypeName;
-    }
-
+    T select(List<T> serverList);
 }
