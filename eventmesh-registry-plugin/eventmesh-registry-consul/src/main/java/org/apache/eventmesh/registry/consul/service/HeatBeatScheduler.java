@@ -25,9 +25,6 @@ import java.util.concurrent.TimeUnit;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.agent.model.NewService;
 
-/**
- * @author huyuanxin
- */
 public class HeatBeatScheduler {
 
     private final ConsulClient consulClient;
@@ -49,9 +46,9 @@ public class HeatBeatScheduler {
     }
 
     /**
-     * 开始服务的心跳
+     * start service heartbeat
      *
-     * @param newService 服务
+     * @param newService service
      * @param aclToken   token
      */
     protected void startHeartBeat(NewService newService, String aclToken) {
@@ -60,9 +57,9 @@ public class HeatBeatScheduler {
     }
 
     /**
-     * 停止服务的心跳
+     * stop service heartbeat
      *
-     * @param newService 服务
+     * @param newService service
      */
     private void stopHeartBeat(NewService newService) {
         heartBeatMap.remove(newService.getName());
