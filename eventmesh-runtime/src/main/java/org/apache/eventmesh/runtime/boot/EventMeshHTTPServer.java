@@ -55,8 +55,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.registry.Registry;
-import org.apache.eventmesh.trace.api.TracePluginFactory;
-import org.apache.eventmesh.trace.api.TraceService;
+import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.webhook.receive.WebHookController;
 
 import org.apache.commons.lang3.StringUtils;
@@ -264,9 +263,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
             super.useTrace = eventMeshHttpConfiguration.eventMeshServerTraceEnable;
         }
-        HTTPTrace httpTrace = new HTTPTrace();
-        httpTrace.initTrace(tracer, textMapPropagator, useTrace);
-        this.handlerService.setHttpTrace(httpTrace);
+
+//        HTTPTrace httpTrace =
+////        httpTrace.initTrace(tracer, textMapPropagator, useTrace);
+        this.handlerService.setHttpTrace(new HTTPTrace());
 
         registerHTTPRequestProcessor();
         this.initWebhook();
