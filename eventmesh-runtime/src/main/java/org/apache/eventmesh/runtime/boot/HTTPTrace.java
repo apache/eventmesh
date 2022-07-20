@@ -18,14 +18,17 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.runtime.trace.SpanKey;
+import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.trace.api.TracePluginFactory;
 import org.apache.eventmesh.trace.api.TraceService;
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
@@ -40,13 +43,16 @@ import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class HTTPTrace {
 
     private TextMapPropagator textMapPropagator;
 
     private Tracer tracer;
 
-    private boolean useTrace = false;
+//    private boolean useTrace = false;
 
     @Setter
     private String serviceAddress;
@@ -54,26 +60,30 @@ public class HTTPTrace {
     @Setter
     private String servicePort;
 
-    public void initTrace(Tracer tracer, TextMapPropagator textMapPropagator, boolean useTrace) {
-        this.tracer = tracer;
-        this.textMapPropagator = textMapPropagator;
-        this.useTrace = useTrace;
-    }
+//    public void initTrace(Tracer tracer, TextMapPropagator textMapPropagator, boolean useTrace) {
+//        this.tracer = tracer;
+//        this.textMapPropagator = textMapPropagator;
+//        this.useTrace = useTrace;
+//    }
+//
+//    public void initTrace(String traceType, boolean traceEnable, Class<?> clazz) {
+//        if (StringUtils.isNotEmpty(traceType) && traceEnable) {
+//            TraceService traceService = TracePluginFactory.getTraceService(traceType);
+//            traceService.init();
+//            tracer = traceService.getTracer(clazz.toString());
+//            textMapPropagator = traceService.getTextMapPropagator();
+//            useTrace = true;
+//        }
+//    }
 
-    public void initTrace(String traceType, boolean traceEnable, Class<?> clazz) {
-        if (StringUtils.isNotEmpty(traceType) && traceEnable) {
-            TraceService traceService = TracePluginFactory.getTraceService(traceType);
-            traceService.init();
-            tracer = traceService.getTracer(clazz.toString());
-            textMapPropagator = traceService.getTextMapPropagator();
-            useTrace = true;
-        }
-    }
-
-    public TraceOperation getTraceOperation(HttpRequest httpRequest, Channel chnanle) {
+    public TraceOperation getTraceOperation(HttpRequest httpRequest, Channel channel) {
         if (!useTrace) {
-            return new TraceOperation(null, null, useTrace);
+            return new TraceOperation();
         }
+
+        final Map<String, Object> headerMap = parseHttpHeader(httpRequest);
+        Span span = TraceUtils.prepareServerSpan(headerMap, EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
+            false);
 
         Context context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>() {
             @Override
@@ -99,12 +109,24 @@ public class HTTPTrace {
         return new TraceOperation(context, span, useTrace);
     }
 
+    private Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
+        Map<String, Object> headerParam = new HashMap<>();
+        for (String key : fullReq.headers().names()) {
+            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
+                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
+                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
+                continue;
+            }
+            headerParam.put(key, fullReq.headers().get(key));
+        }
+        return headerParam;
+    }
+
     @AllArgsConstructor
     public static class TraceOperation {
 
         private final Context context;
         private final Span span;
-        private final boolean useTrace;
 
         public void endTrace() {
             if (!useTrace) {
