@@ -20,8 +20,10 @@ package org.apache.eventmesh.runtime.core.protocol.http.processor;
 import org.apache.eventmesh.runtime.boot.HTTPTrace;
 import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
+import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,6 +39,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
+import io.opentelemetry.api.trace.Span;
 import lombok.Setter;
 
 
@@ -75,10 +78,10 @@ public class HandlerService {
         processorWrapper.threadPoolExecutor = threadPoolExecutor;
         processorWrapper.httpProcessor = httpProcessor;
         if (httpProcessor instanceof AsyncHttpProcessor) {
-            processorWrapper.asyn = (AsyncHttpProcessor) httpProcessor;
+            processorWrapper.async = (AsyncHttpProcessor) httpProcessor;
         }
         httpProcessorMap.put(path, processorWrapper);
-        httpServerLogger.info("path is {}  proocessor name is {}", path, httpProcessor.getClass().getSimpleName());
+        httpServerLogger.info("path is {}  processor name is {}", path, httpProcessor.getClass().getSimpleName());
     }
 
     public boolean isProcessorWrapper(HttpRequest httpRequest) {
@@ -154,22 +157,22 @@ public class HandlerService {
         public void run() {
             ProcessorWrapper processorWrapper = HandlerService.this.httpProcessorMap.get(httpRequest.uri());
             try {
-                this.postHandler();
+                this.preHandler();
                 if (Objects.isNull(processorWrapper.httpProcessor)) {
-                    processorWrapper.asyn.handler(this, httpRequest);
+                    processorWrapper.async.handler(this, httpRequest);
                     return;
                 }
                 response = processorWrapper.httpProcessor.handler(httpRequest);
 
-                this.preHandler();
+                this.postHandler();
             } catch (Throwable e) {
                 httpServerLogger.error(e.getMessage(), e);
                 exception = e;
-                this.errer();
+                this.error();
             }
         }
 
-        private void preHandler() {
+        private void postHandler() {
             metrics.getSummaryMetrics().recordHTTPRequest();
             if (httpLogger.isDebugEnabled()) {
                 httpLogger.debug("{}", httpRequest);
@@ -181,14 +184,14 @@ public class HandlerService {
             this.sendResponse(this.response);
         }
 
-        private void postHandler() {
+        private void preHandler() {
             metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
             if (httpLogger.isDebugEnabled()) {
                 httpLogger.debug("{}", response);
             }
         }
 
-        private void errer() {
+        private void error() {
             this.traceOperation.exceptionTrace(this.exception);
             metrics.getSummaryMetrics().recordHTTPDiscard();
             metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
@@ -225,7 +228,7 @@ public class HandlerService {
 
         private HttpProcessor httpProcessor;
 
-        private AsyncHttpProcessor asyn;
+        private AsyncHttpProcessor async;
     }
 
 }

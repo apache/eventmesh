@@ -50,9 +50,6 @@ public class ConfigurationWrapper {
 
     private final boolean reload;
 
-    private final ScheduledExecutorService configLoader = ThreadPoolFactory
-            .createSingleScheduledExecutor("eventMesh-configLoader-");
-
     private final FileChangeListener fileChangeListener = new FileChangeListener() {
         @Override
         public void onChanged(FileChangeContext changeContext) {
