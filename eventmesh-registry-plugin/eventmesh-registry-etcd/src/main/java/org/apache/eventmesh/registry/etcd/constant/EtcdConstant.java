@@ -28,8 +28,9 @@ public class EtcdConstant {
 
     public static final String PASSWORD = "password";
 
-    public static final String IP_PORT_SEPARATOR = ":";
-
     public static final String KEY_SEPARATOR = "/";
+
+    public static final long TTL = 15L;
+
 
 }
