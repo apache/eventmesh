@@ -22,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.registry.etcd.constant.EtcdConstant;
-import org.apache.eventmesh.registry.etcd.wrapper.EtcdClientWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
