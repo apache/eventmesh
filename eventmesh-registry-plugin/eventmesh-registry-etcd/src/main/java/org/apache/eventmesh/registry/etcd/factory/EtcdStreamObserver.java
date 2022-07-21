@@ -17,12 +17,14 @@
 
 package org.apache.eventmesh.registry.etcd.factory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.etcd.jetcd.options.LeaseOption;
 import io.grpc.stub.StreamObserver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 public class EtcdStreamObserver implements StreamObserver<LeaseKeepAliveResponse> {
 

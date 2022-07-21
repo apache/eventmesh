@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.registry.etcd.factory;
 
-import io.etcd.jetcd.*;
-
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.etcd.jetcd.ClientBuilder;
 
 class EtcdLeaseId {
 

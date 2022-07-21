@@ -27,7 +27,6 @@ import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,7 +50,7 @@ public class EtcdRegistryServiceTest {
     public void setUp() {
         etcdRegistryService = new EtcdRegistryService();
         CommonConfiguration configuration = new CommonConfiguration(null);
-        configuration.namesrvAddr = "127.0.0.1:2379";
+        configuration.namesrvAddr = "127.0.0.1:2378";
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
 
         Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");
