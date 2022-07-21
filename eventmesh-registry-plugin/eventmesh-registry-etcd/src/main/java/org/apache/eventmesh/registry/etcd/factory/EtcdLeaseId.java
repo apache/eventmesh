@@ -18,7 +18,6 @@
 package org.apache.eventmesh.registry.etcd.factory;
 
 import io.etcd.jetcd.*;
-import org.apache.eventmesh.registry.etcd.wrapper.EtcdClientWrapper;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
