@@ -73,7 +73,6 @@ public class EtcdRegistryServiceTest {
     public void testInit() {
         etcdRegistryService.init();
         etcdRegistryService.start();
-        Assert.assertNotNull(etcdRegistryService.getServerAddr());
     }
 
     @Test
