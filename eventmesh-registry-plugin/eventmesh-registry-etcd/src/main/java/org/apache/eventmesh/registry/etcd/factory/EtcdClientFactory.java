@@ -17,72 +17,78 @@
 
 package org.apache.eventmesh.registry.etcd.factory;
 
-import io.etcd.jetcd.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.registry.etcd.constant.EtcdConstant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.etcd.jetcd.ByteSequence;
+import io.etcd.jetcd.Client;
+import io.etcd.jetcd.ClientBuilder;
+
+
 public class EtcdClientFactory {
 
-	private static final Logger logger = LoggerFactory.getLogger(EtcdClientFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(EtcdClientFactory.class);
 
-	private static Map<String, EtcdLeaseId> etcdLeaseIdMap = new ConcurrentHashMap<>();
+    private static final Map<String, EtcdLeaseId> etcdLeaseIdMap = new ConcurrentHashMap<>();
 
 
-	public static Client createClient(Properties properties) {
-		String serverAddr = properties.getProperty(EtcdConstant.SERVER_ADDR);
-		String username = properties.getProperty(EtcdConstant.USERNAME);
-		String password = properties.getProperty(EtcdConstant.PASSWORD);
+    public static Client createClient(Properties properties) {
+        String serverAddr = properties.getProperty(EtcdConstant.SERVER_ADDR);
+        String username = properties.getProperty(EtcdConstant.USERNAME);
+        String password = properties.getProperty(EtcdConstant.PASSWORD);
 
-		EtcdLeaseId etcdLeaseId = etcdLeaseIdMap.get(serverAddr);
-		if (Objects.nonNull(etcdLeaseId)) {
-			return etcdLeaseId.getClientWrapper();
-		}
-		ClientBuilder clientBuilder = Client.builder();
-		String[] addresss = serverAddr.split(",");
-		String[] httpAddress = new String[addresss.length];
-		for (int i = 0; i < addresss.length; i++) {
-			if (!addresss[i].startsWith(Constants.HTTP_PROTOCOL_PREFIX)) {
-				httpAddress[i] = Constants.HTTP_PROTOCOL_PREFIX + addresss[i];
-			}
-		}
-		etcdLeaseId = new EtcdLeaseId();
-		try {
-			etcdLeaseId.setUrl(serverAddr);
-			etcdLeaseId.setClientBuilder(clientBuilder.endpoints(httpAddress));
-			if (StringUtils.isNoneBlank(username)) {
-				etcdLeaseId.getClientBuilder().user(ByteSequence.from(username.getBytes()));
-			}
-			if (StringUtils.isNoneBlank(password)) {
-				etcdLeaseId.getClientBuilder().password(ByteSequence.from(password.getBytes()));
-			}
-			etcdLeaseId.setClientWrapper(new EtcdClientWrapper(etcdLeaseId.getClientBuilder().build()));
-			EtcdClientWrapper client = etcdLeaseId.getClientWrapper();
-			long leaseId = client.getLeaseClient().grant(EtcdConstant.TTL).get().getID();
-			etcdLeaseId.setLeaseId(leaseId);
-			EtcdStreamObserver etcdStreamObserver = new EtcdStreamObserver();
-			etcdStreamObserver.setEtcdLeaseId(etcdLeaseId);
-			etcdLeaseId.setEtcdStreamObserver(etcdStreamObserver);
-			client.getLeaseClient().keepAlive(leaseId, etcdStreamObserver);
+        EtcdLeaseId etcdLeaseId = etcdLeaseIdMap.get(serverAddr);
+        if (Objects.nonNull(etcdLeaseId)) {
+            return etcdLeaseId.getClientWrapper();
+        }
+        ClientBuilder clientBuilder = Client.builder();
+        String[] addresss = serverAddr.split(",");
+        String[] httpAddress = new String[addresss.length];
+        for (int i = 0; i < addresss.length; i++) {
+            if (!addresss[i].startsWith(Constants.HTTP_PROTOCOL_PREFIX)) {
+                httpAddress[i] = Constants.HTTP_PROTOCOL_PREFIX + addresss[i];
+            }
+        }
+        etcdLeaseId = new EtcdLeaseId();
+        try {
+            etcdLeaseId.setUrl(serverAddr);
+            etcdLeaseId.setClientBuilder(clientBuilder.endpoints(httpAddress));
+            if (StringUtils.isNoneBlank(username)) {
+                etcdLeaseId.getClientBuilder().user(ByteSequence.from(username.getBytes()));
+            }
+            if (StringUtils.isNoneBlank(password)) {
+                etcdLeaseId.getClientBuilder().password(ByteSequence.from(password.getBytes()));
+            }
+            etcdLeaseId.setClientWrapper(new EtcdClientWrapper(etcdLeaseId.getClientBuilder().build()));
+            EtcdClientWrapper client = etcdLeaseId.getClientWrapper();
+            long leaseId = client.getLeaseClient().grant(EtcdConstant.TTL).get().getID();
+            etcdLeaseId.setLeaseId(leaseId);
+            EtcdStreamObserver etcdStreamObserver = new EtcdStreamObserver();
+            etcdStreamObserver.setEtcdLeaseId(etcdLeaseId);
+            etcdLeaseId.setEtcdStreamObserver(etcdStreamObserver);
+            client.getLeaseClient().keepAlive(leaseId, etcdStreamObserver);
 
-			etcdLeaseIdMap.put(serverAddr, etcdLeaseId);
-		} catch (Throwable e) {
-			logger.error(e.getMessage(), e);
-			throw new RegistryException("createClient failed", e);
-		}
-		return etcdLeaseId.getClientWrapper();
-	}
+            etcdLeaseIdMap.put(serverAddr, etcdLeaseId);
+        } catch (Throwable e) {
+            logger.error(e.getMessage(), e);
+            throw new RegistryException("createClient failed", e);
+        }
+        return etcdLeaseId.getClientWrapper();
+    }
 
-	public static Long getLeaseId(String url) {
-		return etcdLeaseIdMap.get(url).getLeaseId();
-	}
+    public static Long getLeaseId(String url) {
+        return etcdLeaseIdMap.get(url).getLeaseId();
+    }
 
 }
