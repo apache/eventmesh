@@ -14,7 +14,7 @@ TCP, HTTP 和 GRPC 示例都在**eventmesh-example**模块下
 
 <h4>异步消息</h4>
 
-- 创建主题TEST-TOPIC-TCP-ASYNC，可以通过rocketmq-console或者rocketmq tools 命令
+- 创建主题TEST-TOPIC-TCP-ASYNC，可以通过 rocketmq-console 或者 rocketmq tools 命令
 
 - 启动消费者，订阅上一步骤已经创建的Topic
 
@@ -30,7 +30,7 @@ TCP, HTTP 和 GRPC 示例都在**eventmesh-example**模块下
 
 <h4>广播消息</h4>
 
-- 创建主题TEST-TOPIC-TCP-BROADCAST，可以通过rocketmq-console或者rocketmq tools 命令
+- 创建主题TEST-TOPIC-TCP-BROADCAST，可以通过 rocketmq-console 或者 rocketmq tools 命令
 
 - 启动消费端，订阅上一步骤已经创建的Topic
 
@@ -123,10 +123,6 @@ TCP, HTTP 和 GRPC 示例都在**eventmesh-example**模块下
 ```
 
 
-
-
-
-
 ### 3.4 测试
 
 **预先准备** ：RocketMQ Namesrv & Broker
@@ -141,7 +137,6 @@ docker pull rocketmqinc/rocketmq-broker:4.5.0-alpine
 
 #运行namerv容器
 docker run -d -p 9876:9876 -v `pwd` /data/namesrv/logs:/root/logs -v `pwd`/data/namesrv/store:/root/store --name rmqnamesrv  rocketmqinc/rocketmq-namesrv:4.5.0-alpine sh mqnamesrv
-
 #运行broker容器
 docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq-broker:4.5.0-alpine sh mqbroker -c ../conf/broker.conf
 ```
@@ -149,10 +144,6 @@ docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs
 这里 **rocketmq-broker ip** 是 **pod ip**, 如果你想修改这个ip, 可以通过挂载容器中 **broker.conf** 文件的方式并修改文件中的 **brokerIP1** 配置项为自定义值
 
 **3.4.1 运行示例**
-
-Windows
-
-- Windows系统下运行示例可以参考[这里](https://github.com/apache/incubator-eventmesh/blob/develop/docs/cn/instructions/eventmesh-sdk-java-quickstart.zh-CN.md)
 
 Linux
 
