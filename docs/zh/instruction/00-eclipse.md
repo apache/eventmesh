@@ -4,7 +4,7 @@
 
 ```
 64位JDK 1.8+;
-Gradle至少为5.6, 推荐 5.6.*
+Gradle至少为7.0, 推荐 7.0.*
 eclipse 已安装gradle插件或者eclipse自带gradle插件
 ```
 
