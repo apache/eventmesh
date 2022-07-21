@@ -61,17 +61,17 @@
 
 [Step 1: Deploy eventmesh-store](docs/zh/instruction/01-store.md)
 
-[Step 2: Start eventmesh-runtime](docs/zh/instruction/01-store.md)
+[Step 2: Start eventmesh-runtime](docs/zh/instruction/02-runtime.md)
 
-[Step 3: Run our demos](docs/zh/instruction/01-store.md)
+[Step 3: Run our demos](docs/zh/instruction/03-demo.md)
 
 除此之外，我们还提供了 Docker 版本的快速开始指引，方便您借助 Docker 来初探我们的项目:
 
 [Step 1: Deploy eventmesh-store using docker](docs/zh/instruction/01-store-with-docker.md)
 
-[Step 2: Start eventmesh-runtime using docker](docs/zh/instruction/01-store-with-docker.md)
+[Step 2: Start eventmesh-runtime using docker](docs/zh/instruction/02-runtime-with-docker.md)
 
-[Step 3: Run our demos](docs/zh/instruction/01-store.md)
+[Step 3: Run our demos](docs/zh/instruction/03-demo.md)
 
 
 

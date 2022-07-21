@@ -59,17 +59,17 @@ Here are the guidelines:
 
 [Step 1: Deploy eventmesh-store](docs/zh/instruction/01-store.md)
 
-[Step 2: Start eventmesh-runtime](docs/zh/instruction/01-store.md)
+[Step 2: Start eventmesh-runtime](docs/zh/instruction/02-runtime.md)
 
-[Step 3: Run our demos](docs/zh/instruction/01-store.md)
+[Step 3: Run our demos](docs/zh/instruction/03-demo.md)
 
 Besides, we also provide the docker-version guidelines for you if you prefer Docker:
 
 [Step 1: Deploy eventmesh-store using docker](docs/zh/instruction/01-store-with-docker.md)
 
-[Step 2: Start eventmesh-runtime using docker](docs/zh/instruction/01-store-with-docker.md)
+[Step 2: Start eventmesh-runtime using docker](docs/zh/instruction/02-runtime-with-docker.md)
 
-[Step 3: Run our demos](docs/zh/instruction/01-store.md)
+[Step 3: Run our demos](docs/zh/instruction/03-demo.md)
 
 ## Contributing
 
