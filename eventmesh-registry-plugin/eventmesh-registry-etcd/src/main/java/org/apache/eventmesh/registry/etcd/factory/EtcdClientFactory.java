@@ -19,6 +19,7 @@ package org.apache.eventmesh.registry.etcd.factory;
 
 import io.etcd.jetcd.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.registry.etcd.constant.EtcdConstant;
 import org.apache.eventmesh.registry.etcd.wrapper.EtcdClientWrapper;
@@ -76,6 +77,7 @@ public class EtcdClientFactory {
 			etcdLeaseIdMap.put(serverAddr, etcdLeaseId);
 		} catch (Throwable e) {
 			logger.error(e.getMessage(), e);
+			throw new RegistryException("createClient failed", e);
 		}
 		return etcdLeaseId.getClientWrapper();
 	}
