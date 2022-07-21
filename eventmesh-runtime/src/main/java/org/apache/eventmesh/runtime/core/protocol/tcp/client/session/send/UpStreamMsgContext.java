@@ -92,21 +92,26 @@ public class UpStreamMsgContext extends RetryContext {
             Command replyCmd = getReplyCmd(header.getCmd());
             long sendTime = System.currentTimeMillis();
 
-            EventMeshTcpSendResult sendStatus = session.upstreamMsg(header, event,
-                    createSendCallback(replyCmd, taskExecuteTime, event), startTime, taskExecuteTime);
+            retryTimes++;
 
-            if (StringUtils.equals(EventMeshTcpSendStatus.SUCCESS.name(), sendStatus.getSendStatus().name())) {
-                logger.info("pkg|eventMesh2mq|cmd={}|event={}|user={}|wait={}ms|cost={}ms", header.getCmd(), event,
+            // check session availability
+            if (session.isAvailable(event.getSubject())) {
+                EventMeshTcpSendResult sendStatus = session.upstreamMsg(header, event,
+                    createSendCallback(replyCmd, taskExecuteTime, event, this), startTime, taskExecuteTime);
+
+                if (StringUtils.equals(EventMeshTcpSendStatus.SUCCESS.name(), sendStatus.getSendStatus().name())) {
+                    logger.info("pkg|eventMesh2mq|cmd={}|event={}|user={}|wait={}ms|cost={}ms", header.getCmd(), event,
                         session.getClient(), taskExecuteTime - startTime, sendTime - startTime);
-            } else {
-                throw new Exception(sendStatus.getDetail());
+                } else {
+                    throw new Exception(sendStatus.getDetail());
+                }
             }
         } catch (Exception e) {
             logger.error("TCP UpstreamMsg Retry error", e);
         }
     }
 
-    protected SendCallback createSendCallback(Command replyCmd, long taskExecuteTime, CloudEvent event) {
+    protected SendCallback createSendCallback(Command replyCmd, long taskExecuteTime, CloudEvent event, UpStreamMsgContext retryContext) {
         final long createTime = System.currentTimeMillis();
         Package msg = new Package();
 
@@ -129,10 +134,9 @@ public class UpStreamMsgContext extends RetryContext {
                 session.getSender().getUpstreamBuff().release();
 
                 // retry
-                UpStreamMsgContext upStreamMsgContext = new UpStreamMsgContext(
-                        session, event, header, startTime, taskExecuteTime);
-                upStreamMsgContext.delay(10000);
-                session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(upStreamMsgContext);
+                // reset delay time
+                retryContext.delay(10000);
+                session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(retryContext);
 
                 session.getSender().failMsgCount.incrementAndGet();
                 logger.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(),
