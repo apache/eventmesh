@@ -42,29 +42,29 @@ The deployment of eventmesh-store has finished, please go to the next step: [Sta
 
 
 ## Deploy
-Run 命令行输入如下命令直接从 pull RocketMQ image from Docker Hub：
+Pull RocketMQ image from Docker Hub：
 
 ```shell
 #获取namesrv镜像
-docker pull rocketmqinc/rocketmq-namesrv:4.5.0-alpine
+sudo docker pull rocketmqinc/rocketmq-namesrv:4.5.0-alpine
 #获取broker镜像
-docker pull rocketmqinc/rocketmq-broker:4.5.0-alpine
+sudo docker pull rocketmqinc/rocketmq-broker:4.5.0-alpine
 ```
 
-在命令行输入以下命令运行namerv容器和broker容器
+Start namesrv  and broker
 
 ```shell
 #运行namerv容器
-docker run -d -p 9876:9876 -v `pwd` /data/namesrv/logs:/root/logs -v `pwd`/data/namesrv/store:/root/store --name rmqnamesrv  rocketmqinc/rocketmq-namesrv:4.5.0-alpine sh mqnamesrv
+sudo docker run -d -p 9876:9876 -v `pwd` /data/namesrv/logs:/root/logs -v `pwd`/data/namesrv/store:/root/store --name rmqnamesrv  rocketmqinc/rocketmq-namesrv:4.5.0-alpine sh mqnamesrv
 
 #运行broker容器
-docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq-broker:4.5.0-alpine sh mqbroker -c ../conf/broker.conf
+sudo docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq-broker:4.5.0-alpine sh mqbroker -c ../conf/broker.conf
 ```
 
-Please note that the **rocketmq-broker ip** is **pod ip**. If you want to 如果你想修改这个ip, 可以通过挂载容器中 **broker.conf** 文件的方式并修改文件中的 **brokerIP1** 配置项为自定义值
+Please note that the **rocketmq-broker ip** is **pod ip**. If you want to modify this ip, you can set it your custom value in **broker.conf**。
 
 
-By noe, the deployment of eventmesh-store has finished, please go to the next step: [Start Eventmesh-Runtime Using Docker](docs/en/instruction/02-runtime-with-docker.md)
+By now, the deployment of eventmesh-store has finished, please go to the next step: [Start Eventmesh-Runtime Using Docker](docs/en/instruction/02-runtime-with-docker.md)
 
 
 ## Reference
