@@ -14,9 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.eventmesh.registry.etcd.factory;
 
-import io.etcd.jetcd.*;
+
+import io.etcd.jetcd.Auth;
+import io.etcd.jetcd.Client;
+import io.etcd.jetcd.Cluster;
+import io.etcd.jetcd.KV;
+import io.etcd.jetcd.Lease;
+import io.etcd.jetcd.Lock;
+import io.etcd.jetcd.Maintenance;
+import io.etcd.jetcd.Watch;
+
 
 class EtcdClientWrapper implements Client {
 
