@@ -29,7 +29,7 @@ import java.util.Properties;
 public class KnativeProducerImplTest {
 
     @Test
-    public void testSendOneway() throws Exception {
+    public void testPublish() throws Exception {
         Properties properties = new Properties();
 
         // Set URL according to cloudevents-player:
