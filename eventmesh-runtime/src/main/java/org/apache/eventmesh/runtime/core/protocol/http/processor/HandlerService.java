@@ -17,14 +17,20 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.HTTPTrace;
 import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
+import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -36,11 +42,25 @@ import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.multipart.Attribute;
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.opentelemetry.api.trace.Span;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.entity.ContentType;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 
 public class HandlerService {
@@ -56,6 +76,8 @@ public class HandlerService {
 
     @Setter
     private HTTPTrace httpTrace;
+
+    public DefaultHttpDataFactory defaultHttpDataFactory = new DefaultHttpDataFactory(false);
 
 
     public void init() {
@@ -101,7 +123,7 @@ public class HandlerService {
     /**
      * @param httpRequest
      */
-    public void handler(ChannelHandlerContext ctx, HttpRequest httpRequest) {
+    public void handler(ChannelHandlerContext ctx, HttpRequest httpRequest, ThreadPoolExecutor asyncContextCompleteHandler) {
 
 
         TraceOperation traceOperation = httpTrace.getTraceOperation(httpRequest, ctx.channel());
@@ -116,6 +138,7 @@ public class HandlerService {
             handlerSpecific.httpRequest = httpRequest;
             handlerSpecific.ctx = ctx;
             handlerSpecific.traceOperation = traceOperation;
+            handlerSpecific.asyncContext = new AsyncContext<>(new HttpEventWrapper(), null, asyncContextCompleteHandler);
             processorWrapper.threadPoolExecutor.execute(handlerSpecific);
         } catch (Exception e) {
             httpServerLogger.error(e.getMessage(), e);
@@ -139,6 +162,60 @@ public class HandlerService {
         });
     }
 
+    private HttpEventWrapper parseHttpRequest(HttpRequest httpRequest) throws IOException {
+        HttpEventWrapper httpEventWrapper = new HttpEventWrapper();
+        httpEventWrapper.setHttpMethod(httpRequest.method().name());
+        httpEventWrapper.setHttpVersion(httpRequest.protocolVersion().protocolName());
+        httpEventWrapper.setRequestURI(httpRequest.uri());
+
+        //parse http header
+        for (String key : httpRequest.headers().names()) {
+            httpEventWrapper.getHeaderMap().put(key, httpRequest.headers().get(key));
+        }
+
+        final long bodyDecodeStart = System.currentTimeMillis();
+        //parse http body
+        FullHttpRequest fullHttpRequest = (FullHttpRequest) httpRequest;
+        final Map<String, Object> bodyMap = new HashMap<>();
+        if (HttpMethod.GET == fullHttpRequest.method()) {
+            QueryStringDecoder getDecoder = new QueryStringDecoder(fullHttpRequest.uri());
+            getDecoder.parameters().forEach((key, value) -> bodyMap.put(key, value.get(0)));
+        } else if (HttpMethod.POST == fullHttpRequest.method()) {
+
+            if (StringUtils.contains(httpRequest.headers().get("Content-Type"), ContentType.APPLICATION_JSON.getMimeType())) {
+                int length = fullHttpRequest.content().readableBytes();
+                if (length > 0) {
+                    byte[] body = new byte[length];
+                    fullHttpRequest.content().readBytes(body);
+                    JsonUtils.deserialize(new String(body), new TypeReference<Map<String, Object>>() {
+                    }).forEach(bodyMap::put);
+                }
+            } else {
+                HttpPostRequestDecoder decoder =
+                    new HttpPostRequestDecoder(defaultHttpDataFactory, httpRequest);
+                for (InterfaceHttpData parm : decoder.getBodyHttpDatas()) {
+                    if (parm.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
+                        Attribute data = (Attribute) parm;
+                        bodyMap.put(data.getName(), data.getValue());
+                    }
+                }
+                decoder.destroy();
+            }
+
+        } else {
+            throw new RuntimeException("UnSupported Method " + fullHttpRequest.method());
+        }
+
+        byte[] requestBody = JsonUtils.serialize(bodyMap).getBytes(StandardCharsets.UTF_8);
+        httpEventWrapper.setBody(requestBody);
+
+        metrics.getSummaryMetrics().recordDecodeTimeCost(System.currentTimeMillis() - bodyDecodeStart);
+
+        return httpEventWrapper;
+    }
+
+    @Getter
+    @Setter
     class HandlerSpecific implements Runnable {
 
         private TraceOperation traceOperation;
@@ -148,6 +225,8 @@ public class HandlerService {
         private HttpRequest httpRequest;
 
         private HttpResponse response;
+
+        private AsyncContext<HttpEventWrapper> asyncContext;
 
         private Throwable exception;
 
@@ -159,6 +238,9 @@ public class HandlerService {
             try {
                 this.preHandler();
                 if (Objects.isNull(processorWrapper.httpProcessor)) {
+                    // set actual async request
+                    HttpEventWrapper httpEventWrapper = parseHttpRequest(httpRequest);
+                    this.asyncContext.setRequest(httpEventWrapper);
                     processorWrapper.async.handler(this, httpRequest);
                     return;
                 }
