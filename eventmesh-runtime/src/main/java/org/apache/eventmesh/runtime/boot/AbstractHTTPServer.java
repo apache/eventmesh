@@ -333,7 +333,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
 
             if (Objects.nonNull(handlerService) && handlerService.isProcessorWrapper(httpRequest)) {
-                handlerService.handler(ctx, httpRequest);
+                handlerService.handler(ctx, httpRequest, asyncContextCompleteHandler);
                 return;
             }
 
