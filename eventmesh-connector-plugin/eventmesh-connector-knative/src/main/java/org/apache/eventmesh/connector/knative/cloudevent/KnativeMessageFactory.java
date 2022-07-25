@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.connector.knative.cloudevent;
 
-import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeMessageWriter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+
+import io.cloudevents.CloudEvent;
 
 public final class KnativeMessageFactory {
 

@@ -17,19 +17,19 @@
 
 package org.apache.eventmesh.connector.knative.cloudevent.impl;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.CloudEventData;
-import io.cloudevents.SpecVersion;
-import io.cloudevents.core.v1.CloudEventBuilder;
-import io.cloudevents.core.format.EventFormat;
-import io.cloudevents.core.message.MessageWriter;
-import io.cloudevents.rw.CloudEventContextWriter;
-import io.cloudevents.rw.CloudEventRWException;
-import io.cloudevents.rw.CloudEventWriter;
-
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.CloudEventData;
+import io.cloudevents.SpecVersion;
+import io.cloudevents.core.format.EventFormat;
+import io.cloudevents.core.message.MessageWriter;
+import io.cloudevents.core.v1.CloudEventBuilder;
+import io.cloudevents.rw.CloudEventContextWriter;
+import io.cloudevents.rw.CloudEventRWException;
+import io.cloudevents.rw.CloudEventWriter;
 
 public class KnativeMessageWriter implements MessageWriter<CloudEventWriter<String>, String>, CloudEventWriter<String> {
 
@@ -38,12 +38,12 @@ public class KnativeMessageWriter implements MessageWriter<CloudEventWriter<Stri
     public KnativeMessageWriter(Properties properties) {
         String s = "{ \"msg\": [\"" + properties.get("data") + "\"]}";
         this.message = new CloudEventBuilder()
-                .withId(properties.getProperty(KnativeHeaders.CE_ID))
-                .withSource(URI.create(properties.getProperty(KnativeHeaders.CE_SOURCE)))
-                .withType(properties.getProperty(KnativeHeaders.CE_TYPE))
-                .withDataContentType(properties.getProperty(KnativeHeaders.CONTENT_TYPE))
-                .withData(s.getBytes(StandardCharsets.UTF_8))
-                .build();
+            .withId(properties.getProperty(KnativeHeaders.CE_ID))
+            .withSource(URI.create(properties.getProperty(KnativeHeaders.CE_SOURCE)))
+            .withType(properties.getProperty(KnativeHeaders.CE_TYPE))
+            .withDataContentType(properties.getProperty(KnativeHeaders.CONTENT_TYPE))
+            .withData(s.getBytes(StandardCharsets.UTF_8))
+            .build();
     }
 
     @Override

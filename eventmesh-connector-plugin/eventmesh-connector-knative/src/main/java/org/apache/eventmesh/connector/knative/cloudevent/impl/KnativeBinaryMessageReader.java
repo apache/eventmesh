@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.connector.knative.cloudevent.impl;
 
+import java.util.function.BiConsumer;
+
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.data.BytesCloudEventData;
 import io.cloudevents.core.message.impl.BaseGenericBinaryMessageReaderImpl;
-
-import java.util.function.BiConsumer;
 
 public class KnativeBinaryMessageReader extends BaseGenericBinaryMessageReaderImpl<String, String> {
 
