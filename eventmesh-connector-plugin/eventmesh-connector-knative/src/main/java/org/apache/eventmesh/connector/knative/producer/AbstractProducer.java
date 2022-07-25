@@ -17,24 +17,25 @@
 
 package org.apache.eventmesh.connector.knative.producer;
 
-import io.cloudevents.CloudEvent;
+import static org.asynchttpclient.Dsl.asyncHttpClient;
+
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.producer.Producer;
-import org.asynchttpclient.AsyncHttpClient;
 
-import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.asynchttpclient.Dsl.asyncHttpClient;
+import org.asynchttpclient.AsyncHttpClient;
+
+import io.cloudevents.CloudEvent;
 
 public abstract class AbstractProducer implements Producer {
 
+    protected final AtomicBoolean started = new AtomicBoolean(false);
     final Properties properties;
     AsyncHttpClient asyncHttpClient;
-    protected final AtomicBoolean started = new AtomicBoolean(false);
 
-    AbstractProducer(final Properties properties) throws IOException {
+    AbstractProducer(final Properties properties) {
         this.properties = properties;
         this.asyncHttpClient = asyncHttpClient();
     }
@@ -43,7 +44,7 @@ public abstract class AbstractProducer implements Producer {
         if (cloudEvent.getData() == null) {
             return new ConnectorRuntimeException(String.format("CloudEvent message data does not exist."));
         }
-        return  new ConnectorRuntimeException(String.format("Unknown connector runtime exception."));
+        return new ConnectorRuntimeException(String.format("Unknown connector runtime exception."));
     }
 
     public boolean isStarted() {
