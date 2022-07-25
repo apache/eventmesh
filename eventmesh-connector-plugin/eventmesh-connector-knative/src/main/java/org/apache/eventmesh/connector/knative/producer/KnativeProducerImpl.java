@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.knative.producer;
 
-import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
@@ -25,12 +24,14 @@ import org.apache.eventmesh.api.producer.Producer;
 
 import java.util.Properties;
 
+import io.cloudevents.CloudEvent;
+
 public class KnativeProducerImpl implements Producer {
 
     private ProducerImpl producer;
 
     @Override
-    public void init(Properties properties) throws Exception {
+    public synchronized void init(Properties properties) throws Exception {
         producer = new ProducerImpl(properties);
     }
 

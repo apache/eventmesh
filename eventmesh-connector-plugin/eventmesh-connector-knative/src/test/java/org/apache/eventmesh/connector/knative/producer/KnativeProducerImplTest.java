@@ -22,9 +22,10 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
 import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeHeaders;
-import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
+
+import org.junit.jupiter.api.Test;
 
 public class KnativeProducerImplTest {
 
@@ -33,7 +34,7 @@ public class KnativeProducerImplTest {
         Properties properties = new Properties();
 
         // Set URL according to cloudevents-player:
-        // Please follow the steps in https://knative.dev/docs/getting-started/first-source/#sending-an-event to set up a Knative service (cloudevents-player) as source.
+        // Please follow the steps in https://knative.dev/docs/getting-started/first-source/#sending-an-event to set up a Knative service (cloudevents-player) as sink.
         properties.put("url", "http://cloudevents-player.default.127.0.0.1.sslip.io");
 
         // Set CloudEvent header:
@@ -50,7 +51,7 @@ public class KnativeProducerImplTest {
         KnativeProducerImpl producer = new KnativeProducerImpl();
         producer.init(properties);
 
-        // Send CloudEvent message to cloudevents-player:
+        // Publish a CloudEvent message to cloudevents-player:
         producer.publish(KnativeMessageFactory.createWriter(properties), new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {

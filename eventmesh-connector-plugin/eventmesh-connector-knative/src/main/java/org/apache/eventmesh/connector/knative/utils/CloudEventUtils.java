@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.connector.knative.utils;
 
-import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
+
+import io.cloudevents.CloudEvent;
 
 public class CloudEventUtils {
 
