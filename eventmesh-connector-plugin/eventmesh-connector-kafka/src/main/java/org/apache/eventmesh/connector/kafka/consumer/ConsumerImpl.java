@@ -17,12 +17,16 @@
 
 package org.apache.eventmesh.connector.kafka.consumer;
 
+import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.requests.MetadataResponse;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.time.Duration;
@@ -35,13 +39,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.CloudEventUtils;
 
 public class ConsumerImpl {
     private final KafkaConsumer<String, CloudEvent> kafkaConsumer;
     private final Properties properties;
     private AtomicBoolean started = new AtomicBoolean(false);
     private EventListener eventListener;
-    // private final ConsumerConfig clientConfig;
 
     public ConsumerImpl(final Properties properties) {
         Properties props = new Properties();
@@ -99,10 +103,10 @@ public class ConsumerImpl {
         try {
             this.kafkaConsumer.subscribe(Arrays.asList(topic));
         } catch (Exception e) {
-            throw new ConnectorRuntimeException(String.format("Kafka consumer can't attach to %s.", topic));
+            throw new ConnectorRuntimeException(
+                String.format("Kafka consumer can't attach to %s.", topic));
         }
     }
-
 
     public void unsubscribe(String topic) {
         try {
@@ -114,7 +118,21 @@ public class ConsumerImpl {
             this.kafkaConsumer.unsubscribe();
             this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
-            throw new ConnectorRuntimeException(String.format("RocketMQ push consumer fails to unsubscribe topic: %s", topic));
+            throw new ConnectorRuntimeException(String.format("kafka push consumer fails to unsubscribe topic: %s", topic));
         }
+    }
+
+    public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
+        cloudEvents.forEach(cloudEvent -> this.updateOffset(
+            cloudEvent.getSubject(), (Long) cloudEvent.getExtension("offset"))
+        );
+    }
+
+    public void updateOffset(String topicName, long offset) {
+        this.kafkaConsumer.seek(new TopicPartition(topicName, 1), offset);
+    }
+
+    public void registerEventListener(EventListener listener) {
+        this.eventListener = listener;
     }
 }

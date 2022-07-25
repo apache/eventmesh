@@ -48,6 +48,11 @@ public class KafkaConsumerImpl implements Consumer {
     }
 
     @Override
+    public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
+        consumer.updateOffset(cloudEvents, context);
+    }
+
+    @Override
     public void subscribe(String topic) throws Exception {
         consumer.subscribe(topic);
     }
@@ -68,18 +73,13 @@ public class KafkaConsumerImpl implements Consumer {
     }
 
     @Override
-    public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
-
-    }
-
-    @Override
     public void unsubscribe(String topic) {
         consumer.unsubscribe(topic);
     }
 
     @Override
     public void registerEventListener(EventListener listener) {
-
+        consumer.registerEventListener(listener);
     }
 
     @Override
