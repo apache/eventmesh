@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
+import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.HTTPTrace;
 import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
@@ -263,7 +264,7 @@ public class HandlerService {
                 this.response = HttpResponseUtils.createSuccess();
             }
             this.traceOperation.endTrace();
-            this.sendResponse(this.response);
+            HandlerService.this.sendResponse(ctx, this.response);
         }
 
         private void preHandler() {
@@ -277,7 +278,7 @@ public class HandlerService {
             this.traceOperation.exceptionTrace(this.exception);
             metrics.getSummaryMetrics().recordHTTPDiscard();
             metrics.getSummaryMetrics().recordHTTPReqResTimeCost(System.currentTimeMillis() - requestTime);
-            this.sendResponse(HttpResponseUtils.createInternalServerError());
+            HandlerService.this.sendResponse(ctx, HttpResponseUtils.createInternalServerError());
         }
 
 
@@ -291,7 +292,16 @@ public class HandlerService {
 
         public void sendResponse(HttpResponse response) {
             this.response = response;
-            this.preHandler();
+            this.postHandler();
+        }
+
+        public void sendResponse(EventMeshRetCode retCode, Map<String, Object> responseHeaderMap, Map<String, Object> responseBodyMap)
+            throws Exception {
+            responseBodyMap.put("retCode", retCode.getRetCode());
+            responseBodyMap.put("retMsg", retCode.getErrMsg());
+            HttpEventWrapper responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
+            asyncContext.onComplete(responseWrapper);
+            HandlerService.this.sendResponse(ctx, asyncContext.getRequest().httpResponse());
         }
 
         /**
