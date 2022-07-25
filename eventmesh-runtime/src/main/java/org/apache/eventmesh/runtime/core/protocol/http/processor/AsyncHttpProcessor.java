@@ -31,5 +31,5 @@ public interface AsyncHttpProcessor extends HttpProcessor {
         return null;
     }
 
-    public void handler(HandlerSpecific handlerSpecific, HttpRequest httpRequest);
+    public void handler(HandlerSpecific handlerSpecific, HttpRequest httpRequest) throws Exception;
 }
