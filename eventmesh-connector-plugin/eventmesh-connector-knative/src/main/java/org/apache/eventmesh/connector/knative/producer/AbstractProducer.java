@@ -26,11 +26,14 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.asynchttpclient.AsyncHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
 public abstract class AbstractProducer implements Producer {
 
+    static final Logger logger = LoggerFactory.getLogger(AbstractProducer.class);
     protected final AtomicBoolean started = new AtomicBoolean(false);
     final Properties properties;
     AsyncHttpClient asyncHttpClient;
@@ -40,11 +43,11 @@ public abstract class AbstractProducer implements Producer {
         this.asyncHttpClient = asyncHttpClient();
     }
 
-    ConnectorRuntimeException checkProducerException(CloudEvent cloudEvent) {
+    ConnectorRuntimeException checkProducerException(CloudEvent cloudEvent, Throwable e) {
         if (cloudEvent.getData() == null) {
-            return new ConnectorRuntimeException(String.format("CloudEvent message data does not exist."));
+            return new ConnectorRuntimeException(String.format("CloudEvent message data does not exist.", e));
         }
-        return new ConnectorRuntimeException(String.format("Unknown connector runtime exception."));
+        return new ConnectorRuntimeException(String.format("Unknown connector runtime exception.", e));
     }
 
     public boolean isStarted() {

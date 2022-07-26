@@ -33,10 +33,6 @@ public class KnativeProducerImplTest {
     public void testPublish() throws Exception {
         Properties properties = new Properties();
 
-        // Set URL according to cloudevents-player:
-        // Please follow the steps in https://knative.dev/docs/getting-started/first-source/#sending-an-event to set up a Knative service (cloudevents-player) as sink.
-        properties.put("url", "http://cloudevents-player.default.127.0.0.1.sslip.io");
-
         // Set CloudEvent header:
         properties.put(KnativeHeaders.CONTENT_TYPE, "application/json");
         properties.put(KnativeHeaders.CE_ID, "1234");
