@@ -22,23 +22,22 @@ import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.annotation.Nullable;
 
+import io.cloudevents.CloudEvent;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class HTTPTrace {
 
@@ -46,18 +45,24 @@ public class HTTPTrace {
 
     private Tracer tracer;
 
+    public boolean useTrace;
+
     @Setter
     private String serviceAddress;
 
     @Setter
     private String servicePort;
 
+    public HTTPTrace(boolean useTrace) {
+        this.useTrace = useTrace;
+    }
+
     public TraceOperation getTraceOperation(HttpRequest httpRequest, Channel channel) {
 
         final Map<String, Object> headerMap = parseHttpHeader(httpRequest);
         Span span = TraceUtils.prepareServerSpan(headerMap, EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
             false);
-        return new TraceOperation(span);
+        return new TraceOperation(span, null);
     }
 
     private Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
@@ -75,21 +80,68 @@ public class HTTPTrace {
 
     @AllArgsConstructor
     @Getter
-    public static class TraceOperation {
+    public class TraceOperation {
 
-        private final Span span;
+        private Span span;
 
-        public void endTrace() {
+        private TraceOperation childTraceOperation;
 
+        public void endTrace(CloudEvent ce) {
+            if (!HTTPTrace.this.useTrace) {
+                return;
+            }
+            if (childTraceOperation != null) {
+                childTraceOperation.endTrace(ce);
+            }
             try (Scope ignored = span.makeCurrent()) {
-                TraceUtils.finishSpan(span, null);
+                TraceUtils.finishSpan(span, ce);
             }
         }
 
-        public void exceptionTrace(@Nullable Throwable ex) {
+        public void exceptionTrace(@Nullable Throwable ex, Map<String, Object> map) {
+            if (!HTTPTrace.this.useTrace) {
+                return;
+            }
+            if (childTraceOperation != null) {
+                childTraceOperation.exceptionTrace(ex, map);
+            }
             try (Scope ignored = span.makeCurrent()) {
-                TraceUtils.finishSpanWithException(span, null, ex.getMessage(), ex);
+                TraceUtils.finishSpanWithException(span, map, ex.getMessage(), ex);
             }
         }
+
+        public void endLatestTrace(CloudEvent ce) {
+            if (childTraceOperation != null) {
+                TraceOperation traceOperation = this.childTraceOperation.getChildTraceOperation();
+                this.childTraceOperation.setChildTraceOperation(null);
+
+                childTraceOperation.endTrace(ce);
+                this.childTraceOperation = traceOperation;
+            }
+        }
+
+        public void exceptionLatestTrace(@Nullable Throwable ex, Map<String, Object> traceMap) {
+            if (childTraceOperation != null) {
+                TraceOperation traceOperation = this.childTraceOperation.getChildTraceOperation();
+                this.childTraceOperation.setChildTraceOperation(null);
+
+                childTraceOperation.exceptionTrace(ex, traceMap);
+                this.childTraceOperation = traceOperation;
+            }
+        }
+
+        public TraceOperation createClientTraceOperation(Map<String, Object> map, String spanName, boolean isSpanFinishInOtherThread) {
+            TraceOperation traceOperation = new TraceOperation(TraceUtils.prepareClientSpan(map, spanName, isSpanFinishInOtherThread), null);
+            this.setChildTraceOperation(traceOperation);
+            return traceOperation;
+        }
+
+        public void setChildTraceOperation(TraceOperation traceOperation) {
+            if (childTraceOperation != null) {
+                childTraceOperation.setChildTraceOperation(traceOperation);
+            }
+            this.childTraceOperation = traceOperation;
+        }
+
     }
 }
