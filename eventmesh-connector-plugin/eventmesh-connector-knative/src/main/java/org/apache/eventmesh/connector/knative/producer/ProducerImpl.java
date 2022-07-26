@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.knative.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
@@ -49,7 +48,7 @@ public class ProducerImpl extends AbstractProducer {
     public void send(CloudEvent cloudEvent, SendCallback sendCallback) {
         // Set HTTP header, body and send CloudEvent message:
         try {
-            ListenableFuture<Response> execute = super.getAsyncHttpClient().preparePost(this.attributes().getProperty("url"))
+            ListenableFuture<Response> execute = super.getAsyncHttpClient().preparePost("http://" + this.attributes().getProperty("url"))
                 .addHeader(KnativeHeaders.CONTENT_TYPE, cloudEvent.getDataContentType())
                 .addHeader(KnativeHeaders.CE_ID, cloudEvent.getId())
                 .addHeader(KnativeHeaders.CE_SPECVERSION, String.valueOf(cloudEvent.getSpecVersion()))
@@ -61,37 +60,25 @@ public class ProducerImpl extends AbstractProducer {
             Response response = execute.get(10, TimeUnit.SECONDS);
             if (response.getStatusCode() == HttpConstants.ResponseStatusCodes.OK_200) {
                 sendCallback.onSuccess(CloudEventUtils.convertSendResult(cloudEvent));
+                return;
             }
+            throw new IllegalStateException("HTTP response code error: " + response.getStatusCode());
         } catch (Exception e) {
-            sendCallback.onException(new OnExceptionContext());
+            ConnectorRuntimeException onsEx = ProducerImpl.this.checkProducerException(cloudEvent, e);
+            OnExceptionContext context = new OnExceptionContext();
+            context.setTopic(KnativeMessageFactory.createReader(cloudEvent));
+            context.setException(onsEx);
+            sendCallback.onException(context);
         }
     }
 
     public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
         try {
-            this.send(cloudEvent, this.sendCallbackConvert(cloudEvent, sendCallback));
+            this.send(cloudEvent, sendCallback);
         } catch (Exception e) {
-            throw new ConnectorRuntimeException("Send cloudevent message exception.");
+            logger.error(String.format("Send cloudevent message Exception, %s", e));
+            throw new ConnectorRuntimeException("Send cloudevent message Exception.");
         }
-    }
-
-    private SendCallback sendCallbackConvert(final CloudEvent cloudEvent, final SendCallback sendCallback) {
-        SendCallback knativeSendCallback =
-            new SendCallback() {
-                @Override
-                public void onSuccess(SendResult sendResult) {
-                    sendCallback.onSuccess(CloudEventUtils.convertSendResult(cloudEvent));
-                }
-
-                @Override
-                public void onException(OnExceptionContext context) {
-                    ConnectorRuntimeException onsEx = ProducerImpl.this.checkProducerException(cloudEvent);
-                    context.setTopic(KnativeMessageFactory.createReader(cloudEvent));
-                    context.setException(onsEx);
-                    sendCallback.onException(context);
-                }
-            };
-        return knativeSendCallback;
     }
 
     @Override

@@ -26,6 +26,11 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
+    implementation.exclude group: 'log4j', module: 'log4j'
+}
+
 dependencies {
     implementation 'org.asynchttpclient:async-http-client:2.12.0'
 
@@ -34,6 +39,9 @@ dependencies {
 
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
+
+    implementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
+    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
 
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
@@ -50,6 +58,12 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }
 
 test {
