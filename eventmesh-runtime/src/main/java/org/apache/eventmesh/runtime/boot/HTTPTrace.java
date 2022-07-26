@@ -32,26 +32,14 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
-import io.opentelemetry.context.propagation.TextMapPropagator;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 public class HTTPTrace {
 
-    private TextMapPropagator textMapPropagator;
-
-    private Tracer tracer;
-
     public boolean useTrace;
-
-    @Setter
-    private String serviceAddress;
-
-    @Setter
-    private String servicePort;
 
     public HTTPTrace(boolean useTrace) {
         this.useTrace = useTrace;
