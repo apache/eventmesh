@@ -43,7 +43,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteSubscribe
 import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteUnSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.ReplyMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncEventProcessor;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncEventProcessorV2;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncRemoteEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendSyncMessageProcessor;
@@ -56,7 +55,6 @@ import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.registry.Registry;
-import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.webhook.receive.WebHookController;
 
 import org.apache.commons.lang3.StringUtils;
@@ -356,13 +354,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         registerProcessor(RequestCode.MSG_SEND_ASYNC.getRequestCode(), sendAsyncMessageProcessor, sendMsgExecutor);
 
         SendAsyncEventProcessor sendAsyncEventProcessor = new SendAsyncEventProcessor(this);
-        registerProcessor(RequestURI.PUBLISH.getRequestURI(), sendAsyncEventProcessor, sendMsgExecutor);
-
-        SendAsyncEventProcessorV2 sendAsyncEventProcessorV2 = new SendAsyncEventProcessorV2(this);
-        handlerService.register(sendAsyncEventProcessorV2, sendMsgExecutor);
+        handlerService.register(sendAsyncEventProcessor, sendMsgExecutor);
 
         SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new SendAsyncRemoteEventProcessor(this);
-        registerProcessor(RequestURI.PUBLISH_BRIDGE.getRequestURI(), sendAsyncRemoteEventProcessor, remoteMsgExecutor);
+        handlerService.register(sendAsyncRemoteEventProcessor, remoteMsgExecutor);
 
         AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
         registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor, adminExecutor);
