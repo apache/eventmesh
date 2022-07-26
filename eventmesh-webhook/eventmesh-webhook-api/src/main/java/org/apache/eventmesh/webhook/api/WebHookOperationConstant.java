@@ -43,7 +43,7 @@ public class WebHookOperationConstant {
         if (filePath.startsWith("#{eventMeshHome}")) {
             String configPath = System.getProperty("confPath", System.getenv("confPath"));
            
-            filePath = filePath.replace("#{eventMeshHome}", configPath.substring(0,  configPath.lastIndexOf('/')));
+            filePath = filePath.replace("#{eventMeshHome}", configPath.substring(0,  configPath.lastIndexOf(FILE_SEPARATOR)));
         }
         return filePath;
     }

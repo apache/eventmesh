@@ -43,6 +43,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteSubscribe
 import org.apache.eventmesh.runtime.core.protocol.http.processor.RemoteUnSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.ReplyMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncEventProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncEventProcessorV2;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncRemoteEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendSyncMessageProcessor;
@@ -264,7 +265,7 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             super.useTrace = eventMeshHttpConfiguration.eventMeshServerTraceEnable;
         }
 
-        this.handlerService.setHttpTrace(new HTTPTrace());
+        this.handlerService.setHttpTrace(new HTTPTrace(eventMeshHttpConfiguration.eventMeshServerTraceEnable));
 
         registerHTTPRequestProcessor();
         this.initWebhook();
@@ -356,6 +357,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         SendAsyncEventProcessor sendAsyncEventProcessor = new SendAsyncEventProcessor(this);
         registerProcessor(RequestURI.PUBLISH.getRequestURI(), sendAsyncEventProcessor, sendMsgExecutor);
+
+        SendAsyncEventProcessorV2 sendAsyncEventProcessorV2 = new SendAsyncEventProcessorV2(this);
+        handlerService.register(sendAsyncEventProcessorV2, sendMsgExecutor);
 
         SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new SendAsyncRemoteEventProcessor(this);
         registerProcessor(RequestURI.PUBLISH_BRIDGE.getRequestURI(), sendAsyncRemoteEventProcessor, remoteMsgExecutor);

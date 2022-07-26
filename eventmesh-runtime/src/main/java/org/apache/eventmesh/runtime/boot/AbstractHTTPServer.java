@@ -60,11 +60,15 @@ import javax.net.ssl.SSLEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Preconditions;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -93,11 +97,9 @@ import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.ReferenceCountUtil;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Preconditions;
 
 public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
@@ -300,53 +302,22 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         return httpRequestBody;
     }
 
-    class HTTPHandler extends SimpleChannelInboundHandler<HttpRequest> {
+    class HTTPHandler extends ChannelInboundHandlerAdapter {
 
         @Override
-        protected void channelRead0(ChannelHandlerContext ctx, HttpRequest httpRequest) {
-            //            Context context = null;
-            //            Span span = null;
-            //            if (useTrace) {
-            //
-            //                //if the client injected span context,this will extract the context from httpRequest or it will be null
-            //                context = textMapPropagator.extract(Context.current(), httpRequest, new TextMapGetter<HttpRequest>() {
-            //                    @Override
-            //                    public Iterable<String> keys(HttpRequest carrier) {
-            //                        return carrier.headers().names();
-            //                    }
-            //
-            //                    @Override
-            //                    public String get(HttpRequest carrier, String key) {
-            //                        return carrier.headers().get(key);
-            //                    }
-            //                });
-            //
-            //                span = tracer.spanBuilder("HTTP " + httpRequest.method())
-            //                        .setParent(context)
-            //                        .setSpanKind(SpanKind.SERVER)
-            //                        .startSpan();
-            //                //attach the span to the server context
-            //                context = context.with(SpanKey.SERVER_KEY, span);
-            //                //put the context in channel
-            //                ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
-            //            }
+        public void channelRead(ChannelHandlerContext ctx, Object message) {
 
-
+            HttpRequest httpRequest = (HttpRequest) message;
             if (Objects.nonNull(handlerService) && handlerService.isProcessorWrapper(httpRequest)) {
                 handlerService.handler(ctx, httpRequest, asyncContextCompleteHandler);
                 return;
             }
 
-            Span span = null;
-            //            Context context = null;
-            //            context = EventMeshServer.getTrace().extractFrom();
-            //            span = EventMeshServer.getTrace().createSpan("", context);
-            //            //attach the span to the server context
-            //            context = context.with(SpanKey.SERVER_KEY, span);
-            //            //put the context in channel
-            //            ctx.channel().attr(AttributeKeys.SERVER_CONTEXT).set(context);
-
             try {
+
+                Span span = null;
+
+
                 preProcessHttpRequestHeader(ctx, httpRequest);
 
                 final Map<String, Object> headerMap = parseHttpHeader(httpRequest);
@@ -395,12 +366,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                     requestCommand.setHttpVersion(httpRequest.protocolVersion().protocolName());
                     requestCommand.setRequestCode(requestCode);
 
-                    //                if (useTrace) {
-                    //                    span.setAttribute(SemanticAttributes.HTTP_METHOD, httpRequest.method().name());
-                    //                    span.setAttribute(SemanticAttributes.HTTP_FLAVOR, httpRequest.protocolVersion().protocolName());
-                    //                    span.setAttribute(String.valueOf(SemanticAttributes.HTTP_STATUS_CODE), requestCode);
-                    //                }
-
                     HttpCommand responseCommand = null;
 
                     if (StringUtils.isBlank(requestCode)
@@ -438,7 +403,9 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
 
             } catch (Exception ex) {
-                httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead0 err", ex);
+                httpServerLogger.error("AbrstractHTTPServer.HTTPHandler.channelRead err", ex);
+            } finally {
+                ReferenceCountUtil.release(message);
             }
         }
 
