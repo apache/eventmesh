@@ -45,12 +45,12 @@ public class HTTPTrace {
         this.useTrace = useTrace;
     }
 
-    public TraceOperation getTraceOperation(HttpRequest httpRequest, Channel channel) {
+    public TraceOperation getTraceOperation(HttpRequest httpRequest, Channel channel, boolean traceEnabled) {
 
         final Map<String, Object> headerMap = parseHttpHeader(httpRequest);
         Span span = TraceUtils.prepareServerSpan(headerMap, EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
             false);
-        return new TraceOperation(span, null);
+        return new TraceOperation(span, null, traceEnabled);
     }
 
     private Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
@@ -73,6 +73,8 @@ public class HTTPTrace {
         private Span span;
 
         private TraceOperation childTraceOperation;
+
+        private boolean traceEnabled;
 
         public void endTrace(CloudEvent ce) {
             if (!HTTPTrace.this.useTrace) {
@@ -119,7 +121,7 @@ public class HTTPTrace {
         }
 
         public TraceOperation createClientTraceOperation(Map<String, Object> map, String spanName, boolean isSpanFinishInOtherThread) {
-            TraceOperation traceOperation = new TraceOperation(TraceUtils.prepareClientSpan(map, spanName, isSpanFinishInOtherThread), null);
+            TraceOperation traceOperation = new TraceOperation(TraceUtils.prepareClientSpan(map, spanName, isSpanFinishInOtherThread), null, this.traceEnabled);
             this.setChildTraceOperation(traceOperation);
             return traceOperation;
         }

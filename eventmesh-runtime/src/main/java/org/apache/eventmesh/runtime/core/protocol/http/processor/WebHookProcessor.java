@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.webhook.receive.WebHookController;
 
@@ -29,6 +30,7 @@ import io.netty.handler.codec.http.HttpResponse;
 
 import lombok.Setter;
 
+@EventMeshTrace(isEnable = true)
 public class WebHookProcessor implements HttpProcessor {
 
     @Setter
