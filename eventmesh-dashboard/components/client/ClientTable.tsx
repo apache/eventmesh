@@ -33,7 +33,8 @@ import {
   Button,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../../context/context';
 
 interface Client {
   env: string,
@@ -67,12 +68,14 @@ interface RemoveClientRequest {
 const ClientRow = ({
   host, port, group, protocol, url,
 }: ClientProps) => {
+  const { state } = useContext(AppContext);
+
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const onRemoveClick = async () => {
     try {
       setLoading(true);
-      await axios.delete<RemoveClientRequest>('/client', {
+      await axios.delete<RemoveClientRequest>(`${state.endpoint}/client`, {
         data: {
           host,
           port,
@@ -117,6 +120,8 @@ const ClientRow = ({
 };
 
 const ClientTable = () => {
+  const { state } = useContext(AppContext);
+
   const [searchInput, setSearchInput] = useState<string>('');
   const handleSearchInputChange = (event: React.FormEvent<HTMLInputElement>) => {
     setSearchInput(event.currentTarget.value);
@@ -138,7 +143,7 @@ const ClientTable = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const { data } = await axios.get<Client[]>('/client');
+        const { data } = await axios.get<Client[]>(`${state.endpoint}/client`);
         setClientList(data);
 
         const nextGroupSet = new Set<string>();

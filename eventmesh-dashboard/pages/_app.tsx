@@ -20,11 +20,9 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import '@fontsource/inter';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
-import axios from 'axios';
 import type { AppProps } from 'next/app';
 import Sidebar from '../components/Sidebar';
-
-axios.defaults.baseURL = 'http://localhost:10106';
+import { AppProvider } from '../context/context';
 
 const theme = extendTheme({
   initialColorMode: 'light',
@@ -37,9 +35,11 @@ const theme = extendTheme({
 
 const Application = ({ Component, pageProps }: AppProps) => (
   <ChakraProvider theme={theme}>
-    <Sidebar>
-      <Component {...pageProps} />
-    </Sidebar>
+    <AppProvider>
+      <Sidebar>
+        <Component {...pageProps} />
+      </Sidebar>
+    </AppProvider>
   </ChakraProvider>
 );
 

@@ -17,19 +17,24 @@
  * under the License.
  */
 
-import Head from 'next/head';
-import type { NextPage } from 'next';
-import Endpoint from '../components/index/Endpoint';
-import Configuration from '../components/index/Configuration';
+export interface State {
+  endpoint: string;
+}
 
-const Index: NextPage = () => (
-  <>
-    <Head>
-      <title>Apache EventMesh Dashboard</title>
-    </Head>
-    <Endpoint />
-    <Configuration />
-  </>
-);
+interface SetState {
+  type: 'SetState';
+  payload: {
+    endpoint: string;
+  };
+}
 
-export default Index;
+interface SetEndPointAction {
+  type: 'SetEndPointAction';
+  payload: {
+    endpoint: string;
+  };
+}
+
+export type Action =
+  | SetState
+  | SetEndPointAction;
