@@ -144,6 +144,6 @@ sudo docker rm -f [your container id or name]
 
 ## 探索更多
 
-既然 EventMesh 已经通过容器运行了，现在你可以参考 [```eventmesh-examples``` 模块](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) 编写并测试自己的代码了。
+现在 EventMesh 已经通过容器运行了，你可以参考 [```eventmesh-examples``` 模块](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) 编写并测试自己的代码了。
 
 希望你享受这个过程并获得更多收获！
