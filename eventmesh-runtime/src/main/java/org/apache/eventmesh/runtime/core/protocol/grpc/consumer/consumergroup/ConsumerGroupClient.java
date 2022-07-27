@@ -32,31 +32,31 @@ import lombok.Getter;
 @Getter
 public class ConsumerGroupClient {
 
-    private final String env;
+    public final String env;
 
-    private final String idc;
+    public final String idc;
 
-    private final String consumerGroup;
+    public final String consumerGroup;
 
-    private final String topic;
+    public final String topic;
 
     private final GrpcType grpcType;
 
-    private String url;
+    public String url;
 
     private EventEmitter<SimpleMessage> eventEmitter;
 
     private final SubscriptionMode subscriptionMode;
 
-    private final String sys;
+    public final String sys;
 
-    private final String ip;
+    public final String ip;
 
-    private final String pid;
+    public final String pid;
 
-    private final String hostname;
+    public final String hostname;
 
-    private final String apiVersion;
+    public final String apiVersion;
 
     private Date lastUpTime;
 

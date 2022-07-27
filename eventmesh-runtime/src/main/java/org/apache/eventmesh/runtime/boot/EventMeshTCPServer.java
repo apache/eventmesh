@@ -71,8 +71,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     private EventMeshTcpMonitor eventMeshTcpMonitor;
 
-    private ClientManageController clientManageController;
-
     private EventMeshServer eventMeshServer;
 
     private EventMeshTCPConfiguration eventMeshTCPConfiguration;
@@ -91,14 +89,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
     public void setClientSessionGroupMapping(ClientSessionGroupMapping clientSessionGroupMapping) {
         this.clientSessionGroupMapping = clientSessionGroupMapping;
-    }
-
-    public ClientManageController getClientManageController() {
-        return clientManageController;
-    }
-
-    public void setClientManageController(ClientManageController clientManageController) {
-        this.clientManageController = clientManageController;
     }
 
     public ScheduledExecutorService getScheduler() {
@@ -208,8 +198,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
         globalTrafficShapingHandler = newGTSHandler();
 
-        clientManageController = new ClientManageController(this);
-
         clientSessionGroupMapping = new ClientSessionGroupMapping(this);
         clientSessionGroupMapping.init();
 
@@ -242,8 +230,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         eventMeshTcpRetryer.start();
 
         eventMeshTcpMonitor.start();
-
-        clientManageController.start();
 
         if (eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
             this.register();

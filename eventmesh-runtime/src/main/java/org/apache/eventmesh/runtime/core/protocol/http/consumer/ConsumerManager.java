@@ -340,4 +340,8 @@ public class ConsumerManager {
             logger.error("onChange event:{} err", event, ex);
         }
     }
+
+    public ConcurrentHashMap<String, ConsumerGroupManager> getClientTable() {
+        return consumerTable;
+    }
 }
