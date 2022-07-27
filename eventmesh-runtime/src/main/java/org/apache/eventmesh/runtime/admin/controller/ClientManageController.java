@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.admin.controller;
 
 import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
+import org.apache.eventmesh.runtime.admin.handler.ClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.QueryRecommendEventMeshHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientByIpPortHandler;
 import org.apache.eventmesh.runtime.admin.handler.RedirectClientByPathHandler;
@@ -28,6 +29,8 @@ import org.apache.eventmesh.runtime.admin.handler.RejectClientBySubSystemHandler
 import org.apache.eventmesh.runtime.admin.handler.ShowClientBySystemHandler;
 import org.apache.eventmesh.runtime.admin.handler.ShowClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.ShowListenClientByTopicHandler;
+import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 
 import java.io.IOException;
@@ -43,11 +46,19 @@ public class ClientManageController {
     private static final Logger logger = LoggerFactory.getLogger(ClientManageController.class);
 
     private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshHTTPServer eventMeshHTTPServer;
+    private final EventMeshGrpcServer eventMeshGrpcServer;
 
     private AdminController adminController;
 
-    public ClientManageController(EventMeshTCPServer eventMeshTCPServer) {
+    public ClientManageController(
+            EventMeshTCPServer eventMeshTCPServer,
+            EventMeshHTTPServer eventMeshHTTPServer,
+            EventMeshGrpcServer eventMeshGrpcServer
+    ) {
         this.eventMeshTCPServer = eventMeshTCPServer;
+        this.eventMeshHTTPServer = eventMeshHTTPServer;
+        this.eventMeshGrpcServer = eventMeshGrpcServer;
     }
 
     public void start() throws IOException {
@@ -63,6 +74,8 @@ public class ClientManageController {
         server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler(eventMeshTCPServer));
         server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler(eventMeshTCPServer));
         server.createContext("/eventMesh/recommend", new QueryRecommendEventMeshHandler(eventMeshTCPServer));
+
+        server.createContext("/client", new ClientHandler(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer));
 
         adminController = new AdminController();
         adminController.run(server);
