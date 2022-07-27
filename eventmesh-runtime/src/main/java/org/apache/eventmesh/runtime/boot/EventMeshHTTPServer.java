@@ -291,7 +291,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         if (eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
             this.unRegister();
-            registry.shutdown();
         }
         logger.info("--------------------------EventMeshHTTPServer shutdown");
     }

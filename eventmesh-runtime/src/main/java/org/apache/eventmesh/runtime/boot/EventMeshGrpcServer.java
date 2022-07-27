@@ -144,7 +144,6 @@ public class EventMeshGrpcServer {
 
         if (eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
             this.unRegister();
-            registry.shutdown();
         }
 
         logger.info("---------------EventMeshGRPCServer stopped-------------------");
