@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.HTTPTrace;
 import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
+import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.trace.TraceUtils;
@@ -105,6 +106,7 @@ public class HandlerService {
             processorWrapper.async = (AsyncHttpProcessor) httpProcessor;
         }
         processorWrapper.httpProcessor = httpProcessor;
+        processorWrapper.traceEnabled = httpProcessor.getClass().getAnnotation(EventMeshTrace.class).isEnable();
         httpProcessorMap.put(path, processorWrapper);
         httpServerLogger.info("path is {}  processor name is {}", path, httpProcessor.getClass().getSimpleName());
     }
@@ -128,14 +130,12 @@ public class HandlerService {
      */
     public void handler(ChannelHandlerContext ctx, HttpRequest httpRequest, ThreadPoolExecutor asyncContextCompleteHandler) {
 
-
-        TraceOperation traceOperation = httpTrace.getTraceOperation(httpRequest, ctx.channel());
-
         ProcessorWrapper processorWrapper = getProcessorWrapper(httpRequest);
         if (Objects.isNull(processorWrapper)) {
             this.sendResponse(ctx, httpRequest, HttpResponseUtils.createNotFound());
             return;
         }
+        TraceOperation traceOperation = httpTrace.getTraceOperation(httpRequest, ctx.channel(), processorWrapper.traceEnabled);
         try {
             HandlerSpecific handlerSpecific = new HandlerSpecific();
             handlerSpecific.request = httpRequest;
@@ -363,6 +363,8 @@ public class HandlerService {
         private HttpProcessor httpProcessor;
 
         private AsyncHttpProcessor async;
+
+        private boolean traceEnabled;
     }
 
 }
