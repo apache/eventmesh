@@ -23,8 +23,7 @@ import java.util.Map;
 public class BaseRequestBody extends Body {
 
     public static BaseRequestBody buildBody(Map<String, Object> bodyParam) {
-        BaseRequestBody baseRequestBody = new BaseRequestBody();
-        return baseRequestBody;
+        return new BaseRequestBody();
     }
 
     @Override

@@ -81,7 +81,7 @@ EventMesh遵循[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.h
 所有的源代码文件应该在文件头部添加Apache License header，EventMesh会使用[apache/skywalking-eyes](https://github.com/apache/skywalking-eyes)
 对源代码文件头进行校验。
 
-EventMesh使用[check-dependencies.sh](tools/third-party-dependencies/check-dependencies.sh)脚本
+EventMesh使用[check-dependencies.sh](tools/dependency-check/check-dependencies.sh)脚本
 检查第三方依赖，当你需要添加三方依赖时，你需要将新添加的依赖注册在tool/license/known-dependencies.txt中，
 同时新添加的三方库需要满足[Apache对于第三方的政策](https://apache.org/legal/resolved.html)。
 

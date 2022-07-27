@@ -51,7 +51,7 @@ public class HttpResponseUtils {
 
     public static final HttpResponse setResponseJsonBody(String body, ChannelHandlerContext ctx) {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_HTML);
+        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, crateByteBuf(ctx, body),
                 responseHeaders, responseHeaders);
 
@@ -59,7 +59,7 @@ public class HttpResponseUtils {
 
     public static final HttpResponse setResponseTextBody(String body, ChannelHandlerContext ctx) {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
-        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
+        responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_HTML);
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, crateByteBuf(ctx, body),
                 responseHeaders, responseHeaders);
     }

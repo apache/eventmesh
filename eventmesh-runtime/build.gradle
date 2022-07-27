@@ -58,6 +58,7 @@ dependencies {
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-http")
 
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-api")
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-prometheus")
@@ -70,6 +71,7 @@ dependencies {
     implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
 
     testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-inline"
     testImplementation "org.powermock:powermock-module-junit4"
     testImplementation "org.powermock:powermock-api-mockito2"
 }

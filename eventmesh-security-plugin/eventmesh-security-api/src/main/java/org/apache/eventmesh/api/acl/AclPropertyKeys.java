@@ -24,4 +24,5 @@ public class AclPropertyKeys {
     public static final String SUBSYSTEM = "subsystem";
     public static final String TOPIC = "topic";
     public static final String REQUEST_CODE = "requestCode";
+    public static final String REQUEST_URI = "requestURI";
 }
