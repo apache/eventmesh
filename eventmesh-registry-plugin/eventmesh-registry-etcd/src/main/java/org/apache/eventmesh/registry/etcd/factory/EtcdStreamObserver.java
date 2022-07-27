@@ -20,9 +20,7 @@ package org.apache.eventmesh.registry.etcd.factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.etcd.jetcd.Client;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
-import io.etcd.jetcd.options.LeaseOption;
 import io.grpc.stub.StreamObserver;
 
 
@@ -38,30 +36,12 @@ public class EtcdStreamObserver implements StreamObserver<LeaseKeepAliveResponse
 
     @Override
     public void onError(Throwable t) {
-        logger.error("EtcdStreamObserver error {}", t.getMessage(), t);
-        this.createLeaseId(etcdLeaseId);
+        logger.debug("EtcdStreamObserver lease renewal Exception", t);
     }
 
     @Override
     public void onCompleted() {
         logger.info("EtcdStreamObserver completed");
-        this.createLeaseId(etcdLeaseId);
-    }
-
-    private void createLeaseId(EtcdLeaseId etcdLeaseId) {
-        logger.info("renewal of contract. server url {}", etcdLeaseId.getUrl());
-        Client client = etcdLeaseId.getClientWrapper();
-        try {
-            long ttl = client.getLeaseClient().timeToLive(etcdLeaseId.getLeaseId(), LeaseOption.DEFAULT).get().getTTl();
-            if (ttl < 1) {
-                long leaseId = client.getLeaseClient().grant(1L).get().getID();
-                client.getLeaseClient().keepAlive(leaseId, etcdLeaseId.getEtcdStreamObserver());
-                etcdLeaseId.setLeaseId(leaseId);
-            }
-        } catch (Throwable e) {
-            logger.error("renewal error", e);
-            client.getLeaseClient().keepAlive(System.currentTimeMillis(), etcdLeaseId.getEtcdStreamObserver());
-        }
     }
 
     public void setEtcdLeaseId(EtcdLeaseId etcdLeaseId) {
