@@ -57,6 +57,7 @@ public abstract class AbstractHttpClient implements AutoCloseable {
         this.httpClient = setHttpClient();
     }
 
+    @Override
     public void close() throws EventMeshException {
         try (final CloseableHttpClient ignore = this.httpClient) {
             // ignore
