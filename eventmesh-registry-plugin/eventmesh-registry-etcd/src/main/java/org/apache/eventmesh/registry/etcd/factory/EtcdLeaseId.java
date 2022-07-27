@@ -33,6 +33,8 @@ class EtcdLeaseId {
 
     private String url;
 
+    private long ttl;
+
     private EtcdStreamObserver etcdStreamObserver;
 
     public AtomicBoolean getRenewalLock() {
