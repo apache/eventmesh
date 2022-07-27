@@ -32,6 +32,7 @@ import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
@@ -56,6 +57,7 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
+@EventMeshTrace(isEnable = true)
 public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
     public Logger messageLogger = LoggerFactory.getLogger("message");

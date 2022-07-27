@@ -22,7 +22,6 @@ import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
@@ -369,19 +368,19 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         registerProcessor(RequestCode.SUBSCRIBE.getRequestCode(), subscribeProcessor, clientManageExecutor);
 
         LocalSubscribeEventProcessor localSubscribeEventProcessor = new LocalSubscribeEventProcessor(this);
-        registerProcessor(RequestURI.SUBSCRIBE_LOCAL.getRequestURI(), localSubscribeEventProcessor, clientManageExecutor);
+        handlerService.register(localSubscribeEventProcessor, clientManageExecutor);
 
         RemoteSubscribeEventProcessor remoteSubscribeEventProcessor = new RemoteSubscribeEventProcessor(this);
-        registerProcessor(RequestURI.SUBSCRIBE_REMOTE.getRequestURI(), remoteSubscribeEventProcessor, clientManageExecutor);
+        handlerService.register(remoteSubscribeEventProcessor, clientManageExecutor);
 
         UnSubscribeProcessor unSubscribeProcessor = new UnSubscribeProcessor(this);
         registerProcessor(RequestCode.UNSUBSCRIBE.getRequestCode(), unSubscribeProcessor, clientManageExecutor);
 
         LocalUnSubscribeEventProcessor localUnSubscribeEventProcessor = new LocalUnSubscribeEventProcessor(this);
-        registerProcessor(RequestURI.UNSUBSCRIBE_LOCAL.getRequestURI(), localUnSubscribeEventProcessor, clientManageExecutor);
+        handlerService.register(localUnSubscribeEventProcessor, clientManageExecutor);
 
         RemoteUnSubscribeEventProcessor remoteUnSubscribeEventProcessor = new RemoteUnSubscribeEventProcessor(this);
-        registerProcessor(RequestURI.UNSUBSCRIBE_REMOTE.getRequestURI(), remoteUnSubscribeEventProcessor, clientManageExecutor);
+        handlerService.register(remoteUnSubscribeEventProcessor, clientManageExecutor);
 
         ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);
