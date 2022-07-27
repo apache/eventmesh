@@ -18,7 +18,7 @@
 # under the License.
 
 #detect operating system.
-OS=$(uname -o)
+OS=$(uname)
 
 EVENTMESH_HOME=`cd $(dirname $0)/.. && pwd`
 

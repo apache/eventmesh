@@ -14,23 +14,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-task copyEventMeshAdmin(dependsOn: ['jar']) {
-    doFirst {
-        new File(projectDir, '../eventmesh-admin/dist/apps').mkdir()
-        new File(projectDir, '../dist/admin/').mkdirs()
-    }
-    doLast {
-        copy {
-            into('../eventmesh-admin/dist/apps/')
-            from project.jar.getArchivePath()
-            exclude {
-                "eventmesh-admin-${version}.jar"                
-            }
-        }
-        copy {
-            into '../dist/admin'
-            from "../eventmesh-admin/dist/apps/eventmesh-admin-rocketmq-${version}.jar"
-        }
-    }
-}

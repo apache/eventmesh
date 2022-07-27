@@ -36,13 +36,9 @@ public interface Producer extends LifeCycle {
 
     void init(Properties properties) throws Exception;
 
-    SendResult publish(final CloudEvent cloudEvent);
-
     void publish(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception;
 
     void sendOneway(final CloudEvent cloudEvent);
-
-    void sendAsync(final CloudEvent cloudEvent, final SendCallback sendCallback);
 
     void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception;
 
