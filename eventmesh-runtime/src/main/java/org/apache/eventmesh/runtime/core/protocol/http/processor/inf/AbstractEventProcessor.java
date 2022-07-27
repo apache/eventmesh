@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 /**
  * EventProcessor
  */
-public abstract class AbstractEventProcessor implements EventProcessor {
+public class AbstractEventProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("AbstractEventProcessor");
 

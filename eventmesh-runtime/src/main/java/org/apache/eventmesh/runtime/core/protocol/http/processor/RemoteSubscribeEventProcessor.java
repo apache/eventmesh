@@ -28,11 +28,10 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
+import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
-import org.apache.eventmesh.runtime.core.protocol.http.async.CompleteHandler;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.AbstractEventProcessor;
-import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.WebhookUtil;
 
@@ -56,11 +55,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpRequest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Preconditions;
 
-public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
+@EventMeshTrace(isEnable = false)
+public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
@@ -72,8 +73,11 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
     }
 
     @Override
-    public void processRequest(ChannelHandlerContext ctx, AsyncContext<HttpEventWrapper> asyncContext)
-        throws Exception {
+    public void handler(HandlerService.HandlerSpecific handlerSpecific, HttpRequest httpRequest) throws Exception {
+
+        AsyncContext<HttpEventWrapper> asyncContext = handlerSpecific.getAsyncContext();
+
+        ChannelHandlerContext ctx = handlerSpecific.getCtx();
 
         HttpEventWrapper requestWrapper = asyncContext.getRequest();
 
@@ -101,17 +105,16 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
         Map<String, Object> sysHeaderMap = requestWrapper.getSysHeaderMap();
 
+        Map<String, Object> responseBodyMap = new HashMap<>();
+
         //validate header
         if (StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString())
             || StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString())
             || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString())
             || StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString())) {
 
-            Map<String, Object> responseBodyMap = new HashMap<>();
-            responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode());
-            responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg());
-            responseWrapper = requestWrapper.createHttpResponse(responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(responseWrapper);
+            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
+                responseBodyMap, null);
             return;
         }
 
@@ -124,11 +127,8 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
 
         if (requestBodyMap.get("url") == null || requestBodyMap.get("topic") == null || requestBodyMap.get("consumerGroup") == null) {
-            Map<String, Object> responseBodyMap = new HashMap<>();
-            responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode());
-            responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg());
-            responseWrapper = requestWrapper.createHttpResponse(responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(responseWrapper);
+            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+                responseBodyMap, null);
             return;
         }
 
@@ -152,13 +152,10 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
                     Acl.doAclCheckInHttpReceive(remoteAddr, user, pass, subsystem, item.getTopic(),
                         requestWrapper.getRequestURI());
                 } catch (Exception e) {
-                    Map<String, Object> responseBodyMap = new HashMap<>();
-                    responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode());
-                    responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_ACL_ERR.getErrMsg());
-
-                    responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
-                    asyncContext.onComplete(responseWrapper);
                     aclLogger.warn("CLIENT HAS NO PERMISSION,SubscribeProcessor subscribe failed", e);
+                    handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap,
+                        responseBodyMap, null);
+
                     return;
                 }
             }
@@ -169,20 +166,14 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             if (!IPUtils.isValidDomainOrIp(url, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv4BlackList,
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIpv6BlackList)) {
                 httpLogger.error("subscriber url {} is not valid", url);
-                Map<String, Object> responseBodyMap = new HashMap<>();
-                responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode());
-                responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url);
-                responseWrapper = requestWrapper.createHttpResponse(responseHeaderMap, responseBodyMap);
-                asyncContext.onComplete(responseWrapper);
+                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+                    responseBodyMap, null);
                 return;
             }
         } catch (Exception e) {
             httpLogger.error("subscriber url {} is not valid, error {}", url, e.getMessage());
-            Map<String, Object> responseBodyMap = new HashMap<>();
-            responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode());
-            responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url);
-            responseWrapper = requestWrapper.createHttpResponse(responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(responseWrapper);
+            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+                responseBodyMap, null);
             return;
         }
 
@@ -192,11 +183,8 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
 
         if (!isWebhookAllowed) {
             httpLogger.error("subscriber url {} is not allowed by the target system", url);
-            Map<String, Object> responseBodyMap = new HashMap<>();
-            responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode());
-            responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + "unauthorized webhook URL: " + url);
-            responseWrapper = requestWrapper.createHttpResponse(responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(responseWrapper);
+            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
+                responseBodyMap, null);
             return;
         }
 
@@ -248,51 +236,30 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor {
             Map<String, String> remoteResultMap = JsonUtils.deserialize(remoteResult, new TypeReference<Map<String, String>>() {
             });
 
-            final CompleteHandler<HttpEventWrapper> handler = httpEventWrapper -> {
-                try {
-                    if (httpLogger.isDebugEnabled()) {
-                        httpLogger.debug("{}", httpEventWrapper);
-                    }
-                    eventMeshHTTPServer.sendResponse(ctx, httpEventWrapper.httpResponse());
-                    eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPReqResTimeCost(
-                        System.currentTimeMillis() - requestWrapper.getReqTime());
-                } catch (Exception ex) {
-                    // ignore
-                }
-            };
-
             if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get("retCode"))) {
-                responseWrapper = requestWrapper.createHttpResponse(EventMeshRetCode.SUCCESS);
-                asyncContext.onComplete(responseWrapper, handler);
+                responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
+                responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg());
+
+                handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
             } else {
-                Map<String, Object> responseBodyMap = new HashMap<>();
-                responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getRetCode());
-                responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg());
-                HttpEventWrapper err = asyncContext.getRequest().createHttpResponse(
-                    responseHeaderMap, responseBodyMap);
-                asyncContext.onComplete(err);
+                handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
+                    responseBodyMap, null);
             }
 
         } catch (Exception e) {
-            Map<String, Object> responseBodyMap = new HashMap<>();
-            responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getRetCode());
-            responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2));
-            HttpEventWrapper err = asyncContext.getRequest().createHttpResponse(
-                responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(err);
             long endTime = System.currentTimeMillis();
             httpLogger.error(
                 "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
                     + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
                 JsonUtils.serialize(subscriptionList), url, e);
-            eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
-            eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);
+            handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR, responseHeaderMap,
+                responseBodyMap, null);
         }
     }
 
     @Override
-    public boolean rejectRequest() {
-        return false;
+    public String[] paths() {
+        return new String[] {RequestURI.SUBSCRIBE_REMOTE.getRequestURI()};
     }
 
     public static String post(CloseableHttpClient client, String uri,
