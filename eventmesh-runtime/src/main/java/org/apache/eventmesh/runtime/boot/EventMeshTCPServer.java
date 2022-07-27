@@ -264,7 +264,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             eventMeshRebalanceService.shutdown();
 
             this.unRegister();
-            registry.shutdown();
         }
 
         clientSessionGroupMapping.shutdown();

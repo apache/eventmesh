@@ -31,23 +31,37 @@ import org.slf4j.LoggerFactory;
 
 public class Registry {
     private static final Logger logger = LoggerFactory.getLogger(Registry.class);
-    private static RegistryService registryService;
 
-    public void init(String registryPluginType) throws Exception {
-        registryService = EventMeshExtensionFactory.getExtension(RegistryService.class, registryPluginType);
-        if (registryService == null) {
-            logger.error("can't load the registryService plugin, please check.");
-            throw new RuntimeException("doesn't load the registryService plugin, please check.");
+    private volatile boolean inited = false;
+
+    private volatile boolean started = false;
+
+    private RegistryService registryService;
+
+    public synchronized void init(String registryPluginType) throws Exception {
+        if (!inited) {
+            registryService = EventMeshExtensionFactory.getExtension(RegistryService.class, registryPluginType);
+            if (registryService == null) {
+                logger.error("can't load the registryService plugin, please check.");
+                throw new RuntimeException("doesn't load the registryService plugin, please check.");
+            }
+            registryService.init();
+            inited = true;
         }
-        registryService.init();
     }
 
-    public void start() throws Exception {
-        registryService.start();
+    public synchronized void start() throws Exception {
+        if (!started) {
+            registryService.start();
+            started = true;
+        }
     }
 
-    public void shutdown() throws Exception {
-        registryService.shutdown();
+    public synchronized void shutdown() throws Exception {
+        if (started) {
+            registryService.shutdown();
+            started = false;
+        }
     }
 
     public List<EventMeshDataInfo> findEventMeshInfoByCluster(String clusterName) throws Exception {
