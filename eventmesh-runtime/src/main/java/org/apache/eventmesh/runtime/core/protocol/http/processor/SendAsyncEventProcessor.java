@@ -240,33 +240,33 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
             handlerSpecific.getTraceOperation().createClientTraceOperation(EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event),
                 EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
 
-                eventMeshProducer.send(sendMessageContext, new SendCallback() {
+            eventMeshProducer.send(sendMessageContext, new SendCallback() {
 
-                    @Override
-                    public void onSuccess(SendResult sendResult) {
-                        responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
-                        responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg() + sendResult.toString());
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                    responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
+                    responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg() + sendResult.toString());
 
-                        messageLogger.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                            System.currentTimeMillis() - startTime, topic, bizNo, uniqueId);
-                        handlerSpecific.getTraceOperation().endLatestTrace(sendMessageContext.getEvent());
-                        handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
-                    }
+                    messageLogger.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                        System.currentTimeMillis() - startTime, topic, bizNo, uniqueId);
+                    handlerSpecific.getTraceOperation().endLatestTrace(sendMessageContext.getEvent());
+                    handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
+                }
 
-                    @Override
-                    public void onException(OnExceptionContext context) {
-                        responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode());
-                        responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg()
-                            + EventMeshUtil.stackTrace(context.getException(), 2));
-                        eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
-                        handlerSpecific.getTraceOperation().exceptionLatestTrace(context.getException(),
-                            EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), sendMessageContext.getEvent()));
+                @Override
+                public void onException(OnExceptionContext context) {
+                    responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode());
+                    responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg()
+                        + EventMeshUtil.stackTrace(context.getException(), 2));
+                    eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
+                    handlerSpecific.getTraceOperation().exceptionLatestTrace(context.getException(),
+                        EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), sendMessageContext.getEvent()));
 
-                        handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
-                        messageLogger.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
-                            System.currentTimeMillis() - startTime, topic, bizNo, uniqueId, context.getException());
-                    }
-                });
+                    handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
+                    messageLogger.error("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
+                        System.currentTimeMillis() - startTime, topic, bizNo, uniqueId, context.getException());
+                }
+            });
         } catch (Exception ex) {
             eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR, responseHeaderMap, responseBodyMap, null);
