@@ -96,8 +96,11 @@ public class RocketMQProducerImpl implements Producer {
 
     @Override
     public void checkTopicExist(String topic) throws Exception {
-        this.producer.getRocketmqProducer().getDefaultMQProducerImpl().getmQClientFactory().getMQClientAPIImpl()
-                .getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+        this.producer.getRocketmqProducer()
+            .getDefaultMQProducerImpl()
+            .getmQClientFactory()
+            .getMQClientAPIImpl()
+            .getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
     }
 
     @Override
