@@ -25,10 +25,11 @@ import org.apache.eventmesh.runtime.boot.HTTPTrace.TraceOperation;
 import org.apache.eventmesh.runtime.common.EventMeshTrace;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
-import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.HttpResponseUtils;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
-import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.entity.ContentType;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -49,23 +50,17 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
-
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
 import io.netty.util.ReferenceCountUtil;
-import io.opentelemetry.api.trace.Span;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.entity.ContentType;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import lombok.Getter;
+import lombok.Setter;
 
 public class HandlerService {
 
