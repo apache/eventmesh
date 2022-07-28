@@ -61,6 +61,7 @@ public class Registry {
         if (started) {
             registryService.shutdown();
             started = false;
+            inited = false;
         }
     }
 
