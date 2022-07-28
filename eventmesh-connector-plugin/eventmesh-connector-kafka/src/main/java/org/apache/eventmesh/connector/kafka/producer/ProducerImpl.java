@@ -87,9 +87,9 @@ public class ProducerImpl {
     }
 
     public void send(CloudEvent cloudEvent) {
-//        ProducerRecord<Void, byte[]> msg =
-//            KafkaMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject()))
-//                .writeBinary(cloudEvent);
+        // ProducerRecord<Void, byte[]> msg =
+        //    KafkaMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject()))
+        //    .writeBinary(cloudEvent);
         try {
             this.producer.send(new ProducerRecord<>(cloudEvent.getSubject(), cloudEvent));
         } catch (Exception e) {
