@@ -25,6 +25,6 @@ public class PrometheusConfigurationTest {
     @Test
     public void getEventMeshPrometheusPort() {
         int eventMeshPrometheusPort = PrometheusConfiguration.getEventMeshPrometheusPort();
-        Assert.assertEquals(19090, eventMeshPrometheusPort);
+        Assert.assertEquals(19091, eventMeshPrometheusPort);
     }
 }
