@@ -13,6 +13,7 @@ logs
 build
 .classpath
 .project
+.checkstyle
 test-output
 dist
 .pmd
@@ -21,6 +22,7 @@ package-lock.json
 node_modules
 .DS_Store
 .run
+/**/bin
 
 h2/db.mv.db
 
