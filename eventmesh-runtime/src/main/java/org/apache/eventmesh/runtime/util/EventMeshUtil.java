@@ -280,6 +280,7 @@ public class EventMeshUtil {
      * @throws IOException
      * @throws ClassNotFoundException
      */
+    @SuppressWarnings("unchecked")
     public static <T> T cloneObject(T object) throws IOException, ClassNotFoundException {
         ByteArrayOutputStream byOut = new ByteArrayOutputStream();
         ObjectOutputStream outputStream = new ObjectOutputStream(byOut);

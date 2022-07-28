@@ -56,10 +56,10 @@ public class WebhookUtil {
         try (CloseableHttpResponse response = httpClient.execute(builder)) {
             String allowedOrigin = response.getLastHeader(ALLOWED_ORIGIN_HEADER).getValue();
             return StringUtils.isEmpty(allowedOrigin)
-                || allowedOrigin.equals("*") || allowedOrigin.equalsIgnoreCase(requestOrigin);
+                    || allowedOrigin.equals("*") || allowedOrigin.equalsIgnoreCase(requestOrigin);
         } catch (Exception e) {
             logger.warn("HTTP Options Method is not supported at the Delivery Target: {},"
-                + " unable to obtain the webhook delivery agreement.", targetUrl);
+                    + " unable to obtain the webhook delivery agreement.", targetUrl);
         }
         return true;
     }
@@ -74,6 +74,7 @@ public class WebhookUtil {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static Map<String, String> getHttpAuthParam(String authType) {
         if (StringUtils.isEmpty(authType)) {
             return null;
