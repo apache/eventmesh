@@ -36,49 +36,48 @@ import io.cloudevents.kafka.CloudEventSerializer;
 
 public class KafkaProducerImpl implements Producer {
 
+    private ProducerImpl producer;
+
     @Override
     public synchronized void init(Properties keyValue) {
-
+        keyValue.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        this.producer = new ProducerImpl(keyValue);
     }
 
     @Override
     public boolean isStarted() {
-        return false;
+        return producer.isStarted();
     }
 
     @Override
     public boolean isClosed() {
-        return false;
+        return producer.isClosed();
     }
 
     @Override
     public void start() {
-
+        producer.start();
     }
 
     @Override
-    public void shutdown() {
-
+    public synchronized void shutdown() {
+        producer.shutdown();
     }
 
     @Override
-    public void publish(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-
+    public void publish(CloudEvent message, SendCallback sendCallback) throws Exception {
+        producer.sendAsync(message, sendCallback);
     }
 
     @Override
-    public void sendOneway(CloudEvent cloudEvent) {
-
+    public void request(CloudEvent message, RequestReplyCallback rrCallback, long timeout) throws Exception {
+        producer.request(message, rrCallback, timeout);
     }
 
     @Override
-    public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
-
-    }
-
-    @Override
-    public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-        return false;
+    public boolean reply(final CloudEvent message, final SendCallback sendCallback) throws Exception {
+        producer.reply(message, sendCallback);
+        return true;
     }
 
     @Override
@@ -88,6 +87,12 @@ public class KafkaProducerImpl implements Producer {
 
     @Override
     public void setExtFields() {
+        // producer.setExtFields();
+    }
 
+
+    @Override
+    public void sendOneway(CloudEvent message) {
+        producer.sendOneway(message);
     }
 }
