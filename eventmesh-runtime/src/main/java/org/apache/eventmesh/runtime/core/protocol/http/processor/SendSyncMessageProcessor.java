@@ -104,7 +104,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     SendMessageResponseBody
                             .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
                                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -125,7 +125,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     SendMessageResponseBody
                             .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
                                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -152,7 +152,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     SendMessageResponseBody
                             .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
                                     EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -172,7 +172,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                         SendMessageResponseBody
                                 .buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(),
                                         e.getMessage()));
-                asyncContext.onComplete(responseEventMeshCommand);
+                EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
                 aclLogger.warn("CLIENT HAS NO PERMISSION,SendSyncMessageProcessor send failed", e);
                 return;
             }
@@ -188,7 +188,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     .buildBody(EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getRetCode(),
                         EventMeshRetCode.EVENTMESH_HTTP_MES_SEND_OVER_LIMIT_ERR.getErrMsg()));
             eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPDiscard();
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -201,7 +201,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 sendMessageResponseHeader,
                 SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
                     "Event size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -214,7 +214,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                     SendMessageResponseBody
                             .buildBody(EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getRetCode(),
                                     EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -237,7 +237,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                             .buildBody(EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getRetCode(),
                                     EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg()
                                             + EventMeshUtil.stackTrace(e, 2)));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -322,13 +322,13 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                 }
             }, Integer.parseInt(ttl));
         } catch (Exception ex) {
-            HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
+            responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                 sendMessageResponseHeader,
                 SendMessageResponseBody
                     .buildBody(EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getRetCode(),
                         EventMeshRetCode.EVENTMESH_SEND_SYNC_MSG_ERR.getErrMsg()
                             + EventMeshUtil.stackTrace(ex, 2)));
-            asyncContext.onComplete(err);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
 
             eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
             long endTime = System.currentTimeMillis();
