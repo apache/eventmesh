@@ -17,12 +17,16 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.apache.eventmesh.common.protocol.http.HttpCommand;
+import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
+import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.constants.EventMeshVersion;
+import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,6 +55,9 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.v03.CloudEventV03;
 import io.cloudevents.core.v1.CloudEventV1;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -62,6 +69,8 @@ public class EventMeshUtil {
     private static final Logger logger = LoggerFactory.getLogger(EventMeshUtil.class);
 
     private static final Logger tcpLogger = LoggerFactory.getLogger("tcpMonitor");
+
+    private static final Logger httpLogger = LoggerFactory.getLogger("http");
 
     public static String buildPushMsgSeqNo() {
         return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + RandomStringUtils.generateNum(4);
@@ -303,5 +312,41 @@ public class EventMeshUtil {
             logger.warn("getCloudEventExtensionMap fail", e);
             return null;
         }
+    }
+
+    public static void sendResponseToClient(ChannelHandlerContext ctx, AsyncContext<HttpEventWrapper> asyncContext,
+                                            HttpEventWrapper responseWrapper, EventMeshHTTPServer eventMeshHTTPServer) throws Exception {
+        asyncContext.onComplete(responseWrapper);
+        eventMeshHTTPServer.metrics.getSummaryMetrics()
+            .recordHTTPReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+
+        if (httpLogger.isDebugEnabled()) {
+            httpLogger.debug("{}", asyncContext.getResponse());
+        }
+
+        sendResponse(ctx, asyncContext.getResponse().httpResponse());
+    }
+
+    public static void sendResponseToClient(ChannelHandlerContext ctx, AsyncContext<HttpCommand> asyncContext,
+                                            HttpCommand responeCommand, EventMeshHTTPServer eventMeshHTTPServer) throws Exception {
+        asyncContext.onComplete(responeCommand);
+        eventMeshHTTPServer.metrics.getSummaryMetrics()
+            .recordHTTPReqResTimeCost(System.currentTimeMillis() - asyncContext.getRequest().getReqTime());
+
+        if (httpLogger.isDebugEnabled()) {
+            httpLogger.debug("{}", asyncContext.getResponse());
+        }
+
+        sendResponse(ctx, asyncContext.getResponse().httpResponse());
+    }
+
+    public static void sendResponse(ChannelHandlerContext ctx, DefaultFullHttpResponse response) {
+        ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
+            if (!f.isSuccess()) {
+                httpLogger.warn("send response to [{}] fail, will close this channel",
+                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                f.channel().close();
+            }
+        });
     }
 }

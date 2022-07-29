@@ -109,7 +109,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
             responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode());
             responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg());
             responseWrapper = requestWrapper.createHttpResponse(responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(responseWrapper);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
             return;
         }
 
@@ -126,7 +126,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
             responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode());
             responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg());
             responseWrapper = requestWrapper.createHttpResponse(responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(responseWrapper);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
             return;
         }
 
@@ -209,22 +209,20 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor {
                 Map<String, Object> responseBodyMap = new HashMap<>();
                 responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getRetCode());
                 responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg());
-                HttpEventWrapper err = asyncContext.getRequest().createHttpResponse(
-                    responseHeaderMap, responseBodyMap);
-                asyncContext.onComplete(err);
+                responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
+                EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
             }
 
         } catch (Exception e) {
             Map<String, Object> responseBodyMap = new HashMap<>();
             responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getRetCode());
             responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2));
-            HttpEventWrapper err = asyncContext.getRequest().createHttpResponse(
-                responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(err);
+            responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
             long endTime = System.currentTimeMillis();
             httpLogger.error(
                 "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
-                    + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
+                    + "|url={}", endTime - startTime,
                 topic, unSubscribeUrl, e);
             eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgFailed();
             eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendMsgCost(endTime - startTime);

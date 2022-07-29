@@ -113,7 +113,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                     SendMessageBatchV2ResponseBody
                             .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
                                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -134,7 +134,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                     SendMessageBatchV2ResponseBody
                             .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
                                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -155,7 +155,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                     SendMessageBatchV2ResponseBody
                             .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
                                     EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -168,7 +168,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                 sendMessageBatchV2ResponseHeader,
                 SendMessageBatchV2ResponseBody.buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
                     "Event size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -188,7 +188,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                         SendMessageResponseBody
                                 .buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(),
                                         e.getMessage()));
-                asyncContext.onComplete(responseEventMeshCommand);
+                EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
                 aclLogger
                         .warn("CLIENT HAS NO PERMISSION,BatchSendMessageV2Processor send failed", e);
                 return;
@@ -204,7 +204,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                     .buildBody(EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR.getRetCode(),
                         EventMeshRetCode.EVENTMESH_BATCH_SPEED_OVER_LIMIT_ERR.getErrMsg()));
             eventMeshHTTPServer.metrics.getSummaryMetrics().recordSendBatchMsgDiscard(1);
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -217,7 +217,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                     SendMessageBatchV2ResponseBody
                             .buildBody(EventMeshRetCode.EVENTMESH_BATCH_PRODUCER_STOPED_ERR.getRetCode(),
                                     EventMeshRetCode.EVENTMESH_BATCH_PRODUCER_STOPED_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -253,7 +253,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                                     EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg()
                                             +
                                             EventMeshUtil.stackTrace(e, 2)));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -292,7 +292,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                                     EventMeshRetCode.EVENTMESH_SEND_BATCHLOG_MSG_ERR.getErrMsg()
                                             +
                                             EventMeshUtil.stackTrace(e, 2)));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             long batchEndTime = System.currentTimeMillis();
             eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
             eventMeshHTTPServer.metrics.getSummaryMetrics().recordBatchSendMsgCost(batchEndTime - batchStartTime);
@@ -305,7 +305,7 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
                 sendMessageBatchV2ResponseHeader,
                 SendMessageBatchV2ResponseBody.buildBody(EventMeshRetCode.SUCCESS.getRetCode(),
                         EventMeshRetCode.SUCCESS.getErrMsg()));
-        asyncContext.onComplete(responseEventMeshCommand);
+        EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
 
     }
 
