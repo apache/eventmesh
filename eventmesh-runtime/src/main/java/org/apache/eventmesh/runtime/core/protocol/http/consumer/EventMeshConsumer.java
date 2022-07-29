@@ -54,7 +54,6 @@ import org.slf4j.LoggerFactory;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Scope;
 
 public class EventMeshConsumer {
 
@@ -106,7 +105,7 @@ public class EventMeshConsumer {
                 Span span = TraceUtils.prepareServerSpan(
                     EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                     EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
-                try (Scope scope = span.makeCurrent()) {
+                try {
                     String topic = event.getSubject();
                     String bizSeqNo = (String) event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
                     String uniqueId = (String) event.getExtension(Constants.RMB_UNIQ_ID);
@@ -179,7 +178,7 @@ public class EventMeshConsumer {
                 Span span = TraceUtils.prepareServerSpan(
                     EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                     EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
-                try (Scope scope = span.makeCurrent()) {
+                try {
 
                     event = CloudEventBuilder.from(event)
                         .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
@@ -323,5 +322,9 @@ public class EventMeshConsumer {
                     consumerGroupConf.getConsumerGroup(), bizSeqNo, uniqueId);
             }
         });
+    }
+
+    public void setConsumerGroupConf(ConsumerGroupConf consumerGroupConf) {
+        this.consumerGroupConf = consumerGroupConf;
     }
 }
