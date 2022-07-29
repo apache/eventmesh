@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
+import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
@@ -51,21 +52,25 @@ public class OpenMessageTCPClient implements EventMeshTCPClient<Message> {
 
     @Override
     public Package rr(Message openMessage, long timeout) throws EventMeshException {
+        MessageUtils.validateOpenmessage(openMessage);
         return eventMeshTCPPubClient.rr(openMessage, timeout);
     }
 
     @Override
     public void asyncRR(Message openMessage, AsyncRRCallback callback, long timeout) throws EventMeshException {
+        MessageUtils.validateOpenmessage(openMessage);
         eventMeshTCPPubClient.asyncRR(openMessage, callback, timeout);
     }
 
     @Override
     public Package publish(Message openMessage, long timeout) throws EventMeshException {
+        MessageUtils.validateOpenmessage(openMessage);
         return eventMeshTCPPubClient.publish(openMessage, timeout);
     }
 
     @Override
     public void broadcast(Message openMessage, long timeout) throws EventMeshException {
+        MessageUtils.validateOpenmessage(openMessage);
         eventMeshTCPPubClient.broadcast(openMessage, timeout);
     }
 
