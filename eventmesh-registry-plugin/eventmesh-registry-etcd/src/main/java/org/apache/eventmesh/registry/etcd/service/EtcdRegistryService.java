@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -214,7 +215,6 @@ public class EtcdRegistryService implements RegistryService {
                     eventMeshUnRegisterInfo.getEndPoint());
             etcdClient.getKVClient().delete(etcdKey);
             eventMeshRegisterInfoMap.remove(eventMeshName);
-
             logger.info("EventMesh successfully logout to etcd, eventMeshClusterName: {}, eventMeshName: {}",
                     eventMeshClusterName, eventMeshName);
             return true;
@@ -234,7 +234,7 @@ public class EtcdRegistryService implements RegistryService {
     }
 
     private ByteSequence getEtcdKey(String eventMeshClusterName, String eventMeshName, String endPoint) {
-        StringBuilder etcdKey = new StringBuilder(KEY_PREFIX + eventMeshClusterName);
+        StringBuilder etcdKey = new StringBuilder(KEY_PREFIX).append(eventMeshClusterName);
         if (StringUtils.isNoneBlank(eventMeshName)) {
             etcdKey.append(EtcdConstant.KEY_SEPARATOR).append(eventMeshName);
         }
@@ -244,6 +244,9 @@ public class EtcdRegistryService implements RegistryService {
         return ByteSequence.from(etcdKey.toString().getBytes());
     }
 
+    /**
+     * check the registered services if alive
+     */
     private class EventMeshEtcdRegisterMonitor implements Runnable {
 
         @Override
@@ -253,16 +256,17 @@ public class EtcdRegistryService implements RegistryService {
                     EventMeshRegisterInfo eventMeshRegisterInfo = eventMeshRegisterInfoEntry.getValue();
                     ByteSequence etcdKey = getEtcdKey(eventMeshRegisterInfo.getEventMeshClusterName(),
                             eventMeshRegisterInfo.getEventMeshName(), eventMeshRegisterInfo.getEndPoint());
+                    List<KeyValue> keyValues = null;
                     try {
-                        List<KeyValue> keyValues = etcdClient.getKVClient().get(etcdKey).get().getKvs();
-                        if (CollectionUtils.isEmpty(keyValues)) {
-                            logger.warn("eventMeshRegisterInfo [{}] is not matched in Etcd , try to register again",
-                                    eventMeshRegisterInfo.getEventMeshName());
-                            EtcdClientFactory.renewalLeaseId(EtcdClientFactory.getEtcdLeaseId(serverAddr));
-                            register(eventMeshRegisterInfo);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        keyValues = etcdClient.getKVClient().get(etcdKey).get().getKvs();
+                    } catch (InterruptedException | ExecutionException e) {
+                        logger.error("get etcdKey[{}] failed", etcdKey, e);
+                    }
+                    if (CollectionUtils.isEmpty(keyValues)) {
+                        logger.warn("eventMeshRegisterInfo [{}] is not matched in Etcd , try to register again",
+                                eventMeshRegisterInfo.getEventMeshName());
+                        EtcdClientFactory.renewalLeaseId(EtcdClientFactory.getEtcdLeaseId(serverAddr));
+                        register(eventMeshRegisterInfo);
                     }
                 }
             }

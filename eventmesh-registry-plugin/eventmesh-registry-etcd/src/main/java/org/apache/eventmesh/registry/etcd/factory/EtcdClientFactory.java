@@ -54,11 +54,11 @@ public class EtcdClientFactory {
             return etcdLeaseId.getClientWrapper();
         }
         ClientBuilder clientBuilder = Client.builder();
-        String[] addresss = serverAddr.split(",");
-        String[] httpAddress = new String[addresss.length];
-        for (int i = 0; i < addresss.length; i++) {
-            if (!addresss[i].startsWith(Constants.HTTP_PROTOCOL_PREFIX)) {
-                httpAddress[i] = Constants.HTTP_PROTOCOL_PREFIX + addresss[i];
+        String[] addresses = serverAddr.split(",");
+        String[] httpAddress = new String[addresses.length];
+        for (int i = 0; i < addresses.length; i++) {
+            if (!addresses[i].startsWith(Constants.HTTP_PROTOCOL_PREFIX)) {
+                httpAddress[i] = Constants.HTTP_PROTOCOL_PREFIX + addresses[i];
             }
         }
         etcdLeaseId = new EtcdLeaseId();
