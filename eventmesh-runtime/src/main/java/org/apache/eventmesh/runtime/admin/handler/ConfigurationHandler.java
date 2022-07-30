@@ -85,7 +85,19 @@ public class ConfigurationHandler implements HttpHandler {
                     eventMeshTCPConfiguration.eventMeshName,
                     eventMeshTCPConfiguration.eventMeshWebhookOrigin,
                     eventMeshTCPConfiguration.eventMeshServerSecurityEnable,
-                    eventMeshTCPConfiguration.eventMeshServerRegistryEnable
+                    eventMeshTCPConfiguration.eventMeshServerRegistryEnable,
+
+                    // TCP Configuration
+                    eventMeshTCPConfiguration.eventMeshTcpServerPort,
+                    eventMeshTCPConfiguration.eventMeshTcpServerEnabled,
+
+                    // HTTP Configuration
+                    eventMeshHTTPConfiguration.httpServerPort,
+                    eventMeshHTTPConfiguration.eventMeshServerUseTls,
+
+                    // gRPC Configuration
+                    eventMeshGrpcConfiguration.grpcServerPort,
+                    eventMeshGrpcConfiguration.eventMeshServerUseTls
             );
 
             String result = JsonUtils.toJson(getConfigurationResponse);
