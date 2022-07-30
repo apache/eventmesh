@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.dledger;
+package org.apache.eventmesh.connector.dledger.clientpool;
 
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.connector.dledger.exception.DLedgerConnectorException;
@@ -24,23 +24,17 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.openmessaging.storage.dledger.client.DLedgerClient;
 import io.openmessaging.storage.dledger.entry.DLedgerEntry;
 import io.openmessaging.storage.dledger.protocol.AppendEntryResponse;
 import io.openmessaging.storage.dledger.protocol.DLedgerResponseCode;
 import io.openmessaging.storage.dledger.protocol.GetEntriesResponse;
-import io.openmessaging.storage.dledger.protocol.LeadershipTransferResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DLedgerClientPool extends GenericObjectPool<DLedgerClient> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DLedgerClientPool.class);
-
-    public static volatile DLedgerClientPool clientPool;
+    public static DLedgerClientPool CLIENT_POOL;
 
     private DLedgerClientPool(DLedgerClientFactory factory, int size) {
         super(factory);
@@ -48,27 +42,8 @@ public class DLedgerClientPool extends GenericObjectPool<DLedgerClient> {
         setMinIdle(1);
     }
 
-    public static DLedgerClientPool getInstance() {
-        if (clientPool == null) {
-            throw new DLedgerConnectorException("DLedgerClientPool hasn't created.");
-        }
-        return clientPool;
-    }
-
-    public static DLedgerClientPool getInstance(DLedgerClientFactory factory, int size) {
-        if (clientPool == null) {
-            synchronized (DLedgerClientPool.class) {
-                if (clientPool == null) {
-                    clientPool = new DLedgerClientPool(factory, size);
-                    return clientPool;
-                }
-            }
-        }
-        return clientPool;
-    }
-
     public SendResult append(String topic, byte[] body) throws Exception {
-        AppendEntryResponse response = clientPool.borrowObject().append(body);
+        AppendEntryResponse response = CLIENT_POOL.borrowObject().append(body);
         if (DLedgerResponseCode.SUCCESS.getCode() != response.getCode()) {
             throw new DLedgerConnectorException(String.format("Error code: %d", response.getCode()));
         }
@@ -80,18 +55,25 @@ public class DLedgerClientPool extends GenericObjectPool<DLedgerClient> {
     }
 
     public List<DLedgerEntry> get(long index) throws Exception {
-        GetEntriesResponse response = clientPool.borrowObject().get(index);
+        GetEntriesResponse response = CLIENT_POOL.borrowObject().get(index);
         if (DLedgerResponseCode.SUCCESS.getCode() != response.getCode()) {
             throw new DLedgerConnectorException(String.format("Error code: %d", response.getCode()));
         }
         return response.getEntries();
     }
 
-    public boolean leadershipTransfer(String curLeaderId, String transfereeId, long term) throws Exception {
-        LeadershipTransferResponse response = clientPool.borrowObject().leadershipTransfer(curLeaderId, transfereeId, term);
-        if (DLedgerResponseCode.SUCCESS.getCode() != response.getCode()) {
-            throw new DLedgerConnectorException(String.format("Error code: %d", response.getCode()));
+    public static DLedgerClientPool getInstance() {
+        if (CLIENT_POOL == null) {
+            throw new DLedgerConnectorException("DLedgerClientPool hasn't created.");
         }
-        return true;
+        return CLIENT_POOL;
+    }
+
+    public static synchronized DLedgerClientPool setupAndGetInstance(DLedgerClientFactory factory, int size) {
+        if (CLIENT_POOL == null) {
+            CLIENT_POOL = new DLedgerClientPool(factory, size);
+            return CLIENT_POOL;
+        }
+        return CLIENT_POOL;
     }
 }

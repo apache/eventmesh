@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.dledger.producer;
+package org.apache.eventmesh.connector.dledger;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
@@ -23,11 +23,9 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.producer.Producer;
-import org.apache.eventmesh.connector.dledger.CloudEventMessage;
-import org.apache.eventmesh.connector.dledger.DLedgerClientFactory;
-import org.apache.eventmesh.connector.dledger.DLedgerClientPool;
-import org.apache.eventmesh.connector.dledger.DLedgerMessageIndexStore;
-import org.apache.eventmesh.connector.dledger.config.DLedgerClientConfiguration;
+import org.apache.eventmesh.connector.dledger.clientpool.DLedgerClientPool;
+import org.apache.eventmesh.connector.dledger.broker.CloudEventMessage;
+import org.apache.eventmesh.connector.dledger.broker.DLedgerTopicIndexesStore;
 import org.apache.eventmesh.connector.dledger.exception.DLedgerConnectorException;
 
 import java.util.Properties;
@@ -46,21 +44,13 @@ public class DLedgerProducer implements Producer {
     private static final Logger LOGGER = LoggerFactory.getLogger(DLedgerProducer.class);
 
     private DLedgerClientPool clientPool;
-    private DLedgerMessageIndexStore messageIndexStore;
+    private DLedgerTopicIndexesStore topicIndexesStore;
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     @Override
     public void init(Properties properties) throws Exception {
-        final DLedgerClientConfiguration clientConfiguration = new DLedgerClientConfiguration();
-        clientConfiguration.init();
-        String group = properties.getProperty("producerGroup", "default");
-        String peers = clientConfiguration.getPeers();
-        int poolSize = clientConfiguration.getClientPoolSize();
-        int queueSize = clientConfiguration.getQueueSize();
-
-        DLedgerClientFactory factory = new DLedgerClientFactory(group, peers);
-        clientPool = DLedgerClientPool.getInstance(factory, poolSize);
-        messageIndexStore = DLedgerMessageIndexStore.getInstance(queueSize);
+        clientPool = DLedgerClientPool.getInstance();
+        topicIndexesStore = DLedgerTopicIndexesStore.getInstance();
     }
 
     @Override
@@ -97,43 +87,36 @@ public class DLedgerProducer implements Producer {
         CloudEventMessage message = new CloudEventMessage(cloudEvent.getSubject(), cloudEvent);
         try {
             SendResult sendResult = clientPool.append(message.getTopic(), CloudEventMessage.toByteArray(message));
-            messageIndexStore.put(sendResult.getTopic(), Long.parseLong(sendResult.getMessageId()));
+            topicIndexesStore.publish(sendResult.getTopic(), Long.parseLong(sendResult.getMessageId()));
             sendCallback.onSuccess(sendResult);
         } catch (Exception ex) {
             OnExceptionContext onExceptionContext = OnExceptionContext.builder()
-                .messageId(cloudEvent.getId())
-                .topic(cloudEvent.getSubject())
-                .exception(new ConnectorRuntimeException(ex))
-                .build();
+                                                                      .messageId(cloudEvent.getId())
+                                                                      .topic(cloudEvent.getSubject())
+                                                                      .exception(new ConnectorRuntimeException(ex))
+                                                                      .build();
             sendCallback.onException(onExceptionContext);
         }
     }
 
     @Override
     public void sendOneway(CloudEvent cloudEvent) {
-        try {
-            SendResult sendResult = clientPool.append(cloudEvent.getSubject(), cloudEvent.getData().toBytes());
-            messageIndexStore.put(sendResult.getTopic(), Long.parseLong(sendResult.getMessageId()));
-        } catch (Exception e) {
-            throw new DLedgerConnectorException(e);
-        }
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
-        // TODO request asynchronously, see RocketMQ Connector implementation
         throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
-        publish(cloudEvent, sendCallback);
-        return true;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void checkTopicExist(String topic) throws Exception {
-        boolean exist = messageIndexStore.contain(topic);
+        boolean exist = topicIndexesStore.contain(topic);
         if (!exist) {
             throw new DLedgerConnectorException(String.format("topic: %s is not exist.", topic));
         }
@@ -141,6 +124,5 @@ public class DLedgerProducer implements Producer {
 
     @Override
     public void setExtFields() {
-        throw new UnsupportedOperationException();
     }
 }

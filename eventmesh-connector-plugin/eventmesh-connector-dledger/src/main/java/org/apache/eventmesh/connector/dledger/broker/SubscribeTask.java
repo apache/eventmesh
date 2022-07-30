@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.dledger;
+package org.apache.eventmesh.connector.dledger.broker;
 
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
-import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.connector.dledger.clientpool.DLedgerClientPool;
 import org.apache.eventmesh.connector.dledger.exception.DLedgerConnectorException;
 
-import java.net.URI;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.SpecVersion;
-import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.v1.CloudEventV1;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -43,54 +43,60 @@ public class SubscribeTask implements Runnable {
     private final Queue<Long> messageQueue;
     private final EventListener listener;
     private final DLedgerClientPool clientPool;
-    private volatile boolean started;
+    private final AtomicBoolean started;
 
     public SubscribeTask(String topic, Queue<Long> messageQueue, EventListener listener) {
         this.topic = topic;
         this.messageQueue = messageQueue;
         this.listener = listener;
         clientPool = DLedgerClientPool.getInstance();
-        this.started = true;
+        this.started = new AtomicBoolean(true);
     }
 
     @Override
     public void run() {
         // TODO
-        while (started) {
+        while (started.get()) {
             try {
                 LOGGER.debug("execute subscribe task, topic: {}", topic);
+
+                if (messageQueue.isEmpty()) {
+                    Thread.sleep(1000);
+                    continue;
+                }
+                byte[] originMessage = clientPool.get(messageQueue.peek()).get(0).getBody();
+                String cloudEventStr = CloudEventMessage.getFromByteArray(originMessage).getMessage();
+                // TODO deserialize
+                CloudEvent cloudEvent = JsonUtils.deserialize(cloudEventStr, CloudEventV1.class);
 
                 EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
                     @Override
                     public void commit(EventMeshAction action) {
                         switch (action) {
                             case CommitMessage:
-                                break;
                             case ReconsumeLater:
                                 break;
                             case ManualAck:
-                                break;
+                                messageQueue.poll();
                             default:
                         }
                     }
                 };
-                // TODO fix serialize/deserialize bug
-                String message = CloudEventMessage.getFromByteArray(clientPool.get(messageQueue.peek()).get(0).getBody()).getMessage();
-                // TODO need to deal with CloudEvent v0.3?
-//                CloudEvent cloudEvent = JsonUtils.deserialize(message, zCloudEventV1.class);
-                CloudEvent cloudEvent = CloudEventBuilder.v1().withId("test")
-                                                         .withType("test.example")
-                                                         .withSource(URI.create("http://localhost"))
-                                                         .withExtension(Constants.PROTOCOL_VERSION, SpecVersion.V1.toString())
-                                                         .build();
                 listener.consume(cloudEvent, consumeContext);
+                Thread.sleep(1000);
             } catch (Exception e) {
-                throw new DLedgerConnectorException(e);
+                LOGGER.error("DLedger connector subscribeTask Thread[{}] error.",
+                             Thread.currentThread().getName(),
+                             new DLedgerConnectorException(e));
             }
         }
     }
 
-    public void setStarted(boolean started) {
-        this.started = started;
+    public void start() {
+        started.compareAndSet(false, true);
+    }
+
+    public void stop() {
+        started.compareAndSet(true, false);
     }
 }

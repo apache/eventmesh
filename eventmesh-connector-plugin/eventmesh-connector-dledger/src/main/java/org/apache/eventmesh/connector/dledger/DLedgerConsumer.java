@@ -15,24 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.dledger.consumer;
+package org.apache.eventmesh.connector.dledger;
 
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
-import org.apache.eventmesh.common.ThreadPoolFactory;
-import org.apache.eventmesh.connector.dledger.DLedgerClientFactory;
-import org.apache.eventmesh.connector.dledger.DLedgerClientPool;
-import org.apache.eventmesh.connector.dledger.DLedgerMessageIndexStore;
-import org.apache.eventmesh.connector.dledger.SubscribeTask;
-import org.apache.eventmesh.connector.dledger.config.DLedgerClientConfiguration;
+import org.apache.eventmesh.connector.dledger.clientpool.DLedgerClientPool;
+import org.apache.eventmesh.connector.dledger.broker.DLedgerTopicIndexesStore;
 import org.apache.eventmesh.connector.dledger.exception.DLedgerConnectorException;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -47,31 +40,15 @@ public class DLedgerConsumer implements Consumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(DLedgerConsumer.class);
 
     private DLedgerClientPool clientPool;
-    private DLedgerMessageIndexStore messageIndexStore;
+    private DLedgerTopicIndexesStore topicIndexesStore;
     private EventListener listener;
     private final AtomicBoolean started = new AtomicBoolean(false);
-    private ExecutorService consumeExecutorService;
-
-    private final Map<String, SubscribeTask> topicAndSubTaskMap = new ConcurrentHashMap<>();
 
     @Override
     public void init(Properties keyValue) throws Exception {
         // TODO need consider isBroadcast, consumerGroup
-        final DLedgerClientConfiguration clientConfiguration = new DLedgerClientConfiguration();
-        clientConfiguration.init();
-        String group = keyValue.getProperty("producerGroup", "default");
-        String peers = clientConfiguration.getPeers();
-        int poolSize = clientConfiguration.getClientPoolSize();
-        int queueSize = clientConfiguration.getQueueSize();
-
-        DLedgerClientFactory factory = new DLedgerClientFactory(group, peers);
-        clientPool = DLedgerClientPool.getInstance(factory, poolSize);
-        messageIndexStore = DLedgerMessageIndexStore.getInstance(queueSize);
-        consumeExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors() * 2,
-            Runtime.getRuntime().availableProcessors() * 2,
-            "DLedgerConsumerThread"
-        );
+        clientPool = DLedgerClientPool.getInstance();
+        topicIndexesStore = DLedgerTopicIndexesStore.getInstance();
     }
 
     @Override
@@ -87,7 +64,7 @@ public class DLedgerConsumer implements Consumer {
     @Override
     public void shutdown() {
         clientPool.close();
-        messageIndexStore.clear();
+        topicIndexesStore.shutdown();
         started.compareAndSet(true, false);
     }
 
@@ -103,31 +80,17 @@ public class DLedgerConsumer implements Consumer {
 
     @Override
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void subscribe(String topic) throws Exception {
-        if (topicAndSubTaskMap.containsKey(topic)) {
-            return;
-        }
-        synchronized (topicAndSubTaskMap) {
-            SubscribeTask subscribeTask = new SubscribeTask(topic, messageIndexStore.get(topic), listener);
-            topicAndSubTaskMap.put(topic, subscribeTask);
-            consumeExecutorService.execute(subscribeTask);
-        }
+        topicIndexesStore.subscribe(topic, listener);
     }
 
     @Override
     public void unsubscribe(String topic) {
-        if (!topicAndSubTaskMap.containsKey(topic)) {
-            return;
-        }
-        synchronized (topicAndSubTaskMap) {
-            SubscribeTask subscribeTask = topicAndSubTaskMap.get(topic);
-            subscribeTask.setStarted(false);
-            topicAndSubTaskMap.remove(topic);
-        }
+        topicIndexesStore.unsubscribe(topic);
     }
 
     @Override

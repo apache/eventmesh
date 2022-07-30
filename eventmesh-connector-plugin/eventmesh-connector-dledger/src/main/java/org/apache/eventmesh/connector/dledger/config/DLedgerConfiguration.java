@@ -22,18 +22,21 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 
 @Getter
-public class DLedgerClientConfiguration {
+public class DLedgerConfiguration {
     public static String KEYS_EVENTMESH_DLEDGER_GROUP = "eventMesh.server.dledger.group";
     public static String KEYS_EVENTMESH_DLEDGER_PEERS = "eventMesh.server.dledger.peers";
     public static String KEYS_EVENTMESH_DLEDGER_CLIENTPOOL_SIZE = "eventMesh.server.dledger.clientPool.size";
     public static String KEYS_EVENTMESH_DLEDGER_QUEUE_SIZE = "eventMesh.server.dledger.queue.size";
 
     private String group = "default";
-    private String peers = "n0-localhost:20911";
+    private String peers = "n0-localhost:20911;n1-localhost:20912;n2-localhost:20913";
     private int clientPoolSize = 8;
     private int queueSize = 512;
 
-    public void init() {
+    private DLedgerConfiguration() {
+    }
+
+    private void init() {
         String groupStr = DLedgerConfigurationWrapper.getProp(KEYS_EVENTMESH_DLEDGER_GROUP);
         if (StringUtils.isNotBlank(groupStr)) {
             group = StringUtils.trim(groupStr);
@@ -53,5 +56,15 @@ public class DLedgerClientConfiguration {
         if (StringUtils.isNumeric(queueSizeStr)) {
             queueSize = Integer.parseInt(queueSizeStr);
         }
+    }
+
+    private static DLedgerConfiguration INSTANCE = null;
+
+    public static synchronized DLedgerConfiguration getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new DLedgerConfiguration();
+            INSTANCE.init();
+        }
+        return INSTANCE;
     }
 }

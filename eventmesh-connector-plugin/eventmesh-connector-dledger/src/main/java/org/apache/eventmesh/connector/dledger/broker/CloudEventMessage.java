@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.dledger;
+package org.apache.eventmesh.connector.dledger.broker;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
 
@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -42,13 +43,13 @@ public class CloudEventMessage implements Serializable {
         }
         this.topic = topic;
         this.message = new String(EventFormatProvider.getInstance()
-                                                     .resolveFormat("application/cloudevents+json")
+                                                     .resolveFormat(JsonFormat.CONTENT_TYPE)
                                                      .serialize(cloudEvent), StandardCharsets.UTF_8);
         this.createTimestamp = System.currentTimeMillis();
     }
 
-    public static byte[] toByteArray(CloudEventMessage message) {
-        return JsonUtils.serialize(message).getBytes(StandardCharsets.UTF_8);
+    public static byte[] toByteArray(CloudEventMessage cloudEventMessage) {
+        return JsonUtils.serialize(cloudEventMessage).getBytes(StandardCharsets.UTF_8);
     }
 
     public static CloudEventMessage getFromByteArray(byte[] body) {

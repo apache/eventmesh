@@ -15,18 +15,34 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.dledger.connector;
+package org.apache.eventmesh.connector.dledger.config;
 
-import org.apache.eventmesh.api.connector.ConnectorResourceService;
+import static org.junit.Assert.assertEquals;
 
-public class DLedgerConnectorResourceService implements ConnectorResourceService {
-    @Override
-    public void init() throws Exception {
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+public class DLedgerConfigurationTest {
+
+    private static DLedgerConfiguration config;
+
+    @BeforeClass
+    public static void init() {
+        config = DLedgerConfiguration.getInstance();
     }
 
-    @Override
-    public void release() throws Exception {
+    @Test
+    public void getGroup() {
+        assertEquals("default", config.getGroup());
+    }
 
+    @Test
+    public void getPeers() {
+        assertEquals("n0-localhost:20911;n1-localhost:20912;n2-localhost:20913", config.getPeers());
+    }
+
+    @Test
+    public void getClientPoolSize() {
+        assertEquals(8, config.getClientPoolSize());
     }
 }

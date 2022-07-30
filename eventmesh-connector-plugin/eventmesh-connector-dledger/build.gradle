@@ -24,6 +24,7 @@ dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation 'org.apache.commons:commons-pool2:2.11.1'
+    implementation 'io.cloudevents:cloudevents-json-jackson:2.2.0'
     implementation "io.openmessaging.storage:dledger:$dledger_version"
 
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")

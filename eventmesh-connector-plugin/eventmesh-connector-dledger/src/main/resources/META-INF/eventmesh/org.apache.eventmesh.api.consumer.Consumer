@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-dledger=org.apache.eventmesh.connector.dledger.consumer.DLedgerConsumer
+dledger=org.apache.eventmesh.connector.dledger.DLedgerConsumer
