@@ -43,6 +43,15 @@ interface EventMeshConfiguration {
   eventMeshWebhookOrigin: string,
   eventMeshServerSecurityEnable: boolean,
   eventMeshServerRegistryEnable: boolean,
+
+  eventMeshTcpServerPort: number,
+  eventMeshTcpServerEnabled: boolean,
+
+  eventMeshHttpServerPort: number,
+  eventMeshHttpServerUseTls: boolean,
+
+  eventMeshGrpcServerPort: number,
+  eventMeshGrpcServerUseTls: boolean,
 }
 
 const Configuration = () => {
@@ -62,7 +71,8 @@ const Configuration = () => {
     fetch();
   }, []);
 
-  const commonConfiguration: Record<string, string | number | boolean | undefined> = {
+  type ConfigurationRecord = Record<string, string | number | boolean | undefined>;
+  const commonConfiguration: ConfigurationRecord = {
     'System ID': configuration.sysID,
     'NameServer Address': configuration.namesrvAddr,
     'EventMesh Environment': configuration.eventMeshEnv,
@@ -73,6 +83,21 @@ const Configuration = () => {
     'EventMesh Webhook Origin': configuration.eventMeshWebhookOrigin,
     'EventMesh Server Security Enable': configuration.eventMeshServerSecurityEnable,
     'EventMesh Server Registry Enable': configuration.eventMeshServerRegistryEnable,
+  };
+
+  const tcpConfiguration: ConfigurationRecord = {
+    'TCP Server Port': configuration.eventMeshTcpServerPort,
+    'TCP Server Enabled': configuration.eventMeshTcpServerEnabled,
+  };
+
+  const httpConfiguration: ConfigurationRecord = {
+    'HTTP Server Port': configuration.eventMeshHttpServerPort,
+    'HTTP Server TLS Enabled': configuration.eventMeshHttpServerUseTls,
+  };
+
+  const grpcConfiguration: ConfigurationRecord = {
+    'gRPC Server Port': configuration.eventMeshGrpcServerPort,
+    'gRPC Server TLS Enabled': configuration.eventMeshGrpcServerUseTls,
   };
 
   const convertConfigurationToTable = (
@@ -95,36 +120,114 @@ const Configuration = () => {
     );
   });
 
-  return (
-    <Box
-      maxW="full"
-      bg="white"
-      borderWidth="1px"
-      borderRadius="md"
-      overflow="hidden"
-      p="4"
-      mt="4"
-    >
-      <Text
-        w="full"
-      >
-        EventMesh Configuration
-      </Text>
+  if (Object.keys(configuration).length === 0) {
+    return false;
+  }
 
-      <TableContainer mt="4">
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Configuration Field</Th>
-              <Th>Value</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {convertConfigurationToTable(commonConfiguration)}
-          </Tbody>
-        </Table>
-      </TableContainer>
-    </Box>
+  return (
+    <>
+      <Box
+        maxW="full"
+        bg="white"
+        borderWidth="1px"
+        borderRadius="md"
+        overflow="hidden"
+        p="4"
+        mt="4"
+      >
+        <Text
+          w="full"
+        >
+          EventMesh Configuration
+        </Text>
+
+        <TableContainer mt="4">
+          <Table variant="simple">
+            <Thead>
+              <Tr>
+                <Th>Configuration Field</Th>
+                <Th>Value</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {convertConfigurationToTable(commonConfiguration)}
+            </Tbody>
+          </Table>
+        </TableContainer>
+
+      </Box>
+      <Box
+        maxW="full"
+        bg="white"
+        borderWidth="1px"
+        borderRadius="md"
+        overflow="hidden"
+        p="4"
+        mt="4"
+      >
+        <Text
+          w="full"
+        >
+          TCP Configuration
+        </Text>
+
+        <TableContainer mt="4">
+          <Table variant="simple">
+            <Thead>
+              <Tr>
+                <Th>Configuration Field</Th>
+                <Th>Value</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {convertConfigurationToTable(tcpConfiguration)}
+            </Tbody>
+          </Table>
+        </TableContainer>
+
+        <Text
+          w="full"
+          mt="4"
+        >
+          HTTP Configuration
+        </Text>
+
+        <TableContainer mt="4">
+          <Table variant="simple">
+            <Thead>
+              <Tr>
+                <Th>Configuration Field</Th>
+                <Th>Value</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {convertConfigurationToTable(httpConfiguration)}
+            </Tbody>
+          </Table>
+        </TableContainer>
+
+        <Text
+          w="full"
+          mt="4"
+        >
+          gRPC Configuration
+        </Text>
+
+        <TableContainer mt="4">
+          <Table variant="simple">
+            <Thead>
+              <Tr>
+                <Th>Configuration Field</Th>
+                <Th>Value</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {convertConfigurationToTable(grpcConfiguration)}
+            </Tbody>
+          </Table>
+        </TableContainer>
+      </Box>
+    </>
   );
 };
 
