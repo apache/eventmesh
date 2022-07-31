@@ -36,10 +36,10 @@ buildscript {
 }
 
 // Remove doclint warnings that pollute javadoc logs when building with Java 8
-if(JavaVersion.current().isJava8()){
+if (JavaVersion.current().isJava8()) {
     allprojects {
-        tasks.withType(Javadoc){
-            options.addStringOption("xdoclint:none","-quiet")
+        tasks.withType(Javadoc) {
+            options.addStringOption("xdoclint:none", "-quiet")
         }
     }
 }
@@ -131,9 +131,7 @@ task installPlugin() {
             return
         }
         pluginFile.mkdirs()
-        println String.format(
-            "install plugin, pluginType: %s, pluginInstanceName: %s, module: %s", pluginType, pluginName, subProject.getName()
-        )
+        println String.format("install plugin, pluginType: %s, pluginInstanceName: %s, module: %s", pluginType, pluginName, subProject.getName())
 
         copy {
             into "${rootDir}/dist/plugin/${pluginType}/${pluginName}"
@@ -244,8 +242,7 @@ subprojects {
                     "Implementation-Version": project.version,
                     "Implementation-Vendor": "Apache",
                     "Implementation-Title": project.name,
-                    "Build-Jdk": project.findProperty("jdk")
-            )
+                    "Build-Jdk": project.findProperty("jdk"))
         }
     }
 
@@ -271,8 +268,7 @@ subprojects {
                                    "eventmesh-spi",
                                    "eventmesh-webhook-api",
                                    "eventmesh-webhook-admin",
-                                   "eventmesh-webhook-receive"
-                                   ]
+                                   "eventmesh-webhook-receive"]
         doLast {
             copy {
                 into("${projectDir}/dist/apps")
