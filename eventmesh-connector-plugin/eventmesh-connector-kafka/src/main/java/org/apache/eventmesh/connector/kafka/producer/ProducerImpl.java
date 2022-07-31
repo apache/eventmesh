@@ -98,7 +98,7 @@ public class ProducerImpl {
     }
 
     public boolean checkTopicExist(String topic) {
-        return false;
+        throw new ConnectorRuntimeException("Request is not supported");
     }
 
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {
@@ -112,6 +112,11 @@ public class ProducerImpl {
     public void sendOneway(CloudEvent message) {
     }
 
-    public void sendAsync(CloudEvent message, SendCallback sendCallback) {
+    public void sendAsync(CloudEvent cloudEvent, SendCallback sendCallback) {
+        try {
+            this.producer.send(new ProducerRecord<>(cloudEvent.getSubject(), cloudEvent));
+        } catch (Exception e) {
+            log.error(String.format("Send message oneway Exception, %s", cloudEvent), e);
+        }
     }
 }

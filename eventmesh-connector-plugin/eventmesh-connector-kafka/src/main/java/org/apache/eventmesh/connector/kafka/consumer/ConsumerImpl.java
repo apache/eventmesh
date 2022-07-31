@@ -101,7 +101,12 @@ public class ConsumerImpl {
 
     public void subscribe(String topic) {
         try {
-            this.kafkaConsumer.subscribe(Arrays.asList(topic));
+            // Get the current subscription
+            Map<String, List<PartitionInfo>> topicsAndPartition = this.kafkaConsumer.listTopics();
+            Set<String> topicsSet = topicsAndPartition.keySet();
+            List<String> topics = new ArrayList<>(topicsSet);
+            topics.add(topic);
+            this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
             throw new ConnectorRuntimeException(
                 String.format("Kafka consumer can't attach to %s.", topic));
@@ -113,8 +118,8 @@ public class ConsumerImpl {
             // Get the current subscription
             Map<String, List<PartitionInfo>> topicsAndPartition = this.kafkaConsumer.listTopics();
             Set<String> topicsSet = topicsAndPartition.keySet();
-            List<String> topics = new ArrayList<>();
-            topics.addAll(topicsSet);
+            topicsSet.remove(topic);
+            List<String> topics = new ArrayList<>(topicsSet);
             this.kafkaConsumer.unsubscribe();
             this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
