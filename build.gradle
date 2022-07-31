@@ -35,17 +35,17 @@ buildscript {
     }
 }
 
-//Remove doclint warnings that pollute javadoc logs when building with java8
+// Remove doclint warnings that pollute javadoc logs when building with Java 8
 if(JavaVersion.current().isJava8()){
     allprojects {
         tasks.withType(Javadoc){
-            options.addStringOption('xdoclint:none','-quiet')
+            options.addStringOption("xdoclint:none","-quiet")
         }
     }
 }
 
 allprojects {
-    apply plugin: 'java'
+    apply plugin: "java"
     apply plugin: "eclipse"
     apply plugin: "idea"
     apply plugin: "project-reports"
@@ -55,28 +55,28 @@ allprojects {
     apply plugin: "jacoco"
     apply plugin: "pmd"
     apply plugin: "java-library"
-    apply plugin: 'signing'
-    apply plugin: 'checkstyle'
+    apply plugin: "signing"
+    apply plugin: "checkstyle"
 
-    [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+    [compileJava, compileTestJava, javadoc]*.options*.encoding = "UTF-8"
 
     compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 
     clean.doFirst {
-        delete 'build'
-        delete 'dist'
-        delete 'out'
+        delete "build"
+        delete "dist"
+        delete "out"
     }
 
     checkstyle {
-        toolVersion = '9.0'
+        toolVersion = "9.0"
         ignoreFailures = false
         showViolations = true
         maxWarnings = 0
         configFile = new File("${rootDir}/style/checkStyle.xml")
     }
 
-    checkstyleMain.exclude '**/org/apache/eventmesh/client/grpc/protos**'
+    checkstyleMain.exclude "**/org/apache/eventmesh/client/grpc/protos**"
 
     dependencies {
         repositories {
@@ -91,21 +91,21 @@ allprojects {
 task tar(type: Tar) {
     archiveBaseName.set(project.name)
     archiveVersion.set(project.version.toString())
-    archiveExtension.set('tar.gz')
+    archiveExtension.set("tar.gz")
     compression = Compression.GZIP
-    destinationDirectory = new File(projectDir, 'build')
-    into('/') {
-        from 'dist'
+    destinationDirectory = new File(projectDir, "build")
+    into("/") {
+        from "dist"
     }
 }
 
 task zip(type: Zip) {
     archiveBaseName.set(project.name)
     archiveVersion.set(project.version.toString())
-    archiveExtension.set('zip')
-    destinationDirectory = new File(projectDir, 'build')
-    into('/') {
-        from 'dist'
+    archiveExtension.set("zip")
+    destinationDirectory = new File(projectDir, "build")
+    into("/") {
+        from "dist"
     }
 }
 
@@ -132,7 +132,7 @@ task installPlugin() {
         }
         pluginFile.mkdirs()
         println String.format(
-                "install plugin, pluginType: %s, pluginInstanceName: %s, module: %s", pluginType, pluginName, subProject.getName()
+            "install plugin, pluginType: %s, pluginInstanceName: %s, module: %s", pluginType, pluginName, subProject.getName()
         )
 
         copy {
@@ -147,7 +147,7 @@ task installPlugin() {
         copy {
             into "${rootDir}/dist/conf"
             from "${subProject.getProjectDir()}/dist/conf"
-            exclude 'META-INF'
+            exclude "META-INF"
         }
     })
 }
@@ -167,17 +167,17 @@ subprojects {
 
     sourceSets {
         main {
-            java.srcDirs = ['src/main/java']
+            java.srcDirs = ["src/main/java"]
         }
 
         test {
-            java.srcDirs = ['src/test/java']
+            java.srcDirs = ["src/test/java"]
         }
     }
 
     clean.doFirst {
-        delete 'build'
-        delete 'dist'
+        delete "build"
+        delete "dist"
     }
 
     jacoco {
@@ -196,12 +196,12 @@ subprojects {
         ignoreFailures = true
         showProgress = true
         showStackTraces = true
-        effort = 'default'
+        effort = "default"
         reportsDir = file("$buildDir/reports/spotbugs")
         projectName = rootProject.name
         release = version
-        extraArgs = ['-nested:false']
-        maxHeapSize = '256m'
+        extraArgs = ["-nested:false"]
+        maxHeapSize = "256m"
 
     }
 
@@ -212,7 +212,7 @@ subprojects {
             html {
                 enabled = true
                 destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
-                stylesheet = 'fancy-hist.xsl'
+                stylesheet = "fancy-hist.xsl"
             }
         }
     }
@@ -223,7 +223,7 @@ subprojects {
             html {
                 enabled = true
                 destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
-                stylesheet = 'fancy-hist.xsl'
+                stylesheet = "fancy-hist.xsl"
             }
         }
     }
@@ -249,7 +249,7 @@ subprojects {
         }
     }
 
-    task dist(dependsOn: ['jar']) {
+    task dist(dependsOn: ["jar"]) {
         doFirst {
             new File("${projectDir}/dist/bin").mkdirs()
             new File("${projectDir}/dist/apps").mkdirs()
@@ -284,13 +284,13 @@ subprojects {
             }
             copy {
                 into("${projectDir}/dist/bin")
-                from 'bin'
+                from "bin"
             }
             copy {
                 into("${projectDir}/dist/conf")
-                from 'conf', sourceSets.main.resources.srcDirs
+                from "conf", sourceSets.main.resources.srcDirs
                 setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE)
-                exclude 'META-INF'
+                exclude "META-INF"
             }
             if (rootProject.contains(project.name)) {
                 new File("${rootDir}/dist/apps").mkdirs()
@@ -327,14 +327,14 @@ subprojects {
         destinationDir = reporting.file("javadoc")
     }
 
-    task packageJavadoc(type: Jar, dependsOn: ['javadoc']) {
+    task packageJavadoc(type: Jar, dependsOn: ["javadoc"]) {
         from project.javadoc.destinationDir
-        classifier = 'javadoc'
+        classifier = "javadoc"
     }
 
     task packageSources(type: Jar) {
         from project.sourceSets.main.allSource
-        classifier = 'sources'  // either here or in artifacts block
+        classifier = "sources"  // either here or in artifacts block
     }
 
     artifacts {
@@ -369,43 +369,43 @@ subprojects {
                 artifact packageSources
                 artifact packageJavadoc
                 versionMapping {
-                    usage('java-api') {
-                        fromResolutionOf('runtimeClasspath')
+                    usage("java-api") {
+                        fromResolutionOf("runtimeClasspath")
                     }
-                    usage('java-runtime') {
+                    usage("java-runtime") {
                         fromResolutionResult()
                     }
                 }
                 pom {
-                    name = 'EventMesh'
-                    description = 'Apache EventMesh'
-                    url = 'https://github.com/apache/incubator-eventmesh'
+                    name = "EventMesh"
+                    description = "Apache EventMesh"
+                    url = "https://github.com/apache/incubator-eventmesh"
                     licenses {
                         license {
-                            name = 'The Apache License, Version 2.0'
-                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            name = "The Apache License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
                         }
                     }
                     developers {
                         developer {
-                            id = 'Apache EventMesh(incubating)'
-                            name = 'Apache EventMesh(incubating) of ASF'
-                            url = 'https://eventmesh.apache.org/'
+                            id = "Apache EventMesh (Incubating)"
+                            name = "Apache EventMesh (Incubating) of ASF"
+                            url = "https://eventmesh.apache.org/"
                         }
                     }
                     scm {
-                        connection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-                        developerConnection = 'scm:git:git@github.com:apache/incubator-eventmesh.git'
-                        url = 'https://github.com/apache/incubator-eventmesh'
+                        connection = "scm:git:git@github.com:apache/incubator-eventmesh.git"
+                        developerConnection = "scm:git:git@github.com:apache/incubator-eventmesh.git"
+                        url = "https://github.com/apache/incubator-eventmesh"
                     }
                 }
             }
         }
         repositories {
             maven {
-                def releasesRepoUrl = 'https://repository.apache.org/service/local/staging/deploy/maven2'
-                def snapshotsRepoUrl = 'https://repository.apache.org/content/repositories/snapshots/'
-                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                def releasesRepoUrl = "https://repository.apache.org/service/local/staging/deploy/maven2"
+                def snapshotsRepoUrl = "https://repository.apache.org/content/repositories/snapshots/"
+                url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
                 credentials {
                     username apacheUserName
                     password apachePassWord
@@ -427,7 +427,7 @@ subprojects {
 
 
             dependency "com.google.guava:guava:31.0.1-jre"
-            
+
             dependency "org.slf4j:slf4j-api:1.7.30"
             dependency "org.apache.logging.log4j:log4j-api:2.17.1"
             dependency "org.apache.logging.log4j:log4j-core:2.17.1"
@@ -443,19 +443,19 @@ subprojects {
 
             dependency "io.netty:netty-all:4.1.73.Final"
 
-            dependency 'io.dropwizard.metrics:metrics-core:4.1.0'
+            dependency "io.dropwizard.metrics:metrics-core:4.1.0"
             dependency "io.dropwizard.metrics:metrics-healthchecks:4.1.0"
             dependency "io.dropwizard.metrics:metrics-annotation:4.1.0"
             dependency "io.dropwizard.metrics:metrics-json:4.1.0"
 
-            dependency 'io.opentelemetry:opentelemetry-api:1.3.0'
-            dependency 'io.opentelemetry:opentelemetry-sdk:1.3.0'
-            dependency 'io.opentelemetry:opentelemetry-sdk-metrics:1.3.0-alpha'
-            dependency 'io.opentelemetry:opentelemetry-exporter-prometheus:1.3.0-alpha'
-            dependency 'io.prometheus:simpleclient:0.8.1'
-            dependency 'io.prometheus:simpleclient_httpserver:0.8.1'
-            dependency 'io.opentelemetry:opentelemetry-exporter-zipkin:1.3.0'
-            dependency 'io.opentelemetry:opentelemetry-semconv:1.3.0-alpha'
+            dependency "io.opentelemetry:opentelemetry-api:1.3.0"
+            dependency "io.opentelemetry:opentelemetry-sdk:1.3.0"
+            dependency "io.opentelemetry:opentelemetry-sdk-metrics:1.3.0-alpha"
+            dependency "io.opentelemetry:opentelemetry-exporter-prometheus:1.3.0-alpha"
+            dependency "io.prometheus:simpleclient:0.8.1"
+            dependency "io.prometheus:simpleclient_httpserver:0.8.1"
+            dependency "io.opentelemetry:opentelemetry-exporter-zipkin:1.3.0"
+            dependency "io.opentelemetry:opentelemetry-semconv:1.3.0-alpha"
 
             dependency "io.openmessaging:openmessaging-api:2.2.1-pubsub"
 
