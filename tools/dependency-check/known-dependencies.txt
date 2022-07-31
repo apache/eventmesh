@@ -12,10 +12,12 @@ commons-collections4-4.1.jar
 commons-digester-2.1.jar
 commons-lang3-3.6.jar
 commons-logging-1.2.jar
+commons-pool2-2.11.1.jar
 commons-text-1.9.jar
 commons-validator-1.7.jar
 disruptor-3.4.2.jar
 dledger-0.2.3.jar
+dledger-0.2.7.jar
 error_prone_annotations-2.7.1.jar
 failureaccess-1.0.1.jar
 fastjson-1.2.76.jar

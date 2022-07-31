@@ -230,7 +230,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     commons-text 1.9: https://github.com/apache/commons-text, Apache 2.0
     commons-validator 1.7: https://github.com/apache/commons-validator, Apache 2.0
     disruptor 3.4.2: https://github.com/LMAX-Exchange/disruptor, Apache 2.0
-    dledger 0.2.3: https://github.com/openmessaging/dledger, Apache 2.0
+    dledger 0.2.7: https://github.com/openmessaging/dledger, Apache 2.0
     error_prone_annotations 2.7.1: https://github.com/google/error-prone, Apache 2.0
     failureaccess 1.0.1: https://github.com/google/guava, Apache 2.0
     listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://github.com/google/guava, Apache 2.0

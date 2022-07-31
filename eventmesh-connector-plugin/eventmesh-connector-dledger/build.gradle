@@ -25,7 +25,10 @@ dependencies {
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation 'org.apache.commons:commons-pool2:2.11.1'
     implementation 'io.cloudevents:cloudevents-json-jackson:2.2.0'
-    implementation "io.openmessaging.storage:dledger:$dledger_version"
+    implementation("io.openmessaging.storage:dledger:$dledger_version") {
+        exclude group: 'org.apache.rocketmq', module: 'rocketmq-remoting'
+    }
+    implementation 'org.apache.rocketmq:rocketmq-remoting:4.9.3'
 
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     testImplementation project(":eventmesh-common")
