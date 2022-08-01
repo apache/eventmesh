@@ -95,7 +95,7 @@ public class UpStreamMsgContext extends RetryContext {
             retryTimes++;
 
             // check session availability
-            if (session.isAvailable(event.getSubject())) {
+            if (session.isRunning()) {
                 EventMeshTcpSendResult sendStatus = session.upstreamMsg(header, event,
                     createSendCallback(replyCmd, taskExecuteTime, event, this), startTime, taskExecuteTime);
 
