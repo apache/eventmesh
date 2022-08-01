@@ -423,13 +423,13 @@ public class ClientGroupWrapper {
 
         EventListener listener = (event, context) -> {
             String protocolVersion =
-                Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_VERSION)).toString();
+                Objects.requireNonNull(event.getSpecVersion()).toString();
 
             Span span = TraceUtils.prepareServerSpan(
                 EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
 
-            try (Scope scope = span.makeCurrent()) {
+            try {
                 eventMeshTcpMonitor.getTcpSummaryMetrics().getMq2eventMeshMsgNum()
                     .incrementAndGet();
                 event = CloudEventBuilder.from(event)
@@ -533,12 +533,12 @@ public class ClientGroupWrapper {
 
         EventListener listener = (event, context) -> {
             String protocolVersion =
-                Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_VERSION)).toString();
+                Objects.requireNonNull(event.getSpecVersion()).toString();
 
             Span span = TraceUtils.prepareServerSpan(
                 EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
-            try (Scope scope = span.makeCurrent()) {
+            try {
                 eventMeshTcpMonitor.getTcpSummaryMetrics().getMq2eventMeshMsgNum()
                     .incrementAndGet();
                 event = CloudEventBuilder.from(event)
