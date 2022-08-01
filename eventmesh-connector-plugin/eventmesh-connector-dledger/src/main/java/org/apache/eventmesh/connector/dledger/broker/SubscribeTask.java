@@ -20,7 +20,6 @@ package org.apache.eventmesh.connector.dledger.broker;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.dledger.clientpool.DLedgerClientPool;
 import org.apache.eventmesh.connector.dledger.exception.DLedgerConnectorException;
 
@@ -31,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.v1.CloudEventV1;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,7 +53,6 @@ public class SubscribeTask implements Runnable {
 
     @Override
     public void run() {
-        // TODO
         while (started.get()) {
             try {
                 LOGGER.debug("execute subscribe task, topic: {}", topic);
@@ -65,10 +62,8 @@ public class SubscribeTask implements Runnable {
                     continue;
                 }
                 byte[] originMessage = clientPool.get(messageQueue.peek()).get(0).getBody();
-                String cloudEventStr = CloudEventMessage.getFromByteArray(originMessage).getMessage();
-                // TODO deserialize
-                CloudEvent cloudEvent = JsonUtils.deserialize(cloudEventStr, CloudEventV1.class);
-
+                CloudEventMessage cloudEventMessage = CloudEventMessage.getFromByteArray(originMessage);
+                CloudEvent cloudEvent = cloudEventMessage.convertToCloudEvent();
                 EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
                     @Override
                     public void commit(EventMeshAction action) {

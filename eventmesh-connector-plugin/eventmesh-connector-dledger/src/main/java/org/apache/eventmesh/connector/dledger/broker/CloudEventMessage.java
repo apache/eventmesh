@@ -20,33 +20,26 @@ package org.apache.eventmesh.connector.dledger.broker;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
+import io.cloudevents.SpecVersion;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-// TODO improve serialize/deserialize
 @Data
 @NoArgsConstructor
 public class CloudEventMessage implements Serializable {
+    private SpecVersion version;
     private String topic;
-    private String message;
+    private String data;
+    private Map<String, String> extensions = new HashMap<>();
     private long createTimestamp;
-
-    public CloudEventMessage(String topic, CloudEvent cloudEvent) {
-        if (cloudEvent == null) {
-            throw new IllegalArgumentException();
-        }
-        this.topic = topic;
-        this.message = new String(EventFormatProvider.getInstance()
-                                                     .resolveFormat(JsonFormat.CONTENT_TYPE)
-                                                     .serialize(cloudEvent), StandardCharsets.UTF_8);
-        this.createTimestamp = System.currentTimeMillis();
-    }
 
     public static byte[] toByteArray(CloudEventMessage cloudEventMessage) {
         return JsonUtils.serialize(cloudEventMessage).getBytes(StandardCharsets.UTF_8);
@@ -54,5 +47,30 @@ public class CloudEventMessage implements Serializable {
 
     public static CloudEventMessage getFromByteArray(byte[] body) {
         return JsonUtils.deserialize(new String(body, StandardCharsets.UTF_8), CloudEventMessage.class);
+    }
+
+    public CloudEvent convertToCloudEvent() {
+        CloudEventBuilder builder = null;
+        switch (version) {
+            case V03:
+                builder = CloudEventBuilder.v03();
+                break;
+            case V1:
+                builder = CloudEventBuilder.v1();
+                break;
+        }
+        builder.withData(data.getBytes());
+
+        builder.withId(extensions.remove("id"));
+        builder.withSource(URI.create(extensions.remove("source")));
+        builder.withType(extensions.remove("type"));
+        builder.withDataContentType(extensions.remove("datacontenttype"));
+        builder.withSubject(extensions.remove("subject"));
+
+        for (Map.Entry<String, String> extension : extensions.entrySet()) {
+            builder.withExtension(extension.getKey(), extension.getValue());
+        }
+
+        return builder.build();
     }
 }

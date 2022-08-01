@@ -23,6 +23,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.api.producer.Producer;
+import org.apache.eventmesh.connector.dledger.broker.DLedgerMessageWriter;
 import org.apache.eventmesh.connector.dledger.clientpool.DLedgerClientPool;
 import org.apache.eventmesh.connector.dledger.broker.CloudEventMessage;
 import org.apache.eventmesh.connector.dledger.broker.DLedgerTopicIndexesStore;
@@ -84,7 +85,8 @@ public class DLedgerProducer implements Producer {
         Preconditions.checkNotNull(cloudEvent);
         Preconditions.checkNotNull(sendCallback);
 
-        CloudEventMessage message = new CloudEventMessage(cloudEvent.getSubject(), cloudEvent);
+        DLedgerMessageWriter<CloudEventMessage> messageWriter = new DLedgerMessageWriter<>(cloudEvent.getSubject());
+        CloudEventMessage message = messageWriter.writeBinary(cloudEvent);
         try {
             SendResult sendResult = clientPool.append(message.getTopic(), CloudEventMessage.toByteArray(message));
             topicIndexesStore.publish(sendResult.getTopic(), Long.parseLong(sendResult.getMessageId()));
