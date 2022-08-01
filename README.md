@@ -19,6 +19,7 @@
 [🌐 简体中文](README.zh-CN.md)
 </div>
 
+
 # Apache EventMesh (Incubating)
 
 **Apache EventMesh (Incubating)** is a dynamic [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture) application multi-runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
@@ -59,25 +60,31 @@ Here are the guidelines:
 
 [Step 1: Deploy eventmesh-store](docs/zh/instruction/01-store.md)
 
-[Step 2: Start eventmesh-runtime](docs/zh/instruction/01-store.md)
+[Step 2: Start eventmesh-runtime](docs/zh/instruction/02-runtime.md)
 
-[Step 3: Run our demos](docs/zh/instruction/01-store.md)
+[Step 3: Run our demos](docs/zh/instruction/03-demo.md)
 
 Besides, we also provide the docker-version guidelines for you if you prefer Docker:
 
 [Step 1: Deploy eventmesh-store using docker](docs/zh/instruction/01-store-with-docker.md)
 
-[Step 2: Start eventmesh-runtime using docker](docs/zh/instruction/01-store-with-docker.md)
+[Step 2: Start eventmesh-runtime using docker](docs/zh/instruction/02-runtime-with-docker.md)
 
-[Step 3: Run our demos](docs/zh/instruction/01-store.md)
+[Step 3: Run our demos](docs/zh/instruction/03-demo.md)
 
 ## Contributing
 
 Each contributor has played an important role in promoting the robust development of Apache EventMesh (Incubating). We sincerely appreciate all contributors who have contributed code and documents.
 
 - [Contributing Guideline](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/contribute/03-new-contributor-guidelines.md)
-- [List of Contributors](https://github.com/apache/incubator-eventmesh/graphs/contributors)
 - [Good First Issues](https://github.com/apache/incubator-eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+
+Here is the [List of Contributors](https://github.com/apache/incubator-eventmesh/graphs/contributors), thank you all! :)
+
+<a href="https://github.com/apache/incubator-eventmesh/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=apache/incubator-eventmesh" />
+</a>
+
 
 ## CNCF Landscape
 

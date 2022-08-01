@@ -93,7 +93,7 @@ public class SubService implements InitializingBean {
                 e.printStackTrace();
             }
             logger.info("stopThread start....");
-            System.exit(0);
+            throw new RuntimeException();
         });
         stopThread.start();
     }
