@@ -85,8 +85,7 @@ public class HTTPMessageHandler implements MessageHandler {
 
         try {
             pushExecutor.submit(() -> {
-                String protocolVersion = Objects.requireNonNull(handleMsgContext.getEvent().getExtension(
-                    Constants.PROTOCOL_VERSION)).toString();
+                String protocolVersion = Objects.requireNonNull(handleMsgContext.getEvent().getSpecVersion()).toString();
 
                 Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, handleMsgContext.getEvent()),
                     EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
