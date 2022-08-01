@@ -97,16 +97,16 @@ public class EventMeshConsumer {
             eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
         persistentMqConsumer.init(keyValue);
 
-        EventListener cluserEventListener = new EventListener() {
+        EventListener clusterEventListener = new EventListener() {
             @Override
             public void consume(CloudEvent event, AsyncConsumeContext context) {
                 String protocolVersion =
-                    Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_VERSION)).toString();
+                    Objects.requireNonNull(event.getSpecVersion()).toString();
 
                 Span span = TraceUtils.prepareServerSpan(
                     EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                     EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
-                try (Scope scope = span.makeCurrent()) {
+                try {
                     String topic = event.getSubject();
                     String bizSeqNo = (String) event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
                     String uniqueId = (String) event.getExtension(Constants.RMB_UNIQ_ID);
@@ -158,7 +158,7 @@ public class EventMeshConsumer {
                 }
             }
         };
-        persistentMqConsumer.registerEventListener(cluserEventListener);
+        persistentMqConsumer.registerEventListener(clusterEventListener);
 
         //broacast consumer
         Properties broadcastKeyValue = new Properties();
@@ -174,12 +174,12 @@ public class EventMeshConsumer {
             public void consume(CloudEvent event, AsyncConsumeContext context) {
 
                 String protocolVersion =
-                    Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_VERSION)).toString();
+                    Objects.requireNonNull(event.getSpecVersion()).toString();
 
                 Span span = TraceUtils.prepareServerSpan(
                     EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                     EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
-                try (Scope scope = span.makeCurrent()) {
+                try {
 
                     event = CloudEventBuilder.from(event)
                         .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,

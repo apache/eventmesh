@@ -60,8 +60,6 @@ public class SendAsyncEventProcessor implements EventProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
-
     public Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private EventMeshHTTPServer eventMeshHTTPServer;
@@ -77,7 +75,7 @@ public class SendAsyncEventProcessor implements EventProcessor {
 
         HttpEventWrapper responseWrapper;
 
-        cmdLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
+        httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
                 EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         // user request header
