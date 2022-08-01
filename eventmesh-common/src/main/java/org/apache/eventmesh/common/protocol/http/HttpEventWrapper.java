@@ -205,12 +205,9 @@ public class HttpEventWrapper implements ProtocolTransportObject {
 
         String topic = headerMap.getOrDefault("subject", "").toString();
 
-        if (requestURI.startsWith(RequestURI.PUBLISH.getRequestURI())) {
-            topic = requestURI.substring(RequestURI.PUBLISH.getRequestURI().length() + 1);
-        }
-
-        if (StringUtils.isEmpty(topic)) {
-            topic = "TEST-HTTP-TOPIC";
+        int publishUriLength = RequestURI.PUBLISH.getRequestURI().length();
+        if (requestURI.startsWith(RequestURI.PUBLISH.getRequestURI()) && (requestURI.length() > publishUriLength + 1)) {
+            topic = requestURI.substring(publishUriLength + 1);
         }
         sysHeaderMap.put(ProtocolKey.CloudEventsKey.SUBJECT, topic);
     }
