@@ -64,8 +64,6 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
     public Logger httpLogger = LoggerFactory.getLogger("http");
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
-
     public Logger aclLogger = LoggerFactory.getLogger("acl");
 
     private EventMeshHTTPServer eventMeshHTTPServer;
@@ -83,8 +81,10 @@ public class SendAsyncEventProcessor implements AsyncHttpProcessor {
 
         HttpEventWrapper requestWrapper = asyncContext.getRequest();
 
-        cmdLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-            EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
+        HttpEventWrapper responseWrapper;
+
+        httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
+                EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         // user request header
         Map<String, Object> requestHeaderMap = requestWrapper.getHeaderMap();

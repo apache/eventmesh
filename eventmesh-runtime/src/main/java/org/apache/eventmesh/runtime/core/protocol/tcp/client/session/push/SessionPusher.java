@@ -115,7 +115,7 @@ public class SessionPusher {
             session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
 
             //TODO uploadTrace
-            String protocolVersion = Objects.requireNonNull(downStreamMsgContext.event.getExtension(Constants.PROTOCOL_VERSION)).toString();
+            String protocolVersion = Objects.requireNonNull(downStreamMsgContext.event.getSpecVersion()).toString();
 
             Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, downStreamMsgContext.event),
                 EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_CLIENT_SPAN, false);
