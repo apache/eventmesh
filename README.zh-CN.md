@@ -61,17 +61,17 @@
 
 [Step 1: Deploy eventmesh-store](docs/zh/instruction/01-store.md)
 
-[Step 2: Start eventmesh-runtime](docs/zh/instruction/01-store.md)
+[Step 2: Start eventmesh-runtime](docs/zh/instruction/02-runtime.md)
 
-[Step 3: Run our demos](docs/zh/instruction/01-store.md)
+[Step 3: Run our demos](docs/zh/instruction/03-demo.md)
 
 除此之外，我们还提供了 Docker 版本的快速开始指引，方便您借助 Docker 来初探我们的项目:
 
 [Step 1: Deploy eventmesh-store using docker](docs/zh/instruction/01-store-with-docker.md)
 
-[Step 2: Start eventmesh-runtime using docker](docs/zh/instruction/01-store-with-docker.md)
+[Step 2: Start eventmesh-runtime using docker](docs/zh/instruction/02-runtime-with-docker.md)
 
-[Step 3: Run our demos](docs/zh/instruction/01-store.md)
+[Step 3: Run our demos](docs/zh/instruction/03-demo.md)
 
 
 
@@ -80,8 +80,14 @@
 每一名贡献者都在这个项目的发展上都是至关重要的。我们真诚地感谢所有对代码和文档的贡献者！想要尝试贡献的可以看看以下三个链接。
 
 - [贡献准则](https://eventmesh.apache.org/docs/contribute/contribute)
-- [贡献者名单](https://github.com/apache/incubator-eventmesh/graphs/contributors)
 - [值得新人尝试的 Issue](https://github.com/apache/incubator-eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+
+这是项目的[贡献者名单](https://github.com/apache/incubator-eventmesh/graphs/contributors)
+，感谢各位的大力支持 :)
+
+<a href="https://github.com/apache/incubator-eventmesh/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=apache/incubator-eventmesh" />
+</a>
 
 ## CNCF Landscape
 
