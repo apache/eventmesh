@@ -73,7 +73,7 @@ public class EtcdRegistryServiceTest {
         etcdRegistryService.init();
     }
 
-    @Test
+    @Test(expected = RegistryException.class)
     public void testStart() {
         etcdRegistryService.init();
         etcdRegistryService.start();
@@ -81,7 +81,7 @@ public class EtcdRegistryServiceTest {
 
     }
 
-    @Test
+    @Test(expected = RegistryException.class)
     public void testShutdown() throws NoSuchFieldException, IllegalAccessException {
         etcdRegistryService.init();
         etcdRegistryService.start();
@@ -105,7 +105,7 @@ public class EtcdRegistryServiceTest {
         etcdRegistryService.register(eventMeshRegisterInfo);
     }
 
-    @Test
+    @Test(expected = RegistryException.class)
     public void testFindEventMeshInfo() {
         etcdRegistryService.init();
         etcdRegistryService.start();
