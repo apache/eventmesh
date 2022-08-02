@@ -19,16 +19,7 @@ package org.apache.eventmesh.runtime.admin.controller;
 
 import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
 import org.apache.eventmesh.runtime.admin.handler.ClientHandler;
-import org.apache.eventmesh.runtime.admin.handler.QueryRecommendEventMeshHandler;
-import org.apache.eventmesh.runtime.admin.handler.RedirectClientByIpPortHandler;
-import org.apache.eventmesh.runtime.admin.handler.RedirectClientByPathHandler;
-import org.apache.eventmesh.runtime.admin.handler.RedirectClientBySubSystemHandler;
-import org.apache.eventmesh.runtime.admin.handler.RejectAllClientHandler;
-import org.apache.eventmesh.runtime.admin.handler.RejectClientByIpPortHandler;
-import org.apache.eventmesh.runtime.admin.handler.RejectClientBySubSystemHandler;
-import org.apache.eventmesh.runtime.admin.handler.ShowClientBySystemHandler;
-import org.apache.eventmesh.runtime.admin.handler.ShowClientHandler;
-import org.apache.eventmesh.runtime.admin.handler.ShowListenClientByTopicHandler;
+import org.apache.eventmesh.runtime.admin.handler.ConfigurationHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -41,9 +32,9 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpServer;
 
-public class ClientManageController {
+public class EventMeshAdminController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ClientManageController.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventMeshAdminController.class);
 
     private EventMeshTCPServer eventMeshTCPServer;
     private final EventMeshHTTPServer eventMeshHTTPServer;
@@ -51,7 +42,7 @@ public class ClientManageController {
 
     private AdminController adminController;
 
-    public ClientManageController(
+    public EventMeshAdminController(
             EventMeshTCPServer eventMeshTCPServer,
             EventMeshHTTPServer eventMeshHTTPServer,
             EventMeshGrpcServer eventMeshGrpcServer
@@ -64,21 +55,12 @@ public class ClientManageController {
     public void start() throws IOException {
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-        server.createContext("/clientManage/showClient", new ShowClientHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/showClientBySystem", new ShowClientBySystemHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/rejectAllClient", new RejectAllClientHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/rejectClientByIpPort", new RejectClientByIpPortHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/rejectClientBySubSystem", new RejectClientBySubSystemHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/redirectClientBySubSystem", new RedirectClientBySubSystemHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/redirectClientByPath", new RedirectClientByPathHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler(eventMeshTCPServer));
-        server.createContext("/eventMesh/recommend", new QueryRecommendEventMeshHandler(eventMeshTCPServer));
-
         server.createContext("/client", new ClientHandler(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer));
-
-        adminController = new AdminController();
-        adminController.run(server);
+        server.createContext("/configuration", new ConfigurationHandler(
+                eventMeshTCPServer.getEventMeshTCPConfiguration(),
+                eventMeshHTTPServer.getEventMeshHttpConfiguration(),
+                eventMeshGrpcServer.getEventMeshGrpcConfiguration()
+        ));
 
         server.start();
         logger.info("ClientManageController start success, port:{}", port);

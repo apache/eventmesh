@@ -53,7 +53,7 @@ import com.sun.net.httpserver.HttpHandler;
  * The client handler
  */
 public class ClientHandler implements HttpHandler {
-    private static final Logger logger = LoggerFactory.getLogger(ShowClientHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
     private final EventMeshHTTPServer eventMeshHTTPServer;
