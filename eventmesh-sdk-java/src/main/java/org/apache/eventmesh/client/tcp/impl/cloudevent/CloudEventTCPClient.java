@@ -21,6 +21,7 @@ import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPPubClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPSubClient;
 import org.apache.eventmesh.client.tcp.common.AsyncRRCallback;
+import org.apache.eventmesh.client.tcp.common.MessageUtils;
 import org.apache.eventmesh.client.tcp.common.ReceiveMsgHook;
 import org.apache.eventmesh.client.tcp.conf.EventMeshTCPClientConfig;
 import org.apache.eventmesh.common.exception.EventMeshException;
@@ -49,21 +50,25 @@ public class CloudEventTCPClient implements EventMeshTCPClient<CloudEvent> {
 
     @Override
     public Package rr(CloudEvent cloudEvent, long timeout) throws EventMeshException {
+        MessageUtils.validateCloudEvent(cloudEvent);
         return cloudEventTCPPubClient.rr(cloudEvent, timeout);
     }
 
     @Override
     public void asyncRR(CloudEvent cloudEvent, AsyncRRCallback callback, long timeout) throws EventMeshException {
+        MessageUtils.validateCloudEvent(cloudEvent);
         cloudEventTCPPubClient.asyncRR(cloudEvent, callback, timeout);
     }
 
     @Override
     public Package publish(CloudEvent cloudEvent, long timeout) throws EventMeshException {
+        MessageUtils.validateCloudEvent(cloudEvent);
         return cloudEventTCPPubClient.publish(cloudEvent, timeout);
     }
 
     @Override
     public void broadcast(CloudEvent cloudEvent, long timeout) throws EventMeshException {
+        MessageUtils.validateCloudEvent(cloudEvent);
         cloudEventTCPPubClient.broadcast(cloudEvent, timeout);
     }
 

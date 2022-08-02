@@ -18,6 +18,7 @@
 package org.apache.eventmesh.client.tcp.common;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
@@ -27,6 +28,8 @@ import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.common.protocol.tcp.Subscription;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -187,5 +190,33 @@ public class MessageUtils {
             builder.append((char) ThreadLocalRandom.current().nextInt(48, 57));
         }
         return builder.toString();
+    }
+
+    public static void validateEventMeshMessage(EventMeshMessage eventMeshMessage) throws
+        EventMeshException {
+        if (StringUtils.isBlank(eventMeshMessage.getTopic())) {
+            throw new EventMeshException("eventMeshMessage topic is null");
+        }
+        if (StringUtils.isBlank(eventMeshMessage.getBody())) {
+            throw new EventMeshException("eventMeshMessage body is null");
+        }
+    }
+
+    public static void validateCloudEvent(CloudEvent cloudEvent) throws EventMeshException {
+        if (StringUtils.isBlank(cloudEvent.getSubject())) {
+            throw new EventMeshException("cloudEvent subject is null");
+        }
+        if (cloudEvent.getData() == null || cloudEvent.getData().toBytes().length == 0) {
+            throw new EventMeshException("cloudEvent body is null");
+        }
+    }
+
+    public static void validateOpenmessage(Message message) throws EventMeshException {
+        if (StringUtils.isBlank(message.getTopic())) {
+            throw new EventMeshException("message topic is null");
+        }
+        if (message.getBody() == null || message.getBody().length == 0) {
+            throw new EventMeshException("message body is null");
+        }
     }
 }
