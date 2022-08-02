@@ -125,7 +125,9 @@ public class EtcdRegistryService implements RegistryService {
         INIT_STATUS.compareAndSet(true, false);
         START_STATUS.compareAndSet(true, false);
         try {
-            etcdClient.close();
+            if (etcdClient != null) {
+                etcdClient.close();
+            }
         } catch (Exception e) {
             logger.error("[EtcdRegistryService][shutdown] error", e);
             throw new RegistryException(e.getMessage());
