@@ -26,20 +26,17 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../../context/context';
 
 const Endpoint = () => {
+  const { state, dispatch } = useContext(AppContext);
   const toast = useToast();
   const [endpointInput, setEndpointInput] = useState('http://localhost:10106');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const endpoint = localStorage.getItem('endpoint');
-    if (endpoint === null) {
-      return;
-    }
-    setEndpointInput(endpoint);
-    axios.defaults.baseURL = endpoint;
+    setEndpointInput(state.endpoint);
   }, []);
 
   const handleEndpointInputChange = (event: React.FormEvent<HTMLInputElement>) => {
@@ -50,8 +47,12 @@ const Endpoint = () => {
     try {
       setLoading(true);
       await axios.get(`${endpointInput}/client`);
-      axios.defaults.baseURL = endpointInput;
-      localStorage.setItem('endpoint', endpointInput);
+      dispatch({
+        type: 'SetEndPointAction',
+        payload: {
+          endpoint: endpointInput,
+        },
+      });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast({

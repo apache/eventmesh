@@ -17,8 +17,24 @@
  * under the License.
  */
 
-/// <reference types="next" />
-/// <reference types="next/image-types/global" />
+export interface State {
+  endpoint: string;
+}
 
-// NOTE: This file should not be edited
-// see https://nextjs.org/docs/basic-features/typescript for more information.
+interface SetState {
+  type: 'SetState';
+  payload: {
+    endpoint: string;
+  };
+}
+
+interface SetEndPointAction {
+  type: 'SetEndPointAction';
+  payload: {
+    endpoint: string;
+  };
+}
+
+export type Action =
+  | SetState
+  | SetEndPointAction;
