@@ -19,7 +19,7 @@ package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.acl.Acl;
-import org.apache.eventmesh.runtime.admin.controller.ClientManageController;
+import org.apache.eventmesh.runtime.admin.controller.EventMeshAdminController;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
@@ -118,7 +118,7 @@ public class EventMeshServer {
             }
         }
 
-        ClientManageController clientManageController = new ClientManageController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer);
+        EventMeshAdminController clientManageController = new EventMeshAdminController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer);
         clientManageController.start();
 
         String eventStore = System
