@@ -112,7 +112,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     @Override
     public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
-                                                                Integer pageSize) {
+        Integer pageSize) {
         String manuDirPath = getWebhookConfigManuDir(webHookConfig);
         File manuDir = new File(manuDirPath);
         if (!manuDir.exists()) {
@@ -120,12 +120,12 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
             return new ArrayList<>();
         }
         List<WebHookConfig> webHookConfigs = new ArrayList<>();
-        
+
         File[] webhookFiles = manuDir.listFiles();
-        if(webhookFiles == null || webhookFiles.length == 0) {
-        	return webHookConfigs;
+        if (webhookFiles == null || webhookFiles.length == 0) {
+            return webHookConfigs;
         }
-        
+
         int startIndex = (pageNum - 1) * pageSize;
         int endIndex = pageNum * pageSize - 1;
         if (webhookFiles.length > startIndex) {
@@ -180,8 +180,8 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         try {
             // use URLEncoder.encode before, because the path may contain some speacial char like '/', which is illegal as a file name.
             webhookConfigFilePath = this.getWebhookConfigManuDir(webHookConfig)
-                    + WebHookOperationConstant.FILE_SEPARATOR + URLEncoder.encode(webHookConfig.getCallbackPath(), "UTF-8")
-                    + WebHookOperationConstant.FILE_EXTENSION;
+                + WebHookOperationConstant.FILE_SEPARATOR + URLEncoder.encode(webHookConfig.getCallbackPath(), "UTF-8")
+                + WebHookOperationConstant.FILE_EXTENSION;
         } catch (UnsupportedEncodingException e) {
             logger.error("get webhookConfig file path {} failed", webHookConfig.getCallbackPath(), e);
         }
