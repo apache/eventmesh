@@ -131,7 +131,7 @@ public class SendAsyncEventProcessor implements EventProcessor {
             responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg());
 
             responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(responseWrapper);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
             return;
         }
 
@@ -149,7 +149,7 @@ public class SendAsyncEventProcessor implements EventProcessor {
             responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg());
 
             responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(responseWrapper);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
             return;
         }
 
@@ -168,7 +168,7 @@ public class SendAsyncEventProcessor implements EventProcessor {
 
             responseWrapper = asyncContext.getRequest().createHttpResponse(
                 responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(responseWrapper);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
             return;
         }
 
@@ -187,7 +187,7 @@ public class SendAsyncEventProcessor implements EventProcessor {
                 responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_ACL_ERR.getErrMsg());
 
                 responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
-                asyncContext.onComplete(responseWrapper);
+                EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
                 aclLogger.warn("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);
                 return;
             }
@@ -201,7 +201,7 @@ public class SendAsyncEventProcessor implements EventProcessor {
 
             responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
             eventMeshHTTPServer.metrics.getSummaryMetrics().recordHTTPDiscard();
-            asyncContext.onComplete(responseWrapper);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
             return;
         }
 
@@ -211,7 +211,7 @@ public class SendAsyncEventProcessor implements EventProcessor {
             responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getRetCode());
             responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_GROUP_PRODUCER_STOPED_ERR.getErrMsg());
             responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(responseWrapper);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
             return;
         }
 
@@ -223,7 +223,7 @@ public class SendAsyncEventProcessor implements EventProcessor {
             responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode());
             responseBodyMap.put("retMsg", "Event size exceeds the limit: " + eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize);
             responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(responseWrapper);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
             return;
         }
 
@@ -243,7 +243,7 @@ public class SendAsyncEventProcessor implements EventProcessor {
             responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_PACKAGE_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(e, 2));
             responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
 
-            asyncContext.onComplete(responseWrapper);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
             return;
         }
 
@@ -307,8 +307,8 @@ public class SendAsyncEventProcessor implements EventProcessor {
         } catch (Exception ex) {
             responseBodyMap.put("retCode", EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getRetCode());
             responseBodyMap.put("retMsg", EventMeshRetCode.EVENTMESH_SEND_ASYNC_MSG_ERR.getErrMsg() + EventMeshUtil.stackTrace(ex, 2));
-            HttpEventWrapper err = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
-            asyncContext.onComplete(err);
+            responseWrapper = asyncContext.getRequest().createHttpResponse(responseHeaderMap, responseBodyMap);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseWrapper, eventMeshHTTPServer);
 
             eventMeshHTTPServer.getHttpRetryer().pushRetry(sendMessageContext.delay(10000));
             long endTime = System.currentTimeMillis();

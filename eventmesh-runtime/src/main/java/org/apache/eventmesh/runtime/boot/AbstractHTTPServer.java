@@ -466,18 +466,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         }
 
                         processor.processRequest(ctx, asyncContext);
-                        if (!asyncContext.isComplete()) {
-                            return;
-                        }
-
-                        metrics.getSummaryMetrics()
-                            .recordHTTPReqResTimeCost(System.currentTimeMillis() - requestWrapper.getReqTime());
-
-                        if (httpLogger.isDebugEnabled()) {
-                            httpLogger.debug("{}", asyncContext.getResponse());
-                        }
-
-                        sendResponse(ctx, asyncContext.getResponse().httpResponse());
                     } catch (Exception e) {
                         httpServerLogger.error("process error", e);
                     }
@@ -524,19 +512,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                         }
 
                         processor.processRequest(ctx, asyncContext);
-                        if (!asyncContext.isComplete()) {
-                            return;
-                        }
-
-                        metrics.getSummaryMetrics()
-                            .recordHTTPReqResTimeCost(System.currentTimeMillis() - request.getReqTime());
-
-                        if (httpLogger.isDebugEnabled()) {
-                            httpLogger.debug("{}", asyncContext.getResponse());
-                        }
-
-                        sendResponse(ctx, asyncContext.getResponse().httpResponse());
-
                     } catch (Exception e) {
                         httpServerLogger.error("process error", e);
                     }

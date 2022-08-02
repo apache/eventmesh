@@ -25,6 +25,7 @@ import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.http.async.AsyncContext;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequestProcessor;
+import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 
 import org.slf4j.Logger;
@@ -54,7 +55,7 @@ public class AdminShutdownProcessor implements HttpRequestProcessor {
         eventMeshServer.shutdown();
 
         responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(EventMeshRetCode.SUCCESS);
-        asyncContext.onComplete(responseEventMeshCommand);
+        EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshServer.getEventMeshHTTPServer());
     }
 
     @Override

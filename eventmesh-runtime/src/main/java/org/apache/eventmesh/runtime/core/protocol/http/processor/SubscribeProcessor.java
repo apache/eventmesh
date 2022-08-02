@@ -102,7 +102,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     SubscribeResponseBody
                             .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getRetCode(),
                                     EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -116,7 +116,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     SubscribeResponseBody
                             .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
                                     EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg()));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
         List<SubscriptionItem> subTopicList = subscribeRequestBody.getTopics();
@@ -138,7 +138,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                             SendMessageResponseBody
                                     .buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(),
                                             e.getMessage()));
-                    asyncContext.onComplete(responseEventMeshCommand);
+                    EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
                     aclLogger
                             .warn("CLIENT HAS NO PERMISSION,SubscribeProcessor subscribe failed", e);
                     return;
@@ -159,7 +159,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                     SubscribeResponseBody
                         .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
                             EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url));
-                asyncContext.onComplete(responseEventMeshCommand);
+                EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
                 return;
             }
         } catch (Exception e) {
@@ -169,7 +169,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 SubscribeResponseBody
                     .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
                         EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " invalid URL: " + url));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -184,7 +184,7 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 SubscribeResponseBody
                     .buildBody(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getRetCode(),
                         EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR.getErrMsg() + " unauthorized webhook URL: " + url));
-            asyncContext.onComplete(responseEventMeshCommand);
+            EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
             return;
         }
 
@@ -284,13 +284,13 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                 responseEventMeshCommand = request.createHttpCommandResponse(EventMeshRetCode.SUCCESS);
                 asyncContext.onComplete(responseEventMeshCommand, handler);
             } catch (Exception e) {
-                HttpCommand err = asyncContext.getRequest().createHttpCommandResponse(
+                responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     subscribeResponseHeader,
                     SubscribeResponseBody
                         .buildBody(EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getRetCode(),
                             EventMeshRetCode.EVENTMESH_SUBSCRIBE_ERR.getErrMsg()
                                 + EventMeshUtil.stackTrace(e, 2)));
-                asyncContext.onComplete(err);
+                EventMeshUtil.sendResponseToClient(ctx, asyncContext, responseEventMeshCommand, eventMeshHTTPServer);
                 long endTime = System.currentTimeMillis();
                 httpLogger.error(
                     "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
