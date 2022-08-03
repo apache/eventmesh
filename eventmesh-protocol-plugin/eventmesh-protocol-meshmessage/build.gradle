@@ -18,7 +18,7 @@
 dependencies {
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
     implementation "io.cloudevents:cloudevents-core"
-    implementation "io.grpc:grpc-protobuf:1.15.0"
+    implementation "io.grpc:grpc-protobuf:1.17.1"
 
     testImplementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
     testImplementation "io.cloudevents:cloudevents-core"

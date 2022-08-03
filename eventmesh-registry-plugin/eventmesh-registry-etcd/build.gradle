@@ -16,9 +16,8 @@
  */
 
 dependencies {
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "com.google.guava:guava"
-    implementation "io.cloudevents:cloudevents-json-jackson"
-    implementation "io.grpc:grpc-protobuf:1.17.1"
+    implementation ("io.etcd:jetcd-core:0.3.0")
+    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
+    implementation project(":eventmesh-common")
+    testImplementation "org.mockito:mockito-core"
 }
