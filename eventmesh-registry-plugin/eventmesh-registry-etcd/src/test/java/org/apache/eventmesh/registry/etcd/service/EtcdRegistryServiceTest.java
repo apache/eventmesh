@@ -33,7 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -53,13 +52,13 @@ public class EtcdRegistryServiceTest {
         configuration.namesrvAddr = "127.0.0.1:2379";
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, configuration);
 
-//        Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");
-//        Mockito.when(eventMeshRegisterInfo.getEventMeshName()).thenReturn("eventmesh");
-//        Mockito.when(eventMeshRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:2379");
-//
-//        Mockito.when(eventMeshUnRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");
-//        Mockito.when(eventMeshUnRegisterInfo.getEventMeshName()).thenReturn("eventmesh");
-//        Mockito.when(eventMeshUnRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:2379");
+        // Mockito.when(eventMeshRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");
+        // Mockito.when(eventMeshRegisterInfo.getEventMeshName()).thenReturn("eventmesh");
+        // Mockito.when(eventMeshRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:2379");
+        //
+        // Mockito.when(eventMeshUnRegisterInfo.getEventMeshClusterName()).thenReturn("eventmesh");
+        // Mockito.when(eventMeshUnRegisterInfo.getEventMeshName()).thenReturn("eventmesh");
+        // Mockito.when(eventMeshUnRegisterInfo.getEndPoint()).thenReturn("127.0.0.1:2379");
     }
 
     @After
