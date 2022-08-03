@@ -133,10 +133,10 @@ public class ClientSessionGroupMapping {
             return;
         }
 
+        closeSession(session);
+
         //remove session from sessionTable
         sessionTable.remove(addr);
-
-        closeSession(session);
 
         sessionLogger.info("session|close|succeed|user={}", session.getClient());
     }
@@ -335,12 +335,11 @@ public class ClientSessionGroupMapping {
                 session.getClientGroupWrapper().get().getGroupProducerSessions().size());
         if ((session.getClientGroupWrapper().get().getGroupConsumerSessions().size() == 0)
                 && (session.getClientGroupWrapper().get().getGroupProducerSessions().size() == 0)) {
+            shutdownClientGroupProducer(session);
 
             clientGroupMap.remove(session.getClientGroupWrapper().get().getGroup());
             lockMap.remove(session.getClientGroupWrapper().get().getGroup());
             logger.info("remove clientGroupWrapper group[{}]", session.getClientGroupWrapper().get().getGroup());
-
-            shutdownClientGroupProducer(session);
         }
     }
 
