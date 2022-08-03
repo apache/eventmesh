@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.dledger.broker;
 
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.connector.dledger.exception.DLedgerConnectorException;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -50,7 +51,7 @@ public class CloudEventMessage implements Serializable {
     }
 
     public CloudEvent convertToCloudEvent() {
-        CloudEventBuilder builder = null;
+        CloudEventBuilder builder;
         switch (version) {
             case V03:
                 builder = CloudEventBuilder.v03();
@@ -58,6 +59,8 @@ public class CloudEventMessage implements Serializable {
             case V1:
                 builder = CloudEventBuilder.v1();
                 break;
+            default:
+                throw new DLedgerConnectorException(String.format("CloudEvent version %s does not support.", version));
         }
         builder.withData(data.getBytes());
 

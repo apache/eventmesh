@@ -18,9 +18,9 @@
 package org.apache.eventmesh.connector.dledger;
 
 import org.apache.eventmesh.api.connector.ConnectorResourceService;
+import org.apache.eventmesh.connector.dledger.broker.DLedgerTopicIndexesStore;
 import org.apache.eventmesh.connector.dledger.clientpool.DLedgerClientFactory;
 import org.apache.eventmesh.connector.dledger.clientpool.DLedgerClientPool;
-import org.apache.eventmesh.connector.dledger.broker.DLedgerTopicIndexesStore;
 import org.apache.eventmesh.connector.dledger.config.DLedgerConfiguration;
 
 public class DLedgerConnectorResourceService implements ConnectorResourceService {

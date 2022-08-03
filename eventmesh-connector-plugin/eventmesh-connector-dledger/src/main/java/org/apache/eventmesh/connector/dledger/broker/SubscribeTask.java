@@ -73,6 +73,7 @@ public class SubscribeTask implements Runnable {
                                 break;
                             case ManualAck:
                                 messageQueue.poll();
+                                break;
                             default:
                         }
                     }

@@ -57,9 +57,9 @@ public class DLedgerProducerTest {
 
     @Test
     public void publish() throws Exception {
-        String data = "{\"headers\":{\"content-length\":\"36\",\"Accept\":\"*/*\",\"ip\":\"127.0.0.1:51226\",\"User-Agent\":\"curl/7.83.1\"," +
-            "\"Host\":\"127.0.0.1:10105\",\"source\":\"127.0.0.1:51226\",\"Content-Type\":\"application/json\"}," +
-            "\"path\":\"/eventmesh/publish/TEST-TOPIC-HTTP-ASYNC\",\"method\":\"POST\",\"body\":{\"pass\":\"12345678\",\"name\":\"admin\"}}";
+        String data = "{\"headers\":{\"content-length\":\"36\",\"Accept\":\"*/*\",\"ip\":\"127.0.0.1:51226\",\"User-Agent\":\"curl/7.83.1\","
+            + "\"Host\":\"127.0.0.1:10105\",\"source\":\"127.0.0.1:51226\",\"Content-Type\":\"application/json\"},"
+            + "\"path\":\"/eventmesh/publish/TEST-TOPIC-HTTP-ASYNC\",\"method\":\"POST\",\"body\":{\"pass\":\"12345678\",\"name\":\"admin\"}}";
         CloudEvent cloudEvent = CloudEventBuilder.v1()
                                                  .withId("c61039e1-7884-4d7f-b72f-6c61160a64fc")
                                                  .withSource(new URI("source:127.0.0.1:51226"))
@@ -89,7 +89,6 @@ public class DLedgerProducerTest {
             @Override
             public void onSuccess(SendResult sendResult) {
                 Assert.assertTrue(DLedgerTopicIndexesStore.getInstance().contain("TEST-TOPIC-HTTP-ASYNC"));
-                System.out.println(sendResult);
             }
 
             @Override
