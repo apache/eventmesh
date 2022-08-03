@@ -339,4 +339,11 @@ public class Session {
         return true;
     }
 
+    public boolean isRunning() {
+        if (SessionState.RUNNING != sessionState) {
+            logger.warn("session is not running, state:{} client:{}", sessionState, client);
+            return false;
+        }
+        return true;
+    }
 }
