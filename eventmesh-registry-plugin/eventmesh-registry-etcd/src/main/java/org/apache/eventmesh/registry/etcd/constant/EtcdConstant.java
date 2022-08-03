@@ -15,10 +15,22 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
-    implementation "io.cloudevents:cloudevents-core"
-    implementation "com.google.guava:guava"
-    implementation "io.cloudevents:cloudevents-json-jackson"
-    implementation "io.grpc:grpc-protobuf:1.17.1"
+package org.apache.eventmesh.registry.etcd.constant;
+
+/**
+ * EtcdConstant.
+ */
+public class EtcdConstant {
+
+    public static final String SERVER_ADDR = "serverAddr";
+
+    public static final String USERNAME = "username";
+
+    public static final String PASSWORD = "password";
+
+    public static final String KEY_SEPARATOR = "/";
+
+    public static final long TTL = 15L;
+
+
 }
