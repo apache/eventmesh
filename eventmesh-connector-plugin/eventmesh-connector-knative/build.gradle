@@ -15,22 +15,6 @@
  * limitations under the License.
  */
 
-plugins {
-    id 'java'
-}
-
-group 'org.apache.eventmesh'
-version '1.3.0-release'
-
-repositories {
-    mavenCentral()
-}
-
-configurations {
-    implementation.exclude group: 'ch.qos.logback', module: 'logback-classic'
-    implementation.exclude group: 'log4j', module: 'log4j'
-}
-
 dependencies {
     implementation 'org.asynchttpclient:async-http-client:2.12.0'
 
@@ -40,32 +24,11 @@ dependencies {
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
 
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-rocketmq")
-
-    implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
-    testImplementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
-
-    implementation 'org.apache.directory.studio:org.apache.commons.io:2.4'
-
-    implementation 'io.cloudevents:cloudevents-api:2.3.0'
-    implementation 'io.cloudevents:cloudevents-core:2.3.0'
-    implementation 'io.cloudevents:cloudevents-http-basic:2.3.0'
-
-    testImplementation 'io.cloudevents:cloudevents-api:2.3.0'
-    testImplementation 'io.cloudevents:cloudevents-core:2.3.0'
-    testImplementation 'io.cloudevents:cloudevents-http-basic:2.3.0'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+    testImplementation "org.powermock:powermock-module-junit4"
 
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     testCompileOnly 'org.projectlombok:lombok:1.18.22'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
-}
-
-test {
-    useJUnitPlatform()
 }

@@ -25,7 +25,7 @@ import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeHeaders;
 
 import java.util.Properties;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 public class KnativeProducerImplTest {
 
@@ -51,12 +51,10 @@ public class KnativeProducerImplTest {
         producer.publish(KnativeMessageFactory.createWriter(properties), new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
-                System.out.println("Send cloudevent message successfully.");
             }
 
             @Override
             public void onException(OnExceptionContext context) {
-                System.out.println("Send cloudevent message exception.");
             }
         });
     }

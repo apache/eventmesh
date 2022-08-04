@@ -33,7 +33,7 @@ public class KnativeProducerImpl implements Producer {
 
     @Override
     public synchronized void init(Properties properties) throws Exception {
-        // Fetch parameters from properties file:
+        // Load parameters from properties file:
         final ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.init();
 
