@@ -44,7 +44,7 @@ public class DLedgerConfiguration {
 
         String peersStr = DLedgerConfigurationWrapper.getProp(KEYS_EVENTMESH_DLEDGER_PEERS);
         if (StringUtils.isNotBlank(peersStr)) {
-            peers = StringUtils.trim(peers);
+            peers = StringUtils.trim(peersStr);
         }
 
         String clientPoolSizeStr = DLedgerConfigurationWrapper.getProp(KEYS_EVENTMESH_DLEDGER_CLIENTPOOL_SIZE);
