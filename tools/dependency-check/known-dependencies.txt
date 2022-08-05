@@ -120,8 +120,6 @@ simpleclient-0.8.1.jar
 simpleclient_common-0.8.1.jar
 simpleclient_httpserver-0.8.1.jar
 slf4j-api-1.7.30.jar
-slf4j-api-1.7.32.jar
-slf4j-simple-1.7.32.jar
 snappy-java-1.1.8.1.jar
 system-rules-1.16.1.jar
 truth-0.30.jar
