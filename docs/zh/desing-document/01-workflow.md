@@ -24,7 +24,7 @@ Serverless工作流定义了一种领域特定语言（DSL）来描述有状态�
 
 我们利用Serverless工作流DSL来描述EventMesh工作流。根据其规范，工作流由一系列用于描述控制流逻辑的工作流状态组成。目前，我们仅支持与事件相关的工作流状态。请参见[工作流DSL设计](#workflow-dsl-design-wip)中支持的状态。
 
-"工作流状态"可以包含适用的"操作"，或在工作流执行期间应调用的服务/函数。这些"操作"可以引用可复用的函数定义（应如何调用这些函数/服务），还可以引用触发基于事件的服务调用的事件，以及要等待的事件，这些事件表示这种基于事件的服务调用完成。
+`工作流状态`可以包含通用的`操作`，或在工作流执行期间应调用的服务/函数。这些`操作`可以引用可复用的`函数`定义（应如何调用这些函数/服务），还可以引用触发基于事件的服务调用的事件，以及要等待的事件，这些事件表示这种基于事件的服务调用完成。
 
 在EDA解决方案中，我们通常使用AsyncAPI定义事件驱动的微服务。Serverless工作流“函数”定义支持使用AsyncAPI定义调用语义。有关详细信息，请参见[Using Funtions for AsyncAPI Service](https://github.com/serverlessworkflow/specification/blob/main/specification.md#using-functions-for-async-api-service-invocations)。
 
@@ -194,11 +194,11 @@ events:
 
 2. 在EventMesh工作流引擎中注册Serverless工作流DSL。
 
-3. 工作流引擎从EventMesh目录查询发布服务器和订阅服务器的需要的工作流DSL函数。
+3. 工作流引擎从EventMesh目录查询发布服务器和订阅服务器的需要的工作流DSL`函数`。
 
 4. 事件驱动App将事件发布到EventMesh Runtime触发工作流。EventMesh工作流引擎发布和订阅事件、编排事件。
 
-### EventMesh目录设计
+### EventMesh Catalog 设计
 
 EventMesh目录存储发布者、订阅者和通道元数据。由以下模块组成：
 
