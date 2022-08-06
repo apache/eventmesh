@@ -137,3 +137,4 @@ jetcd-core-0.3.0.jar
 jetcd-common-0.3.0.jar
 jetcd-resolver-0.3.0.jar
 protobuf-java-util-3.5.1.jar
+consul-api-1.4.5.jar

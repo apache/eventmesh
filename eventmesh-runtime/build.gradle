@@ -66,6 +66,10 @@ dependencies {
 
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
+    
+    implementation project(":eventmesh-webhook:eventmesh-webhook-admin")
+    implementation project(":eventmesh-webhook:eventmesh-webhook-api")
+    implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
 
     testImplementation "org.mockito:mockito-core"
     testImplementation "org.mockito:mockito-inline"

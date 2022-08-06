@@ -31,6 +31,7 @@ include 'eventmesh-security-plugin:eventmesh-security-acl'
 include 'eventmesh-registry-plugin:eventmesh-registry-api'
 include 'eventmesh-registry-plugin:eventmesh-registry-nacos'
 include 'eventmesh-registry-plugin:eventmesh-registry-etcd'
+include 'eventmesh-registry-plugin:eventmesh-registry-consul'
 include 'eventmesh-admin'
 include 'eventmesh-protocol-plugin'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-api'
@@ -50,3 +51,10 @@ include 'eventmesh-security-plugin:eventmesh-security-auth-http-basic'
 include 'eventmesh-trace-plugin'
 include 'eventmesh-trace-plugin:eventmesh-trace-api'
 include 'eventmesh-trace-plugin:eventmesh-trace-zipkin'
+
+
+include 'eventmesh-webhook'
+include 'eventmesh-webhook:eventmesh-webhook-api'
+include 'eventmesh-webhook:eventmesh-webhook-admin'
+include 'eventmesh-webhook:eventmesh-webhook-receive'
+

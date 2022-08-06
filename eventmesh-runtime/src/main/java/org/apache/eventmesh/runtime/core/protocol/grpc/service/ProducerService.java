@@ -55,7 +55,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "AsyncPublish",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
             eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
-
+        
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
             SendAsyncMessageProcessor sendAsyncMessageProcessor = new SendAsyncMessageProcessor(eventMeshGrpcServer);

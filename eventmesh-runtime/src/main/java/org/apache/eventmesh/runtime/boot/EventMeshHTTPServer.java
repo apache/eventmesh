@@ -22,7 +22,6 @@ import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.http.common.RequestCode;
-import org.apache.eventmesh.common.protocol.http.common.RequestURI;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
@@ -35,6 +34,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.consumer.ConsumerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.AdminMetricsProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.BatchSendMessageV2Processor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.HandlerService;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.HeartBeatProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalSubscribeEventProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.LocalUnSubscribeEventProcessor;
@@ -47,12 +47,14 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.SendAsyncRemote
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SendSyncMessageProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.SubscribeProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.UnSubscribeProcessor;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.WebHookProcessor;
 import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.ProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.http.push.HTTPClientPool;
 import org.apache.eventmesh.runtime.core.protocol.http.retry.HttpRetryer;
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.registry.Registry;
+import org.apache.eventmesh.webhook.receive.WebHookController;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -79,10 +81,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     private Registry registry;
 
     public final ConcurrentHashMap<String /**group*/, ConsumerGroupConf> localConsumerGroupMapping =
-        new ConcurrentHashMap<>();
+            new ConcurrentHashMap<>();
 
     public final ConcurrentHashMap<String /**group@topic*/, List<Client>> localClientInfoMapping =
-        new ConcurrentHashMap<>();
+            new ConcurrentHashMap<>();
 
     public EventMeshHTTPServer(EventMeshServer eventMeshServer,
                                EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
@@ -117,6 +119,8 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
     public ThreadPoolExecutor clientManageExecutor;
 
     public ThreadPoolExecutor adminExecutor;
+
+    public ThreadPoolExecutor webhookExecutor;
 
     private RateLimiter msgRateLimiter;
 
@@ -248,7 +252,9 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         producerManager = new ProducerManager(this);
         producerManager.init();
 
-        registerHTTPRequestProcessor();
+        this.handlerService = new HandlerService();
+        this.handlerService.setMetrics(metrics);
+
 
         //get the trace-plugin
         if (StringUtils.isNotEmpty(eventMeshHttpConfiguration.eventMeshTracePluginType) && eventMeshHttpConfiguration.eventMeshServerTraceEnable) {
@@ -256,6 +262,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
             super.useTrace = eventMeshHttpConfiguration.eventMeshServerTraceEnable;
         }
 
+        this.handlerService.setHttpTrace(new HTTPTrace(eventMeshHttpConfiguration.eventMeshServerTraceEnable));
+
+        registerHTTPRequestProcessor();
+        this.initWebhook();
         logger.info("--------------------------EventMeshHTTPServer inited");
     }
 
@@ -291,7 +301,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         if (eventMeshHttpConfiguration.eventMeshServerRegistryEnable) {
             this.unRegister();
-            registry.shutdown();
         }
         logger.info("--------------------------EventMeshHTTPServer shutdown");
     }
@@ -343,10 +352,10 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         registerProcessor(RequestCode.MSG_SEND_ASYNC.getRequestCode(), sendAsyncMessageProcessor, sendMsgExecutor);
 
         SendAsyncEventProcessor sendAsyncEventProcessor = new SendAsyncEventProcessor(this);
-        registerProcessor(RequestURI.PUBLISH.getRequestURI(), sendAsyncEventProcessor, sendMsgExecutor);
+        handlerService.register(sendAsyncEventProcessor, sendMsgExecutor);
 
         SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new SendAsyncRemoteEventProcessor(this);
-        registerProcessor(RequestURI.PUBLISH_BRIDGE.getRequestURI(), sendAsyncRemoteEventProcessor, remoteMsgExecutor);
+        handlerService.register(sendAsyncRemoteEventProcessor, remoteMsgExecutor);
 
         AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
         registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor, adminExecutor);
@@ -358,22 +367,41 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         registerProcessor(RequestCode.SUBSCRIBE.getRequestCode(), subscribeProcessor, clientManageExecutor);
 
         LocalSubscribeEventProcessor localSubscribeEventProcessor = new LocalSubscribeEventProcessor(this);
-        registerProcessor(RequestURI.SUBSCRIBE_LOCAL.getRequestURI(), localSubscribeEventProcessor, clientManageExecutor);
+        handlerService.register(localSubscribeEventProcessor, clientManageExecutor);
 
         RemoteSubscribeEventProcessor remoteSubscribeEventProcessor = new RemoteSubscribeEventProcessor(this);
-        registerProcessor(RequestURI.SUBSCRIBE_REMOTE.getRequestURI(), remoteSubscribeEventProcessor, clientManageExecutor);
+        handlerService.register(remoteSubscribeEventProcessor, clientManageExecutor);
 
         UnSubscribeProcessor unSubscribeProcessor = new UnSubscribeProcessor(this);
         registerProcessor(RequestCode.UNSUBSCRIBE.getRequestCode(), unSubscribeProcessor, clientManageExecutor);
 
         LocalUnSubscribeEventProcessor localUnSubscribeEventProcessor = new LocalUnSubscribeEventProcessor(this);
-        registerProcessor(RequestURI.UNSUBSCRIBE_LOCAL.getRequestURI(), localUnSubscribeEventProcessor, clientManageExecutor);
+        handlerService.register(localUnSubscribeEventProcessor, clientManageExecutor);
 
         RemoteUnSubscribeEventProcessor remoteUnSubscribeEventProcessor = new RemoteUnSubscribeEventProcessor(this);
-        registerProcessor(RequestURI.UNSUBSCRIBE_REMOTE.getRequestURI(), remoteUnSubscribeEventProcessor, clientManageExecutor);
+        handlerService.register(remoteUnSubscribeEventProcessor, clientManageExecutor);
 
         ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);
+
+
+    }
+
+    private void initWebhook() throws Exception {
+
+
+        BlockingQueue<Runnable> webhookThreadPoolQueue = new LinkedBlockingQueue<Runnable>(100);
+        webhookExecutor =
+                ThreadPoolFactory.createThreadPoolExecutor(eventMeshHttpConfiguration.eventMeshServerWebhookThreadNum,
+                        eventMeshHttpConfiguration.eventMeshServerWebhookThreadNum, webhookThreadPoolQueue,
+                        "eventMesh-webhook-", true);
+        WebHookProcessor webHookProcessor = new WebHookProcessor();
+
+        WebHookController webHookController = new WebHookController();
+        webHookController.setConfigurationWrapper(eventMeshHttpConfiguration.getConfigurationWrapper());
+        webHookController.init();
+        webHookProcessor.setWebHookController(webHookController);
+        this.handlerService.register(webHookProcessor, webhookExecutor);
     }
 
     public ConsumerManager getConsumerManager() {
