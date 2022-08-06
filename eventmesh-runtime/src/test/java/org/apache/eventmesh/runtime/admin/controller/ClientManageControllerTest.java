@@ -28,6 +28,8 @@ import static org.mockito.Mockito.when;
 import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
+import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManage;
+import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
 
@@ -47,6 +49,12 @@ public class ClientManageControllerTest {
         doNothing().when(tcpConfiguration).init();
         when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
         ClientManageController controller = new ClientManageController(eventMeshTCPServer);
+
+        AdminWebHookConfigOperationManage adminWebHookConfigOperationManage = mock(AdminWebHookConfigOperationManage.class);
+        WebHookConfigOperation webHookConfigOperation = mock(WebHookConfigOperation.class);
+        when(adminWebHookConfigOperationManage.getWebHookConfigOperation()).thenReturn(webHookConfigOperation);
+        controller.setAdminWebHookConfigOperationManage(adminWebHookConfigOperationManage);
+
         try (MockedStatic<HttpServer> dummyStatic = Mockito.mockStatic(HttpServer.class)) {
             HttpServer server = mock(HttpServer.class);
             dummyStatic.when(() -> HttpServer.create(any(), anyInt())).thenReturn(server);

@@ -41,8 +41,6 @@ public class MetaInfExtensionClassLoader implements ExtensionClassLoader {
     private static final ConcurrentHashMap<Class<?>, Map<String, Class<?>>> EXTENSION_CLASS_CACHE =
             new ConcurrentHashMap<>(16);
 
-    private static final String EVENTMESH_EXTENSION_META_DIR = "META-INF/eventmesh/";
-
     @Override
     public <T> Map<String, Class<?>> loadExtensionClass(Class<T> extensionType, String extensionInstanceName) {
         return EXTENSION_CLASS_CACHE.computeIfAbsent(extensionType, this::doLoadExtensionClass);
@@ -50,7 +48,7 @@ public class MetaInfExtensionClassLoader implements ExtensionClassLoader {
 
     private <T> Map<String, Class<?>> doLoadExtensionClass(Class<T> extensionType) {
         Map<String, Class<?>> extensionMap = new HashMap<>();
-        String extensionFileName = EVENTMESH_EXTENSION_META_DIR + extensionType.getName();
+        String extensionFileName = EventMeshExtensionConstant.EVENTMESH_EXTENSION_META_DIR + extensionType.getName();
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         try {
             Enumeration<URL> extensionUrls = classLoader.getResources(extensionFileName);

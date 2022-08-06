@@ -36,7 +36,7 @@ import io.opentelemetry.context.Context;
 public class Trace {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private boolean useTrace = false;
+    private final boolean useTrace;
     private EventMeshTraceService eventMeshTraceService;
 
     public Trace(boolean useTrace) {
@@ -53,7 +53,7 @@ public class Trace {
     public Span createSpan(String spanName, SpanKind spanKind, long startTime, TimeUnit timeUnit,
                            Context context, boolean isSpanFinishInOtherThread) {
         if (!useTrace) {
-            return null;
+            return Span.getInvalid();
         }
         return eventMeshTraceService.createSpan(spanName, spanKind, startTime, timeUnit, context,
             isSpanFinishInOtherThread);
@@ -62,7 +62,7 @@ public class Trace {
     public Span createSpan(String spanName, SpanKind spanKind, Context context,
                            boolean isSpanFinishInOtherThread) {
         if (!useTrace) {
-            return null;
+            return Span.getInvalid();
         }
         return eventMeshTraceService.createSpan(spanName, spanKind, context,
             isSpanFinishInOtherThread);

@@ -22,6 +22,7 @@ import java.io.IOException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -68,5 +69,13 @@ public class JsonUtils {
         }
 
         return objectMapper.readValue(json, clazz);
+    }
+
+    public static JsonNode getJsonNode(String json) throws IOException {
+        if (json == null || json.length() == 0) {
+            return null;
+        }
+
+        return objectMapper.readTree(json);
     }
 }
