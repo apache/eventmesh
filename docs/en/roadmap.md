@@ -27,7 +27,7 @@ The development roadmap of Apache EventMesh (Incubating) is an overview of the p
 | **Implemented in 1.5.0**                  | Support  Federal Government     | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | **Implemented in 1.6.0 (to be released)** | Integrate with Consul           | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | **Implemented in 1.6.0 (to be released)** | Support Webhook                 | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
-| **Implemented in 1.6.0 (to be released)** | Support ETCD                    | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
+| **Implemented in 1.6.0 (to be released)** | Support etcd                    | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | **In Progress**                           | Knative Eventing Infrastructure | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/790), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-463) |
 | **In Progress**                           | Dashboard                       | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/700), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-465) |
 | **In Progress**                           | Support Kafka as EventStore     | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/676) |
