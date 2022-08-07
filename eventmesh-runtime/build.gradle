@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.15.0'
+def grpcVersion = '1.17.1'
 
 dependencies {
     implementation 'io.cloudevents:cloudevents-core'
@@ -42,10 +42,11 @@ dependencies {
 
 
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
-
+    implementation project(":eventmesh-registry-plugin:eventmesh-registry-etcd")
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
+    implementation "io.grpc:grpc-core:${grpcVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
     implementation "io.grpc:grpc-netty:${grpcVersion}"

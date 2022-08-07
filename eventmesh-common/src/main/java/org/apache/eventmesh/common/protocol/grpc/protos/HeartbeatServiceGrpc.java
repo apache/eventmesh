@@ -28,7 +28,7 @@ import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
  */
 @SuppressWarnings({"all"})
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.15.0)",
+    value = "by gRPC proto compiler (version 1.17.1)",
     comments = "Source: eventmesh-client.proto")
 public final class HeartbeatServiceGrpc {
 
