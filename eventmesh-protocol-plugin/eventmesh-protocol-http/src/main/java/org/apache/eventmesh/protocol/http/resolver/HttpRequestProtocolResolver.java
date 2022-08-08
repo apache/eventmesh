@@ -48,11 +48,13 @@ public class HttpRequestProtocolResolver {
 
             String id = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_ID, UUID.randomUUID()).toString();
 
-            String source = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, HttpProtocolConstant.CONSTANTS_DEFAULT_SOURCE).toString();
+            String source =
+                sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, HttpProtocolConstant.CONSTANTS_DEFAULT_SOURCE).toString();
 
             String type = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_TYPE, HttpProtocolConstant.CONSTANTS_DEFAULT_TYPE).toString();
 
-            String subject = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, HttpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
+            String subject =
+                sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, HttpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
 
             // with attributes
             builder.withId(id)
@@ -63,7 +65,9 @@ public class HttpRequestProtocolResolver {
 
             // with extensions
             for (String extensionKey : sysHeaderMap.keySet()) {
-                if (StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_ID, extensionKey) || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, extensionKey) || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_TYPE, extensionKey)
+                if (StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_ID, extensionKey)
+                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, extensionKey)
+                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_TYPE, extensionKey)
                     || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, extensionKey)) {
                     continue;
                 }
