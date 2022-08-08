@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+import org.apache.eventmesh.api.exception.RegistryException;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
@@ -97,7 +98,7 @@ public class ConsulRegistryServiceTest {
         Assert.assertFalse((Boolean.parseBoolean(startStatusField.toString())));
     }
 
-    @Test
+    @Test(expected = RegistryException.class)
     public void testRegister() {
         consulRegistryService.init();
         consulRegistryService.start();
@@ -106,7 +107,7 @@ public class ConsulRegistryServiceTest {
         Assert.assertEquals(1, eventmesh.size());
     }
 
-    @Test
+    @Test(expected = RegistryException.class)
     public void testUnRegister() {
         consulRegistryService.init();
         consulRegistryService.start();
@@ -115,7 +116,7 @@ public class ConsulRegistryServiceTest {
         Assert.assertEquals(0, eventmesh.size());
     }
 
-    @Test
+    @Test(expected = RegistryException.class)
     public void findEventMeshInfoByCluster() {
         consulRegistryService.init();
         consulRegistryService.start();
