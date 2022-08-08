@@ -1,0 +1,83 @@
+linters-settings:
+  funlen:
+    lines: 80
+    statements: 80
+  goconst:
+    min-len: 2
+    min-occurrences: 3
+  gocyclo:
+    min-complexity: 20
+  golint:
+    min-confidence: 0
+  govet:
+    check-shadowing: true
+  lll:
+    line-length: 120
+  errcheck: 
+    check-type-assertions: false
+  gocritic:
+    enabled-checks:
+      - nestingReduce
+    settings:
+      nestingReduce:
+        bodyWidth: 5
+
+linters:
+  disable-all: true
+  enable:
+    - deadcode
+    - funlen
+    - goconst
+    - gocyclo
+    - gofmt
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - goimports
+    - revive
+    - gosimple
+    - govet
+    - typecheck
+    - lll
+    - rowserrcheck
+    - errcheck
+    - unused
+    - varcheck
+    - sqlclosecheck
+
+run:
+  timeout: 20m
+
+issues:
+  exclude-use-default: true
+
+  # The list of ids of default excludes to include or disable. By default it's empty.
+  include:
+    - EXC0004 # govet (possible misuse of unsafe.Pointer|should have signature)
+    - EXC0005 # staticcheck ineffective break statement. Did you mean to break out of the outer loop
+    - EXC0011 # stylecheck (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)
+    - EXC0012 # revive exported (method|function|type|const) (.+) should have comment or be unexported
+
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - funlen
+    - linters:
+        - staticcheck
+      text: "SA6002: argument should be pointer-like to avoid allocations" # sync.pool.Put(buf), slice `var buf []byte` will tiger this
+    - linters:
+        - structcheck
+      text: "Store` is unused"
+    - linters:
+        - lll
+      source: "^//go:generate "
+
+  max-same-issues: 0
+  new: false
+  max-issues-per-linter: 0
+
+output:
+  sort-results: true
+
+service:
+  golangci-lint-version: 1.23.x
