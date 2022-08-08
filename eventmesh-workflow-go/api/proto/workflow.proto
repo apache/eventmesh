@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package eventmesh.workflow.api.protocol;
+
+option go_package = "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api/proto";
+
+service Workflow {
+    rpc Execute (ExecuteRequest) returns (ExecuteResponse) {}
+}
+
+message ExecuteRequest {
+	string id = 1;
+	string instance_id = 2;
+	string input = 3;
+}
+
+message ExecuteResponse {
+	string instance_id = 1;
+}
