@@ -22,6 +22,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import org.apache.eventmesh.trace.api.EventMeshTraceService;
 import org.apache.eventmesh.trace.api.config.ExporterConfiguration;
 import org.apache.eventmesh.trace.api.exception.TraceException;
+import org.apache.eventmesh.trace.zipkin.common.ZipkinConstants;
 import org.apache.eventmesh.trace.zipkin.config.ZipkinConfiguration;
 
 import java.util.Map;
@@ -52,10 +53,6 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
  *
  */
 public class ZipkinTraceService implements EventMeshTraceService {
-    // Zipkin API Endpoints for uploading spans
-    private static final String ENDPOINT_V2_SPANS = "/api/v2/spans";
-    // Name of the service(using the instrumentationName)
-    private final String serviceName = "eventmesh_trace";
     private String eventMeshZipkinIP;
     private int eventMeshZipkinPort;
     private int eventMeshTraceExportInterval;
@@ -84,7 +81,7 @@ public class ZipkinTraceService implements EventMeshTraceService {
 
         String httpUrl = String.format("http://%s:%s", eventMeshZipkinIP, eventMeshZipkinPort);
         ZipkinSpanExporter zipkinExporter =
-            ZipkinSpanExporter.builder().setEndpoint(httpUrl + ENDPOINT_V2_SPANS).build();
+            ZipkinSpanExporter.builder().setEndpoint(httpUrl + ZipkinConstants.ENDPOINT_V2_SPANS).build();
 
         SpanProcessor spanProcessor = BatchSpanProcessor.builder(zipkinExporter)
             .setScheduleDelay(eventMeshTraceExportInterval, TimeUnit.SECONDS)
@@ -95,7 +92,7 @@ public class ZipkinTraceService implements EventMeshTraceService {
 
         //set the trace service's name
         Resource serviceNameResource =
-            Resource.create(Attributes.of(stringKey("service.name"), serviceName));
+            Resource.create(Attributes.of(stringKey("service.name"), ZipkinConstants.SERVICE_NAME));
 
         sdkTracerProvider = SdkTracerProvider.builder()
             .addSpanProcessor(spanProcessor)
@@ -108,7 +105,7 @@ public class ZipkinTraceService implements EventMeshTraceService {
             .build();
 
         //TODO serviceName???
-        tracer = openTelemetry.getTracer(serviceName);
+        tracer = openTelemetry.getTracer(ZipkinConstants.SERVICE_NAME);
         textMapPropagator = openTelemetry.getPropagators().getTextMapPropagator();
 
         shutdownHook = new Thread(sdkTracerProvider::close);
