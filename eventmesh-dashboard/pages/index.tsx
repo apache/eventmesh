@@ -20,6 +20,7 @@
 import Head from 'next/head';
 import type { NextPage } from 'next';
 import Endpoint from '../components/index/Endpoint';
+import Metrics from '../components/index/Metrics';
 import Configuration from '../components/index/Configuration';
 
 const Index: NextPage = () => (
@@ -29,6 +30,7 @@ const Index: NextPage = () => (
     </Head>
     <Endpoint />
     <Configuration />
+    <Metrics />
   </>
 );
 
