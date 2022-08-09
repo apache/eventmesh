@@ -1,28 +1,15 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.metrics.api.MetricsPluginFactory;
-import org.apache.eventmesh.metrics.api.MetricsRegistry;
 import org.apache.eventmesh.metrics.api.model.HttpSummaryMetrics;
 import org.apache.eventmesh.metrics.api.model.TcpSummaryMetrics;
 import org.apache.eventmesh.runtime.admin.response.Error;
-import org.apache.eventmesh.runtime.admin.response.GetConfigurationResponse;
 import org.apache.eventmesh.runtime.admin.response.GetMetricsResponse;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
-import org.apache.eventmesh.runtime.metrics.tcp.EventMeshTcpMonitor;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
-import java.util.Optional;
-
-import org.assertj.core.util.Lists;
-
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +39,7 @@ public class MetricsHandler implements HttpHandler {
         OutputStream out = httpExchange.getResponseBody();
         out.close();
     }
+
     /**
      * GET /metrics
      * Return a response that contains a summary of metrics
@@ -61,7 +49,7 @@ public class MetricsHandler implements HttpHandler {
         httpExchange.getResponseHeaders().add("Content-Type", "application/json");
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-        try{
+        try {
             GetMetricsResponse getMetricsResponse = new GetMetricsResponse(
                 httpSummaryMetrics.maxHTTPTPS(),
                 httpSummaryMetrics.avgHTTPTPS(),
