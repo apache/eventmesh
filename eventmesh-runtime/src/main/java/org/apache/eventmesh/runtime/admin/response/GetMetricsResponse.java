@@ -17,9 +17,9 @@ public class GetMetricsResponse {
     public long sendBatchMsgNumSum;
     public long sendBatchMsgFailNumSum;
     public float sendBatchMsgFailRate;
-    public long SendBatchMsgDiscardNumSum;
+    public long sendBatchMsgDiscardNumSum;
     public float maxSendMsgTPS;
-    public float avgsendMsgTPS;
+    public float avgSendMsgTPS;
     public long sendMsgNumSum;
     public long sendMsgFailNumSum;
     public float sendMsgFailRate;
@@ -27,28 +27,28 @@ public class GetMetricsResponse {
     public long replyMsgFailNumSum;
     public float maxPushMsgTPS;
     public float avgPushMsgTPS;
-    public long HTTPpushMsgNumSum;
-    public long HTTPpushMsgFailNumSum;
-    public float HTTPpushMsgFailRate;
+    public long pushHTTPMsgNumSum;
+    public long pushHTTPMsgFailNumSum;
+    public float pushHTTPMsgFailRate;
     public float maxHTTPPushLatency;
     public float avgHTTPPushLatency;
     public int batchMsgQueueSize;
     public int sendMsgQueueSize;
     public int pushMsgQueueSize;
-    public int HTTPRetryQueueSize;
+    public int retryHTTPQueueSize;
     public float avgBatchSendMsgCost;
     public float avgSendMsgCost;
     public float avgReplyMsgCost;
 
     //TCP Metrics
-    public int TCPretryQueueSize;
-    public int TCPclient2eventMeshTPS;
-    public int TCPeventMesh2mqTPS;
-    public int TCPMq2eventMeshTPS;
-    public int TCPeventMesh2clientTPS;
+    public int retryTCPQueueSize;
+    public int client2eventMeshTCPTPS;
+    public int eventMesh2mqTCPTPS;
+    public int mq2eventMeshTCPTPS;
+    public int eventMesh2clientTCPTPS;
     public int allTCPTPS;
     public int allTCPConnections;
-    public int TCPSubTopicNum;
+    public int subTopicTCPNum;
 
 
     @JsonCreator
@@ -65,9 +65,9 @@ public class GetMetricsResponse {
             @JsonProperty("sendBatchMsgNumSum") long sendBatchMsgNumSum,
             @JsonProperty("sendBatchMsgFailNumSum") long sendBatchMsgFailNumSum,
             @JsonProperty("sendBatchMsgFailRate") float sendBatchMsgFailRate,
-            @JsonProperty("SendBatchMsgDiscardNumSum") long SendBatchMsgDiscardNumSum,
+            @JsonProperty("sendBatchMsgDiscardNumSum") long sendBatchMsgDiscardNumSum,
             @JsonProperty("maxSendMsgTPS") float maxSendMsgTPS,
-            @JsonProperty("avgsendMsgTPS") float avgsendMsgTPS,
+            @JsonProperty("avgSendMsgTPS") float avgSendMsgTPS,
             @JsonProperty("sendMsgNumSum") long sendMsgNumSum,
             @JsonProperty("sendMsgFailNumSum") long sendMsgFailNumSum,
             @JsonProperty("sendMsgFailRate") float sendMsgFailRate,
@@ -75,28 +75,28 @@ public class GetMetricsResponse {
             @JsonProperty("replyMsgFailNumSum") long replyMsgFailNumSum,
             @JsonProperty("maxPushMsgTPS") float maxPushMsgTPS,
             @JsonProperty("avgPushMsgTPS") float avgPushMsgTPS,
-            @JsonProperty("HTTPpushMsgNumSum") long HTTPpushMsgNumSum,
-            @JsonProperty("HTTPpushMsgFailNumSum") long HTTPpushMsgFailNumSum,
-            @JsonProperty("HTTPpushMsgFailRate") float HTTPpushMsgFailRate,
+            @JsonProperty("pushHTTPMsgNumSum") long pushHTTPMsgNumSum,
+            @JsonProperty("pushHTTPMsgFailNumSum") long pushHTTPMsgFailNumSum,
+            @JsonProperty("pushHTTPMsgFailRate") float pushHTTPMsgFailRate,
             @JsonProperty("maxHTTPPushLatency") float maxHTTPPushLatency,
             @JsonProperty("avgHTTPPushLatency") float avgHTTPPushLatency,
             @JsonProperty("batchMsgQueueSize") int batchMsgQueueSize,
             @JsonProperty("sendMsgQueueSize") int sendMsgQueueSize,
             @JsonProperty("pushMsgQueueSize") int pushMsgQueueSize,
-            @JsonProperty("HTTPRetryQueueSize") int HTTPRetryQueueSize,
+            @JsonProperty("retryHTTPQueueSize") int retryHTTPQueueSize,
             @JsonProperty("avgBatchSendMsgCost") float avgBatchSendMsgCost,
             @JsonProperty("avgSendMsgCost") float avgSendMsgCost,
             @JsonProperty("avgReplyMsgCost") float avgReplyMsgCost,
             //TCP Metrics
-            @JsonProperty("TCPretryQueueSize") int TCPretryQueueSize,
-            @JsonProperty("TCPclient2eventMeshTPS") int TCPclient2eventMeshTPS,
-            @JsonProperty("TCPeventMesh2mqTPS") int TCPeventMesh2mqTPS,
-            @JsonProperty("TCPMq2eventMeshTPS") int TCPMq2eventMeshTPS,
-            @JsonProperty("TCPeventMesh2clientTPS") int TCPeventMesh2clientTPS,
+            @JsonProperty("retryTCPQueueSize") int retryTCPQueueSize,
+            @JsonProperty("client2eventMeshTCPTPS") int client2eventMeshTCPTPS,
+            @JsonProperty("eventMesh2mqTCPTPS") int eventMesh2mqTCPTPS,
+            @JsonProperty("mq2eventMeshTCPTPS") int mq2eventMeshTCPTPS,
+            @JsonProperty("eventMesh2clientTCPTPS") int eventMesh2clientTCPTPS,
             @JsonProperty("allTCPTPS") int allTCPTPS,
             @JsonProperty("allTCPConnections") int allTCPConnections,
-            @JsonProperty("TCPSubTopicNum") int TCPSubTopicNum
-    ){
+            @JsonProperty("subTopicTCPNum") int subTopicTCPNum
+    ) {
         super();
         this.maxHTTPTPS = maxHTTPTPS;
         this.avgHTTPTPS = avgHTTPTPS;
@@ -109,9 +109,9 @@ public class GetMetricsResponse {
         this.sendBatchMsgNumSum = sendBatchMsgNumSum;
         this.sendBatchMsgFailNumSum = sendBatchMsgFailNumSum;
         this.sendBatchMsgFailRate = sendBatchMsgFailRate;
-        this.SendBatchMsgDiscardNumSum = SendBatchMsgDiscardNumSum;
+        this.sendBatchMsgDiscardNumSum = sendBatchMsgDiscardNumSum;
         this.maxSendMsgTPS = maxSendMsgTPS;
-        this.avgsendMsgTPS = avgsendMsgTPS;
+        this.avgSendMsgTPS = avgSendMsgTPS;
         this.sendMsgNumSum = sendMsgNumSum;
         this.sendMsgFailNumSum = sendMsgFailNumSum;
         this.sendMsgFailRate = sendMsgFailRate;
@@ -119,26 +119,26 @@ public class GetMetricsResponse {
         this.replyMsgFailNumSum = replyMsgFailNumSum;
         this.maxPushMsgTPS = maxPushMsgTPS;
         this.avgPushMsgTPS = avgPushMsgTPS;
-        this.HTTPpushMsgNumSum = HTTPpushMsgNumSum;
-        this.HTTPpushMsgFailNumSum = HTTPpushMsgFailNumSum;
-        this.HTTPpushMsgFailRate = HTTPpushMsgFailRate;
+        this.pushHTTPMsgNumSum = pushHTTPMsgNumSum;
+        this.pushHTTPMsgFailNumSum = pushHTTPMsgFailNumSum;
+        this.pushHTTPMsgFailRate = pushHTTPMsgFailRate;
         this.maxHTTPPushLatency = maxHTTPPushLatency;
         this.avgHTTPPushLatency = avgHTTPPushLatency;
         this.batchMsgQueueSize = batchMsgQueueSize;
         this.sendMsgQueueSize = sendMsgQueueSize;
         this.pushMsgQueueSize = pushMsgQueueSize;
-        this.HTTPRetryQueueSize = HTTPRetryQueueSize;
+        this.retryHTTPQueueSize = retryHTTPQueueSize;
         this.avgBatchSendMsgCost = avgBatchSendMsgCost;
         this.avgSendMsgCost = avgSendMsgCost;
         this.avgReplyMsgCost = avgReplyMsgCost;
-        this.TCPretryQueueSize = TCPretryQueueSize;
-        this.TCPclient2eventMeshTPS = TCPclient2eventMeshTPS;
-        this.TCPeventMesh2mqTPS = TCPeventMesh2mqTPS;
-        this.TCPMq2eventMeshTPS = TCPMq2eventMeshTPS;
-        this.TCPeventMesh2clientTPS = TCPeventMesh2clientTPS;
+        this.retryTCPQueueSize = retryTCPQueueSize;
+        this.client2eventMeshTCPTPS = client2eventMeshTCPTPS;
+        this.eventMesh2mqTCPTPS = eventMesh2mqTCPTPS;
+        this.mq2eventMeshTCPTPS = mq2eventMeshTCPTPS;
+        this.eventMesh2clientTCPTPS = eventMesh2clientTCPTPS;
         this.allTCPTPS = allTCPTPS;
         this.allTCPConnections = allTCPConnections;
-        this.TCPSubTopicNum = TCPSubTopicNum;
+        this.subTopicTCPNum = subTopicTCPNum;
     }
 
 
