@@ -95,6 +95,7 @@ func toZapLevel(l log.Level) zapcore.Level {
 	return zapcore.DebugLevel
 }
 
+// zapLogger log implement by zap logger
 type zapLogger struct {
 	*zap.Logger
 	atomicLevel zap.AtomicLevel
