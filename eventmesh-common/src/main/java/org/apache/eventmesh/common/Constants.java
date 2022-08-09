@@ -87,4 +87,30 @@ public class Constants {
 
     public static final String EVENTMESH_CONF_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
+    public static final String PRODUCER_ID = "PRODUCER_ID";
+
+    public static final String CONSUMER_ID = "CONSUMER_ID";
+
+    public static final String BROADCAST_PREFIX = "broadcast-";
+
+    public static final String IS_BROADCAST = "isBroadcast";
+
+    public static final String CONSUMER_GROUP = "consumerGroup";
+
+    public static final String PRODUCER_GROUP = "producerGroup";
+
+    public static final String INSTANCE_NAME = "instanceName";
+
+    public static final String ACCESS_POINTS = "ACCESS_POINTS";
+
+    public static final String REGION = "REGION";
+
+    public static final String MESSAGE_MODEL = "MESSAGE_MODEL";
+
+    public static final String NAMESPACE = "namespace";
+
+    public static final String RMQ_PRODUCER_GROUP = "RMQ_PRODUCER_GROUP";
+
+    public static final String OPERATION_TIMEOUT = "OPERATION_TIMEOUT";
+
 }
