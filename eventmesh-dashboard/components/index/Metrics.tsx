@@ -33,49 +33,49 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../context/context';
 
 interface EventMeshMetrics {
-    maxHTTPTPS: number,
-    avgHTTPTPS: number,
-    maxHTTPCost: number,
-    avgHTTPCost: number,
-    avgHTTPBodyDecodeCost: number,
-    httpDiscard: number,
-    maxBatchSendMsgTPS: number,
-    avgBatchSendMsgTPS: number,
-    sendBatchMsgNumSum: number,
-    sendBatchMsgFailNumSum: number,
-    sendBatchMsgFailRate: number,
-    sendBatchMsgDiscardNumSum: number,
-    maxSendMsgTPS: number,
-    avgSendMsgTPS: number,
-    sendMsgNumSum: number,
-    sendMsgFailNumSum: number,
-    sendMsgFailRate: number,
-    replyMsgNumSum: number,
-    replyMsgFailNumSum: number,
-    maxPushMsgTPS: number,
-    avgPushMsgTPS: number,
-    pushHTTPMsgNumSum: number,
-    pushHTTPMsgFailNumSum: number,
-    pushHTTPMsgFailRate: number,
-    maxHTTPPushLatency : number,
-    avgHTTPPushLatency : number,
-    batchMsgQueueSize : number,
-    sendMsgQueueSize  : number,
-    pushMsgQueueSize : number,
-    retryHTTPQueueSize : number,
-    avgBatchSendMsgCost : number,
-    avgSendMsgCost : number,
-    avgReplyMsgCost : number,
+  maxHTTPTPS: number,
+  avgHTTPTPS: number,
+  maxHTTPCost: number,
+  avgHTTPCost: number,
+  avgHTTPBodyDecodeCost: number,
+  httpDiscard: number,
+  maxBatchSendMsgTPS: number,
+  avgBatchSendMsgTPS: number,
+  sendBatchMsgNumSum: number,
+  sendBatchMsgFailNumSum: number,
+  sendBatchMsgFailRate: number,
+  sendBatchMsgDiscardNumSum: number,
+  maxSendMsgTPS: number,
+  avgSendMsgTPS: number,
+  sendMsgNumSum: number,
+  sendMsgFailNumSum: number,
+  sendMsgFailRate: number,
+  replyMsgNumSum: number,
+  replyMsgFailNumSum: number,
+  maxPushMsgTPS: number,
+  avgPushMsgTPS: number,
+  pushHTTPMsgNumSum: number,
+  pushHTTPMsgFailNumSum: number,
+  pushHTTPMsgFailRate: number,
+  maxHTTPPushLatency : number,
+  avgHTTPPushLatency : number,
+  batchMsgQueueSize : number,
+  sendMsgQueueSize : number,
+  pushMsgQueueSize : number,
+  retryHTTPQueueSize : number,
+  avgBatchSendMsgCost : number,
+  avgSendMsgCost : number,
+  avgReplyMsgCost : number,
 
-  //TCP Metrics
-    retryTCPQueueSize: number,
-    client2eventMeshTCPTPS : number,
-    eventMesh2mqTCPTPS : number,
-    mq2eventMeshTCPTPS : number,
-    eventMesh2clientTCPTPS : number,
-    allTCPTPS : number,
-    allTCPConnections : number,
-    subTopicTCPNum : number
+  // TCP Metrics
+  retryTCPQueueSize: number,
+  client2eventMeshTCPTPS : number,
+  eventMesh2mqTCPTPS : number,
+  mq2eventMeshTCPTPS : number,
+  eventMesh2clientTCPTPS : number,
+  allTCPTPS : number,
+  allTCPConnections : number,
+  subTopicTCPNum : number
 }
 
 const Metrics = () => {
@@ -258,16 +258,16 @@ const Metrics = () => {
             </Tbody>
           </Table>
         </TableContainer>
-        </Box>
-        <Box
-          maxW="full"
-          bg="white"
-          borderWidth="1px"
-          borderRadius="md"
-          overflow="hidden"
-          p="4"
-          mt="4"
-        >
+      </Box>
+      <Box
+        maxW="full"
+        bg="white"
+        borderWidth="1px"
+        borderRadius="md"
+        overflow="hidden"
+        p="4"
+        mt="4"
+      >
 
         <Text
           w="full"
