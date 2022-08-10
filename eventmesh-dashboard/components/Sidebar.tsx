@@ -54,6 +54,7 @@ const LinkItems: Array<LinkItemProps> = [
   { name: 'Client', icon: FiServer, href: '/client' },
   { name: 'Topic', icon: FiGrid, href: '/topic' },
   { name: 'Event', icon: FiDatabase, href: '/event' },
+  { name: 'Metrics', icon: FiMenu, href: '/metrics' },
 ];
 
 interface NavItemProps extends FlexProps {
