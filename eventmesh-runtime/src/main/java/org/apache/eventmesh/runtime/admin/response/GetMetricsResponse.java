@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 public class GetMetricsResponse {
-    //HTTP Metrics
+    // HTTP Metrics
     public float maxHTTPTPS;
     public float avgHTTPTPS;
     public long maxHTTPCost;
@@ -57,7 +57,7 @@ public class GetMetricsResponse {
     public float avgSendMsgCost;
     public float avgReplyMsgCost;
 
-    //TCP Metrics
+    // TCP Metrics
     public int retryTCPQueueSize;
     public int client2eventMeshTCPTPS;
     public int eventMesh2mqTCPTPS;
@@ -70,7 +70,7 @@ public class GetMetricsResponse {
 
     @JsonCreator
     public GetMetricsResponse(
-            //HTTP Metrics
+            // HTTP Metrics
             @JsonProperty("maxHTTPTPS") float maxHTTPTPS,
             @JsonProperty("avgHTTPTPS") float avgHTTPTPS,
             @JsonProperty("maxHTTPCost") long maxHTTPCost,
@@ -104,7 +104,7 @@ public class GetMetricsResponse {
             @JsonProperty("avgBatchSendMsgCost") float avgBatchSendMsgCost,
             @JsonProperty("avgSendMsgCost") float avgSendMsgCost,
             @JsonProperty("avgReplyMsgCost") float avgReplyMsgCost,
-            //TCP Metrics
+            // TCP Metrics
             @JsonProperty("retryTCPQueueSize") int retryTCPQueueSize,
             @JsonProperty("client2eventMeshTCPTPS") int client2eventMeshTCPTPS,
             @JsonProperty("eventMesh2mqTCPTPS") int eventMesh2mqTCPTPS,

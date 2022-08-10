@@ -78,67 +78,67 @@ interface EventMeshMetrics {
   subTopicTCPNum : number
 }
 
-const Metrics = () => {
+const MetricsTable = () => {
   const { state } = useContext(AppContext);
-  const [configuration, setConfiguration] = useState<Partial<EventMeshMetrics>>({});
+  const [metrics, setMetrics] = useState<Partial<EventMeshMetrics>>({});
 
   useEffect(() => {
     const fetch = async () => {
       try {
         const { data } = await axios.get<EventMeshMetrics>(`${state.endpoint}/metrics`);
-        setConfiguration(data);
+        setMetrics(data);
       } catch (error) {
-        setConfiguration({});
+        setMetrics({});
       }
     };
 
     fetch();
   }, []);
 
-  type MetricRecord = Record<string, string | number | boolean | undefined>;
+  type MetricRecord = Record<string, number | undefined>;
   const httpMetrics: MetricRecord = {
-    'Max HTTP TPS': configuration.maxHTTPTPS,
-    'Avg HTTP TPS': configuration.avgHTTPTPS,
-    'Max HTTP Cost': configuration.maxHTTPCost,
-    'Avg HTTP Cost': configuration.avgHTTPCost,
-    'Avg HTTP Body Decode Cost': configuration.avgHTTPBodyDecodeCost,
-    'HTTP Discard': configuration.httpDiscard,
+    'Max HTTP TPS': metrics.maxHTTPTPS,
+    'Avg HTTP TPS': metrics.avgHTTPTPS,
+    'Max HTTP Cost': metrics.maxHTTPCost,
+    'Avg HTTP Cost': metrics.avgHTTPCost,
+    'Avg HTTP Body Decode Cost': metrics.avgHTTPBodyDecodeCost,
+    'HTTP Discard': metrics.httpDiscard,
   };
   const batchMetrics: MetricRecord = {
-    'Max Batch Send Msg TPS': configuration.maxBatchSendMsgTPS,
-    'Avg Batch Send Msg TPS': configuration.avgBatchSendMsgTPS,
-    'Send Batch Msg Num Sum': configuration.sendBatchMsgNumSum,
-    'Send Batch Msg Fail Num Sum': configuration.sendBatchMsgFailNumSum,
-    'Send Batch Msg Fail Rate': configuration.sendBatchMsgFailRate,
-    'Send Batch Msg Discard Num Sum': configuration.sendBatchMsgDiscardNumSum,
+    'Max Batch Send Msg TPS': metrics.maxBatchSendMsgTPS,
+    'Avg Batch Send Msg TPS': metrics.avgBatchSendMsgTPS,
+    'Send Batch Msg Num Sum': metrics.sendBatchMsgNumSum,
+    'Send Batch Msg Fail Num Sum': metrics.sendBatchMsgFailNumSum,
+    'Send Batch Msg Fail Rate': metrics.sendBatchMsgFailRate,
+    'Send Batch Msg Discard Num Sum': metrics.sendBatchMsgDiscardNumSum,
   };
   const sendMetrics: MetricRecord = {
-    'Max Send Msg TPS': configuration.maxSendMsgTPS,
-    'Avg Send Msg TPS': configuration.avgSendMsgTPS,
-    'Send Msg Num Sum': configuration.sendMsgNumSum,
-    'Send Msg Fail Num Sum': configuration.sendMsgFailNumSum,
-    'Send Msg Fail Rate': configuration.sendMsgFailRate,
-    'Reply Msg Num Sum': configuration.replyMsgNumSum,
-    'Reply Msg Fail Num Sum': configuration.replyMsgFailNumSum,
+    'Max Send Msg TPS': metrics.maxSendMsgTPS,
+    'Avg Send Msg TPS': metrics.avgSendMsgTPS,
+    'Send Msg Num Sum': metrics.sendMsgNumSum,
+    'Send Msg Fail Num Sum': metrics.sendMsgFailNumSum,
+    'Send Msg Fail Rate': metrics.sendMsgFailRate,
+    'Reply Msg Num Sum': metrics.replyMsgNumSum,
+    'Reply Msg Fail Num Sum': metrics.replyMsgFailNumSum,
   };
   const pushMetrics: MetricRecord = {
-    'Max Push Msg TPS': configuration.maxPushMsgTPS,
-    'Avg Push Msg TPS': configuration.avgPushMsgTPS,
-    'Push HTTP Msg Num Sum': configuration.pushHTTPMsgNumSum,
-    'Push HTTP Msg Fail Num Sum': configuration.pushHTTPMsgFailNumSum,
-    'Push HTTP Msg Fail Rate': configuration.pushHTTPMsgFailRate,
-    'Max HTTP Push Latency': configuration.maxHTTPPushLatency,
-    'Avg HTTP Push Latency': configuration.avgHTTPPushLatency,
+    'Max Push Msg TPS': metrics.maxPushMsgTPS,
+    'Avg Push Msg TPS': metrics.avgPushMsgTPS,
+    'Push HTTP Msg Num Sum': metrics.pushHTTPMsgNumSum,
+    'Push HTTP Msg Fail Num Sum': metrics.pushHTTPMsgFailNumSum,
+    'Push HTTP Msg Fail Rate': metrics.pushHTTPMsgFailRate,
+    'Max HTTP Push Latency': metrics.maxHTTPPushLatency,
+    'Avg HTTP Push Latency': metrics.avgHTTPPushLatency,
   };
   const tcpMetrics: MetricRecord = {
-    'Retry TCP Queue Size': configuration.retryTCPQueueSize,
-    'Client2eventMesh TCP TPS': configuration.client2eventMeshTCPTPS,
-    'EventMesh2mq TCP TPS': configuration.eventMesh2mqTCPTPS,
-    'MQ2eventMesh TCP TPS': configuration.mq2eventMeshTCPTPS,
-    'EventMesh2client TCP TPS': configuration.eventMesh2clientTCPTPS,
-    'All TCP TPS': configuration.allTCPTPS,
-    'All TCP Connections': configuration.allTCPConnections,
-    'Sub Topic TCP Num': configuration.subTopicTCPNum,
+    'Retry TCP Queue Size': metrics.retryTCPQueueSize,
+    'Client2eventMesh TCP TPS': metrics.client2eventMeshTCPTPS,
+    'EventMesh2mq TCP TPS': metrics.eventMesh2mqTCPTPS,
+    'MQ2eventMesh TCP TPS': metrics.mq2eventMeshTCPTPS,
+    'EventMesh2client TCP TPS': metrics.eventMesh2clientTCPTPS,
+    'All TCP TPS': metrics.allTCPTPS,
+    'All TCP Connections': metrics.allTCPConnections,
+    'Sub Topic TCP Num': metrics.subTopicTCPNum,
   };
 
   const convertConfigurationToTable = (
@@ -161,7 +161,7 @@ const Metrics = () => {
     );
   });
 
-  if (Object.keys(configuration).length === 0) {
+  if (Object.keys(metrics).length === 0) {
     return false;
   }
 
@@ -228,7 +228,7 @@ const Metrics = () => {
           <Table variant="simple">
             <Thead>
               <Tr>
-                <Th>Configuration Field</Th>
+                <Th>Metric</Th>
                 <Th>Value</Th>
               </Tr>
             </Thead>
@@ -249,7 +249,7 @@ const Metrics = () => {
           <Table variant="simple">
             <Thead>
               <Tr>
-                <Th>Configuration Field</Th>
+                <Th>Metric</Th>
                 <Th>Value</Th>
               </Tr>
             </Thead>
@@ -280,7 +280,7 @@ const Metrics = () => {
           <Table variant="simple">
             <Thead>
               <Tr>
-                <Th>Configuration Field</Th>
+                <Th>Metric</Th>
                 <Th>Value</Th>
               </Tr>
             </Thead>
@@ -295,4 +295,4 @@ const Metrics = () => {
   );
 };
 
-export default Metrics;
+export default MetricsTable;
