@@ -44,6 +44,14 @@ public class StandaloneBroker {
         startHistoryMessageCleanTask();
     }
 
+    public ConcurrentHashMap<TopicMetadata, MessageQueue> getMessageContainer() {
+        return this.messageContainer;
+    }
+
+    public ConcurrentHashMap<TopicMetadata, AtomicLong> getOffsetMap() {
+        return this.offsetMap;
+    }
+
     public static StandaloneBroker getInstance() {
         return StandaloneBrokerInstanceHolder.instance;
     }
@@ -106,7 +114,6 @@ public class StandaloneBroker {
         }
         return messageEntity.getMessage();
     }
-
 
     private void startHistoryMessageCleanTask() {
         Thread thread = new Thread(new HistoryMessageClearTask(messageContainer));
