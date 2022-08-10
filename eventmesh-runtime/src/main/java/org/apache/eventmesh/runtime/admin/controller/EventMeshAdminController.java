@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.admin.controller;
 import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
 import org.apache.eventmesh.runtime.admin.handler.ClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.ConfigurationHandler;
+import org.apache.eventmesh.runtime.admin.handler.MetricsHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
@@ -61,6 +62,7 @@ public class EventMeshAdminController {
                 eventMeshHTTPServer.getEventMeshHttpConfiguration(),
                 eventMeshGrpcServer.getEventMeshGrpcConfiguration()
         ));
+        server.createContext("/metrics", new MetricsHandler(eventMeshHTTPServer, eventMeshTCPServer));
 
         server.start();
         logger.info("ClientManageController start success, port:{}", port);
