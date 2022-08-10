@@ -1,0 +1,22 @@
+server:
+  port: 11010
+  name: "eventmesh-server"
+plugins:
+  registry:
+    nacos:
+      address_list: "9.135.90.236:8848"
+  selector:
+    nacos:
+      address_list: "9.135.90.236:8848"
+  log:
+    default:                                      
+      - writer: console                           
+        level: debug                              
+      - writer: file                              
+        level: info                               
+        writer_config:
+          filename: ./eventmesh.log
+          max_size: 10                            
+          max_backups: 10                         
+          max_age: 7                              
+          compress:  false
