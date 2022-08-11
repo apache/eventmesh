@@ -23,3 +23,8 @@ type Config struct {
 	GroupName   string
 	Metadata    map[string]string
 }
+
+// PluginConfig define selector plugin config
+type PluginConfig struct {
+	AddressList string `yaml:"address_list"`
+}

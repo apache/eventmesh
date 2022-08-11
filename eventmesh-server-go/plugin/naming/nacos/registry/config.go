@@ -15,10 +15,15 @@
 
 package registry
 
-// Config register config
+// Config registry config
 type Config struct {
 	ServiceName string
 	Weight      int
 	Address     string
 	Metadata    map[string]string
+}
+
+// PluginConfig define registry plugin config
+type PluginConfig struct {
+	AddressList string `yaml:"address_list"`
 }

@@ -28,16 +28,16 @@ var (
 	// DefaultFileWriterFactory is the default file output implementation.
 	DefaultFileWriterFactory = &FileWriterFactory{}
 
-	writers = make(map[string]plugin.Factory)
+	writers = make(map[string]plugin.Plugin)
 )
 
 // RegisterWriter registers log output writer. Writer may have multiple implementations.
-func RegisterWriter(name string, writer plugin.Factory) {
+func RegisterWriter(name string, writer plugin.Plugin) {
 	writers[name] = writer
 }
 
 // GetWriter gets log output writer, returns nil if not exist.
-func GetWriter(name string) plugin.Factory {
+func GetWriter(name string) plugin.Plugin {
 	return writers[name]
 }
 
