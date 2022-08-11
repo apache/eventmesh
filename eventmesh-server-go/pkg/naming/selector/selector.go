@@ -15,7 +15,7 @@
 
 package selector
 
-import "github.com/apache/incubator-eventmesh/eventmesh-go/pkg/naming/registry"
+import "github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
 
 // Selector is the interface that defines the selector.
 type Selector interface {

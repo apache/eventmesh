@@ -18,8 +18,8 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-go/config"
-	"github.com/apache/incubator-eventmesh/eventmesh-go/pkg/naming/registry"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
 	"google.golang.org/grpc"
 	"net"
 )
