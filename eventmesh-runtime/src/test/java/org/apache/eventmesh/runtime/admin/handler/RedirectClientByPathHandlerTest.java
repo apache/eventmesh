@@ -22,9 +22,9 @@ package org.apache.eventmesh.runtime.admin.handler;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -64,10 +64,12 @@ public class RedirectClientByPathHandlerTest {
 
     @Test
     public void testHandle() throws IOException {
-        final OutputStream outputStream = new ByteArrayOutputStream();
+        OutputStream outputStream = new ByteArrayOutputStream();
+        HttpExchange mockExchange = mock(HttpExchange.class);
 
         ClientSessionGroupMapping mapping = mock(ClientSessionGroupMapping.class);
         when(eventMeshTCPServer.getClientSessionGroupMapping()).thenReturn(mapping);
+        RedirectClientByPathHandler redirectClientByPathHandler = new RedirectClientByPathHandler(eventMeshTCPServer);
 
         // mock session map
         ConcurrentHashMap<InetSocketAddress, Session> sessionMap = new ConcurrentHashMap<>();
@@ -77,11 +79,6 @@ public class RedirectClientByPathHandlerTest {
         when(session.getClient()).thenReturn(agent);
         sessionMap.put(new InetSocketAddress(8080), session);
         when(mapping.getSessionMap()).thenReturn(sessionMap);
-
-        RedirectClientByPathHandler redirectClientByPathHandler = new RedirectClientByPathHandler(eventMeshTCPServer);
-
-        HttpExchange mockExchange = mock(HttpExchange.class);
-        when(mockExchange.getResponseBody()).thenReturn(outputStream);
 
         // mock uri
         URI uri = mock(URI.class);
@@ -95,13 +92,35 @@ public class RedirectClientByPathHandlerTest {
             queryStringInfo.put(EventMeshConstants.MANAGE_DEST_PORT, "8080");
             netUtilsMockedStatic.when(() -> NetUtils.formData2Dic(anyString())).thenReturn(queryStringInfo);
 
+            // case 1: normal case
+            when(mockExchange.getResponseBody()).thenReturn(outputStream);
             try (MockedStatic<EventMeshTcp2Client> clientMockedStatic = Mockito.mockStatic(EventMeshTcp2Client.class)) {
                 clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
                     any())).thenReturn("redirectResult");
                 redirectClientByPathHandler.handle(mockExchange);
-
                 String response = outputStream.toString();
-                Assert.assertTrue(response.contains("redirectClientByPath success"));
+                Assert.assertTrue(response.startsWith("redirectClientByPath success!"));
+            }
+
+            // case 2: params illegal
+            outputStream = new ByteArrayOutputStream();
+            when(mockExchange.getResponseBody()).thenReturn(outputStream);
+            try (MockedStatic<StringUtils> dummyStatic = mockStatic(StringUtils.class)) {
+                dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(true);
+                redirectClientByPathHandler.handle(mockExchange);
+                String response = outputStream.toString();
+                Assert.assertEquals("params illegal!", response);
+            }
+
+            // case 3: redirectClient2NewEventMesh fail
+            outputStream = new ByteArrayOutputStream();
+            when(mockExchange.getResponseBody()).thenReturn(outputStream);
+            try (MockedStatic<EventMeshTcp2Client> clientMockedStatic = Mockito.mockStatic(EventMeshTcp2Client.class)) {
+                clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
+                        any())).thenThrow(new RuntimeException());
+                redirectClientByPathHandler.handle(mockExchange);
+                String response = outputStream.toString();
+                Assert.assertTrue(response.startsWith("redirectClientByPath fail!"));
             }
         }
     }

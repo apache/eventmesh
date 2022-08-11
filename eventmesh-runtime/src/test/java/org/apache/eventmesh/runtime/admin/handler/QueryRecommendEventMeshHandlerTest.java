@@ -20,16 +20,15 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 
@@ -38,32 +37,55 @@ import org.junit.Test;
 import org.mockito.MockedConstruction;
 
 import com.sun.net.httpserver.HttpExchange;
+import org.mockito.MockedStatic;
 
 public class QueryRecommendEventMeshHandlerTest {
 
     @Test
     public void testHandle() throws Exception {
-        HttpExchange httpExchange = mock(HttpExchange.class);
-        URI uri = mock(URI.class);
-        when(uri.getQuery()).thenReturn("group=group&purpose=purpose");
-        when(httpExchange.getRequestURI()).thenReturn(uri);
-
         // mock eventMeshTCPServer
         EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
         EventMeshTCPConfiguration tcpConfiguration = mock(EventMeshTCPConfiguration.class);
         doNothing().when(tcpConfiguration).init();
-        tcpConfiguration.eventMeshServerRegistryEnable = true;
         when(eventMeshTCPServer.getEventMeshTCPConfiguration()).thenReturn(tcpConfiguration);
 
+        URI uri = mock(URI.class);
+        when(uri.getQuery()).thenReturn("group=group&purpose=purpose");
         OutputStream outputStream = new ByteArrayOutputStream();
-        when(httpExchange.getResponseBody()).thenReturn(outputStream);
-
+        HttpExchange httpExchange = mock(HttpExchange.class);
+        when(httpExchange.getRequestURI()).thenReturn(uri);
         QueryRecommendEventMeshHandler handler = new QueryRecommendEventMeshHandler(eventMeshTCPServer);
+
+        // case 1: normal case
+        tcpConfiguration.eventMeshServerRegistryEnable = true;
+        when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
             (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn("result"))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
             Assert.assertEquals("result", response);
+        }
+
+        // case 2: params illegal
+        outputStream = new ByteArrayOutputStream();
+        when(httpExchange.getResponseBody()).thenReturn(outputStream);
+        try (MockedStatic<StringUtils> dummyStatic = mockStatic(StringUtils.class)) {
+            dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(true);
+            handler.handle(httpExchange);
+            String response = outputStream.toString();
+            Assert.assertEquals("params illegal!", response);
+        }
+
+        // case 3: registry disable
+        tcpConfiguration.eventMeshServerRegistryEnable = false;
+        outputStream = mock(ByteArrayOutputStream.class);
+        doThrow(new IOException()).when(outputStream).close();
+        when(httpExchange.getResponseBody()).thenReturn(outputStream);
+        try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
+                (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn("result"))) {
+            handler.handle(httpExchange);
+            String response = outputStream.toString();
+            Assert.assertNotEquals("result", response);
         }
     }
 }
