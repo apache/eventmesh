@@ -19,7 +19,7 @@ import (
 	"io/ioutil"
 	"sync/atomic"
 
-	"github.com/apache/incubator-eventmesh/eventmesh-go/plugin"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"gopkg.in/yaml.v3"
 )
 

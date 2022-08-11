@@ -1,4 +1,4 @@
-module github.com/apache/incubator-eventmesh/eventmesh-go
+module github.com/apache/incubator-eventmesh/eventmesh-server-go
 
 go 1.18
 
