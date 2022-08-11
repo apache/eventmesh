@@ -17,7 +17,7 @@ package selector
 
 import (
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-go/internal/naming/registry"
+	"github.com/apache/incubator-eventmesh/eventmesh-go/pkg/naming/registry"
 	nacos_registry "github.com/apache/incubator-eventmesh/eventmesh-go/plugin/naming/nacos/registry"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"

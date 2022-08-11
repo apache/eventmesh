@@ -60,7 +60,7 @@ func (r *Registry) Register(_ string) error {
 		return err
 	}
 	r.host = host
-	r.port = int(port)
+	r.port = gconv.Int(port)
 	if r.cfg.Weight == 0 {
 		r.cfg.Weight = defaultWeight
 	}
