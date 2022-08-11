@@ -117,9 +117,7 @@ public class TopicHandler implements HttpHandler {
         try {
             String request = HttpExchangeUtils.streamToString(httpExchange.getRequestBody());
             CreateTopicRequest createTopicRequest = JsonUtils.toObject(request, CreateTopicRequest.class);
-            logger.info("topicHandler create {}", request);
             String topicName = createTopicRequest.name;
-            logger.info("topicHandler create {}", topicName);
             admin.createTopic(topicName);
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
