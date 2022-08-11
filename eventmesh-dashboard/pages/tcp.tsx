@@ -19,15 +19,15 @@
 
 import Head from 'next/head';
 import type { NextPage } from 'next';
-import ClientTable from '../components/client/ClientTable';
+import TCPClientTable from '../components/client/TCPClientTable';
 
-const Client: NextPage = () => (
+const TCPClient: NextPage = () => (
   <>
     <Head>
       <title>Client | Apache EventMesh Dashboard</title>
     </Head>
-    <ClientTable />
+    <TCPClientTable />
   </>
 );
 
-export default Client;
+export default TCPClient;

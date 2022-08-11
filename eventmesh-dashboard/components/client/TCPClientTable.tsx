@@ -36,7 +36,7 @@ import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../context/context';
 
-interface Client {
+interface TCPClient {
   env: string,
   subsystem: string,
   url: string,
@@ -50,24 +50,20 @@ interface Client {
   protocol: string,
 }
 
-interface ClientProps {
+interface TCPClientProps {
   host: string,
   port: number,
   group: string,
-  protocol: string,
-  url: string,
 }
 
-interface RemoveClientRequest {
+interface RemoveTCPClientRequest {
   host: string,
   port: number,
-  protocol: string,
-  url: string,
 }
 
-const ClientRow = ({
-  host, port, group, protocol, url,
-}: ClientProps) => {
+const TCPClientRow = ({
+  host, port, group,
+}: TCPClientProps) => {
   const { state } = useContext(AppContext);
 
   const toast = useToast();
@@ -75,19 +71,17 @@ const ClientRow = ({
   const onRemoveClick = async () => {
     try {
       setLoading(true);
-      await axios.delete<RemoveClientRequest>(`${state.endpoint}/client`, {
+      await axios.delete<RemoveTCPClientRequest>(`${state.endpoint}/client/tcp`, {
         data: {
           host,
           port,
-          protocol,
-          url,
         },
       });
       setLoading(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast({
-          title: 'Failed to remove the client',
+          title: 'Failed to remove the TCP Client',
           description: error.message,
           status: 'error',
           duration: 3000,
@@ -99,14 +93,11 @@ const ClientRow = ({
 
   return (
     <Tr>
-      {protocol === 'TCP' && <Td>{`${host}:${port}`}</Td>}
-      {(protocol === 'HTTP' || protocol === 'gRPC') && <Td>{url}</Td>}
+      <Td>{`${host}:${port}`}</Td>
       <Td>{group}</Td>
-      <Td>{protocol}</Td>
       <Td>
         <HStack>
           <Button
-            isDisabled
             colorScheme="red"
             isLoading={loading}
             onClick={onRemoveClick}
@@ -119,17 +110,12 @@ const ClientRow = ({
   );
 };
 
-const ClientTable = () => {
+const TCPClientTable = () => {
   const { state } = useContext(AppContext);
 
   const [searchInput, setSearchInput] = useState<string>('');
   const handleSearchInputChange = (event: React.FormEvent<HTMLInputElement>) => {
     setSearchInput(event.currentTarget.value);
-  };
-
-  const [protocolFilter, setProtocolFilter] = useState<string>('');
-  const handleProtocolSelectChange = (event: React.FormEvent<HTMLSelectElement>) => {
-    setProtocolFilter(event.currentTarget.value);
   };
 
   const [groupSet, setGroupSet] = useState<Set<string>>(new Set());
@@ -138,13 +124,13 @@ const ClientTable = () => {
     setGroupFilter(event.currentTarget.value);
   };
 
-  const [clientList, setClientList] = useState<Client[]>([]);
+  const [TCPClientList, setTCPClientList] = useState<TCPClient[]>([]);
   const toast = useToast();
   useEffect(() => {
     const fetch = async () => {
       try {
-        const { data } = await axios.get<Client[]>(`${state.endpoint}/client`);
-        setClientList(data);
+        const { data } = await axios.get<TCPClient[]>(`${state.endpoint}/client/tcp`);
+        setTCPClientList(data);
 
         const nextGroupSet = new Set<string>();
         data.forEach(({ group }) => {
@@ -154,13 +140,13 @@ const ClientTable = () => {
       } catch (error) {
         if (axios.isAxiosError(error)) {
           toast({
-            title: 'Failed to fetch the list of clients',
+            title: 'Failed to fetch the list of TCP Clients',
             description: error.message,
             status: 'error',
             duration: 3000,
             isClosable: true,
           });
-          setClientList([]);
+          setTCPClientList([]);
         }
       }
     };
@@ -187,14 +173,6 @@ const ClientTable = () => {
           onChange={handleSearchInputChange}
         />
         <Select
-          placeholder="Select Protocol"
-          onChange={handleProtocolSelectChange}
-        >
-          <option value="TCP">TCP</option>
-          <option value="HTTP">HTTP</option>
-          <option value="gRPC">gRPC</option>
-        </Select>
-        <Select
           placeholder="Select Group"
           onChange={handleGroupSelectChange}
         >
@@ -208,15 +186,14 @@ const ClientTable = () => {
         <Table variant="simple">
           <Thead>
             <Tr>
-              <Th>Host or url</Th>
+              <Th>Host</Th>
               <Th>Group</Th>
-              <Th>Protocol</Th>
               <Th>Action</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {clientList && clientList.filter(({
-              host, port, group, protocol,
+            {TCPClientList && TCPClientList.filter(({
+              host, port, group,
             }) => {
               const address = `${host}:${port}`;
               if (searchInput && !address.includes(searchInput)) {
@@ -225,19 +202,14 @@ const ClientTable = () => {
               if (groupFilter && groupFilter !== group) {
                 return false;
               }
-              if (protocolFilter && protocolFilter !== protocol) {
-                return false;
-              }
               return true;
             }).map(({
-              host, port, group, protocol, url,
+              host, port, group,
             }) => (
-              <ClientRow
+              <TCPClientRow
                 host={host}
                 port={port}
                 group={group}
-                protocol={protocol}
-                url={url}
               />
             ))}
           </Tbody>
@@ -247,4 +219,4 @@ const ClientTable = () => {
   );
 };
 
-export default ClientTable;
+export default TCPClientTable;
