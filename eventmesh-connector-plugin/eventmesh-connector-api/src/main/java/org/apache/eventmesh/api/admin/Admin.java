@@ -1,7 +1,6 @@
 package org.apache.eventmesh.api.admin;
 
 import org.apache.eventmesh.api.LifeCycle;
-import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
@@ -14,7 +13,11 @@ import io.cloudevents.CloudEvent;
 public interface Admin extends LifeCycle {
     void init(Properties keyValue) throws Exception;
 
-    List<String> getTopic() throws Exception;
+    List<TopicProperties> getTopic() throws Exception;
+
+    void createTopic(String topicName) throws Exception;
+
+    void deleteTopic(String topicName) throws Exception;
 
     List<CloudEvent> getEvent(String topicName, int offset, int length) throws Exception;
 

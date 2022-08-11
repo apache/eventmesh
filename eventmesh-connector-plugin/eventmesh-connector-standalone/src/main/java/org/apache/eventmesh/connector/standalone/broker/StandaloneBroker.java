@@ -127,7 +127,7 @@ public class StandaloneBroker {
     }
 
     /**
-     * if topic not exist, create a topic
+     * if the topic does not exist, create the topic
      *
      * @param topicName topicName
      * @return messageQueue and offset
@@ -137,6 +137,16 @@ public class StandaloneBroker {
         MessageQueue messageQueue = messageContainer.computeIfAbsent(topicMetadata, k -> new MessageQueue());
         AtomicLong offset = offsetMap.computeIfAbsent(topicMetadata, k -> new AtomicLong());
         return Pair.of(messageQueue, offset);
+    }
+
+    /**
+     * if the topic exists, delete the topic
+     *
+     * @param topicName topicName
+     */
+    public void deleteTopicIfExist(String topicName) {
+        TopicMetadata topicMetadata = new TopicMetadata(topicName);
+        messageContainer.remove(topicMetadata);
     }
 
     public void updateOffset(TopicMetadata topicMetadata, long offset) {

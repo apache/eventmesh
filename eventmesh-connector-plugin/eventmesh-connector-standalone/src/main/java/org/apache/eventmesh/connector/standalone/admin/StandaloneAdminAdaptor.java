@@ -1,6 +1,7 @@
 package org.apache.eventmesh.connector.standalone.admin;
 
 import org.apache.eventmesh.api.admin.Admin;
+import org.apache.eventmesh.api.admin.TopicProperties;
 
 import java.util.List;
 import java.util.Properties;
@@ -40,8 +41,18 @@ public class StandaloneAdminAdaptor implements Admin {
     }
 
     @Override
-    public List<String> getTopic() throws Exception {
+    public List<TopicProperties> getTopic() throws Exception {
         return admin.getTopic();
+    }
+
+    @Override
+    public void createTopic(String topicName) throws Exception {
+        admin.createTopic(topicName);
+    }
+
+    @Override
+    public void deleteTopic(String topicName) throws Exception {
+        admin.deleteTopic(topicName);
     }
 
     @Override

@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.apache.eventmesh.runtime.core.plugin.MQAdminWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,27 +37,21 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 /**
- * The config handler
+ * The event handler
  */
-public class ConfigurationHandler implements HttpHandler {
+public class EventHandler implements HttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationHandler.class);
 
-    private final EventMeshTCPConfiguration eventMeshTCPConfiguration;
-    private final EventMeshHTTPConfiguration eventMeshHTTPConfiguration;
-    private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
+    private final String connectorPluginType;
 
-    public ConfigurationHandler(
-            EventMeshTCPConfiguration eventMeshTCPConfiguration,
-            EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
-            EventMeshGrpcConfiguration eventMeshGrpcConfiguration
+    public EventHandler(
+            String connectorPluginType
     ) {
-        this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
-        this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;
-        this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
+        this.connectorPluginType = connectorPluginType;
     }
 
     /**
-     * OPTIONS /configuration
+     * OPTIONS /event
      */
     void preflight(HttpExchange httpExchange) throws IOException {
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
@@ -69,7 +64,7 @@ public class ConfigurationHandler implements HttpHandler {
     }
 
     /**
-     * GET /config
+     * GET /event
      * Return a response that contains the EventMesh configuration
      */
     void get(HttpExchange httpExchange) throws IOException {
@@ -78,34 +73,34 @@ public class ConfigurationHandler implements HttpHandler {
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
         try {
-            GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
-                    eventMeshTCPConfiguration.sysID,
-                    eventMeshTCPConfiguration.namesrvAddr,
-                    eventMeshTCPConfiguration.eventMeshEnv,
-                    eventMeshTCPConfiguration.eventMeshIDC,
-                    eventMeshTCPConfiguration.eventMeshCluster,
-                    eventMeshTCPConfiguration.eventMeshServerIp,
-                    eventMeshTCPConfiguration.eventMeshName,
-                    eventMeshTCPConfiguration.eventMeshWebhookOrigin,
-                    eventMeshTCPConfiguration.eventMeshServerSecurityEnable,
-                    eventMeshTCPConfiguration.eventMeshServerRegistryEnable,
-
-                    // TCP Configuration
-                    eventMeshTCPConfiguration.eventMeshTcpServerPort,
-                    eventMeshTCPConfiguration.eventMeshTcpServerEnabled,
-
-                    // HTTP Configuration
-                    eventMeshHTTPConfiguration.httpServerPort,
-                    eventMeshHTTPConfiguration.eventMeshServerUseTls,
-
-                    // gRPC Configuration
-                    eventMeshGrpcConfiguration.grpcServerPort,
-                    eventMeshGrpcConfiguration.eventMeshServerUseTls
-            );
-
-            String result = JsonUtils.toJson(getConfigurationResponse);
-            httpExchange.sendResponseHeaders(200, result.getBytes().length);
-            out.write(result.getBytes());
+                //            GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
+                //                    eventMeshTCPConfiguration.sysID,
+                //                    eventMeshTCPConfiguration.namesrvAddr,
+                //                    eventMeshTCPConfiguration.eventMeshEnv,
+                //                    eventMeshTCPConfiguration.eventMeshIDC,
+                //                    eventMeshTCPConfiguration.eventMeshCluster,
+                //                    eventMeshTCPConfiguration.eventMeshServerIp,
+                //                    eventMeshTCPConfiguration.eventMeshName,
+                //                    eventMeshTCPConfiguration.eventMeshWebhookOrigin,
+                //                    eventMeshTCPConfiguration.eventMeshServerSecurityEnable,
+                //                    eventMeshTCPConfiguration.eventMeshServerRegistryEnable,
+                //
+                //                    // TCP Configuration
+                //                    eventMeshTCPConfiguration.eventMeshTcpServerPort,
+                //                    eventMeshTCPConfiguration.eventMeshTcpServerEnabled,
+                //
+                //                    // HTTP Configuration
+                //                    eventMeshHTTPConfiguration.httpServerPort,
+                //                    eventMeshHTTPConfiguration.eventMeshServerUseTls,
+                //
+                //                    // gRPC Configuration
+                //                    eventMeshGrpcConfiguration.grpcServerPort,
+                //                    eventMeshGrpcConfiguration.eventMeshServerUseTls
+                //            );
+                //
+                //            String result = JsonUtils.toJson(getConfigurationResponse);
+                //            httpExchange.sendResponseHeaders(200, result.getBytes().length);
+                //            out.write(result.getBytes());
         } catch (Exception e) {
             StringWriter writer = new StringWriter();
             PrintWriter printWriter = new PrintWriter(writer);
