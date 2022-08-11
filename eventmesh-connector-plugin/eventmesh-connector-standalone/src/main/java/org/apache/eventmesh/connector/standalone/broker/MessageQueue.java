@@ -221,4 +221,11 @@ public class MessageQueue {
         return item;
     }
 
+    public int getTakeIndex() {
+        return takeIndex;
+    }
+
+    public int getPutIndex() {
+        return putIndex;
+    }
 }

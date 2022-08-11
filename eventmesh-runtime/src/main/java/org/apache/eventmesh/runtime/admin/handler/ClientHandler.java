@@ -35,6 +35,8 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,11 +72,12 @@ public class ClientHandler implements HttpHandler {
     }
 
     /**
-     * OPTION /client
+     * OPTIONS /client
      */
     void preflight(HttpExchange httpExchange) throws IOException {
         httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        httpExchange.getResponseHeaders().add("Access-Control-Allow-Method", "*");
+        httpExchange.getResponseHeaders().add("Access-Control-Allow-Methods", "*");
+        httpExchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
         httpExchange.getResponseHeaders().add("Access-Control-Max-Age", "86400");
         httpExchange.sendResponseHeaders(200, 0);
         OutputStream out = httpExchange.getResponseBody();
@@ -132,7 +135,13 @@ public class ClientHandler implements HttpHandler {
             httpExchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
             httpExchange.sendResponseHeaders(200, 0);
         } catch (Exception e) {
-            Error error = new Error(e.toString());
+            StringWriter writer = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(writer);
+            e.printStackTrace(printWriter);
+            printWriter.flush();
+            String stackTrace = writer.toString();
+
+            Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJson(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
@@ -232,7 +241,13 @@ public class ClientHandler implements HttpHandler {
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (Exception e) {
-            Error error = new Error(e.toString());
+            StringWriter writer = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(writer);
+            e.printStackTrace(printWriter);
+            printWriter.flush();
+            String stackTrace = writer.toString();
+
+            Error error = new Error(e.toString(), stackTrace);
             String result = JsonUtils.toJson(error);
             httpExchange.sendResponseHeaders(500, result.getBytes().length);
             out.write(result.getBytes());
@@ -249,7 +264,7 @@ public class ClientHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        if (httpExchange.getRequestMethod().equals("OPTION")) {
+        if (httpExchange.getRequestMethod().equals("OPTIONS")) {
             preflight(httpExchange);
         }
         if (httpExchange.getRequestMethod().equals("GET")) {
