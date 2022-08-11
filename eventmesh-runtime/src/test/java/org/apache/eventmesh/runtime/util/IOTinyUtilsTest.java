@@ -19,18 +19,13 @@ package org.apache.eventmesh.runtime.util;
 
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.MockedConstruction;
@@ -58,23 +53,61 @@ public class IOTinyUtilsTest {
     }
 
     @Test
+    public void testToString() throws IOException {
+        File temp = null;
+        try {
+            temp = File.createTempFile("temp", ".txt");
+            BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
+            bw.write("test toString");
+            bw.close();
+            String res = IOTinyUtils.toString(Files.newInputStream(temp.toPath()), EventMeshConstants.DEFAULT_CHARSET);
+            Assert.assertEquals("test toString", res);
+        } finally {
+            Assert.assertNotNull(temp);
+            temp.delete();
+        }
+    }
+
+    @Test
     public void testCopyFile() {
     }
 
     @Test
     public void testCleanDirectory() throws IOException {
-        File dirFile = mock(File.class);
-        when(dirFile.exists()).thenReturn(true);
-        when(dirFile.isDirectory()).thenReturn(true);
+        // file is not exist
+        File dirFile1 = mock(File.class);
+        when(dirFile1.exists()).thenReturn(false);
+        Assert.assertThrows(IllegalArgumentException.class, () -> IOTinyUtils.cleanDirectory(dirFile1));
 
-        File normalFile = mock(File.class);
-        when(normalFile.exists()).thenReturn(true);
-        when(normalFile.isDirectory()).thenReturn(false);
-        when(normalFile.delete()).thenReturn(true);
+        // file is not a directory
+        File dirFile2 = mock(File.class);
+        when(dirFile2.exists()).thenReturn(true);
+        when(dirFile2.isDirectory()).thenReturn(false);
+        when(dirFile2.delete()).thenReturn(true);
+        Assert.assertThrows(IllegalArgumentException.class, () -> IOTinyUtils.cleanDirectory(dirFile2));
 
-        File[] files = {normalFile};
-        when(dirFile.listFiles()).thenReturn(files);
-        IOTinyUtils.cleanDirectory(dirFile);
+        // directory is empty
+        File dirFile3 = mock(File.class);
+        when(dirFile3.exists()).thenReturn(true);
+        when(dirFile3.isDirectory()).thenReturn(true);
+        when(dirFile3.listFiles()).thenReturn(null);
+        Assert.assertThrows(IOException.class, () -> IOTinyUtils.cleanDirectory(dirFile3));
+
+        // clean directory failed
+        File dirFile4 = mock(File.class);
+        File[] files4 = {dirFile3};
+        when(dirFile4.exists()).thenReturn(true);
+        when(dirFile4.isDirectory()).thenReturn(true);
+        when(dirFile4.listFiles()).thenReturn(files4);
+        Assert.assertThrows(IOException.class, () -> IOTinyUtils.cleanDirectory(dirFile4));
+
+        // successfully clean directory
+        File dirFile5 = mock(File.class);
+        File[] files5 = {dirFile2, null};
+        when(dirFile5.exists()).thenReturn(true);
+        when(dirFile5.isDirectory()).thenReturn(true);
+        when(dirFile5.listFiles()).thenReturn(files5);
+        IOTinyUtils.cleanDirectory(dirFile5);
     }
 
     @Test
