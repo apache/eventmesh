@@ -19,11 +19,11 @@
 // that do not rely on configuration should be registered by calling methods in certain packages.
 package plugin
 
-var plugins = make(map[string]map[string]Factory) // plugin type => { plugin name => plugin factory }
+var plugins = make(map[string]map[string]Plugin) // plugin type => { plugin name => plugin factory }
 
-// Factory is the interface for plugin factory abstraction.
+// Plugin is the interface for plugin factory abstraction.
 // Custom Plugins need to implement this interface to be registered as a plugin with certain type.
-type Factory interface {
+type Plugin interface {
 	// Type returns type of the plugin, i.e. selector, log, config, tracing.
 	Type() string
 	// Setup loads plugin by configuration.
@@ -38,18 +38,18 @@ type Decoder interface {
 
 // Register registers a plugin factory.
 // Name of the plugin should be specified.
-// It is supported to register instances which are the same implementation of plugin Factory
+// It is supported to register instances which are the same implementation of plugin Plugin
 // but use different configuration.
-func Register(name string, f Factory) {
+func Register(name string, f Plugin) {
 	factories, ok := plugins[f.Type()]
 	if !ok {
-		factories = make(map[string]Factory)
+		factories = make(map[string]Plugin)
 		plugins[f.Type()] = factories
 	}
 	factories[name] = f
 }
 
-// Get returns a plugin Factory by its type and name.
-func Get(typ string, name string) Factory {
+// Get returns a plugin Plugin by its type and name.
+func Get(typ string, name string) Plugin {
 	return plugins[typ][name]
 }

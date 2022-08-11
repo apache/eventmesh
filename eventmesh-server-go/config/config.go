@@ -27,7 +27,7 @@ import (
 var ServerConfigPath = defaultConfigPath
 
 const (
-	defaultConfigPath = "./eventmesh-server.yaml"
+	defaultConfigPath = "./configs//eventmesh-server.yaml"
 )
 
 type Config struct {

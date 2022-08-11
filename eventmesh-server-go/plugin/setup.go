@@ -107,7 +107,7 @@ func (c Config) setupPlugins(plugins chan pluginInfo, status map[string]bool) ([
 
 // pluginInfo is the information of a plugin.
 type pluginInfo struct {
-	factory Factory
+	factory Plugin
 	typ     string
 	name    string
 	cfg     yaml.Node

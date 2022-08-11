@@ -16,25 +16,38 @@
 package registry
 
 import (
+	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-go/pkg/naming/registry"
+	"github.com/apache/incubator-eventmesh/eventmesh-go/pkg/util"
+	"github.com/apache/incubator-eventmesh/eventmesh-go/plugin"
 	"github.com/gogf/gf/util/gconv"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
+	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"github.com/pkg/errors"
 	"net"
 	"strconv"
+	"strings"
 )
 
 const (
 	DefaultClusterName = "DEFAULT"
 	DefaultGroupName   = "DEFAULT_GROUP"
 )
+
 const (
-	defaultWeight = 100
+	defaultConnectTimeout = 5000
+	defaultWeight         = 100
 )
+
+func init() {
+	plugin.Register("nacos", &Registry{})
+}
 
 // Registry register service
 type Registry struct {
-	// Provider: public for user custom
 	Provider naming_client.INamingClient
 	cfg      *Config
 	host     string
@@ -47,6 +60,23 @@ func newRegistry(provider naming_client.INamingClient, cfg *Config) *Registry {
 		Provider: provider,
 		cfg:      cfg,
 	}
+}
+
+// Type return registry type
+func (r *Registry) Type() string {
+	return "registry"
+}
+
+// Setup setup config
+func (r *Registry) Setup(name string, configDec plugin.Decoder) error {
+	if configDec == nil {
+		return errors.New("registry config decoder empty")
+	}
+	conf := &PluginConfig{}
+	if err := configDec.Decode(conf); err != nil {
+		return err
+	}
+	return r.register(conf)
 }
 
 // Register registry service, application can invoke this method to register service to remote registry-server
@@ -64,10 +94,6 @@ func (r *Registry) Register(_ string) error {
 	if r.cfg.Weight == 0 {
 		r.cfg.Weight = defaultWeight
 	}
-	return r.register()
-}
-
-func (r *Registry) register() error {
 	var req = vo.RegisterInstanceParam{
 		Ip:          r.host,
 		Port:        uint64(r.port),
@@ -103,4 +129,43 @@ func (r *Registry) Deregister(_ string) error {
 		return errors.New("fail to Deregister instance")
 	}
 	return nil
+}
+
+func (r *Registry) register(conf *PluginConfig) error {
+	provider, err := r.newProvider(conf)
+	if err != nil {
+		return err
+	}
+	ip, err := util.GetIP()
+	if err != nil {
+		return err
+	}
+	serverName := config.GlobalConfig().Server.Name
+	cfg := &Config{
+		ServiceName: serverName,
+		Address:     fmt.Sprintf("%s:%d", ip, config.GlobalConfig().Server.Port),
+	}
+	registry.Register(serverName, newRegistry(provider, cfg))
+	return nil
+}
+
+func (r *Registry) newProvider(cfg *PluginConfig) (naming_client.INamingClient, error) {
+	var p vo.NacosClientParam
+	var addresses []string
+	if len(cfg.AddressList) > 0 {
+		addresses = strings.Split(cfg.AddressList, ",")
+	}
+	for _, address := range addresses {
+		ip, port, err := net.SplitHostPort(address)
+		if err != nil {
+			return nil, err
+		}
+		p.ServerConfigs = append(p.ServerConfigs, constant.ServerConfig{IpAddr: ip, Port: gconv.Uint64(port)})
+	}
+	p.ClientConfig = &constant.ClientConfig{TimeoutMs: defaultConnectTimeout}
+	provider, err := clients.NewNamingClient(p)
+	if err != nil {
+		return nil, err
+	}
+	return provider, nil
 }

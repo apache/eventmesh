@@ -16,15 +16,30 @@
 package selector
 
 import (
+	"errors"
 	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-go/pkg/naming/registry"
+	"github.com/apache/incubator-eventmesh/eventmesh-go/pkg/naming/selector"
+	"github.com/apache/incubator-eventmesh/eventmesh-go/plugin"
 	nacos_registry "github.com/apache/incubator-eventmesh/eventmesh-go/plugin/naming/nacos/registry"
 	"github.com/gogf/gf/util/gconv"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
+	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"net"
 	"strconv"
+	"strings"
 )
+
+const (
+	defaultConnectTimeout = 5000
+)
+
+func init() {
+	plugin.Register("nacos", &Selector{})
+}
 
 // Selector 路由选择器
 type Selector struct {
@@ -36,6 +51,28 @@ func newSelector(client naming_client.INamingClient) *Selector {
 	return &Selector{
 		Client: client,
 	}
+}
+
+// Type return registry type
+func (s *Selector) Type() string {
+	return "selector"
+}
+
+// Setup setup config
+func (s *Selector) Setup(name string, configDec plugin.Decoder) error {
+	if configDec == nil {
+		return errors.New("selector config decoder empty")
+	}
+	conf := &PluginConfig{}
+	if err := configDec.Decode(conf); err != nil {
+		return err
+	}
+	client, err := s.newClient(conf)
+	if err != nil {
+		return err
+	}
+	selector.Register(config.GlobalConfig().Server.Name, newSelector(client))
+	return nil
 }
 
 // Select 选择服务节点
@@ -59,4 +96,25 @@ func (s *Selector) Select(serviceName string) (*registry.Instance, error) {
 		Clusters:    instance.ClusterName,
 		Metadata:    instance.Metadata,
 	}, nil
+}
+
+func (s *Selector) newClient(cfg *PluginConfig) (naming_client.INamingClient, error) {
+	var p vo.NacosClientParam
+	var addresses []string
+	if len(cfg.AddressList) > 0 {
+		addresses = strings.Split(cfg.AddressList, ",")
+	}
+	for _, address := range addresses {
+		ip, port, err := net.SplitHostPort(address)
+		if err != nil {
+			return nil, err
+		}
+		p.ServerConfigs = append(p.ServerConfigs, constant.ServerConfig{IpAddr: ip, Port: gconv.Uint64(port)})
+	}
+	p.ClientConfig = &constant.ClientConfig{TimeoutMs: defaultConnectTimeout}
+	provider, err := clients.NewNamingClient(p)
+	if err != nil {
+		return nil, err
+	}
+	return provider, nil
 }
