@@ -17,28 +17,17 @@
  * under the License.
  */
 
-package org.apache.eventmesh.runtime.admin.request;
+import Head from 'next/head';
+import type { NextPage } from 'next';
+import GrpcClientTable from '../components/client/GrpcClientTable';
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+const TCPClient: NextPage = () => (
+  <>
+    <Head>
+      <title>Client | Apache EventMesh Dashboard</title>
+    </Head>
+    <GrpcClientTable />
+  </>
+);
 
-public class DeleteClientRequest {
-    public String host;
-    public int port;
-    public String protocol;
-    public String url;
-
-    @JsonCreator
-    public DeleteClientRequest(
-            @JsonProperty("host") String host,
-            @JsonProperty("port") int port,
-            @JsonProperty("protocol") String protocol,
-            @JsonProperty("url") String url
-    ) {
-        super();
-        this.host = host;
-        this.port = port;
-        this.protocol = protocol;
-        this.url = url;
-    }
-}
+export default TCPClient;
