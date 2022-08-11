@@ -22,12 +22,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Error {
     public String message;
+    public String stackTrace;
 
     @JsonCreator
     public Error(
-            @JsonProperty("message") String message
+            @JsonProperty("message") String message,
+            @JsonProperty("stackTrace") String stackTrace
     ) {
         super();
         this.message = message;
+        this.stackTrace = stackTrace;
     }
 }

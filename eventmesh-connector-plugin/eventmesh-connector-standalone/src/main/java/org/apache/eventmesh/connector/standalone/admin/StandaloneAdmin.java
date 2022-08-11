@@ -1,12 +1,13 @@
 package org.apache.eventmesh.connector.standalone.admin;
 
 import org.apache.eventmesh.api.admin.Admin;
+import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.connector.standalone.broker.MessageQueue;
 import org.apache.eventmesh.connector.standalone.broker.StandaloneBroker;
 import org.apache.eventmesh.connector.standalone.broker.model.TopicMetadata;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,14 +51,28 @@ public class StandaloneAdmin implements Admin {
     }
 
     @Override
-    public List<String> getTopic() throws Exception {
+    public List<TopicProperties> getTopic() throws Exception {
         ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = this.standaloneBroker.getMessageContainer();
-        List<String> topicNameList = new ArrayList<>();
+        List<TopicProperties> topicList = new ArrayList<>();
         for (TopicMetadata topicMetadata : messageContainer.keySet()) {
-            topicNameList.add(topicMetadata.getTopicName());
+            MessageQueue messageQueue = messageContainer.get(topicMetadata);
+            topicList.add(new TopicProperties(
+                    topicMetadata.getTopicName(),
+                    messageQueue.getPutIndex() - messageQueue.getTakeIndex()
+            ));
         }
-        Collections.sort(topicNameList);
-        return topicNameList;
+        topicList.sort(Comparator.comparing(t -> t.name));
+        return topicList;
+    }
+
+    @Override
+    public void createTopic(String topicName) {
+        standaloneBroker.createTopicIfAbsent(topicName);
+    }
+
+    @Override
+    public void deleteTopic(String topicName) {
+        standaloneBroker.deleteTopicIfExist(topicName);
     }
 
     @Override

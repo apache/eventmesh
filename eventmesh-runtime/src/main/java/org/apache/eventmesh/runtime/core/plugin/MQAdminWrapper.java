@@ -1,7 +1,7 @@
 package org.apache.eventmesh.runtime.core.plugin;
 
-import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.admin.Admin;
+import org.apache.eventmesh.api.admin.TopicProperties;
 import org.apache.eventmesh.api.factory.ConnectorPluginFactory;
 
 import java.util.List;
@@ -9,6 +9,8 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
 
 public class MQAdminWrapper extends MQWrapper {
 
@@ -62,15 +64,23 @@ public class MQAdminWrapper extends MQWrapper {
         return meshMQAdmin;
     }
 
-    List<String> getTopic() throws Exception {
+    public List<TopicProperties> getTopic() throws Exception {
         return meshMQAdmin.getTopic();
     }
 
-    List<CloudEvent> getEvent(String topicName, int offset, int length) throws Exception {
+    public void createTopic(String topicName) throws Exception {
+        meshMQAdmin.createTopic(topicName);
+    }
+
+    public void deleteTopic(String topicName) throws Exception {
+        meshMQAdmin.deleteTopic(topicName);
+    }
+
+    public List<CloudEvent> getEvent(String topicName, int offset, int length) throws Exception {
         return meshMQAdmin.getEvent(topicName, offset, length);
     }
 
-    void publish(CloudEvent cloudEvent) throws Exception {
+    public void publish(CloudEvent cloudEvent) throws Exception {
         meshMQAdmin.publish(cloudEvent);
     }
 }
