@@ -16,8 +16,8 @@
 package main
 
 import (
-	_ "github.com/apache/incubator-eventmesh/eventmesh-go/internal/naming/registry"
 	"github.com/apache/incubator-eventmesh/eventmesh-go/log"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-go/pkg/naming/registry"
 	_ "github.com/apache/incubator-eventmesh/eventmesh-go/plugin/naming/nacos/selector"
 )
 

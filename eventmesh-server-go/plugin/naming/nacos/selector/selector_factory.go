@@ -18,7 +18,7 @@ package selector
 import (
 	"errors"
 	"github.com/apache/incubator-eventmesh/eventmesh-go/config"
-	"github.com/apache/incubator-eventmesh/eventmesh-go/internal/naming/selector"
+	"github.com/apache/incubator-eventmesh/eventmesh-go/pkg/naming/selector"
 	"github.com/apache/incubator-eventmesh/eventmesh-go/plugin"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"

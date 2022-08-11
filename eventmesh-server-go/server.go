@@ -19,7 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-go/config"
-	"github.com/apache/incubator-eventmesh/eventmesh-go/internal/naming/registry"
+	"github.com/apache/incubator-eventmesh/eventmesh-go/pkg/naming/registry"
 	"google.golang.org/grpc"
 	"net"
 )
