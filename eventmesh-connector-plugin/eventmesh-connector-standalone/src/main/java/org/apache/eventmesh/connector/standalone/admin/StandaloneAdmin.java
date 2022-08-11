@@ -80,8 +80,8 @@ public class StandaloneAdmin implements Admin {
         if (!this.standaloneBroker.checkTopicExist(topicName)) {
             throw new Exception("The topic name doesn't exist in the message queue");
         }
-        ConcurrentHashMap<TopicMetadata, AtomicLong> offsetMap = this.standaloneBroker.getOffsetMap();
-        long topicOffset = offsetMap.get(new TopicMetadata(topicName)).get();
+        ConcurrentHashMap<TopicMetadata, MessageQueue> messageContainer = this.standaloneBroker.getMessageContainer();
+        long topicOffset = messageContainer.get(new TopicMetadata(topicName)).getTakeIndex();
 
         List<CloudEvent> messageList = new ArrayList<>();
         for (int index = 0; index < length; index++) {
@@ -97,5 +97,6 @@ public class StandaloneAdmin implements Admin {
 
     @Override
     public void publish(CloudEvent cloudEvent) throws Exception {
+        this.standaloneBroker.putMessage(cloudEvent.getSubject(), cloudEvent);
     }
 }
