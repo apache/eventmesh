@@ -19,13 +19,20 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,9 +42,9 @@ import java.net.URI;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 
 import com.sun.net.httpserver.HttpExchange;
-import org.mockito.MockedStatic;
 
 public class QueryRecommendEventMeshHandlerTest {
 
@@ -82,7 +89,7 @@ public class QueryRecommendEventMeshHandlerTest {
         doThrow(new IOException()).when(outputStream).close();
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
-                (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn("result"))) {
+            (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn("result"))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
             Assert.assertNotEquals("result", response);

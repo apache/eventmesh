@@ -19,13 +19,22 @@ package org.apache.eventmesh.runtime.util;
 
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.when;
 
-import java.io.*;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.MockedConstruction;
