@@ -19,7 +19,7 @@ import (
 	"errors"
 	"path/filepath"
 
-	"github.com/apache/incubator-eventmesh/eventmesh-go/plugin"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 )
 
 var (

@@ -21,7 +21,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/apache/incubator-eventmesh/eventmesh-go/log/rollwriter"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log/rollwriter"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
