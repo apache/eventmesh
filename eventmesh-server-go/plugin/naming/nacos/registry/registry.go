@@ -17,10 +17,10 @@ package registry
 
 import (
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-go/config"
-	"github.com/apache/incubator-eventmesh/eventmesh-go/pkg/naming/registry"
-	"github.com/apache/incubator-eventmesh/eventmesh-go/pkg/util"
-	"github.com/apache/incubator-eventmesh/eventmesh-go/plugin"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"

@@ -16,9 +16,9 @@
 package main
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-go/log"
-	_ "github.com/apache/incubator-eventmesh/eventmesh-go/pkg/naming/registry"
-	_ "github.com/apache/incubator-eventmesh/eventmesh-go/plugin/naming/nacos/selector"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/naming/nacos/selector"
 )
 
 func main() {

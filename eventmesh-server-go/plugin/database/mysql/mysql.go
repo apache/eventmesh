@@ -16,7 +16,7 @@
 package mysql
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-go/plugin"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 )
 
 const (

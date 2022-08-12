@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/apache/incubator-eventmesh/eventmesh-go/plugin"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
