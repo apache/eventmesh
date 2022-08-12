@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.runtime.util;
 
-import io.cloudevents.SpecVersion;
-import io.cloudevents.core.v03.CloudEventV03;
-import io.cloudevents.core.v1.CloudEventV1;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
@@ -44,7 +41,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.v03.CloudEventV03;
+import io.cloudevents.core.v1.CloudEventV1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -164,7 +164,7 @@ public class EventMeshUtilTest {
     @Test
     public void testPrintState() {
         ScheduledExecutorService serviceRebalanceScheduler = ThreadPoolFactory
-                .createScheduledExecutor(5, new EventMeshThreadFactoryImpl("proxy-rebalance-sch", true));
+            .createScheduledExecutor(5, new EventMeshThreadFactoryImpl("proxy-rebalance-sch", true));
         EventMeshUtil.printState((ThreadPoolExecutor) serviceRebalanceScheduler);
     }
 

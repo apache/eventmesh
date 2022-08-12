@@ -22,9 +22,10 @@ package org.apache.eventmesh.runtime.admin.handler;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
@@ -32,6 +33,8 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 import org.apache.eventmesh.runtime.util.NetUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -65,7 +68,7 @@ public class RedirectClientByPathHandlerTest {
     @Test
     public void testHandle() throws IOException {
         OutputStream outputStream = new ByteArrayOutputStream();
-        HttpExchange mockExchange = mock(HttpExchange.class);
+        final HttpExchange mockExchange = mock(HttpExchange.class);
 
         ClientSessionGroupMapping mapping = mock(ClientSessionGroupMapping.class);
         when(eventMeshTCPServer.getClientSessionGroupMapping()).thenReturn(mapping);
@@ -117,7 +120,7 @@ public class RedirectClientByPathHandlerTest {
             when(mockExchange.getResponseBody()).thenReturn(outputStream);
             try (MockedStatic<EventMeshTcp2Client> clientMockedStatic = Mockito.mockStatic(EventMeshTcp2Client.class)) {
                 clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
-                        any())).thenThrow(new RuntimeException());
+                    any())).thenThrow(new RuntimeException());
                 redirectClientByPathHandler.handle(mockExchange);
                 String response = outputStream.toString();
                 Assert.assertTrue(response.startsWith("redirectClientByPath fail!"));
