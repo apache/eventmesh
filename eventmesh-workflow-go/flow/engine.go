@@ -2,7 +2,7 @@ package flow
 
 import (
 	"context"
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"

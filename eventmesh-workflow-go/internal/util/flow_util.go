@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 )
 
 // PanicBufLen is len of buffer used for stack trace logging
