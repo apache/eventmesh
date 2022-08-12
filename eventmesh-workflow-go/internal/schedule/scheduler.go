@@ -2,12 +2,12 @@ package schedule
 
 import (
 	"context"
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/task"
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/log"
 	"time"
 )
 

@@ -4,17 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api/proto"
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/naming/registry"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/schedule"
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/plugin"
 	"github.com/gogf/gf/util/gconv"
 	"google.golang.org/grpc"
 	"net"
@@ -70,6 +70,7 @@ func (s *Server) Run() error {
 }
 
 func (s *Server) SetupConfig() error {
+	config.ServerConfigPath = "./configs/workflow.yaml"
 	cfg, err := config.LoadConfig(config.ServerConfigPath)
 	if err != nil {
 		return err
