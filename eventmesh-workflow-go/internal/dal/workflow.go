@@ -5,9 +5,9 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/util"
 	"time"
 
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/third_party/swf"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/google/uuid"

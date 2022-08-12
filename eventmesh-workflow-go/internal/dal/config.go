@@ -9,7 +9,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	pmysql "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/plugin/database/mysql"
+	pmysql "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/database/mysql"
 )
 
 var workflowDB *gorm.DB

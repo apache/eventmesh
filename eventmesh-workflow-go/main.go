@@ -1,13 +1,13 @@
 package main
 
 import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/database/mysql"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/naming/nacos/selector"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api/proto"
-	_ "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/naming/registry"
 	_ "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/log"
-	_ "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/plugin/database/mysql"
-	_ "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/plugin/naming/nacos/selector"
 )
 
 func main() {
