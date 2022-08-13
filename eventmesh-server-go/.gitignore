@@ -23,6 +23,7 @@ node_modules
 .DS_Store
 .run
 /**/bin
+eventmesh-go
 
 h2/db.mv.db
 
