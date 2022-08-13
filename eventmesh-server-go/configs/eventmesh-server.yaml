@@ -13,15 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-.PHONY: build
-build:
-	mkdir -p bin/ && go build -o ./bin ./cmd/...
-
-.PHONY: test
-test:
-	go test ./...
-
-coverage:
-	 go test -covermode=set ./...
+server:
+  port: 11010
+  name: "eventmesh-server"
+plugins:
+  registry:
+    nacos:
+      address_list: "9.135.90.236:8848"
+  selector:
+    nacos:
+      address_list: "9.135.90.236:8848"
+  log:
+    default:                                      
+      - writer: console                           
+        level: debug                              
+      - writer: file                              
+        level: info                               
+        writer_config:
+          filename: ./eventmesh.log
+          max_size: 10                            
+          max_backups: 10                         
+          max_age: 7                              
+          compress:  false
