@@ -118,7 +118,12 @@ public class EventMeshServer {
             }
         }
 
-        EventMeshAdminController clientManageController = new EventMeshAdminController(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer);
+        EventMeshAdminController clientManageController = new EventMeshAdminController(
+            eventMeshTCPServer,
+            eventMeshHTTPServer,
+            eventMeshGrpcServer,
+            registry
+        );
         clientManageController.start();
 
         String eventStore = System
