@@ -23,11 +23,14 @@ import org.apache.eventmesh.runtime.admin.handler.EventHandler;
 import org.apache.eventmesh.runtime.admin.handler.GrpcClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.HTTPClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.MetricsHandler;
+import org.apache.eventmesh.runtime.admin.handler.RegistryHandler;
 import org.apache.eventmesh.runtime.admin.handler.TCPClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.TopicHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.registry.Registry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,15 +44,18 @@ public class EventMeshAdminController {
     private final EventMeshTCPServer eventMeshTCPServer;
     private final EventMeshHTTPServer eventMeshHTTPServer;
     private final EventMeshGrpcServer eventMeshGrpcServer;
+    private final Registry eventMeshRegistry;
 
     public EventMeshAdminController(
             EventMeshTCPServer eventMeshTCPServer,
             EventMeshHTTPServer eventMeshHTTPServer,
-            EventMeshGrpcServer eventMeshGrpcServer
+            EventMeshGrpcServer eventMeshGrpcServer,
+            Registry eventMeshRegistry
     ) {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.eventMeshGrpcServer = eventMeshGrpcServer;
+        this.eventMeshRegistry = eventMeshRegistry;
     }
 
     public void start() throws IOException {
@@ -66,6 +72,7 @@ public class EventMeshAdminController {
         server.createContext("/metrics", new MetricsHandler(eventMeshHTTPServer, eventMeshTCPServer));
         server.createContext("/topic", new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType));
         server.createContext("/event", new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType));
+        server.createContext("/registry", new RegistryHandler(eventMeshRegistry));
         server.start();
         logger.info("ClientManageController start success, port:{}", port);
     }
