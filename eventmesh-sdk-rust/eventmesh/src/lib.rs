@@ -1,5 +1,6 @@
 pub mod message;
 mod producer;
-mod http;
+pub mod http;
 mod constants;
+mod Message;
 

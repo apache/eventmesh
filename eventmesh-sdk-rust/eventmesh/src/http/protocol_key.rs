@@ -13,5 +13,5 @@ const_str!(CLIENT_IDC, "idc");
 const_str!(CLIENT_IP, "ip");
 const_str!(CLIENT_PID, "pid");
 const_str!(CLIENT_SYS, "sys");
-const_str!(CLIENT_USERNAME, "usrname");
+const_str!(CLIENT_USERNAME, "username");
 const_str!(CLIENT_PASSWD, "passwd");

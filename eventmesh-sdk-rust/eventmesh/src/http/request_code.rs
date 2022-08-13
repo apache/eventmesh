@@ -33,27 +33,27 @@ impl Display for RequestCode {
             RequestCode::ReplyMessage => write!(f, "REPLY MESSAGE"),
             RequestCode::Unsubscribe => write!(f, "UNSUBSCRIBE"),
             RequestCode::AdminMetrics => write!(f, "ADMIN METRICS"),
-            RequestCode::AdminShutdown => write!(f,"ADMIN SHUTDOWN"),
+            RequestCode::AdminShutdown => write!(f, "ADMIN SHUTDOWN"),
         }
     }
 }
-impl Into<i32> for RequestCode {
-    fn into(self) -> i32 {
+impl RequestCode {
+    pub(crate) fn to_code(&self) -> &'static str {
         match self {
-            RequestCode::MsgBatchSend => 102,
-            RequestCode::MsgBatchSendV2 => 107,
-            RequestCode::MsgSendSync => 101,
-            RequestCode::MsgSendAsync => 104,
-            RequestCode::HttpPushClientAsync => 105,
-            RequestCode::HttpPushClientSync => 106,
-            RequestCode::Register => 201,
-            RequestCode::Unregister => 202,
-            RequestCode::Heartbeat => 203,
-            RequestCode::Subscribe => 206,
-            RequestCode::ReplyMessage => 301,
-            RequestCode::Unsubscribe => 207,
-            RequestCode::AdminMetrics => 603,
-            RequestCode::AdminShutdown => 601,
+            RequestCode::MsgBatchSend => "102",
+            RequestCode::MsgBatchSendV2 => "107",
+            RequestCode::MsgSendSync => "101",
+            RequestCode::MsgSendAsync => "104",
+            RequestCode::HttpPushClientAsync => "105",
+            RequestCode::HttpPushClientSync => "106",
+            RequestCode::Register => "201",
+            RequestCode::Unregister => "202",
+            RequestCode::Heartbeat => "203",
+            RequestCode::Subscribe => "206",
+            RequestCode::ReplyMessage => "301",
+            RequestCode::Unsubscribe => "207",
+            RequestCode::AdminMetrics => "603",
+            RequestCode::AdminShutdown => "601",
         }
     }
 }
