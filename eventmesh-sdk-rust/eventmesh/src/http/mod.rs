@@ -1,6 +1,5 @@
 pub mod config;
 pub mod producer;
-mod protocol_const;
 mod protocol_key;
 mod request_code;
 mod protocol_version {
