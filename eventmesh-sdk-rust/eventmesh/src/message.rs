@@ -1,10 +1,10 @@
-use serde::Serialize;
-use std::time::SystemTime;
-#[derive(Debug, Clone, Serialize)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EventMeshMessage {
-    #[serde(rename="bizseqno")]
+    #[serde(rename = "bizseqno")]
     pub biz_seq_no: String,
-    #[serde(rename="uniqueid")]
+    #[serde(rename = "uniqueid")]
     pub unique_id: String,
     pub topic: String,
     pub content: String,
@@ -28,4 +28,11 @@ impl EventMeshMessage {
             //     .unwrap(),
         }
     }
+}
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all(deserialize = "camelCase"))]
+pub struct EventMeshMessageResp {
+    pub ret_code: i32,
+    pub ret_msg: String,
+    pub res_time: u64,
 }

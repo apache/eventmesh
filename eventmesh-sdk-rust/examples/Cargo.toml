@@ -12,5 +12,14 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 [[example]]
-name = "http-producer"
-path = "http-producer.rs"
+name = "http-producer-publish"
+path = "http-producer-publish.rs"
+
+[[example]]
+name = "http-producer-request"
+path = "http-producer-request.rs"
+
+
+[[example]]
+name = "grpc-producer-publish"
+path = "grpc-producer-publish.rs"
