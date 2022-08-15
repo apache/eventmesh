@@ -13,25 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module github.com/apache/incubator-eventmesh/eventmesh-server-go
+package option
 
-go 1.16
+// TLSOption option to tls
+type TLSOption struct {
+	// EnableInsecure enable the insecure request
+	EnableInsecure bool `yaml:"enable-secure" toml:"enable-secure"`
 
-require (
-	github.com/gogf/gf v1.16.9
-	github.com/hashicorp/go-multierror v1.1.1
-	github.com/lestrrat-go/strftime v1.0.6
-	github.com/nacos-group/nacos-sdk-go/v2 v2.0.3
-	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.5.0
-	go.uber.org/zap v1.22.0
-	google.golang.org/grpc v1.36.1
-	gopkg.in/yaml.v3 v3.0.1
-)
+	// CA no client authentication is used,
+	// and the file CA is used to verify the server certificate
+	CA string `yaml:"ca" toml:"ca"`
 
-require (
-	github.com/BurntSushi/toml v1.2.0 // indirect
-	github.com/gin-contrib/pprof v1.4.0
-	github.com/gin-gonic/gin v1.8.1
-	github.com/unrolled/secure v1.12.0
-)
+	//  Certfile client authentication is used with the specified cert/key pair.
+	// The server certificate is verified with the system CAs
+	Certfile string `yaml:"certfile" toml:"certfile"`
+
+	//  client authentication is used with the specified cert/key pair.
+	// The server certificate is verified using the specified CA file
+	Keyfile string `yaml:"keyfile" toml:"keyfile"`
+}
