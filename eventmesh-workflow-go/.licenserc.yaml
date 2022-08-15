@@ -40,5 +40,6 @@ header:
     - 'DISCLAIMER-WIP'
     - 'gradlew'
     - 'gradlew.bat'
+    - '**/*.pb.go'
 
   comment: on-failure
