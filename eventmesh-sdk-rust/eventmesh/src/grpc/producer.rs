@@ -18,21 +18,8 @@ impl EventMeshMessageProducer {
         let client = PublisherServiceClient::connect(config.eventmesh_addr.clone()).await?;
         Ok(EventMeshMessageProducer {
             client,
-            producer_group: config.producergroup.clone(),
-            default_header: RequestHeader {
-                env: config.env.to_string(),
-                region: String::from(""),
-                idc: config.idc.to_string(),
-                ip: config.ip.to_string(),
-                pid: config.pid.to_string(),
-                sys: config.sys.to_string(),
-                username: config.user_name.to_string(),
-                password: config.password.to_string(),
-                language: String::from("RUST"),
-                protocol_type: String::from(constants::EM_MESSAGE_PROTOCOL),
-                protocol_version: String::from("1.0"),
-                protocol_desc: String::from("grpc"),
-            },
+            producer_group: config.producer_group.clone(),
+            default_header: config.build_header(),
         })
     }
     pub async fn publish(&mut self, message: EventMeshMessage) -> Result<EventMeshMessageResp> {
