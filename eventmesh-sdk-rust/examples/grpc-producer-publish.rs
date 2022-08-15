@@ -21,7 +21,8 @@ async fn main() -> Result<()> {
         sys: "1234".to_string(),
         user_name: "eventmesh".to_string(),
         password: "pass".to_string(),
-        producergroup: "EventMeshTest-producerGroup".to_string(),
+        producer_group: "EventMeshTest-producerGroup".to_string(),
+        consumer_group: "EventMeshTest-consumerGroup".to_string()
     }).await?;
     let resp = producer
         .publish(EventMeshMessage::new(

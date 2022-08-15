@@ -4,3 +4,4 @@ pub mod eventmesh_grpc {
 
 pub mod config;
 pub mod producer;
+pub mod consumer;
