@@ -13,20 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package config
 
-import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
-	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
-	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/naming/nacos/selector"
-)
-
-func main() {
-	s, err := NewServer()
-	if err != nil {
-		log.Fatal("new eventmesh server fail: " + err.Error())
-	}
-	if err = s.Run(); err != nil {
-		log.Fatal("run server fail: " + err.Error())
-	}
+// PProfOption option to start the prof
+type PProfOption struct {
+	// Port pprof server listen on
+	Port string `yaml:"port" toml:"port"`
 }

@@ -13,10 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package option
+package config
 
-// HTTPOption option for http/https server
-type HTTPOption struct {
+// GRPCOption configuratin for grpc server
+type GRPCOption struct {
+	Port string `yaml:"port" toml:"port"`
+
 	// TLSOption process with the tls configuration
 	*TLSOption `yaml:"tls" toml:"tls"`
 

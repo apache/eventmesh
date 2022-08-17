@@ -13,4 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package runtime
+package config
+
+// HTTPOption option for http/https server
+type HTTPOption struct {
+	// Port http server listen
+	Port string `yaml:"port" toml:"port"`
+
+	// TLSOption process with the tls configuration
+	*TLSOption `yaml:"tls" toml:"tls"`
+
+	// PProfOption if pprof is enabled, server
+	// will start on given port, and you can check
+	// on http://ip:port/pprof/debug
+	*PProfOption `yaml:"pprof" toml:"pprof"`
+}

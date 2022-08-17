@@ -13,22 +13,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package option
+package emserver
 
-// TLSOption option to tls
-type TLSOption struct {
-	// EnableInsecure enable the insecure request
-	EnableInsecure bool `yaml:"enable-secure" toml:"enable-secure"`
+import (
+	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/panjf2000/gnet/v2"
+)
 
-	// CA no client authentication is used,
-	// and the file CA is used to verify the server certificate
-	CA string `yaml:"ca" toml:"ca"`
+type TCPServer struct {
+	tcpOption *config.TCPOption
+	eng       gnet.Engine
+	gnet.BuiltinEventEngine
+}
 
-	//  Certfile client authentication is used with the specified cert/key pair.
-	// The server certificate is verified with the system CAs
-	Certfile string `yaml:"certfile" toml:"certfile"`
+func NewTCPServer(opt *config.TCPOption) (GracefulServer, error) {
+	return &TCPServer{
+		tcpOption: opt,
+	}, nil
+}
 
-	//  client authentication is used with the specified cert/key pair.
-	// The server certificate is verified using the specified CA file
-	Keyfile string `yaml:"keyfile" toml:"keyfile"`
+func (t *TCPServer) Serve() error {
+	return gnet.Run(t, fmt.Sprintf("tcp://:%d", t.tcpOption.Port), gnet.WithMulticore(t.tcpOption.Multicore))
+}
+
+func (t *TCPServer) Stop() error {
+	return nil
+}
+
+func (t *TCPServer) OnBoot(eng gnet.Engine) gnet.Action {
+	return gnet.None
+}
+
+func (t *TCPServer) OnTraffic(c gnet.Conn) gnet.Action {
+	return gnet.None
 }

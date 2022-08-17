@@ -16,28 +16,26 @@
 package emserver
 
 import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/unrolled/secure"
 
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/runtime/option"
 )
 
 // HTTPServer http server to handle eventmesh message
 // from client send by http request
 type HTTPServer struct {
-	*Server
-
 	// httpOption option for current http server
-	httpOption *option.HTTPOption
+	httpOption *config.HTTPOption
 
 	// router gin router to dispatch the http request
 	router *gin.Engine
 }
 
 // NewHTTPServer create new http server by Gin
-func NewHTTPServer(httpOption *option.HTTPOption) (GracefulServer, error) {
+func NewHTTPServer(httpOption *config.HTTPOption) (GracefulServer, error) {
 	r := gin.New()
 	if httpOption.PProfOption != nil {
 		log.Infof("enable pprof on http server, listen port:%v", httpOption.Port)
@@ -48,9 +46,6 @@ func NewHTTPServer(httpOption *option.HTTPOption) (GracefulServer, error) {
 	}
 
 	return &HTTPServer{
-		Server: &Server{
-			Port: httpOption.Port,
-		},
 		router:     r,
 		httpOption: httpOption,
 	}, nil
@@ -58,13 +53,13 @@ func NewHTTPServer(httpOption *option.HTTPOption) (GracefulServer, error) {
 
 func (h *HTTPServer) Serve() error {
 	if h.httpOption.TLSOption.EnableInsecure {
-		if err := h.router.RunTLS(h.Port,
+		if err := h.router.RunTLS(h.httpOption.Port,
 			h.httpOption.TLSOption.Certfile,
 			h.httpOption.TLSOption.Keyfile); err != nil {
 			return err
 		}
 	}
-	return h.router.Run(h.Port)
+	return h.router.Run(h.httpOption.Port)
 }
 
 func (h *HTTPServer) Stop() error {
