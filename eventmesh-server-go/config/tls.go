@@ -13,10 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package option
+package config
 
-// PProfOption option to start the prof
-type PProfOption struct {
-	// Port pprof server listen on
-	Port string `yaml:"port" toml:"port"`
+// TLSOption option to tls
+type TLSOption struct {
+	// EnableInsecure enable the insecure request
+	EnableInsecure bool `yaml:"enable-secure" toml:"enable-secure"`
+
+	// CA no client authentication is used,
+	// and the file CA is used to verify the server certificate
+	CA string `yaml:"ca" toml:"ca"`
+
+	//  Certfile client authentication is used with the specified cert/key pair.
+	// The server certificate is verified with the system CAs
+	Certfile string `yaml:"certfile" toml:"certfile"`
+
+	//  client authentication is used with the specified cert/key pair.
+	// The server certificate is verified using the specified CA file
+	Keyfile string `yaml:"keyfile" toml:"keyfile"`
 }

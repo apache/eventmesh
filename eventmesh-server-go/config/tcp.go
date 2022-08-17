@@ -13,27 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-module github.com/apache/incubator-eventmesh/eventmesh-server-go
+package config
 
-go 1.16
+// TCPOption option for eventmesh tcp server
+type TCPOption struct {
+	// Port http server listen
+	Port string `yaml:"port" toml:"port"`
 
-require (
-	github.com/gogf/gf v1.16.9
-	github.com/hashicorp/go-multierror v1.1.1
-	github.com/lestrrat-go/strftime v1.0.6
-	github.com/nacos-group/nacos-sdk-go/v2 v2.0.3
-	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.5.0
-	go.uber.org/zap v1.22.0
-	google.golang.org/grpc v1.36.1
-	gopkg.in/yaml.v3 v3.0.1
-)
+	// Multicore indicates whether the engine will
+	// be effectively created with multi-cores
+	Multicore bool `yaml:"multicore" toml:"multicore"`
 
-require (
-	github.com/BurntSushi/toml v1.2.0 // indirect
-	github.com/gin-contrib/pprof v1.4.0
-	github.com/gin-gonic/gin v1.8.1
-	github.com/panjf2000/gnet/v2 v2.1.1
-	github.com/unrolled/secure v1.12.0
-	go.uber.org/fx v1.18.1
-)
+	// TLSOption process with the tls configuration
+	*TLSOption `yaml:"tls" toml:"tls"`
+
+	// PProfOption if pprof is enabled, server
+	// will start on given port, and you can check
+	// on http://ip:port/pprof/debug
+	*PProfOption `yaml:"pprof" toml:"pprof"`
+}

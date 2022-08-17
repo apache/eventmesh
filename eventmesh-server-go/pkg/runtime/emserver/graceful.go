@@ -15,23 +15,6 @@
 
 package emserver
 
-import (
-	"time"
-)
-
-// Server represents an instance of a server, which serves
-// at a particular address (host and port). A
-// server is capable of serving numerous zones on
-// the same address and the listener may be stopped for
-// graceful termination (POSIX only).
-type Server struct {
-	// Port we listen on
-	Port string
-
-	// the maximum duration of a graceful shutdown
-	graceTimeout time.Duration
-}
-
 // GracefulServer is a Server and Stopper, the stopping
 // of which is graceful (whatever that means for the kind
 // of server being implemented). It must be able to return
