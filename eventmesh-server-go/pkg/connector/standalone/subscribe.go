@@ -14,12 +14,3 @@
 // limitations under the License.
 
 package standalone
-
-import (
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-)
-
-// EventListener listener to consume the cloudevents message
-type EventListener interface {
-	Consume(*cloudevents.Event)
-}
