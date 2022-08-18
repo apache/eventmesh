@@ -28,3 +28,7 @@ path = "grpc-producer-publish.rs"
 [[example]]
 name = "grpc-consumer"
 path = "grpc-consumer.rs"
+
+[[example]]
+name = "grpc-consumer-stream"
+path = "grpc-consumer-stream.rs"
