@@ -25,8 +25,8 @@ type TopicMetadata struct {
 }
 
 type MessageEntity struct {
-	TopicMetadata *TopicMetadata    `json:"topicMetadata"`
-	Message       cloudevents.Event `json:"message"`
-	Offset        int64             `json:"offset"`
-	createTime    time.Time         `json:"createTime"`
+	TopicMetadata *TopicMetadata     `json:"topicMetadata"`
+	Message       *cloudevents.Event `json:"message"`
+	Offset        int64              `json:"offset"`
+	CreateTime    time.Time          `json:"createTime"`
 }

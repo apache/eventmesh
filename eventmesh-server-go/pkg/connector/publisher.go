@@ -49,13 +49,13 @@ type Producer interface {
 
 	Initialize(*Properties) error
 
-	Publish(cloudevents.Event, SendCallback) error
+	Publish(*cloudevents.Event, SendCallback) error
 
-	SendOneway(cloudevents.Event) error
+	SendOneway(*cloudevents.Event) error
 
-	Request(cloudevents.Event, RequestReplyCallback, time.Duration) error
+	Request(*cloudevents.Event, RequestReplyCallback, time.Duration) error
 
-	Reply(cloudevents.Event, SendCallback) error
+	Reply(*cloudevents.Event, SendCallback) error
 
 	CheckTopicExist(string) bool
 

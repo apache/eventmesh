@@ -25,7 +25,7 @@ type Consumer interface {
 
 	Initialize(*Properties) error
 
-	UpdateOffset([]cloudevents.Event)
+	UpdateOffset([]*cloudevents.Event)
 
 	Subscribe(string)
 
