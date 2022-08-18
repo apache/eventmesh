@@ -1,10 +1,15 @@
-use std::{collections::HashMap, time::Duration, sync::Arc};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
+use futures::{stream, StreamExt};
+use futures_util::Stream;
 use tokio::{
     sync::{oneshot, Mutex},
     time::{interval, sleep},
 };
-use tonic::transport::{channel, Channel, Endpoint};
+use tonic::{
+    transport::{channel, Channel, Endpoint},
+    Request,
+};
 
 use super::{
     config::EventMeshGrpcConfig,
@@ -13,8 +18,10 @@ use super::{
         consumer_service_server::ConsumerServiceServer,
         heartbeat::{ClientType, HeartbeatItem},
         heartbeat_service_client::HeartbeatServiceClient,
-        Heartbeat, RequestHeader, subscription::SubscriptionItem,
-    }, SDK_STREAM_URL,
+        subscription::SubscriptionItem,
+        Heartbeat, RequestHeader, Response, Subscription,
+    },
+    SDK_STREAM_URL,
 };
 use anyhow::Result;
 #[derive(Debug)]
@@ -35,7 +42,8 @@ impl HeartbeatInterval {
                 // not set in java
                 producer_group: String::from(""),
                 consumer_group: self.consumer_group.to_string(),
-                heartbeat_items: map.iter()
+                heartbeat_items: map
+                    .iter()
                     .map(|(key, value)| HeartbeatItem {
                         topic: key.to_string(),
                         url: value.to_string(),
@@ -94,17 +102,19 @@ pub struct EventMeshMessageConsumer {
     subscription_map: Arc<Mutex<HashMap<String, String>>>,
 }
 impl EventMeshMessageConsumer {
-    pub async fn new(
-        config: &EventMeshGrpcConfig,
-    ) -> Result<Self> {
+    pub async fn new(config: &EventMeshGrpcConfig) -> Result<Self> {
         let channel = Endpoint::new(config.eventmesh_addr.clone())?
             .connect()
             .await?;
         let client = ConsumerServiceClient::new(channel.clone());
         let header = config.build_header();
         let subscription_map = Arc::new(Mutex::new(HashMap::new()));
-        let heartbeat =
-            HeartbeatController::new(subscription_map.clone(), channel, &header, &config.consumer_group);
+        let heartbeat = HeartbeatController::new(
+            subscription_map.clone(),
+            channel,
+            &header,
+            &config.consumer_group,
+        );
         Ok(EventMeshMessageConsumer {
             client,
             heartbeat,
@@ -113,10 +123,86 @@ impl EventMeshMessageConsumer {
             subscription_map,
         })
     }
-    pub async fn subscribe(&mut self, mut subscription_items: Vec<SubscriptionItem>){
+    pub async fn subscribe(
+        &mut self,
+        subscription_items: &Vec<SubscriptionItem>,
+        url: &str,
+    ) -> Result<Response> {
+        self.add_subscription(subscription_items, url).await;
+        let resp = self
+            .client
+            .subscribe(Subscription {
+                header: Some(self.default_header.clone()),
+                consumer_group: self.consumer_group.clone(),
+                subscription_items: subscription_items.clone(),
+                url: url.to_string(),
+                reply: None,
+            })
+            .await?;
+        Ok(resp.into_inner())
+    }
+    pub async fn unsubscribe(
+        &mut self,
+        subscription_items: &Vec<SubscriptionItem>,
+        url: &str,
+    ) -> Result<Response> {
+        self.remove_subscription(subscription_items).await;
+        let resp = self
+            .client
+            .unsubscribe(Subscription {
+                header: Some(self.default_header.clone()),
+                consumer_group: self.consumer_group.clone(),
+                subscription_items: subscription_items.clone(),
+                url: url.to_string(),
+                reply: None,
+            })
+            .await?;
+        Ok(resp.into_inner())
+    }
+    // pub async fn create_stream(&mut self) {
+
+    // }
+    // async fn subscribe<T>(&mut self, subscription_items_stream: &mut T)
+    // where
+    //     T: Stream<Item = Vec<SubscriptionItem>> + std::marker::Unpin,
+    // {
+    //     let subscription_stream = subscription_items_stream.then(|subscription_items| {
+    //         let map = self.subscription_map.clone();
+    //         let header = self.default_header.clone();
+    //         let consumer_group=self.consumer_group.clone();
+
+    //         async move {
+    //             let mut map = map.lock().await;
+    //             subscription_items.iter().for_each(|item| {
+    //                 map.insert(item.topic.to_string(), SDK_STREAM_URL.to_string());
+    //             });
+    //             Subscription{
+    //                 header: Some(header),
+    //                 consumer_group,
+    //                 subscription_items,
+    //                 url: SDK_STREAM_URL.to_string(),
+    //                 reply: None,
+    //             }
+    //         }
+    //     });
+    //     self.client.subscribe_stream(Request::new(tonic::codec::Streaming::from(subscription_stream)));
+    //     while let Some(subscription_items) = subscription_items_stream.next().await {
+    //         self.store_subscribes(&subscription_items, SDK_STREAM_URL).await;
+    //     }
+    //     self.store_subscribes(&subscription_items, SDK_STREAM_URL)
+    //         .await;
+    //     todo!()
+    // }
+    async fn add_subscription(&mut self, subscription_items: &Vec<SubscriptionItem>, url: &str) {
         let mut map = self.subscription_map.lock().await;
-        subscription_items.drain(..).for_each(|item|{
-            map.insert(item.topic, SDK_STREAM_URL.to_string());
-        })
+        subscription_items.iter().for_each(|item| {
+            map.insert(item.topic.to_string(), url.to_string());
+        });
+    }
+    async fn remove_subscription(&self, subscription_items: &Vec<SubscriptionItem>) {
+        let mut map = self.subscription_map.lock().await;
+        subscription_items.iter().for_each(|item| {
+            map.remove(&item.topic);
+        });
     }
 }
