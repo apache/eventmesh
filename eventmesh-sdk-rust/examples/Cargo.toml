@@ -10,6 +10,7 @@ tokio = { version = "1.0", features = ["full"] }
 anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+axum = "0.5.15"
 
 [[example]]
 name = "http-producer-publish"
@@ -23,3 +24,7 @@ path = "http-producer-request.rs"
 [[example]]
 name = "grpc-producer-publish"
 path = "grpc-producer-publish.rs"
+
+[[example]]
+name = "grpc-consumer"
+path = "grpc-consumer.rs"

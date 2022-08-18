@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
         .publish(EventMeshMessage::new(
             "123456789012345678901234567891",
             "123456789012345678901234567892",
-            "TEST-TOPIC-HTTP-ASYNC",
+            "TEST-TOPIC-GRPC-BROADCAST",
             &serde_json::to_string(&Content {
                 content: "testPublishMessage".to_string(),
             })?,
