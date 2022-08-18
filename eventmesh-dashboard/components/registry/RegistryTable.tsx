@@ -44,49 +44,9 @@ interface EventMeshInstance {
   metadata: string
 }
 
-interface TCPClientProps {
-  host: string,
-  port: number,
-  group: string,
-}
-
-interface RemoveTCPClientRequest {
-  host: string,
-  port: number,
-}
-
 const EventMeshInstanceRow = ({
   eventMeshClusterName, eventMeshName, endpoint, lastUpdateTimestamp, metadata,
-}: EventMeshInstance) => {
-  const { state } = useContext(AppContext);
-
-  const toast = useToast();
-  const [loading, setLoading] = useState(false);
-  
-  const onRemoveClick = async () => {
-    //TODO: Unregister event mesh instance
-    // try {
-    //   setLoading(true);
-    //   await axios.delete<RemoveTCPClientRequest>(`${state.endpoint}/client/tcp`, {
-    //     data: {
-    //       host,
-    //       port,
-    //     },
-    //   });
-    //   setLoading(false);
-    // } catch (error) {
-    //   if (axios.isAxiosError(error)) {
-    //     toast({
-    //       title: 'Failed to remove the TCP Client',
-    //       description: error.message,
-    //       status: 'error',
-    //       duration: 3000,
-    //       isClosable: true,
-    //     });
-    //   }
-    // }
-  };
-
+}: EventMeshInstance) => {  
   return (
     <Tr>
       <Td>{eventMeshClusterName}</Td>
@@ -94,17 +54,6 @@ const EventMeshInstanceRow = ({
       <Td>{endpoint}</Td>
       <Td>{lastUpdateTimestamp}</Td>
       <Td>{metadata}</Td>
-      <Td>
-        <HStack>
-          <Button
-            colorScheme="red"
-            isLoading={loading}
-            onClick={onRemoveClick}
-          >
-            Remove
-          </Button>
-        </HStack>
-      </Td>
     </Tr>
   );
 };
@@ -140,7 +89,7 @@ const RegistryTable = () => {
         if (axios.isAxiosError(error)) {
           toast({
             title: 'Failed to fetch registry list',
-            description: error.message,
+            description: 'unable to connect to the EventMesh daemon',
             status: 'error',
             duration: 3000,
             isClosable: true,
@@ -190,7 +139,6 @@ const RegistryTable = () => {
               <Th>Endpoint</Th>
               <Th>Last Update Timestamp</Th>
               <Th>Metadata</Th>
-              <Th>Actions</Th>
             </Tr>
           </Thead>
           <Tbody>
