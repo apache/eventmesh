@@ -13,26 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package emserver
+package connector
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
-type TCPServer struct {
-	tcpOption *config.TCPOption
-}
-
-func NewTCPServer(opt *config.TCPOption) (GracefulServer, error) {
-	return &TCPServer{
-		tcpOption: opt,
-	}, nil
-}
-
-func (t *TCPServer) Serve() error {
-	return nil
-}
-
-func (t *TCPServer) Stop() error {
-	return nil
+// EventListener listener to consume the cloudevents message
+type EventListener interface {
+	Consume(cloudevents.Event)
 }

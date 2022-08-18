@@ -13,26 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package emserver
+package connector
 
-import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
-)
-
-type TCPServer struct {
-	tcpOption *config.TCPOption
-}
-
-func NewTCPServer(opt *config.TCPOption) (GracefulServer, error) {
-	return &TCPServer{
-		tcpOption: opt,
-	}, nil
-}
-
-func (t *TCPServer) Serve() error {
-	return nil
-}
-
-func (t *TCPServer) Stop() error {
-	return nil
+// LifeCycle defines a lifecycle interface for a OMS related service endpoint,
+type LifeCycle interface {
+	IsStarted() bool
+	IsClosed() bool
+	Start()
+	Shutdown()
 }

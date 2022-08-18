@@ -13,26 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package emserver
+package connector
 
-import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
-)
-
-type TCPServer struct {
-	tcpOption *config.TCPOption
-}
-
-func NewTCPServer(opt *config.TCPOption) (GracefulServer, error) {
-	return &TCPServer{
-		tcpOption: opt,
-	}, nil
-}
-
-func (t *TCPServer) Serve() error {
-	return nil
-}
-
-func (t *TCPServer) Stop() error {
-	return nil
-}
+// Properties represents a persistent set of properties.
+// The Properties can be saved to a stream
+// or loaded from a stream. Each key and its corresponding value in
+// the property list is a string.
+type Properties map[string]interface{}
