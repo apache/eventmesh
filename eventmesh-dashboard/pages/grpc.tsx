@@ -21,13 +21,13 @@ import Head from 'next/head';
 import type { NextPage } from 'next';
 import GrpcClientTable from '../components/client/GrpcClientTable';
 
-const TCPClient: NextPage = () => (
+const GrpcClient: NextPage = () => (
   <>
     <Head>
-      <title>Client | Apache EventMesh Dashboard</title>
+      <title>Grpc Client | Apache EventMesh Dashboard</title>
     </Head>
     <GrpcClientTable />
   </>
 );
 
-export default TCPClient;
+export default GrpcClient;
