@@ -15,6 +15,11 @@
 
 package standalone
 
+import (
+	"fmt"
+	"sync"
+)
+
 var (
 	// ErrMessageDeleted message has been deleted with invalid offset
 	ErrMessageDeleted = fmt.Errorf("message has been deleted")
@@ -41,7 +46,7 @@ func NewDefaultMessageQueue() *MessageQueue {
 // given capacity
 func NewMessageQueueWithCapacity(capacity int) *MessageQueue {
 	return &MessageQueue{
-		items:    make(*MessageEntity, capacity),
+		items:    make([]*MessageEntity, capacity),
 		lock:     new(sync.Mutex),
 		capacity: capacity,
 	}
@@ -51,8 +56,8 @@ func NewMessageQueueWithCapacity(capacity int) *MessageQueue {
 // waiting for space to become available if the queue is full
 func (m *MessageQueue) Put(msg *MessageEntity) error {
 	m.lock.Lock()
-	defer m.lock.UnLock()
-	enqueue(msg)
+	defer m.lock.Unlock()
+	m.enqueue(msg)
 	return nil
 }
 
@@ -61,15 +66,15 @@ func (m *MessageQueue) Put(msg *MessageEntity) error {
 // this method will not remove the message
 func (m *MessageQueue) Take() *MessageEntity {
 	m.lock.Lock()
-	defer m.lock.UnLock()
-	return dequeue()
+	defer m.lock.Unlock()
+	return m.dequeue()
 }
 
 // Peek Get the first message at this queue,
 // if the queue is empty return null immediately
 func (m *MessageQueue) Peek() *MessageEntity {
 	m.lock.Lock()
-	defer m.lock.UnLock()
+	defer m.lock.Unlock()
 	return m.ItemAt(m.takeIndex)
 }
 
@@ -81,7 +86,7 @@ func (m *MessageQueue) GetHead() *MessageEntity {
 // GetTail Get the tail in this queue
 func (m *MessageQueue) GetTail() *MessageEntity {
 	m.lock.Lock()
-	defer m.lock.UnLock()
+	defer m.lock.Unlock()
 
 	if m.count == 0 {
 		return nil
@@ -95,12 +100,12 @@ func (m *MessageQueue) GetTail() *MessageEntity {
 	return m.ItemAt(tailIndex)
 }
 
-// Get the message by offset, since the offset is increment,
+// GetByOffset get the message by offset, since the offset is increment,
 // so we can get the first message in this queue
 // and calculate the index of this offset
-func (m *MessageQueue) GetByOffset(offset long) (*MessageEntity, error) {
+func (m *MessageQueue) GetByOffset(offset int64) (*MessageEntity, error) {
 	m.lock.Lock()
-	defer m.lock.UnLock()
+	defer m.lock.Unlock()
 
 	head := m.GetHead()
 	if head == nil {
@@ -117,7 +122,7 @@ func (m *MessageQueue) GetByOffset(offset long) (*MessageEntity, error) {
 	}
 
 	offsetDis := head.Offset - offset
-	offsetIndex := m.takeIndex - offsetDis
+	offsetIndex := m.takeIndex - int(offsetDis)
 	if offsetIndex < 0 {
 		offsetIndex += len(m.items)
 	}
@@ -127,9 +132,9 @@ func (m *MessageQueue) GetByOffset(offset long) (*MessageEntity, error) {
 
 func (m *MessageQueue) RemoveHead() {
 	m.lock.Lock()
-	defer m.lock.UnLock()
-	if m.count = 0 {
-		return 
+	defer m.lock.Unlock()
+	if m.count == 0 {
+		return
 	}
 	m.items[m.takeIndex] = nil
 	m.takeIndex++
@@ -148,9 +153,9 @@ func (m *MessageQueue) GetSize() int {
 
 func (m *MessageQueue) enqueue(msg *MessageEntity) {
 	m.items = append(m.items, msg)
-	putIndex++
-	if putIndex == len(m.items) {
-		putIndex = 0
+	m.putIndex++
+	if m.putIndex == len(m.items) {
+		m.putIndex = 0
 	}
 	m.count++
 }
@@ -159,7 +164,7 @@ func (m *MessageQueue) dequeue() *MessageEntity {
 	item := m.items[m.takeIndex]
 	m.takeIndex++
 	if m.takeIndex == len(m.items) {
-		m.takeIndex == 0
+		m.takeIndex = 0
 	}
 	return item
 }

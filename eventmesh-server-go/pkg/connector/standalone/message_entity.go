@@ -17,6 +17,7 @@ package standalone
 
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"time"
 )
 
 type TopicMetadata struct {
@@ -24,8 +25,8 @@ type TopicMetadata struct {
 }
 
 type MessageEntity struct {
-	TopicMetadata *TopicMetadata    `json:"topicMetadata`
+	TopicMetadata *TopicMetadata    `json:"topicMetadata"`
 	Message       cloudevents.Event `json:"message"`
-	Offset        long              `json:"offset"`
+	Offset        int64             `json:"offset"`
 	createTime    time.Time         `json:"createTime"`
 }
