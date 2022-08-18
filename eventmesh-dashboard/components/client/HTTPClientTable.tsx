@@ -138,7 +138,7 @@ const HTTPClientTable = () => {
         if (axios.isAxiosError(error)) {
           toast({
             title: 'Failed to fetch the list of HTTP Clients',
-            description: error.message,
+            description: 'unable to connect to the EventMesh daemon',
             status: 'error',
             duration: 3000,
             isClosable: true,
