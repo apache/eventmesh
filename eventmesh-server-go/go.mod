@@ -18,6 +18,7 @@ module github.com/apache/incubator-eventmesh/eventmesh-server-go
 go 1.16
 
 require (
+	github.com/cloudevents/sdk-go/v2 v2.11.0
 	github.com/gogf/gf v1.16.9
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/lestrrat-go/strftime v1.0.6
@@ -33,7 +34,10 @@ require (
 	github.com/BurntSushi/toml v1.2.0 // indirect
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.8.1
-	github.com/panjf2000/gnet/v2 v2.1.1
 	github.com/unrolled/secure v1.12.0
+	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/fx v1.18.1
+	go.uber.org/multierr v1.7.0 // indirect
+	golang.org/x/sys v0.0.0-20220224120231-95c6836cb0e7 // indirect
+	google.golang.org/protobuf v1.28.0
 )

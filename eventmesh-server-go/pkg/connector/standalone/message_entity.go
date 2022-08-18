@@ -13,26 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package emserver
+package standalone
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
-type TCPServer struct {
-	tcpOption *config.TCPOption
+type TopicMetadata struct {
+	TopicName string `json:"topicName"`
 }
 
-func NewTCPServer(opt *config.TCPOption) (GracefulServer, error) {
-	return &TCPServer{
-		tcpOption: opt,
-	}, nil
-}
-
-func (t *TCPServer) Serve() error {
-	return nil
-}
-
-func (t *TCPServer) Stop() error {
-	return nil
+type MessageEntity struct {
+	TopicMetadata *TopicMetadata    `json:"topicMetadata`
+	Message       cloudevents.Event `json:"message"`
+	Offset        long              `json:"offset"`
+	createTime    time.Time         `json:"createTime"`
 }
