@@ -122,21 +122,21 @@ const Configuration = () => {
 
   if (Object.keys(configuration).length === 0) {
     return (
-    <Box
-      maxW="full"
-      bg="white"
-      borderWidth="2px"
-      borderRadius="md"
-      borderColor="rgb(211,85,25)"
-      overflow="hidden"
-      p="4"
-      mt="4"
-      opacity="0.8"
-    >
-      <Text fontSize="l" fontWeight="semibold" color="rgb(211,85,25)" textAlign={[ 'left', 'center' ]}>
-        EventMesh Daemon Not Connected
-      </Text>
-    </Box>
+      <Box
+        maxW="full"
+        bg="white"
+        borderWidth="2px"
+        borderRadius="md"
+        borderColor="rgb(211,85,25)"
+        overflow="hidden"
+        p="4"
+        mt="4"
+        opacity="0.8"
+      >
+        <Text fontSize="l" fontWeight="semibold" color="rgb(211,85,25)" textAlign={['left', 'center']}>
+          EventMesh Daemon Not Connected
+        </Text>
+      </Box>
     );
   }
 

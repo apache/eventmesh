@@ -30,7 +30,6 @@ import {
   TableContainer,
   useToast,
   Box,
-  Button,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
@@ -46,17 +45,15 @@ interface EventMeshInstance {
 
 const EventMeshInstanceRow = ({
   eventMeshClusterName, eventMeshName, endpoint, lastUpdateTimestamp, metadata,
-}: EventMeshInstance) => {  
-  return (
-    <Tr>
-      <Td>{eventMeshClusterName}</Td>
-      <Td>{eventMeshName}</Td>
-      <Td>{endpoint}</Td>
-      <Td>{lastUpdateTimestamp}</Td>
-      <Td>{metadata}</Td>
-    </Tr>
-  );
-};
+}: EventMeshInstance) => (
+  <Tr>
+    <Td>{eventMeshClusterName}</Td>
+    <Td>{eventMeshName}</Td>
+    <Td>{endpoint}</Td>
+    <Td>{lastUpdateTimestamp}</Td>
+    <Td>{metadata}</Td>
+  </Tr>
+);
 
 const RegistryTable = () => {
   const { state } = useContext(AppContext);
@@ -143,7 +140,7 @@ const RegistryTable = () => {
           </Thead>
           <Tbody>
             {EventMeshInstanceList && EventMeshInstanceList.filter(({
-              eventMeshClusterName, eventMeshName
+              eventMeshClusterName, eventMeshName,
             }) => {
               if (searchInput && !eventMeshName.includes(searchInput)) {
                 return false;
