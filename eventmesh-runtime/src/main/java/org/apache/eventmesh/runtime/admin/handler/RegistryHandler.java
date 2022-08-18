@@ -86,6 +86,7 @@ public class RegistryHandler implements HttpHandler {
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
         } catch (NullPointerException e) {
+            //registry not initialized, return empty list
             String result = JsonUtils.toJson(new ArrayList<>());
             httpExchange.sendResponseHeaders(200, result.getBytes().length);
             out.write(result.getBytes());
@@ -110,7 +111,6 @@ public class RegistryHandler implements HttpHandler {
             }
         }
     }
-
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {

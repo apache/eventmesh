@@ -271,8 +271,8 @@ const EventTable = () => {
       } catch (error) {
         if (axios.isAxiosError(error)) {
           toast({
-            title: 'Failed to fetch the list of topics',
-            description: error.message,
+            title: 'Failed to fetch the list of events',
+            description: 'unable to connect to the EventMesh daemon',
             status: 'error',
             duration: 3000,
             isClosable: true,
@@ -301,8 +301,8 @@ const EventTable = () => {
       } catch (error) {
         if (axios.isAxiosError(error)) {
           toast({
-            title: 'Failed to fetch the list of topics',
-            description: error.message,
+            title: 'Failed to fetch the list of events',
+            description: 'unable to connect to the EventMesh daemon',
             status: 'error',
             duration: 3000,
             isClosable: true,
