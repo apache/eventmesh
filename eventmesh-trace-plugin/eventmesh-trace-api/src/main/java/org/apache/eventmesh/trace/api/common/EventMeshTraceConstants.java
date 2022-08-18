@@ -30,4 +30,8 @@ public class EventMeshTraceConstants {
 
     public static final String TRACE_EVENTMESH_SDK_SERVER_SPAN = "eventmesh-sdk-server-span";
 
+    public static final String TRACE_EVENTMESH_MAX_EXPORT_SIZE = "eventmesh.trace.max.export.size";
+    public static final String TRACE_EVENTMESH_MAX_QUEUE_SIZE = "eventmesh.trace.max.queue.size";
+    public static final String TRACE_EVENTMESH_EXPORT_TIMEOUT = "eventmesh.trace.export.timeout";
+    public static final String TRACE_EVENTMESH_EXPORT_INTERVAL = "eventmesh.trace.export.interval";
 }
