@@ -21,7 +21,7 @@ import Head from 'next/head';
 import type { NextPage } from 'next';
 import RegistryTable from '../components/registry/RegistryTable';
 
-const HTTPClient: NextPage = () => (
+const Registry: NextPage = () => (
   <>
     <Head>
       <title>Registry | Apache EventMesh Dashboard</title>
@@ -30,4 +30,4 @@ const HTTPClient: NextPage = () => (
   </>
 );
 
-export default HTTPClient;
+export default Registry;

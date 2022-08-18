@@ -24,7 +24,7 @@ import HTTPClientTable from '../components/client/HTTPClientTable';
 const HTTPClient: NextPage = () => (
   <>
     <Head>
-      <title>Client | Apache EventMesh Dashboard</title>
+      <title>HTTP Client | Apache EventMesh Dashboard</title>
     </Head>
     <HTTPClientTable />
   </>
