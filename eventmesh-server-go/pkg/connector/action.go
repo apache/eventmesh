@@ -1,4 +1,4 @@
-package connector
+package standalone
 
 type EventMeshAction string
 

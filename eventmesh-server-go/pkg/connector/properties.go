@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package connector
+package standalone
 
 // Properties represents a persistent set of properties.
 // The Properties can be saved to a stream

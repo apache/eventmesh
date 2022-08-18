@@ -15,6 +15,12 @@
 
 package standalone
 
+import (
+	"context"
+	"sync"
+	"time"
+)
+
 var (
 	// messageStoreWindow msg ttl,
 	// If the currentTimeMills - messageCreateTimeMills >= MESSAGE_STORE_WINDOW,
@@ -33,34 +39,35 @@ type Broker struct {
 	offsetMap *sync.Map
 }
 
+// NewBroker create new standalone broker
 func NewBroker(ctx context.Context) *Broker {
 	b := &Broker{
 		messageContainer: new(sync.Map),
 		offsetMap:        new(sync.Map),
 	}
+	go b.startHistoryMessageCleanTask(ctx)
 	return b
 }
 
+// startHistoryMessageCleanTask clean the message which has pass the window
 func (b *Broker) startHistoryMessageCleanTask(ctx context.Context) {
-	go func() {
-		cleanTicker := time.NewTicker(time.Second)
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-cleanTicker.C:
-				b.messageContainer.Range(func(k, v interface{}) bool {
-					now := time.Now()
-					currentMsg := v.(*MessageQueue).GetHead()
-					if currentMsg == nil {
-						return
-					}
-					if now.Sub(currentMsg.Create) > messageStoreWindow {
-						v.(*MessageQueue).RemoveHead()
-					}
+	cleanTicker := time.NewTicker(time.Second)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-cleanTicker.C:
+			b.messageContainer.Range(func(k, v interface{}) bool {
+				now := time.Now()
+				currentMsg := v.(*MessageQueue).GetHead()
+				if currentMsg == nil {
 					return true
-				})
-			}
+				}
+				if now.Sub(currentMsg.createTime) > messageStoreWindow {
+					v.(*MessageQueue).RemoveHead()
+				}
+				return true
+			})
 		}
-	}()
+	}
 }
