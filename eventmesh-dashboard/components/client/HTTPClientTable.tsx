@@ -149,7 +149,7 @@ const HTTPClientTable = () => {
     };
 
     fetch();
-  }, []);
+  }, [HTTPClientList]);
 
   return (
     <Box

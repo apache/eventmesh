@@ -152,7 +152,7 @@ const TCPClientTable = () => {
     };
 
     fetch();
-  }, []);
+  }, [TCPClientList]);
 
   return (
     <Box
