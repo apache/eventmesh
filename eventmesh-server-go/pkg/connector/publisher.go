@@ -16,6 +16,7 @@
 package connector
 
 import (
+	"context"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -23,12 +24,13 @@ import (
 
 type SendResult struct {
 	MessageId string `json:"messageId"`
-	Mopic     string `json:"topic"`
+	Topic     string `json:"topic"`
 }
 
 type SendErrResult struct {
-	*SendResult
-	Err error `json:"err"`
+	MessageId string `json:"messageId"`
+	Topic     string `json:"topic"`
+	Err       error  `json:"err"`
 }
 
 // SendCallback callback for send message to eventmesh
@@ -50,13 +52,13 @@ type Producer interface {
 
 	Initialize(*Properties) error
 
-	Publish(*cloudevents.Event, SendCallback) error
+	Publish(context.Context, *cloudevents.Event, SendCallback)
 
-	SendOneway(*cloudevents.Event) error
+	SendOneway(context.Context, *cloudevents.Event)
 
-	Request(*cloudevents.Event, RequestReplyCallback, time.Duration) error
+	Request(context.Context, *cloudevents.Event, RequestReplyCallback, time.Duration) error
 
-	Reply(*cloudevents.Event, SendCallback) error
+	Reply(context.Context, *cloudevents.Event, SendCallback) error
 
 	CheckTopicExist(string) bool
 
