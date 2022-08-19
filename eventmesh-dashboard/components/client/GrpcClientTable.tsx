@@ -149,7 +149,7 @@ const GrpcClientTable = () => {
     };
 
     fetch();
-  }, []);
+  }, [GrpcClientList]);
 
   return (
     <Box
