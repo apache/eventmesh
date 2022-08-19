@@ -13,9 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package standalone
+package connector
 
 import (
+	"context"
+
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
@@ -27,7 +29,7 @@ type Consumer interface {
 
 	UpdateOffset([]*cloudevents.Event)
 
-	Subscribe(string)
+	Subscribe(context.Context, string)
 
 	UnSubscribe(string)
 
