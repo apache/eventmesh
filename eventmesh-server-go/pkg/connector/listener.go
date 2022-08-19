@@ -13,13 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package standalone
+package connector
 
 import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
+// AsyncConsumeHandler async handler to consume message
+type AsyncConsumeHandler func(EventMeshAction)
+
 // EventListener listener to consume the cloudevents message
 type EventListener interface {
-	Consume(*cloudevents.Event)
+	Consume(*cloudevents.Event, AsyncConsumeHandler)
 }
