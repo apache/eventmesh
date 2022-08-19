@@ -18,6 +18,9 @@ package standalone
 import (
 	"fmt"
 	"sync"
+	"time"
+
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
 )
 
 var (
@@ -33,6 +36,8 @@ type MessageQueue struct {
 	putIndex  int
 	count     int
 	capacity  int
+	notFull   *util.Until
+	notEmpty  *util.Until
 	lock      *sync.Mutex
 }
 
@@ -45,11 +50,20 @@ func NewDefaultMessageQueue() *MessageQueue {
 // NewMessageQueueWithCapacity crate message queue with
 // given capacity
 func NewMessageQueueWithCapacity(capacity int) *MessageQueue {
-	return &MessageQueue{
+	mq := &MessageQueue{
 		items:    make([]*MessageEntity, capacity),
 		lock:     new(sync.Mutex),
 		capacity: capacity,
 	}
+
+	mq.notFull = util.NewUntil(func() bool {
+		return mq.count == len(mq.items)
+	}, time.Second)
+	mq.notEmpty = util.NewUntil(func() bool {
+		return mq.count == 0
+	}, time.Second)
+
+	return mq
 }
 
 // Put insert the message at the tail of this queue,
