@@ -216,7 +216,7 @@ const TopicTable = () => {
     };
 
     fetch();
-  }, []);
+  }, [topicList]);
 
   return (
     <Box
