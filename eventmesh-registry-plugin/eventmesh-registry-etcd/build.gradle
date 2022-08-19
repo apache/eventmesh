@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rocketmq.common;
-
-public class Constants {
-
-    public static final String BROADCAST_PREFIX = "broadcast-";
+dependencies {
+    implementation ("io.etcd:jetcd-core:0.3.0")
+    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
+    implementation project(":eventmesh-common")
+    testImplementation "org.mockito:mockito-core"
 }
