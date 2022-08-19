@@ -34,7 +34,6 @@ require (
 	github.com/BurntSushi/toml v1.2.0 // indirect
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.8.1
-	github.com/panjf2000/ants/v2 v2.5.0
 	github.com/unrolled/secure v1.12.0
 	go.uber.org/atomic v1.9.0
 	go.uber.org/fx v1.18.1
