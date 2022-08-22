@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
-use futures_util::Stream;
+use futures::Stream;
+use reqwest::header::HeaderValue;
 use tokio::{
     sync::{
         mpsc::{self, Receiver, Sender},
@@ -8,10 +9,11 @@ use tokio::{
     },
     time::{interval, sleep},
 };
+
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{
     transport::{channel, Channel, Endpoint},
-    Request, Status, Streaming,
+    IntoStreamingRequest, Request, Status, Streaming,
 };
 
 use super::{
@@ -21,7 +23,7 @@ use super::{
         consumer_service_server::ConsumerServiceServer,
         heartbeat::{ClientType, HeartbeatItem},
         heartbeat_service_client::HeartbeatServiceClient,
-        subscription::SubscriptionItem,
+        subscription::{subscription_item, SubscriptionItem},
         Heartbeat, RequestHeader, Response, SimpleMessage, Subscription,
     },
     SDK_STREAM_URL,
@@ -105,30 +107,7 @@ pub struct EventMeshMessageConsumer {
     subscription_map: Arc<Mutex<HashMap<String, String>>>,
     sender: Option<Sender<Subscription>>,
 }
-// #[derive(Debug)]
-// struct SubscriberStream {
-//     inner: mpsc::Receiver<Vec<SubscriptionItem>>,
-//     header: RequestHeader,
-//     consumer_group: String,
-// }
-// impl Stream for SubscriberStream {
-//     type Item = Subscription;
 
-//     fn poll_next(
-//         mut self: std::pin::Pin<&mut Self>,
-//         cx: &mut std::task::Context<'_>,
-//     ) -> std::task::Poll<Option<Self::Item>> {
-//         self.inner.poll_recv(cx).map(|item| {
-//             item.map(|item| Subscription {
-//                 header: Some(self.header.clone()),
-//                 consumer_group: self.consumer_group.clone(),
-//                 subscription_items: item,
-//                 url: String::from(SDK_STREAM_URL),
-//                 reply: None,
-//             })
-//         })
-//     }
-// }
 impl EventMeshMessageConsumer {
     pub async fn new(config: &EventMeshGrpcConfig) -> Result<Self> {
         let channel = Endpoint::new(config.eventmesh_addr.clone())?
@@ -200,7 +179,6 @@ impl EventMeshMessageConsumer {
         &mut self,
         subscription_items: &Vec<SubscriptionItem>,
     ) -> Result<Option<Streaming<SimpleMessage>>> {
-        println!("subscribe_stream");
         let sub = Subscription {
             header: Some(self.default_header.clone()),
             consumer_group: self.consumer_group.to_string(),
@@ -213,30 +191,19 @@ impl EventMeshMessageConsumer {
         if self.sender.is_none() {
             let (sender, receiver) = mpsc::channel::<Subscription>(16);
             sender.send(sub).await?;
-            let stream = self.create_stream(receiver).await?;
-            Ok(Some(stream))
+            self.sender = Some(sender);
+            let resp = self
+                .client
+                .subscribe_stream(Request::new(ReceiverStream::new(receiver)))
+                .await?;
+            Ok(Some(resp.into_inner()))
         } else {
-            println!("{:#?}", sub);
             self.sender.as_ref().unwrap().send(sub).await?;
             Ok(None)
         }
     }
-    pub async fn create_stream(
-        &mut self,
-        receiver: Receiver<Subscription>,
-    ) -> Result<Streaming<SimpleMessage>> {
-        println!("inner0");
-        let resp = self
-            .client
-            .subscribe_stream(Request::new(ReceiverStream::new(receiver)))
-            .await?;
-        println!("inner");
-        Ok(resp.into_inner())
-    }
     async fn add_subscription(&mut self, subscription_items: &Vec<SubscriptionItem>, url: &str) {
-        println!("add_subscription 1");
         let mut map = self.subscription_map.lock().await;
-        println!("add_subscription 2");
         subscription_items.iter().for_each(|item| {
             map.insert(item.topic.to_string(), url.to_string());
         });

@@ -32,3 +32,7 @@ path = "grpc-consumer.rs"
 [[example]]
 name = "grpc-consumer-stream"
 path = "grpc-consumer-stream.rs"
+
+[dependencies]
+tracing = "0.1.36"
+tracing-subscriber = "0.3.15"
