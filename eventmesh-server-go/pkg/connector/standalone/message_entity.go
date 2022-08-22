@@ -13,4 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package runtime
+package standalone
+
+import (
+	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"time"
+)
+
+type TopicMetadata struct {
+	TopicName string `json:"topicName"`
+}
+
+type MessageEntity struct {
+	TopicMetadata *TopicMetadata     `json:"topicMetadata"`
+	Message       *cloudevents.Event `json:"message"`
+	Offset        int64              `json:"offset"`
+	CreateTime    time.Time          `json:"createTime"`
+}
