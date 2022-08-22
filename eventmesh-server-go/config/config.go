@@ -31,6 +31,7 @@ const (
 )
 
 type Config struct {
+	Name   string `yaml:"name" toml:"name"`
 	Server struct {
 		*HTTPOption `yaml:"http" toml:"http"`
 		*GRPCOption `yaml:"http" toml:"http"`

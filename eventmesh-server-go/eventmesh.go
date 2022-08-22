@@ -18,7 +18,7 @@ package main
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/runtime"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime"
 )
 
 func main() {
