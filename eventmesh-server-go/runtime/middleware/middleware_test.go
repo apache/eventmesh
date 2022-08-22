@@ -13,10 +13,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package middleware
 
-import "github.com/spf13/cobra"
+import (
+	"context"
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
 
-func NewRootCmd() *cobra.Command {
-	return &cobra.Command{}
+func Test_middleware(t *testing.T) {
+	m1 := func(hdl Handler) Handler {
+		return func(ctx context.Context, i interface{}) (interface{}, error) {
+			t.Logf("in handler, in:%v", i)
+			return nil, nil
+		}
+	}
+
+	val, err := Chain([]Middleware{m1}...)(func(ctx context.Context, i interface{}) (interface{}, error) {
+		return "here", nil
+	})(context.TODO(), "from")
+	assert.NoError(t, err)
+	t.Logf("%v", val)
 }

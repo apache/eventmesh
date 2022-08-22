@@ -13,38 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package service
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"context"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/emserver"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	"github.com/panjf2000/ants"
+	"google.golang.org/grpc"
 )
 
-func main() {
-	cfg, err := config.LoadConfig(config.ServerConfigPath)
-	if err != nil {
-		log.Fatalf("load config err:%v", err)
-	}
-	if err := SetupPlugins(cfg); err != nil {
-		log.Fatalf("setup plugin err:%v", err)
-	}
-	config.SetGlobalConfig(cfg)
-
-	if err := emserver.Start(); err != nil {
-		log.Fatalf("start runtime server err:%v", err)
-	}
-
-	log.Infof("stop runtime server success")
+// Consumer service for consumer, provide consumer grpc handler
+type Consumer struct {
+	subscribePool *ants.Pool
+	replyPool     *ants.Pool
 }
 
-// SetupPlugins registers client config and setups plugins according to the Config.
-func SetupPlugins(cfg *config.Config) error {
-	// SetupConfig all plugins
-	if cfg.Plugins != nil {
-		if err := cfg.Plugins.Setup(); err != nil {
-			return err
-		}
-	}
-	return nil
+func (c *Consumer) Subscribe(ctx context.Context, in *pb.Subscription, opts ...grpc.CallOption) (*pb.Response, error) {
+	log.Info("subscribe with webhook, client:%v, topic:%v, webhook:%v", in.Header.Ip, in.SubscriptionItems, in.Url)
+
+	return nil, nil
+}
+
+func (c *Consumer) SubscribeSubscribeStream(ctx context.Context, opts ...grpc.CallOption) (pb.ConsumerService_SubscribeStreamClient, error) {
+	return nil, nil
+}
+
+func (c *Consumer) Unsubscribe(ctx context.Context, in *pb.Subscription, opts ...grpc.CallOption) (*pb.Response, error) {
+	return nil, nil
 }

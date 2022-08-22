@@ -13,12 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package runtime
+package emserver
 
 import (
 	"context"
-	emserver2 "github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/emserver"
-
 	"go.uber.org/fx"
 
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
@@ -27,14 +25,14 @@ import (
 // Server server for all eventmesh endpoint, include grpc/tcp/http servers
 type Server struct {
 	// servers for eventmesh
-	servers []emserver2.GracefulServer
+	servers []GracefulServer
 }
 
 // Start create and start all server
 func Start() error {
 	var (
 		initSuccessed bool
-		gracesrvs     []emserver2.GracefulServer
+		gracesrvs     []GracefulServer
 	)
 
 	defer func() {
@@ -47,21 +45,21 @@ func Start() error {
 	}()
 
 	if config.GlobalConfig().Server.TCPOption != nil {
-		tcpserver, err := emserver2.NewTCPServer(config.GlobalConfig().Server.TCPOption)
+		tcpserver, err := NewTCPServer(config.GlobalConfig().Server.TCPOption)
 		if err != nil {
 			return err
 		}
 		gracesrvs = append(gracesrvs, tcpserver)
 	}
 	if config.GlobalConfig().Server.GRPCOption != nil {
-		grpcserver, err := emserver2.NewGRPCServer(config.GlobalConfig().Server.GRPCOption)
+		grpcserver, err := NewGRPCServer(config.GlobalConfig().Server.GRPCOption)
 		if err != nil {
 			return err
 		}
 		gracesrvs = append(gracesrvs, grpcserver)
 	}
 	if config.GlobalConfig().Server.HTTPOption != nil {
-		httpserver, err := emserver2.NewHTTPServer(config.GlobalConfig().Server.HTTPOption)
+		httpserver, err := NewHTTPServer(config.GlobalConfig().Server.HTTPOption)
 		if err != nil {
 			return err
 		}
