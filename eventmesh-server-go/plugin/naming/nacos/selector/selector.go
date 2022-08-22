@@ -71,7 +71,7 @@ func (s *Selector) Setup(name string, configDec plugin.Decoder) error {
 	if err != nil {
 		return err
 	}
-	selector.Register(config.GlobalConfig().Server.Name, newSelector(client))
+	selector.Register(config.GlobalConfig().Name, newSelector(client))
 	return nil
 }
 
