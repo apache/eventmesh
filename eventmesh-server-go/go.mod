@@ -15,7 +15,7 @@
 
 module github.com/apache/incubator-eventmesh/eventmesh-server-go
 
-go 1.18
+go 1.16
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.11.0

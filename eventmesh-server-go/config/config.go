@@ -32,17 +32,10 @@ const (
 
 type Config struct {
 	Server struct {
-		Port uint16 `yaml:"port"`
-		Name string `yaml:"name"`
+		*HTTPOption `yaml:"http" toml:"http"`
+		*GRPCOption `yaml:"http" toml:"http"`
+		*TCPOption  `yaml:"tcp" toml:"tcp"`
 	}
-	Flow struct {
-		Queue struct {
-			Store string `yaml:"store"`
-		} `yaml:"queue"`
-		Schedule struct {
-			Interval int `yaml:"interval"`
-		} `yaml:"schedule"`
-	} `yaml:"flow"`
 	Plugins plugin.Config `yaml:"plugins,omitempty"`
 }
 
@@ -92,15 +85,4 @@ func parseConfigFromFile(configPath string) (*Config, error) {
 		return nil, err
 	}
 	return cfg, nil
-}
-
-// Setup registers client config and setups plugins according to the Config.
-func Setup(cfg *Config) error {
-	// SetupConfig all plugins
-	if cfg.Plugins != nil {
-		if err := cfg.Plugins.Setup(); err != nil {
-			return err
-		}
-	}
-	return nil
 }
