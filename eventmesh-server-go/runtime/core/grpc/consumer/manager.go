@@ -13,29 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package processor
+package consumer
 
-import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/grpc/utils"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-)
+import "sync"
 
-// SubscribeWebHook process the subscribe request
-type SubscribeWebHook struct {
-	*Processor
+type ConsumerManager struct {
+	// consumerClients store all consumer clients
+	// key is consumer group, value is []*GroupClient
+	consumerGroupClients *sync.Map
+
+	// consumers eventmesh consumer instances
+	// key is consumer group, value is EventMeshConsumer
+	consumers *sync.Map
 }
 
-// Do process the webhook subscription
-func (s *SubscribeWebHook) Do(sub *pb.Subscription) error {
-	hdr := sub.Header
-	if err := utils.ValidateHeader(hdr); err != nil {
-		return err
-	}
-	if err := utils.ValidateSubscription(true, sub); err != nil {
-		return err
-	}
-	if err := s.Interceptor(sub); err != nil {
-		return err
-	}
+// NewConsumerManager create new consumer manager
+func NewConsumerManager() (*ConsumerManager, error) {
+	return &ConsumerManager{
+		consumers:            new(sync.Map),
+		consumerGroupClients: new(sync.Map),
+	}, nil
+}
 
+func (c *ConsumerManager) Start() error {
+	return nil
+}
+
+func (c *ConsumerManager) Stop() error {
+	return nil
 }

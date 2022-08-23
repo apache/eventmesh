@@ -16,26 +16,20 @@
 package processor
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/grpc/utils"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/middleware"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 )
 
-// SubscribeWebHook process the subscribe request
-type SubscribeWebHook struct {
-	*Processor
+// Processor common parts for msg processor
+type Processor struct {
+	middwares []*middleware.Middleware
 }
 
-// Do process the webhook subscription
-func (s *SubscribeWebHook) Do(sub *pb.Subscription) error {
-	hdr := sub.Header
-	if err := utils.ValidateHeader(hdr); err != nil {
-		return err
-	}
-	if err := utils.ValidateSubscription(true, sub); err != nil {
-		return err
-	}
-	if err := s.Interceptor(sub); err != nil {
-		return err
-	}
+// Interceptor do acl or other interceptor
+func (p *Processor) Interceptor(in interface{}) error {
+	switch in.(type) {
+	case *pb.Subscription:
 
+	}
+	return nil
 }

@@ -26,4 +26,11 @@ type GRPCOption struct {
 	// will start on given port, and you can check
 	// on http://ip:port/pprof/debug
 	*PProfOption `yaml:"pprof" toml:"pprof"`
+
+	// SubscribePoolSize pool in handle subscribe msg
+	// default to 10
+	SubscribePoolSize int `yaml:"subscribe-pool-size" toml:"subscribe-pool-size"`
+	// RetryPoolSize pool in handle retry msg
+	// default to 10
+	RetryPoolSize int `yaml:"retry-pool-size" toml:"retry-pool-size"`
 }
