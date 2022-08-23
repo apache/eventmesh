@@ -19,7 +19,6 @@
 
 import {
   HStack,
-  Select,
   Input,
   Table,
   Thead,
@@ -31,43 +30,117 @@ import {
   useToast,
   Box,
   Button,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  useDisclosure,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../context/context';
 
-interface Client {
-  env: string,
-  subsystem: string,
-  url: string,
-  pid: number,
-  host: string,
-  port: number,
-  version: string,
-  idc: string,
-  group: string,
-  purpose: string,
-  protocol: string,
+interface Topic {
+  name: string,
+  messageCount: number,
 }
 
-interface ClientProps {
-  host: string,
-  port: number,
-  group: string,
-  protocol: string,
-  url: string,
+interface TopicProps {
+  name: string,
+  messageCount: number,
 }
 
-interface RemoveClientRequest {
-  host: string,
-  port: number,
-  protocol: string,
-  url: string,
+interface CreateTopicRequest {
+  name: string,
 }
 
-const ClientRow = ({
-  host, port, group, protocol, url,
-}: ClientProps) => {
+interface RemoveTopicRequest {
+  name: string,
+}
+
+const CreateTopicModal = () => {
+  const { state } = useContext(AppContext);
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [topicName, setTopicName] = useState('');
+  const handleTopicNameChange = (event: React.FormEvent<HTMLInputElement>) => {
+    setTopicName(event.currentTarget.value);
+  };
+
+  const toast = useToast();
+  const [loading, setLoading] = useState(false);
+  const onCreateClick = async () => {
+    try {
+      setLoading(true);
+      await axios.post<CreateTopicRequest>(`${state.endpoint}/topic`, {
+        name: topicName,
+      });
+      onClose();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast({
+          title: 'Failed to create the topic',
+          description: error.message,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Button
+        colorScheme="blue"
+        onClick={onOpen}
+      >
+        Create Topic
+      </Button>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Create Topic</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Input
+              placeholder="Topic Name"
+              value={topicName}
+              onChange={handleTopicNameChange}
+            />
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              mr={2}
+              onClick={onClose}
+            >
+              Close
+            </Button>
+            <Button
+              colorScheme="blue"
+              onClick={onCreateClick}
+              isLoading={loading}
+              isDisabled={topicName.length === 0}
+            >
+              Create
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+};
+
+const TopicRow = ({
+  name,
+  messageCount,
+}: TopicProps) => {
   const { state } = useContext(AppContext);
 
   const toast = useToast();
@@ -75,19 +148,16 @@ const ClientRow = ({
   const onRemoveClick = async () => {
     try {
       setLoading(true);
-      await axios.delete<RemoveClientRequest>(`${state.endpoint}/client`, {
+      await axios.delete<RemoveTopicRequest>(`${state.endpoint}/topic`, {
         data: {
-          host,
-          port,
-          protocol,
-          url,
+          name,
         },
       });
       setLoading(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast({
-          title: 'Failed to remove the client',
+          title: 'Failed to remove the topic',
           description: error.message,
           status: 'error',
           duration: 3000,
@@ -99,14 +169,11 @@ const ClientRow = ({
 
   return (
     <Tr>
-      {protocol === 'TCP' && <Td>{`${host}:${port}`}</Td>}
-      {(protocol === 'HTTP' || protocol === 'gRPC') && <Td>{url}</Td>}
-      <Td>{group}</Td>
-      <Td>{protocol}</Td>
+      <Td>{name}</Td>
+      <Td>{messageCount}</Td>
       <Td>
         <HStack>
           <Button
-            isDisabled
             colorScheme="red"
             isLoading={loading}
             onClick={onRemoveClick}
@@ -119,7 +186,7 @@ const ClientRow = ({
   );
 };
 
-const ClientTable = () => {
+const TopicTable = () => {
   const { state } = useContext(AppContext);
 
   const [searchInput, setSearchInput] = useState<string>('');
@@ -127,40 +194,23 @@ const ClientTable = () => {
     setSearchInput(event.currentTarget.value);
   };
 
-  const [protocolFilter, setProtocolFilter] = useState<string>('');
-  const handleProtocolSelectChange = (event: React.FormEvent<HTMLSelectElement>) => {
-    setProtocolFilter(event.currentTarget.value);
-  };
-
-  const [groupSet, setGroupSet] = useState<Set<string>>(new Set());
-  const [groupFilter, setGroupFilter] = useState<string>('');
-  const handleGroupSelectChange = (event: React.FormEvent<HTMLSelectElement>) => {
-    setGroupFilter(event.currentTarget.value);
-  };
-
-  const [clientList, setClientList] = useState<Client[]>([]);
+  const [topicList, setTopicList] = useState<Topic[]>([]);
   const toast = useToast();
   useEffect(() => {
     const fetch = async () => {
       try {
-        const { data } = await axios.get<Client[]>(`${state.endpoint}/client`);
-        setClientList(data);
-
-        const nextGroupSet = new Set<string>();
-        data.forEach(({ group }) => {
-          nextGroupSet.add(group);
-        });
-        setGroupSet(nextGroupSet);
+        const { data } = await axios.get<Topic[]>(`${state.endpoint}/topic`);
+        setTopicList(data);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           toast({
-            title: 'Failed to fetch the list of clients',
+            title: 'Failed to fetch the list of topics',
             description: error.message,
             status: 'error',
             duration: 3000,
             isClosable: true,
           });
-          setClientList([]);
+          setTopicList([]);
         }
       }
     };
@@ -181,63 +231,38 @@ const ClientTable = () => {
         spacing="2"
       >
         <Input
-          w="200%"
+          w="100%"
           placeholder="Search"
           value={searchInput}
           onChange={handleSearchInputChange}
         />
-        <Select
-          placeholder="Select Protocol"
-          onChange={handleProtocolSelectChange}
-        >
-          <option value="TCP">TCP</option>
-          <option value="HTTP">HTTP</option>
-          <option value="gRPC">gRPC</option>
-        </Select>
-        <Select
-          placeholder="Select Group"
-          onChange={handleGroupSelectChange}
-        >
-          {Array.from(groupSet).map((group) => (
-            <option value={group} key={group}>{group}</option>
-          ))}
-        </Select>
+        <CreateTopicModal />
       </HStack>
 
       <TableContainer>
         <Table variant="simple">
           <Thead>
             <Tr>
-              <Th>Host or url</Th>
-              <Th>Group</Th>
-              <Th>Protocol</Th>
+              <Th>Topic Name</Th>
+              <Th>Message Count</Th>
               <Th>Action</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {clientList && clientList.filter(({
-              host, port, group, protocol,
+            {topicList.filter(({
+              name,
             }) => {
-              const address = `${host}:${port}`;
-              if (searchInput && !address.includes(searchInput)) {
-                return false;
-              }
-              if (groupFilter && groupFilter !== group) {
-                return false;
-              }
-              if (protocolFilter && protocolFilter !== protocol) {
+              if (searchInput && !name.includes(searchInput)) {
                 return false;
               }
               return true;
             }).map(({
-              host, port, group, protocol, url,
+              name,
+              messageCount,
             }) => (
-              <ClientRow
-                host={host}
-                port={port}
-                group={group}
-                protocol={protocol}
-                url={url}
+              <TopicRow
+                name={name}
+                messageCount={messageCount}
               />
             ))}
           </Tbody>
@@ -247,4 +272,4 @@ const ClientTable = () => {
   );
 };
 
-export default ClientTable;
+export default TopicTable;

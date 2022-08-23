@@ -17,31 +17,30 @@
 
 package org.apache.eventmesh.runtime.admin.controller;
 
-import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
-import org.apache.eventmesh.runtime.admin.handler.ClientHandler;
+import com.sun.net.httpserver.HttpServer;
 import org.apache.eventmesh.runtime.admin.handler.ConfigurationHandler;
+import org.apache.eventmesh.runtime.admin.handler.EventHandler;
+import org.apache.eventmesh.runtime.admin.handler.GrpcClientHandler;
+import org.apache.eventmesh.runtime.admin.handler.HTTPClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.MetricsHandler;
+import org.apache.eventmesh.runtime.admin.handler.TCPClientHandler;
+import org.apache.eventmesh.runtime.admin.handler.TopicHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshGrpcServer;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 
 public class EventMeshAdminController {
 
     private static final Logger logger = LoggerFactory.getLogger(EventMeshAdminController.class);
 
-    private EventMeshTCPServer eventMeshTCPServer;
+    private final EventMeshTCPServer eventMeshTCPServer;
     private final EventMeshHTTPServer eventMeshHTTPServer;
     private final EventMeshGrpcServer eventMeshGrpcServer;
-
-    private AdminController adminController;
 
     public EventMeshAdminController(
             EventMeshTCPServer eventMeshTCPServer,
@@ -56,14 +55,17 @@ public class EventMeshAdminController {
     public void start() throws IOException {
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-        server.createContext("/client", new ClientHandler(eventMeshTCPServer, eventMeshHTTPServer, eventMeshGrpcServer));
+        server.createContext("/client/tcp", new TCPClientHandler(eventMeshTCPServer));
+        server.createContext("/client/http", new HTTPClientHandler(eventMeshHTTPServer));
+        server.createContext("/client/grpc", new GrpcClientHandler(eventMeshGrpcServer));
         server.createContext("/configuration", new ConfigurationHandler(
                 eventMeshTCPServer.getEventMeshTCPConfiguration(),
                 eventMeshHTTPServer.getEventMeshHttpConfiguration(),
                 eventMeshGrpcServer.getEventMeshGrpcConfiguration()
         ));
         server.createContext("/metrics", new MetricsHandler(eventMeshHTTPServer, eventMeshTCPServer));
-
+        server.createContext("/topic", new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType));
+        server.createContext("/event", new EventHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType));
         server.start();
         logger.info("ClientManageController start success, port:{}", port);
     }
