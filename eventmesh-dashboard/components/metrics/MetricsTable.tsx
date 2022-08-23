@@ -162,7 +162,7 @@ const MetricsTable = () => {
   });
 
   if (Object.keys(metrics).length === 0) {
-    return false;
+    return null;
   }
 
   return (
