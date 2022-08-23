@@ -19,15 +19,15 @@
 
 import Head from 'next/head';
 import type { NextPage } from 'next';
-import ClientTable from '../components/client/ClientTable';
+import EventTable from '../components/event/EventTable';
 
-const Client: NextPage = () => (
+const Event: NextPage = () => (
   <>
     <Head>
       <title>Client | Apache EventMesh Dashboard</title>
     </Head>
-    <ClientTable />
+    <EventTable />
   </>
 );
 
-export default Client;
+export default Event;

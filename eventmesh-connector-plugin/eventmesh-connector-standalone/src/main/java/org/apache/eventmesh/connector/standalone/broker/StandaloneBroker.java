@@ -44,6 +44,14 @@ public class StandaloneBroker {
         startHistoryMessageCleanTask();
     }
 
+    public ConcurrentHashMap<TopicMetadata, MessageQueue> getMessageContainer() {
+        return this.messageContainer;
+    }
+
+    public ConcurrentHashMap<TopicMetadata, AtomicLong> getOffsetMap() {
+        return this.offsetMap;
+    }
+
     public static StandaloneBroker getInstance() {
         return StandaloneBrokerInstanceHolder.instance;
     }
@@ -107,7 +115,6 @@ public class StandaloneBroker {
         return messageEntity.getMessage();
     }
 
-
     private void startHistoryMessageCleanTask() {
         Thread thread = new Thread(new HistoryMessageClearTask(messageContainer));
         thread.setDaemon(true);
@@ -120,7 +127,7 @@ public class StandaloneBroker {
     }
 
     /**
-     * if topic not exist, create a topic
+     * if the topic does not exist, create the topic
      *
      * @param topicName topicName
      * @return messageQueue and offset
@@ -130,6 +137,16 @@ public class StandaloneBroker {
         MessageQueue messageQueue = messageContainer.computeIfAbsent(topicMetadata, k -> new MessageQueue());
         AtomicLong offset = offsetMap.computeIfAbsent(topicMetadata, k -> new AtomicLong());
         return Pair.of(messageQueue, offset);
+    }
+
+    /**
+     * if the topic exists, delete the topic
+     *
+     * @param topicName topicName
+     */
+    public void deleteTopicIfExist(String topicName) {
+        TopicMetadata topicMetadata = new TopicMetadata(topicName);
+        messageContainer.remove(topicMetadata);
     }
 
     public void updateOffset(TopicMetadata topicMetadata, long offset) {

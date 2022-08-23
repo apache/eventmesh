@@ -31,6 +31,9 @@ public class TopicMetadata implements Serializable {
         this.topicName = topicName;
     }
 
+    public String getTopicName() {
+        return this.topicName;
+    }
 
     @Override
     public boolean equals(Object o) {
