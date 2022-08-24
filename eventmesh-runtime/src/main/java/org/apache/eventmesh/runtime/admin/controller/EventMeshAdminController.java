@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.runtime.admin.controller;
 
-import com.sun.net.httpserver.HttpServer;
 import org.apache.eventmesh.runtime.admin.handler.ConfigurationHandler;
 import org.apache.eventmesh.runtime.admin.handler.EventHandler;
 import org.apache.eventmesh.runtime.admin.handler.GrpcClientHandler;
@@ -31,11 +30,13 @@ import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.registry.Registry;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
+import com.sun.net.httpserver.HttpServer;
 
 public class EventMeshAdminController {
 
@@ -47,10 +48,10 @@ public class EventMeshAdminController {
     private final Registry eventMeshRegistry;
 
     public EventMeshAdminController(
-            EventMeshTCPServer eventMeshTCPServer,
-            EventMeshHTTPServer eventMeshHTTPServer,
-            EventMeshGrpcServer eventMeshGrpcServer,
-            Registry eventMeshRegistry
+        EventMeshTCPServer eventMeshTCPServer,
+        EventMeshHTTPServer eventMeshHTTPServer,
+        EventMeshGrpcServer eventMeshGrpcServer,
+        Registry eventMeshRegistry
     ) {
         this.eventMeshTCPServer = eventMeshTCPServer;
         this.eventMeshHTTPServer = eventMeshHTTPServer;
@@ -65,9 +66,9 @@ public class EventMeshAdminController {
         server.createContext("/client/http", new HTTPClientHandler(eventMeshHTTPServer));
         server.createContext("/client/grpc", new GrpcClientHandler(eventMeshGrpcServer));
         server.createContext("/configuration", new ConfigurationHandler(
-                eventMeshTCPServer.getEventMeshTCPConfiguration(),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration(),
-                eventMeshGrpcServer.getEventMeshGrpcConfiguration()
+            eventMeshTCPServer.getEventMeshTCPConfiguration(),
+            eventMeshHTTPServer.getEventMeshHttpConfiguration(),
+            eventMeshGrpcServer.getEventMeshGrpcConfiguration()
         ));
         server.createContext("/metrics", new MetricsHandler(eventMeshHTTPServer, eventMeshTCPServer));
         server.createContext("/topic", new TopicHandler(eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshConnectorPluginType));

@@ -46,9 +46,9 @@ public class ConfigurationHandler implements HttpHandler {
     private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
     public ConfigurationHandler(
-            EventMeshTCPConfiguration eventMeshTCPConfiguration,
-            EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
-            EventMeshGrpcConfiguration eventMeshGrpcConfiguration
+        EventMeshTCPConfiguration eventMeshTCPConfiguration,
+        EventMeshHTTPConfiguration eventMeshHTTPConfiguration,
+        EventMeshGrpcConfiguration eventMeshGrpcConfiguration
     ) {
         this.eventMeshTCPConfiguration = eventMeshTCPConfiguration;
         this.eventMeshHTTPConfiguration = eventMeshHTTPConfiguration;
@@ -79,28 +79,28 @@ public class ConfigurationHandler implements HttpHandler {
 
         try {
             GetConfigurationResponse getConfigurationResponse = new GetConfigurationResponse(
-                    eventMeshTCPConfiguration.sysID,
-                    eventMeshTCPConfiguration.namesrvAddr,
-                    eventMeshTCPConfiguration.eventMeshEnv,
-                    eventMeshTCPConfiguration.eventMeshIDC,
-                    eventMeshTCPConfiguration.eventMeshCluster,
-                    eventMeshTCPConfiguration.eventMeshServerIp,
-                    eventMeshTCPConfiguration.eventMeshName,
-                    eventMeshTCPConfiguration.eventMeshWebhookOrigin,
-                    eventMeshTCPConfiguration.eventMeshServerSecurityEnable,
-                    eventMeshTCPConfiguration.eventMeshServerRegistryEnable,
+                eventMeshTCPConfiguration.sysID,
+                eventMeshTCPConfiguration.namesrvAddr,
+                eventMeshTCPConfiguration.eventMeshEnv,
+                eventMeshTCPConfiguration.eventMeshIDC,
+                eventMeshTCPConfiguration.eventMeshCluster,
+                eventMeshTCPConfiguration.eventMeshServerIp,
+                eventMeshTCPConfiguration.eventMeshName,
+                eventMeshTCPConfiguration.eventMeshWebhookOrigin,
+                eventMeshTCPConfiguration.eventMeshServerSecurityEnable,
+                eventMeshTCPConfiguration.eventMeshServerRegistryEnable,
 
-                    // TCP Configuration
-                    eventMeshTCPConfiguration.eventMeshTcpServerPort,
-                    eventMeshTCPConfiguration.eventMeshTcpServerEnabled,
+                // TCP Configuration
+                eventMeshTCPConfiguration.eventMeshTcpServerPort,
+                eventMeshTCPConfiguration.eventMeshTcpServerEnabled,
 
-                    // HTTP Configuration
-                    eventMeshHTTPConfiguration.httpServerPort,
-                    eventMeshHTTPConfiguration.eventMeshServerUseTls,
+                // HTTP Configuration
+                eventMeshHTTPConfiguration.httpServerPort,
+                eventMeshHTTPConfiguration.eventMeshServerUseTls,
 
-                    // gRPC Configuration
-                    eventMeshGrpcConfiguration.grpcServerPort,
-                    eventMeshGrpcConfiguration.eventMeshServerUseTls
+                // gRPC Configuration
+                eventMeshGrpcConfiguration.grpcServerPort,
+                eventMeshGrpcConfiguration.eventMeshServerUseTls
             );
 
             String result = JsonUtils.toJson(getConfigurationResponse);
