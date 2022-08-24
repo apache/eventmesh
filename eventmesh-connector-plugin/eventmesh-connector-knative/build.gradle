@@ -16,7 +16,10 @@
  */
 
 dependencies {
-    implementation 'org.asynchttpclient:async-http-client:2.12.0'
+    implementation 'org.asynchttpclient:async-http-client'
+
+    implementation project(":eventmesh-runtime")
+    testImplementation project(":eventmesh-runtime")
 
     implementation project(":eventmesh-common")
     testImplementation project(":eventmesh-common")
