@@ -23,7 +23,10 @@ configurations {
 dependencies {
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
-    implementation "io.pravega:pravega-client:$pravega_version"
+    implementation("io.pravega:pravega-client:$pravega_version") {
+        exclude group: 'io.netty', module: 'netty-codec-http2:4.1.30.Final'
+    }
+    implementation 'io.netty:netty-codec-http2:4.1.79.Final'
 
 //    testImplementation "org.mockito:mockito-core"
 //    testImplementation "org.powermock:powermock-module-junit4"
