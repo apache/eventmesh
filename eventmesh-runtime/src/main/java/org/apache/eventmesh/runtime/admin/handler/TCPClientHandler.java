@@ -24,9 +24,6 @@ import org.apache.eventmesh.runtime.admin.response.GetClientResponse;
 import org.apache.eventmesh.runtime.admin.utils.HttpExchangeUtils;
 import org.apache.eventmesh.runtime.admin.utils.JsonUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.ConsumerManager;
-import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.ConsumerGroupClient;
-import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -39,7 +36,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -58,7 +54,7 @@ public class TCPClientHandler implements HttpHandler {
     private final EventMeshTCPServer eventMeshTCPServer;
 
     public TCPClientHandler(
-            EventMeshTCPServer eventMeshTCPServer
+        EventMeshTCPServer eventMeshTCPServer
     ) {
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
@@ -93,9 +89,9 @@ public class TCPClientHandler implements HttpHandler {
                 for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                     if (entry.getKey().getHostString().equals(host) && entry.getKey().getPort() == port) {
                         EventMeshTcp2Client.serverGoodby2Client(
-                                eventMeshTCPServer,
-                                entry.getValue(),
-                                clientSessionGroupMapping
+                            eventMeshTCPServer,
+                            entry.getValue(),
+                            clientSessionGroupMapping
                         );
                     }
                 }
@@ -142,17 +138,17 @@ public class TCPClientHandler implements HttpHandler {
             for (Session session : sessionMap.values()) {
                 UserAgent userAgent = session.getClient();
                 GetClientResponse getClientResponse = new GetClientResponse(
-                        Optional.ofNullable(userAgent.getEnv()).orElse(""),
-                        Optional.ofNullable(userAgent.getSubsystem()).orElse(""),
-                        Optional.ofNullable(userAgent.getPath()).orElse(""),
-                        String.valueOf(userAgent.getPid()),
-                        Optional.ofNullable(userAgent.getHost()).orElse(""),
-                        userAgent.getPort(),
-                        Optional.ofNullable(userAgent.getVersion()).orElse(""),
-                        Optional.ofNullable(userAgent.getIdc()).orElse(""),
-                        Optional.ofNullable(userAgent.getGroup()).orElse(""),
-                        Optional.ofNullable(userAgent.getPurpose()).orElse(""),
-                        "TCP"
+                    Optional.ofNullable(userAgent.getEnv()).orElse(""),
+                    Optional.ofNullable(userAgent.getSubsystem()).orElse(""),
+                    Optional.ofNullable(userAgent.getPath()).orElse(""),
+                    String.valueOf(userAgent.getPid()),
+                    Optional.ofNullable(userAgent.getHost()).orElse(""),
+                    userAgent.getPort(),
+                    Optional.ofNullable(userAgent.getVersion()).orElse(""),
+                    Optional.ofNullable(userAgent.getIdc()).orElse(""),
+                    Optional.ofNullable(userAgent.getGroup()).orElse(""),
+                    Optional.ofNullable(userAgent.getPurpose()).orElse(""),
+                    "TCP"
                 );
                 getClientResponseList.add(getClientResponse);
             }
