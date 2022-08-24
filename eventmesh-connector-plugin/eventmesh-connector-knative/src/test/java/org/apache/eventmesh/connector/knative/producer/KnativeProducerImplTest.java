@@ -20,18 +20,8 @@ package org.apache.eventmesh.connector.knative.producer;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
-import org.apache.eventmesh.common.config.ConfigurationWrapper;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
 import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeHeaders;
-import org.apache.eventmesh.runtime.boot.EventMeshServer;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
-import org.apache.eventmesh.runtime.constants.EventMeshConstants;
-import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
-import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 
 import java.util.Properties;
 
@@ -41,27 +31,6 @@ public class KnativeProducerImplTest {
 
     @Test
     public void testPublish() throws Exception {
-        // Start an EventMesh server:
-        ConfigurationWrapper configurationWrapper =
-            new ConfigurationWrapper(System.getProperty("user.dir") + "/../../eventmesh-runtime/conf/",
-                EventMeshConstants.EVENTMESH_CONF_FILE, false);
-
-        EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(configurationWrapper);
-        eventMeshHttpConfiguration.init();
-        EventMeshTCPConfiguration eventMeshTcpConfiguration = new EventMeshTCPConfiguration(configurationWrapper);
-        eventMeshTcpConfiguration.init();
-        EventMeshGrpcConfiguration eventMeshGrpcConfiguration = new EventMeshGrpcConfiguration(configurationWrapper);
-        eventMeshGrpcConfiguration.init();
-
-        EventMeshServer server = new EventMeshServer(eventMeshHttpConfiguration, eventMeshTcpConfiguration, eventMeshGrpcConfiguration);
-        server.init();
-        server.start();
-
-        // Create a Knative producer:
-        EventMeshProducer eventMeshProducer =
-            server.eventMeshHTTPServer.getProducerManager().createEventMeshProducer(new ProducerGroupConf("test-producer-group"));
-
-        // Publish an event message:
         Properties properties = new Properties();
 
         properties.put(KnativeHeaders.CONTENT_TYPE, "application/json");
@@ -70,11 +39,13 @@ public class KnativeProducerImplTest {
         properties.put(KnativeHeaders.CE_TYPE, "some-type");
         properties.put(KnativeHeaders.CE_SOURCE, "java-client");
         properties.put("data", "Hello Knative from EventMesh!");
-        SendMessageContext sendMessageContext =
-            new SendMessageContext(RandomStringUtils.generateNum(30), KnativeMessageFactory.createWriter(properties), eventMeshProducer,
-                server.eventMeshHTTPServer);
 
-        eventMeshProducer.send(sendMessageContext, new SendCallback() {
+        // Create a Knative producer:
+        KnativeProducerImpl knativehProducer = new KnativeProducerImpl();
+        knativehProducer.init(properties);
+
+        // Publish an event message:
+        knativehProducer.publish(KnativeMessageFactory.createWriter(properties), new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
             }
