@@ -28,17 +28,42 @@ import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 
+/**
+ * Admin API.
+ */
 @EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
 public interface Admin extends LifeCycle {
+    /**
+     * Initializes admin api service.
+     */
     void init(Properties keyValue) throws Exception;
 
+    /**
+     * Get the list of topics.
+     *
+     * @return List of topics.
+     */
     List<TopicProperties> getTopic() throws Exception;
 
+    /**
+     * Create one topic.
+     */
     void createTopic(String topicName) throws Exception;
 
+    /**
+     * Delete one topic.
+     */
     void deleteTopic(String topicName) throws Exception;
 
+    /**
+     * Get the list of all events.
+     *
+     * @return List of events.
+     */
     List<CloudEvent> getEvent(String topicName, int offset, int length) throws Exception;
 
+    /**
+     * Publish an event.
+     */
     void publish(CloudEvent cloudEvent) throws Exception;
 }

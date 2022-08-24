@@ -49,13 +49,13 @@ public final class RocketMQMessageFactory {
 
     public static MessageReader createReader(final Map<String, String> props,
                                              @Nullable final byte[] body)
-            throws CloudEventRWException {
+        throws CloudEventRWException {
 
         return MessageUtils.parseStructuredOrBinaryMessage(
-                () -> null,
-                format -> null,
-                () -> props.get(RocketMQHeaders.SPEC_VERSION),
-                sv -> new RocketMQBinaryMessageReader(sv, props, body)
+            () -> null,
+            format -> null,
+            () -> props.get(RocketMQHeaders.SPEC_VERSION),
+            sv -> new RocketMQBinaryMessageReader(sv, props, body)
         );
     }
 

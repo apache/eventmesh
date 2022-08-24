@@ -50,9 +50,9 @@ public class StandaloneConsumer implements Consumer {
         this.subscribeTaskTable = new ConcurrentHashMap<>(16);
         this.isStarted = new AtomicBoolean(false);
         this.consumeExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
-                Runtime.getRuntime().availableProcessors() * 2,
-                Runtime.getRuntime().availableProcessors() * 2,
-                "StandaloneConsumerThread"
+            Runtime.getRuntime().availableProcessors() * 2,
+            Runtime.getRuntime().availableProcessors() * 2,
+            "StandaloneConsumerThread"
         );
     }
 
@@ -86,7 +86,7 @@ public class StandaloneConsumer implements Consumer {
     @Override
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
         cloudEvents.forEach(cloudEvent -> standaloneBroker.updateOffset(
-                new TopicMetadata(cloudEvent.getSubject()), (Long) cloudEvent.getExtension("offset"))
+            new TopicMetadata(cloudEvent.getSubject()), (Long) cloudEvent.getExtension("offset"))
         );
 
     }
