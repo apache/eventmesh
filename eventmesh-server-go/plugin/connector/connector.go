@@ -17,8 +17,6 @@ package connector
 
 import (
 	"context"
-	"time"
-
 	ce "github.com/cloudevents/sdk-go/v2"
 
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
@@ -64,7 +62,7 @@ type Producer interface {
 	InitProducer(properties map[string]string) error
 	Publish(ctx context.Context, event *ce.Event, callback SendCallback) error
 	SendOneway(ctx context.Context, event *ce.Event) error
-	Request(ctx context.Context, event *ce.Event, callback SendCallback, timeout time.Duration) error
+	Request(ctx context.Context, event *ce.Event, callback SendCallback) error
 	Reply(ctx context.Context, event *ce.Event, callback SendCallback) error
 	CheckTopicExist(topicName string) (bool, error)
 	SetExtFields() error

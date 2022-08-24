@@ -19,7 +19,7 @@ import (
 	"context"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/grpc/processor"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/processor"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"github.com/panjf2000/ants"
 	"google.golang.org/grpc"

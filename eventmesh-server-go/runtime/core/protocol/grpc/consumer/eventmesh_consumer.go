@@ -13,29 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package processor
+package consumer
 
-import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/grpc/utils"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-)
+import "github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
 
-// SubscribeWebHook process the subscribe request
-type SubscribeWebHook struct {
-	*Processor
-}
-
-// Do process the webhook subscription
-func (s *SubscribeWebHook) Do(sub *pb.Subscription) error {
-	hdr := sub.Header
-	if err := utils.ValidateHeader(hdr); err != nil {
-		return err
-	}
-	if err := utils.ValidateSubscription(true, sub); err != nil {
-		return err
-	}
-	if err := s.Interceptor(sub); err != nil {
-		return err
-	}
-
+type EventMeshConsumer struct {
+	ConsumerGroup      string
+	persistentConsumer *wrapper.Consumer
+	broadcastConsumer  *wrapper.Consumer
 }

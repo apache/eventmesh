@@ -13,8 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package wrapper
 
-type EventMeshConsumer struct {
-	ConsumerGroup string
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
+	"go.uber.org/atomic"
+	"os"
+)
+
+var (
+	defaultEventStore = "defibus"
+)
+
+type Base struct {
+	CurrentEventStore string
+	Started           *atomic.Bool
+	Inited            *atomic.Bool
+}
+
+func DefaultBaseWrapper() *Base {
+	val := os.Getenv(consts.EVENT_STORE_ENV)
+	if val == "" {
+		val = defaultEventStore
+	}
+	return &Base{
+		CurrentEventStore: val,
+		Started:           atomic.NewBool(false),
+		Inited:            atomic.NewBool(false),
+	}
 }
