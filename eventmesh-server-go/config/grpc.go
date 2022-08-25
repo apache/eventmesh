@@ -33,4 +33,7 @@ type GRPCOption struct {
 	// RetryPoolSize pool in handle retry msg
 	// default to 10
 	RetryPoolSize int `yaml:"retry-pool-size" toml:"retry-pool-size"`
+	// PushMessagePoolSize pool to push message
+	// default to 10
+	PushMessagePoolSize int `yaml:"push-message-pool-size" toml:"push-message-pool-size"`
 }

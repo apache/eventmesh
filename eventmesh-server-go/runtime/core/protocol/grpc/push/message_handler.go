@@ -15,8 +15,51 @@
 
 package push
 
-import "github.com/panjf2000/ants"
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/panjf2000/ants"
+	"sync"
+	"time"
+)
 
 type MessageHandler struct {
 	pool *ants.Pool
+	// waitingRequests waiting to request
+	// key to consumerGroup value to []*PushRequest
+	waitingRequests *sync.Map
+}
+
+func NewMessageHandler(consumerGroup string) (*MessageHandler, error) {
+	ps := config.GlobalConfig().Server.GRPCOption.PushMessagePoolSize
+	p, err := ants.NewPool(ps, ants.WithPanicHandler(func(i interface{}) {
+		log.Warnf("err in handle push message:%v", i)
+	}))
+	if err != nil {
+		return nil, err
+	}
+	wr := new(sync.Map)
+	// TODO need goroutine safe in []*Request{}
+	wr.Store(consumerGroup, []*Request{})
+	hdl := &MessageHandler{
+		pool:            p,
+		waitingRequests: wr,
+	}
+	go hdl.checkTimeout()
+	return hdl, nil
+}
+
+func (m *MessageHandler) checkTimeout() {
+	tk := time.NewTicker(time.Second)
+	for range tk.C {
+		m.waitingRequests.Range(func(key, value interface{}) bool {
+			reqs := value.([]*Request)
+			for _, req := range reqs {
+				if req.timeout() {
+
+				}
+			}
+			return true
+		})
+	}
 }
