@@ -26,6 +26,10 @@ name = "grpc-producer-publish"
 path = "grpc-producer-publish.rs"
 
 [[example]]
+name = "grpc-producer-request"
+path = "grpc-producer-request.rs"
+
+[[example]]
 name = "grpc-consumer"
 path = "grpc-consumer.rs"
 

@@ -16,6 +16,8 @@ use tonic::{
     IntoStreamingRequest, Request, Status, Streaming,
 };
 
+use crate::message::EventMeshMessage;
+
 use super::{
     config::EventMeshGrpcConfig,
     eventmesh_grpc::{
@@ -23,7 +25,7 @@ use super::{
         consumer_service_server::ConsumerServiceServer,
         heartbeat::{ClientType, HeartbeatItem},
         heartbeat_service_client::HeartbeatServiceClient,
-        subscription::{subscription_item, SubscriptionItem},
+        subscription::{subscription_item, Reply, SubscriptionItem},
         Heartbeat, RequestHeader, Response, SimpleMessage, Subscription,
     },
     SDK_STREAM_URL,
@@ -104,6 +106,7 @@ pub struct EventMeshMessageConsumer {
     default_header: RequestHeader,
     // producer_group: String,
     consumer_group: String,
+    producer_group:String,
     subscription_map: Arc<Mutex<HashMap<String, String>>>,
     sender: Option<Sender<Subscription>>,
 }
@@ -130,6 +133,7 @@ impl EventMeshMessageConsumer {
             consumer_group: config.consumer_group.to_string(),
             subscription_map,
             sender: None,
+            producer_group: config.producer_group.to_string(),
         })
     }
     pub async fn unsubscribe_stream(
@@ -174,6 +178,31 @@ impl EventMeshMessageConsumer {
             })
             .await?;
         Ok(resp.into_inner())
+    }
+    pub async fn stream_reply(&mut self, message: &EventMeshMessage) -> Result<()> {
+        let sender = self
+            .sender
+            .as_ref()
+            .ok_or(anyhow::anyhow!("sender not init"))?;
+        sender
+            .send(Subscription {
+                header: Some(self.default_header.clone()),
+                consumer_group: self.consumer_group.clone(),
+                subscription_items: vec![],
+                url: SDK_STREAM_URL.to_string(),
+                reply: Some(Reply {
+                    producer_group: self.producer_group.clone(),
+                    topic: message.topic.to_string(),
+                    content: message.content.to_string(),
+                    ttl: message.ttl.to_string(),
+                    unique_id: message.unique_id.to_string(),
+                    seq_num: message.biz_seq_no.to_string(),
+                    tag: "".to_string(),
+                    properties: HashMap::new(),
+                }),
+            })
+            .await?;
+        Ok(())
     }
     pub async fn subscribe_stream(
         &mut self,
