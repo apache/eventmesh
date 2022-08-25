@@ -1,17 +1,24 @@
+use std::fmt;
+
 use anyhow::Result;
-use eventmesh::grpc::{
-    config::EventMeshGrpcConfig,
-    consumer::EventMeshMessageConsumer,
-    eventmesh_grpc::{
-        subscription::{
+use eventmesh::{
+    grpc::{
+        config::EventMeshGrpcConfig,
+        consumer::EventMeshMessageConsumer,
+        eventmesh_grpc::subscription::{
             subscription_item::{SubscriptionMode, SubscriptionType},
             SubscriptionItem,
         },
     },
+    message::EventMeshMessage,
 };
+use serde::Serialize;
 use tokio::{select, signal};
-use tracing::{Level, info};
-
+use tracing::{info, Level};
+#[derive(Serialize)]
+struct Content {
+    content: String,
+}
 #[tokio::main]
 async fn main() -> Result<()> {
     let collector = tracing_subscriber::fmt().init();
@@ -46,7 +53,18 @@ async fn main() -> Result<()> {
         _ = async {
             while let Ok(msg) = stream.message().await{
                 match msg{
-                    Some(msg) => info!("{:#?}",msg),
+                    Some(msg) => {
+                        info!("receive: {:#?}", msg);
+                        consumer.stream_reply(&EventMeshMessage::new(
+                            "123456789012345678901234567893",
+                            "123456789012345678901234567894",
+                            "TEST-TOPIC-GRPC-BROADCAST",
+                            &serde_json::to_string(&Content {
+                                content: format!("testReplyMessage: {}",msg.content).to_string(),
+                            }).unwrap(),
+                            5,
+                        )).await.unwrap();
+                    },
                     None => { info!("stream end"); break; },
                 }
             };

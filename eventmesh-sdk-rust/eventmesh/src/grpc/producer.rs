@@ -44,4 +44,22 @@ impl EventMeshMessageProducer {
             res_time: resp.resp_time.parse()?,
         })
     }
+    pub async fn request(&mut self, message: EventMeshMessage) -> Result<SimpleMessage> {
+        let resp = self
+            .client
+            .request_reply(SimpleMessage {
+                header: Some(self.default_header.clone()),
+                producer_group: self.producer_group.to_string(),
+                topic: message.topic,
+                content: message.content,
+                ttl: message.ttl.to_string(),
+                unique_id: message.unique_id,
+                seq_num: message.biz_seq_no,
+                tag: "".to_string(),
+                properties: Default::default(),
+            })
+            .await?
+            .into_inner();
+        Ok(resp)
+    }
 }
