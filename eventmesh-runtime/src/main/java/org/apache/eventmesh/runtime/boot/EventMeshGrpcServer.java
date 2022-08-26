@@ -240,9 +240,6 @@ public class EventMeshGrpcServer {
             eventMeshGrpcConfiguration.eventMeshServerPushMsgThreadNum, pushMsgThreadPoolQueue,
             "eventMesh-grpc-pushMsg-%d", true);
 
-        BlockingQueue<Runnable> replyMsgThreadPoolQueue =
-            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.eventMeshServerSendMsgBlockQueueSize);
-
         replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(eventMeshGrpcConfiguration.eventMeshServerReplyMsgThreadNum,
             eventMeshGrpcConfiguration.eventMeshServerReplyMsgThreadNum, sendMsgThreadPoolQueue,
             "eventMesh-grpc-replyMsg-%d", true);
