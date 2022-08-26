@@ -21,6 +21,9 @@ import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
+import org.apache.eventmesh.common.protocol.SubscriptionItem;
+import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
 import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeHeaders;
@@ -29,13 +32,19 @@ import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
+import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupTopicConf;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.EventMeshProducer;
 import org.apache.eventmesh.runtime.core.protocol.http.producer.SendMessageContext;
 
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
+
+import com.google.common.collect.Maps;
 
 public class KnativeConnectorTest {
 
@@ -83,6 +92,25 @@ public class KnativeConnectorTest {
             public void onException(OnExceptionContext context) {
             }
         });
+
+        // Wait a second:
+        TimeUnit.MILLISECONDS.sleep(1000);
+
+        // Subscribe:
+        final String topic = "messages";
+
+        ConsumerGroupTopicConf consumerGroupTopicConf = new ConsumerGroupTopicConf();
+        consumerGroupTopicConf.setTopic(topic);
+        SubscriptionItem subscriptionItem = new SubscriptionItem(topic, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC);
+        consumerGroupTopicConf.setSubscriptionItem(subscriptionItem);
+
+        Map<String, ConsumerGroupTopicConf> consumerGroupTopicConfMap = Maps.newConcurrentMap();
+        consumerGroupTopicConfMap.put(topic, consumerGroupTopicConf);
+
+        ConsumerGroupConf consumerGroupConf = new ConsumerGroupConf("test-consumerGroup");
+        consumerGroupConf.setConsumerGroupTopicConf(consumerGroupTopicConfMap);
+
+        server.eventMeshHTTPServer.getConsumerManager().addConsumer("test-consumerGroup", consumerGroupConf);
 
         // Shutdown EventMesh server:
         server.shutdown();

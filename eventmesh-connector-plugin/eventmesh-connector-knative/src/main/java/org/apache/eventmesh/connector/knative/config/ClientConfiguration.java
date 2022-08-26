@@ -23,6 +23,7 @@ import com.google.common.base.Preconditions;
 
 public class ClientConfiguration {
 
+    public String emurl = "";
     public String serviceAddr = "";
 
     public void init() {
@@ -31,6 +32,7 @@ public class ClientConfiguration {
             String.format("%s error", ConfKeys.KEYS_EVENTMESH_KNATIVE_SERVICE_ADDR));
         serviceAddr = StringUtils.trim(serviceAddrStr);
         String[] temp = serviceAddr.split(";");
+        emurl = temp[0];
         serviceAddr = temp[1];
     }
 
