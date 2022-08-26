@@ -26,11 +26,11 @@ dependencies {
     implementation("io.pravega:pravega-client:$pravega_version") {
         exclude group: 'io.netty', module: 'netty-codec-http2:4.1.30.Final'
     }
+    // use newer version to avoid CVE
     implementation 'io.netty:netty-codec-http2:4.1.79.Final'
 
-//    testImplementation "org.mockito:mockito-core"
-//    testImplementation "org.powermock:powermock-module-junit4"
-//    testImplementation "org.powermock:powermock-api-mockito2"
+    testImplementation "org.powermock:powermock-module-junit4"
+    testImplementation "org.powermock:powermock-api-mockito2"
 
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
