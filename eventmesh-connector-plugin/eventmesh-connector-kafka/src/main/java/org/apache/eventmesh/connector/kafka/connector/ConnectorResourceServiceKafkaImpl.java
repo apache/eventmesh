@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.prometheus.config;
+package org.apache.eventmesh.connector.kafka.connector;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.eventmesh.api.connector.ConnectorResourceService;
 
-public class PrometheusConfigurationTest {
+public class ConnectorResourceServiceKafkaImpl implements ConnectorResourceService {
+    @Override
+    public void init() throws Exception {
 
-    @Test
-    public void getEventMeshPrometheusPort() {
-        int eventMeshPrometheusPort = PrometheusConfiguration.getEventMeshPrometheusPort();
-        Assert.assertEquals(19091, eventMeshPrometheusPort);
+    }
+
+    @Override
+    public void release() throws Exception {
+
     }
 }

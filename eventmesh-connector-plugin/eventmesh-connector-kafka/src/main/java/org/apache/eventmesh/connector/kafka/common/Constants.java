@@ -15,16 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.prometheus.config;
+package org.apache.eventmesh.connector.kafka.common;
 
-import org.junit.Assert;
-import org.junit.Test;
+public class Constants {
 
-public class PrometheusConfigurationTest {
-
-    @Test
-    public void getEventMeshPrometheusPort() {
-        int eventMeshPrometheusPort = PrometheusConfiguration.getEventMeshPrometheusPort();
-        Assert.assertEquals(19091, eventMeshPrometheusPort);
-    }
+    public static final String BROADCAST_PREFIX = "broadcast-";
 }

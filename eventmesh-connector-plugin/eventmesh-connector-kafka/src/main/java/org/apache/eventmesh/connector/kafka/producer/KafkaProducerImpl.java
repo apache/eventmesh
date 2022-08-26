@@ -15,46 +15,33 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.rocketmq.producer;
+package org.apache.eventmesh.connector.kafka.producer;
+
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.producer.Producer;
-import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
-import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 
-import org.apache.rocketmq.client.exception.MQBrokerException;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.remoting.exception.RemotingException;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 
+import java.net.URI;
 import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.kafka.CloudEventSerializer;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@SuppressWarnings("deprecation")
-public class RocketMQProducerImpl implements Producer {
+public class KafkaProducerImpl implements Producer {
 
     private ProducerImpl producer;
 
     @Override
     public synchronized void init(Properties keyValue) {
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.init();
-        String producerGroup = keyValue.getProperty("producerGroup");
-
-        String omsNamesrv = clientConfiguration.namesrvAddr;
-        Properties properties = new Properties();
-        properties.put("ACCESS_POINTS", omsNamesrv);
-        properties.put("REGION", "namespace");
-        properties.put("RMQ_PRODUCER_GROUP", producerGroup);
-        properties.put("OPERATION_TIMEOUT", 3000);
-        properties.put("PRODUCER_ID", producerGroup);
-
-        producer = new ProducerImpl(properties);
-
+        keyValue.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        this.producer = new ProducerImpl(keyValue);
     }
 
     @Override
@@ -83,8 +70,7 @@ public class RocketMQProducerImpl implements Producer {
     }
 
     @Override
-    public void request(CloudEvent message, RequestReplyCallback rrCallback, long timeout)
-            throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+    public void request(CloudEvent message, RequestReplyCallback rrCallback, long timeout) throws Exception {
         producer.request(message, rrCallback, timeout);
     }
 
@@ -96,16 +82,12 @@ public class RocketMQProducerImpl implements Producer {
 
     @Override
     public void checkTopicExist(String topic) throws Exception {
-        this.producer.getRocketmqProducer()
-            .getDefaultMQProducerImpl()
-            .getmQClientFactory()
-            .getMQClientAPIImpl()
-            .getDefaultTopicRouteInfoFromNameServer(topic, EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+
     }
 
     @Override
     public void setExtFields() {
-        producer.setExtFields();
+        // producer.setExtFields();
     }
 
 
