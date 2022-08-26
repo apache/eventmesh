@@ -15,19 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.connector.pulsar.config;
 
-import java.io.Serializable;
-import java.util.Comparator;
-import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 
-public class ValueComparator implements Comparator<Map.Entry<String, Integer>>, Serializable {
-    @Override
-    public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
-        if (x.getValue().intValue() != y.getValue().intValue()) {
-            return x.getValue() - y.getValue();
-        } else {
-            return x.getKey().compareTo(y.getKey());
-        }
+import com.google.common.base.Preconditions;
+
+public class ClientConfiguration {
+
+    public String serviceAddr = "";
+
+    public void init() {
+        String serviceAddrStr = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR);
+        Preconditions.checkState(StringUtils.isNotEmpty(serviceAddrStr),
+                String.format("%s error", ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR));
+        serviceAddr = StringUtils.trim(serviceAddrStr);
+        String[] temp = serviceAddr.split(";");
+        serviceAddr = temp[1];
+    }
+
+    static class ConfKeys {
+        public static final String KEYS_EVENTMESH_PULSAR_SERVICE_ADDR = "eventMesh.server.pulsar.service";
     }
 }
