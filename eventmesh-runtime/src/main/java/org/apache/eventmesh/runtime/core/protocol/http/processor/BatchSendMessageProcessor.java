@@ -172,7 +172,6 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
             batchId = Objects.requireNonNull(event.getExtension(SendMessageBatchRequestBody.BATCHID)).toString();
             producerGroup = Objects.requireNonNull(event.getExtension(SendMessageBatchRequestBody.PRODUCERGROUP)).toString();
-            String topic = event.getSubject();
             eventSize = Integer.parseInt(Objects.requireNonNull(event.getExtension(SendMessageBatchRequestBody.SIZE)).toString());
             CloudEventData eventData = event.getData();
 
