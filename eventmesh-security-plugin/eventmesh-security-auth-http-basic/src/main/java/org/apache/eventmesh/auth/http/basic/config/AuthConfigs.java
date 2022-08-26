@@ -23,6 +23,12 @@ import java.util.Properties;
 
 public class AuthConfigs {
 
+    private static final String AUTH_CONFIG_FILE_NAME = "auth-http-basic.properties";
+
+    private static final String AUTH_CONFIG_KEY_USERNAME = "auth.username";
+
+    private static final String AUTH_CONFIG_KEY_PASSWORD = "auth.password";
+
     public String username;
 
     public String password;
@@ -31,10 +37,10 @@ public class AuthConfigs {
 
     public static synchronized AuthConfigs getConfigs() {
         if (instance == null) {
-            Properties props = ConfigurationWrapper.getConfig("auth-http-basic.properties");
+            Properties props = ConfigurationWrapper.getConfig(AUTH_CONFIG_FILE_NAME);
             instance = new AuthConfigs();
-            instance.username = props.getProperty("auth.username");
-            instance.password = props.getProperty("auth.password");
+            instance.username = props.getProperty(AUTH_CONFIG_KEY_USERNAME);
+            instance.password = props.getProperty(AUTH_CONFIG_KEY_PASSWORD);
         }
         return instance;
     }
