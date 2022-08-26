@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
 import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -54,7 +55,7 @@ public class UpdateWebHookConfigHandler implements HttpHandler {
         try (OutputStream out = httpExchange.getResponseBody()) {
             Integer code = operation.updateWebHookConfig(webHookConfig); // operating result
             String result = 1 == code ? "updateWebHookConfig Succeed!" : "updateWebHookConfig Failed!";
-            out.write(result.getBytes());
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("get WebHookConfigOperation implementation Failed.", e);
         }
