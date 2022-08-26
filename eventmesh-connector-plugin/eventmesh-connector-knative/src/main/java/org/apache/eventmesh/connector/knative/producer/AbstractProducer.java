@@ -51,7 +51,7 @@ public abstract class AbstractProducer implements Producer {
     }
 
     public boolean isStarted() {
-        return this.started.get();
+        return started.get();
     }
 
     public boolean isClosed() {
