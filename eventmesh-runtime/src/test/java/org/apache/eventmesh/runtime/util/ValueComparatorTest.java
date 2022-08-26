@@ -17,17 +17,27 @@
 
 package org.apache.eventmesh.runtime.util;
 
-import java.io.Serializable;
-import java.util.Comparator;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.Map;
+import java.util.TreeMap;
 
-public class ValueComparator implements Comparator<Map.Entry<String, Integer>>, Serializable {
-    @Override
-    public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
-        if (x.getValue().intValue() != y.getValue().intValue()) {
-            return x.getValue() - y.getValue();
-        } else {
-            return x.getKey().compareTo(y.getKey());
+import org.junit.Assert;
+import org.junit.Test;
+
+public class ValueComparatorTest {
+
+    @Test
+    public void testSerializeOrderedCollection() {
+        Map<Map.Entry<String, Integer>, Integer> map = new TreeMap<>(new ValueComparator());
+        try (OutputStream bos = new ByteArrayOutputStream();
+             ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+            oos.writeObject(map);
+        } catch (IOException e) {
+            Assert.fail();
         }
     }
+
 }

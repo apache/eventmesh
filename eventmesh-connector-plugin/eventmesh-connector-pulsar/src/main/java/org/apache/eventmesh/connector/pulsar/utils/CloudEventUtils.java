@@ -15,19 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.connector.pulsar.utils;
 
-import java.io.Serializable;
-import java.util.Comparator;
-import java.util.Map;
+import org.apache.eventmesh.api.SendResult;
 
-public class ValueComparator implements Comparator<Map.Entry<String, Integer>>, Serializable {
-    @Override
-    public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
-        if (x.getValue().intValue() != y.getValue().intValue()) {
-            return x.getValue() - y.getValue();
-        } else {
-            return x.getKey().compareTo(y.getKey());
-        }
+import io.cloudevents.CloudEvent;
+
+public class CloudEventUtils {
+    public static SendResult convertSendResult(CloudEvent cloudEvent) {
+        SendResult sendResult = new SendResult();
+        sendResult.setTopic(cloudEvent.getSubject());
+        sendResult.setMessageId(cloudEvent.getId());
+        return sendResult;
     }
 }

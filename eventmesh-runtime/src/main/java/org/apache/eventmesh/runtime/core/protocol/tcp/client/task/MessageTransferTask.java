@@ -93,7 +93,6 @@ public class MessageTransferTask extends AbstractTask {
         Command replyCmd = getReplyCmd(cmd);
         Package msg = new Package();
 
-        int retCode = 0;
         EventMeshTcpSendResult sendStatus;
         CloudEvent event = null;
 

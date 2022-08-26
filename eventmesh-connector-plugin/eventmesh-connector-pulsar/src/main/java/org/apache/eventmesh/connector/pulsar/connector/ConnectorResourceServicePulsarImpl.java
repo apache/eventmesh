@@ -15,19 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.connector.pulsar.connector;
 
-import java.io.Serializable;
-import java.util.Comparator;
-import java.util.Map;
+import org.apache.eventmesh.api.connector.ConnectorResourceService;
 
-public class ValueComparator implements Comparator<Map.Entry<String, Integer>>, Serializable {
+public class ConnectorResourceServicePulsarImpl implements ConnectorResourceService {
     @Override
-    public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
-        if (x.getValue().intValue() != y.getValue().intValue()) {
-            return x.getValue() - y.getValue();
-        } else {
-            return x.getKey().compareTo(y.getKey());
-        }
+    public void init() throws Exception {
+
+    }
+
+    @Override
+    public void release() throws Exception {
+
     }
 }

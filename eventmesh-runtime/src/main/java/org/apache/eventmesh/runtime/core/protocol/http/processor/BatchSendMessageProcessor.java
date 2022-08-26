@@ -172,7 +172,6 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
 
             batchId = Objects.requireNonNull(event.getExtension(SendMessageBatchRequestBody.BATCHID)).toString();
             producerGroup = Objects.requireNonNull(event.getExtension(SendMessageBatchRequestBody.PRODUCERGROUP)).toString();
-            String topic = event.getSubject();
             eventSize = Integer.parseInt(Objects.requireNonNull(event.getExtension(SendMessageBatchRequestBody.SIZE)).toString());
             CloudEventData eventData = event.getData();
 
@@ -289,19 +288,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
             for (List<CloudEvent> eventlist : topicBatchMessageMappings.values()) {
                 // TODO: Implementation in API. Consider whether to put it in the plug-in.
                 CloudEvent event = null;
-                //Message omsMsg = new Message();
-                //try {
-                //    msgBatch = msgBatch.generateFromList(batchMsgs);
-                //    for (Message message : msgBatch.getMessages()) {
-                //        // TODO: Detect the maximum length of messages for different producers.
-                //        Validators.checkMessage(message, batchEventMeshProducer.getMqProducerWrapper().getDefaultMQProducer());
-                //        MessageClientIDSetter.setUniqID(message);
-                //    }
-                //    msgBatch.setBody(msgBatch.encode());
-                //} catch (Exception e) {
-                //    continue;
-                //}
-
+                // TODO: Detect the maximum length of messages for different producers.
                 final SendMessageContext sendMessageContext = new SendMessageContext(batchId, event, batchEventMeshProducer,
                         eventMeshHTTPServer);
                 sendMessageContext.setEventList(eventlist);
