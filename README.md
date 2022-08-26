@@ -103,7 +103,7 @@ Apache EventMesh (Incubating) is licensed under the [Apache License, Version 2.0
 
 ## Community
 
-|WeChat Assistant|WeChat Official Account|Slack|
+|WeChat Assistant|WeChat Public Account|Slack|
 |-|-|-|
 |<img src="docs/images/contact/wechat-assistant.jpg" width="128"/>|<img src="docs/images/contact/wechat-official.jpg" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1blhcbedu-9b7yvwAQcDs3fddZxnZXag)|
 
