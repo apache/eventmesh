@@ -117,11 +117,11 @@ public class ProducerImpl extends AbstractProducer {
 
     @Override
     public void start() {
-        throw new ConnectorRuntimeException("Start is not supported");
+        started.set(true);
     }
 
     @Override
     public void shutdown() {
-        throw new ConnectorRuntimeException("Shutdown is not supported");
+        started.set(false);
     }
 }
