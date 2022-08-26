@@ -1,12 +1,16 @@
+use std::collections::HashMap;
+
 use crate::constants;
 use crate::message::{EventMeshMessage, EventMeshMessageResp};
 
 use super::config::EventMeshGrpcConfig;
 
+use super::eventmesh_grpc::batch_message::MessageItem;
+use super::eventmesh_grpc::BatchMessage;
 use super::eventmesh_grpc::{
     publisher_service_client::PublisherServiceClient, RequestHeader, SimpleMessage,
 };
-use anyhow::Result;
+use anyhow::{bail, Result};
 use tonic::transport::Channel;
 pub struct EventMeshMessageProducer {
     client: PublisherServiceClient<Channel>,
@@ -20,6 +24,47 @@ impl EventMeshMessageProducer {
             client,
             producer_group: config.producer_group.clone(),
             default_header: config.build_header(),
+        })
+    }
+    pub async fn batch_publish(
+        &mut self,
+        messages: &Vec<EventMeshMessage>,
+    ) -> Result<EventMeshMessageResp> {
+        if messages.is_empty() {
+            bail!("empty messages")
+        }
+        let resp = self
+            .client
+            .batch_publish(BatchMessage {
+                header: Some(self.default_header.clone()),
+                producer_group: self.producer_group.to_string(),
+                topic: messages[0].topic.to_string(),
+                message_item: messages
+                    .iter()
+                    .map(
+                        |EventMeshMessage {
+                             content,
+                             ttl,
+                             unique_id,
+                             biz_seq_no,
+                             topic: _,
+                         }| MessageItem {
+                            content: content.clone(),
+                            ttl: ttl.to_string(),
+                            unique_id: unique_id.clone(),
+                            seq_num: biz_seq_no.clone(),
+                            tag: String::from(""),
+                            properties: HashMap::new(),
+                        },
+                    )
+                    .collect(),
+            })
+            .await?
+            .into_inner();
+        Ok(EventMeshMessageResp {
+            ret_code: resp.resp_code.parse()?,
+            ret_msg: resp.resp_msg,
+            res_time: resp.resp_time.parse()?,
         })
     }
     pub async fn publish(&mut self, message: EventMeshMessage) -> Result<EventMeshMessageResp> {
