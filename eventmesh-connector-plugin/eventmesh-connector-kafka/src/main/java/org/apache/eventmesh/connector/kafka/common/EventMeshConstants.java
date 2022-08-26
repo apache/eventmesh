@@ -15,16 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.prometheus.config;
+package org.apache.eventmesh.connector.kafka.common;
 
-import org.junit.Assert;
-import org.junit.Test;
+public class EventMeshConstants {
 
-public class PrometheusConfigurationTest {
+    public static final String EVENTMESH_CONF_FILE = "kafka-client.properties";
 
-    @Test
-    public void getEventMeshPrometheusPort() {
-        int eventMeshPrometheusPort = PrometheusConfiguration.getEventMeshPrometheusPort();
-        Assert.assertEquals(19091, eventMeshPrometheusPort);
-    }
+    public static final int DEFAULT_TIMEOUT_IN_MILLISECONDS = 3000;
+
+    public static final String STORE_TIMESTAMP = "storetime";
 }
