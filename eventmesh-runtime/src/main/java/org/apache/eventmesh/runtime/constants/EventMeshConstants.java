@@ -76,8 +76,9 @@ public class EventMeshConstants {
     public static final int DEFAULT_PUSH_RETRY_TIME_DISTANCE_IN_MILLSECONDS = 3000;
 
     public static final String PURPOSE_PUB = "pub";
-
+    public static final String PURPOSE_PUB_UPPER_CASE = "PUB";
     public static final String PURPOSE_SUB = "sub";
+    public static final String PURPOSE_SUB_UPPER_CASE = "SUB";
 
     public static final String PURPOSE_ALL = "all";
 
@@ -105,7 +106,7 @@ public class EventMeshConstants {
     public static final String MANAGE_GROUP = "group";
     public static final String MANAGE_PURPOSE = "purpose";
     public static final String MANAGE_TOPIC = "topic";
-
+    public static final String MANAGE_MSG = "msg";
     public static final String EVENTMESH_SEND_BACK_TIMES = "eventmeshdendbacktimes";
 
     public static final String EVENTMESH_SEND_BACK_IP = "eventmeshsendbackip";
@@ -129,6 +130,10 @@ public class EventMeshConstants {
     public static final String LEAVE_TIME = "leave" + Constants.MESSAGE_PROP_SEPARATOR + "time";            //leaveBrokerTime
     public static final String ARRIVE_TIME = "arrive" + Constants.MESSAGE_PROP_SEPARATOR + "time";
     public static final String STORE_TIME = "store" + Constants.MESSAGE_PROP_SEPARATOR + "time";
-
+    public static final String PRODUCER_GROUP = "producerGroup";
+    public static final String CONSUMER_GROUP = "consumerGroup";
+    public static final String INSTANCE_NAME = "instanceName";
+    public static final String EVENT_MESH_IDC = "eventMeshIDC";
+    public static final String IS_BROADCAST = "isBroadcast";
 
 }
