@@ -15,19 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.connector.pulsar.common;
 
-import java.io.Serializable;
-import java.util.Comparator;
-import java.util.Map;
-
-public class ValueComparator implements Comparator<Map.Entry<String, Integer>>, Serializable {
-    @Override
-    public int compare(Map.Entry<String, Integer> x, Map.Entry<String, Integer> y) {
-        if (x.getValue().intValue() != y.getValue().intValue()) {
-            return x.getValue() - y.getValue();
-        } else {
-            return x.getKey().compareTo(y.getKey());
-        }
-    }
+public class EventMeshConstants {
+    public static final String EVENTMESH_CONF_FILE = "pulsar-client.properties";
 }
