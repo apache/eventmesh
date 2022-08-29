@@ -18,11 +18,15 @@
 package org.apache.eventmesh.connector.pravega;
 
 import org.apache.eventmesh.api.connector.ConnectorResourceService;
+import org.apache.eventmesh.connector.pravega.client.PravegaClient;
+import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
 public class PravegaConnectorResourceServiceImpl implements ConnectorResourceService {
     @Override
     public void init() throws Exception {
-
+        if (!PravegaClient.getInstance().createScope()) {
+            throw new PravegaConnectorException("create scope failed.");
+        }
     }
 
     @Override
