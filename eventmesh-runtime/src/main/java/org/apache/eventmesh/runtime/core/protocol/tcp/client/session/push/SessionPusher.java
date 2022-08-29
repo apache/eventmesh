@@ -99,9 +99,6 @@ public class SessionPusher {
             .withExtension(EventMeshConstants.RSP_IDC, session.getClient().getIdc())
             .withExtension(EventMeshConstants.RSP_IP, session.getClient().getHost())
             .build();
-        EventMeshMessage body = null;
-        int retCode = 0;
-        String retMsg = null;
         try {
             pkg = (Package) protocolAdaptor.fromCloudEvent(downStreamMsgContext.event);
             pkg.setHeader(new Header(cmd, OPStatus.SUCCESS.getCode(), null, downStreamMsgContext.seq));
@@ -109,8 +106,6 @@ public class SessionPusher {
             messageLogger.info("pkg|mq2eventMesh|cmd={}|mqMsg={}|user={}", cmd, pkg, session.getClient());
         } catch (Exception e) {
             pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), e.getStackTrace().toString(), downStreamMsgContext.seq));
-            retCode = -1;
-            retMsg = e.toString();
         } finally {
             session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
 

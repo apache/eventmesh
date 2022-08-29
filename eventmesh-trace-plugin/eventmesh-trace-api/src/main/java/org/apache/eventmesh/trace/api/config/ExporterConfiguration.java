@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.trace.api.config;
 
+import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
@@ -68,24 +70,24 @@ public class ExporterConfiguration {
     }
 
     private void initializeConfig() {
-        String eventMeshTraceMaxExportSizeStr = properties.getProperty("eventmesh.trace.max.export.size");
+        String eventMeshTraceMaxExportSizeStr = properties.getProperty(EventMeshTraceConstants.TRACE_EVENTMESH_MAX_EXPORT_SIZE);
         if (StringUtils.isNotEmpty(eventMeshTraceMaxExportSizeStr)) {
             eventMeshTraceMaxExportSize =
                 Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceMaxExportSizeStr));
         }
 
-        String eventMeshTraceMaxQueueSizeStr = properties.getProperty("eventmesh.trace.max.queue.size");
+        String eventMeshTraceMaxQueueSizeStr = properties.getProperty(EventMeshTraceConstants.TRACE_EVENTMESH_MAX_QUEUE_SIZE);
         if (StringUtils.isNotEmpty(eventMeshTraceMaxQueueSizeStr)) {
             eventMeshTraceMaxQueueSize = Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceMaxQueueSizeStr));
         }
 
-        String eventMeshTraceExportTimeoutStr = properties.getProperty("eventmesh.trace.export.timeout");
+        String eventMeshTraceExportTimeoutStr = properties.getProperty(EventMeshTraceConstants.TRACE_EVENTMESH_EXPORT_TIMEOUT);
         if (StringUtils.isNotEmpty(eventMeshTraceExportTimeoutStr)) {
             eventMeshTraceExportTimeout =
                 Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceExportTimeoutStr));
         }
 
-        String eventMeshTraceExportIntervalStr = properties.getProperty("eventmesh.trace.export.interval");
+        String eventMeshTraceExportIntervalStr = properties.getProperty(EventMeshTraceConstants.TRACE_EVENTMESH_EXPORT_INTERVAL);
         if (StringUtils.isNotEmpty(eventMeshTraceExportIntervalStr)) {
             eventMeshTraceExportInterval =
                 Integer.parseInt(StringUtils.deleteWhitespace(eventMeshTraceExportIntervalStr));

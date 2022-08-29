@@ -76,7 +76,6 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
 
     @Override
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
-        String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
         HttpEventWrapper httpEventWrapper = new HttpEventWrapper();
         Map<String, Object> sysHeaderMap = new HashMap<>();
         // ce attributes
