@@ -20,8 +20,10 @@ package org.apache.eventmesh.connector.kafka.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.producer.Producer;
 
+import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -29,6 +31,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.net.URI;
 import java.util.Properties;
+import java.util.Set;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -38,9 +41,12 @@ public class KafkaProducerImpl implements Producer {
 
     private ProducerImpl producer;
 
+    private Properties properties;
+
     @Override
     public synchronized void init(Properties keyValue) {
         keyValue.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        Properties properties = (Properties) keyValue.clone();
         this.producer = new ProducerImpl(keyValue);
     }
 
@@ -82,7 +88,7 @@ public class KafkaProducerImpl implements Producer {
 
     @Override
     public void checkTopicExist(String topic) throws Exception {
-
+        this.producer.checkTopicExist(topic);
     }
 
     @Override
