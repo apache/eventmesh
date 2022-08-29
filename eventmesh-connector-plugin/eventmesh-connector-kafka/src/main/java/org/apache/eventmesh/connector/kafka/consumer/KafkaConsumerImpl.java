@@ -42,7 +42,8 @@ public class KafkaConsumerImpl implements Consumer {
         String consumerGroup = props.getProperty("consumerGroup");
         String bootstrapServers = props.getProperty("bootstrapServers");
         // Other config props
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+
         props.put(ConsumerConfig.GROUP_ID_CONFIG, consumerGroup);
         consumer = new ConsumerImpl(props);
     }
