@@ -63,3 +63,7 @@ func (m *MessageHandler) checkTimeout() {
 		})
 	}
 }
+
+func (m *MessageHandler) Handler() {
+
+}

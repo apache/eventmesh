@@ -33,7 +33,7 @@ type Consumer struct {
 
 // PoolExceptionHandler handle the ants goroutine panic
 func PoolExceptionHandler(in interface{}) {
-	log.Errorf("err in groutine pool:%v", in)
+	log.Errorf("err in goroutine pool:%v", in)
 }
 
 // NewConsumer create new consumer to handle the grpc request
