@@ -37,7 +37,7 @@ const Endpoint = () => {
 
   useEffect(() => {
     setEndpointInput(state.endpoint);
-  }, []);
+  }, [state.endpoint]);
 
   const handleEndpointInputChange = (event: React.FormEvent<HTMLInputElement>) => {
     setEndpointInput(event.currentTarget.value);

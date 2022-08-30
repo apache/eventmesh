@@ -24,7 +24,7 @@ import TCPClientTable from '../components/client/TCPClientTable';
 const TCPClient: NextPage = () => (
   <>
     <Head>
-      <title>Client | Apache EventMesh Dashboard</title>
+      <title>TCP Client | Apache EventMesh Dashboard</title>
     </Head>
     <TCPClientTable />
   </>

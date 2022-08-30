@@ -29,7 +29,9 @@ import {
   Box,
 } from '@chakra-ui/react';
 import axios from 'axios';
-import React, { useContext, useEffect, useState } from 'react';
+import React, {
+  useContext, useEffect, useState,
+} from 'react';
 import { AppContext } from '../../context/context';
 
 interface EventMeshConfiguration {
@@ -59,9 +61,12 @@ const Configuration = () => {
   const [configuration, setConfiguration] = useState<Partial<EventMeshConfiguration>>({});
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetch = async () => {
       try {
-        const { data } = await axios.get<EventMeshConfiguration>(`${state.endpoint}/configuration`);
+        const { data } = await axios.get<EventMeshConfiguration>(`${state.endpoint}/configuration`, {
+          signal: controller.signal,
+        });
         setConfiguration(data);
       } catch (error) {
         setConfiguration({});
@@ -69,7 +74,11 @@ const Configuration = () => {
     };
 
     fetch();
-  }, []);
+
+    return () => {
+      controller.abort();
+    };
+  }, [state.endpoint]);
 
   type ConfigurationRecord = Record<string, string | number | boolean | undefined>;
   const commonConfiguration: ConfigurationRecord = {
@@ -121,7 +130,23 @@ const Configuration = () => {
   });
 
   if (Object.keys(configuration).length === 0) {
-    return false;
+    return (
+      <Box
+        maxW="full"
+        bg="white"
+        borderWidth="2px"
+        borderRadius="md"
+        borderColor="rgb(211,85,25)"
+        overflow="hidden"
+        p="4"
+        mt="4"
+        opacity="0.8"
+      >
+        <Text fontSize="l" fontWeight="semibold" color="rgb(211,85,25)" textAlign={['left', 'center']}>
+          EventMesh Daemon Not Connected
+        </Text>
+      </Box>
+    );
   }
 
   return (
