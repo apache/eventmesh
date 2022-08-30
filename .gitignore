@@ -16,6 +16,7 @@ build
 .checkstyle
 test-output
 dist
+out
 .pmd
 classes
 package-lock.json

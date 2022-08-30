@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
@@ -63,7 +64,7 @@ public class RejectClientByIpPortHandler implements HttpHandler {
             if (StringUtils.isBlank(ip) || StringUtils.isBlank(port)) {
                 httpExchange.sendResponseHeaders(200, 0);
                 result = "params illegal!";
-                out.write(result.getBytes());
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             logger.info("rejectClientByIpPort in admin,ip:{},port:{}====================", ip, port);
@@ -87,14 +88,14 @@ public class RejectClientByIpPortHandler implements HttpHandler {
                 result = String.format("rejectClientByIpPort fail! {ip=%s port=%s}, had reject {%s}, errorMsg : %s", ip,
                         port, NetUtils.addressToString(successRemoteAddrs), e.getMessage());
                 httpExchange.sendResponseHeaders(200, 0);
-                out.write(result.getBytes());
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
 
             result = String.format("rejectClientByIpPort success! {ip=%s port=%s}, had reject {%s}", ip, port,
                     NetUtils.addressToString(successRemoteAddrs));
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("rejectClientByIpPort fail...", e);
         } finally {

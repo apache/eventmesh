@@ -60,7 +60,8 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
 
         String manufacturers = configService.getConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK, TIMEOUT_MS);
         if (manufacturers == null) {
-            configService.publishConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK, JsonUtils.serialize(new ManufacturerObject()), ConfigType.JSON.getType());
+            configService.publishConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK,
+                JsonUtils.serialize(new ManufacturerObject()), ConfigType.JSON.getType());
         }
 
     }

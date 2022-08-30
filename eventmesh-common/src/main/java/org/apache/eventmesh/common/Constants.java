@@ -17,9 +17,12 @@
 
 package org.apache.eventmesh.common;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 public class Constants {
 
-    public static final String DEFAULT_CHARSET = "UTF-8";
+    public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
