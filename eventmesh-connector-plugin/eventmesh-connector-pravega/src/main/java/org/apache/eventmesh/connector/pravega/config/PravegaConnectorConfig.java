@@ -31,7 +31,7 @@ public class PravegaConnectorConfig {
     public static String EVENTMESH_PRAVEGA_QUEUE_SIZE = "eventMesh.server.pravega.queue.size";
 
     private URI controllerURI = URI.create("tcp://127.0.0.1:9090");
-    private String scope = "eventmesh.pravega";
+    private String scope = "eventmesh-pravega";
     private int clientPoolSize = 8;
     private int queueSize = 512;
 
