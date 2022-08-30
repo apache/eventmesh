@@ -20,55 +20,72 @@ package org.apache.eventmesh.connector.pravega;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.connector.pravega.client.PravegaClient;
+import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PravegaConsumerImpl implements Consumer {
-    @Override
-    public boolean isStarted() {
-        return false;
-    }
+    private static final AtomicBoolean started = new AtomicBoolean(false);
+
+    private String consumerGroup;
+    private PravegaClient client;
+    private EventListener eventListener;
 
     @Override
-    public boolean isClosed() {
-        return false;
+    public void init(Properties keyValue) throws Exception {
+        consumerGroup = keyValue.getProperty("consumerGroup");
+        client = PravegaClient.getInstance();
     }
 
     @Override
     public void start() {
-
+        started.compareAndSet(false, true);
     }
 
     @Override
     public void shutdown() {
-
+        started.compareAndSet(true, false);
     }
 
     @Override
-    public void init(Properties keyValue) throws Exception {
+    public boolean isStarted() {
+        return started.get();
+    }
 
+    @Override
+    public boolean isClosed() {
+        return !started.get();
     }
 
     @Override
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
-
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void subscribe(String topic) throws Exception {
-
+        if (!client.subscribe(topic, consumerGroup)) {
+            throw new PravegaConnectorException(String.format("subscribe topic[%s] fail.", topic));
+        }
     }
 
     @Override
     public void unsubscribe(String topic) {
-
+        if (!client.unsubscribe(topic, consumerGroup)) {
+            throw new PravegaConnectorException(String.format("unsubscribe topic[%s] fail.", topic));
+        }
     }
 
     @Override
     public void registerEventListener(EventListener listener) {
-
+        this.eventListener = listener;
     }
 }
