@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
@@ -67,7 +68,7 @@ public class RedirectClientBySubSystemHandler implements HttpHandler {
                     || !StringUtils.isNumeric(destEventMeshPort)) {
                 httpExchange.sendResponseHeaders(200, 0);
                 result = "params illegal!";
-                out.write(result.getBytes());
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             logger.info("redirectClientBySubSystem in admin,subsys:{},destIp:{},destPort:{}====================",
@@ -96,7 +97,7 @@ public class RedirectClientBySubSystemHandler implements HttpHandler {
                         sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult, e
                                 .getMessage());
                 httpExchange.sendResponseHeaders(200, 0);
-                out.write(result.getBytes());
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             result = String.format("redirectClientBySubSystem success! sessionMap size {%d}, {subSystem=%s "
@@ -104,7 +105,7 @@ public class RedirectClientBySubSystemHandler implements HttpHandler {
                             "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
                     sessionMap.size(), subSystem, destEventMeshIp, destEventMeshPort, redirectResult);
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("redirectClientBySubSystem fail...", e);
         } finally {

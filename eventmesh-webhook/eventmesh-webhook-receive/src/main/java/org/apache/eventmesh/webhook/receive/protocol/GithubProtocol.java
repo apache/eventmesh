@@ -18,6 +18,7 @@
 package org.apache.eventmesh.webhook.receive.protocol;
 
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;
 import org.apache.eventmesh.webhook.receive.WebHookRequest;
@@ -68,7 +69,7 @@ public class GithubProtocol implements ManufacturerProtocol {
         String hash = "sha256=";
         try {
             Mac sha = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(Constants.DEFAULT_CHARSET), "HmacSHA256");
             sha.init(secretKey);
             byte[] bytes = sha.doFinal(data);
             hash += byteArrayToHexString(bytes);
