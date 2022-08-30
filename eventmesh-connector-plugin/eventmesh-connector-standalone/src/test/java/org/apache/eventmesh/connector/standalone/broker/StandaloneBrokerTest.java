@@ -38,10 +38,10 @@ public class StandaloneBrokerTest {
     public void putMessage() throws InterruptedException {
         StandaloneBroker instance = StandaloneBroker.getInstance();
         CloudEvent cloudEvent = CloudEventBuilder.v1()
-                .withId("test")
-                .withSource(URI.create("testsource"))
-                .withType("testType")
-                .build();
+            .withId("test")
+            .withSource(URI.create("testsource"))
+            .withType("testType")
+            .build();
         MessageEntity messageEntity = instance.putMessage("test-topic", cloudEvent);
         Assert.assertNotNull(messageEntity);
     }
@@ -50,10 +50,10 @@ public class StandaloneBrokerTest {
     public void takeMessage() throws InterruptedException {
         StandaloneBroker instance = StandaloneBroker.getInstance();
         CloudEvent cloudEvent = CloudEventBuilder.v1()
-                .withId("test")
-                .withSource(URI.create("testsource"))
-                .withType("testType")
-                .build();
+            .withId("test")
+            .withSource(URI.create("testsource"))
+            .withType("testType")
+            .build();
         instance.putMessage("test-topic", cloudEvent);
         CloudEvent message = instance.takeMessage("test-topic");
         Assert.assertNotNull(message);

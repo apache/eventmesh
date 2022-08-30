@@ -30,84 +30,32 @@ import {
   TableContainer,
   useToast,
   Box,
-  Button,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../context/context';
 
-interface GrpcClient {
-  env: string,
-  subsystem: string,
-  url: string,
-  pid: number,
-  host: string,
-  port: number,
-  version: string,
-  idc: string,
-  group: string,
-  purpose: string,
-  protocol: string,
+interface EventMeshInstance {
+  eventMeshClusterName: string,
+  eventMeshName: string,
+  endpoint: string,
+  lastUpdateTimestamp: number,
+  metadata: string
 }
 
-interface GrpcClientProps {
-  url: string,
-  group: string,
-}
+const EventMeshInstanceRow = ({
+  eventMeshClusterName, eventMeshName, endpoint, lastUpdateTimestamp, metadata,
+}: EventMeshInstance) => (
+  <Tr>
+    <Td>{eventMeshClusterName}</Td>
+    <Td>{eventMeshName}</Td>
+    <Td>{endpoint}</Td>
+    <Td>{lastUpdateTimestamp}</Td>
+    <Td>{metadata}</Td>
+  </Tr>
+);
 
-interface RemoveGrpcClientRequest {
-  url: string,
-}
-
-const GrpcClientRow = ({
-  url, group,
-}: GrpcClientProps) => {
-  const { state } = useContext(AppContext);
-
-  const toast = useToast();
-  const [loading, setLoading] = useState(false);
-  const onRemoveClick = async () => {
-    try {
-      setLoading(true);
-      await axios.delete<RemoveGrpcClientRequest>(`${state.endpoint}/client/grpc`, {
-        data: {
-          url,
-        },
-      });
-      setLoading(false);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        toast({
-          title: 'Failed to remove the gRPC Client',
-          description: error.message,
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
-        });
-      }
-    }
-  };
-
-  return (
-    <Tr>
-      <Td>{url}</Td>
-      <Td>{group}</Td>
-      <Td>
-        <HStack>
-          <Button
-            colorScheme="red"
-            isLoading={loading}
-            onClick={onRemoveClick}
-          >
-            Remove
-          </Button>
-        </HStack>
-      </Td>
-    </Tr>
-  );
-};
-
-const GrpcClientTable = () => {
+const RegistryTable = () => {
   const { state } = useContext(AppContext);
 
   const [searchInput, setSearchInput] = useState<string>('');
@@ -121,35 +69,35 @@ const GrpcClientTable = () => {
     setGroupFilter(event.currentTarget.value);
   };
 
-  const [GrpcClientList, setGrpcClientList] = useState<GrpcClient[]>([]);
+  const [EventMeshInstanceList, setEventMeshInstanceList] = useState<EventMeshInstance[]>([]);
   const toast = useToast();
   useEffect(() => {
     const fetch = async () => {
       try {
-        const { data } = await axios.get<GrpcClient[]>(`${state.endpoint}/client/grpc`);
-        setGrpcClientList(data);
+        const { data } = await axios.get<EventMeshInstance[]>(`${state.endpoint}/registry`);
+        setEventMeshInstanceList(data);
 
         const nextGroupSet = new Set<string>();
-        data.forEach(({ group }) => {
-          nextGroupSet.add(group);
+        data.forEach(({ eventMeshClusterName }) => {
+          nextGroupSet.add(eventMeshClusterName);
         });
         setGroupSet(nextGroupSet);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           toast({
-            title: 'Failed to fetch the list of gRPC Clients',
+            title: 'Failed to fetch registry list',
             description: 'unable to connect to the EventMesh daemon',
             status: 'error',
             duration: 3000,
             isClosable: true,
           });
-          setGrpcClientList([]);
+          setEventMeshInstanceList([]);
         }
       }
     };
 
     fetch();
-  }, [GrpcClientList]);
+  }, []);
 
   return (
     <Box
@@ -183,28 +131,33 @@ const GrpcClientTable = () => {
         <Table variant="simple">
           <Thead>
             <Tr>
-              <Th>URL</Th>
-              <Th>Group</Th>
-              <Th>Action</Th>
+              <Th>Event Mesh Cluster Name</Th>
+              <Th>Event Mesh Name</Th>
+              <Th>Endpoint</Th>
+              <Th>Last Update Timestamp</Th>
+              <Th>Metadata</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {GrpcClientList && GrpcClientList.filter(({
-              url, group,
+            {EventMeshInstanceList && EventMeshInstanceList.filter(({
+              eventMeshClusterName, eventMeshName,
             }) => {
-              if (searchInput && !url.includes(searchInput)) {
+              if (searchInput && !eventMeshName.includes(searchInput)) {
                 return false;
               }
-              if (groupFilter && groupFilter !== group) {
+              if (groupFilter && groupFilter !== eventMeshClusterName) {
                 return false;
               }
               return true;
             }).map(({
-              url, group,
+              eventMeshClusterName, eventMeshName, endpoint, lastUpdateTimestamp, metadata,
             }) => (
-              <GrpcClientRow
-                url={url}
-                group={group}
+              <EventMeshInstanceRow
+                eventMeshClusterName={eventMeshClusterName}
+                eventMeshName={eventMeshName}
+                endpoint={endpoint}
+                lastUpdateTimestamp={lastUpdateTimestamp}
+                metadata={metadata}
               />
             ))}
           </Tbody>
@@ -214,4 +167,4 @@ const GrpcClientTable = () => {
   );
 };
 
-export default GrpcClientTable;
+export default RegistryTable;
