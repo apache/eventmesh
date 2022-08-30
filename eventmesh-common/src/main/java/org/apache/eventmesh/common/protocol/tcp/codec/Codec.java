@@ -52,7 +52,6 @@ import lombok.extern.slf4j.Slf4j;
 public class Codec {
 
     private static final int FRAME_MAX_LENGTH = 1024 * 1024 * 4;
-    private static final Charset DEFAULT_CHARSET = Charset.forName(Constants.DEFAULT_CHARSET);
 
     private static final byte[] CONSTANT_MAGIC_FLAG = serializeBytes("EventMesh");
     private static final byte[] VERSION = serializeBytes("0000");
@@ -225,7 +224,7 @@ public class Codec {
      * @return
      */
     private static String deserializeBytes(byte[] bytes) {
-        return new String(bytes, DEFAULT_CHARSET);
+        return new String(bytes, Constants.DEFAULT_CHARSET);
     }
 
     /**
@@ -238,7 +237,7 @@ public class Codec {
         if (str == null) {
             return null;
         }
-        return str.getBytes(DEFAULT_CHARSET);
+        return str.getBytes(Constants.DEFAULT_CHARSET);
     }
 
 

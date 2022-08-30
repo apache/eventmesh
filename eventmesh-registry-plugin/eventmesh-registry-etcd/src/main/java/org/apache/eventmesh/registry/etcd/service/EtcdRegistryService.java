@@ -22,6 +22,7 @@ import org.apache.eventmesh.api.registry.RegistryService;
 import org.apache.eventmesh.api.registry.dto.EventMeshDataInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshRegisterInfo;
 import org.apache.eventmesh.api.registry.dto.EventMeshUnRegisterInfo;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
@@ -144,13 +145,14 @@ public class EtcdRegistryService implements RegistryService {
 
         try {
             String keyPrefix = clusterName == null ? KEY_PREFIX : KEY_PREFIX + EtcdConstant.KEY_SEPARATOR + clusterName;
-            ByteSequence keyByteSequence = ByteSequence.from(keyPrefix.getBytes());
+            ByteSequence keyByteSequence = ByteSequence.from(keyPrefix.getBytes(Constants.DEFAULT_CHARSET));
             GetOption getOption = GetOption.newBuilder().withPrefix(keyByteSequence).build();
             List<KeyValue> keyValues = etcdClient.getKVClient().get(keyByteSequence, getOption).get().getKvs();
 
             if (CollectionUtils.isNotEmpty(keyValues)) {
                 for (KeyValue kv : keyValues) {
-                    EventMeshDataInfo eventMeshDataInfo = JsonUtils.deserialize(new String(kv.getValue().getBytes()), EventMeshDataInfo.class);
+                    EventMeshDataInfo eventMeshDataInfo =
+                        JsonUtils.deserialize(new String(kv.getValue().getBytes(), Constants.DEFAULT_CHARSET), EventMeshDataInfo.class);
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
             }
@@ -197,7 +199,7 @@ public class EtcdRegistryService implements RegistryService {
             EventMeshDataInfo eventMeshDataInfo =
                     new EventMeshDataInfo(eventMeshClusterName, eventMeshName,
                             endPoint, System.currentTimeMillis(), eventMeshRegisterInfo.getMetadata());
-            ByteSequence etcdValue = ByteSequence.from(JsonUtils.serialize(eventMeshDataInfo).getBytes());
+            ByteSequence etcdValue = ByteSequence.from(JsonUtils.serialize(eventMeshDataInfo).getBytes(Constants.DEFAULT_CHARSET));
             etcdClient.getKVClient().put(etcdKey, etcdValue, PutOption.newBuilder().withLeaseId(getLeaseId()).build());
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
 
@@ -246,7 +248,7 @@ public class EtcdRegistryService implements RegistryService {
         if (StringUtils.isNoneBlank(endPoint)) {
             etcdKey.append(EtcdConstant.KEY_SEPARATOR).append(endPoint);
         }
-        return ByteSequence.from(etcdKey.toString().getBytes());
+        return ByteSequence.from(etcdKey.toString().getBytes(Constants.DEFAULT_CHARSET));
     }
 
     /**
