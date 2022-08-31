@@ -22,8 +22,10 @@ import org.apache.commons.lang3.StringUtils;
 import java.net.URI;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class PravegaConnectorConfig {
     public static String EVENTMESH_PRAVEGA_CONTROLLER_URI = "eventMesh.server.pravega.controller.uri";
     public static String EVENTMESH_PRAVEGA_SCOPE = "eventMesh.server.pravega.scope";
