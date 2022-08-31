@@ -80,7 +80,7 @@
 
 Component 接口是主要的入口点，您可以使用 Component 对象作为工厂来创建 EndPoint 对象。
 
-![Stream Component Interface](/images/design-document/stream-component-interface.png)
+![Stream Component Interface](../../images/design-document/stream-component-interface.png)
 
 ### EndPoint（端点）
 
