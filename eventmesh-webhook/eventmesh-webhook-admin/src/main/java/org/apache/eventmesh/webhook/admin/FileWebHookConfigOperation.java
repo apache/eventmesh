@@ -33,7 +33,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -47,17 +46,16 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     private final String webHookFilePath;
 
-
     public FileWebHookConfigOperation(Properties properties) throws FileNotFoundException {
         String webHookFilePath = WebHookOperationConstant.getFilePath(properties.getProperty("filePath"));
 
         assert webHookFilePath != null;
         File webHookFileDir = new File(webHookFilePath);
-        if (!webHookFileDir.isDirectory()) {
-            throw new FileNotFoundException("File path " + webHookFilePath + " is not directory");
-        }
         if (!webHookFileDir.exists()) {
             webHookFileDir.mkdirs();
+        }
+        if (!webHookFileDir.isDirectory()) {
+            throw new FileNotFoundException("File path " + webHookFilePath + " is not directory");
         }
         this.webHookFilePath = webHookFilePath;
     }
@@ -112,7 +110,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     @Override
     public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
-        Integer pageSize) {
+                                                                Integer pageSize) {
         String manuDirPath = getWebhookConfigManuDir(webHookConfig);
         File manuDir = new File(manuDirPath);
         if (!manuDir.exists()) {
@@ -129,7 +127,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         int startIndex = (pageNum - 1) * pageSize;
         int endIndex = pageNum * pageSize - 1;
         if (webhookFiles.length > startIndex) {
-            for (int i = startIndex; i < endIndex && i < webhookFiles.length; i++) {
+            for (int i = startIndex; i <= endIndex && i < webhookFiles.length; i++) {
                 webHookConfigs.add(getWebHookConfigFromFile(webhookFiles[i]));
             }
         }
@@ -150,23 +148,14 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         return JsonUtils.deserialize(fileContent.toString(), WebHookConfig.class);
     }
 
-    private boolean writeToFile(File webhookConfigFile, WebHookConfig webHookConfig) {
-        FileLock lock = null;
+    public boolean writeToFile(File webhookConfigFile, WebHookConfig webHookConfig) {
         try (FileOutputStream fos = new FileOutputStream(webhookConfigFile); BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos))) {
-            // lock this file
-            lock = fos.getChannel().lock();
+            // lock this file, and will auto release after fos close
+            fos.getChannel().lock();
             bw.write(JsonUtils.serialize(webHookConfig));
         } catch (IOException e) {
             logger.error("write webhookConfig {} to file error", webHookConfig.getCallbackPath());
             return false;
-        } finally {
-            try {
-                if (lock != null) {
-                    lock.release();
-                }
-            } catch (IOException e) {
-                logger.warn("writeToFile finally caught an exception", e);
-            }
         }
         return true;
     }
@@ -188,6 +177,4 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
         assert webhookConfigFilePath != null;
         return new File(webhookConfigFilePath);
     }
-
-
 }
