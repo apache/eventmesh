@@ -17,40 +17,33 @@
 
 package org.apache.eventmesh.connector.pravega.client;
 
+import io.cloudevents.CloudEvent;
+import io.pravega.client.ClientConfig;
+import io.pravega.client.EventStreamClientFactory;
+import io.pravega.client.admin.ReaderGroupManager;
+import io.pravega.client.admin.StreamManager;
+import io.pravega.client.stream.*;
+import io.pravega.client.stream.impl.ByteArraySerializer;
+import io.pravega.shared.NameUtils;
+import io.pravega.shared.security.auth.DefaultCredentials;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.pravega.client.ClientConfig;
-import io.pravega.client.EventStreamClientFactory;
-import io.pravega.client.admin.ReaderGroupManager;
-import io.pravega.client.admin.StreamManager;
-import io.pravega.client.stream.EventRead;
-import io.pravega.client.stream.EventStreamReader;
-import io.pravega.client.stream.EventStreamWriter;
-import io.pravega.client.stream.EventWriterConfig;
-import io.pravega.client.stream.ReaderConfig;
-import io.pravega.client.stream.ReaderGroupConfig;
-import io.pravega.client.stream.StreamConfiguration;
-import io.pravega.client.stream.impl.ByteArraySerializer;
-import io.pravega.shared.NameUtils;
-import io.pravega.shared.security.auth.DefaultCredentials;
-
+@Slf4j
 public class PravegaClient {
     private final PravegaConnectorConfig config;
     private final StreamManager streamManager;
-    private final ClientConfig clientConfig;
     private final EventStreamClientFactory clientFactory;
     private final ReaderGroupManager readerGroupManager;
     private final Map<String, AtomicLong> readerIdMap = new ConcurrentHashMap<>();
+    private final Map<String, SubscribeTask> subscribeTaskMap = new ConcurrentHashMap<>();
 
     private static PravegaClient instance;
 
@@ -64,7 +57,7 @@ public class PravegaClient {
         if (config.isTlsEnable()) {
             clientConfigBuilder.trustStore(config.getTruststore()).validateHostName(false);
         }
-        clientConfig = clientConfigBuilder.build();
+        ClientConfig clientConfig = clientConfigBuilder.build();
         clientFactory = EventStreamClientFactory.withScope(config.getScope(), clientConfig);
         readerGroupManager = ReaderGroupManager.withScope(config.getScope(), clientConfig);
     }
@@ -76,19 +69,30 @@ public class PravegaClient {
         return instance;
     }
 
-    public void shutdown() {
-        // TODO
+    public void start() {
+        if (!PravegaClient.getInstance().createScope()) {
+            log.info("Pravega scope[{}] has already been created.", PravegaConnectorConfig.getInstance().getScope());
+        }
+        log.info("Create Pravega scope[{}] success.", PravegaConnectorConfig.getInstance().getScope());
     }
 
-    // TODO wrap event
-    public SendResult publish(String topic, byte[] event) {
-        createStream(topic);
+    public void shutdown() {
+        subscribeTaskMap.forEach((topic, task) -> task.stopRead());
+        subscribeTaskMap.clear();
+    }
+
+    public SendResult publish(String topic, CloudEvent cloudEvent) {
+        if (createStream(topic)) {
+            log.debug("stream[{}] has already been created.", topic);
+        }
         try (EventStreamWriter<byte[]> writer = createWrite(topic)) {
-            final CompletableFuture<Void> writerFuture = writer.writeEvent(event);
+            PravegaCloudEventWriter cloudEventWriter = new PravegaCloudEventWriter(topic);
+            PravegaEvent pravegaEvent = cloudEventWriter.writeBinary(cloudEvent);
+            final CompletableFuture<Void> writerFuture = writer.writeEvent(PravegaEvent.toByteArray(pravegaEvent));
             writerFuture.get(5, TimeUnit.SECONDS);
             SendResult sendResult = new SendResult();
             sendResult.setTopic(topic);
-            // TODO need to build messageId since writeEvent doesn't return it.
+            // set -1 as messageId since writeEvent method doesn't return it.
             sendResult.setMessageId("-1");
             return sendResult;
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
@@ -96,31 +100,28 @@ public class PravegaClient {
         }
     }
 
-    public boolean subscribe(String topic, String consumerGroup) {
+    public boolean subscribe(String topic, String consumerGroup, EventListener listener) {
+        if (subscribeTaskMap.containsKey(topic)) {
+            return true;
+        }
         String readerGroup = buildReaderGroup(topic, consumerGroup);
-        boolean created = createReaderGroup(topic, readerGroup);
-        // TODO start reader thread
-        return false;
-    }
-
-    public boolean unsubscribe(String topic, String consumerGroup) {
-        String readerGroup = buildReaderGroup(topic, consumerGroup);
-        deleteReaderGroup(readerGroup);
-        // TODO stop reader thread
+        if (createReaderGroup(topic, readerGroup)) {
+            log.debug("readerGroup[{}] has already been created.", readerGroup);
+        }
+        String readerId = buildReaderId(readerGroup);
+        EventStreamReader<byte[]> reader = createReader(readerId, readerGroup);
+        SubscribeTask subscribeTask = new SubscribeTask(topic, reader, listener);
+        subscribeTask.start();
+        subscribeTaskMap.put(topic, subscribeTask);
         return true;
     }
 
-    public void consume(String topic, String readerGroup) {
-        String readerId = buildReaderId(readerGroup);
-        try (EventStreamReader<byte[]> reader = createReader(readerId, readerGroup)) {
-            EventRead<byte[]> event;
-            while ((event = reader.readNextEvent(2000)) != null) {
-                if (event.getEvent() == null) {
-                    continue;
-                }
-                // TODO consume
-            }
+    public boolean unsubscribe(String topic, String consumerGroup) {
+        if (!subscribeTaskMap.containsKey(topic)) {
+            return true;
         }
+        subscribeTaskMap.remove(topic).stopRead();
+        return true;
     }
 
     public void checkTopicExist(String topic) {
@@ -134,9 +135,9 @@ public class PravegaClient {
         return streamManager.createScope(config.getScope());
     }
 
-    private void createStream(String topic) {
+    private boolean createStream(String topic) {
         StreamConfiguration streamConfiguration = StreamConfiguration.builder().build();
-        streamManager.createStream(config.getScope(), topic, streamConfiguration);
+        return streamManager.createStream(config.getScope(), topic, streamConfiguration);
     }
 
     private EventStreamWriter<byte[]> createWrite(String topic) {
@@ -157,7 +158,7 @@ public class PravegaClient {
     private boolean createReaderGroup(String topic, String readerGroup) {
         readerIdMap.putIfAbsent(topic, new AtomicLong(0));
         ReaderGroupConfig readerGroupConfig =
-            ReaderGroupConfig.builder().stream(NameUtils.getScopedStreamName(config.getScope(), topic)).build();
+                ReaderGroupConfig.builder().stream(NameUtils.getScopedStreamName(config.getScope(), topic)).build();
         return readerGroupManager.createReaderGroup(readerGroup, readerGroupConfig);
     }
 
