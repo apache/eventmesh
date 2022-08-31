@@ -17,24 +17,35 @@
 
 package org.apache.eventmesh.connector.pravega.client;
 
-import io.cloudevents.CloudEvent;
-import io.pravega.client.ClientConfig;
-import io.pravega.client.EventStreamClientFactory;
-import io.pravega.client.admin.ReaderGroupManager;
-import io.pravega.client.admin.StreamManager;
-import io.pravega.client.stream.*;
-import io.pravega.client.stream.impl.ByteArraySerializer;
-import io.pravega.shared.NameUtils;
-import io.pravega.shared.security.auth.DefaultCredentials;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
+
+import io.cloudevents.CloudEvent;
+import io.pravega.client.ClientConfig;
+import io.pravega.client.EventStreamClientFactory;
+import io.pravega.client.admin.ReaderGroupManager;
+import io.pravega.client.admin.StreamManager;
+import io.pravega.client.stream.EventStreamReader;
+import io.pravega.client.stream.EventStreamWriter;
+import io.pravega.client.stream.EventWriterConfig;
+import io.pravega.client.stream.ReaderConfig;
+import io.pravega.client.stream.ReaderGroupConfig;
+import io.pravega.client.stream.StreamConfiguration;
+import io.pravega.client.stream.impl.ByteArraySerializer;
+import io.pravega.shared.NameUtils;
+import io.pravega.shared.security.auth.DefaultCredentials;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PravegaClient {
@@ -120,6 +131,7 @@ public class PravegaClient {
         if (!subscribeTaskMap.containsKey(topic)) {
             return true;
         }
+        deleteReaderGroup(consumerGroup);
         subscribeTaskMap.remove(topic).stopRead();
         return true;
     }
@@ -158,7 +170,7 @@ public class PravegaClient {
     private boolean createReaderGroup(String topic, String readerGroup) {
         readerIdMap.putIfAbsent(readerGroup, new AtomicLong(0));
         ReaderGroupConfig readerGroupConfig =
-                ReaderGroupConfig.builder().stream(NameUtils.getScopedStreamName(config.getScope(), topic)).build();
+            ReaderGroupConfig.builder().stream(NameUtils.getScopedStreamName(config.getScope(), topic)).build();
         return readerGroupManager.createReaderGroup(readerGroup, readerGroupConfig);
     }
 

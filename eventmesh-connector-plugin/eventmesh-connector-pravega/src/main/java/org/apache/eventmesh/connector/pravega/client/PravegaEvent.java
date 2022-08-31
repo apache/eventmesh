@@ -17,11 +17,6 @@
 
 package org.apache.eventmesh.connector.pravega.client;
 
-import io.cloudevents.CloudEvent;
-import io.cloudevents.SpecVersion;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
@@ -30,6 +25,13 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.SpecVersion;
+import io.cloudevents.core.builder.CloudEventBuilder;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -61,11 +63,11 @@ public class PravegaEvent implements Serializable {
                 throw new PravegaConnectorException(String.format("CloudEvent version %s does not support.", version));
         }
         builder.withData(data.getBytes())
-                .withId(extensions.remove("id"))
-                .withSource(URI.create(extensions.remove("source")))
-                .withType(extensions.remove("type"))
-                .withDataContentType(extensions.remove("datacontenttype"))
-                .withSubject(extensions.remove("subject"));
+               .withId(extensions.remove("id"))
+               .withSource(URI.create(extensions.remove("source")))
+               .withType(extensions.remove("type"))
+               .withDataContentType(extensions.remove("datacontenttype"))
+               .withSubject(extensions.remove("subject"));
         for (Map.Entry<String, String> extension : extensions.entrySet()) {
             builder.withExtension(extension.getKey(), extension.getValue());
         }

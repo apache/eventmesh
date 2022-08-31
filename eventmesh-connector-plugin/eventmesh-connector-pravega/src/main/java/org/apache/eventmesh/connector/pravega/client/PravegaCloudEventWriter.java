@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.pravega.client;
 
+import java.nio.charset.StandardCharsets;
+
 import io.cloudevents.CloudEventData;
 import io.cloudevents.SpecVersion;
 import io.cloudevents.core.format.EventFormat;
@@ -25,10 +27,8 @@ import io.cloudevents.rw.CloudEventContextWriter;
 import io.cloudevents.rw.CloudEventRWException;
 import io.cloudevents.rw.CloudEventWriter;
 
-import java.nio.charset.StandardCharsets;
-
 public class PravegaCloudEventWriter
-        implements MessageWriter<CloudEventWriter<PravegaEvent>, PravegaEvent>, CloudEventWriter<PravegaEvent> {
+    implements MessageWriter<CloudEventWriter<PravegaEvent>, PravegaEvent>, CloudEventWriter<PravegaEvent> {
 
     private final PravegaEvent pravegaEvent;
 
