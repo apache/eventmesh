@@ -29,8 +29,7 @@ dependencies {
     // use newer version to avoid CVE
     implementation 'io.netty:netty-codec-http2:4.1.79.Final'
 
-    testImplementation "org.powermock:powermock-module-junit4"
-    testImplementation "org.powermock:powermock-api-mockito2"
+    testImplementation "org.testcontainers:testcontainers:1.17.3"
 
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'

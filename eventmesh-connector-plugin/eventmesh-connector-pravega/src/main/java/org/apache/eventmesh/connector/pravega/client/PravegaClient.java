@@ -58,9 +58,9 @@ public class PravegaClient {
 
     private static PravegaClient instance;
 
-    private PravegaClient() {
-        this.config = PravegaConnectorConfig.getInstance();
-        this.streamManager = StreamManager.create(config.getControllerURI());
+    private PravegaClient(PravegaConnectorConfig config) {
+        this.config = config;
+        streamManager = StreamManager.create(config.getControllerURI());
         ClientConfig.ClientConfigBuilder clientConfigBuilder = ClientConfig.builder().controllerURI(config.getControllerURI());
         if (config.isAuthEnabled()) {
             clientConfigBuilder.credentials(new DefaultCredentials(config.getPassword(), config.getUsername()));
@@ -75,7 +75,14 @@ public class PravegaClient {
 
     public static PravegaClient getInstance() {
         if (instance == null) {
-            instance = new PravegaClient();
+            instance = new PravegaClient(PravegaConnectorConfig.getInstance());
+        }
+        return instance;
+    }
+
+    protected static PravegaClient setUpAndGetInstance(PravegaConnectorConfig config) {
+        if (instance == null) {
+            instance = new PravegaClient(config);
         }
         return instance;
     }
@@ -90,6 +97,10 @@ public class PravegaClient {
     public void shutdown() {
         subscribeTaskMap.forEach((topic, task) -> task.stopRead());
         subscribeTaskMap.clear();
+        readerIdMap.clear();
+        readerGroupManager.close();
+        clientFactory.close();
+        streamManager.close();
     }
 
     public SendResult publish(String topic, CloudEvent cloudEvent) {
@@ -107,7 +118,7 @@ public class PravegaClient {
             sendResult.setMessageId("-1");
             return sendResult;
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
-            throw new PravegaConnectorException(String.format("Write [%s] fail", topic));
+            throw new PravegaConnectorException(String.format("Write topic[%s] fail", topic));
         }
     }
 
@@ -143,7 +154,7 @@ public class PravegaClient {
         }
     }
 
-    public boolean createScope() {
+    private boolean createScope() {
         return streamManager.createScope(config.getScope());
     }
 
@@ -181,5 +192,25 @@ public class PravegaClient {
 
     private EventStreamReader<byte[]> createReader(String readerId, String readerGroup) {
         return clientFactory.createReader(readerId, readerGroup, new ByteArraySerializer(), ReaderConfig.builder().build());
+    }
+
+    protected StreamManager getStreamManager() {
+        return streamManager;
+    }
+
+    protected EventStreamClientFactory getClientFactory() {
+        return clientFactory;
+    }
+
+    protected ReaderGroupManager getReaderGroupManager() {
+        return readerGroupManager;
+    }
+
+    protected Map<String, AtomicLong> getReaderIdMap() {
+        return readerIdMap;
+    }
+
+    protected Map<String, SubscribeTask> getSubscribeTaskMap() {
+        return subscribeTaskMap;
     }
 }
