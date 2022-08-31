@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.connector.pravega;
 
+import io.cloudevents.CloudEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.SendResult;
@@ -27,10 +29,6 @@ import org.apache.eventmesh.connector.pravega.client.PravegaClient;
 
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.cloudevents.CloudEvent;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PravegaProducerImpl implements Producer {
@@ -65,15 +63,15 @@ public class PravegaProducerImpl implements Producer {
     @Override
     public void publish(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception {
         try {
-            SendResult sendResult = client.publish(cloudEvent.getSubject(), cloudEvent.getData().toBytes());
+            SendResult sendResult = client.publish(cloudEvent.getSubject(), cloudEvent);
             sendCallback.onSuccess(sendResult);
         } catch (Exception e) {
             log.error("send message error, topic: {}", cloudEvent.getSubject());
             OnExceptionContext onExceptionContext = OnExceptionContext.builder()
-                                                                      .messageId("-1")
-                                                                      .topic(cloudEvent.getSubject())
-                                                                      .exception(new ConnectorRuntimeException(e))
-                                                                      .build();
+                    .messageId("-1")
+                    .topic(cloudEvent.getSubject())
+                    .exception(new ConnectorRuntimeException(e))
+                    .build();
             sendCallback.onException(onExceptionContext);
         }
     }
