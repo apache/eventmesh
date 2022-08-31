@@ -1,14 +1,16 @@
 package org.apache.eventmesh.connector.pravega.client;
 
-import io.cloudevents.CloudEvent;
-import io.pravega.client.stream.EventRead;
-import io.pravega.client.stream.EventStreamReader;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.cloudevents.CloudEvent;
+import io.pravega.client.stream.EventRead;
+import io.pravega.client.stream.EventStreamReader;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SubscribeTask extends Thread {

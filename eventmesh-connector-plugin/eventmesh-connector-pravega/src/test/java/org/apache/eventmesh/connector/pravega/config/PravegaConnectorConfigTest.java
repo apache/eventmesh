@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.pravega.config;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.net.URI;
 
@@ -40,7 +41,32 @@ public class PravegaConnectorConfigTest {
 
     @Test
     public void getScope() {
-        assertEquals("eventmesh.pravega", config.getScope());
+        assertEquals("eventmesh-pravega", config.getScope());
+    }
+
+    @Test
+    public void isAuthEnabled() {
+        assertFalse(config.isAuthEnabled());
+    }
+
+    @Test
+    public void getUsername() {
+        assertEquals("", config.getUsername());
+    }
+
+    @Test
+    public void getPassword() {
+        assertEquals("", config.getPassword());
+    }
+
+    @Test
+    public void isTslEnabled() {
+        assertFalse(config.isTlsEnable());
+    }
+
+    @Test
+    public void getTruststore() {
+        assertEquals("", config.getTruststore());
     }
 
     @Test

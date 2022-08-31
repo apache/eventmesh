@@ -27,6 +27,7 @@ import lombok.Getter;
 public class PravegaConnectorConfig {
     public static String EVENTMESH_PRAVEGA_CONTROLLER_URI = "eventMesh.server.pravega.controller.uri";
     public static String EVENTMESH_PRAVEGA_SCOPE = "eventMesh.server.pravega.scope";
+    public static String EVENTMESH_PRAVEGA_AUTH_ENABLED = "eventMesh.server.pravega.authEnabled";
     public static String EVENTMESH_PRAVEGA_USERNAME = "eventMesh.server.pravega.username";
     public static String EVENTMESH_PRAVEGA_PASSWORD = "eventMesh.server.pravega.password";
     public static String EVENTMESH_PRAVEGA_TLS_ENABLED = "eventMesh.server.pravega.tlsEnabled";
@@ -38,9 +39,9 @@ public class PravegaConnectorConfig {
     private String scope = "eventmesh-pravega";
     private int clientPoolSize = 8;
     private int queueSize = 512;
+    private boolean authEnabled = false;
     private String username = "";
     private String password = "";
-    private boolean authEnabled = false;
     private boolean tlsEnable = false;
     private String truststore = "";
 
@@ -66,6 +67,11 @@ public class PravegaConnectorConfig {
         String scopeStr = PravegaConnectorConfigWrapper.getProp(EVENTMESH_PRAVEGA_SCOPE);
         if (StringUtils.isNotBlank(scopeStr)) {
             scope = StringUtils.trim(scopeStr);
+        }
+
+        String authEnableStr = PravegaConnectorConfigWrapper.getProp(EVENTMESH_PRAVEGA_AUTH_ENABLED);
+        if (StringUtils.isNotBlank(authEnableStr)) {
+            authEnabled = Boolean.parseBoolean(StringUtils.trim(authEnableStr));
         }
 
         String usernameStr = PravegaConnectorConfigWrapper.getProp(EVENTMESH_PRAVEGA_USERNAME);
