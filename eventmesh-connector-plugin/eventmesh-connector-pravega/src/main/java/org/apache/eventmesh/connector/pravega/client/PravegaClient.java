@@ -82,7 +82,7 @@ public class PravegaClient {
     }
 
     public SendResult publish(String topic, CloudEvent cloudEvent) {
-        if (createStream(topic)) {
+        if (!createStream(topic)) {
             log.debug("stream[{}] has already been created.", topic);
         }
         try (EventStreamWriter<byte[]> writer = createWrite(topic)) {
@@ -105,7 +105,7 @@ public class PravegaClient {
             return true;
         }
         String readerGroup = buildReaderGroup(topic, consumerGroup);
-        if (createReaderGroup(topic, readerGroup)) {
+        if (!createReaderGroup(topic, readerGroup)) {
             log.debug("readerGroup[{}] has already been created.", readerGroup);
         }
         String readerId = buildReaderId(readerGroup);
@@ -156,7 +156,7 @@ public class PravegaClient {
     }
 
     private boolean createReaderGroup(String topic, String readerGroup) {
-        readerIdMap.putIfAbsent(topic, new AtomicLong(0));
+        readerIdMap.putIfAbsent(readerGroup, new AtomicLong(0));
         ReaderGroupConfig readerGroupConfig =
                 ReaderGroupConfig.builder().stream(NameUtils.getScopedStreamName(config.getScope(), topic)).build();
         return readerGroupManager.createReaderGroup(readerGroup, readerGroupConfig);
