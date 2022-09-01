@@ -33,7 +33,10 @@ import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 public class PravegaClient {
@@ -41,6 +44,7 @@ public class PravegaClient {
     private final StreamManager streamManager;
     private final EventStreamClientFactory clientFactory;
     private final ReaderGroupManager readerGroupManager;
+    private final Map<String, EventStreamWriter<byte[]>> writerMap = new ConcurrentHashMap<>();
     private final Map<String, SubscribeTask> subscribeTaskMap = new ConcurrentHashMap<>();
 
     private static PravegaClient instance;
@@ -88,14 +92,13 @@ public class PravegaClient {
     }
 
     public SendResult publish(String topic, CloudEvent cloudEvent) {
-        if (!createStream(topic)) {
-            log.debug("stream[{}] has already been created.", topic);
-        }
-        try (EventStreamWriter<byte[]> writer = createWrite(topic)) {
+        try (EventStreamWriter<byte[]> writer = writerMap.computeIfAbsent(topic, k -> createWrite(topic))) {
+            if (!createStream(topic)) {
+                log.debug("stream[{}] has already been created.", topic);
+            }
             PravegaCloudEventWriter cloudEventWriter = new PravegaCloudEventWriter(topic);
             PravegaEvent pravegaEvent = cloudEventWriter.writeBinary(cloudEvent);
-            final CompletableFuture<Void> writerFuture = writer.writeEvent(PravegaEvent.toByteArray(pravegaEvent));
-            writerFuture.get(5, TimeUnit.SECONDS);
+            writer.writeEvent(PravegaEvent.toByteArray(pravegaEvent)).get(5, TimeUnit.SECONDS);
             SendResult sendResult = new SendResult();
             sendResult.setTopic(topic);
             // set -1 as messageId since writeEvent method doesn't return it.
