@@ -357,9 +357,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new SendAsyncRemoteEventProcessor(this);
         handlerService.register(sendAsyncRemoteEventProcessor, remoteMsgExecutor);
 
-        SendAsyncRemoteEventProcessor sendAsyncRemoteEventProcessor = new SendAsyncRemoteEventProcessor(this);
-        registerProcessor(RequestURI.PUBLISH_BRIDGE.getRequestURI(), sendAsyncRemoteEventProcessor, remoteMsgExecutor);
-
         AdminMetricsProcessor adminMetricsProcessor = new AdminMetricsProcessor(this);
         registerProcessor(RequestCode.ADMIN_METRICS.getRequestCode(), adminMetricsProcessor, adminExecutor);
 
@@ -375,9 +372,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
         RemoteSubscribeEventProcessor remoteSubscribeEventProcessor = new RemoteSubscribeEventProcessor(this);
         handlerService.register(remoteSubscribeEventProcessor, clientManageExecutor);
 
-        RemoteSubscribeEventProcessor remoteSubscribeEventProcessor = new RemoteSubscribeEventProcessor(this);
-        registerProcessor(RequestURI.SUBSCRIBE_REMOTE.getRequestURI(), remoteSubscribeEventProcessor, clientManageExecutor);
-
         UnSubscribeProcessor unSubscribeProcessor = new UnSubscribeProcessor(this);
         registerProcessor(RequestCode.UNSUBSCRIBE.getRequestCode(), unSubscribeProcessor, clientManageExecutor);
 
@@ -386,9 +380,6 @@ public class EventMeshHTTPServer extends AbstractHTTPServer {
 
         RemoteUnSubscribeEventProcessor remoteUnSubscribeEventProcessor = new RemoteUnSubscribeEventProcessor(this);
         handlerService.register(remoteUnSubscribeEventProcessor, clientManageExecutor);
-
-        RemoteUnSubscribeEventProcessor remoteUnSubscribeEventProcessor = new RemoteUnSubscribeEventProcessor(this);
-        registerProcessor(RequestURI.UNSUBSCRIBE_REMOTE.getRequestURI(), remoteUnSubscribeEventProcessor, clientManageExecutor);
 
         ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
         registerProcessor(RequestCode.REPLY_MESSAGE.getRequestCode(), replyMessageProcessor, replyMsgExecutor);

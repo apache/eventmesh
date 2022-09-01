@@ -216,7 +216,6 @@ The following components are provided under the Apache License. See project link
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
     assertj-core 2.6.0: https://github.com/assertj/assertj-core, Apache 2.0
-    async-http-client-2.12.0: https://https://github.com/AsyncHttpClient/async-http-client, Apache 2.0
     cloudevents-api 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
     cloudevents-core 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
     cloudevents-json-jackson 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
