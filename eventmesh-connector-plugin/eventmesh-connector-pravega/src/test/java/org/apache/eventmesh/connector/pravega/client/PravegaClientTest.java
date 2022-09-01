@@ -1,24 +1,30 @@
 package org.apache.eventmesh.connector.pravega.client;
 
-import com.github.dockerjava.api.command.CreateContainerCmd;
-import com.github.dockerjava.api.model.PortBinding;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import io.pravega.client.admin.StreamManager;
-import io.pravega.client.stream.ReaderGroupNotFoundException;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.apache.eventmesh.api.AsyncConsumeContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
+
+import java.net.URI;
+import java.util.function.Consumer;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.net.URI;
-import java.util.function.Consumer;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+import io.pravega.client.admin.StreamManager;
+import io.pravega.client.stream.ReaderGroupNotFoundException;
 
-import static org.junit.Assert.*;
+import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.model.PortBinding;
 
 public class PravegaClientTest {
     private StreamManager streamManager;
@@ -26,11 +32,12 @@ public class PravegaClientTest {
     private URI controllerURI;
 
     @Rule
-    public GenericContainer pravega = new GenericContainer(DockerImageName.parse("pravega/pravega:0.11.0"))
+    public GenericContainer pravega =
+        new GenericContainer(DockerImageName.parse("pravega/pravega:0.11.0"))
             .withExposedPorts(9090, 12345).withEnv("HOST_IP", "127.0.0.1").withCommand("standalone")
             .withCreateContainerCmdModifier((Consumer<CreateContainerCmd>) createContainerCmd ->
-                    createContainerCmd.getHostConfig()
-                            .withPortBindings(PortBinding.parse("9090:9090"), PortBinding.parse("12345:12345")));
+                createContainerCmd.getHostConfig()
+                    .withPortBindings(PortBinding.parse("9090:9090"), PortBinding.parse("12345:12345")));
 
     @Before
     public void setUp() {
@@ -126,32 +133,32 @@ public class PravegaClientTest {
 
     private CloudEvent createCloudEvent() {
         String data = "{\"headers\":{\"content-length\":\"36\",\"Accept\":\"*/*\",\"ip\":\"127.0.0.1:51226\",\"User-Agent\":\"curl/7.83.1\","
-                + "\"Host\":\"127.0.0.1:10105\",\"source\":\"127.0.0.1:51226\",\"Content-Type\":\"application/json\"},"
-                + "\"path\":\"/eventmesh/publish/TEST-TOPIC-HTTP-ASYNC\",\"method\":\"POST\",\"body\":{\"pass\":\"12345678\",\"name\":\"admin\"}}";
+            + "\"Host\":\"127.0.0.1:10105\",\"source\":\"127.0.0.1:51226\",\"Content-Type\":\"application/json\"},"
+            + "\"path\":\"/eventmesh/publish/TEST-TOPIC-HTTP-ASYNC\",\"method\":\"POST\",\"body\":{\"pass\":\"12345678\",\"name\":\"admin\"}}";
         return CloudEventBuilder.v1()
-                .withId("c61039e1-7884-4d7f-b72f-6c61160a64fc")
-                .withSource(URI.create("source:127.0.0.1:51226"))
-                .withType("http_request")
-                .withDataContentType("application/json")
-                .withSubject("TEST-TOPIC-HTTP-ASYNC")
-                .withData(data.getBytes())
-                .withExtension("reqeventmesh2mqtimestamp", "1659342713460")
-                .withExtension("ip", "127.0.0.1:51226")
-                .withExtension("idc", "idc")
-                .withExtension("protocoldesc", "http")
-                .withExtension("pid", 2376)
-                .withExtension("env", "env")
-                .withExtension("sys", 1234)
-                .withExtension("ttl", 4000)
-                .withExtension("producergroup", "em-http-producer")
-                .withExtension("consumergroup", "em-http-consumer")
-                .withExtension("passwd", "pass")
-                .withExtension("bizseqno", "249695004068274968410952665702")
-                .withExtension("protocoltype", "http")
-                .withExtension("msgtype", "persistent")
-                .withExtension("uniqueid", "866012286651006371403062105469")
-                .withExtension("username", "eventmesh")
-                .withExtension("reqc2eventmeshtimestamp", "1659342713460")
-                .build();
+            .withId("c61039e1-7884-4d7f-b72f-6c61160a64fc")
+            .withSource(URI.create("source:127.0.0.1:51226"))
+            .withType("http_request")
+            .withDataContentType("application/json")
+            .withSubject("TEST-TOPIC-HTTP-ASYNC")
+            .withData(data.getBytes())
+            .withExtension("reqeventmesh2mqtimestamp", "1659342713460")
+            .withExtension("ip", "127.0.0.1:51226")
+            .withExtension("idc", "idc")
+            .withExtension("protocoldesc", "http")
+            .withExtension("pid", 2376)
+            .withExtension("env", "env")
+            .withExtension("sys", 1234)
+            .withExtension("ttl", 4000)
+            .withExtension("producergroup", "em-http-producer")
+            .withExtension("consumergroup", "em-http-consumer")
+            .withExtension("passwd", "pass")
+            .withExtension("bizseqno", "249695004068274968410952665702")
+            .withExtension("protocoltype", "http")
+            .withExtension("msgtype", "persistent")
+            .withExtension("uniqueid", "866012286651006371403062105469")
+            .withExtension("username", "eventmesh")
+            .withExtension("reqc2eventmeshtimestamp", "1659342713460")
+            .build();
     }
 }
