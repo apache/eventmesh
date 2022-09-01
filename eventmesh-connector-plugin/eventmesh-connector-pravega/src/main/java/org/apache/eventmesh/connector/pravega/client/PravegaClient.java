@@ -87,27 +87,31 @@ public class PravegaClient {
     public void shutdown() {
         subscribeTaskMap.forEach((topic, task) -> task.stopRead());
         subscribeTaskMap.clear();
+        writerMap.forEach((topic, writer) -> writer.close());
+        writerMap.clear();
         readerGroupManager.close();
         clientFactory.close();
         streamManager.close();
     }
 
     public SendResult publish(String topic, CloudEvent cloudEvent) {
-        try (EventStreamWriter<byte[]> writer = writerMap.computeIfAbsent(topic, k -> createWrite(topic))) {
-            if (!createStream(topic)) {
-                log.debug("stream[{}] has already been created.", topic);
-            }
-            PravegaCloudEventWriter cloudEventWriter = new PravegaCloudEventWriter(topic);
-            PravegaEvent pravegaEvent = cloudEventWriter.writeBinary(cloudEvent);
+        if (!createStream(topic)) {
+            log.debug("stream[{}] has already been created.", topic);
+        }
+        EventStreamWriter<byte[]> writer = writerMap.computeIfAbsent(topic, k -> createWrite(topic));
+        PravegaCloudEventWriter cloudEventWriter = new PravegaCloudEventWriter(topic);
+        PravegaEvent pravegaEvent = cloudEventWriter.writeBinary(cloudEvent);
+        try {
             writer.writeEvent(PravegaEvent.toByteArray(pravegaEvent)).get(5, TimeUnit.SECONDS);
-            SendResult sendResult = new SendResult();
-            sendResult.setTopic(topic);
-            // set -1 as messageId since writeEvent method doesn't return it.
-            sendResult.setMessageId("-1");
-            return sendResult;
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
             throw new PravegaConnectorException(String.format("Write topic[%s] fail.", topic));
         }
+        SendResult sendResult = new SendResult();
+        sendResult.setTopic(topic);
+        // set -1 as messageId since writeEvent method doesn't return it.
+        sendResult.setMessageId("-1");
+        return sendResult;
+
     }
 
     public boolean subscribe(String topic, String consumerGroup, EventListener listener) {
@@ -115,9 +119,13 @@ public class PravegaClient {
             return true;
         }
         String readerGroup = buildReaderGroup(topic, consumerGroup);
-        if (!createReaderGroup(topic, readerGroup)) {
-            log.debug("readerGroup[{}] has already been created.", readerGroup);
+        // clear the readerGroup first to ensure a readerGroup only has one reader
+        try {
+            deleteReaderGroup(readerGroup);
+        } catch (Exception e) {
+            log.debug("clear readerGroup[{}] fail since it doesn't exist.", readerGroup);
         }
+        createReaderGroup(topic, readerGroup);
         String readerId = buildReaderId(readerGroup);
         EventStreamReader<byte[]> reader = createReader(readerId, readerGroup);
         SubscribeTask subscribeTask = new SubscribeTask(topic, reader, listener);
@@ -160,13 +168,13 @@ public class PravegaClient {
         return String.format("%s-reader", readerGroup);
     }
 
-    private boolean createReaderGroup(String topic, String readerGroup) {
+    private void createReaderGroup(String topic, String readerGroup) {
         if (!checkTopicExist(topic)) {
             createStream(topic);
         }
         ReaderGroupConfig readerGroupConfig =
                 ReaderGroupConfig.builder().stream(NameUtils.getScopedStreamName(config.getScope(), topic)).build();
-        return readerGroupManager.createReaderGroup(readerGroup, readerGroupConfig);
+        readerGroupManager.createReaderGroup(readerGroup, readerGroupConfig);
     }
 
     private void deleteReaderGroup(String readerGroup) {
@@ -187,6 +195,10 @@ public class PravegaClient {
 
     protected ReaderGroupManager getReaderGroupManager() {
         return readerGroupManager;
+    }
+
+    public Map<String, EventStreamWriter<byte[]>> getWriterMap() {
+        return writerMap;
     }
 
     protected Map<String, SubscribeTask> getSubscribeTaskMap() {
