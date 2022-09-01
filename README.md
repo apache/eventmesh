@@ -58,19 +58,19 @@ Please go to the [release page](https://eventmesh.apache.org/download) to get th
 ## Quick start
 Here are the guidelines:
 
-[Step 1: Deploy eventmesh-store](docs/zh/instruction/01-store.md)
+[Step 1: Deploy eventmesh-store](docs/en/instruction/01-store.md)
 
-[Step 2: Start eventmesh-runtime](docs/zh/instruction/02-runtime.md)
+[Step 2: Start eventmesh-runtime](docs/en/instruction/02-runtime.md)
 
-[Step 3: Run our demos](docs/zh/instruction/03-demo.md)
+[Step 3: Run our demos](docs/en/instruction/03-demo.md)
 
 Besides, we also provide the docker-version guidelines for you if you prefer Docker:
 
-[Step 1: Deploy eventmesh-store using docker](docs/zh/instruction/01-store-with-docker.md)
+[Step 1: Deploy eventmesh-store using docker](docs/en/instruction/01-store-with-docker.md)
 
-[Step 2: Start eventmesh-runtime using docker](docs/zh/instruction/02-runtime-with-docker.md)
+[Step 2: Start eventmesh-runtime using docker](docs/en/instruction/02-runtime-with-docker.md)
 
-[Step 3: Run our demos](docs/zh/instruction/03-demo.md)
+[Step 3: Run our demos](docs/en/instruction/03-demo.md)
 
 ## Contributing
 
