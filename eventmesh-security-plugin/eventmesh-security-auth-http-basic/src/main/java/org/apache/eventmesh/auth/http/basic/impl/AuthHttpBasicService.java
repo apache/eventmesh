@@ -46,7 +46,7 @@ public class AuthHttpBasicService implements AuthService {
     }
 
     @Override
-    public Map getAuthParams() throws AuthException {
+    public Map<String, String> getAuthParams() throws AuthException {
         if (authConfigs == null) {
             init();
         }
@@ -54,7 +54,7 @@ public class AuthHttpBasicService implements AuthService {
         String token = Base64.getEncoder().encodeToString((authConfigs.username + authConfigs.password)
             .getBytes(StandardCharsets.UTF_8));
 
-        Map authParams = new HashMap();
+        Map<String, String> authParams = new HashMap<>(2);
         authParams.put("Authorization", "Basic " + token);
         return authParams;
     }
