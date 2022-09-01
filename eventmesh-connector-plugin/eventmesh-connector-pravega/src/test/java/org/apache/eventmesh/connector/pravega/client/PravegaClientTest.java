@@ -57,6 +57,7 @@ public class PravegaClientTest {
 
         pravegaClient.shutdown();
         assertTrue(pravegaClient.getSubscribeTaskMap().isEmpty());
+        assertTrue(pravegaClient.getWriterMap().isEmpty());
     }
 
     @Test
