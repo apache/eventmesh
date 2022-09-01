@@ -17,25 +17,28 @@
 
 package org.apache.eventmesh.admin.rocketmq.handler;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import static org.apache.eventmesh.admin.rocketmq.Constants.APPLICATION_JSON;
+import static org.apache.eventmesh.admin.rocketmq.Constants.CONTENT_TYPE;
+import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_ERROR;
+import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.admin.rocketmq.request.TopicCreateRequest;
 import org.apache.eventmesh.admin.rocketmq.response.TopicResponse;
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
 import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
 import org.apache.eventmesh.admin.rocketmq.util.RequestMapping;
 import org.apache.eventmesh.common.Constants;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.eventmesh.admin.rocketmq.Constants.APPLICATION_JSON;
-import static org.apache.eventmesh.admin.rocketmq.Constants.CONTENT_TYPE;
-import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_ERROR;
-import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
 
 public class TopicsHandler implements HttpHandler {
     private static final Logger logger = LoggerFactory.getLogger(TopicsHandler.class);
