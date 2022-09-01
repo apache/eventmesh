@@ -17,16 +17,6 @@
 
 package org.apache.eventmesh.connector.pravega.client;
 
-import io.cloudevents.CloudEvent;
-import io.pravega.client.ClientConfig;
-import io.pravega.client.EventStreamClientFactory;
-import io.pravega.client.admin.ReaderGroupManager;
-import io.pravega.client.admin.StreamManager;
-import io.pravega.client.stream.*;
-import io.pravega.client.stream.impl.ByteArraySerializer;
-import io.pravega.shared.NameUtils;
-import io.pravega.shared.security.auth.DefaultCredentials;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.connector.pravega.SubscribeTask;
@@ -38,6 +28,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import io.cloudevents.CloudEvent;
+import io.pravega.client.ClientConfig;
+import io.pravega.client.EventStreamClientFactory;
+import io.pravega.client.admin.ReaderGroupManager;
+import io.pravega.client.admin.StreamManager;
+import io.pravega.client.stream.EventStreamReader;
+import io.pravega.client.stream.EventStreamWriter;
+import io.pravega.client.stream.EventWriterConfig;
+import io.pravega.client.stream.ReaderConfig;
+import io.pravega.client.stream.ReaderGroupConfig;
+import io.pravega.client.stream.StreamConfiguration;
+import io.pravega.client.stream.impl.ByteArraySerializer;
+import io.pravega.shared.NameUtils;
+import io.pravega.shared.security.auth.DefaultCredentials;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PravegaClient {
@@ -173,7 +180,7 @@ public class PravegaClient {
             createStream(topic);
         }
         ReaderGroupConfig readerGroupConfig =
-                ReaderGroupConfig.builder().stream(NameUtils.getScopedStreamName(config.getScope(), topic)).build();
+            ReaderGroupConfig.builder().stream(NameUtils.getScopedStreamName(config.getScope(), topic)).build();
         readerGroupManager.createReaderGroup(readerGroup, readerGroupConfig);
     }
 
