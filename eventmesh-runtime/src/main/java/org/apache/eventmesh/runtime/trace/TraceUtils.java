@@ -35,7 +35,7 @@ import io.opentelemetry.context.Context;
 public class TraceUtils {
     private static Logger logger = LoggerFactory.getLogger(TraceUtils.class);
 
-    public static Span prepareClientSpan(Map map, String spanName,
+    public static Span prepareClientSpan(Map<String, Object> map, String spanName,
                                          boolean isSpanFinishInOtherThread) {
         Span span = null;
         try {

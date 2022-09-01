@@ -35,5 +35,5 @@ public interface AuthService {
 
     void shutdown() throws AuthException;
 
-    Map getAuthParams() throws AuthException;
+    Map<String, String> getAuthParams() throws AuthException;
 }
