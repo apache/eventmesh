@@ -35,7 +35,7 @@ import org.junit.Test;
 public class FileWebHookConfigOperationTest {
 
     @Test
-    public void TestInsertWebHookConfig() {
+    public void testInsertWebHookConfig() {
         Properties properties = new Properties();
         properties.setProperty("filePath", "test_dir");
 
