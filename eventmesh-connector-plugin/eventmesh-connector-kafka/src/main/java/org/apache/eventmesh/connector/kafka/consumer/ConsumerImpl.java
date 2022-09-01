@@ -23,29 +23,28 @@ import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.requests.MetadataResponse;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.CloudEventUtils;
 
 public class ConsumerImpl {
     private final KafkaConsumer<String, CloudEvent> kafkaConsumer;
     private final Properties properties;
     private AtomicBoolean started = new AtomicBoolean(false);
     private EventListener eventListener;
+    private KafkaConsumerRunner kafkaConsumerRunner;
+    private ExecutorService executorService;
+    private Set<String> topicsSet;
 
     public ConsumerImpl(final Properties properties) {
         Properties props = new Properties();
@@ -59,22 +58,18 @@ public class ConsumerImpl {
 
         this.properties = props;
         this.kafkaConsumer = new KafkaConsumer<String, CloudEvent>(props);
+        kafkaConsumerRunner = new KafkaConsumerRunner(this.kafkaConsumer);
+        executorService = Executors.newFixedThreadPool(10);
+        topicsSet = new HashSet<>();
     }
 
     public Properties attributes() {
         return properties;
     }
 
-
     public void start() {
         if (this.started.compareAndSet(false, true)) {
-            try {
-                while (this.started.get()) {
-                    this.kafkaConsumer.poll(Duration.ofMillis(100));
-                }
-            } catch (Exception e) {
-                throw new ConnectorRuntimeException(e.getMessage());
-            }
+            executorService.submit(kafkaConsumerRunner);
         }
     }
 
@@ -102,10 +97,8 @@ public class ConsumerImpl {
     public void subscribe(String topic) {
         try {
             // Get the current subscription
-            Map<String, List<PartitionInfo>> topicsAndPartition = this.kafkaConsumer.listTopics();
-            Set<String> topicsSet = topicsAndPartition.keySet();
+            topicsSet.add(topic);
             List<String> topics = new ArrayList<>(topicsSet);
-            topics.add(topic);
             this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
             throw new ConnectorRuntimeException(
@@ -116,11 +109,9 @@ public class ConsumerImpl {
     public void unsubscribe(String topic) {
         try {
             // Get the current subscription
-            Map<String, List<PartitionInfo>> topicsAndPartition = this.kafkaConsumer.listTopics();
-            Set<String> topicsSet = topicsAndPartition.keySet();
-            topicsSet.remove(topic);
-            List<String> topics = new ArrayList<>(topicsSet);
             this.kafkaConsumer.unsubscribe();
+            topicsSet.add(topic);
+            List<String> topics = new ArrayList<>(topicsSet);
             this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
             throw new ConnectorRuntimeException(String.format("kafka push consumer fails to unsubscribe topic: %s", topic));
@@ -139,5 +130,6 @@ public class ConsumerImpl {
 
     public void registerEventListener(EventListener listener) {
         this.eventListener = listener;
+        kafkaConsumerRunner.setListener(this.eventListener);
     }
 }

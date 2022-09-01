@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.kafka.listener;
+package org.apache.eventmesh.connector.kafka.consumer;
 
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
@@ -37,11 +37,14 @@ public class KafkaConsumerRunner implements Runnable {
     private final Logger logger = LoggerFactory.getLogger(KafkaConsumerRunner.class);
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final KafkaConsumer<String, CloudEvent> consumer;
-    private final EventListener listener;
+    private EventListener listener;
     private AtomicInteger offset;
 
-    public KafkaConsumerRunner(KafkaConsumer consumer, EventListener listener) {
-        this.consumer = consumer;
+    public KafkaConsumerRunner(KafkaConsumer<String, CloudEvent> kafkaConsumer) {
+        this.consumer = kafkaConsumer;
+    }
+
+    public void setListener(EventListener listener) {
         this.listener = listener;
     }
 
@@ -76,10 +79,10 @@ public class KafkaConsumerRunner implements Runnable {
                             }
                         }
                     };
-
-                    listener.consume(cloudEvent, eventMeshAsyncConsumeContext);
+                    if (listener != null) {
+                        listener.consume(cloudEvent, eventMeshAsyncConsumeContext);
+                    }
                 });
-
             }
         } catch (WakeupException e) {
             // Ignore exception if closing
