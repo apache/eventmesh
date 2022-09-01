@@ -44,7 +44,7 @@ public class KafkaConsumerRunner implements Runnable {
         this.consumer = kafkaConsumer;
     }
 
-    public void setListener(EventListener listener) {
+    public synchronized void setListener(EventListener listener) {
         this.listener = listener;
     }
 
@@ -87,6 +87,8 @@ public class KafkaConsumerRunner implements Runnable {
         } catch (WakeupException e) {
             // Ignore exception if closing
             if (!closed.get()) throw e;
+        } catch (Exception e) {
+            System.out.println(e);
         } finally {
             consumer.close();
         }
