@@ -29,6 +29,7 @@ import io.pravega.shared.security.auth.DefaultCredentials;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.connector.pravega.SubscribeTask;
 import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
