@@ -58,7 +58,7 @@ public class HttpUtils {
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         post(client, null, uri, requestParam, response -> {
             responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
             countDownLatch.countDown();
             if (log.isDebugEnabled()) {
                 log.debug("{}", responseHolder);
@@ -83,7 +83,7 @@ public class HttpUtils {
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         post(client, forwardAgent, uri, requestParam, response -> {
             responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
             countDownLatch.countDown();
             if (log.isDebugEnabled()) {
                 log.debug("{}", responseHolder);
@@ -198,7 +198,7 @@ public class HttpUtils {
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         get(client, null, url, requestParam, response -> {
             responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
             countDownLatch.countDown();
             if (log.isDebugEnabled()) {
                 log.debug("{}", responseHolder);
@@ -223,7 +223,7 @@ public class HttpUtils {
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         get(client, forwardAgent, url, requestParam, response -> {
             responseHolder.response =
-                    EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+                    EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
             countDownLatch.countDown();
             if (log.isDebugEnabled()) {
                 log.debug("{}", responseHolder);

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.17.1'
+def grpcVersion = '1.42.2'
 
 dependencies {
     api project(":eventmesh-common")
@@ -47,9 +47,9 @@ dependencies {
     testImplementation "io.netty:netty-all"
     testImplementation "org.apache.httpcomponents:httpclient"
 
-    implementation "io.grpc:grpc-protobuf:1.17.1"
-    implementation "io.grpc:grpc-stub:1.17.1"
-    implementation "com.google.protobuf:protobuf-java-util:3.5.1"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "com.google.protobuf:protobuf-java-util:3.21.5"
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
@@ -59,6 +59,7 @@ dependencies {
     testImplementation "org.assertj:assertj-core"
 
     testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-inline"
     testImplementation "org.powermock:powermock-module-junit4"
     testImplementation "org.powermock:powermock-api-mockito2"
 }

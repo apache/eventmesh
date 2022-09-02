@@ -26,6 +26,7 @@ import org.apache.eventmesh.trace.zipkin.common.ZipkinConstants;
 import org.apache.eventmesh.trace.zipkin.config.ZipkinConfiguration;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
@@ -122,7 +123,7 @@ public class ZipkinTraceService implements EventMeshTraceService {
 
             @Override
             public String get(Map<String, Object> carrier, String key) {
-                return carrier.get(key).toString();
+                return Optional.ofNullable(carrier.get(key)).map(Object::toString).orElse(null);
             }
         });
         return context;
