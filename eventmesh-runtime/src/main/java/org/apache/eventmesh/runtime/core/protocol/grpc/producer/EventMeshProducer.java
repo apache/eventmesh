@@ -21,6 +21,7 @@ import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.runtime.common.ServiceState;
 import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ProducerGroupConf;
 import org.apache.eventmesh.runtime.core.plugin.MQProducerWrapper;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
@@ -59,12 +60,12 @@ public class EventMeshProducer {
         this.producerGroupConfig = producerGroupConfig;
 
         Properties keyValue = new Properties();
-        keyValue.put("producerGroup", producerGroupConfig.getGroupName());
-        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(
+        keyValue.put(EventMeshConstants.PRODUCER_GROUP, producerGroupConfig.getGroupName());
+        keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(
             producerGroupConfig.getGroupName(), eventMeshGrpcConfiguration.eventMeshCluster));
 
         //TODO for defibus
-        keyValue.put("eventMeshIDC", eventMeshGrpcConfiguration.eventMeshIDC);
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.eventMeshIDC);
         mqProducerWrapper = new MQProducerWrapper(
             eventMeshGrpcConfiguration.eventMeshConnectorPluginType);
         mqProducerWrapper.init(keyValue);

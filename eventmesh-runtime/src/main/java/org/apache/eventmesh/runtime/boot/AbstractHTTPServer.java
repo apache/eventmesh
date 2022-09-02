@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.protocol.http.HttpCommand;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
@@ -578,7 +579,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
                 if (length > 0) {
                     byte[] body = new byte[length];
                     fullHttpRequest.content().readBytes(body);
-                    JsonUtils.deserialize(new String(body), new TypeReference<Map<String, Object>>() {
+                    JsonUtils.deserialize(new String(body, Constants.DEFAULT_CHARSET), new TypeReference<Map<String, Object>>() {
                     }).forEach(bodyMap::put);
                 }
             } else {

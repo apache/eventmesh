@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.apache.eventmesh.common.Constants;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -43,7 +45,7 @@ public class HttpResponseUtils {
     }
 
     private static final ByteBuf crateByteBuf(ChannelHandlerContext ctx, String body) {
-        byte[] bytes = body.getBytes();
+        byte[] bytes = body.getBytes(Constants.DEFAULT_CHARSET);
         ByteBuf byteBuf = ctx.alloc().buffer(bytes.length);
         byteBuf.writeBytes(bytes);
         return byteBuf;

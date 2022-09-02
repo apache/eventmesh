@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
@@ -79,7 +80,7 @@ public class RejectClientBySubSystemHandler implements HttpHandler {
             if (StringUtils.isBlank(subSystem)) {
                 httpExchange.sendResponseHeaders(200, 0);
                 result = "params illegal!";
-                out.write(result.getBytes());
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
 
@@ -104,14 +105,14 @@ public class RejectClientBySubSystemHandler implements HttpHandler {
                         +
                         "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs), subSystem, e.getMessage());
                 httpExchange.sendResponseHeaders(200, 0);
-                out.write(result.getBytes());
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
                     +
                     "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("rejectClientBySubSystem fail...", e);
         } finally {
