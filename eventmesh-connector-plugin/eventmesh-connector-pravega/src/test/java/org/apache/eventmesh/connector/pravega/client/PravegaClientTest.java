@@ -30,6 +30,7 @@ import java.net.URI;
 import java.util.function.Consumer;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -43,6 +44,7 @@ import io.pravega.client.stream.ReaderGroupNotFoundException;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.model.PortBinding;
 
+@Ignore
 public class PravegaClientTest {
     private StreamManager streamManager;
     private PravegaConnectorConfig config;
