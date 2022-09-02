@@ -24,12 +24,12 @@ eventMesh.webHook.producer.connector=standalone
 #### 第二步：添加webhook配置信息
 配置信息说明
 ```java
-	/**
-	 * 厂商调用的path。厂商事件调用地址、 [http or https ]://[域名 or IP 【厂商可以被调用】]:[端口]/webhook/[callbackPath]
-	 * 比如：http://127.0.0.1:10504/webhook/test/event 需要把全完url填入厂商调用输入中
-	 * callbackPath 是唯一
-	 * manufacturer callback path
-	 */
+   /**
+    * 厂商调用的path。厂商事件调用地址、 [http or https ]://[域名 or IP 【厂商可以被调用】]:[端口]/webhook/[callbackPath]
+    * 比如：http://127.0.0.1:10504/webhook/test/event 需要把全完url填入厂商调用输入中
+    * callbackPath 是唯一
+    * manufacturer callback path
+    */
     private String callbackPath;
 
     /**
@@ -251,13 +251,13 @@ contentType： application/json
 ### github 注册
 #### 第一步：进入对应的项目
 #### 第二步：点击setting
-![](../images/features/webhook/webhook-github-setting.png)
+![](../../images/design-document/webhook/webhook-github-setting.png)
 #### 第三步：点击Webhooks
-![](../images/features/webhook/webhook-github-webhooks.png)
+![](../../images/design-document/webhook/webhook-github-webhooks.png)
 #### 第四步：点击 Add webhook
-![](../images/features/webhook/webhook-github-add.png)
+![](../../images/design-document/webhook/webhook-github-add.png)
 #### 第五步: 填写webhook信息
-![](../images/features/webhook/webhook-github-info.png)
+![](../../images/design-document/webhook/webhook-github-info.png)
 
 Payload URL: 服务地址以及pahts。[http or https ]://[域名 or IP 【厂商可以被调用】]:[端口]/webhook/[callbackPath]
 Content type：http header content type
