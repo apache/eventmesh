@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
@@ -67,7 +68,7 @@ public class RedirectClientByPathHandler implements HttpHandler {
                     || !StringUtils.isNumeric(destEventMeshPort)) {
                 httpExchange.sendResponseHeaders(200, 0);
                 result = "params illegal!";
-                out.write(result.getBytes());
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             logger.info("redirectClientByPath in admin,path:{},destIp:{},destPort:{}====================", path,
@@ -96,7 +97,7 @@ public class RedirectClientByPathHandler implements HttpHandler {
                         sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult, e
                                 .getMessage());
                 httpExchange.sendResponseHeaders(200, 0);
-                out.write(result.getBytes());
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             result = String.format("redirectClientByPath success! sessionMap size {%d}, {path=%s "
@@ -104,7 +105,7 @@ public class RedirectClientByPathHandler implements HttpHandler {
                             "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
                     sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("redirectClientByPath fail...", e);
         } finally {

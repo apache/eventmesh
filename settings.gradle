@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-rootProject.name = 'EventMesh'
+rootProject.name = 'incubator-eventmesh'
 String jdkVersion = "${jdk}"
 include 'eventmesh-runtime'
 include 'eventmesh-sdk-java'
@@ -24,13 +24,17 @@ include 'eventmesh-starter'
 include 'eventmesh-examples'
 include 'eventmesh-spi'
 include 'eventmesh-connector-plugin:eventmesh-connector-api'
+include 'eventmesh-connector-plugin:eventmesh-connector-pravega'
 include 'eventmesh-connector-plugin:eventmesh-connector-rocketmq'
 include 'eventmesh-connector-plugin:eventmesh-connector-standalone'
+include 'eventmesh-connector-plugin:eventmesh-connector-pulsar'
 include 'eventmesh-connector-plugin:eventmesh-connector-redis'
 include 'eventmesh-security-plugin:eventmesh-security-api'
 include 'eventmesh-security-plugin:eventmesh-security-acl'
 include 'eventmesh-registry-plugin:eventmesh-registry-api'
 include 'eventmesh-registry-plugin:eventmesh-registry-nacos'
+include 'eventmesh-registry-plugin:eventmesh-registry-etcd'
+include 'eventmesh-registry-plugin:eventmesh-registry-consul'
 include 'eventmesh-admin'
 include 'eventmesh-protocol-plugin'
 include 'eventmesh-protocol-plugin:eventmesh-protocol-api'
@@ -50,3 +54,10 @@ include 'eventmesh-security-plugin:eventmesh-security-auth-http-basic'
 include 'eventmesh-trace-plugin'
 include 'eventmesh-trace-plugin:eventmesh-trace-api'
 include 'eventmesh-trace-plugin:eventmesh-trace-zipkin'
+
+
+include 'eventmesh-webhook'
+include 'eventmesh-webhook:eventmesh-webhook-api'
+include 'eventmesh-webhook:eventmesh-webhook-admin'
+include 'eventmesh-webhook:eventmesh-webhook-receive'
+

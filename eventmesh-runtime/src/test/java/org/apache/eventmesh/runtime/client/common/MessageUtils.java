@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MessageUtils {
-    public static int seqLength = 10;
+    public static final int seqLength = 10;
 
     public static Package hello(UserAgent user) {
         Package msg = new Package();

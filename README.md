@@ -11,13 +11,14 @@
 
 [![License](https://img.shields.io/github/license/apache/incubator-eventmesh?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![GitHub Release](https://img.shields.io/github/v/release/apache/eventmesh?style=for-the-badge)](https://github.com/apache/incubator-eventmesh/releases)
-[![Slack Status](https://img.shields.io/badge/slack-join_chat-blue.svg?logo=slack&style=for-the-badge)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1blhcbedu-9b7yvwAQcDs3fddZxnZXag)
+[![Slack Status](https://img.shields.io/badge/slack-join_chat-blue.svg?logo=slack&style=for-the-badge)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1fal6hggw-PJ3~N6Js_ZFlEvPtpQR7jg)
 
 [📦 Documentation](https://eventmesh.apache.org/docs/introduction) |
 [📔 Examples](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) |
 [⚙️ Roadmap](https://eventmesh.apache.org/docs/roadmap) |
 [🌐 简体中文](README.zh-CN.md)
 </div>
+
 
 # Apache EventMesh (Incubating)
 
@@ -42,24 +43,50 @@
 Apache EventMesh (Incubating) consists of multiple components that integrate different middlewares and messaging protocols to enhance the functionalities of the application runtime.
 
 - **eventmesh-runtime**: The middleware that transmits events between producers and consumers, which supports cloud-native apps and microservices.
-- **eventmesh-sdk-java**: The Java SDK that supports HTTP, HTTPS, TCP, and [gRPC](https://grpc.io) protocols.
-- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache Kafka](https://kafka.apache.org), [Apache RocketMQ](https://rocketmq.apache.org), [Apache Pulsar](https://pulsar.apache.org/), [DeFiBus](https://github.com/webankfintech/DeFiBus) and [Redis](https://redis.io).
-- **eventmesh-registry-plugin**: The collection of plugins that integrate service registries such as [Nacos](https://nacos.io) and [etcd](https://etcd.io).
+- **eventmesh-sdk-java**: The Java SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
+- **eventmesh-sdk-go**: The Golang SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
+- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache RocketMQ](https://rocketmq.apache.org)(implemented) [Apache Kafka](https://kafka.apache.org)(in progress), [Apache Pulsar](https://pulsar.apache.org/)(in progress), [Pravega](https://cncf.pravega.io/)(in progress), [Redis](https://redis.io) (in progress) and [RDMS](https://en.wikipedia.org/wiki/Relational_database) using [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity) (in progress).
+- **eventmesh-registry-plugin**: The collection of plugins that integrate service registries such as [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io) and [ETCD](https://etcd.io).
 - **eventmesh-security-plugin**: The collection of plugins that implement security mechanisms, such as ACL (access control list), authentication, and authorization.
-- **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io) and [MQTT](https://mqtt.org).
+- **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io), [AMQP](https://www.amqp.org/) and [MQTT](https://mqtt.org).
+- **eventmesh-workflow-go**: The [Serverless workflow](https://serverlessworkflow.io/) engine implementation.
+- **eventmesh-catalog-go**: The catalog implementation follow [AsyncAPI](https://www.asyncapi.com/).
 - **eventmesh-admin**: The control plane that manages clients, topics, and subscriptions.
 
-## Quick start
+## Roadmap
 
-[Http pub/sub](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/sdk-java/02-http.md#using-curl-command)
+Please go to the [roadmap](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/roadmap.md) to get the release history and new features of Apache EventMesh (Incubating).
+
+## Quick start
+Here are the guidelines:
+
+[Step 1: Deploy eventmesh-store](docs/en/instruction/01-store.md)
+
+[Step 2: Start eventmesh-runtime](docs/en/instruction/02-runtime.md)
+
+[Step 3: Run our demos](docs/en/instruction/03-demo.md)
+
+Besides, we also provide the docker-version guidelines for you if you prefer Docker:
+
+[Step 1: Deploy eventmesh-store using docker](docs/en/instruction/01-store-with-docker.md)
+
+[Step 2: Start eventmesh-runtime using docker](docs/en/instruction/02-runtime-with-docker.md)
+
+[Step 3: Run our demos](docs/en/instruction/03-demo.md)
 
 ## Contributing
 
 Each contributor has played an important role in promoting the robust development of Apache EventMesh (Incubating). We sincerely appreciate all contributors who have contributed code and documents.
 
 - [Contributing Guideline](https://github.com/apache/incubator-eventmesh/blob/master/docs/en/contribute/03-new-contributor-guidelines.md)
-- [List of Contributors](https://github.com/apache/incubator-eventmesh/graphs/contributors)
 - [Good First Issues](https://github.com/apache/incubator-eventmesh/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+
+Here is the [List of Contributors](https://github.com/apache/incubator-eventmesh/graphs/contributors), thank you all! :)
+
+<a href="https://github.com/apache/incubator-eventmesh/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=apache/incubator-eventmesh" />
+</a>
+
 
 ## CNCF Landscape
 
@@ -78,9 +105,9 @@ Apache EventMesh (Incubating) is licensed under the [Apache License, Version 2.0
 
 ## Community
 
-|WeChat Assistant|WeChat Official Account|Slack|
+|WeChat Assistant|WeChat Public Account|Slack|
 |-|-|-|
-|<img src="docs/images/contact/wechat-assistant.jpg" width="128"/>|<img src="docs/images/contact/wechat-official.jpg" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1blhcbedu-9b7yvwAQcDs3fddZxnZXag)|
+|<img src="docs/images/contact/wechat-assistant.jpg" width="128"/>|<img src="docs/images/contact/wechat-official.jpg" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1fal6hggw-PJ3~N6Js_ZFlEvPtpQR7jg)|
 
 ### Mailing List
 

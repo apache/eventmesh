@@ -236,22 +236,27 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     listenablefuture 9999.0-empty-to-avoid-conflict-with-guava: https://github.com/google/guava, Apache 2.0
     fastjson 1.2.76: https://github.com/alibaba/fastjson, Apache 2.0
     guava 31.0.1-jre: https://github.com/google/guava, Apache 2.0
-    grpc-context 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
-    grpc-core 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
-    grpc-netty 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
-    grpc-netty-shaded 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
-    grpc-protobuf 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
-    grpc-protobuf-lite 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
-    grpc-stub 1.15.0: https://github.com/grpc/grpc-java, Apache 2.0
-    gson 2.7: https://github.com/google/gson, Apache 2.0
+    grpc-context 1.42.2: https://github.com/grpc/grpc-java, Apache 2.0
+    grpc-core 1.42.2: https://github.com/grpc/grpc-java, Apache 2.0
+    grpc-netty 1.42.2: https://github.com/grpc/grpc-java, Apache 2.0
+    grpc-netty-shaded 1.42.2: https://github.com/grpc/grpc-java, Apache 2.0
+    grpc-protobuf 1.42.2: https://github.com/grpc/grpc-java, Apache 2.0
+    grpc-protobuf-lite 1.42.2: https://github.com/grpc/grpc-java, Apache 2.0
+    grpc-stub 1.42.2: https://github.com/grpc/grpc-java, Apache 2.0
+    grpc-grpclb 1.42.2: https://github.com/grpc/grpc-java, Apache 2.0
+    gson 2.8.2: https://github.com/google/gson, Apache 2.0
+    httpasyncclient 4.1.3: https://github.com/apache/httpasyncclient, Apache 2.0
     httpclient 4.5.13: https://github.com/apache/httpcomponents-client, Apache 2.0
     httpcore 4.4.13: https://github.com/apache/httpcomponents-core, Apache 2.0
     j2objc-annotations 1.3: https://github.com/google/j2objc, Apache 2.0
     jackson-annotations 2.13.0: https://github.com/FasterXML/jackson-annotations, Apache 2.0
     jackson-core 2.13.0: https://github.com/FasterXML/jackson-core, Apache 2.0
     jackson-databind 2.13.0: https://github.com/FasterXML/jackson-databind, Apache 2.0
-    javassist 3.20.0-GA/3.24.0-GA: https://github.com/jboss-javassist/javassist, Apache 2.0
+    javassist 3.24.0-GA/3.24.0-GA: https://github.com/jboss-javassist/javassist, Apache 2.0
     jcommander 1.72: https://github.com/cbeust/jcommander, Apache 2.0
+    jetcd-common 0.3.0: https://github.com/etcd-io/jetcd, Apache 2.0
+    jetcd-core 0.3.0: https://github.com/etcd-io/jetcd, Apache 2.0
+    jetcd-resolver 0.3.0: https://github.com/etcd-io/jetcd, Apache 2.0
     jna 4.2.2: https://github.com/java-native-access/jna, Apache 2.0
     log4j-api 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
     log4j-core 2.17.1: https://github.com/apache/logging-log4j2, Apache 2.0
@@ -260,6 +265,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     metrics-core 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
     metrics-healthchecks 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
     metrics-json 4.1.0: https://github.com/dropwizard/metrics, Apache 2.0
+    nacos-client 2.0.4: https://github.com/alibaba/nacos, Apache 2.0
     netty-all 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
     netty-buffer 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
     netty-codec 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
@@ -325,7 +331,6 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     simpleclient 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
     simpleclient_common 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
     simpleclient_httpserver 0.8.1: https://github.com/prometheus/client_java, Apache 2.0
-    snakeyaml 1.23: https://bitbucket.org/asomov/snakeyaml, Apache 2.0
     snakeyaml 1.30: https://bitbucket.org/asomov/snakeyaml, Apache 2.0
     truth 0.30: https://github.com/google/truth, Apache 2.0
     zipkin 2.23.2: https://github.com/openzipkin/zipkin, Apache 2.0
@@ -363,7 +368,8 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
 
     hamcrest-core 1.3: https://github.com/hamcrest/JavaHamcrest, BSD
     jsr305 3.0.2: https://code.google.com/archive/p/jsr-305, BSD
-    protobuf-java 3.5.1: https://github.com/protocolbuffers/protobuf, BSD
+    protobuf-java 3.21.5: https://github.com/protocolbuffers/protobuf, BSD
+    protobuf-java-util 3.21.5: https://github.com/protocolbuffers/protobuf, BSD
 
 ========================================================================
 CDDL licenses
@@ -399,6 +405,10 @@ MIT licenses
 The following components are provided under the MIT license. See project link for details.
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
+    animal-sniffer-annotations 1.17: https://github.com/mojohaus/animal-sniffer, MIT
+    bcpkix-jdk15on 1.69: https://github.com/bcgit/bc-java, MIT
+    bcprov-jdk15on 1.69: https://github.com/bcgit/bc-java, MIT
+    bcutil-jdk15on 1.69: https://github.com/bcgit/bc-java, MIT
     checker-qual 3.12.0: https://github.com/typetools/checker-framework, MIT
     slf4j-api 1.7.30: https://github.com/qos-ch/slf4j, MIT
     github.com/BurntSushi/toml v0.3.1 MIT
