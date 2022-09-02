@@ -23,6 +23,7 @@ import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
 
+import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -33,6 +34,7 @@ import org.apache.kafka.common.protocol.Message;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -42,7 +44,7 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.kafka.CloudEventSerializer;
 import io.cloudevents.kafka.KafkaMessageFactory;
 
-import com.fasterxml.jackson.databind.ser.std.StringSerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
@@ -52,18 +54,19 @@ import lombok.extern.slf4j.Slf4j;
 public class ProducerImpl {
     private Logger logger = LoggerFactory.getLogger(ProducerImpl.class);
     private KafkaProducer<String, CloudEvent> producer;
+    Properties properties;
 
     private AtomicBoolean isStarted;
 
     public ProducerImpl(Properties props) {
         this.isStarted = new AtomicBoolean(false);
-        Properties properties = new Properties();
 
+        properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
             props.getProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG));
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, CloudEventSerializer.class);
-        this.producer = new KafkaProducer<>(props);
+        this.producer = new KafkaProducer<>(properties);
     }
 
     public boolean isStarted() {
@@ -97,8 +100,14 @@ public class ProducerImpl {
         }
     }
 
-    public boolean checkTopicExist(String topic) {
-        throw new ConnectorRuntimeException("Request is not supported");
+    public void checkTopicExist(String topic) throws ExecutionException, InterruptedException, ConnectorRuntimeException {
+        Admin admin = Admin.create(properties);
+        Set<String> topicNames = admin.listTopics().names().get();
+        admin.close();
+        boolean exist = topicNames.contains(topic);
+        if (!exist) {
+            throw new ConnectorRuntimeException(String.format("topic:%s is not exist", topic));
+        }
     }
 
     public void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception {

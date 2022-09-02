@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.tcp.client.group;
 
+import org.apache.eventmesh.api.AsyncConsumeContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
@@ -421,7 +422,7 @@ public class ClientGroupWrapper {
 
         persistentMsgConsumer.init(keyValue);
 
-        EventListener listener = (event, context) -> {
+        EventListener listener = (CloudEvent event, AsyncConsumeContext context) -> {
             String protocolVersion =
                 Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_VERSION)).toString();
 
