@@ -70,9 +70,8 @@ public class WebhookFileListener {
 
     /**
      * Read the directory and register the listener
-     *
      */
-    public void filePatternInit()  {
+    public void filePatternInit() {
         File webHookFileDir = new File(filePath);
         if (!webHookFileDir.exists()) {
             webHookFileDir.mkdirs();
@@ -159,14 +158,15 @@ public class WebhookFileListener {
                     if (flashPath.equals(filePath)) {
                         if (ENTRY_CREATE == event.kind()) {
                             try {
-                                key = Paths.get(filePath + event.context()).register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+                                key = Paths.get(filePath + WebHookOperationConstant.FILE_SEPARATOR + event.context())
+                                    .register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
                             } catch (IOException e) {
                                 logger.error("registerWatchKey failed", e);
                             }
-                            watchKeyPathMap.put(key, filePath + event.context());
+                            watchKeyPathMap.put(key, filePath + WebHookOperationConstant.FILE_SEPARATOR + event.context());
                         }
                     } else { // config change
-                        cacheInit(new File(flashPath + event.context()));
+                        cacheInit(new File(flashPath + WebHookOperationConstant.FILE_SEPARATOR + event.context()));
                     }
                 }
                 if (!key.reset()) {
