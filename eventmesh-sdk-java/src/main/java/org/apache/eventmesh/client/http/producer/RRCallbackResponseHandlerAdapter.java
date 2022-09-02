@@ -82,7 +82,7 @@ public class RRCallbackResponseHandlerAdapter<ProtocolMessage> implements Respon
             return err;
         }
 
-        String res = EntityUtils.toString(response.getEntity(), Charset.forName(Constants.DEFAULT_CHARSET));
+        String res = EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET);
         EventMeshRetObj ret = JsonUtils.deserialize(res, EventMeshRetObj.class);
         if (ret.getRetCode() != EventMeshRetCode.SUCCESS.getRetCode()) {
             rrCallback.onException(new EventMeshException(ret.getRetCode(), ret.getRetMsg()));

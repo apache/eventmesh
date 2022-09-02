@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
@@ -63,7 +64,7 @@ public class QueryRecommendEventMeshHandler implements HttpHandler {
             if (StringUtils.isBlank(group) || StringUtils.isBlank(purpose)) {
                 httpExchange.sendResponseHeaders(200, 0);
                 result = "params illegal!";
-                out.write(result.getBytes());
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
 
@@ -72,7 +73,7 @@ public class QueryRecommendEventMeshHandler implements HttpHandler {
             result = (recommendEventMeshResult == null) ? "null" : recommendEventMeshResult;
             logger.info("recommend eventmesh:{},group:{},purpose:{}", result, group, purpose);
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes());
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("QueryRecommendEventMeshHandler fail...", e);
         } finally {

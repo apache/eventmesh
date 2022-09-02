@@ -35,7 +35,7 @@ self_modules_txt='tools/dependency-check/self-modules.txt'
 third_party_dependencies_txt='tools/dependency-check/third-party-dependencies.txt'
 
 mkdir $decompress_conf || true
-tar -zxf build/EventMesh*.tar.gz -C $decompress_conf
+tar -zxf build/incubator-eventmesh*.tar.gz -C $decompress_conf
 
 ./gradlew printProjects | grep '.jar' > "$self_modules_txt"
 

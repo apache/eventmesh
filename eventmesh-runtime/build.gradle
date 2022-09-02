@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.15.0'
+def grpcVersion = '1.42.2'
 
 dependencies {
     implementation 'io.cloudevents:cloudevents-core'
@@ -42,10 +42,11 @@ dependencies {
 
 
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
-
+    implementation project(":eventmesh-registry-plugin:eventmesh-registry-etcd")
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
+    implementation "io.grpc:grpc-core:${grpcVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
     implementation "io.grpc:grpc-netty:${grpcVersion}"
@@ -65,8 +66,13 @@ dependencies {
 
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
+    
+    implementation project(":eventmesh-webhook:eventmesh-webhook-admin")
+    implementation project(":eventmesh-webhook:eventmesh-webhook-api")
+    implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
 
     testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-inline"
     testImplementation "org.powermock:powermock-module-junit4"
     testImplementation "org.powermock:powermock-api-mockito2"
 }

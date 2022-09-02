@@ -201,9 +201,9 @@ public class IPUtils {
             return false;
         }
         if (ipAddress.isIPv4()) {
-            return isReservedIp(ipAddress, ipV4ReservedAddrs);
+            return !isReservedIp(ipAddress, ipV4ReservedAddrs);
         } else {
-            return isReservedIp(ipAddress, ipV6ReservedAddrs);
+            return !isReservedIp(ipAddress, ipV6ReservedAddrs);
         }
     }
 

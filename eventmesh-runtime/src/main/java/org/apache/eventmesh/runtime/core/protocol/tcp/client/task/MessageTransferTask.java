@@ -31,7 +31,6 @@ import org.apache.eventmesh.common.protocol.tcp.Package;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.runtime.acl.Acl;
-import org.apache.eventmesh.runtime.boot.EventMeshServer;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send.EventMeshTcpSendResult;
@@ -58,7 +57,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 
 public class MessageTransferTask extends AbstractTask {
@@ -95,12 +93,11 @@ public class MessageTransferTask extends AbstractTask {
         Command replyCmd = getReplyCmd(cmd);
         Package msg = new Package();
 
-        int retCode = 0;
         EventMeshTcpSendResult sendStatus;
         CloudEvent event = null;
 
         try {
-            String protocolType = "EventMeshMessage";
+            String protocolType = "eventmeshmessage";
             if (pkg.getHeader().getProperties() != null
                 && pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE) != null) {
                 protocolType = (String) pkg.getHeader().getProperty(Constants.PROTOCOL_TYPE);
@@ -181,7 +178,9 @@ public class MessageTransferTask extends AbstractTask {
                             .getSeq()));
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
 
-                TraceUtils.finishSpanWithException(ctx, event, "MessageTransferTask failed", e);
+                if (event != null) {
+                    TraceUtils.finishSpanWithException(ctx, event, "MessageTransferTask failed", e);
+                }
             }
         }
     }
