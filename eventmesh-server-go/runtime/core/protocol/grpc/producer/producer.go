@@ -13,32 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package producer
 
-import "sync"
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
+)
 
-type Manager struct {
-	// consumerClients store all consumer clients
-	// key is consumer group, value is []*GroupClient
-	consumerGroupClients *sync.Map
-
-	// consumers eventmesh consumer instances
-	// key is consumer group, value is EventMeshConsumer
-	consumers *sync.Map
+type EventMeshProducer struct {
+	producer     *wrapper.Producer
+	ServiceState consts.ServiceState
 }
 
-// NewManager create new consumer manager
-func NewManager() (*Manager, error) {
-	return &Manager{
-		consumers:            new(sync.Map),
-		consumerGroupClients: new(sync.Map),
-	}, nil
-}
-
-func (c *Manager) Start() error {
-	return nil
-}
-
-func (c *Manager) Stop() error {
-	return nil
+func (e *EventMeshProducer) Send(sctx SendMessageContext, callback connector.SendCallback) error {
+	return e.producer.Send(sctx.Ctx, sctx.Event, callback)
 }

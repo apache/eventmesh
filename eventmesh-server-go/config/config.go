@@ -23,13 +23,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// ServerConfigPath is the file path of server config file.
-var ServerConfigPath = defaultConfigPath
-
-const (
-	defaultConfigPath = "./configs//eventmesh-server.yaml"
-)
-
 type Config struct {
 	Name   string `yaml:"name" toml:"name"`
 	Server struct {

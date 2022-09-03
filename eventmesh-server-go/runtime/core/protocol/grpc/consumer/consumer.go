@@ -15,30 +15,24 @@
 
 package consumer
 
-import "sync"
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/push"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
+	"sync"
+)
 
-type Manager struct {
-	// consumerClients store all consumer clients
-	// key is consumer group, value is []*GroupClient
-	consumerGroupClients *sync.Map
-
-	// consumers eventmesh consumer instances
-	// key is consumer group, value is EventMeshConsumer
-	consumers *sync.Map
+type EventMeshConsumer struct {
+	ConsumerGroup      string
+	persistentConsumer *wrapper.Consumer
+	broadcastConsumer  *wrapper.Consumer
+	messageHandler     *push.MessageHandler
+	ServiceState       consts.ServiceState
+	// consumerGroupTopicConfig key is topic
+	// value is ConsumerGroupTopicOption
+	consumerGroupTopicConfig *sync.Map
 }
 
-// NewManager create new consumer manager
-func NewManager() (*Manager, error) {
-	return &Manager{
-		consumers:            new(sync.Map),
-		consumerGroupClients: new(sync.Map),
-	}, nil
-}
-
-func (c *Manager) Start() error {
-	return nil
-}
-
-func (c *Manager) Stop() error {
-	return nil
+func NewEventMeshConsumer(consumerGroup string) *EventMeshConsumer {
+	return &EventMeshConsumer{}
 }

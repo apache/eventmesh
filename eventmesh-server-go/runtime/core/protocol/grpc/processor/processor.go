@@ -13,32 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package processor
 
-import "sync"
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/server"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+)
 
-type Manager struct {
-	// consumerClients store all consumer clients
-	// key is consumer group, value is []*GroupClient
-	consumerGroupClients *sync.Map
-
-	// consumers eventmesh consumer instances
-	// key is consumer group, value is EventMeshConsumer
-	consumers *sync.Map
+// Processor common parts for msg processor
+type Processor struct {
+	grpcServerAPI server.GRPCServerAPI
 }
 
-// NewManager create new consumer manager
-func NewManager() (*Manager, error) {
-	return &Manager{
-		consumers:            new(sync.Map),
-		consumerGroupClients: new(sync.Map),
-	}, nil
-}
+// Interceptor do acl or other interceptor
+func (p *Processor) Interceptor(in interface{}) error {
+	switch in.(type) {
+	case *pb.Subscription:
 
-func (c *Manager) Start() error {
-	return nil
-}
-
-func (c *Manager) Stop() error {
+	}
 	return nil
 }

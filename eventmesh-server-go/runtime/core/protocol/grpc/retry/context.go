@@ -14,5 +14,3 @@
 // limitations under the License.
 
 package retry
-
-type

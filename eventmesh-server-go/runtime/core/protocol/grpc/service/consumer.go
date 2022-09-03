@@ -19,7 +19,6 @@ import (
 	"context"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/processor"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"github.com/panjf2000/ants"
 	"google.golang.org/grpc"
@@ -57,7 +56,7 @@ func NewConsumer() (*Consumer, error) {
 func (c *Consumer) Subscribe(ctx context.Context, in *pb.Subscription, opts ...grpc.CallOption) (*pb.Response, error) {
 	log.Info("subscribe with webhook, client:%v, topic:%v, webhook:%v", in.Header.Ip, in.SubscriptionItems, in.Url)
 	c.subscribePool.Submit(func() {
-		sw := processor.SubscribeWebHook{}
+		//sw := processor.SubscribeWebHook{}
 
 	})
 	return nil, nil

@@ -13,32 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
-
-import "sync"
+package producer
 
 type Manager struct {
-	// consumerClients store all consumer clients
-	// key is consumer group, value is []*GroupClient
-	consumerGroupClients *sync.Map
-
-	// consumers eventmesh consumer instances
-	// key is consumer group, value is EventMeshConsumer
-	consumers *sync.Map
-}
-
-// NewManager create new consumer manager
-func NewManager() (*Manager, error) {
-	return &Manager{
-		consumers:            new(sync.Map),
-		consumerGroupClients: new(sync.Map),
-	}, nil
-}
-
-func (c *Manager) Start() error {
-	return nil
-}
-
-func (c *Manager) Stop() error {
-	return nil
 }

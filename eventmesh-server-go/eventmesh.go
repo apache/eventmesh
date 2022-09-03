@@ -16,13 +16,22 @@
 package main
 
 import (
+	"flag"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/emserver"
 )
 
+var ConfigFile string
+
+func init() {
+	flag.StringVar(&ConfigFile, "config", "eventmesh-server.yaml", "the absolute config file path")
+}
+
 func main() {
-	cfg, err := config.LoadConfig(config.ServerConfigPath)
+	flag.Parse()
+
+	cfg, err := config.LoadConfig(ConfigFile)
 	if err != nil {
 		log.Fatalf("load config err:%v", err)
 	}

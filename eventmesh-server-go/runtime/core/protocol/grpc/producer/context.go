@@ -13,23 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package processor
+package producer
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/middleware"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	"context"
+	cloudv2 "github.com/cloudevents/sdk-go/v2"
+	"time"
 )
 
-// Processor common parts for msg processor
-type Processor struct {
-	middwares []*middleware.Middleware
-}
-
-// Interceptor do acl or other interceptor
-func (p *Processor) Interceptor(in interface{}) error {
-	switch in.(type) {
-	case *pb.Subscription:
-
-	}
-	return nil
+// SendMessageContext context in produce message
+type SendMessageContext struct {
+	Ctx         context.Context
+	Event       *cloudv2.Event
+	BizSeqNO    string
+	producerAPI *EventMeshProducer
+	CreateTime  time.Time
 }

@@ -16,9 +16,9 @@
 package consumer
 
 import (
-	"container/list"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	"github.com/liyue201/gostl/ds/set"
 	"sync"
 )
 
@@ -47,15 +47,16 @@ func NewConsumerGroupTopicOption(cg string,
 	}
 }
 
+// WebhookGroupTopicOption topic option for subscribe with webhook
 type WebhookGroupTopicOption struct {
 	*ConsumerGroupTopicOption
 
 	// IDCWebhookURLs webhook urls seperated by IDC
-	// key is IDC, value is *list.List
+	// key is IDC, value is vector.Vector
 	IDCWebhookURLs *sync.Map
 
 	// AllURLs all webhook urls, ignore idc
-	AllURLs *list.List
+	AllURLs *set.Set
 }
 
 func NewWebhookGroupTopicOption(cg string,
@@ -65,7 +66,7 @@ func NewWebhookGroupTopicOption(cg string,
 	opt := &WebhookGroupTopicOption{
 		ConsumerGroupTopicOption: NewConsumerGroupTopicOption(cg, topic, mode, WEBHOOK),
 		IDCWebhookURLs:           new(sync.Map),
-		AllURLs:                  list.New(),
+		AllURLs:                  set.New(set.WithGoroutineSafe()),
 	}
 	opt.ConsumerGroupTopicOption.RegisterClient = func(cli *GroupClient) {
 		if cli.GRPCType != WEBHOOK {
@@ -74,15 +75,15 @@ func NewWebhookGroupTopicOption(cg string,
 		}
 		iwu, ok := opt.IDCWebhookURLs.Load(cli.IDC)
 		if !ok {
-			newList := list.New()
-			newList.PushBack(cli.URL)
-			opt.IDCWebhookURLs.Store(cli.IDC, newList)
+			newIDCURLs := set.New(set.WithGoroutineSafe())
+			newIDCURLs.Insert(cli.URL)
+			opt.IDCWebhookURLs.Store(cli.IDC, newIDCURLs)
 		} else {
-			val := iwu.(list.List)
-			val.PushBack(cli.URL)
+			val := iwu.(*set.Set)
+			val.Insert(cli.URL)
 			opt.IDCWebhookURLs.Store(cli.IDC, val)
 		}
-		opt.AllURLs.PushBack(cli.URL)
+		opt.AllURLs.Insert(cli.URL)
 	}
 
 	opt.ConsumerGroupTopicOption.DeregisterClient = func(cli *GroupClient) {
@@ -90,9 +91,34 @@ func NewWebhookGroupTopicOption(cg string,
 		if !ok {
 			return
 		}
-		// TODO think about goroutine safe
-		idcURLs := val.(list.List)
-		//idcURLs.
+		idcURLs := val.(*set.Set)
+		idcURLs.Erase(cli.URL)
+		opt.AllURLs.Erase(cli.URL)
+	}
+	return opt
+}
+
+// StreamGroupTopicOption topic option for subscribe with stream
+type StreamGroupTopicOption struct {
+	*ConsumerGroupTopicOption
+}
+
+func NewWStreamGroupTopicOption(cg string,
+	topic string,
+	mode pb.Subscription_SubscriptionItem_SubscriptionMode,
+	gtype GRPCType) *StreamGroupTopicOption {
+	opt := &StreamGroupTopicOption{
+		ConsumerGroupTopicOption: NewConsumerGroupTopicOption(cg, topic, mode, STREAM),
+	}
+	opt.RegisterClient = func(cli *GroupClient) {
+		if cli.GRPCType != STREAM {
+			log.Warnf("invalid grpc type:%v, with provide STREAM", cli.GRPCType)
+			return
+		}
+
+	}
+	opt.DeregisterClient = func(cli *GroupClient) {
+
 	}
 	return opt
 }

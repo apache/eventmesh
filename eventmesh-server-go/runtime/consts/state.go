@@ -13,12 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package consts
 
-import "github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
+type ServiceState string
 
-type EventMeshConsumer struct {
-	ConsumerGroup      string
-	persistentConsumer *wrapper.Consumer
-	broadcastConsumer  *wrapper.Consumer
-}
+const (
+	INITED  ServiceState = "INITED"
+	RUNNING ServiceState = "RUNNING"
+	STOPING ServiceState = "STOPING"
+	STOPED  ServiceState = "STOPED"
+)
