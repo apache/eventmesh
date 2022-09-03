@@ -43,18 +43,14 @@ public class GithubProtocol implements ManufacturerProtocol {
     @Override
     public void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) throws Exception {
 
-        String fromSignature = header.get("X-Hub-Signature-256");
+        String fromSignature = header.get("x-hub-signature-256");
         if (!isValid(fromSignature, webHookRequest.getData(), webHookConfig.getSecret())) {
             throw new Exception("webhook-GithubProtocol authenticate failed");
         }
 
-        try {
-            webHookRequest.setManufacturerEventId(header.get("X-GitHub-Delivery"));
-            webHookRequest.setManufacturerEventName(webHookConfig.getManufacturerEventName());
-            webHookRequest.setManufacturerSource(getManufacturerName());
-        } catch (Exception e) {
-            throw new Exception("webhook-GithubProtocol parse failed");
-        }
+        webHookRequest.setManufacturerEventId(header.get("x-github-delivery"));
+        webHookRequest.setManufacturerEventName(webHookConfig.getManufacturerEventName());
+        webHookRequest.setManufacturerSource(getManufacturerName());
     }
 
     /**

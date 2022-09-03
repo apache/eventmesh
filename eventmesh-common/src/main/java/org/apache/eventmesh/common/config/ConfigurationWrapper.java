@@ -137,5 +137,9 @@ public class ConfigurationWrapper {
         ObjectMapper objectMapper = new ObjectMapper();
         return (T) objectMapper.convertValue(getPropertiesByConfig(prefix, removePrefix), clazz);
     }
+    
+    public Properties getProperties() {
+    	return this.properties;
+    }
 
 }

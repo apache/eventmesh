@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
+import org.apache.eventmesh.webhook.api.utils.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -31,11 +32,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -156,18 +156,18 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
             // lock this file
             lock = fos.getChannel().lock();
             bw.write(JsonUtils.serialize(webHookConfig));
+            lock.release();
         } catch (IOException e) {
+        	if(Objects.nonNull(lock)) {
+        		try {
+					lock.release();
+				} catch (IOException e1) {
+					logger.error("lock release fail file path is :" , webhookConfigFile.getPath());
+				}
+        	}
             logger.error("write webhookConfig {} to file error", webHookConfig.getCallbackPath());
             return false;
-        } finally {
-            try {
-                if (lock != null) {
-                    lock.release();
-                }
-            } catch (IOException e) {
-                logger.warn("writeToFile finally caught an exception", e);
-            }
-        }
+        } 
         return true;
     }
 
@@ -177,14 +177,9 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     private File getWebhookConfigFile(WebHookConfig webHookConfig) {
         String webhookConfigFilePath = null;
-        try {
-            // use URLEncoder.encode before, because the path may contain some speacial char like '/', which is illegal as a file name.
-            webhookConfigFilePath = this.getWebhookConfigManuDir(webHookConfig)
-                + WebHookOperationConstant.FILE_SEPARATOR + URLEncoder.encode(webHookConfig.getCallbackPath(), "UTF-8")
-                + WebHookOperationConstant.FILE_EXTENSION;
-        } catch (UnsupportedEncodingException e) {
-            logger.error("get webhookConfig file path {} failed", webHookConfig.getCallbackPath(), e);
-        }
+        webhookConfigFilePath = this.getWebhookConfigManuDir(webHookConfig) + WebHookOperationConstant.FILE_SEPARATOR
+        		+ StringUtils.getFileName(webHookConfig.getCallbackPath());
+        
         assert webhookConfigFilePath != null;
         return new File(webhookConfigFilePath);
     }

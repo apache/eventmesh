@@ -24,7 +24,7 @@ import org.apache.eventmesh.webhook.receive.WebHookController;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
@@ -48,9 +48,15 @@ public class WebHookProcessor implements HttpProcessor {
             for (Map.Entry<String, String> entry : httpRequest.headers().entries()) {
                 header.put(entry.getKey().toLowerCase(), entry.getValue());
             }
-            byte[] bytes = ((DefaultFullHttpRequest) httpRequest).content().array();
-            webHookController.execute(httpRequest.uri(), header, bytes);
-            return HttpResponseUtils.createSuccess();
+            FullHttpRequest fullHttpRequest = ((FullHttpRequest) httpRequest);
+            int length = fullHttpRequest.content().readableBytes();
+            if (length > 0) {
+                byte[] body = new byte[length];
+                fullHttpRequest.content().readBytes(body);
+                webHookController.execute(httpRequest.uri(), header, body);
+                return HttpResponseUtils.createSuccess();
+            }
+            throw new RuntimeException("Body has no data ");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

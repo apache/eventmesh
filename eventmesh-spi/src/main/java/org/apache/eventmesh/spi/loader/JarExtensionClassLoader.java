@@ -71,8 +71,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
 
         String pluginDir = Paths.get(
                 EVENTMESH_EXTENSION_PLUGIN_DIR,
-                eventMeshSpiAnnotation.eventMeshExtensionType().getExtensionTypeName(),
-                extensionInstanceName
+                eventMeshSpiAnnotation.eventMeshExtensionType().getExtensionTypeName()
         ).toString();
 
         String extensionFileName =
@@ -101,6 +100,7 @@ public class JarExtensionClassLoader implements ExtensionClassLoader {
         }
         if (plugin.isFile() && plugin.getName().endsWith(".jar")) {
             try {
+            	logger.info("plugin file : {}", pluginPath);
                 return Lists.newArrayList(plugin.toURI().toURL());
             } catch (Exception e) {
                 throw new ExtensionException(e);

@@ -61,7 +61,7 @@ public class WebHookController {
     private ConfigurationWrapper configurationWrapper;
 
     public void init() throws Exception {
-        this.webHookMQProducer = new WebHookMQProducer(
+        this.webHookMQProducer = new WebHookMQProducer(configurationWrapper.getProperties(),
                 configurationWrapper.getProp("eventMesh.webHook.producer.connector"));
         this.hookConfigOperationManage = new HookConfigOperationManage(configurationWrapper);
         this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("webhookProtocolAdaptor");
@@ -99,7 +99,7 @@ public class WebHookController {
         try {
             protocol.execute(webHookRequest, webHookConfig, header);
         } catch (Exception e) {
-            throw new Exception("Webhook Message Parse Failed.");
+            throw new Exception("Webhook Message Parse Failed. " + e.getMessage() , e);
         }
 
         // 3. convert to cloudEvent obj
@@ -109,6 +109,7 @@ public class WebHookController {
 
         WebhookProtocolTransportObject webhookProtocolTransportObject = WebhookProtocolTransportObject.builder()
                 .cloudEventId(cloudEventId).eventType(eventType).cloudEventName(webHookConfig.getCloudEventName())
+                .cloudEventSource("www."+webHookConfig.getManufacturerName()+".com")
                 .dataContentType(webHookConfig.getDataContentType()).body(body).build();
 
         // 4. send cloudEvent

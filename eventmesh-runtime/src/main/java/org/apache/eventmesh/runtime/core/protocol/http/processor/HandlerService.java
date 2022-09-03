@@ -155,9 +155,9 @@ public class HandlerService {
             if (!f.isSuccess()) {
                 httpLogger.warn("send response to [{}] fail, will close this channel",
                         RemotingHelper.parseChannelRemoteAddr(f.channel()));
-                if (isClose) {
-                    f.channel().close();
-                }
+            }
+            if (isClose) {
+            	f.channel().close();
             }
         });
     }
