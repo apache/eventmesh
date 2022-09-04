@@ -13,27 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package config
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-	"time"
+	"github.com/liyue201/gostl/ds/set"
+	"sync"
 )
 
-// GroupClient consumer group client details
-type GroupClient struct {
-	ENV              string
-	IDC              string
+type GRPCType string
+
+const (
+	WEBHOOK GRPCType = "WEBHOOK"
+	STREAM  GRPCType = "STREAM"
+)
+
+type ConsumerGroupTopicConfig struct {
 	ConsumerGroup    string
 	Topic            string
-	GRPCType         config.GRPCType
-	URL              string
 	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
-	SYS              string
-	IP               string
-	PID              string
-	Hostname         string
-	APIVersion       string
-	LastUPtime       time.Time
+	GRPCType         GRPCType
+	// IDCWebhookURLs webhook urls seperated by IDC
+	// key is IDC, value is vector.Vector
+	IDCWebhookURLs *sync.Map
+
+	// AllURLs all webhook urls, ignore idc
+	AllURLs *set.Set
 }

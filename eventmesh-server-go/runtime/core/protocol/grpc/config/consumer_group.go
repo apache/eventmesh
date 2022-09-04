@@ -13,27 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package config
 
-import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/config"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-	"time"
-)
+import "sync"
 
-// GroupClient consumer group client details
-type GroupClient struct {
-	ENV              string
-	IDC              string
-	ConsumerGroup    string
-	Topic            string
-	GRPCType         config.GRPCType
-	URL              string
-	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
-	SYS              string
-	IP               string
-	PID              string
-	Hostname         string
-	APIVersion       string
-	LastUPtime       time.Time
+type ConsumerGroupConfig struct {
+	ConsumerGroup string
+
+	// key is topic, value is  ConsumerGroupTopicConfig
+	ConsumerGroupTopicConfigs sync.Map
 }

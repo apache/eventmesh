@@ -20,6 +20,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	eventv2 "github.com/cloudevents/sdk-go/v2"
+	"time"
 )
 
 type Producer struct {
@@ -45,8 +46,8 @@ func (c *Producer) Send(ctx context.Context, event *eventv2.Event, callback conn
 }
 
 // todo move the timeout to context is better
-func (c *Producer) Request(ctx context.Context, event *eventv2.Event, callback connector.SendCallback) error {
-	return c.ProducerConnector.Request(ctx, event, callback)
+func (c *Producer) Request(ctx context.Context, event *eventv2.Event, callback connector.SendCallback, timeout time.Duration) error {
+	return c.ProducerConnector.Request(ctx, event, callback, timeout)
 }
 
 func (c *Producer) Reply(ctx context.Context, event *eventv2.Event, callback connector.SendCallback) error {

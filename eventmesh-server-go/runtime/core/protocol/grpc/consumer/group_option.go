@@ -17,6 +17,7 @@ package consumer
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"github.com/liyue201/gostl/ds/set"
 	"sync"
@@ -30,7 +31,7 @@ type ConsumerGroupTopicOption struct {
 	ConsumerGroup    string
 	Topic            string
 	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
-	GRPCType         GRPCType
+	GRPCType         config.GRPCType
 	RegisterClient   RegisterClient
 	DeregisterClient DeregisterClient
 }
@@ -38,7 +39,7 @@ type ConsumerGroupTopicOption struct {
 func NewConsumerGroupTopicOption(cg string,
 	topic string,
 	mode pb.Subscription_SubscriptionItem_SubscriptionMode,
-	gtype GRPCType) *ConsumerGroupTopicOption {
+	gtype config.GRPCType) *ConsumerGroupTopicOption {
 	return &ConsumerGroupTopicOption{
 		ConsumerGroup:    cg,
 		Topic:            topic,
@@ -62,14 +63,14 @@ type WebhookGroupTopicOption struct {
 func NewWebhookGroupTopicOption(cg string,
 	topic string,
 	mode pb.Subscription_SubscriptionItem_SubscriptionMode,
-	gtype GRPCType) *WebhookGroupTopicOption {
+	gtype config.GRPCType) *WebhookGroupTopicOption {
 	opt := &WebhookGroupTopicOption{
-		ConsumerGroupTopicOption: NewConsumerGroupTopicOption(cg, topic, mode, WEBHOOK),
+		ConsumerGroupTopicOption: NewConsumerGroupTopicOption(cg, topic, mode, config.WEBHOOK),
 		IDCWebhookURLs:           new(sync.Map),
 		AllURLs:                  set.New(set.WithGoroutineSafe()),
 	}
 	opt.ConsumerGroupTopicOption.RegisterClient = func(cli *GroupClient) {
-		if cli.GRPCType != WEBHOOK {
+		if cli.GRPCType != config.WEBHOOK {
 			log.Warnf("invalid grpc type:%v, with provide WEBHOOK", cli.GRPCType)
 			return
 		}
@@ -106,12 +107,12 @@ type StreamGroupTopicOption struct {
 func NewWStreamGroupTopicOption(cg string,
 	topic string,
 	mode pb.Subscription_SubscriptionItem_SubscriptionMode,
-	gtype GRPCType) *StreamGroupTopicOption {
+	gtype config.GRPCType) *StreamGroupTopicOption {
 	opt := &StreamGroupTopicOption{
-		ConsumerGroupTopicOption: NewConsumerGroupTopicOption(cg, topic, mode, STREAM),
+		ConsumerGroupTopicOption: NewConsumerGroupTopicOption(cg, topic, mode, config.STREAM),
 	}
 	opt.RegisterClient = func(cli *GroupClient) {
-		if cli.GRPCType != STREAM {
+		if cli.GRPCType != config.STREAM {
 			log.Warnf("invalid grpc type:%v, with provide STREAM", cli.GRPCType)
 			return
 		}

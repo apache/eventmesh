@@ -22,6 +22,7 @@ import (
 	ce "github.com/cloudevents/sdk-go/v2"
 	"go.uber.org/atomic"
 	"strconv"
+	"time"
 
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 )
@@ -70,7 +71,7 @@ func (p *Producer) SendOneway(ctx context.Context, event *ce.Event) (err error) 
 	return
 }
 
-func (p *Producer) Request(ctx context.Context, event *ce.Event, callback connector.SendCallback) error {
+func (p *Producer) Request(ctx context.Context, event *ce.Event, callback connector.SendCallback, timeout time.Duration) error {
 	return fmt.Errorf("request is not supported in standalone connector")
 }
 

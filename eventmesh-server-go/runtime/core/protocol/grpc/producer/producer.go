@@ -16,16 +16,63 @@
 package producer
 
 import (
+	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
+	"time"
 )
 
 type EventMeshProducer struct {
+	groupName    string
 	producer     *wrapper.Producer
 	ServiceState consts.ServiceState
 }
 
+func NewEventMeshProducer() *EventMeshProducer {
+	return &EventMeshProducer{}
+}
+
 func (e *EventMeshProducer) Send(sctx SendMessageContext, callback connector.SendCallback) error {
 	return e.producer.Send(sctx.Ctx, sctx.Event, callback)
+}
+
+func (e *EventMeshProducer) Request(sctx SendMessageContext, callback connector.SendCallback, timeout time.Duration) error {
+	return e.producer.Request(sctx.Ctx, sctx.Event, callback, timeout)
+}
+
+func (e *EventMeshProducer) Reply(sctx SendMessageContext, callback connector.SendCallback) error {
+	return e.producer.Reply(sctx.Ctx, sctx.Event, callback)
+}
+
+func (e *EventMeshProducer) Start() error {
+	if e.ServiceState == "" || e.ServiceState == consts.RUNNING {
+		return nil
+	}
+	if err := e.producer.Start(); err != nil {
+		return err
+	}
+	e.ServiceState = consts.RUNNING
+	log.Info("start eventmesh producer for groupName:%s", e.groupName)
+	return nil
+}
+
+func (e *EventMeshProducer) Shutdown() error {
+	if e.ServiceState == "" || e.ServiceState == consts.INITED {
+		return nil
+	}
+	if err := e.producer.Shutdown(); err != nil {
+		return err
+	}
+	e.ServiceState = consts.STOPED
+	return nil
+}
+
+func (e *EventMeshProducer) Status() consts.ServiceState {
+	return e.ServiceState
+}
+
+func (e *EventMeshProducer) String() string {
+	return fmt.Sprintf("eventMeshProducer, status:%s,  groupName:%s", e.ServiceState, e.groupName)
 }
