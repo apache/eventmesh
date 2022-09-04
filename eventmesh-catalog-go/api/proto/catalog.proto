@@ -27,7 +27,7 @@ option go_package = "github.com/apache/incubator-eventmesh/eventmesh-catalog-go/
 
 service Catalog {
     rpc Registry (RegistryRequest) returns (RegistryResponse) {}
-    rpc Query (QueryRequest) returns (QueryResponse) {}
+    rpc QueryOperations (QueryOperationsRequest) returns (QueryOperationsResponse) {}
 }
 
 message RegistryRequest {
@@ -38,13 +38,18 @@ message RegistryRequest {
 message RegistryResponse {
 }
 
-message QueryRequest {
-    string operation_id = 1;
+message QueryOperationsRequest {
+    string service_name = 1;
+    string operation_id = 2;
 }
 
-message QueryResponse {
+message Operation {
     string channel_name = 1;
     string schema = 2;
     // publish/subscribe
     string type = 3;
+}
+
+message QueryOperationsResponse {
+    repeated Operation operations = 1;
 }

@@ -21,37 +21,60 @@
 package org.apache.eventmesh.common.protocol.catalog.protos;
 
 @SuppressWarnings({"all"})
-public interface RegistryRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:eventmesh.catalog.api.protocol.RegistryRequest)
+public interface OperationOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:eventmesh.catalog.api.protocol.Operation)
     com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string file_name = 1;</code>
+     * <code>string channel_name = 1;</code>
      *
-     * @return The fileName.
+     * @return The channelName.
      */
-    String getFileName();
+    String getChannelName();
 
     /**
-     * <code>string file_name = 1;</code>
+     * <code>string channel_name = 1;</code>
      *
-     * @return The bytes for fileName.
+     * @return The bytes for channelName.
      */
     com.google.protobuf.ByteString
-    getFileNameBytes();
+    getChannelNameBytes();
 
     /**
-     * <code>string definition = 2;</code>
+     * <code>string schema = 2;</code>
      *
-     * @return The definition.
+     * @return The schema.
      */
-    String getDefinition();
+    String getSchema();
 
     /**
-     * <code>string definition = 2;</code>
+     * <code>string schema = 2;</code>
      *
-     * @return The bytes for definition.
+     * @return The bytes for schema.
      */
     com.google.protobuf.ByteString
-    getDefinitionBytes();
+    getSchemaBytes();
+
+    /**
+     * <pre>
+     * publish/subscribe
+     * </pre>
+     *
+     * <code>string type = 3;</code>
+     *
+     * @return The type.
+     */
+    String getType();
+
+    /**
+     * <pre>
+     * publish/subscribe
+     * </pre>
+     *
+     * <code>string type = 3;</code>
+     *
+     * @return The bytes for type.
+     */
+    com.google.protobuf.ByteString
+    getTypeBytes();
 }

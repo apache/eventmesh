@@ -21,37 +21,35 @@
 package org.apache.eventmesh.common.protocol.catalog.protos;
 
 @SuppressWarnings({"all"})
-public interface RegistryRequestOrBuilder extends
-    // @@protoc_insertion_point(interface_extends:eventmesh.catalog.api.protocol.RegistryRequest)
+public interface QueryOperationsResponseOrBuilder extends
+    // @@protoc_insertion_point(interface_extends:eventmesh.catalog.api.protocol.QueryOperationsResponse)
     com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>string file_name = 1;</code>
-     *
-     * @return The fileName.
+     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
      */
-    String getFileName();
+    java.util.List<Operation>
+    getOperationsList();
 
     /**
-     * <code>string file_name = 1;</code>
-     *
-     * @return The bytes for fileName.
+     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
      */
-    com.google.protobuf.ByteString
-    getFileNameBytes();
+    Operation getOperations(int index);
 
     /**
-     * <code>string definition = 2;</code>
-     *
-     * @return The definition.
+     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
      */
-    String getDefinition();
+    int getOperationsCount();
 
     /**
-     * <code>string definition = 2;</code>
-     *
-     * @return The bytes for definition.
+     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
      */
-    com.google.protobuf.ByteString
-    getDefinitionBytes();
+    java.util.List<? extends OperationOrBuilder>
+    getOperationsOrBuilderList();
+
+    /**
+     * <code>repeated .eventmesh.catalog.api.protocol.Operation operations = 1;</code>
+     */
+    OperationOrBuilder getOperationsOrBuilder(
+        int index);
 }
