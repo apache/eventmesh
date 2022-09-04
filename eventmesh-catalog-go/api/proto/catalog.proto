@@ -19,6 +19,10 @@ syntax = "proto3";
 
 package eventmesh.catalog.api.protocol;
 
+option java_multiple_files = true;
+option java_package="org.apache.eventmesh.common.protocol.catalog.protos";
+option java_outer_classname = "EventmeshCatalogGrpc";
+
 option go_package = "github.com/apache/incubator-eventmesh/eventmesh-catalog-go/api/proto";
 
 service Catalog {
