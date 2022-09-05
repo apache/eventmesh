@@ -99,6 +99,7 @@ netty-common-4.1.79.Final.jar
 netty-handler-4.1.73.Final.jar
 netty-handler-4.1.79.Final.jar
 netty-handler-proxy-4.1.73.Final.jar
+netty-reactive-streams-2.0.4.jar
 netty-resolver-4.1.73.Final.jar
 netty-resolver-4.1.79.Final.jar
 netty-resolver-dns-4.1.73.Final.jar
@@ -147,6 +148,7 @@ protobuf-java-3.19.4.jar
 protobuf-java-3.21.5.jar
 protobuf-java-util-3.15.0.jar
 protobuf-java-util-3.5.1.jar
+protobuf-java-util-3.21.5.jar
 pulsar-client-2.10.1.jar
 pulsar-client-admin-api-2.10.1.jar
 pulsar-client-api-2.10.1.jar
