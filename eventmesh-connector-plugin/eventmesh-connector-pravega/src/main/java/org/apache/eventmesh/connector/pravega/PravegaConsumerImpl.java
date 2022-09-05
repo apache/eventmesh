@@ -35,13 +35,15 @@ import lombok.extern.slf4j.Slf4j;
 public class PravegaConsumerImpl implements Consumer {
     private static final AtomicBoolean started = new AtomicBoolean(false);
 
+    private String instanceName;
     private String consumerGroup;
     private PravegaClient client;
     private EventListener eventListener;
 
     @Override
     public void init(Properties keyValue) throws Exception {
-        consumerGroup = keyValue.getProperty("consumerGroup");
+        instanceName = keyValue.getProperty("instanceName", "");
+        consumerGroup = keyValue.getProperty("consumerGroup", "");
         client = PravegaClient.getInstance();
     }
 
@@ -72,7 +74,7 @@ public class PravegaConsumerImpl implements Consumer {
 
     @Override
     public void subscribe(String topic) throws Exception {
-        if (!client.subscribe(topic, consumerGroup, eventListener)) {
+        if (!client.subscribe(topic, consumerGroup, instanceName, eventListener)) {
             throw new PravegaConnectorException(String.format("subscribe topic[%s] fail.", topic));
         }
     }
