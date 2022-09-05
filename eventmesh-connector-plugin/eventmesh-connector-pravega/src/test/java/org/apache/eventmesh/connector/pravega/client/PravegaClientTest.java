@@ -100,7 +100,7 @@ public class PravegaClientTest {
     public void subscribeTest() {
         PravegaClient pravegaClient = getNewPravegaClient();
         pravegaClient.start();
-        pravegaClient.subscribe("test1", "consumerGroup", new EventListener() {
+        pravegaClient.subscribe("test1", "consumerGroup", "instanceName", new EventListener() {
             @Override
             public void consume(CloudEvent cloudEvent, AsyncConsumeContext context) {
                 // do nothing
@@ -116,7 +116,7 @@ public class PravegaClientTest {
         pravegaClient.unsubscribe("test1", "consumerGroup");
 
         pravegaClient.start();
-        pravegaClient.subscribe("test1", "consumerGroup", new EventListener() {
+        pravegaClient.subscribe("test1", "consumerGroup", "instanceName", new EventListener() {
             @Override
             public void consume(CloudEvent cloudEvent, AsyncConsumeContext context) {
                 // do nothing

@@ -129,20 +129,14 @@ public class PravegaClient {
 
     }
 
-    public boolean subscribe(String topic, String consumerGroup, EventListener listener) {
+    public boolean subscribe(String topic, String consumerGroup, String instanceName, EventListener listener) {
         if (subscribeTaskMap.containsKey(topic)) {
             return true;
         }
-        String readerGroup = buildReaderGroup(topic, consumerGroup);
-        // clear the readerGroup first to ensure a readerGroup only has one reader
-        try {
-            deleteReaderGroup(readerGroup);
-        } catch (Exception e) {
-            log.debug("clear readerGroup[{}] fail since it doesn't exist.", readerGroup);
-        }
-        createReaderGroup(topic, readerGroup);
-        String readerId = buildReaderId(readerGroup);
-        EventStreamReader<byte[]> reader = createReader(readerId, readerGroup);
+        String readerGroupName = buildReaderGroupName(consumerGroup, topic);
+        createReaderGroup(topic, readerGroupName);
+        String readerId = buildReaderId(instanceName);
+        EventStreamReader<byte[]> reader = createReader(readerId, readerGroupName);
         SubscribeTask subscribeTask = new SubscribeTask(topic, reader, listener);
         subscribeTask.start();
         subscribeTaskMap.put(topic, subscribeTask);
@@ -153,7 +147,7 @@ public class PravegaClient {
         if (!subscribeTaskMap.containsKey(topic)) {
             return true;
         }
-        deleteReaderGroup(buildReaderGroup(topic, consumerGroup));
+        deleteReaderGroup(buildReaderGroupName(consumerGroup, topic));
         subscribeTaskMap.remove(topic).stopRead();
         writerMap.remove(topic).close();
         return true;
@@ -176,21 +170,24 @@ public class PravegaClient {
         return clientFactory.createEventWriter(topic, new ByteArraySerializer(), EventWriterConfig.builder().build());
     }
 
-    private String buildReaderGroup(String topic, String consumerGroup) {
-        return String.format("%s-%s", topic, consumerGroup);
+    private String buildReaderGroupName(String consumerGroup, String topic) {
+        return String.format("%s-%s", consumerGroup, topic);
     }
 
-    private String buildReaderId(String readerGroup) {
-        return String.format("%s-reader", readerGroup);
+    private String buildReaderId(String instanceName) {
+        return String.format("%s-reader", instanceName).replaceAll("\\(", "-").replaceAll("\\)", "-");
     }
 
-    private void createReaderGroup(String topic, String readerGroup) {
+    private void createReaderGroup(String topic, String readerGroupName) {
         if (!checkTopicExist(topic)) {
             createStream(topic);
         }
         ReaderGroupConfig readerGroupConfig =
-            ReaderGroupConfig.builder().stream(NameUtils.getScopedStreamName(config.getScope(), topic)).build();
-        readerGroupManager.createReaderGroup(readerGroup, readerGroupConfig);
+            ReaderGroupConfig.builder()
+                .stream(NameUtils.getScopedStreamName(config.getScope(), topic))
+                .retentionType(ReaderGroupConfig.StreamDataRetention.AUTOMATIC_RELEASE_AT_LAST_CHECKPOINT)
+                .build();
+        readerGroupManager.createReaderGroup(readerGroupName, readerGroupConfig);
     }
 
     private void deleteReaderGroup(String readerGroup) {
