@@ -1,6 +1,8 @@
 animal-sniffer-annotations-1.19.jar
 annotations-4.1.1.4.jar
 assertj-core-2.6.0.jar
+async-http-client-2.12.0.jar
+async-http-client-netty-utils-2.12.0.jar
 bcpkix-jdk15on-1.69.jar
 bcprov-ext-jdk15on-1.69.jar
 bcprov-ext-jdk15on-1.70.jar
