@@ -15,12 +15,42 @@
 
 package server
 
-import "github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/consumer"
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/consumer"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/producer"
+	"golang.org/x/time/rate"
+)
 
-// GRPCServerAPI grpc server api, used to handle the client
-type GRPCServerAPI interface {
+// GRPCServer grpc server api, used to handle the client
+type GRPCServer struct {
+	ConsumerMgr *consumer.Manager
+	ProducerMgr *producer.Manager
+	RateLimiter *rate.Limiter
+	Registry    registry.Registry
 }
 
-type grpcServer struct {
-	ConsumerMgr consumer.ConsumerManager
+func NewGRPCServer() (*GRPCServer, error) {
+	log.Infof("create new grpc serer")
+	msgReqPerSeconds := config.GlobalConfig().Server.GRPCOption.MsgReqNumPerSecond
+	limiter := rate.NewLimiter(rate.Limit(msgReqPerSeconds), 10)
+	cmgr, err := consumer.NewManager()
+	if err != nil {
+		return nil, err
+	}
+	pmgr, err := producer.NewManager()
+	if err != nil {
+		return nil, err
+	}
+
+	registryName := config.GlobalConfig().Server.GRPCOption.RegistryName
+	regis := registry.Get(registryName)
+	return &GRPCServer{
+		ConsumerMgr: cmgr,
+		ProducerMgr: pmgr,
+		RateLimiter: limiter,
+		Registry:    regis,
+	}, nil
 }

@@ -15,28 +15,6 @@
 
 package config
 
-import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-	"github.com/liyue201/gostl/ds/set"
-	"sync"
-)
-
-type GRPCType string
-
-const (
-	WEBHOOK GRPCType = "WEBHOOK"
-	STREAM  GRPCType = "STREAM"
-)
-
-type ConsumerGroupTopicConfig struct {
-	ConsumerGroup    string
-	Topic            string
-	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
-	GRPCType         GRPCType
-	// IDCWebhookURLs webhook urls seperated by IDC
-	// key is IDC, value is vector.Vector
-	IDCWebhookURLs *sync.Map
-
-	// AllURLs all webhook urls, ignore idc
-	AllURLs *set.Set
+type ProducerGroupConfig struct {
+	GroupName string `json:"groupName"`
 }

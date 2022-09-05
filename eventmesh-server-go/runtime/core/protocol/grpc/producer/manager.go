@@ -17,3 +17,7 @@ package producer
 
 type Manager struct {
 }
+
+func NewManager() (*Manager, error) {
+	return nil, nil
+}

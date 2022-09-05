@@ -21,6 +21,9 @@ import (
 	"sync"
 )
 
+// RegistryPluginType type for registry
+var RegistryPluginType = "RegistryPluginType"
+
 // ErrNotImplement is the not implemented error.
 var ErrNotImplement = errors.New("not implement")
 

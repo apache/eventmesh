@@ -36,4 +36,10 @@ type GRPCOption struct {
 	// PushMessagePoolSize pool to push message
 	// default to 10
 	PushMessagePoolSize int `yaml:"push-message-pool-size" toml:"push-message-pool-size"`
+
+	//MsgReqNumPerSecond
+	MsgReqNumPerSecond float64 `yaml:"msg-req-num-per-second" toml:"msg-req-num-per-second"`
+
+	// RegistryName name for registry plugin support nacos or etcd
+	RegistryName string `yaml:"registry-name" toml:"registry-name"`
 }
