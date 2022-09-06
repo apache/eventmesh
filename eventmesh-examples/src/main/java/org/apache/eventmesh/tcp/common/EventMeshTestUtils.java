@@ -171,7 +171,7 @@ public class EventMeshTestUtils {
                 .withId(UUID.randomUUID().toString())
                 .withSubject(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC)
                 .withSource(URI.create("/"))
-                .withDataContentType("application/cloudevents+json")
+                .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
                 .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
                 .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
                 .withExtension("ttl", "30000")
