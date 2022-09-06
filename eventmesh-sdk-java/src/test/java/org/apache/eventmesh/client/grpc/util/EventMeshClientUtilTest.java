@@ -58,7 +58,7 @@ public class EventMeshClientUtilTest {
             .hasFieldOrPropertyWithValue("username", clientConfig.getUserName())
             .hasFieldOrPropertyWithValue("password", clientConfig.getPassword())
             .hasFieldOrPropertyWithValue("protocolType", "protocolType")
-            .hasFieldOrPropertyWithValue("protocolDesc", Constants.PROTOCOL_GRPC)
+            .hasFieldOrPropertyWithValue("protocolDesc", "grpc")
             .hasFieldOrPropertyWithValue("protocolVersion", SpecVersion.V1.toString());
     }
 
