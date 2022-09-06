@@ -216,6 +216,7 @@ The following components are provided under the Apache License. See project link
 The text of each license is also included at licenses/LICENSE-[project].txt.
 
     assertj-core 2.6.0: https://github.com/assertj/assertj-core, Apache 2.0
+    async-http-client 2.12.0: https://https://github.com/AsyncHttpClient/async-http-client, Apache 2.0
     cloudevents-api 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
     cloudevents-core 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
     cloudevents-json-jackson 2.2.0: https://github.com/cloudevents/sdk-java, Apache 2.0
@@ -283,6 +284,7 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     netty-common 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
     netty-handler 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
     netty-handler-proxy 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
+    netty-reactive-streams 2.0.4: https://github.com/netty/netty, Apache 2.0
     netty-resolver 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
     netty-resolver-dns 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0
     netty-resolver-dns-classes-macos 4.1.73.Final: https://github.com/netty/netty/tree/netty-4.1.73.Final, Apache 2.0

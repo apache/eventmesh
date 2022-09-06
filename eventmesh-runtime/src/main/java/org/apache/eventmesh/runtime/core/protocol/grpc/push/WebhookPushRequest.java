@@ -116,7 +116,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
             builder.addHeader(ProtocolKey.PROTOCOL_DESC, requestHeader.getProtocolDesc());
             builder.addHeader(ProtocolKey.PROTOCOL_VERSION, requestHeader.getProtocolVersion());
             builder.addHeader(ProtocolKey.CONTENT_TYPE, simpleMessage.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE,
-                Constants.CONTENT_TYPE_CLOUDEVENTS_JSON));
+                    "application/cloudevents+json"));
 
             List<NameValuePair> body = new ArrayList<>();
             body.add(new BasicNameValuePair(PushMessageRequestBody.CONTENT, simpleMessage.getContent()));
