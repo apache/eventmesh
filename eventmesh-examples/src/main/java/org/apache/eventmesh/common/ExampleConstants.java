@@ -41,10 +41,4 @@ public class ExampleConstants {
 
     public static final String DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP = "EventMeshTest-producerGroup";
     public static final String DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP = "EventMeshTest-consumerGroup";
-
-    public static final String EVENTMESH_WORKFLOW_SERVER_NAME = "eventmesh.workflow.server.name";
-
-    public static final String EVENTMESH_CATALOG_ENABLE = "eventmesh.catalog.enable";
-
-    public static final String EVENTMESH_CATALOG_SERVER_NAME = "eventmesh.catalog.server.name";
 }
