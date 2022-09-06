@@ -127,7 +127,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             body.toMap();
             httpCommand.setBody(body);
             return httpCommand;
-        } else if (StringUtils.equals(Constants.PROTOCOL_GRPC, protocolDesc)) {
+        } else if (StringUtils.equals("grpc", protocolDesc)) {
             return GrpcMessageProtocolResolver.buildSimpleMessage(cloudEvent);
         } else if (StringUtils.equals("tcp", protocolDesc)) {
             return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);

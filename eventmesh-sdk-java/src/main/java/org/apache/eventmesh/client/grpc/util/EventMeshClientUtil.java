@@ -64,7 +64,7 @@ public class EventMeshClientUtil {
             .setUsername(clientConfig.getUserName())
             .setPassword(clientConfig.getPassword())
             .setProtocolType(protocolType)
-            .setProtocolDesc(Constants.PROTOCOL_GRPC)
+            .setProtocolDesc("grpc")
             // default CloudEvents version is V1
             .setProtocolVersion(SpecVersion.V1.toString())
             .build();
@@ -117,7 +117,7 @@ public class EventMeshClientUtil {
                                                        String protocolType) {
         if (EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME.equals(protocolType)) {
             CloudEvent cloudEvent = (CloudEvent) message;
-            String contentType = StringUtils.isEmpty(cloudEvent.getDataContentType()) ? Constants.CONTENT_TYPE_CLOUDEVENTS_JSON
+            String contentType = StringUtils.isEmpty(cloudEvent.getDataContentType()) ? "application/cloudevents+json"
                 : cloudEvent.getDataContentType();
             byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(contentType)
                 .serialize(cloudEvent);
@@ -183,7 +183,7 @@ public class EventMeshClientUtil {
                 .setTopic(events.get(0).getSubject());
 
             for (CloudEvent event : events) {
-                String contentType = StringUtils.isEmpty(event.getDataContentType()) ? Constants.CONTENT_TYPE_CLOUDEVENTS_JSON
+                String contentType = StringUtils.isEmpty(event.getDataContentType()) ? "application/cloudevents+json"
                     : event.getDataContentType();
                 byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(contentType)
                     .serialize(event);
