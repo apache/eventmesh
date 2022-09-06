@@ -15,7 +15,10 @@
 
 package consumer
 
-import "sync"
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"sync"
+)
 
 type Manager struct {
 	// consumerClients store all consumer clients
@@ -35,7 +38,21 @@ func NewManager() (*Manager, error) {
 	}, nil
 }
 
+func (c *Manager) GetConsumer(consumerGroup string) (*EventMeshConsumer, error) {
+	val, ok := c.consumers.Load(consumerGroup)
+	if ok {
+		return val.(*EventMeshConsumer), nil
+	}
+	cu, err := NewEventMeshConsumer(consumerGroup)
+	if err != nil {
+		return nil, err
+	}
+	c.consumers.Store(consumerGroup, cu)
+	return cu, nil
+}
+
 func (c *Manager) Start() error {
+	log.Infof("start consumer manager")
 	return nil
 }
 

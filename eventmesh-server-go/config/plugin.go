@@ -13,26 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package config
 
-import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/push"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
-	"sync"
+var (
+	// ConnectorPluginType plugin type for connector
+	// support standalone and rocketmq
+	// default to standalone
+	ConnectorPluginType = "connector"
+
+	// RegistryPluginType plugin type for connector
+	// support nacos and etcd
+	// default to nacos
+	RegistryPluginType = "registry"
 )
-
-type EventMeshConsumer struct {
-	ConsumerGroup      string
-	persistentConsumer *wrapper.Consumer
-	broadcastConsumer  *wrapper.Consumer
-	messageHandler     *push.MessageHandler
-	ServiceState       consts.ServiceState
-	// consumerGroupTopicConfig key is topic
-	// value is ConsumerGroupTopicOption
-	consumerGroupTopicConfig *sync.Map
-}
-
-func NewEventMeshConsumer(consumerGroup string) (*EventMeshConsumer, error) {
-	return &EventMeshConsumer{}, nil
-}

@@ -17,21 +17,44 @@ package producer
 
 import (
 	"fmt"
+	config2 "github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
 	"time"
 )
 
 type EventMeshProducer struct {
-	groupName    string
+	cfg          *config.ProducerGroupConfig
 	producer     *wrapper.Producer
 	ServiceState consts.ServiceState
 }
 
-func NewEventMeshProducer() *EventMeshProducer {
-	return &EventMeshProducer{}
+func NewEventMeshProducer(cfg *config.ProducerGroupConfig) (*EventMeshProducer, error) {
+	pm, err := wrapper.NewProducer()
+	if err != nil {
+		return nil, err
+	}
+
+	cluster := config2.GlobalConfig().Server.GRPCOption.Cluster
+	idc := config2.GlobalConfig().Server.GRPCOption.IDC
+	mm := make(map[string]string)
+	mm["producerGroup"] = cfg.GroupName
+	mm["instanceName"] = util.BuildMeshClientID(cfg.GroupName, cluster)
+	mm["eventMeshIDC"] = idc
+	if err = pm.ProducerConnector.InitProducer(mm); err != nil {
+		return nil, err
+	}
+	
+	p := &EventMeshProducer{
+		cfg:          cfg,
+		producer:     pm,
+		ServiceState: consts.INITED,
+	}
+	return p, nil
 }
 
 func (e *EventMeshProducer) Send(sctx SendMessageContext, callback connector.SendCallback) error {
@@ -54,7 +77,7 @@ func (e *EventMeshProducer) Start() error {
 		return err
 	}
 	e.ServiceState = consts.RUNNING
-	log.Info("start eventmesh producer for groupName:%s", e.groupName)
+	log.Info("start eventmesh producer for groupName:%s", e.cfg.GroupName)
 	return nil
 }
 
@@ -74,5 +97,5 @@ func (e *EventMeshProducer) Status() consts.ServiceState {
 }
 
 func (e *EventMeshProducer) String() string {
-	return fmt.Sprintf("eventMeshProducer, status:%s,  groupName:%s", e.ServiceState, e.groupName)
+	return fmt.Sprintf("eventMeshProducer, status:%s,  groupName:%s", e.ServiceState, e.cfg.GroupName)
 }

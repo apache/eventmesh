@@ -32,6 +32,7 @@ type GRPCServer struct {
 	Registry    registry.Registry
 }
 
+// NewGRPCServer create new grpc server
 func NewGRPCServer() (*GRPCServer, error) {
 	log.Infof("create new grpc serer")
 	msgReqPerSeconds := config.GlobalConfig().Server.GRPCOption.MsgReqNumPerSecond
@@ -53,4 +54,17 @@ func NewGRPCServer() (*GRPCServer, error) {
 		RateLimiter: limiter,
 		Registry:    regis,
 	}, nil
+}
+
+func (g *GRPCServer) Start() error {
+	if err := g.ProducerMgr.Start(); err != nil {
+		return err
+	}
+	if err := g.ConsumerMgr.Start(); err != nil {
+		return err
+	}
+	//if err := g.Registry.Start(); err != nil {
+	//	return err
+	//}
+	return nil
 }

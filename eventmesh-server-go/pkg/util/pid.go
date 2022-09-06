@@ -13,26 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package util
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/push"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
-	"sync"
+	"fmt"
+	"os"
 )
 
-type EventMeshConsumer struct {
-	ConsumerGroup      string
-	persistentConsumer *wrapper.Consumer
-	broadcastConsumer  *wrapper.Consumer
-	messageHandler     *push.MessageHandler
-	ServiceState       consts.ServiceState
-	// consumerGroupTopicConfig key is topic
-	// value is ConsumerGroupTopicOption
-	consumerGroupTopicConfig *sync.Map
+var _pid string
+
+func init() {
+	_pid = fmt.Sprintf("%v", os.Getpid())
 }
 
-func NewEventMeshConsumer(consumerGroup string) (*EventMeshConsumer, error) {
-	return &EventMeshConsumer{}, nil
+// PID return the current process id
+func PID() string {
+	return _pid
 }

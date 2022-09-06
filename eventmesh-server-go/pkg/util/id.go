@@ -13,26 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package util
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/push"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
-	"sync"
+	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/version"
+	"strings"
 )
 
-type EventMeshConsumer struct {
-	ConsumerGroup      string
-	persistentConsumer *wrapper.Consumer
-	broadcastConsumer  *wrapper.Consumer
-	messageHandler     *push.MessageHandler
-	ServiceState       consts.ServiceState
-	// consumerGroupTopicConfig key is topic
-	// value is ConsumerGroupTopicOption
-	consumerGroupTopicConfig *sync.Map
+func BuildMeshTcpClientID(sys, purpose, cluster string) string {
+	return fmt.Sprintf("%v-%v-%v-%v-%v",
+		strings.TrimSpace(sys),
+		strings.TrimSpace(purpose),
+		strings.TrimSpace(cluster),
+		strings.TrimSpace(version.Current),
+		strings.TrimSpace(PID()))
 }
 
-func NewEventMeshConsumer(consumerGroup string) (*EventMeshConsumer, error) {
-	return &EventMeshConsumer{}, nil
+func BuildMeshClientID(group, cluster string) string {
+	return fmt.Sprintf("%v-(%v)-%v-%v-%v",
+		strings.TrimSpace(group),
+		strings.TrimSpace(cluster),
+		strings.TrimSpace(version.Current),
+		strings.TrimSpace(PID()))
 }

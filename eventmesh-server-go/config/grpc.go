@@ -42,4 +42,10 @@ type GRPCOption struct {
 
 	// RegistryName name for registry plugin support nacos or etcd
 	RegistryName string `yaml:"registry-name" toml:"registry-name"`
+
+	// Cluster cluster for grpc server
+	Cluster string `yaml:"cluster" toml:"cluster"`
+
+	// IDC idc for grpc server
+	IDC string `yaml:"idc" toml:"idc"`
 }

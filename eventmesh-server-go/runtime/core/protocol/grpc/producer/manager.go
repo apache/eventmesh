@@ -15,9 +15,64 @@
 
 package producer
 
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/config"
+	"sync"
+)
+
+// Manager manger for all producer
 type Manager struct {
+	// EventMeshProducers {groupName, *EventMeshProducer}
+	EventMeshProducers *sync.Map
 }
 
 func NewManager() (*Manager, error) {
-	return nil, nil
+	return &Manager{
+		EventMeshProducers: new(sync.Map),
+	}, nil
+}
+
+func (m *Manager) GetProducer(groupName string) (*EventMeshProducer, error) {
+	p, ok := m.EventMeshProducers.Load(groupName)
+	if ok {
+		return p.(*EventMeshProducer), nil
+	}
+	pgc := &config.ProducerGroupConfig{GroupName: groupName}
+	pg, err := m.CreateProducer(pgc)
+	if err != nil {
+		return nil, err
+	}
+	return pg, nil
+}
+
+func (m *Manager) CreateProducer(producerGroupConfig *config.ProducerGroupConfig) (*EventMeshProducer, error) {
+	val, ok := m.EventMeshProducers.Load(producerGroupConfig.GroupName)
+	if ok {
+		return val.(*EventMeshProducer), nil
+	}
+	pg, err := NewEventMeshProducer(producerGroupConfig)
+	if err != nil {
+		return nil, err
+	}
+	m.EventMeshProducers.Store(producerGroupConfig.GroupName, pg)
+	return pg, nil
+}
+
+func (m *Manager) Start() error {
+	log.Infof("start producer manager")
+	return nil
+}
+
+func (m *Manager) Shutdown() error {
+	log.Infof("shutdown producer manager")
+
+	m.EventMeshProducers.Range(func(key, value any) bool {
+		pg := value.(*EventMeshProducer)
+		if err := pg.Shutdown(); err != nil {
+			log.Infof("shutdown eventmesh producer:%v, err:%v", key, err)
+		}
+		return true
+	})
+	return nil
 }
