@@ -33,6 +33,8 @@ dependencies {
     implementation "io.grpc:grpc-netty:${grpcVersion}"
     implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
 
+    implementation "com.alibaba.nacos:nacos-client:2.0.4"
+
     // protocol
     api "io.cloudevents:cloudevents-core"
     api "io.cloudevents:cloudevents-json-jackson"

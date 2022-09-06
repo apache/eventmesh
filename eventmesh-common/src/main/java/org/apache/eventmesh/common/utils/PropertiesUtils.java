@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.Constants;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.InputStream;
 import java.util.Properties;
 
 public class PropertiesUtils {
@@ -60,5 +61,15 @@ public class PropertiesUtils {
             }
         );
         return to;
+    }
+
+    public static Properties readPropertiesFile(String fileName) {
+        try (final InputStream inputStream = PropertiesUtils.class.getClassLoader().getResourceAsStream(fileName)) {
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            return properties;
+        } catch (Exception e) {
+            throw new IllegalArgumentException(String.format("File: %s is not exist", fileName));
+        }
     }
 }

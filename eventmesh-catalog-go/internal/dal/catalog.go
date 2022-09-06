@@ -38,8 +38,8 @@ type catalogDALImpl struct {
 func (c *catalogDALImpl) SelectOperations(ctx context.Context, serviceName string,
 	operationID string) ([]*model.EventCatalog, error) {
 	var res []*model.EventCatalog
-	if err := GetDalClient().WithContext(ctx).Where("service_name = ? AND operation_id = ? AND status = 1",
-		serviceName, operationID).Find(&res).Error; err != nil {
+	var condition = model.EventCatalog{ServiceName: serviceName, OperationID: operationID}
+	if err := GetDalClient().WithContext(ctx).Where(&condition).Find(&res).Error; err != nil {
 		return nil, err
 	}
 	return res, nil

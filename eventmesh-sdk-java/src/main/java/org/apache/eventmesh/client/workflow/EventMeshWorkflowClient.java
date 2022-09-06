@@ -15,19 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.catalog;
+package org.apache.eventmesh.client.workflow;
 
-import org.apache.eventmesh.client.catalog.config.EventMeshCatalogClientConfig;
 import org.apache.eventmesh.client.selector.Selector;
 import org.apache.eventmesh.client.selector.SelectorFactory;
 import org.apache.eventmesh.client.selector.ServiceInstance;
-import org.apache.eventmesh.common.protocol.catalog.protos.CatalogGrpc;
-import org.apache.eventmesh.common.protocol.catalog.protos.Operation;
-import org.apache.eventmesh.common.protocol.catalog.protos.QueryOperationsRequest;
-import org.apache.eventmesh.common.protocol.catalog.protos.QueryOperationsResponse;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.eventmesh.client.workflow.config.EventMeshWorkflowClientConfig;
+import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
+import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteResponse;
+import org.apache.eventmesh.common.protocol.workflow.protos.WorkflowGrpc;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,37 +31,35 @@ import org.slf4j.LoggerFactory;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
-public class EventMeshCatalogClient {
-    private static final Logger logger = LoggerFactory.getLogger(EventMeshCatalogClient.class);
-    private final EventMeshCatalogClientConfig clientConfig;
+public class EventMeshWorkflowClient {
 
-    private List<Operation> operations = new ArrayList<>();
+    private static final Logger logger = LoggerFactory.getLogger(EventMeshWorkflowClient.class);
+    private final EventMeshWorkflowClientConfig clientConfig;
 
-    public EventMeshCatalogClient(EventMeshCatalogClientConfig clientConfig) {
+    public EventMeshWorkflowClient(EventMeshWorkflowClientConfig clientConfig) {
         this.clientConfig = clientConfig;
     }
 
-    public void init() throws Exception {
+    public WorkflowGrpc.WorkflowBlockingStub getWorkflowClient() throws Exception {
         Selector selector = SelectorFactory.get(clientConfig.getSelectorType());
         ServiceInstance instance = selector.selectOne(clientConfig.getServerName());
         if (instance == null) {
-            throw new Exception("catalog server is not running.please check it.");
+            throw new Exception("workflow server is not running.please check it.");
         }
         ManagedChannel channel = ManagedChannelBuilder.forAddress(instance.getHost(), instance.getPort())
             .usePlaintext().build();
-        CatalogGrpc.CatalogBlockingStub catalogClient = CatalogGrpc.newBlockingStub(channel);
-        QueryOperationsRequest request = QueryOperationsRequest.newBuilder().setServiceName(clientConfig.getServerName()).build();
-        try {
-            QueryOperationsResponse response = catalogClient.queryOperations(request);
-            logger.info("received response " + response.toString());
-            operations = response.getOperationsList();
-        } catch (Exception e) {
-            logger.error("queryOperations error {}", e.getMessage());
-            throw e;
-        }
+        return WorkflowGrpc.newBlockingStub(channel);
     }
 
-    public List<Operation> getOperations() {
-        return operations;
+    public ExecuteResponse execute(ExecuteRequest request) {
+        try {
+            WorkflowGrpc.WorkflowBlockingStub workflowClient = getWorkflowClient();
+            ExecuteResponse response = workflowClient.execute(request);
+            logger.info("received response " + response.toString());
+            return response;
+        } catch (Exception e) {
+            logger.error("execute error {}", e.getMessage());
+            return null;
+        }
     }
 }

@@ -15,17 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.catalog.config;
+package org.apache.eventmesh.client.selector;
 
-import lombok.Builder;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.Data;
 
 @Data
-@Builder
-public class EventMeshCatalogClientConfig {
-    @Builder.Default
-    private String serverName = "eventmesh-catalog";
+public class ServiceInstance implements Serializable {
 
-    @Builder.Default
-    private String selectorType = "nacos";
+    private static final long serialVersionUID = -5770826614635186498L;
+
+    private String host;
+    private int port;
+    private boolean isHealthy;
+    private Map<String, String> metadata;
+
+    public ServiceInstance() {
+        this.host = null;
+        this.port = 0;
+        this.isHealthy = true;
+        this.metadata = new HashMap<>();
+    }
+
+    public String getParameter(String key) {
+        if (metadata.get(key) != null) {
+            return String.valueOf(metadata.get(key));
+        }
+        return null;
+    }
 }

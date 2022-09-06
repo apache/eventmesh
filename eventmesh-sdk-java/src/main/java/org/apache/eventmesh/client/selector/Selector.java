@@ -15,17 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.catalog.config;
+package org.apache.eventmesh.client.selector;
 
-import lombok.Builder;
-import lombok.Data;
+/**
+ * Selector is the abstract of selecting registry service instances
+ */
+public interface Selector {
 
-@Data
-@Builder
-public class EventMeshCatalogClientConfig {
-    @Builder.Default
-    private String serverName = "eventmesh-catalog";
-
-    @Builder.Default
-    private String selectorType = "nacos";
+    ServiceInstance selectOne(String serverName) throws Exception;
 }

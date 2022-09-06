@@ -15,17 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.catalog.config;
+package org.apache.eventmesh.client.selector;
 
-import lombok.Builder;
-import lombok.Data;
+import java.util.HashMap;
+import java.util.Map;
 
-@Data
-@Builder
-public class EventMeshCatalogClientConfig {
-    @Builder.Default
-    private String serverName = "eventmesh-catalog";
+public class SelectorFactory {
+    private static final Map<String, Selector> selectorMap = new HashMap<>();
 
-    @Builder.Default
-    private String selectorType = "nacos";
+    static {
+        selectorMap.put("nacos", new NacosSelector());
+    }
+
+    public static Selector get(String type) {
+        return selectorMap.getOrDefault(type, new NacosSelector());
+    }
 }

@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.client.catalog.config;
+package org.apache.eventmesh.client.workflow.config;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @Builder
-public class EventMeshCatalogClientConfig {
+@ToString
+public class EventMeshWorkflowClientConfig {
     @Builder.Default
-    private String serverName = "eventmesh-catalog";
+    private String serverName = "eventmesh-workflow";
 
     @Builder.Default
     private String selectorType = "nacos";

@@ -164,4 +164,14 @@ public class Constants {
      * application/cloudevents+json Content-type
      */
     public static final String CONTENT_TYPE_CLOUDEVENTS_JSON = "application/cloudevents+json";
+
+    public static final String CONFIG_FILE_NAME = "application.properties";
+
+    public static final String EVENTMESH_SELECTOR_TYPE = "eventmesh.selector.type";
+
+    public static final String EVENTMESH_SELECTOR_NACOS_ADDRESS = "eventmesh.selector.nacos.address_list";
+
+    public static final String EVENTMESH_WORKFLOW_SERVER_NAME = "eventmesh.workflow.server.name";
+
+    public static final String EVENTMESH_CATALOG_SERVER_NAME = "eventmesh.catalog.server.name";
 }
