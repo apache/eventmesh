@@ -154,14 +154,4 @@ public class Constants {
     public static final String AND = "&";
 
     public static final String EMPTY = "";
-
-    /**
-     * GRPC PROTOCOL
-     */
-    public static final String PROTOCOL_GRPC = "grpc";
-
-    /**
-     * application/cloudevents+json Content-type
-     */
-    public static final String CONTENT_TYPE_CLOUDEVENTS_JSON = "application/cloudevents+json";
 }
