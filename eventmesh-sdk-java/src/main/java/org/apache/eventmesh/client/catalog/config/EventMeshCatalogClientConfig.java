@@ -28,4 +28,6 @@ public class EventMeshCatalogClientConfig {
 
     @Builder.Default
     private String selectorType = "nacos";
+
+    private String appServerName;
 }

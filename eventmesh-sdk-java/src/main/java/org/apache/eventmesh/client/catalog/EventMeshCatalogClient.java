@@ -54,7 +54,7 @@ public class EventMeshCatalogClient {
         ManagedChannel channel = ManagedChannelBuilder.forAddress(instance.getHost(), instance.getPort())
             .usePlaintext().build();
         CatalogGrpc.CatalogBlockingStub catalogClient = CatalogGrpc.newBlockingStub(channel);
-        QueryOperationsRequest request = QueryOperationsRequest.newBuilder().setServiceName(clientConfig.getServerName()).build();
+        QueryOperationsRequest request = QueryOperationsRequest.newBuilder().setServiceName(clientConfig.getAppServerName()).build();
         try {
             QueryOperationsResponse response = catalogClient.queryOperations(request);
             logger.info("received response " + response.toString());
