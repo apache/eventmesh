@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.protocol.meshmessage.resolver.grpc;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.grpc.common.ProtocolKey;
 import org.apache.eventmesh.common.protocol.grpc.common.SimpleMessageWrapper;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
@@ -227,7 +228,7 @@ public class GrpcMessageProtocolResolver {
         String sys = cloudEvent.getExtension(ProtocolKey.SYS) == null ? "sys" : cloudEvent.getExtension(ProtocolKey.SYS).toString();
         String userName = cloudEvent.getExtension(ProtocolKey.USERNAME) == null ? "user" : cloudEvent.getExtension(ProtocolKey.USERNAME).toString();
         String passwd = cloudEvent.getExtension(ProtocolKey.PASSWD) == null ? "pass" : cloudEvent.getExtension(ProtocolKey.PASSWD).toString();
-        String language = cloudEvent.getExtension(ProtocolKey.LANGUAGE) == null ? "JAVA" : cloudEvent.getExtension(ProtocolKey.LANGUAGE).toString();
+        String language = cloudEvent.getExtension(ProtocolKey.LANGUAGE) == null ? Constants.LANGUAGE_JAVA : cloudEvent.getExtension(ProtocolKey.LANGUAGE).toString();
         String protocol = cloudEvent.getExtension(ProtocolKey.PROTOCOL_TYPE) == null ? "" :
             cloudEvent.getExtension(ProtocolKey.PROTOCOL_TYPE).toString();
         String protocolDesc = cloudEvent.getExtension(ProtocolKey.PROTOCOL_DESC) == null ? "" :
