@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 public class ConfigurationWrapper {
 
-    private static Logger logger = LoggerFactory.getLogger(ConfigurationWrapper.class);
+    private static Logger logger = LoggerFactory.getLogger("ConfigurationWrapper");
 
     private static final String EVENTMESH_CONFIG_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
