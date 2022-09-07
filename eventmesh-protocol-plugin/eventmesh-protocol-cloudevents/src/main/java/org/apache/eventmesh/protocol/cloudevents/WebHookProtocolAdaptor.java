@@ -19,13 +19,18 @@ package org.apache.eventmesh.protocol.cloudevents;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.WebhookProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
+
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
@@ -41,7 +46,7 @@ public class WebHookProtocolAdaptor implements ProtocolAdaptor<WebhookProtocolTr
             .withDataContentType(protocol.getDataContentType())
             .withType(protocol.getEventType())
             .withData(protocol.getBody())
-            .withExtension(Constants.PROTOCOL_TYPE, "http")
+            .withExtension(Constants.PROTOCOL_TYPE, "webhookProtocolAdaptor")
             .build();
     }
 
@@ -53,7 +58,25 @@ public class WebHookProtocolAdaptor implements ProtocolAdaptor<WebhookProtocolTr
 
     @Override
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
-        return null;
+        final HttpEventWrapper httpEventWrapper = new HttpEventWrapper();
+        Map<String, Object> sysHeaderMap = new HashMap<>();
+        // ce attributes
+        Set<String> attributeNames = cloudEvent.getAttributeNames();
+        // ce extensions
+        Set<String> extensionNames = cloudEvent.getExtensionNames();
+        for (String attributeName : attributeNames) {
+            sysHeaderMap.put(attributeName, cloudEvent.getAttribute(attributeName));
+        }
+        for (String extensionName : extensionNames) {
+            sysHeaderMap.put(extensionName, cloudEvent.getExtension(extensionName));
+        }
+        sysHeaderMap.put("cloudEventId", cloudEvent.getId());
+        sysHeaderMap.put("cloudEventName", cloudEvent.getSubject());
+        sysHeaderMap.put("cloudEventSource", cloudEvent.getSource().toString());
+        sysHeaderMap.put("type", cloudEvent.getType());
+        httpEventWrapper.setSysHeaderMap(sysHeaderMap);
+        httpEventWrapper.setBody(cloudEvent.getData().toBytes());
+        return httpEventWrapper;
     }
 
     @Override
