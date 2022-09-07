@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.protocol.cloudevents;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.WebhookProtocolTransportObject;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
@@ -34,13 +35,14 @@ public class WebHookProtocolAdaptor implements ProtocolAdaptor<WebhookProtocolTr
     @Override
     public CloudEvent toCloudEvent(WebhookProtocolTransportObject protocol) throws ProtocolHandleException {
         return CloudEventBuilder.v1()
-                .withId(protocol.getCloudEventId())
-                .withSubject(protocol.getCloudEventName())
-                .withSource(URI.create(protocol.getCloudEventSource()))
-                .withDataContentType(protocol.getDataContentType())
-                .withType(protocol.getEventType())
-                .withData(protocol.getBody())
-                .build();
+            .withId(protocol.getCloudEventId())
+            .withSubject(protocol.getCloudEventName())
+            .withSource(URI.create(protocol.getCloudEventSource()))
+            .withDataContentType(protocol.getDataContentType())
+            .withType(protocol.getEventType())
+            .withData(protocol.getBody())
+            .withExtension(Constants.PROTOCOL_TYPE, "http")
+            .build();
     }
 
     @Override

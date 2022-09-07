@@ -94,7 +94,7 @@ public class HandlerService {
 
         if (httpProcessorMap.containsKey(path)) {
             throw new RuntimeException(String.format("HandlerService path %s repeat, repeat processor is %s ",
-                    path, httpProcessor.getClass().getSimpleName()));
+                path, httpProcessor.getClass().getSimpleName()));
         }
         ProcessorWrapper processorWrapper = new ProcessorWrapper();
         processorWrapper.threadPoolExecutor = threadPoolExecutor;
@@ -154,10 +154,10 @@ public class HandlerService {
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
                 httpLogger.warn("send response to [{}] fail, will close this channel",
-                        RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
             }
             if (isClose) {
-            	f.channel().close();
+                f.channel().close();
             }
         });
     }

@@ -112,7 +112,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     @Override
     public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
-        Integer pageSize) {
+                                                                Integer pageSize) {
         String manuDirPath = getWebhookConfigManuDir(webHookConfig);
         File manuDir = new File(manuDirPath);
         if (!manuDir.exists()) {
@@ -158,16 +158,16 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
             bw.write(JsonUtils.serialize(webHookConfig));
             lock.release();
         } catch (IOException e) {
-        	if(Objects.nonNull(lock)) {
-        		try {
-					lock.release();
-				} catch (IOException e1) {
-					logger.error("lock release fail file path is :" , webhookConfigFile.getPath());
-				}
-        	}
+            if (Objects.nonNull(lock)) {
+                try {
+                    lock.release();
+                } catch (IOException e1) {
+                    logger.error("lock release fail file path is :", webhookConfigFile.getPath());
+                }
+            }
             logger.error("write webhookConfig {} to file error", webHookConfig.getCallbackPath());
             return false;
-        } 
+        }
         return true;
     }
 
@@ -178,8 +178,8 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     private File getWebhookConfigFile(WebHookConfig webHookConfig) {
         String webhookConfigFilePath = null;
         webhookConfigFilePath = this.getWebhookConfigManuDir(webHookConfig) + WebHookOperationConstant.FILE_SEPARATOR
-        		+ StringUtils.getFileName(webHookConfig.getCallbackPath());
-        
+            + StringUtils.getFileName(webHookConfig.getCallbackPath());
+
         assert webhookConfigFilePath != null;
         return new File(webhookConfigFilePath);
     }

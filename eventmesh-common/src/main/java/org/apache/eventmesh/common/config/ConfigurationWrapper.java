@@ -64,12 +64,12 @@ public class ConfigurationWrapper {
 
     public ConfigurationWrapper(String directoryPath, String fileName, boolean reload) {
         this.directoryPath = directoryPath
-                .replace('/', File.separator.charAt(0))
-                .replace('\\', File.separator.charAt(0));
+            .replace('/', File.separator.charAt(0))
+            .replace('\\', File.separator.charAt(0));
         this.fileName = fileName;
         this.file = (directoryPath + File.separator + fileName)
-                .replace('/', File.separator.charAt(0))
-                .replace('\\', File.separator.charAt(0));
+            .replace('/', File.separator.charAt(0))
+            .replace('\\', File.separator.charAt(0));
         this.reload = reload;
         init();
     }
@@ -104,7 +104,7 @@ public class ConfigurationWrapper {
             return defaultValue;
         }
         Preconditions.checkState(StringUtils.isNumeric(configValue),
-                String.format("key:%s, value:%s error", configKey, configValue));
+            String.format("key:%s, value:%s error", configKey, configValue));
         return Integer.parseInt(configValue);
     }
 
@@ -137,9 +137,9 @@ public class ConfigurationWrapper {
         ObjectMapper objectMapper = new ObjectMapper();
         return (T) objectMapper.convertValue(getPropertiesByConfig(prefix, removePrefix), clazz);
     }
-    
+
     public Properties getProperties() {
-    	return this.properties;
+        return this.properties;
     }
 
 }

@@ -44,16 +44,13 @@ import com.alibaba.nacos.api.exception.NacosException;
 
 public class HookConfigOperationManage implements WebHookConfigOperation {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private String operationMode;
-
-    private ConfigService nacosConfigService;
-
     /**
      * webhook config pool -> key is CallbackPath
      */
     private final Map<String, WebHookConfig> cacheWebHookConfig = new ConcurrentHashMap<>();
+    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    private String operationMode;
+    private ConfigService nacosConfigService;
 
     public HookConfigOperationManage() {
     }
@@ -61,7 +58,7 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     /**
      * Initialize according to operationMode
      *
-     * @param configurationWrapper 
+     * @param configurationWrapper
      */
     public HookConfigOperationManage(ConfigurationWrapper configurationWrapper) throws FileNotFoundException, NacosException {
 

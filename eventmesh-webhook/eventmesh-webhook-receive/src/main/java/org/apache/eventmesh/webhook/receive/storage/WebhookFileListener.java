@@ -50,15 +50,11 @@ import org.slf4j.LoggerFactory;
 
 public class WebhookFileListener {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private String filePath;
-
-    private Map<String, WebHookConfig> cacheWebHookConfig;
-
     private final Set<String> pathSet = new LinkedHashSet<>(); // monitored subdirectory
-
     private final Map<WatchKey, String> watchKeyPathMap = new HashMap<>(); // WatchKey's path
+    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    private String filePath;
+    private Map<String, WebHookConfig> cacheWebHookConfig;
 
     public WebhookFileListener() {
     }
@@ -71,9 +67,8 @@ public class WebhookFileListener {
 
     /**
      * Read the directory and register the listener
-     *
      */
-    public void filePatternInit()  {
+    public void filePatternInit() {
         File webHookFileDir = new File(filePath);
         if (!webHookFileDir.exists()) {
             webHookFileDir.mkdirs();
@@ -117,9 +112,9 @@ public class WebhookFileListener {
         WebHookConfig webHookConfig = JsonUtils.deserialize(fileContent.toString(), WebHookConfig.class);
         cacheWebHookConfig.put(webhookConfigFile.getName(), webHookConfig);
     }
-    
+
     public void deleteConfig(File webhookConfigFile) {
-    	cacheWebHookConfig.remove(webhookConfigFile.getName());
+        cacheWebHookConfig.remove(webhookConfigFile.getName());
     }
 
     /**
@@ -161,25 +156,25 @@ public class WebhookFileListener {
                 for (WatchEvent<?> event : key.pollEvents()) {
                     String flashPath = watchKeyPathMap.get(key);
                     // manufacturer change
-                    String path = flashPath +"/"+ event.context();
-                    File file= new File(path);
-                    if(ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind()) {
-                    	if(file.isFile()) {
-                    		cacheInit(file);
-                    	}else {
-                    		try {
-                    			key = Paths.get(path).register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
-                    			watchKeyPathMap.put(key, path);
-                    		}catch (IOException e) {
+                    String path = flashPath + "/" + event.context();
+                    File file = new File(path);
+                    if (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind()) {
+                        if (file.isFile()) {
+                            cacheInit(file);
+                        } else {
+                            try {
+                                key = Paths.get(path).register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+                                watchKeyPathMap.put(key, path);
+                            } catch (IOException e) {
                                 logger.error("registerWatchKey failed", e);
                             }
-                    	}
-                    }else if(ENTRY_DELETE == event.kind()) {
-                    	if(file.isDirectory()) {
-                    		watchKeyPathMap.remove(key);
-                    	}else {
-                    		deleteConfig(file);
-                    	}
+                        }
+                    } else if (ENTRY_DELETE == event.kind()) {
+                        if (file.isDirectory()) {
+                            watchKeyPathMap.remove(key);
+                        } else {
+                            deleteConfig(file);
+                        }
                     }
                 }
                 if (!key.reset()) {
