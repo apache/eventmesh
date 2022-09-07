@@ -143,7 +143,7 @@ public class CloudEventsProtocolAdaptor<T extends ProtocolTransportObject>
                 String.format("DateContentType:%s is not supported", dataContentType));
             pkg.setBody(eventFormat.serialize(cloudEvent));
             return pkg;
-        } else if (StringUtils.equals("grpc", protocolDesc)) {
+        } else if (StringUtils.equals(Constants.PROTOCOL_GRPC, protocolDesc)) {
             return GrpcMessageProtocolResolver.buildSimpleMessage(cloudEvent);
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));
