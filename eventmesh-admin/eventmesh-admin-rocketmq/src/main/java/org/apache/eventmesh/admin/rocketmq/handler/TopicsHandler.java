@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.admin.rocketmq.handler;
 
+import static org.apache.eventmesh.admin.rocketmq.Constants.APPLICATION_JSON;
+import static org.apache.eventmesh.admin.rocketmq.Constants.CONTENT_TYPE;
+import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_ERROR;
 import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
 
 import org.apache.eventmesh.admin.rocketmq.request.TopicCreateRequest;
@@ -57,7 +60,7 @@ public class TopicsHandler implements HttpHandler {
     }
 
     public void createTopicHandler(HttpExchange httpExchange) throws IOException {
-        String result = "";
+        String result;
         OutputStream out = httpExchange.getResponseBody();
         try {
             String params = NetUtils.parsePostBody(httpExchange);
@@ -76,21 +79,21 @@ public class TopicsHandler implements HttpHandler {
             TopicResponse topicResponse = null;
             if (topicResponse != null) {
                 logger.info("create a new topic: {}", topic);
-                httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+                httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
                 httpExchange.sendResponseHeaders(200, 0);
                 result = JsonUtils.toJson(topicResponse);
                 logger.info(result);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             } else {
                 httpExchange.sendResponseHeaders(500, 0);
-                result = "create topic failed! Server side error";
+                result = TOPIC_ERROR;
                 logger.error(result);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             }
         } catch (Exception e) {
-            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+            httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
             httpExchange.sendResponseHeaders(500, 0);
-            result = "create topic failed! Server side error";
+            result = TOPIC_ERROR;
             logger.error(result);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {

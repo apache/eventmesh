@@ -38,7 +38,7 @@ public class WebHookProcessor implements HttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{"/webhook"};
+        return new String[] {"/webhook"};
     }
 
     @Override

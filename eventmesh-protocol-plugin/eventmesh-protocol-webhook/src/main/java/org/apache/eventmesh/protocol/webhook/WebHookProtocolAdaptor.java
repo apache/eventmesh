@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.protocol.cloudevents;
+package org.apache.eventmesh.protocol.webhook;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
@@ -81,7 +81,7 @@ public class WebHookProtocolAdaptor implements ProtocolAdaptor<WebhookProtocolTr
 
     @Override
     public String getProtocolType() {
-        return "webhookProtocolAdaptor";
+        return "webhook";
     }
 
 }
