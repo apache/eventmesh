@@ -34,7 +34,7 @@ type ConsumerFactory struct {
 }
 
 func (f *ConsumerFactory) Type() string {
-	return connector.ConsumerPluginType
+	return plugin.Connector
 }
 
 func (f *ConsumerFactory) Setup(name string, dec plugin.Decoder) error {

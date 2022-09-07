@@ -106,7 +106,7 @@ func (c *Consumer) RegisterEventListener(listener connector.EventListener) {
 }
 
 func (c *Consumer) Type() string {
-	return connector.ConsumerPluginType
+	return plugin.Connector
 }
 
 func (c *Consumer) Setup(name string, dec plugin.Decoder) error {

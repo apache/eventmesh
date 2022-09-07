@@ -29,7 +29,7 @@ type Consumer struct {
 
 // NewConsumer create new consumer to handle the grpc request
 func NewConsumer(connectorType string) (*Consumer, error) {
-	factory := plugin.Get(connector.ConsumerPluginType, connectorType).(connector.ConsumerFactory)
+	factory := plugin.Get(plugin.Connector, connectorType).(connector.ConsumerFactory)
 	consu, err := factory.Get()
 	if err != nil {
 		return nil, err

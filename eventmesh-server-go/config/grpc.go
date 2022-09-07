@@ -15,6 +15,8 @@
 
 package config
 
+import "time"
+
 // GRPCOption configuratin for grpc server
 type GRPCOption struct {
 	Port string `yaml:"port" toml:"port"`
@@ -48,4 +50,7 @@ type GRPCOption struct {
 
 	// IDC idc for grpc server
 	IDC string `yaml:"idc" toml:"idc"`
+
+	// SessionExpiredInMills internal to clean the not work session consumer
+	SessionExpiredInMills time.Duration `yaml:"session-expired-in-mills"`
 }

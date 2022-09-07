@@ -13,18 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package registry
+package plugin
 
-// Config registry config
-type Config struct {
-	ServiceName string
-	Weight      int
-	Address     string
-	Port        int
-	Metadata    map[string]string
-}
+// name for every plugin
+var Name = "name"
 
-// PluginConfig define registry plugin config
-type PluginConfig struct {
-	AddressList string `yaml:"address_list"`
-}
+// indicates all plugin type
+var (
+	Connector = "connector"
+	Registry  = "registry"
+)
+
+// indicates registry name list
+var (
+	NacosRegistry = "nacos"
+	ETCDRegistry  = "etcd"
+)
+
+// indicates connector name list
+var (
+	Standalone = "standalone"
+)
