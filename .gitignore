@@ -30,4 +30,4 @@ all-dependencies.txt
 self-modules.txt
 third-party-dependencies.txt
 
-./**/bin/
+bin/
