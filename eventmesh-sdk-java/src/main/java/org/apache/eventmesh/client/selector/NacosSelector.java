@@ -62,4 +62,12 @@ public class NacosSelector implements Selector {
             throw new Exception(e.getMessage());
         }
     }
+
+    public void setNamingService(NamingService namingService) {
+        this.namingService = namingService;
+    }
+
+    public NamingService getNamingService() {
+        return namingService;
+    }
 }

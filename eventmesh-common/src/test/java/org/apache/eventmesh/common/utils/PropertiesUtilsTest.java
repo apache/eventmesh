@@ -40,4 +40,10 @@ public class PropertiesUtilsTest {
         Assert.assertEquals(3, to.size());
         Assert.assertEquals(2, ((Properties) to.get("c")).size());
     }
+
+    @Test
+    public void testReadPropertiesFile() {
+        Properties p = PropertiesUtils.readPropertiesFile("configuration.properties");
+        Assert.assertNotNull(p);
+    }
 }

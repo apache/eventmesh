@@ -39,11 +39,4 @@ public class ServiceInstance implements Serializable {
         this.isHealthy = true;
         this.metadata = new HashMap<>();
     }
-
-    public String getParameter(String key) {
-        if (metadata.get(key) != null) {
-            return String.valueOf(metadata.get(key));
-        }
-        return null;
-    }
 }
