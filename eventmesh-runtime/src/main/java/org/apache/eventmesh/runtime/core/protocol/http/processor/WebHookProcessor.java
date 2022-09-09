@@ -24,7 +24,8 @@ import org.apache.eventmesh.webhook.receive.WebHookController;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
@@ -39,7 +40,7 @@ public class WebHookProcessor implements HttpProcessor {
 
     @Override
     public String[] paths() {
-        return new String[]{"/webhook"};
+        return new String[] {"/webhook"};
     }
 
     @Override
@@ -49,8 +50,8 @@ public class WebHookProcessor implements HttpProcessor {
             for (Map.Entry<String, String> entry : httpRequest.headers().entries()) {
                 header.put(entry.getKey().toLowerCase(), entry.getValue());
             }
-            byte[] bytes = ((FullHttpRequest) httpRequest).content().array();
-            webHookController.execute(httpRequest.uri(), header, bytes);
+            ByteBuf buf = ((FullHttpRequest) httpRequest).content();
+            webHookController.execute(httpRequest.uri(), header, ByteBufUtil.getBytes(buf));
             return HttpResponseUtils.createSuccess();
         } catch (Exception e) {
             throw new RuntimeException(e);
