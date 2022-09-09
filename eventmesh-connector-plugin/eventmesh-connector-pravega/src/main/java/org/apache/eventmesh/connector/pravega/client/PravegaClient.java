@@ -101,6 +101,15 @@ public class PravegaClient {
         streamManager.close();
     }
 
+    /**
+     * Publish CloudEvent to Pravega stream named topic. Note that the messageId in SendResult is always -1
+     * since {@link EventStreamWriter#writeEvent(Object)} just return {@link java.util.concurrent.CompletableFuture}
+     * with {@link Void} which couldn't get messageId.
+     *
+     * @param topic      topic
+     * @param cloudEvent cloudEvent
+     * @return SendResult whose messageId is always -1
+     */
     public SendResult publish(String topic, CloudEvent cloudEvent) {
         if (!createStream(topic)) {
             log.debug("stream[{}] has already been created.", topic);
