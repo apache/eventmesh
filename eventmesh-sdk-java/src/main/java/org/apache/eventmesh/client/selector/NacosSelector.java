@@ -32,7 +32,6 @@ import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.sun.tools.internal.jxc.ap.Const;
 
 public class NacosSelector implements Selector {
     private static final Logger logger = LoggerFactory.getLogger(NacosSelector.class);
