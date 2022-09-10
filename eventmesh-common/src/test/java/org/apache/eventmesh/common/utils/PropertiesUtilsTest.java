@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.common.utils;
 
+import java.io.IOException;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -42,7 +43,7 @@ public class PropertiesUtilsTest {
     }
 
     @Test
-    public void testReadPropertiesFile() {
+    public void testReadPropertiesFile() throws IOException {
         Properties p = PropertiesUtils.readPropertiesFile("configuration.properties");
         Assert.assertNotNull(p);
     }
