@@ -17,10 +17,14 @@
 
 package org.apache.eventmesh.client.selector;
 
-/**
- * Selector is the abstract of selecting registry service instances
- */
-public interface Selector {
+public class SelectorException extends RuntimeException {
+    private static final long serialVersionUID = 7126682512429265292L;
 
-    ServiceInstance selectOne(String serverName) throws SelectorException;
+    public SelectorException(String message) {
+        super(message);
+    }
+
+    public SelectorException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

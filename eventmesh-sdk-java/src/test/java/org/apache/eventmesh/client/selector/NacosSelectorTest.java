@@ -31,11 +31,11 @@ public class NacosSelectorTest {
 
     @Test
     public void testSelectOne() throws Exception {
-        NamingService namingService = mock(NamingService.class);
         Instance instance = new Instance();
         instance.setHealthy(true);
         instance.setIp("127.0.0.1");
         instance.setPort(11024);
+        NamingService namingService = mock(NamingService.class);
         when(namingService.selectOneHealthyInstance(anyString())).thenReturn(instance);
 
         NacosSelector selector = new NacosSelector();
