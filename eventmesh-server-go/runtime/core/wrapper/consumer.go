@@ -48,7 +48,7 @@ func (c *Consumer) UnSubscribe(topicName string) error {
 	return c.consumerConnector.Unsubscribe(topicName)
 }
 
-func (c *Consumer) InitConsumer(props map[string]string) error {
+func (c *Consumer) Init(props map[string]string) error {
 	if err := c.consumerConnector.InitConsumer(props); err != nil {
 		return err
 	}

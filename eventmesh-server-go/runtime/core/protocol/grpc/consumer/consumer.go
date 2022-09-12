@@ -17,10 +17,15 @@ package consumer
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/push"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	cloudv2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/pkg/errors"
 	"sync"
 )
@@ -70,6 +75,37 @@ func NewEventMeshConsumer(consumerGroup string) (*EventMeshConsumer, error) {
 }
 
 func (e *EventMeshConsumer) Init() error {
+	// no topics, don't init the consumer
+	if e.ConsumerGroupSize() == 0 {
+		return nil
+	}
+
+	persistProps := make(map[string]string)
+	persistProps["isBroadcast"] = "false"
+	persistProps["consumerGroup"] = e.ConsumerGroup
+	persistProps["eventMeshIDC"] = config.GlobalConfig().Server.GRPCOption.IDC
+	persistProps["instanceName"] = util.BuildMeshClientID(e.ConsumerGroup,
+		config.GlobalConfig().Server.GRPCOption.Cluster)
+	if err := e.persistentConsumer.Init(persistProps); err != nil {
+		return err
+	}
+	clusterEventListener := e.createEventListener(pb.Subscription_SubscriptionItem_CLUSTERING)
+	e.persistentConsumer.RegisterListener(clusterEventListener)
+
+	broadcastProps := make(map[string]string)
+	broadcastProps["isBroadcast"] = "false"
+	broadcastProps["consumerGroup"] = e.ConsumerGroup
+	broadcastProps["eventMeshIDC"] = config.GlobalConfig().Server.GRPCOption.IDC
+	broadcastProps["instanceName"] = util.BuildMeshClientID(e.ConsumerGroup,
+		config.GlobalConfig().Server.GRPCOption.Cluster)
+	if err := e.broadcastConsumer.Init(broadcastProps); err != nil {
+		return err
+	}
+	broadcastEventListener := e.createEventListener(pb.Subscription_SubscriptionItem_BROADCASTING)
+	e.broadcastConsumer.RegisterListener(broadcastEventListener)
+	e.ServiceState = consts.INITED
+
+	log.Infof("init the eventmesh consumer success, group:%v", e.ConsumerGroup)
 	return nil
 }
 
@@ -78,18 +114,58 @@ func (e *EventMeshConsumer) Start() error {
 }
 
 // RegisterClient Register client's topic information
-// return nil if this EventMeshConsumer required restart because of the topic changes
-func (e *EventMeshConsumer) RegisterClient(cli *GroupClient) error {
+// return true if this EventMeshConsumer required restart because of the topic changes
+func (e *EventMeshConsumer) RegisterClient(cli *GroupClient) bool {
+	var (
+		consumerTopicOption *ConsumerGroupTopicOption
+		restart             = false
+	)
 	val, ok := e.consumerGroupTopicConfig.Load(cli.Topic)
 	if !ok {
-		
+		consumerTopicOption = NewConsumerGroupTopicOption(cli.ConsumerGroup, cli.Topic, cli.SubscriptionMode, cli.GRPCType)
+		e.consumerGroupTopicConfig.Store(cli.Topic, consumerTopicOption)
+		restart = true
+	} else {
+		consumerTopicOption = val.(*ConsumerGroupTopicOption)
 	}
+	consumerTopicOption.RegisterClient(cli)
+	return restart
 }
 
-func (e *EventMeshConsumer) DeRegisterClient(cli *GroupClient) error {
-	return nil
+// DeRegisterClient deregister client's topic information and return true if this EventMeshConsumer
+// required restart because of the topic changes
+// return true if the underlining EventMeshConsumer needs to restart later; false otherwise
+func (e *EventMeshConsumer) DeRegisterClient(cli *GroupClient) bool {
+	var (
+		consumerTopicOption *ConsumerGroupTopicOption
+	)
+	val, ok := e.consumerGroupTopicConfig.Load(cli.Topic)
+	if !ok {
+		return false
+	}
+	consumerTopicOption = val.(*ConsumerGroupTopicOption)
+	consumerTopicOption.DeregisterClient(cli)
+	e.consumerGroupTopicConfig.Delete(cli.Topic)
+	return true
 }
 
 func (e *EventMeshConsumer) Shutdown() error {
 	return nil
+}
+
+func (e *EventMeshConsumer) ConsumerGroupSize() int {
+	count := 0
+	e.consumerGroupTopicConfig.Range(func(key, value any) bool {
+		count++
+		return true
+	})
+	return count
+}
+
+func (e *EventMeshConsumer) createEventListener(mode pb.Subscription_SubscriptionItem_SubscriptionMode) connector.EventListener {
+	return connector.EventListener{
+		Consume: func(event *cloudv2.Event, commitFunc connector.CommitFunc) error {
+			return nil
+		},
+	}
 }
