@@ -227,7 +227,7 @@ func (e *EventMeshConsumer) createEventListener(mode pb.Subscription_Subscriptio
 				// can not handle the message due to the capacity limit is reached
 				// wait for 5 seconds and send this message back to mq and consume again
 				time.Sleep(time.Second * 5)
-				e.sendMessageBack()
+				//e.sendMessageBack()
 				commitAction = connector.CommitMessage
 				return nil
 			}

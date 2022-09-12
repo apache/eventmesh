@@ -18,6 +18,8 @@ package push
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/retry"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
@@ -63,7 +65,13 @@ func eventToSimpleMessage(ev *cloudv2.Event) (*pb.SimpleMessage, error) {
 		return nil, ErrNoProtocolFound
 	}
 	ptype := val.(string)
-
+	pplugin := plugin.Get(plugin.Protocol, ptype)
+	adapter := pplugin.(protocol.Adapter)
+	msg, err := adapter.FromCloudEvent(ev)
+	if err != nil {
+		return nil, err
+	}
+	return msg.(*pb.SimpleMessage), nil
 }
 
 func (r *Request) timeout() bool {

@@ -15,7 +15,9 @@
 
 package protocol
 
-import cloudv2 "github.com/cloudevents/sdk-go/v2"
+import (
+	cloudv2 "github.com/cloudevents/sdk-go/v2"
+)
 
 // Adapter protocol adapter
 // transfer the message with given protocol and events message

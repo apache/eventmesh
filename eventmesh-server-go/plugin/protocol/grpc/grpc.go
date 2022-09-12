@@ -13,25 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package plugin
+package grpc
 
-// name for every plugin
-var Name = "name"
+import "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 
-// indicates all plugin type
-var (
-	Connector = "connector"
-	Registry  = "registry"
-	Protocol  = "protocol"
-)
+func init() {
+	plugin.Register(plugin.Protocol, &ProtocolPlugin{})
+}
 
-// indicates registry name list
-var (
-	NacosRegistry = "nacos"
-	ETCDRegistry  = "etcd"
-)
+type ProtocolPlugin struct {
+}
 
-// indicates connector name list
-var (
-	Standalone = "standalone"
-)
+func (G ProtocolPlugin) Type() string {
+	return "grpc"
+}
+
+func (G ProtocolPlugin) Setup(name string, dec plugin.Decoder) error {
+	return nil
+}

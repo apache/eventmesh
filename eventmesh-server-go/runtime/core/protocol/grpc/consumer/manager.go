@@ -173,8 +173,8 @@ func (c *Manager) clientCheck() {
 							log.Warnf("deregistry client:%v err:%v", lc.ConsumerGroup, err)
 							return true
 						}
-						if err := emconsumer.DeRegisterClient(lc); err != nil {
-							log.Warnf("deregistry client:%v in eventmesh consumer err:%v", lc.ConsumerGroup, err)
+						if ok := emconsumer.DeRegisterClient(lc); !ok {
+							log.Warnf("failed deregistry client:%v in eventmesh consumer", lc.ConsumerGroup)
 							return true
 						}
 						consumerGroupRestart = append(consumerGroupRestart, lc.ConsumerGroup)
