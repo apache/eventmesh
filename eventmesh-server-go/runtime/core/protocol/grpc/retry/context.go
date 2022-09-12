@@ -14,3 +14,20 @@
 // limitations under the License.
 
 package retry
+
+import "time"
+
+type Context struct {
+	RetryTimes  int
+	ExecuteTime time.Time
+	Do          func() error
+}
+
+func (c *Context) SetDelay(delay time.Duration) *Context {
+	c.ExecuteTime = time.Now().Add(delay)
+	return c
+}
+
+func (c *Context) GetDelay() time.Duration {
+	return c.ExecuteTime.Sub(time.Now())
+}

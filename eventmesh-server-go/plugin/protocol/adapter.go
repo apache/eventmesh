@@ -13,18 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consts
+package protocol
 
-var (
-	// EVENT_STORE_ENV evn for store plugin
-	// default to defibus
-	EVENT_STORE_ENV = "EVENT_STORE"
+import cloudv2 "github.com/cloudevents/sdk-go/v2"
 
-	REQ_MQ2EVENTMESH_TIMESTAMP = "reqmq2eventmeshtimestamp"
+// Adapter protocol adapter
+// transfer the message with given protocol and events message
+type Adapter interface {
+	// ToCloudEvent transform protocol to CloudEvent
+	ToCloudEvent(interface{}) (*cloudv2.Event, error)
 
-	PROPERTY_MESSAGE_SEARCH_KEYS = "searchkeys"
+	//ToCloudEvents transform protocol to CloudEvent list.
+	ToCloudEvents(interface{}) ([]*cloudv2.Event, error)
 
-	RMB_UNIQ_ID = "rmbuniqid"
+	//FromCloudEvent transfor CloudEvent to target protocol.
+	FromCloudEvent(event *cloudv2.Event) (interface{}, error)
 
-	PROTOCOL_TYPE = "protocoltype"
-)
+	// ProtocolType protocol type, protocol type should not be null
+	ProtocolType() string
+}

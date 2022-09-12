@@ -16,14 +16,19 @@
 package push
 
 import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/consumer"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	cloudv2 "github.com/cloudevents/sdk-go/v2"
 )
 
 type MessageContext struct {
-	msgRandomNo      string
-	subscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
-
+	MsgRandomNo      string
+	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
+	GrpcType         config.GRPCType
+	ConsumerGroup    string
+	Event            *cloudv2.Event
+	TopicConfig      *config.ConsumerGroupTopicConfig
 	// channel for server
-	consumer *consumer.EventMeshConsumer
+	Consumer *consumer.EventMeshConsumer
 }

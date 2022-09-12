@@ -16,33 +16,38 @@
 package push
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
-	"github.com/panjf2000/ants"
+	"github.com/pkg/errors"
 	"sync"
 	"time"
 )
 
+var (
+	CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD = 1000
+
+	ErrRequestReachMaxThreshold = errors.New("request reach the max threshold")
+)
+
 type MessageHandler struct {
-	pool *ants.Pool
+	//pool *ants.Pool
 	// waitingRequests waiting to request
 	// key to consumerGroup value to []*PushRequest
 	waitingRequests *sync.Map
 }
 
 func NewMessageHandler(consumerGroup string) (*MessageHandler, error) {
-	ps := config.GlobalConfig().Server.GRPCOption.PushMessagePoolSize
-	p, err := ants.NewPool(ps, ants.WithPanicHandler(func(i interface{}) {
-		log.Warnf("err in handle push message:%v", i)
-	}))
-	if err != nil {
-		return nil, err
-	}
+	//ps := config.GlobalConfig().Server.GRPCOption.PushMessagePoolSize
+	//p, err := ants.NewPool(ps, ants.WithPanicHandler(func(i interface{}) {
+	//	log.Warnf("err in handle push message:%v", i)
+	//}))
+	//if err != nil {
+	//	return nil, err
+	//}
 	wr := new(sync.Map)
 	// TODO need goroutine safe in []*Request{}
 	wr.Store(consumerGroup, []*Request{})
 	hdl := &MessageHandler{
-		pool:            p,
+		//pool:            p,
 		waitingRequests: wr,
 	}
 	go hdl.checkTimeout()
@@ -64,6 +69,27 @@ func (m *MessageHandler) checkTimeout() {
 	}
 }
 
-func (m *MessageHandler) Handler() {
+func (m *MessageHandler) Handler(mctx *MessageContext) error {
+	if m.Size() > CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD {
+		log.Warnf("too many request, reject and send back to MQ, group:%v, threshold:%v",
+			mctx.ConsumerGroup, CONSUMER_GROUP_WAITING_REQUEST_THRESHOLD)
+		return ErrRequestReachMaxThreshold
+	}
 
+	go func() {
+		pushRequest := &Request{}
+		if err := pushRequest.Try(); err != nil {
+
+		}
+	}()
+	return nil
+}
+
+func (m *MessageHandler) Size() int {
+	count := 0
+	m.waitingRequests.Range(func(key, value any) bool {
+		count++
+		return true
+	})
+	return count
 }
