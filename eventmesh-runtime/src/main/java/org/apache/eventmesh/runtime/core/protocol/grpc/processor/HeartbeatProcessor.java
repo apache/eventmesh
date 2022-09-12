@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HeartbeatProcessor {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
     private final Logger aclLogger = LoggerFactory.getLogger("acl");
 

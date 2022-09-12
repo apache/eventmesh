@@ -177,8 +177,6 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
             try {
                 Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
             } catch (Exception e) {
-                //String errorMsg = String.format("CLIENT HAS NO PERMISSION,send failed, topic:%s, subsys:%s, realIp:%s", topic, subsys, realIp);
-
                 responseEventMeshCommand = asyncContext.getRequest().createHttpCommandResponse(
                     sendMessageResponseHeader,
                     SendMessageResponseBody.buildBody(EventMeshRetCode.EVENTMESH_ACL_ERR.getRetCode(), e.getMessage()));
