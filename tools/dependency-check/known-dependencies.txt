@@ -167,3 +167,13 @@ validation-api-1.1.0.Final.jar
 zipkin-2.23.2.jar
 zipkin-reporter-2.16.3.jar
 zipkin-sender-okhttp3-2.16.3.jar
+truth-0.30.jar
+commons-cli-1.2.jar
+commons-collections-3.2.2.jar
+commons-validator-1.7.jar
+dledger-0.2.3.jar
+fastjson-1.2.76.jar
+jcommander-1.72.jar
+jna-4.2.2.jar
+commons-beanutils-1.9.4.jar
+commons-digester-2.1.jar
