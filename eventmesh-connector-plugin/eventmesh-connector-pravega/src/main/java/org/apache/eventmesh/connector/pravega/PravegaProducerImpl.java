@@ -81,7 +81,7 @@ public class PravegaProducerImpl implements Producer {
 
     @Override
     public void sendOneway(CloudEvent cloudEvent) {
-        throw new UnsupportedOperationException();
+        client.publish(cloudEvent.getSubject(), cloudEvent);
     }
 
     @Override
