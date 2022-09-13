@@ -100,7 +100,7 @@ public class PravegaClientTest {
     public void subscribeTest() {
         PravegaClient pravegaClient = getNewPravegaClient();
         pravegaClient.start();
-        pravegaClient.subscribe("test1", "consumerGroup", "instanceName", new EventListener() {
+        pravegaClient.subscribe("test1", false, "consumerGroup", "instanceName", new EventListener() {
             @Override
             public void consume(CloudEvent cloudEvent, AsyncConsumeContext context) {
                 // do nothing
@@ -113,16 +113,16 @@ public class PravegaClientTest {
     @Test
     public void unsubscribeTest() {
         PravegaClient pravegaClient = getNewPravegaClient();
-        pravegaClient.unsubscribe("test1", "consumerGroup");
+        pravegaClient.unsubscribe("test1", false, "consumerGroup");
 
         pravegaClient.start();
-        pravegaClient.subscribe("test1", "consumerGroup", "instanceName", new EventListener() {
+        pravegaClient.subscribe("test1", false, "consumerGroup", "instanceName", new EventListener() {
             @Override
             public void consume(CloudEvent cloudEvent, AsyncConsumeContext context) {
                 // do nothing
             }
         });
-        pravegaClient.unsubscribe("test1", "consumerGroup");
+        pravegaClient.unsubscribe("test1", false, "consumerGroup");
 
         assertFalse(pravegaClient.getSubscribeTaskMap().containsKey("test1"));
         try {
