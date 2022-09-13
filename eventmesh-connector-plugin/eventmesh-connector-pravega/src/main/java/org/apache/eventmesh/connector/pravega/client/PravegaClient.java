@@ -23,6 +23,7 @@ import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -129,11 +130,11 @@ public class PravegaClient {
 
     }
 
-    public boolean subscribe(String topic, String consumerGroup, String instanceName, EventListener listener) {
+    public boolean subscribe(String topic, boolean isBroadcast, String consumerGroup, String instanceName, EventListener listener) {
         if (subscribeTaskMap.containsKey(topic)) {
             return true;
         }
-        String readerGroupName = buildReaderGroupName(consumerGroup, topic);
+        String readerGroupName = buildReaderGroupName(isBroadcast, consumerGroup, topic);
         createReaderGroup(topic, readerGroupName);
         String readerId = buildReaderId(instanceName);
         EventStreamReader<byte[]> reader = createReader(readerId, readerGroupName);
@@ -143,11 +144,13 @@ public class PravegaClient {
         return true;
     }
 
-    public boolean unsubscribe(String topic, String consumerGroup) {
+    public boolean unsubscribe(String topic, boolean isBroadcast, String consumerGroup) {
         if (!subscribeTaskMap.containsKey(topic)) {
             return true;
         }
-        deleteReaderGroup(buildReaderGroupName(consumerGroup, topic));
+        if (!isBroadcast) {
+            deleteReaderGroup(buildReaderGroupName(false, consumerGroup, topic));
+        }
         subscribeTaskMap.remove(topic).stopRead();
         writerMap.remove(topic).close();
         return true;
@@ -170,8 +173,12 @@ public class PravegaClient {
         return clientFactory.createEventWriter(topic, new ByteArraySerializer(), EventWriterConfig.builder().build());
     }
 
-    private String buildReaderGroupName(String consumerGroup, String topic) {
-        return String.format("%s-%s", consumerGroup, topic);
+    private String buildReaderGroupName(boolean isBroadcast, String consumerGroup, String topic) {
+        if (isBroadcast) {
+            return UUID.randomUUID().toString();
+        } else {
+            return String.format("%s-%s", consumerGroup, topic);
+        }
     }
 
     private String buildReaderId(String instanceName) {

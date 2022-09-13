@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PravegaConsumerImpl implements Consumer {
     private static final AtomicBoolean started = new AtomicBoolean(false);
 
+    private boolean isBroadcast;
     private String instanceName;
     private String consumerGroup;
     private PravegaClient client;
@@ -42,6 +43,7 @@ public class PravegaConsumerImpl implements Consumer {
 
     @Override
     public void init(Properties keyValue) throws Exception {
+        isBroadcast = Boolean.parseBoolean(keyValue.getProperty("isBroadcast", "false"));
         instanceName = keyValue.getProperty("instanceName", "");
         consumerGroup = keyValue.getProperty("consumerGroup", "");
         client = PravegaClient.getInstance();
@@ -74,14 +76,14 @@ public class PravegaConsumerImpl implements Consumer {
 
     @Override
     public void subscribe(String topic) throws Exception {
-        if (!client.subscribe(topic, consumerGroup, instanceName, eventListener)) {
+        if (!client.subscribe(topic, isBroadcast, consumerGroup, instanceName, eventListener)) {
             throw new PravegaConnectorException(String.format("subscribe topic[%s] fail.", topic));
         }
     }
 
     @Override
     public void unsubscribe(String topic) {
-        if (!client.unsubscribe(topic, consumerGroup)) {
+        if (!client.unsubscribe(topic, isBroadcast, consumerGroup)) {
             throw new PravegaConnectorException(String.format("unsubscribe topic[%s] fail.", topic));
         }
     }
