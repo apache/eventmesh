@@ -25,6 +25,8 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,22 +39,28 @@ public class KafkaConsumerRunner implements Runnable {
     private final Logger logger = LoggerFactory.getLogger(KafkaConsumerRunner.class);
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final KafkaConsumer<String, CloudEvent> consumer;
+    private Map<CloudEvent, Long> cloudEventToOffset;
     private EventListener listener;
     private AtomicInteger offset;
 
     public KafkaConsumerRunner(KafkaConsumer<String, CloudEvent> kafkaConsumer) {
         this.consumer = kafkaConsumer;
+        cloudEventToOffset = new HashMap<>();
     }
 
     public synchronized void setListener(EventListener listener) {
         this.listener = listener;
     }
 
+    public long getOffset(CloudEvent cloudEvent) {
+        return cloudEventToOffset.getOrDefault(cloudEvent, 0);
+    }
+
     @Override
     public void run() {
-        try {
+        try { // TODO: change it to manual ack
             while (!closed.get()) {
-                ConsumerRecords<String, CloudEvent> records = consumer.poll(Duration.ofMillis(10000));
+                ConsumerRecords<String, CloudEvent> records = consumer.poll(Duration.ofMillis(10000)); // (001) dong ji,002
                 // Handle new records
                 records.forEach(rec -> {
                     CloudEvent cloudEvent = rec.value();
@@ -64,21 +72,21 @@ public class KafkaConsumerRunner implements Runnable {
                                 case CommitMessage:
                                     // update offset
                                     logger.info("message commit, topic: {}, current offset:{}", topicName,
-                                        offset.get());
+                                        rec.offset());
                                     break;
                                 case ReconsumeLater:
                                     // don't update offset
                                     break;
                                 case ManualAck:
                                     // update offset
-                                    offset.incrementAndGet();
                                     logger
-                                        .info("message ack, topic: {}, current offset:{}", topicName, offset.get());
+                                        .info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
                                     break;
                                 default:
                             }
                         }
                     };
+                    cloudEventToOffset.put(cloudEvent, rec.offset());
                     if (listener != null) {
                         listener.consume(cloudEvent, eventMeshAsyncConsumeContext);
                     }
@@ -88,7 +96,7 @@ public class KafkaConsumerRunner implements Runnable {
             // Ignore exception if closing
             if (!closed.get()) throw e;
         } catch (Exception e) {
-            System.out.println(e);
+            logger.info("Kafka Runner Failed: " + e.getMessage());
         } finally {
             consumer.close();
         }
