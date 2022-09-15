@@ -101,8 +101,8 @@ func (c *Consumer) UpdateOffset(ctx context.Context, events []*ce.Event) error {
 	return nil
 }
 
-func (c *Consumer) RegisterEventListener(listener connector.EventListener) {
-	c.listener = listener
+func (c *Consumer) RegisterEventListener(listener *connector.EventListener) {
+	c.listener = *listener
 }
 
 func (c *Consumer) Type() string {

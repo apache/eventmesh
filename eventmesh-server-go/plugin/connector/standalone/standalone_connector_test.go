@@ -42,18 +42,18 @@ func TestProducer_Publish(t *testing.T) {
 	var publishSuccess bool
 	var callBackErr error
 	callback := connector.SendCallback{
-		OnSuccess: func(result connector.SendResult) {
+		OnSuccess: func(result *connector.SendResult) {
 			publishSuccess = true
 			assert.Equal(t, topicName, result.Topic)
 			assert.Equal(t, "1", result.MessageId)
 			assert.Nil(t, result.Err)
 		},
-		OnError: func(err error) {
-			callBackErr = err
+		OnError: func(result *connector.ErrorResult) {
+			callBackErr = result.Err
 		},
 	}
 
-	err := producer.Publish(context.Background(), getTestEvent(), callback)
+	err := producer.Publish(context.Background(), getTestEvent(), &callback)
 	assert.Nil(t, err)
 	assert.True(t, publishSuccess)
 	assert.Nil(t, callBackErr)
@@ -83,7 +83,7 @@ func TestConsumer_Subscribe(t *testing.T) {
 	consumerFactory := plugin.Get(connector.ConsumerPluginType, pluginName).(connector.ConsumerFactory)
 	consumer, _ := consumerFactory.Get()
 	consumer.Start()
-	consumer.RegisterEventListener(listener)
+	consumer.RegisterEventListener(&listener)
 	consumer.Subscribe(topicName)
 	defer consumer.Shutdown()
 
@@ -124,7 +124,7 @@ func TestConsumer_UpdateOffset(t *testing.T) {
 	consumer, _ := consumerFactory.Get()
 	consumer.Start()
 	defer consumer.Shutdown()
-	consumer.RegisterEventListener(listener)
+	consumer.RegisterEventListener(&listener)
 	event := getTestEvent()
 	event.SetExtension("offset", "50")
 	consumer.Subscribe(topicName)
@@ -169,13 +169,13 @@ func getTestEventOfData(data map[string]interface{}) *ce.Event {
 	return &event
 }
 
-func getEmptyPublishCallback() connector.SendCallback {
-	return connector.SendCallback{
-		OnSuccess: func(result connector.SendResult) {
+func getEmptyPublishCallback() *connector.SendCallback {
+	return &connector.SendCallback{
+		OnSuccess: func(result *connector.SendResult) {
 			// No-Op
 		},
-		OnError: func(err error) {
-			panic(err)
+		OnError: func(result *connector.ErrorResult) {
+			panic(result.Err)
 		},
 	}
 }
