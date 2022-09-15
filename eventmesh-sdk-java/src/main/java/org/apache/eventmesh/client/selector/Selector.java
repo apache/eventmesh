@@ -21,6 +21,5 @@ package org.apache.eventmesh.client.selector;
  * Selector is the abstract of selecting registry service instances
  */
 public interface Selector {
-
     ServiceInstance selectOne(String serverName) throws SelectorException;
 }

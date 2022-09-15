@@ -23,11 +23,14 @@ import java.util.Map;
 public class SelectorFactory {
     private static final Map<String, Selector> selectorMap = new HashMap<>();
 
-    static {
-        selectorMap.put("nacos", new NacosSelector());
+    public static Selector get(String type) {
+        return selectorMap.get(type);
     }
 
-    public static Selector get(String type) {
-        return selectorMap.getOrDefault(type, new NacosSelector());
+    public static void register(String type, Selector selector) {
+        if (selector == null) {
+            return;
+        }
+        selectorMap.put(type, selector);
     }
 }
