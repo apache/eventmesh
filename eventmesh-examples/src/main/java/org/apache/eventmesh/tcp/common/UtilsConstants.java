@@ -3,10 +3,7 @@ package org.apache.eventmesh.tcp.common;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-/**
- * @author wangguoqiang wrote on 2022/09/15 18:25
- * @version 1.0
- */
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UtilsConstants {
 
