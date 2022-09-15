@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.pulsar.producer;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
@@ -25,6 +24,7 @@ import org.apache.eventmesh.connector.pulsar.utils.CloudEventUtils;
 
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.pulsar.client.api.PulsarClientException;
 
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +33,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
-import org.apache.pulsar.client.api.PulsarClientException;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ProducerImpl extends AbstractProducer {
