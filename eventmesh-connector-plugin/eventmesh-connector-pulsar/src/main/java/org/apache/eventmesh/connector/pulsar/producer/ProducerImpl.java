@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.pulsar.producer;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
@@ -31,9 +32,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.protobuf.ProtobufFormat;
+import io.cloudevents.jackson.JsonFormat;
+import org.apache.pulsar.client.api.PulsarClientException;
 
+@Slf4j
 public class ProducerImpl extends AbstractProducer {
+
     private final AtomicBoolean started = new AtomicBoolean(false);
     private PulsarClient pulsarClient;
 
@@ -53,7 +57,7 @@ public class ProducerImpl extends AbstractProducer {
 
             byte[] serializedCloudEvent = EventFormatProvider
                     .getInstance()
-                    .resolveFormat(ProtobufFormat.PROTO_CONTENT_TYPE)
+                    .resolveFormat(JsonFormat.CONTENT_TYPE)
                     .serialize(cloudEvent);
 
             producer.sendAsync(serializedCloudEvent).thenAccept(messageId -> {
@@ -78,8 +82,8 @@ public class ProducerImpl extends AbstractProducer {
             this.pulsarClient = PulsarClient.builder()
                     .serviceUrl(this.properties().get("url").toString())
                     .build();
-        } catch (Exception ignored) {
-            // ignored
+        } catch (PulsarClientException ex) {
+            log.warn("Connect to the pulsar with exeception: {}", ex.getMessage());
         }
     }
 
@@ -87,15 +91,17 @@ public class ProducerImpl extends AbstractProducer {
         try {
             this.started.compareAndSet(true, false);
             this.pulsarClient.close();
-        } catch (Exception ignored) {
-            // ignored
+        } catch (PulsarClientException ex) {
+            log.warn("Stop the pulsar client with exeception: {}", ex.getMessage());
         }
     }
 
+    @Override
     public boolean isStarted() {
         return this.started.get();
     }
 
+    @Override
     public boolean isClosed() {
         return !this.isStarted();
     }

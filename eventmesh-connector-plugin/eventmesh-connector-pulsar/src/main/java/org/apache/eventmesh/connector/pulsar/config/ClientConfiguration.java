@@ -28,10 +28,8 @@ public class ClientConfiguration {
     public void init() {
         String serviceAddrStr = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR);
         Preconditions.checkState(StringUtils.isNotEmpty(serviceAddrStr),
-                String.format("%s error", ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR));
+                String.format("%s cann't be empty", ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR));
         serviceAddr = StringUtils.trim(serviceAddrStr);
-        String[] temp = serviceAddr.split(";");
-        serviceAddr = temp[1];
     }
 
     static class ConfKeys {
