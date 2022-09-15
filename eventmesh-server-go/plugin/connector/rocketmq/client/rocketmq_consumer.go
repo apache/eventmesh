@@ -118,7 +118,7 @@ func (r *RocketMQConsumerWrapper) getConsumerOptionsFromProperties(properties ma
 
 	// max reconsume times
 	if len(clientConfig.MaxReconsumeTimes) != 0 {
-		maxReconsumeTimes, err := strconv.Atoi(clientConfig.MaxReconsumeTimes)
+		maxReconsumeTimes, err := strconv.ParseInt(clientConfig.MaxReconsumeTimes, 10, 32)
 		if err == nil {
 			options = append(options, consumer.WithMaxReconsumeTimes(int32(maxReconsumeTimes)))
 		}
