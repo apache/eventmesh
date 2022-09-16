@@ -19,19 +19,14 @@ package org.apache.eventmesh.connector.kafka.producer;
 
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.SendResult;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
-import org.apache.eventmesh.api.exception.OnExceptionContext;
 
 import org.apache.kafka.clients.admin.Admin;
-import org.apache.kafka.clients.admin.ListTopicsResult;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.protocol.Message;
+import org.apache.kafka.common.serialization.StringSerializer;
 
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -42,10 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.kafka.CloudEventSerializer;
-import io.cloudevents.kafka.KafkaMessageFactory;
-
-import org.apache.kafka.common.serialization.StringSerializer;
-import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
 
