@@ -31,10 +31,12 @@ dependencies {
 
     implementation 'io.cloudevents:cloudevents-api:2.3.0'
     implementation 'io.cloudevents:cloudevents-core:2.3.0'
+    implementation 'io.cloudevents:cloudevents-protobuf:2.3.0'
     implementation 'io.cloudevents:cloudevents-json-jackson:2.2.0'
 
     testImplementation 'io.cloudevents:cloudevents-api:2.3.0'
     testImplementation 'io.cloudevents:cloudevents-core:2.3.0'
+    testImplementation 'io.cloudevents:cloudevents-protobuf:2.3.0'
     testImplementation 'io.cloudevents:cloudevents-json-jackson:2.2.0'
 
     testImplementation "org.mockito:mockito-core"
