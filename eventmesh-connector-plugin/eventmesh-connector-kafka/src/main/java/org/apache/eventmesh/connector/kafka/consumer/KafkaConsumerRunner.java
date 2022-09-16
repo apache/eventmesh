@@ -53,7 +53,7 @@ public class KafkaConsumerRunner implements Runnable {
     }
 
     public long getOffset(CloudEvent cloudEvent) {
-        return cloudEventToOffset.getOrDefault(cloudEvent, 0);
+        return cloudEventToOffset.getOrDefault(cloudEvent, 0L);
     }
 
     @Override
@@ -94,7 +94,9 @@ public class KafkaConsumerRunner implements Runnable {
             }
         } catch (WakeupException e) {
             // Ignore exception if closing
-            if (!closed.get()) throw e;
+            if (!closed.get()) {
+                throw e;
+            }
         } catch (Exception e) {
             logger.info("Kafka Runner Failed: " + e.getMessage());
         } finally {
