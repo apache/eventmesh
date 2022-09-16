@@ -17,10 +17,9 @@
 
 package org.apache.eventmesh.connector.pulsar.config;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class ClientConfigurationTest {
 
@@ -34,7 +33,7 @@ public class ClientConfigurationTest {
 
     @Test
     public void getServiceUrl() {
-        assertEquals(config.serviceAddr, "pulsar://127.0.0.1:6650");
+        Assert.assertEquals(config.serviceAddr, "pulsar://127.0.0.1:6650");
     }
 
 }
