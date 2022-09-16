@@ -58,7 +58,7 @@ public class ConsumerImpl {
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 
         this.properties = props;
-        this.kafkaConsumer = new KafkaConsumer(props);
+        this.kafkaConsumer = new KafkaConsumer<String, CloudEvent>(props);
         kafkaConsumerRunner = new KafkaConsumerRunner(this.kafkaConsumer);
         executorService = Executors.newFixedThreadPool(10);
         topicsSet = new HashSet<>();
