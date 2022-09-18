@@ -48,7 +48,7 @@ type Consumer interface {
 	UpdateOffset(ctx context.Context, events []*ce.Event) error
 	Subscribe(topicName string) error
 	Unsubscribe(topicName string) error
-	RegisterEventListener(listener EventListener)
+	RegisterEventListener(listener *EventListener)
 }
 
 type ConsumerFactory interface {
@@ -62,10 +62,10 @@ type Producer interface {
 	LifeCycle
 
 	InitProducer(properties map[string]string) error
-	Publish(ctx context.Context, event *ce.Event, callback SendCallback) error
+	Publish(ctx context.Context, event *ce.Event, callback *SendCallback) error
 	SendOneway(ctx context.Context, event *ce.Event) error
-	Request(ctx context.Context, event *ce.Event, callback SendCallback, timeout time.Duration) error
-	Reply(ctx context.Context, event *ce.Event, callback SendCallback) error
+	Request(ctx context.Context, event *ce.Event, callback *RequestReplyCallback, timeout time.Duration) error
+	Reply(ctx context.Context, event *ce.Event, callback *SendCallback) error
 	CheckTopicExist(topicName string) (bool, error)
 	SetExtFields() error
 }
@@ -95,16 +95,27 @@ type LifeCycle interface {
 	Shutdown() error
 }
 
-// SendCallback send callback handler of function Publish, SendOneway and Reply
+// SendCallback send callback handler of function Publish
 type SendCallback struct {
-	OnSuccess func(result SendResult)
-	OnError   func(err error)
+	OnSuccess func(result *SendResult)
+	OnError   func(result *ErrorResult)
+}
+
+// RequestReplyCallback request/reply callback handler of function Request and Reply
+type RequestReplyCallback struct {
+	OnSuccess func(event *ce.Event)
+	OnError   func(result *ErrorResult)
 }
 
 type SendResult struct {
 	MessageId string
 	Topic     string
 	Err       error
+}
+
+type ErrorResult struct {
+	Topic string
+	Err   error
 }
 
 // EventListener message consume handler
