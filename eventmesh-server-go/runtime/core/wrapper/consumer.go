@@ -17,6 +17,7 @@ package wrapper
 
 import (
 	"context"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	eventv2 "github.com/cloudevents/sdk-go/v2"
@@ -28,8 +29,16 @@ type Consumer struct {
 }
 
 // NewConsumer create new consumer to handle the grpc request
-func NewConsumer(connectorType string) (*Consumer, error) {
-	factory := plugin.Get(connector.ConsumerPluginType, connectorType).(connector.ConsumerFactory)
+func NewConsumer() (*Consumer, error) {
+	connectorPlugin, ok := config.GlobalConfig().Plugins[config.ConnectorPluginType]
+	if !ok {
+		return nil, ErrNoConnectorPlugin
+	}
+	connectorPluginName, ok := connectorPlugin["name"]
+	if !ok {
+		return nil, ErrNoConnectorName
+	}
+	factory := plugin.Get(connector.ConsumerPluginType, connectorPluginName.Value).(connector.ConsumerFactory)
 	consu, err := factory.Get()
 	if err != nil {
 		return nil, err
