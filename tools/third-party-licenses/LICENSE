@@ -365,7 +365,6 @@ The text of each license is also included at licenses/LICENSE-[project].txt.
     hamcrest-core 1.3: https://github.com/hamcrest/JavaHamcrest, BSD
     jsr305 3.0.2: https://code.google.com/archive/p/jsr-305, BSD
     protobuf-java 3.5.1: https://github.com/protocolbuffers/protobuf, BSD
-    protobuf-java-util 3.5.1: https://github.com/protocolbuffers/protobuf, BSD
 
 ========================================================================
 CDDL licenses
