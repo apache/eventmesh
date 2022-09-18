@@ -22,6 +22,8 @@ import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeMessageWrit
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
+import org.asynchttpclient.Response;
+
 import io.cloudevents.CloudEvent;
 
 public final class KnativeMessageFactory {
@@ -36,5 +38,9 @@ public final class KnativeMessageFactory {
 
     public static CloudEvent createWriter(Properties properties) {
         return new KnativeMessageWriter(properties).message;
+    }
+
+    public static CloudEvent createWriter(String topic, Response response) {
+        return new KnativeMessageWriter(topic, response).message;
     }
 }

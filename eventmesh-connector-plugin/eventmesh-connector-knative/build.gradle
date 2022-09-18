@@ -16,6 +16,7 @@
  */
 
 dependencies {
+    implementation 'com.alibaba:fastjson'
     implementation 'org.asynchttpclient:async-http-client'
 
     implementation project(":eventmesh-sdk-java")

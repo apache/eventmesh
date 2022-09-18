@@ -19,6 +19,7 @@ package org.apache.eventmesh.connector.knative.consumer;
 
 import static org.asynchttpclient.Dsl.asyncHttpClient;
 
+import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
 import org.apache.eventmesh.connector.knative.patch.EventMeshMessageListenerConcurrently;
 
 import java.util.concurrent.TimeUnit;
@@ -29,6 +30,8 @@ import org.asynchttpclient.Response;
 import org.asynchttpclient.util.HttpConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
 
 import com.google.common.base.Preconditions;
 
@@ -46,7 +49,7 @@ public class DefaultConsumer {
         this.asyncHttpClient = asyncHttpClient();
     }
 
-    public String pullMessage(String topic, String subscribeUrl) throws Exception {
+    public CloudEvent pullMessage(String topic, String subscribeUrl) throws Exception {
         Preconditions.checkNotNull(topic, "Subscribe item cannot be null");
         Preconditions.checkNotNull(subscribeUrl, "SubscribeUrl cannot be null");
 
@@ -58,7 +61,10 @@ public class DefaultConsumer {
         if (response.getStatusCode() == HttpConstants.ResponseStatusCodes.OK_200) {
             responseBody = response.getResponseBody();
             messageLogger.info(responseBody);
-            return responseBody;
+
+            // Parse HTTP responseBody to CloudEvent message:
+            CloudEvent cloudEvent = KnativeMessageFactory.createWriter(topic, response);
+            return cloudEvent;
         }
         throw new IllegalStateException("HTTP response code error: " + response.getStatusCode());
     }
