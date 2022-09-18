@@ -41,7 +41,7 @@ func NewProducer() *Producer {
 	}
 }
 
-func (p *Producer) Publish(ctx context.Context, event *ce.Event, callback connector.SendCallback) (err error) {
+func (p *Producer) Publish(ctx context.Context, event *ce.Event, callback *connector.SendCallback) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("callback function execute failed: %v", err)
@@ -55,7 +55,10 @@ func (p *Producer) Publish(ctx context.Context, event *ce.Event, callback connec
 
 	message, err := p.broker.PutMessage(event.Subject(), event)
 	if err != nil {
-		callback.OnError(err)
+		callback.OnError(&connector.ErrorResult{
+			Topic: event.Subject(),
+			Err:   err,
+		})
 		return
 	}
 	sendResult := connector.SendResult{
@@ -63,7 +66,7 @@ func (p *Producer) Publish(ctx context.Context, event *ce.Event, callback connec
 		Topic:     event.Subject(),
 		Err:       nil,
 	}
-	callback.OnSuccess(sendResult)
+	callback.OnSuccess(&sendResult)
 	return
 }
 
@@ -72,11 +75,11 @@ func (p *Producer) SendOneway(ctx context.Context, event *ce.Event) (err error) 
 	return
 }
 
-func (p *Producer) Request(ctx context.Context, event *ce.Event, callback connector.SendCallback, timeout time.Duration) error {
+func (p *Producer) Request(ctx context.Context, event *ce.Event, callback *connector.RequestReplyCallback, timeout time.Duration) error {
 	return fmt.Errorf("request is not supported in standalone connector")
 }
 
-func (p *Producer) Reply(ctx context.Context, event *ce.Event, callback connector.SendCallback) error {
+func (p *Producer) Reply(ctx context.Context, event *ce.Event, callback *connector.SendCallback) error {
 	return fmt.Errorf("reply is not supported in standalone connector")
 }
 
