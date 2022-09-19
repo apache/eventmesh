@@ -25,8 +25,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.errors.WakeupException;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -39,13 +38,13 @@ public class KafkaConsumerRunner implements Runnable {
     private final Logger logger = LoggerFactory.getLogger(KafkaConsumerRunner.class);
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final KafkaConsumer<String, CloudEvent> consumer;
-    private Map<CloudEvent, Long> cloudEventToOffset;
+    private ConcurrentHashMap<CloudEvent, Long> cloudEventToOffset;
     private EventListener listener;
     private AtomicInteger offset;
 
     public KafkaConsumerRunner(KafkaConsumer<String, CloudEvent> kafkaConsumer) {
         this.consumer = kafkaConsumer;
-        cloudEventToOffset = new HashMap<>();
+        cloudEventToOffset = new ConcurrentHashMap<>();
     }
 
     public synchronized void setListener(EventListener listener) {
@@ -58,49 +57,52 @@ public class KafkaConsumerRunner implements Runnable {
 
     @Override
     public void run() {
-        try { // TODO: change it to manual ack
-            while (!closed.get()) {
-                ConsumerRecords<String, CloudEvent> records = consumer.poll(Duration.ofMillis(10000)); // (001) dong ji,002
+        while (!closed.get()) {
+            try {
+                ConsumerRecords<String, CloudEvent> records = consumer.poll(Duration.ofMillis(10000));
                 // Handle new records
                 records.forEach(rec -> {
-                    CloudEvent cloudEvent = rec.value();
-                    String topicName = cloudEvent.getSubject();
-                    EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
-                        @Override
-                        public void commit(EventMeshAction action) {
-                            switch (action) {
-                                case CommitMessage:
-                                    // update offset
-                                    logger.info("message commit, topic: {}, current offset:{}", topicName,
-                                        rec.offset());
-                                    break;
-                                case ReconsumeLater:
-                                    // don't update offset
-                                    break;
-                                case ManualAck:
-                                    // update offset
-                                    logger
-                                        .info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
-                                    break;
-                                default:
+                    try {
+                        CloudEvent cloudEvent = rec.value();
+                        String topicName = cloudEvent.getSubject();
+                        EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
+                            @Override
+                            public void commit(EventMeshAction action) {
+                                switch (action) {
+                                    case CommitMessage:
+                                        // update offset
+                                        logger.info("message commit, topic: {}, current offset:{}", topicName,
+                                            rec.offset());
+                                        break;
+                                    case ReconsumeLater:
+                                        // don't update offset
+                                        break;
+                                    case ManualAck:
+                                        // update offset
+                                        logger
+                                            .info("message ack, topic: {}, current offset:{}", topicName, rec.offset());
+                                        break;
+                                    default:
+                                }
                             }
+                        };
+                        cloudEventToOffset.put(cloudEvent, rec.offset());
+                        if (listener != null) {
+                            listener.consume(cloudEvent, eventMeshAsyncConsumeContext);
                         }
-                    };
-                    cloudEventToOffset.put(cloudEvent, rec.offset());
-                    if (listener != null) {
-                        listener.consume(cloudEvent, eventMeshAsyncConsumeContext);
+                    } catch (Exception e) {
+                        logger.info("Error parsing cloudevents: " + e.getMessage());
                     }
                 });
+            } catch (WakeupException e) {
+                // Ignore exception if closing
+                if (!closed.get()) {
+                    throw e;
+                }
+            } finally {
+                consumer.close();
+                break;
             }
-        } catch (WakeupException e) {
-            // Ignore exception if closing
-            if (!closed.get()) {
-                throw e;
-            }
-        } catch (Exception e) {
-            logger.info("Kafka Runner Failed: " + e.getMessage());
-        } finally {
-            consumer.close();
         }
     }
 
