@@ -421,7 +421,6 @@ subprojects {
             dependency "org.apache.commons:commons-collections4:4.1"
             dependency "org.apache.commons:commons-text:1.9"
 
-            dependency 'com.alibaba:fastjson:1.2.76'
             dependency "com.google.guava:guava:31.0.1-jre"
 
             dependency "org.slf4j:slf4j-api:1.7.30"

@@ -21,10 +21,10 @@ import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
-import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
 import org.apache.eventmesh.connector.knative.domain.NonStandardKeys;
 import org.apache.eventmesh.connector.knative.patch.EventMeshConsumeConcurrentlyContext;
 import org.apache.eventmesh.connector.knative.patch.EventMeshConsumeConcurrentlyStatus;
@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -45,9 +44,12 @@ import io.cloudevents.CloudEvent;
 
 import com.google.common.collect.Lists;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class PullConsumerImpl {
 
-    private final Logger logger = LoggerFactory.getLogger(PullConsumerImpl.class);
+    public Logger messageLogger = LoggerFactory.getLogger(PullConsumerImpl.class);
 
     private final DefaultConsumer defaultConsumer;
 
@@ -58,59 +60,38 @@ public class PullConsumerImpl {
     private final Properties properties;
 
     // Store received message:
-    public ConcurrentMap<String /* topic */, CloudEvent /* CloudEvent message */> subscriptionInner;
+    public ConcurrentMap<String /* topic */, String /* responseBody */> subscriptionInner;
     public EventListener eventListener;
-
-    private final ExecutorService consumeExecutorService;
 
     public PullConsumerImpl(final Properties properties) throws Exception {
         this.properties = properties;
         this.topicList = Lists.newArrayList();
-        this.subscriptionInner = new ConcurrentHashMap<String, CloudEvent>();
+        this.subscriptionInner = new ConcurrentHashMap<String, String>();
         this.offsetMap = new ConcurrentHashMap<>();
         defaultConsumer = new DefaultConsumer();
 
         // Register listener:
-        if (properties.getProperty("isBroadcast").equals("true")) {
-            defaultConsumer.registerMessageListener(new BroadCastingMessageListener());
-        } else {
-            defaultConsumer.registerMessageListener(new ClusteringMessageListener());
-        }
-
-        // Init KnativeConsumer thread:
-        this.consumeExecutorService = ThreadPoolFactory.createThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors() * 2,
-            Runtime.getRuntime().availableProcessors() * 2,
-            "KnativeConsumerThread"
-        );
+        defaultConsumer.registerMessageListener(new ClusteringMessageListener());
     }
 
     public void subscribe(String topic) {
-        // Add topic to topicList:
-        topicList.add(new SubscriptionItem(topic, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
-        // Pull event messages according to topic:
+        messageLogger.debug("lalalalalalalala");
+        messageLogger.debug("lalalalalalalala");
+        messageLogger.debug("lalalalalalalala");
+        // Subscribe topics:
         try {
-            subscriptionInner.put(topic, defaultConsumer.pullMessage(topic, properties.getProperty("serviceAddr")));
-            // Directly consume message by listener (EventMesh server):
-            EventMeshAsyncConsumeContext consumeContext = new EventMeshAsyncConsumeContext() {
-                @Override
-                public void commit(EventMeshAction action) {
-                    switch (action) {
-                        case CommitMessage:
-                            // update offset
-                            logger.info("message commit, topic: {}", topic);
-                            break;
-                        case ReconsumeLater:
-                            // don't update offset
-                            break;
-                        case ManualAck:
-                            logger.info("message ack, topic: {}", topic);
-                            break;
-                        default:
+            // Add topic to topicList:
+            topicList.add(new SubscriptionItem(topic, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
+            // Pull event messages iteratively:
+            topicList.forEach(
+                item -> {
+                    try {
+                        subscriptionInner.put(item.getTopic(), defaultConsumer.pullMessage(item.getTopic(), properties.getProperty("serviceAddr")));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
-            };
-            eventListener.consume(subscriptionInner.get(topic), consumeContext);
+            );
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -125,6 +106,7 @@ public class PullConsumerImpl {
         }
     }
 
+    // todo: offset
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
         cloudEvents.forEach(cloudEvent -> this.updateOffset(
             cloudEvent.getSubject(), (Long) cloudEvent.getExtension("offset"))
@@ -158,50 +140,9 @@ public class PullConsumerImpl {
         this.eventListener = listener;
     }
 
-    private class BroadCastingMessageListener extends EventMeshMessageListenerConcurrently {
-        @Override
-        public EventMeshConsumeConcurrentlyStatus handleMessage(CloudEvent cloudEvent, EventMeshConsumeConcurrentlyContext context) {
-            final Properties contextProperties = new Properties();
-            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
-            EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = new EventMeshAsyncConsumeContext() {
-                @Override
-                public void commit(EventMeshAction action) {
-                    switch (action) {
-                        case CommitMessage:
-                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
-                            break;
-                        case ReconsumeLater:
-                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
-                            break;
-                        case ManualAck:
-                            contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            };
-
-            eventMeshAsyncConsumeContext.setAbstractContext((AbstractContext) context);
-
-            // Consume received message:
-            eventListener.consume(cloudEvent, eventMeshAsyncConsumeContext);
-
-            return EventMeshConsumeConcurrentlyStatus.valueOf(
-                contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
-        }
-    }
-
+    // todo: load balancer cluser and broadcast
     private class ClusteringMessageListener extends EventMeshMessageListenerConcurrently {
         public EventMeshConsumeConcurrentlyStatus handleMessage(CloudEvent cloudEvent, EventMeshConsumeConcurrentlyContext context) {
-            if (cloudEvent == null) {
-                return EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-            }
-
             final Properties contextProperties = new Properties();
             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
 
@@ -229,6 +170,8 @@ public class PullConsumerImpl {
 
             eventMeshAsyncConsumeContext.setAbstractContext((AbstractContext) context);
 
+            String data = KnativeMessageFactory.createReader(cloudEvent);
+            messageLogger.debug("Subscribed CE-message: {}", data);
             // Consume received message:
             eventListener.consume(cloudEvent, eventMeshAsyncConsumeContext);
 
