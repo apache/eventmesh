@@ -95,7 +95,7 @@ public class ConsumerImpl {
         return kafkaConsumer;
     }
 
-    public void subscribe(String topic) {
+    public synchronized void subscribe(String topic) {
         try {
             // Get the current subscription
             topicsSet.add(topic);
@@ -107,7 +107,7 @@ public class ConsumerImpl {
         }
     }
 
-    public void unsubscribe(String topic) {
+    public synchronized void unsubscribe(String topic) {
         try {
             // Kafka will unsubscribe *all* topic if calling unsubscribe, so we
             this.kafkaConsumer.unsubscribe();
