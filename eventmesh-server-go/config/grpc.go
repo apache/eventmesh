@@ -15,6 +15,8 @@
 
 package config
 
+import "time"
+
 // GRPCOption configuratin for grpc server
 type GRPCOption struct {
 	Port string `yaml:"port" toml:"port"`
@@ -26,4 +28,29 @@ type GRPCOption struct {
 	// will start on given port, and you can check
 	// on http://ip:port/pprof/debug
 	*PProfOption `yaml:"pprof" toml:"pprof"`
+
+	// SubscribePoolSize pool in handle subscribe msg
+	// default to 10
+	SubscribePoolSize int `yaml:"subscribe-pool-size" toml:"subscribe-pool-size"`
+	// RetryPoolSize pool in handle retry msg
+	// default to 10
+	RetryPoolSize int `yaml:"retry-pool-size" toml:"retry-pool-size"`
+	// PushMessagePoolSize pool to push message
+	// default to 10
+	PushMessagePoolSize int `yaml:"push-message-pool-size" toml:"push-message-pool-size"`
+
+	//MsgReqNumPerSecond
+	MsgReqNumPerSecond float64 `yaml:"msg-req-num-per-second" toml:"msg-req-num-per-second"`
+
+	// RegistryName name for registry plugin support nacos or etcd
+	RegistryName string `yaml:"registry-name" toml:"registry-name"`
+
+	// Cluster cluster for grpc server
+	Cluster string `yaml:"cluster" toml:"cluster"`
+
+	// IDC idc for grpc server
+	IDC string `yaml:"idc" toml:"idc"`
+
+	// SessionExpiredInMills internal to clean the not work session consumer
+	SessionExpiredInMills time.Duration `yaml:"session-expired-in-mills"`
 }
