@@ -96,7 +96,10 @@ public final class PinpointConfiguration {
 
         agentId = properties.getProperty(AGENT_ID_KEY);
         if (StringUtils.isBlank(agentId)) {
-            agentId = agentName + Constants.UNDER_LINE + RandomStringUtils.generateNum(16);
+            // refer to: com.navercorp.pinpoint.common.util.IdValidateUtils#validateId
+            agentId = StringUtils.substring(agentName, 0, 15)
+                + Constants.HYPHEN
+                + RandomStringUtils.generateNum(8);
         }
 
         Properties temporary = new Properties();
