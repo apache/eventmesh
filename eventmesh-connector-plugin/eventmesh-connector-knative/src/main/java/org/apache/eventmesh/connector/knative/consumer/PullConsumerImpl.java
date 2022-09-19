@@ -24,7 +24,6 @@ import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
-import org.apache.eventmesh.connector.knative.cloudevent.KnativeMessageFactory;
 import org.apache.eventmesh.connector.knative.domain.NonStandardKeys;
 import org.apache.eventmesh.connector.knative.patch.EventMeshConsumeConcurrentlyContext;
 import org.apache.eventmesh.connector.knative.patch.EventMeshConsumeConcurrentlyStatus;
@@ -37,19 +36,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
 import com.google.common.collect.Lists;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class PullConsumerImpl {
-
-    public Logger messageLogger = LoggerFactory.getLogger(PullConsumerImpl.class);
 
     private final DefaultConsumer defaultConsumer;
 
@@ -75,9 +66,6 @@ public class PullConsumerImpl {
     }
 
     public void subscribe(String topic) {
-        messageLogger.debug("lalalalalalalala");
-        messageLogger.debug("lalalalalalalala");
-        messageLogger.debug("lalalalalalalala");
         // Subscribe topics:
         try {
             // Add topic to topicList:
@@ -170,8 +158,6 @@ public class PullConsumerImpl {
 
             eventMeshAsyncConsumeContext.setAbstractContext((AbstractContext) context);
 
-            String data = KnativeMessageFactory.createReader(cloudEvent);
-            messageLogger.debug("Subscribed CE-message: {}", data);
             // Consume received message:
             eventListener.consume(cloudEvent, eventMeshAsyncConsumeContext);
 
