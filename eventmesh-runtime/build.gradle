@@ -30,6 +30,8 @@ dependencies {
 
     implementation 'com.github.seancfoley:ipaddress:5.3.3'
 
+    implementation 'com.rabbitmq:amqp-client:5.8.0'
+
     implementation project(":eventmesh-common")
     implementation project(":eventmesh-spi")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
