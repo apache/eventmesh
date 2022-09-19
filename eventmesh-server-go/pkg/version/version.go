@@ -13,47 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package util
+package version
 
-import (
-	"context"
-	"time"
+var (
+	Current = "v0.0.1"
 )
-
-// Condition the condition to exit the loop
-type Condition func() bool
-
-// defaultInternal internal to check the condition
-var defaultInternal = time.Second
-
-// Until wait for the condition is true
-type Until struct {
-	Cond     Condition
-	internal time.Duration
-}
-
-// NewUntil create a new until instance
-func NewUntil(cond Condition, internal time.Duration) *Until {
-	if internal == time.Duration(0) {
-		internal = defaultInternal
-	}
-	return &Until{
-		Cond:     cond,
-		internal: internal,
-	}
-}
-
-// Wait loop until the condition is true
-func (u *Until) Wait(ctx context.Context) {
-	tick := time.NewTicker(u.internal)
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-tick.C:
-			if u.Cond() {
-				return
-			}
-		}
-	}
-}
