@@ -26,7 +26,21 @@ dependencies {
     implementation 'io.opentelemetry:opentelemetry-sdk'
 
     implementation("com.navercorp.pinpoint:pinpoint-profiler:${pinpointVersion}") {
+        exclude group: 'org.apache.thrift', module: 'libthrift'
+        exclude group: 'com.navercorp.pinpoint', module: 'pinpoint-thrift'
+        exclude group: 'com.navercorp.pinpoint', module: 'pinpoint-plugins-loader'
+        exclude group: 'com.navercorp.pinpoint', module: 'pinpoint-profiler-logging'
+        exclude group: 'io.grpc', module: 'grpc-protobuf'
+        exclude group: 'io.grpc', module: 'grpc-stub'
+        exclude group: 'io.grpc', module: 'grpc-netty'
+        exclude group: 'io.grpc', module: 'grpc-netty-shaded'
     }
+
+    // grpc
+    implementation "io.grpc:grpc-protobuf"
+    implementation "io.grpc:grpc-stub"
+    implementation "io.grpc:grpc-netty"
+    implementation "io.grpc:grpc-netty-shaded"
 
     testImplementation "org.mockito:mockito-core"
     testImplementation "org.mockito:mockito-inline"
