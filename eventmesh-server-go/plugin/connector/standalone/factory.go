@@ -23,23 +23,21 @@ import (
 )
 
 func init() {
-	plugin.Register("standalone", &ConsumerFactory{})
-	plugin.Register("standalone", &ProducerFactory{})
-	plugin.Register("standalone", &ResourceFactory{})
+	plugin.Register("standalone", &Factory{})
 }
 
-type ConsumerFactory struct {
+type Factory struct {
 	plugin.Plugin
 	properties map[string]string
 }
 
-func (f *ConsumerFactory) Type() string {
-	return connector.ConsumerPluginType
+func (f *Factory) Type() string {
+	return connector.PluginType
 }
 
-func (f *ConsumerFactory) Setup(name string, dec plugin.Decoder) error {
+func (f *Factory) Setup(name string, dec plugin.Decoder) error {
 	if dec == nil {
-		return errors.New("consumer config decoder empty")
+		return errors.New("standalone config decoder empty")
 	}
 	properties := make(map[string]string)
 	if err := dec.Decode(properties); err != nil {
@@ -49,53 +47,20 @@ func (f *ConsumerFactory) Setup(name string, dec plugin.Decoder) error {
 	return nil
 }
 
-func (f *ConsumerFactory) Get() (connector.Consumer, error) {
+func (f *Factory) GetConsumer() (connector.Consumer, error) {
 	consumer := NewConsumer()
 	consumer.InitConsumer(f.properties)
 	consumer.Start()
 	return consumer, nil
 }
 
-type ProducerFactory struct {
-	plugin.Plugin
-	properties map[string]string
-}
-
-func (f *ProducerFactory) Type() string {
-	return connector.ProducerPluginType
-}
-
-func (f *ProducerFactory) Setup(name string, dec plugin.Decoder) error {
-	if dec == nil {
-		return errors.New(" producer config decoder empty")
-	}
-	properties := make(map[string]string)
-	if err := dec.Decode(properties); err != nil {
-		return err
-	}
-	f.properties = properties
-	return nil
-}
-
-func (f *ProducerFactory) Get() (connector.Producer, error) {
+func (f *Factory) GetProducer() (connector.Producer, error) {
 	producer := NewProducer()
 	producer.InitProducer(f.properties)
 	producer.Start()
 	return producer, nil
 }
 
-type ResourceFactory struct {
-	plugin.Plugin
-}
-
-func (f *ResourceFactory) Type() string {
-	return connector.ResourcePluginType
-}
-
-func (f *ResourceFactory) Setup(name string, dec plugin.Decoder) error {
-	return nil
-}
-
-func (f *ResourceFactory) Get() (connector.Resource, error) {
+func (f *Factory) GetResource() (connector.Resource, error) {
 	return &Resource{}, nil
 }

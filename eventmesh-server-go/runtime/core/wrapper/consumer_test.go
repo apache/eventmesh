@@ -32,8 +32,8 @@ func TestConsumer_Subscribe(t *testing.T) {
 	type args struct {
 		topicName string
 	}
-	factory := plugin.Get(connector.ConsumerPluginType, "standalone").(connector.ConsumerFactory)
-	consu, err := factory.Get()
+	factory := plugin.Get(connector.PluginType, "standalone").(connector.Factory)
+	consu, err := factory.GetConsumer()
 	assert.NoError(t, err)
 	tests := []struct {
 		name    string
@@ -73,8 +73,8 @@ func TestConsumer_UnSubscribe(t *testing.T) {
 	type args struct {
 		topicName string
 	}
-	factory := plugin.Get(connector.ConsumerPluginType, "standalone").(connector.ConsumerFactory)
-	consu, err := factory.Get()
+	factory := plugin.Get(connector.PluginType, "standalone").(connector.Factory)
+	consu, err := factory.GetConsumer()
 	assert.NoError(t, err)
 	tests := []struct {
 		name    string

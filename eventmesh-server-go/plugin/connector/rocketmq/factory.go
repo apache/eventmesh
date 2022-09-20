@@ -17,26 +17,25 @@ package rocketmq
 
 import (
 	"errors"
+
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 )
 
 func init() {
-	plugin.Register("rocketmq", &ProducerFactory{})
-	plugin.Register("rocketmq", &ConsumerFactory{})
-	plugin.Register("rocketmq", &ResourceFactory{})
+	plugin.Register("rocketmq", &Factory{})
 }
 
-type ProducerFactory struct {
+type Factory struct {
 	plugin.Plugin
 	properties map[string]string
 }
 
-func (f *ProducerFactory) Type() string {
-	return connector.ProducerPluginType
+func (f *Factory) Type() string {
+	return connector.PluginType
 }
 
-func (f *ProducerFactory) Setup(name string, dec plugin.Decoder) error {
+func (f *Factory) Setup(name string, dec plugin.Decoder) error {
 	if dec == nil {
 		return errors.New(" producer config decoder empty")
 	}
@@ -48,7 +47,7 @@ func (f *ProducerFactory) Setup(name string, dec plugin.Decoder) error {
 	return nil
 }
 
-func (f *ProducerFactory) Get() (connector.Producer, error) {
+func (f *Factory) GetProducer() (connector.Producer, error) {
 	producer := NewProducer()
 	err := producer.InitProducer(f.properties)
 	if err != nil {
@@ -61,30 +60,9 @@ func (f *ProducerFactory) Get() (connector.Producer, error) {
 	return producer, nil
 }
 
-type ConsumerFactory struct {
-	plugin.Plugin
-	properties map[string]string
-}
-
-func (c *ConsumerFactory) Type() string {
-	return connector.ConsumerPluginType
-}
-
-func (c *ConsumerFactory) Setup(name string, dec plugin.Decoder) error {
-	if dec == nil {
-		return errors.New(" producer config decoder empty")
-	}
-	properties := make(map[string]string)
-	if err := dec.Decode(properties); err != nil {
-		return err
-	}
-	c.properties = properties
-	return nil
-}
-
-func (c *ConsumerFactory) Get() (connector.Consumer, error) {
+func (f *Factory) GetConsumer() (connector.Consumer, error) {
 	consumer := NewConsumer()
-	err := consumer.InitConsumer(c.properties)
+	err := consumer.InitConsumer(f.properties)
 	if err != nil {
 		return nil, err
 	}
@@ -95,18 +73,6 @@ func (c *ConsumerFactory) Get() (connector.Consumer, error) {
 	return consumer, nil
 }
 
-type ResourceFactory struct {
-	plugin.Plugin
-}
-
-func (f *ResourceFactory) Type() string {
-	return connector.ResourcePluginType
-}
-
-func (f *ResourceFactory) Setup(name string, dec plugin.Decoder) error {
-	return nil
-}
-
-func (f *ResourceFactory) Get() (connector.Resource, error) {
+func (f *Factory) GetResource() (connector.Resource, error) {
 	return &Resource{}, nil
 }
