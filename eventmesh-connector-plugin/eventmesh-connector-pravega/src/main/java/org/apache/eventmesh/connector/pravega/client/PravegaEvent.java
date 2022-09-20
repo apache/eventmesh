@@ -36,6 +36,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class PravegaEvent implements Serializable {
+    private static final long serialVersionUID = 0L;
+
     private SpecVersion version;
     private String topic;
     private String data;
