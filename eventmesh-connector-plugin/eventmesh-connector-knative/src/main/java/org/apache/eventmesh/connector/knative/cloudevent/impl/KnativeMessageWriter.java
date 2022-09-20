@@ -21,6 +21,8 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
+import org.asynchttpclient.Response;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.CloudEventData;
 import io.cloudevents.SpecVersion;
@@ -31,6 +33,10 @@ import io.cloudevents.rw.CloudEventContextWriter;
 import io.cloudevents.rw.CloudEventRWException;
 import io.cloudevents.rw.CloudEventWriter;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 public class KnativeMessageWriter implements MessageWriter<CloudEventWriter<String>, String>, CloudEventWriter<String> {
 
     public CloudEvent message;
@@ -38,6 +44,30 @@ public class KnativeMessageWriter implements MessageWriter<CloudEventWriter<Stri
     public KnativeMessageWriter(Properties properties) {
         String s = "{ \"msg\": [\"" + properties.get("data") + "\"]}";
         this.message = new CloudEventBuilder()
+            .withId(properties.getProperty(KnativeHeaders.CE_ID))
+            .withSource(URI.create(properties.getProperty(KnativeHeaders.CE_SOURCE)))
+            .withType(properties.getProperty(KnativeHeaders.CE_TYPE))
+            .withDataContentType(properties.getProperty(KnativeHeaders.CONTENT_TYPE))
+            .withData(s.getBytes(StandardCharsets.UTF_8))
+            .build();
+    }
+
+    public KnativeMessageWriter(String topic, Response response) {
+        String responseBody = response.getResponseBody();
+        JSONArray array = JSON.parseArray(responseBody);
+        JSONObject object = array.getJSONObject(0);
+
+        Properties properties = new Properties();
+        properties.put(KnativeHeaders.CONTENT_TYPE, object.getJSONObject("event").getJSONObject("attributes").get("datacontenttype"));
+        properties.put(KnativeHeaders.CE_ID, object.getJSONObject("event").getJSONObject("attributes").get("id"));
+        properties.put(KnativeHeaders.CE_SPECVERSION, object.getJSONObject("event").getJSONObject("attributes").get("specversion"));
+        properties.put(KnativeHeaders.CE_TYPE, object.getJSONObject("event").getJSONObject("attributes").get("type"));
+        properties.put(KnativeHeaders.CE_SOURCE, object.getJSONObject("event").getJSONObject("attributes").get("source"));
+        properties.put("data", object.getJSONObject("event").getJSONObject("data").get("msg"));
+
+        String s = "{ \"msg\": [\"" + properties.get("data") + "\"]}";
+        this.message = new CloudEventBuilder()
+            .withSubject(topic)
             .withId(properties.getProperty(KnativeHeaders.CE_ID))
             .withSource(URI.create(properties.getProperty(KnativeHeaders.CE_SOURCE)))
             .withType(properties.getProperty(KnativeHeaders.CE_TYPE))
