@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.kafka.CloudEventDeserializer;
 
 public class ConsumerImpl {
     private final KafkaConsumer<String, CloudEvent> kafkaConsumer;
@@ -51,10 +52,10 @@ public class ConsumerImpl {
 
         // Other config props
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, properties.getProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG));
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, CloudEventDeserializer.class);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, properties.getProperty(ConsumerConfig.GROUP_ID_CONFIG));
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 
         this.properties = props;
         this.kafkaConsumer = new KafkaConsumer<String, CloudEvent>(props);
@@ -94,7 +95,7 @@ public class ConsumerImpl {
         return kafkaConsumer;
     }
 
-    public void subscribe(String topic) {
+    public synchronized void subscribe(String topic) {
         try {
             // Get the current subscription
             topicsSet.add(topic);
@@ -106,11 +107,11 @@ public class ConsumerImpl {
         }
     }
 
-    public void unsubscribe(String topic) {
+    public synchronized void unsubscribe(String topic) {
         try {
-            // Get the current subscription
+            // Kafka will unsubscribe *all* topic if calling unsubscribe, so we
             this.kafkaConsumer.unsubscribe();
-            topicsSet.add(topic);
+            topicsSet.remove(topic);
             List<String> topics = new ArrayList<>(topicsSet);
             this.kafkaConsumer.subscribe(topics);
         } catch (Exception e) {
@@ -119,9 +120,8 @@ public class ConsumerImpl {
     }
 
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
-        cloudEvents.forEach(cloudEvent -> this.updateOffset(
-            cloudEvent.getSubject(), (Long) cloudEvent.getExtension("offset"))
-        );
+        Long maxOffset = cloudEvents.stream().map(cloudEvent -> this.kafkaConsumerRunner.getOffset(cloudEvent)).max(Long::compare).get();
+        cloudEvents.forEach(cloudEvent -> this.updateOffset(cloudEvent.getSubject(), maxOffset));
     }
 
     public void updateOffset(String topicName, long offset) {
@@ -130,6 +130,6 @@ public class ConsumerImpl {
 
     public void registerEventListener(EventListener listener) {
         this.eventListener = listener;
-        kafkaConsumerRunner.setListener(this.eventListener);
+        this.kafkaConsumerRunner.setListener(this.eventListener);
     }
 }
