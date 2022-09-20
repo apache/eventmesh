@@ -83,7 +83,7 @@ public class PravegaClient {
     }
 
     public void start() {
-        if (PravegaClient.getInstance().createScope()) {
+        if (createScope()) {
             log.info("Create Pravega scope[{}] success.", PravegaConnectorConfig.getInstance().getScope());
         } else {
             log.info("Pravega scope[{}] has already been created.", PravegaConnectorConfig.getInstance().getScope());
@@ -155,6 +155,7 @@ public class PravegaClient {
         }
         deleteReaderGroup(buildReaderGroup(topic, consumerGroup));
         subscribeTaskMap.remove(topic).stopRead();
+        writerMap.remove(topic).close();
         return true;
     }
 
