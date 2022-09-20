@@ -25,7 +25,6 @@ import (
 	"go.uber.org/atomic"
 
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 )
 
@@ -103,22 +102,6 @@ func (c *Consumer) UpdateOffset(ctx context.Context, events []*ce.Event) error {
 
 func (c *Consumer) RegisterEventListener(listener *connector.EventListener) {
 	c.listener = *listener
-}
-
-func (c *Consumer) Type() string {
-	return connector.ConsumerPluginType
-}
-
-func (c *Consumer) Setup(name string, dec plugin.Decoder) error {
-	if dec == nil {
-		return errors.New("selector config decoder empty")
-	}
-	properties := make(map[string]string)
-	if err := dec.Decode(properties); err != nil {
-		return err
-	}
-	c.InitConsumer(properties)
-	return nil
 }
 
 func (c *Consumer) InitConsumer(properties map[string]string) error {

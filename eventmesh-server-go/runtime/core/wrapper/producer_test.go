@@ -35,8 +35,8 @@ func TestProducer_Send(t *testing.T) {
 		event    *eventv2.Event
 		callback *connector.SendCallback
 	}
-	factory := plugin.Get(connector.ProducerPluginType, "standalone").(connector.ProducerFactory)
-	produ, err := factory.Get()
+	factory := plugin.Get(connector.PluginType, "standalone").(connector.Factory)
+	produ, err := factory.GetProducer()
 	assert.NoError(t, err)
 	tests := []struct {
 		name    string
