@@ -25,10 +25,17 @@ import (
 )
 
 const (
-	ConsumerPluginType = "connector.consumer"
-	ProducerPluginType = "connector.producer"
-	ResourcePluginType = "connector.resource"
+	PluginType = "connector"
 )
+
+// Factory plugin factory of consumer/producer/resource
+type Factory interface {
+	plugin.Plugin
+
+	GetConsumer() (Consumer, error)
+	GetProducer() (Producer, error)
+	GetResource() (Resource, error)
+}
 
 // EventMeshAction commit action of message consume
 type EventMeshAction uint
@@ -40,7 +47,7 @@ const (
 )
 
 // Consumer interface of consumer
-// all the consumers implement this interface should implement a corresponding consumer factory and do plugin registration first.
+// all the consumers implement this interface should implement a corresponding factory and do plugin registration first.
 type Consumer interface {
 	LifeCycle
 
@@ -51,13 +58,8 @@ type Consumer interface {
 	RegisterEventListener(listener *EventListener)
 }
 
-type ConsumerFactory interface {
-	plugin.Plugin
-	Get() (Consumer, error)
-}
-
 // Producer interface of producer
-// all the producers implement this interface should implement a corresponding producer factory and do plugin registration first.
+// all the producers implement this interface should implement a corresponding factory and do plugin registration first.
 type Producer interface {
 	LifeCycle
 
@@ -70,21 +72,11 @@ type Producer interface {
 	SetExtFields() error
 }
 
-type ProducerFactory interface {
-	plugin.Plugin
-	Get() (Producer, error)
-}
-
 // Resource interface of resource service
-// all the resources implement this interface should implement a corresponding resource factory and do plugin registration first.
+// all the resources implement this interface should implement a corresponding factory and do plugin registration first.
 type Resource interface {
 	Init() error
 	Release() error
-}
-
-type ResourceFactory interface {
-	plugin.Plugin
-	Get() (Resource, error)
 }
 
 // LifeCycle general life cycle interface for all connectors
@@ -122,5 +114,9 @@ type ErrorResult struct {
 type EventListener struct {
 	Consume ConsumeFunc
 }
+
+// CommitFunc user can commit message through this function in the consuming logic
 type CommitFunc func(action EventMeshAction) error
+
+// ConsumeFunc custom message consuming logic
 type ConsumeFunc func(event *ce.Event, commitFunc CommitFunc) error

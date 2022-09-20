@@ -17,15 +17,17 @@ package standalone
 
 import (
 	"context"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
+	"sync"
+	"testing"
+	"time"
+
 	ce "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/atomic"
-	"sync"
-	"testing"
-	"time"
+
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 )
 
 const (
@@ -34,8 +36,8 @@ const (
 )
 
 func TestProducer_Publish(t *testing.T) {
-	factory := plugin.Get(connector.ProducerPluginType, pluginName).(connector.ProducerFactory)
-	producer, _ := factory.Get()
+	factory := plugin.Get(connector.PluginType, pluginName).(connector.Factory)
+	producer, _ := factory.GetProducer()
 	producer.Start()
 	defer producer.Shutdown()
 
@@ -80,15 +82,14 @@ func TestConsumer_Subscribe(t *testing.T) {
 		},
 	}
 
-	consumerFactory := plugin.Get(connector.ConsumerPluginType, pluginName).(connector.ConsumerFactory)
-	consumer, _ := consumerFactory.Get()
+	factory := plugin.Get(connector.PluginType, pluginName).(connector.Factory)
+	consumer, _ := factory.GetConsumer()
 	consumer.Start()
 	consumer.RegisterEventListener(&listener)
 	consumer.Subscribe(topicName)
 	defer consumer.Shutdown()
 
-	producerFactory := plugin.Get(connector.ProducerPluginType, pluginName).(connector.ProducerFactory)
-	producer, _ := producerFactory.Get()
+	producer, _ := factory.GetProducer()
 	producer.Start()
 	defer producer.Shutdown()
 	for i := 1; i <= 50; i++ {
@@ -120,8 +121,8 @@ func TestConsumer_UpdateOffset(t *testing.T) {
 		},
 	}
 
-	consumerFactory := plugin.Get(connector.ConsumerPluginType, pluginName).(connector.ConsumerFactory)
-	consumer, _ := consumerFactory.Get()
+	factory := plugin.Get(connector.PluginType, pluginName).(connector.Factory)
+	consumer, _ := factory.GetConsumer()
 	consumer.Start()
 	defer consumer.Shutdown()
 	consumer.RegisterEventListener(&listener)
@@ -130,8 +131,7 @@ func TestConsumer_UpdateOffset(t *testing.T) {
 	consumer.Subscribe(topicName)
 	consumer.UpdateOffset(context.Background(), []*ce.Event{event})
 
-	producerFactory := plugin.Get(connector.ProducerPluginType, pluginName).(connector.ProducerFactory)
-	producer, _ := producerFactory.Get()
+	producer, _ := factory.GetProducer()
 	producer.Start()
 	defer producer.Shutdown()
 	for i := 1; i <= 50; i++ {
