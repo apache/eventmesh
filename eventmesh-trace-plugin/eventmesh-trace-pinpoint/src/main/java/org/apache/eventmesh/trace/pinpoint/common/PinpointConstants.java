@@ -32,4 +32,8 @@ public class PinpointConstants {
     public static final String APPLICATION_NAME = "applicationName";
 
     public static final String APPLICATION_NAME_KEY = PROPERTY_KEY_PREFIX + Constants.DOT + APPLICATION_NAME;
+
+    public static final String REQ_IP = "req0ip";
+
+    public static final String UNKNOWN_REQ_IP = "unknown";
 }
