@@ -19,7 +19,6 @@ package org.apache.eventmesh.connector.pravega.client;
 
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.SendResult;
-import org.apache.eventmesh.connector.pravega.SubscribeTask;
 import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
@@ -84,7 +83,7 @@ public class PravegaClient {
     }
 
     public void start() {
-        if (PravegaClient.getInstance().createScope()) {
+        if (createScope()) {
             log.info("Create Pravega scope[{}] success.", PravegaConnectorConfig.getInstance().getScope());
         } else {
             log.info("Pravega scope[{}] has already been created.", PravegaConnectorConfig.getInstance().getScope());
@@ -101,6 +100,15 @@ public class PravegaClient {
         streamManager.close();
     }
 
+    /**
+     * Publish CloudEvent to Pravega stream named topic. Note that the messageId in SendResult is always -1
+     * since {@link EventStreamWriter#writeEvent(Object)} just return {@link java.util.concurrent.CompletableFuture}
+     * with {@link Void} which couldn't get messageId.
+     *
+     * @param topic      topic
+     * @param cloudEvent cloudEvent
+     * @return SendResult whose messageId is always -1
+     */
     public SendResult publish(String topic, CloudEvent cloudEvent) {
         if (!createStream(topic)) {
             log.debug("stream[{}] has already been created.", topic);
@@ -147,6 +155,7 @@ public class PravegaClient {
         }
         deleteReaderGroup(buildReaderGroup(topic, consumerGroup));
         subscribeTaskMap.remove(topic).stopRead();
+        writerMap.remove(topic).close();
         return true;
     }
 
