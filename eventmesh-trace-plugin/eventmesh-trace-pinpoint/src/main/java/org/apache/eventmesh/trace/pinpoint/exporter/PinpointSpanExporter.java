@@ -17,9 +17,13 @@
 
 package org.apache.eventmesh.trace.pinpoint.exporter;
 
-import static com.navercorp.pinpoint.common.trace.AnnotationKey.API;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.REQ_IP;
+import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.UNKNOWN_REQ_IP;
 
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.trace.pinpoint.common.PinpointConstants;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,21 +34,27 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import io.grpc.NameResolverProvider;
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.AttributeType;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.internal.OtelEncodingUtils;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.sdk.common.CompletableResultCode;
-import io.opentelemetry.sdk.common.InstrumentationLibraryInfo;
 import io.opentelemetry.sdk.internal.ThrottlingLogger;
+import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.sdk.trace.data.StatusData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
+import com.navercorp.pinpoint.bootstrap.context.SpanId;
+import com.navercorp.pinpoint.bootstrap.context.TraceId;
+import com.navercorp.pinpoint.common.trace.AnnotationKey;
 import com.navercorp.pinpoint.common.trace.ServiceType;
 import com.navercorp.pinpoint.common.util.JvmUtils;
 import com.navercorp.pinpoint.common.util.SystemPropertyKey;
@@ -55,7 +65,6 @@ import com.navercorp.pinpoint.grpc.client.DefaultChannelFactoryBuilder;
 import com.navercorp.pinpoint.grpc.client.HeaderFactory;
 import com.navercorp.pinpoint.profiler.AgentInfoSender;
 import com.navercorp.pinpoint.profiler.JvmInformation;
-import com.navercorp.pinpoint.profiler.context.Annotation;
 import com.navercorp.pinpoint.profiler.context.DefaultServerMetaDataRegistryService;
 import com.navercorp.pinpoint.profiler.context.ServerMetaDataRegistryService;
 import com.navercorp.pinpoint.profiler.context.Span;
@@ -65,11 +74,9 @@ import com.navercorp.pinpoint.profiler.context.compress.GrpcSpanProcessorV2;
 import com.navercorp.pinpoint.profiler.context.grpc.GrpcAgentInfoMessageConverter;
 import com.navercorp.pinpoint.profiler.context.grpc.GrpcSpanMessageConverter;
 import com.navercorp.pinpoint.profiler.context.grpc.config.GrpcTransportConfig;
-import com.navercorp.pinpoint.profiler.context.id.DefaultTraceIdFactory;
-import com.navercorp.pinpoint.profiler.context.id.DefaultTraceRootFactory;
-import com.navercorp.pinpoint.profiler.context.id.TraceIdFactory;
+import com.navercorp.pinpoint.profiler.context.id.DefaultTraceId;
+import com.navercorp.pinpoint.profiler.context.id.DefaultTraceRoot;
 import com.navercorp.pinpoint.profiler.context.id.TraceRoot;
-import com.navercorp.pinpoint.profiler.context.id.TraceRootFactory;
 import com.navercorp.pinpoint.profiler.context.provider.AgentInformationProvider;
 import com.navercorp.pinpoint.profiler.context.provider.grpc.DnsExecutorServiceProvider;
 import com.navercorp.pinpoint.profiler.context.provider.grpc.GrpcNameResolverProvider;
@@ -116,8 +123,6 @@ public final class PinpointSpanExporter implements SpanExporter {
 
     private final SpanGrpcDataSender spanGrpcDataSender;
 
-    private final TraceRootFactory traceRootFactory;
-
     public PinpointSpanExporter(final String agentId,
                                 final String agentName,
                                 final String applicationName,
@@ -127,9 +132,6 @@ public final class PinpointSpanExporter implements SpanExporter {
         this.agentName = Objects.requireNonNull(agentName, "agentName cannot be null");
         this.applicationName = Objects.requireNonNull(applicationName, "applicationName cannot be  null");
         this.grpcTransportConfig = Objects.requireNonNull(grpcTransportConfig, "grpcTransportConfig cannot be  null");
-
-        TraceIdFactory traceIdFactory = new DefaultTraceIdFactory(agentId, agentStartTime);
-        this.traceRootFactory = new DefaultTraceRootFactory(agentId, traceIdFactory);
 
         this.headerFactory = new AgentHeaderFactory(
             agentId,
@@ -166,7 +168,7 @@ public final class PinpointSpanExporter implements SpanExporter {
                 applicationName,
                 Boolean.TRUE,
                 agentStartTime,
-                ServiceType.UNDEFINED);
+                ServiceType.STAND_ALONE);
 
         JvmInformation jvmInformation = new JvmInformation(
             JvmUtils.getSystemProperty(SystemPropertyKey.JAVA_VERSION),
@@ -192,7 +194,7 @@ public final class PinpointSpanExporter implements SpanExporter {
         GrpcSpanMessageConverter messageConverter =
             new GrpcSpanMessageConverter(
                 agentId,
-                ServiceType.UNDEFINED.getCode(),
+                ServiceType.STAND_ALONE.getCode(),
                 new GrpcSpanProcessorV2()
             );
 
@@ -281,65 +283,86 @@ public final class PinpointSpanExporter implements SpanExporter {
     }
 
     private Span toSpan(SpanData spanData) {
-        TraceRoot traceRoot = traceRootFactory.newTraceRoot(hex16StringToLong(spanData.getSpanId()));
-        if (spanData.getStatus() != null) {
-            traceRoot.getShared().setStatusCode(spanData.getStatus().getStatusCode().ordinal());
-        }
-
-        long startTimestamp = toEpochMicros(spanData.getStartEpochNanos());
-        long endTimestamp = toEpochMicros(spanData.getEndEpochNanos());
-
-        Span span = new Span(traceRoot);
-        span.setStartTime(startTimestamp);
-        span.setElapsedTime((int) (endTimestamp - startTimestamp));
-        span.setServiceType(ServiceType.UNDEFINED.getCode());
-
-        Optional.ofNullable(spanData.getAttributes()).ifPresent(attributes ->
-            attributes.forEach((key, value) -> span.addAnnotation(toAnnotation(key, value))));
+        long startTimestamp = toMillis(spanData.getStartEpochNanos());
+        long endTimestamp = toMillis(spanData.getEndEpochNanos());
+        long transactionId = hex32StringToLong(spanData.getTraceId());
+        long spanId = hex16StringToLong(spanData.getSpanId());
+        final long[] parentSpanId = {SpanId.NULL};
 
         Optional.ofNullable(spanData.getParentSpanContext()).ifPresent(parentSpanContext -> {
             if (parentSpanContext.isValid()) {
-                // ignore
+                parentSpanId[0] = hex16StringToLong(parentSpanContext.getSpanId());
             }
         });
 
-        InstrumentationLibraryInfo instrumentationLibraryInfo = spanData.getInstrumentationLibraryInfo();
+        TraceId traceId = new DefaultTraceId(agentId, startTimestamp, transactionId, parentSpanId[0], spanId,
+            (short) spanData.getKind().ordinal());
+
+        TraceRoot traceRoot = new DefaultTraceRoot(traceId, this.agentId, startTimestamp, transactionId);
+
+        Span span = new Span(traceRoot);
+
+        StatusData statusData = spanData.getStatus();
+        if (statusData != null) {
+            Optional.ofNullable(traceRoot.getShared()).ifPresent(shared -> {
+                shared.setRpcName(spanData.getName());
+                shared.setEndPoint(getEndpoint(spanData.getResource()));
+                if (!StatusCode.OK.equals(statusData.getStatusCode())) {
+                    shared.maskErrorCode(statusData.getStatusCode().ordinal());
+                    span.setExceptionInfo(statusData.getStatusCode().ordinal(), statusData.getDescription());
+                }
+            });
+        }
+
+        span.setStartTime(startTimestamp);
+        span.setElapsedTime((int) (endTimestamp - startTimestamp));
+        span.setServiceType(ServiceType.STAND_ALONE.getCode());
+        span.setRemoteAddr(UNKNOWN_REQ_IP);
+
+        Optional.ofNullable(spanData.getAttributes()).ifPresent(attributes -> {
+                span.addAnnotation(Annotations.of(AnnotationKey.HTTP_PARAM_ENTITY.getCode(),
+                    JsonUtils.serialize(attributes)));
+                attributes.forEach((key, value) -> {
+                    if (REQ_IP.equals(key.getKey())) {
+                        span.setRemoteAddr(String.valueOf(value));
+                    }
+                });
+            }
+        );
 
         if (CollectionUtils.isNotEmpty(spanData.getEvents())) {
-            span.setSpanEventList(spanData.getEvents().stream().map(this::toSpanEvent)
-                .collect(Collectors.toList()));
+            final AtomicInteger sequence = new AtomicInteger();
+            span.setSpanEventList(spanData.getEvents().stream().map(event -> {
+                SpanEvent spanEvent = toSpanEvent(event);
+                spanEvent.setSequence(sequence.getAndIncrement());
+                return spanEvent;
+            }).collect(Collectors.toList()));
         }
 
         return span;
     }
 
-    private static Annotation<?> toAnnotation(AttributeKey<?> key, Object value) {
-        AttributeType type = key.getType();
-        switch (type) {
-            case STRING:
-            case BOOLEAN:
-            case LONG:
-            case DOUBLE:
-            case STRING_ARRAY:
-            case BOOLEAN_ARRAY:
-            case LONG_ARRAY:
-            case DOUBLE_ARRAY:
-                return Annotations.of(API.getCode(), value);
-        }
-        throw new IllegalStateException("Unknown attribute type: " + type);
-    }
-
     private SpanEvent toSpanEvent(EventData eventData) {
         SpanEvent spanEvent = new SpanEvent();
-        spanEvent.setServiceType(ServiceType.UNDEFINED.getCode());
+        spanEvent.setServiceType(ServiceType.INTERNAL_METHOD.getCode());
         spanEvent.setEndPoint(eventData.getName());
-        eventData.getAttributes().forEach((key, value) -> spanEvent.addAnnotation(toAnnotation(key, value)));
-        spanEvent.setElapsedTime((int) toEpochMicros(eventData.getEpochNanos()));
+        spanEvent.addAnnotation(Annotations.of(AnnotationKey.HTTP_PARAM_ENTITY.getCode(),
+            JsonUtils.serialize(eventData.getAttributes())));
+        spanEvent.setElapsedTime((int) toMillis(eventData.getEpochNanos()));
         return spanEvent;
     }
 
-    private static long toEpochMicros(long epochNanos) {
-        return NANOSECONDS.toMicros(epochNanos);
+    private static long toMillis(long epochNanos) {
+        return NANOSECONDS.toMillis(epochNanos);
+    }
+
+    private static long hex32StringToLong(String hex32String) {
+        CharSequence charSequence = new StringBuilder().append(hex32String);
+        return OtelEncodingUtils.isValidBase16String(charSequence)
+            ? (
+            OtelEncodingUtils.longFromBase16String(charSequence, 0)
+                & OtelEncodingUtils.longFromBase16String(charSequence, 16))
+            : hex32String.hashCode();
     }
 
     private static long hex16StringToLong(String hex16String) {
@@ -347,5 +370,15 @@ public final class PinpointSpanExporter implements SpanExporter {
         return OtelEncodingUtils.isValidBase16String(charSequence)
             ? OtelEncodingUtils.longFromBase16String(charSequence, 0)
             : hex16String.hashCode();
+    }
+
+    private static String getEndpoint(Resource resource) {
+        Attributes resourceAttributes = resource.getAttributes();
+
+        String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
+        if (serviceNameValue == null) {
+            serviceNameValue = Resource.getDefault().getAttributes().get(ResourceAttributes.SERVICE_NAME);
+        }
+        return serviceNameValue + Constants.POUND + IPUtils.getLocalAddress();
     }
 }

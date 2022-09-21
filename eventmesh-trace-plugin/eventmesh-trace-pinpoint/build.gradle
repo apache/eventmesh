@@ -23,6 +23,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-api'
 
     implementation 'io.opentelemetry:opentelemetry-api'
+    implementation 'io.opentelemetry:opentelemetry-semconv'
     implementation 'io.opentelemetry:opentelemetry-sdk'
 
     implementation("com.navercorp.pinpoint:pinpoint-profiler:${pinpointVersion}") {
