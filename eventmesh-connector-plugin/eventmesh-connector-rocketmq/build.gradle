@@ -34,7 +34,6 @@ List rocketmq = [
     "org.apache.rocketmq:rocketmq-filter:$rocketmq_version",
     "org.apache.rocketmq:rocketmq-acl:$rocketmq_version",
     "org.apache.rocketmq:rocketmq-srvutil:$rocketmq_version",
-
 ]
 
 dependencies {
