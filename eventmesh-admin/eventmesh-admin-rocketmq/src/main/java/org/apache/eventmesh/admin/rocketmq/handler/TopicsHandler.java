@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.admin.rocketmq.handler;
 
+import static org.apache.eventmesh.admin.rocketmq.Constants.APPLICATION_JSON;
+import static org.apache.eventmesh.admin.rocketmq.Constants.CONTENT_TYPE;
+import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_ERROR;
 import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
 
 import org.apache.eventmesh.admin.rocketmq.request.TopicCreateRequest;
@@ -24,6 +27,7 @@ import org.apache.eventmesh.admin.rocketmq.response.TopicResponse;
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
 import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
 import org.apache.eventmesh.admin.rocketmq.util.RequestMapping;
+import org.apache.eventmesh.common.Constants;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,14 +54,13 @@ public class TopicsHandler implements HttpHandler {
 
         OutputStream out = httpExchange.getResponseBody();
         httpExchange.sendResponseHeaders(500, 0);
-        String result = String.format("Please check your request url");
+        String result = String.format("Please check your request url: %s", httpExchange.getRequestURI());
         logger.error(result);
-        out.write(result.getBytes());
-        return;
+        out.write(result.getBytes(Constants.DEFAULT_CHARSET));
     }
 
     public void createTopicHandler(HttpExchange httpExchange) throws IOException {
-        String result = "";
+        String result;
         OutputStream out = httpExchange.getResponseBody();
         try {
             String params = NetUtils.parsePostBody(httpExchange);
@@ -68,7 +71,7 @@ public class TopicsHandler implements HttpHandler {
             if (StringUtils.isBlank(topic)) {
                 result = "Create topic failed. Parameter topic not found.";
                 logger.error(result);
-                out.write(result.getBytes());
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
 
@@ -76,26 +79,23 @@ public class TopicsHandler implements HttpHandler {
             TopicResponse topicResponse = null;
             if (topicResponse != null) {
                 logger.info("create a new topic: {}", topic);
-                httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+                httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
                 httpExchange.sendResponseHeaders(200, 0);
                 result = JsonUtils.toJson(topicResponse);
                 logger.info(result);
-                out.write(result.getBytes());
-                return;
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             } else {
                 httpExchange.sendResponseHeaders(500, 0);
-                result = String.format("create topic failed! Server side error");
+                result = TOPIC_ERROR;
                 logger.error(result);
-                out.write(result.getBytes());
-                return;
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
             }
         } catch (Exception e) {
-            httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+            httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
             httpExchange.sendResponseHeaders(500, 0);
-            result = String.format("create topic failed! Server side error");
+            result = TOPIC_ERROR;
             logger.error(result);
-            out.write(result.getBytes());
-            return;
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
             if (out != null) {
                 try {

@@ -17,9 +17,11 @@
 
 package org.apache.eventmesh.protocol.http.resolver;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.http.HttpProtocolConstant;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -45,25 +47,29 @@ public class HttpRequestProtocolResolver {
 
             Map<String, Object> sysHeaderMap = httpEventWrapper.getSysHeaderMap();
 
-            String id = sysHeaderMap.getOrDefault("id", UUID.randomUUID()).toString();
+            String id = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_ID, UUID.randomUUID()).toString();
 
-            String source = sysHeaderMap.getOrDefault("source", "/").toString();
+            String source =
+                sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, HttpProtocolConstant.CONSTANTS_DEFAULT_SOURCE).toString();
 
-            String type = sysHeaderMap.getOrDefault("type", "http_request").toString();
+            String type = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_TYPE, HttpProtocolConstant.CONSTANTS_DEFAULT_TYPE).toString();
 
-            String subject = sysHeaderMap.getOrDefault("subject", "TOPIC-HTTP-REQUEST").toString();
+            String subject =
+                sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, HttpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
 
             // with attributes
             builder.withId(id)
                 .withType(type)
-                .withSource(URI.create("source:" + source))
+                .withSource(URI.create(HttpProtocolConstant.CONSTANTS_KEY_SOURCE + ":" + source))
                 .withSubject(subject)
-                .withDataContentType("application/json");
+                .withDataContentType(HttpProtocolConstant.DATA_CONTENT_TYPE);
 
             // with extensions
             for (String extensionKey : sysHeaderMap.keySet()) {
-                if (StringUtils.equals("id", extensionKey) || StringUtils.equals("source", extensionKey) || StringUtils.equals("type", extensionKey)
-                    || StringUtils.equals("subject", extensionKey)) {
+                if (StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_ID, extensionKey)
+                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, extensionKey)
+                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_TYPE, extensionKey)
+                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, extensionKey)) {
                     continue;
                 }
                 String lowerExtensionKey = extensionKey.toLowerCase();
@@ -72,16 +78,16 @@ public class HttpRequestProtocolResolver {
 
             byte[] requestBody = httpEventWrapper.getBody();
 
-            Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody), new TypeReference<HashMap<String, Object>>() {
-            });
+            Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
+                new TypeReference<HashMap<String, Object>>() {});
 
             String requestURI = httpEventWrapper.getRequestURI();
 
             Map<String, Object> data = new HashMap<>();
-            data.put("headers", requestHeaderMap);
-            data.put("body", requestBodyMap);
-            data.put("path", requestURI);
-            data.put("method", httpEventWrapper.getHttpMethod());
+            data.put(HttpProtocolConstant.CONSTANTS_KEY_HEADERS, requestHeaderMap);
+            data.put(HttpProtocolConstant.CONSTANTS_KEY_BODY, requestBodyMap);
+            data.put(HttpProtocolConstant.CONSTANTS_KEY_PATH, requestURI);
+            data.put(HttpProtocolConstant.CONSTANTS_KEY_METHOD, httpEventWrapper.getHttpMethod());
             // with data
             builder = builder.withData(JsonUtils.serialize(data).getBytes(StandardCharsets.UTF_8));
             return builder.build();

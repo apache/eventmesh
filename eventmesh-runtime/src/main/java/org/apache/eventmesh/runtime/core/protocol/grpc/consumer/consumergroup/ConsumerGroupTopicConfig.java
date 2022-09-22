@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class ConsumerGroupTopicConfig {
-    private final Logger logger = LoggerFactory.getLogger(ConsumerGroupTopicConfig.class);
 
     protected final String consumerGroup;
 

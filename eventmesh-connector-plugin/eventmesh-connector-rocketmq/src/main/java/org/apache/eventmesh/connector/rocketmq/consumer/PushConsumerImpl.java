@@ -142,7 +142,6 @@ public class PushConsumerImpl {
         }
     }
 
-
     public void unsubscribe(String topic) {
         try {
             this.rocketmqPushConsumer.unsubscribe(topic);

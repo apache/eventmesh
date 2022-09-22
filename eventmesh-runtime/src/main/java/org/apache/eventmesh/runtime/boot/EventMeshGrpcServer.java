@@ -144,7 +144,6 @@ public class EventMeshGrpcServer {
 
         if (eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
             this.unRegister();
-            registry.shutdown();
         }
 
         logger.info("---------------EventMeshGRPCServer stopped-------------------");
@@ -240,9 +239,6 @@ public class EventMeshGrpcServer {
         pushMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(eventMeshGrpcConfiguration.eventMeshServerPushMsgThreadNum,
             eventMeshGrpcConfiguration.eventMeshServerPushMsgThreadNum, pushMsgThreadPoolQueue,
             "eventMesh-grpc-pushMsg-%d", true);
-
-        BlockingQueue<Runnable> replyMsgThreadPoolQueue =
-            new LinkedBlockingQueue<Runnable>(eventMeshGrpcConfiguration.eventMeshServerSendMsgBlockQueueSize);
 
         replyMsgExecutor = ThreadPoolFactory.createThreadPoolExecutor(eventMeshGrpcConfiguration.eventMeshServerReplyMsgThreadNum,
             eventMeshGrpcConfiguration.eventMeshServerReplyMsgThreadNum, sendMsgThreadPoolQueue,

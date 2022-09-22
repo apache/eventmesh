@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 
+import lombok.Getter;
+
 public class CommonConfiguration {
     public String eventMeshEnv = "P";
     public String eventMeshIDC = "FT";
@@ -49,7 +51,10 @@ public class CommonConfiguration {
     public boolean eventMeshServerSecurityEnable = false;
     public boolean eventMeshServerRegistryEnable = false;
     public boolean eventMeshServerTraceEnable = false;
+    
+    @Getter
     protected ConfigurationWrapper configurationWrapper;
+    
     public String eventMeshWebhookOrigin = "eventmesh." + eventMeshIDC;
 
     public CommonConfiguration(ConfigurationWrapper configurationWrapper) {
@@ -98,7 +103,9 @@ public class CommonConfiguration {
             }
 
             eventMeshServerTraceEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_TRACE_ENABLED, () -> "false"));
-            eventMeshTracePluginType = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE);
+            if (eventMeshServerTraceEnable) {
+                eventMeshTracePluginType = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE);
+            }
         }
     }
 

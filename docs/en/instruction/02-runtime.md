@@ -4,41 +4,20 @@ EventMesh Runtime is the core component of Apache EventMesh (Incubating). It is 
 
 Here, we take JDK 8 as an example. JDK 8 could be installed with the system package manager or the [openjdk:8-jdk](https://hub.docker.com/_/openjdk) Docker image.
 
-```console
-# Debian, Ubuntu, etc.
-apt-get install openjdk-8-jdk
 
-# Fedora, Oracle Linux, Red Hat Enterprise Linux, etc.
-yum install java-1.8.0-openjdk-devel
+## 1 Run on your local machine 
 
-# Docker
-docker pull openjdk:8-jdk
+### 1.1 Dependencies
+
+```
+64-bit OS，we recommend Linux/Unix；
+64-bit JDK 1.8+;
+Gradle 7.0+, we recommend 7.0.*
+4g+ available disk to deploy eventmesh-store
+If you choose standalone mode, you could skip this file and go to the next step: Start Eventmesh-Runtime; if not, you could choose RocketMQ as the store layer.
 ```
 
-## Install Executable Binaries
-
-Download and extract the executable binaries of the latest release from [EventMesh download](https://eventmesh.apache.org/download).
-
-```console
-wget https://github.com/apache/incubator-eventmesh/releases/download/v1.4.0/apache-eventmesh-1.4.0-incubating-bin.tar.gz
-
-tar -xvzf apache-eventmesh-1.4.0-incubating-bin.tar.gz
-```
-
-Edit the `eventmesh.properties` to change the configuration (e.g. TCP port, client blacklist) of EventMesh Runtime. The executable binaries contain all plugins in the bundle, thus there's no need to build them from source code.
-
-```console
-cd apache-eventmesh-1.4.0-incubating
-vim conf/eventmesh.properties
-```
-
-Execute the `start.sh` script to start the EventMesh Runtime server.
-
-```console
-bash bin/start.sh
-```
-
-## Build from Source Code
+### 1.2 Download Source Code
 
 Gradle is the build automation tool used by Apache EventMesh (Incubating). Please refer to the [offical guide](https://docs.gradle.org/current/userguide/installation.html) to install the latest release of Gradle.
 
@@ -47,16 +26,15 @@ Download and extract the source code of the latest release from [EventMesh downl
 ```console
 wget https://dlcdn.apache.org/incubator/eventmesh/{version}-incubating/apache-eventmesh-{version}-incubating-source.tar.gz
 
-tar -xvzf apache-eventmesh-{version}-incubating-source.tar.gz
+tar -xvzf apache-eventmesh-1.5.0-incubating-source.tar.gz
 ```
 
 Build the source code with Gradle.
 
 ```console
-cd apache-eventmesh-{version}-incubating-source
+cd apache-eventmesh-1.5.0-incubating-source
 gradle clean dist
 ```
-Note: Make sure your gradle version is higher than 7.0
 
 Edit the `eventmesh.properties` to change the configuration (e.g. TCP port, client blacklist) of EventMesh Runtime.
 
@@ -71,7 +49,7 @@ Execute the `start.sh` script to start the EventMesh Runtime server.
 bash bin/start.sh
 ```
 
-### Build and Load Plugins
+### 1.3 Build and Load Plugins
 
 Apache EventMesh (Incubating) introduces the SPI (Service Provider Interface) mechanism, which enables EventMesh to discover and load the plugins at runtime. The plugins could be installed with these methods:
 
@@ -91,3 +69,39 @@ dependencies {
 ```console
 gradle installPlugin
 ```
+
+
+## 2 Remote deployment
+### 2.1 Dependencies
+
+```
+64-bit OS，we recommend Linux/Unix；
+64-bit JDK 1.8+;
+Gradle 7.0+, we recommend 7.0.*
+4g+ available disk to deploy eventmesh-store
+If you choose standalone mode, you could skip this file and go to the next step: Start Eventmesh-Runtime; if not, you could choose RocketMQ as the store layer.
+```
+
+### 2.2 Download
+Download and extract the executable binaries of the latest release from [EventMesh download](https://eventmesh.apache.org/download).
+
+```console
+wget https://github.com/apache/incubator-eventmesh/releases/download/v1.4.0/apache-eventmesh-1.4.0-incubating-bin.tar.gz
+
+tar -xvzf apache-eventmesh-1.5.0-incubating-bin.tar.gz
+```
+
+### 2.3 Deploy
+Edit the `eventmesh.properties` to change the configuration (e.g. TCP port, client blacklist) of EventMesh Runtime. The executable binaries contain all plugins in the bundle, thus there's no need to build them from source code.
+
+```console
+cd apache-eventmesh-1.5.0-incubating
+vim conf/eventmesh.properties
+```
+
+Execute the `start.sh` script to start the EventMesh Runtime server.
+
+```console
+bash bin/start.sh
+```
+
