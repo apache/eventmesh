@@ -22,8 +22,6 @@ import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.GROUP_PR
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.MANUFACTURERS_DATA_ID;
 import static org.apache.eventmesh.webhook.api.WebHookOperationConstant.TIMEOUT_MS;
 
-
-
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.ManufacturerObject;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
@@ -35,7 +33,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +77,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
                 return 0;
             }
             result = configService.publishConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig),
-                    JsonUtils.serialize(webHookConfig), ConfigType.JSON.getType());
+                JsonUtils.serialize(webHookConfig), ConfigType.JSON.getType());
         } catch (NacosException e) {
             logger.error("insertWebHookConfig failed", e);
             return 0;
@@ -92,7 +89,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
                 manufacturerObject.addManufacturer(manufacturerName);
                 manufacturerObject.getManufacturerEvents(manufacturerName).add(getWebHookConfigDataId(webHookConfig));
                 configService.publishConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK,
-                        JsonUtils.serialize(manufacturerObject), ConfigType.JSON.getType());
+                    JsonUtils.serialize(manufacturerObject), ConfigType.JSON.getType());
             } catch (NacosException e) {
                 logger.error("update manufacturersInfo error", e);
                 //rollback insert
@@ -115,7 +112,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
                 return 0;
             }
             result = configService.publishConfig(getWebHookConfigDataId(webHookConfig),
-                    getManuGroupId(webHookConfig), JsonUtils.serialize(webHookConfig), ConfigType.JSON.getType());
+                getManuGroupId(webHookConfig), JsonUtils.serialize(webHookConfig), ConfigType.JSON.getType());
         } catch (NacosException e) {
             logger.error("updateWebHookConfig failed", e);
         }
@@ -136,7 +133,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
                 ManufacturerObject manufacturerObject = getManufacturersInfo();
                 manufacturerObject.getManufacturerEvents(manufacturerName).remove(getWebHookConfigDataId(webHookConfig));
                 configService.publishConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK,
-                        JsonUtils.serialize(manufacturerObject), ConfigType.JSON.getType());
+                    JsonUtils.serialize(manufacturerObject), ConfigType.JSON.getType());
             } catch (NacosException e) {
                 logger.error("update manufacturersInfo error", e);
             }
@@ -170,7 +167,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
                 // nacos API is not able to get all config, so use foreach
                 for (int i = startIndex; i < endIndex && i < manufacturerEvents.size(); i++) {
                     String content = configService.getConfig(manufacturerEvents.get(i) + DATA_ID_EXTENSION,
-                            getManuGroupId(webHookConfig), TIMEOUT_MS);
+                        getManuGroupId(webHookConfig), TIMEOUT_MS);
                     webHookConfigs.add(JsonUtils.deserialize(content, WebHookConfig.class));
                 }
             }
@@ -201,7 +198,7 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
     private ManufacturerObject getManufacturersInfo() throws NacosException {
         String manufacturersContent = configService.getConfig(MANUFACTURERS_DATA_ID, CONSTANTS_WEBHOOK, TIMEOUT_MS);
         return StringUtil.isNullOrEmpty(manufacturersContent)
-                ? new ManufacturerObject() : JsonUtils.deserialize(manufacturersContent, ManufacturerObject.class);
+            ? new ManufacturerObject() : JsonUtils.deserialize(manufacturersContent, ManufacturerObject.class);
     }
 
 }
