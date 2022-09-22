@@ -13,20 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consts
+package grpc
 
-var (
-	// EVENT_STORE_ENV evn for store plugin
-	// default to defibus
-	EVENT_STORE_ENV = "EVENT_STORE"
+import "github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 
-	REQ_MQ2EVENTMESH_TIMESTAMP = "reqmq2eventmeshtimestamp"
-
-	PROPERTY_MESSAGE_SEARCH_KEYS = "searchkeys"
-
-	RMB_UNIQ_ID = "rmbuniqid"
-
-	PROTOCOL_TYPE = "protocoltype"
-
-	CONTENT_TYPE_CLOUDEVENTS_JSON = "application/cloudevents+json"
-)
+type SimpleMessageWrapper struct {
+	SimpleMessage *pb.SimpleMessage `json:"simpleMessage"`
+}
