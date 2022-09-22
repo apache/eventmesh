@@ -1,0 +1,116 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.eventmesh.runtime.protocol.processor;
+
+import static org.mockito.ArgumentMatchers.any;
+
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
+import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
+import org.apache.eventmesh.runtime.core.protocol.http.processor.WebHookProcessor;
+import org.apache.eventmesh.webhook.api.WebHookConfig;
+import org.apache.eventmesh.webhook.receive.WebHookController;
+import org.apache.eventmesh.webhook.receive.WebHookMQProducer;
+import org.apache.eventmesh.webhook.receive.storage.HookConfigOperationManage;
+
+import org.apache.commons.lang3.StringUtils;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.powermock.reflect.Whitebox;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.data.BytesCloudEventData;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpVersion;
+
+public class WebHookProcessorTest {
+
+    @Mock
+    private HookConfigOperationManage hookConfigOperationManage;
+    @Mock
+    private WebHookMQProducer webHookMQProducer;
+
+    private WebHookController controller = new WebHookController();
+
+    private ArgumentCaptor<CloudEvent> captor = ArgumentCaptor.forClass(CloudEvent.class);
+
+    @Before
+    public void init() throws Exception {
+        hookConfigOperationManage = Mockito.mock(HookConfigOperationManage.class);
+        Mockito.when(hookConfigOperationManage.queryWebHookConfigById(any())).thenReturn(buildMockWebhookConfig());
+        webHookMQProducer = Mockito.mock(WebHookMQProducer.class);
+        Mockito.doNothing().when(webHookMQProducer).send(captor.capture(), any());
+        ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("webhook");
+
+        Whitebox.setInternalState(controller, HookConfigOperationManage.class, hookConfigOperationManage);
+        Whitebox.setInternalState(controller, WebHookMQProducer.class, webHookMQProducer);
+        Whitebox.setInternalState(controller, ProtocolAdaptor.class, protocolAdaptor);
+    }
+
+    @Test
+    public void testHandler() {
+        try {
+            WebHookProcessor processor = new WebHookProcessor();
+            processor.setWebHookController(controller);
+            processor.handler(buildMockWebhookRequest());
+
+            CloudEvent msgSendToMq = captor.getValue();
+            Assert.assertNotNull(msgSendToMq);
+            Assert.assertTrue(StringUtils.isNoneBlank(msgSendToMq.getId()));
+            Assert.assertEquals("www.github.com", msgSendToMq.getSource().getPath());
+            Assert.assertEquals("github.ForkEvent", msgSendToMq.getType());
+            Assert.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes()), msgSendToMq.getData());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    private HttpRequest buildMockWebhookRequest() {
+        ByteBuf buffer = Unpooled.buffer();
+        buffer.writeBytes("\"mock_data\":0".getBytes());
+
+        FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/webhook/github/eventmesh/all", buffer);
+        request.headers().set("content-type", "application/json");
+        // encrypt method see: GithubProtocol
+        request.headers().set("x-hub-signature-256", "sha256=ddb62e1182e2e6d364c0b5d03f2413fd5d1f68d99d1a4b3873e0d6850650d4b3");
+        return request;
+    }
+
+    private WebHookConfig buildMockWebhookConfig() {
+        WebHookConfig config = new WebHookConfig();
+        config.setCallbackPath("/webhook/github/eventmesh/all");
+        config.setManufacturerName("github");
+        config.setManufacturerEventName("ForkEvent");
+        config.setContentType("application/json");
+        config.setSecret("secret");
+        config.setCloudEventSource("github");
+        config.setCloudEventName("github-eventmesh");
+        config.setCloudEventIdGenerateMode("uuid");
+        return config;
+    }
+}
