@@ -66,10 +66,10 @@ public class EtcdClientFactory {
             etcdLeaseId.setUrl(serverAddr);
             etcdLeaseId.setClientBuilder(clientBuilder.endpoints(httpAddress));
             if (StringUtils.isNoneBlank(username)) {
-                etcdLeaseId.getClientBuilder().user(ByteSequence.from(username.getBytes()));
+                etcdLeaseId.getClientBuilder().user(ByteSequence.from(username.getBytes(Constants.DEFAULT_CHARSET)));
             }
             if (StringUtils.isNoneBlank(password)) {
-                etcdLeaseId.getClientBuilder().password(ByteSequence.from(password.getBytes()));
+                etcdLeaseId.getClientBuilder().password(ByteSequence.from(password.getBytes(Constants.DEFAULT_CHARSET)));
             }
             etcdLeaseId.setClientWrapper(new EtcdClientWrapper(etcdLeaseId.getClientBuilder().build()));
             EtcdClientWrapper client = etcdLeaseId.getClientWrapper();

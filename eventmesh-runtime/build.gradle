@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-def grpcVersion = '1.17.1'
+def grpcVersion = '1.42.2'
 
 dependencies {
     implementation 'io.cloudevents:cloudevents-core'
@@ -60,6 +60,7 @@ dependencies {
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-http")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-webhook")
 
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-api")
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-prometheus")

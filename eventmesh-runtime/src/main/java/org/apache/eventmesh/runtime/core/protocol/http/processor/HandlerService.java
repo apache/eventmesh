@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.processor;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.common.EventMeshRetCode;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -93,7 +94,7 @@ public class HandlerService {
 
         if (httpProcessorMap.containsKey(path)) {
             throw new RuntimeException(String.format("HandlerService path %s repeat, repeat processor is %s ",
-                    path, httpProcessor.getClass().getSimpleName()));
+                path, httpProcessor.getClass().getSimpleName()));
         }
         ProcessorWrapper processorWrapper = new ProcessorWrapper();
         processorWrapper.threadPoolExecutor = threadPoolExecutor;
@@ -153,7 +154,7 @@ public class HandlerService {
         ctx.writeAndFlush(response).addListener((ChannelFutureListener) f -> {
             if (!f.isSuccess()) {
                 httpLogger.warn("send response to [{}] fail, will close this channel",
-                        RemotingHelper.parseChannelRemoteAddr(f.channel()));
+                    RemotingHelper.parseChannelRemoteAddr(f.channel()));
                 if (isClose) {
                     f.channel().close();
                 }
@@ -186,7 +187,7 @@ public class HandlerService {
                 if (length > 0) {
                     byte[] body = new byte[length];
                     fullHttpRequest.content().readBytes(body);
-                    JsonUtils.deserialize(new String(body), new TypeReference<Map<String, Object>>() {
+                    JsonUtils.deserialize(new String(body, Constants.DEFAULT_CHARSET), new TypeReference<Map<String, Object>>() {
                     }).forEach(bodyMap::put);
                 }
             } else {

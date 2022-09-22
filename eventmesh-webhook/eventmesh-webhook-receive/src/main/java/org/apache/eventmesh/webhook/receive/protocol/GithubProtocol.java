@@ -18,6 +18,7 @@
 package org.apache.eventmesh.webhook.receive.protocol;
 
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.receive.ManufacturerProtocol;
 import org.apache.eventmesh.webhook.receive.WebHookRequest;
@@ -42,13 +43,13 @@ public class GithubProtocol implements ManufacturerProtocol {
     @Override
     public void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) throws Exception {
 
-        String fromSignature = header.get("X-Hub-Signature-256");
+        String fromSignature = header.get("x-hub-signature-256");
         if (!isValid(fromSignature, webHookRequest.getData(), webHookConfig.getSecret())) {
             throw new Exception("webhook-GithubProtocol authenticate failed");
         }
 
         try {
-            webHookRequest.setManufacturerEventId(header.get("X-GitHub-Delivery"));
+            webHookRequest.setManufacturerEventId(header.get("x-github-delivery"));
             webHookRequest.setManufacturerEventName(webHookConfig.getManufacturerEventName());
             webHookRequest.setManufacturerSource(getManufacturerName());
         } catch (Exception e) {
@@ -68,7 +69,7 @@ public class GithubProtocol implements ManufacturerProtocol {
         String hash = "sha256=";
         try {
             Mac sha = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(Constants.DEFAULT_CHARSET), "HmacSHA256");
             sha.init(secretKey);
             byte[] bytes = sha.doFinal(data);
             hash += byteArrayToHexString(bytes);

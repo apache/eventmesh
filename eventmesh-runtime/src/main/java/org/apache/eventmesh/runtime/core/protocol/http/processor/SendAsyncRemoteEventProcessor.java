@@ -85,8 +85,6 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
 
         HttpEventWrapper requestWrapper = asyncContext.getRequest();
 
-        HttpEventWrapper responseWrapper;
-
         httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
                 EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
@@ -113,8 +111,8 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         requestWrapper.buildSysHeaderForCE();
 
         // process remote event body
-        Map<String, Object> bodyMap = JsonUtils.deserialize(new String(requestWrapper.getBody()), new TypeReference<Map<String, Object>>() {
-        });
+        Map<String, Object> bodyMap = JsonUtils.deserialize(new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
+            new TypeReference<Map<String, Object>>() {});
 
         byte[] convertedBody = bodyMap.get("content").toString().getBytes(StandardCharsets.UTF_8);
         requestWrapper.setBody(convertedBody);
@@ -208,7 +206,6 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             try {
                 Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestURI);
             } catch (Exception e) {
-                //String errorMsg = String.format("CLIENT HAS NO PERMISSION,send failed, topic:%s, subsys:%s, realIp:%s", topic, subsys, realIp);
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_ACL_ERR, responseHeaderMap,
                     responseBodyMap, EventMeshUtil.getCloudEventExtensionMap(SpecVersion.V1.toString(), event));
                 aclLogger.warn("CLIENT HAS NO PERMISSION,SendAsyncMessageProcessor send failed", e);

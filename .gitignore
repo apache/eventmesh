@@ -13,16 +13,15 @@ logs
 build
 .classpath
 .project
-.checkstyle
 test-output
 dist
+out
 .pmd
 classes
 package-lock.json
 node_modules
-.DS_Store
 .run
-/**/bin
+*.log
 
 h2/db.mv.db
 
