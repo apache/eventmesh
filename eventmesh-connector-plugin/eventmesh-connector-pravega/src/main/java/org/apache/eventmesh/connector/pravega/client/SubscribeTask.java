@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pravega;
+package org.apache.eventmesh.connector.pravega.client;
 
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
 import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
-import org.apache.eventmesh.connector.pravega.client.PravegaEvent;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

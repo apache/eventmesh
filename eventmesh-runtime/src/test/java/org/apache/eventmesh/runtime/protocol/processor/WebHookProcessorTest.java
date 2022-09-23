@@ -82,7 +82,7 @@ public class WebHookProcessorTest {
             CloudEvent msgSendToMq = captor.getValue();
             Assert.assertNotNull(msgSendToMq);
             Assert.assertTrue(StringUtils.isNoneBlank(msgSendToMq.getId()));
-            Assert.assertEquals("github", msgSendToMq.getSource().getPath());
+            Assert.assertEquals("www.github.com", msgSendToMq.getSource().getPath());
             Assert.assertEquals("github.ForkEvent", msgSendToMq.getType());
             Assert.assertEquals(BytesCloudEventData.wrap("\"mock_data\":0".getBytes()), msgSendToMq.getData());
         } catch (Exception e) {
@@ -97,7 +97,7 @@ public class WebHookProcessorTest {
         FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, "/webhook/github/eventmesh/all", buffer);
         request.headers().set("content-type", "application/json");
         // encrypt method see: GithubProtocol
-        request.headers().set("X-Hub-Signature-256", "sha256=ddb62e1182e2e6d364c0b5d03f2413fd5d1f68d99d1a4b3873e0d6850650d4b3");
+        request.headers().set("x-hub-signature-256", "sha256=ddb62e1182e2e6d364c0b5d03f2413fd5d1f68d99d1a4b3873e0d6850650d4b3");
         return request;
     }
 
