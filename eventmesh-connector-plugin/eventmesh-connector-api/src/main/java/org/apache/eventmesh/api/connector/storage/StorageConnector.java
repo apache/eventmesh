@@ -60,11 +60,6 @@ public interface StorageConnector extends LifeCycle {
 
     void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception;
 
-    /**
-     * 有数据，无数据
-     *
-     * @return
-     */
     public List<CloudEvent> pull(PullRequest pullRequest);
 
     void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context);
@@ -73,12 +68,6 @@ public interface StorageConnector extends LifeCycle {
 
     public int deleteCloudEvent();
 
-    /**
-     * 创建表
-     *
-     * @param topicInfo
-     * @return
-     */
     public int createTopic(TopicInfo topicInfo);
 
     public int createConsumerGroup(ConsumerGroupInfo consumerGroupInfo);
