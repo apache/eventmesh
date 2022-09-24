@@ -15,17 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.amqp.remoting;
+package org.apache.eventmesh.runtime.core.protocol.amqp.exception;
 
-import java.io.Serializable;
+import java.io.IOException;
 
-import io.netty.buffer.ByteBuf;
+public class MalformedFrameException extends IOException {
 
-/**
- *
- */
-public interface AMQData extends Serializable {
+    private static final long serialVersionUID = 1L;
 
-    void encode(ByteBuf buf);
+    /**
+     * Instantiate a MalformedFrameException.
+     *
+     * @param reason a string describing the exception
+     */
+    public MalformedFrameException(String reason) {
+        super(reason);
+    }
 
 }
