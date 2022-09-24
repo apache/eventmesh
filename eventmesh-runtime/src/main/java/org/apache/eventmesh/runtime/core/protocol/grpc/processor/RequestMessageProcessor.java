@@ -100,11 +100,13 @@ public class RequestMessageProcessor {
 
         SendMessageContext sendMessageContext = new SendMessageContext(message.getSeqNum(), cloudEvent, eventMeshProducer, eventMeshGrpcServer);
 
+        eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
         eventMeshProducer.request(sendMessageContext, new RequestReplyCallback() {
             @Override
             public void onSuccess(CloudEvent event) {
                 try {
+                    eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromQueue();
                     SimpleMessageWrapper wrapper = (SimpleMessageWrapper) grpcCommandProtocolAdaptor.fromCloudEvent(event);
 
                     emitter.onNext(wrapper.getMessage());
@@ -113,6 +115,7 @@ public class RequestMessageProcessor {
                     long endTime = System.currentTimeMillis();
                     logger.info("message|eventmesh2client|REPLY|RequestReply|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                         endTime - startTime, topic, seqNum, uniqueId);
+                    eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToClient();
                 } catch (Exception e) {
                     ServiceUtils.sendStreamRespAndDone(message.getHeader(), StatusCode.EVENTMESH_REQUEST_REPLY_MSG_ERR,
                         EventMeshUtil.stackTrace(e, 2), emitter);

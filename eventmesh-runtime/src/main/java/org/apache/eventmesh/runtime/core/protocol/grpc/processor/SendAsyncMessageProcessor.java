@@ -102,6 +102,7 @@ public class SendAsyncMessageProcessor {
 
         SendMessageContext sendMessageContext = new SendMessageContext(message.getSeqNum(), cloudEvent, eventMeshProducer, eventMeshGrpcServer);
 
+        eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
         eventMeshProducer.send(sendMessageContext, new SendCallback() {
             @Override
@@ -110,6 +111,7 @@ public class SendAsyncMessageProcessor {
                 long endTime = System.currentTimeMillis();
                 logger.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, seqNum, uniqueId);
+                eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToClient();
             }
 
             @Override
