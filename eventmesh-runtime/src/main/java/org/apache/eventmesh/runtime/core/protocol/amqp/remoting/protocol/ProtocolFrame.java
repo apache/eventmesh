@@ -143,8 +143,4 @@ public class ProtocolFrame implements AMQData {
         return protocolRevision;
     }
 
-    @Override
-    public void recycle() {
-        // do nothing
-    }
 }
