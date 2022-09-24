@@ -41,13 +41,11 @@ import lombok.Setter;
 
 public class WebHookController {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-
     /**
      * protocol pool
      */
     private final ProtocolManage protocolManage = new ProtocolManage();
-
+    public Logger logger = LoggerFactory.getLogger(this.getClass());
     /**
      * config pool
      */
@@ -61,7 +59,7 @@ public class WebHookController {
     private ConfigurationWrapper configurationWrapper;
 
     public void init() throws Exception {
-        this.webHookMQProducer = new WebHookMQProducer(
+        this.webHookMQProducer = new WebHookMQProducer(configurationWrapper.getProperties(),
             configurationWrapper.getProp("eventMesh.webHook.producer.connector"));
         this.hookConfigOperationManage = new HookConfigOperationManage(configurationWrapper);
         this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("webhook");
@@ -98,7 +96,7 @@ public class WebHookController {
         try {
             protocol.execute(webHookRequest, webHookConfig, header);
         } catch (Exception e) {
-            throw new Exception("Webhook Message Parse Failed.");
+            throw new Exception("Webhook Message Parse Failed. " + e.getMessage(), e);
         }
 
         // 3. convert to cloudEvent obj
@@ -107,13 +105,9 @@ public class WebHookController {
         String eventType = manufacturerName + "." + webHookConfig.getManufacturerEventName();
 
         WebhookProtocolTransportObject webhookProtocolTransportObject = WebhookProtocolTransportObject.builder()
-            .cloudEventId(cloudEventId)
-            .eventType(eventType)
-            .cloudEventName(webHookConfig.getCloudEventName())
-            .cloudEventSource(webHookConfig.getCloudEventSource())
-            .dataContentType(webHookConfig.getDataContentType())
-            .body(body)
-            .build();
+            .cloudEventId(cloudEventId).eventType(eventType).cloudEventName(webHookConfig.getCloudEventName())
+            .cloudEventSource("www." + webHookConfig.getManufacturerName() + ".com")
+            .dataContentType(webHookConfig.getDataContentType()).body(body).build();
 
         // 4. send cloudEvent
         webHookMQProducer.send(this.protocolAdaptor.toCloudEvent(webhookProtocolTransportObject), new SendCallback() {
