@@ -15,18 +15,11 @@
  * limitations under the License.
  */
 
-dependencies {
+package org.apache.eventmesh.webhook.api.utils;
 
-    implementation project(":eventmesh-common")
-    implementation project(":eventmesh-webhook:eventmesh-webhook-api")
+public class StringUtils {
 
-    implementation 'org.slf4j:slf4j-api'
-    implementation "com.alibaba.nacos:nacos-client:2.0.4"
-    implementation "com.fasterxml.jackson.core:jackson-databind"
-    implementation "com.fasterxml.jackson.core:jackson-core"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
-
-    testImplementation project(":eventmesh-webhook:eventmesh-webhook-api")
-
-
+    public static final String getFileName(String path) {
+        return path.substring(1).replace('/', '.');
+    }
 }

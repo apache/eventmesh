@@ -25,7 +25,7 @@ task copyEventMeshAdmin(dependsOn: ['jar']) {
             into('../eventmesh-webhook/dist/apps/')
             from project.jar.getArchivePath()
             exclude {
-                "eventmesh-webhook-${version}.jar"                
+                "eventmesh-webhook-${version}.jar"
             }
         }
         copy {
