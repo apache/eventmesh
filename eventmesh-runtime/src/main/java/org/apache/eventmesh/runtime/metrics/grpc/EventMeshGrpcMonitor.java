@@ -32,8 +32,8 @@ import com.google.common.base.Preconditions;
 
 public class EventMeshGrpcMonitor {
 
-    private static int DELAY_MILLS = 60 * 1000;
-    private static int SCHEDULE_PERIOD_MILLS = 60 * 1000;
+    private static final int DELAY_MILLS = 60 * 1000;
+    private static final int SCHEDULE_PERIOD_MILLS = 60 * 1000;
     private static final int SCHEDULE_THREAD_SIZE = 1;
     private static final String THREAD_NAME_PREFIX = "eventMesh-grpc-monitor-scheduler";
 

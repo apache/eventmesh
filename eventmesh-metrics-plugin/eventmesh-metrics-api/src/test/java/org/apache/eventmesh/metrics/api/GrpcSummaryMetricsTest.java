@@ -25,7 +25,7 @@ import org.junit.Test;
 public class GrpcSummaryMetricsTest {
 
     @Test
-    public void TestTpsCalculate() {
+    public void testTpsCalculate() {
         GrpcSummaryMetrics grpcSummaryMetrics = new GrpcSummaryMetrics();
         grpcSummaryMetrics.getEventMesh2ClientMsgNum().addAndGet(128);
         grpcSummaryMetrics.getEventMesh2MqMsgNum().addAndGet(256);
@@ -37,5 +37,8 @@ public class GrpcSummaryMetricsTest {
         Assert.assertEquals(512, grpcSummaryMetrics.getEventMesh2MqTPS());
         Assert.assertEquals(1024, grpcSummaryMetrics.getMq2EventMeshTPS());
         Assert.assertEquals(2048, grpcSummaryMetrics.getClient2EventMeshTPS());
+
+        grpcSummaryMetrics.clearAllMessageCounter();
+        Assert.assertEquals(0, grpcSummaryMetrics.getEventMesh2ClientMsgNum().get());
     }
 }
