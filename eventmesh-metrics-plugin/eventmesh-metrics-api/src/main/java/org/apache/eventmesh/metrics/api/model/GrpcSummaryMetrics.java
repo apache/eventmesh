@@ -50,9 +50,9 @@ public class GrpcSummaryMetrics implements Metric {
 
     public void refreshTpsMetrics(long intervalMills) {
         client2EventMeshTPS = 1000 * client2EventMeshMsgNum.get() / intervalMills;
-        eventMesh2ClientTPS = 1000 * eventMesh2MqMsgNum.get() / intervalMills;
-        eventMesh2MqTPS = 1000 * mq2EventMeshMsgNum.get() / intervalMills;
-        mq2EventMeshTPS = 1000 * eventMesh2ClientMsgNum.get() / intervalMills;
+        eventMesh2ClientTPS = 1000 * eventMesh2ClientMsgNum.get() / intervalMills;
+        eventMesh2MqTPS = 1000 * eventMesh2MqMsgNum.get() / intervalMills;
+        mq2EventMeshTPS = 1000 * mq2EventMeshMsgNum.get() / intervalMills;
     }
 
     public AtomicLong getClient2EventMeshMsgNum() {
