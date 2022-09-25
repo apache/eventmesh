@@ -69,12 +69,6 @@ public class RequestMessageProcessor {
             return;
         }
 
-        String seqNum = message.getSeqNum();
-        String uniqueId = message.getUniqueId();
-        String topic = message.getTopic();
-        String producerGroup = message.getProducerGroup();
-
-        int ttl = Integer.parseInt(message.getTtl());
         try {
             doAclCheck(message);
         } catch (Exception e) {
@@ -94,6 +88,12 @@ public class RequestMessageProcessor {
         String protocolType = requestHeader.getProtocolType();
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new SimpleMessageWrapper(message));
+
+        String seqNum = message.getSeqNum();
+        String uniqueId = message.getUniqueId();
+        String topic = message.getTopic();
+        String producerGroup = message.getProducerGroup();
+        int ttl = Integer.parseInt(message.getTtl());
 
         ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
         EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);

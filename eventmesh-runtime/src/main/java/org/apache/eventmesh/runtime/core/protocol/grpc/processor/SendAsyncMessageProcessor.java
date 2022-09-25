@@ -72,11 +72,6 @@ public class SendAsyncMessageProcessor {
             return;
         }
 
-        String seqNum = message.getSeqNum();
-        String uniqueId = message.getUniqueId();
-        String topic = message.getTopic();
-        String producerGroup = message.getProducerGroup();
-
         try {
             doAclCheck(message);
         } catch (Exception e) {
@@ -96,6 +91,11 @@ public class SendAsyncMessageProcessor {
         String protocolType = requestHeader.getProtocolType();
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new SimpleMessageWrapper(message));
+
+        String seqNum = message.getSeqNum();
+        String uniqueId = message.getUniqueId();
+        String topic = message.getTopic();
+        String producerGroup = message.getProducerGroup();
 
         ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
         EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
