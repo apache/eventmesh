@@ -20,6 +20,7 @@ package org.apache.eventmesh.connector.rocketmq.producer;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.producer.Producer;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 import org.apache.eventmesh.connector.rocketmq.config.ClientConfiguration;
 
@@ -43,15 +44,15 @@ public class RocketMQProducerImpl implements Producer {
     public synchronized void init(Properties keyValue) {
         final ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.init();
-        String producerGroup = keyValue.getProperty("producerGroup");
+        String producerGroup = keyValue.getProperty(Constants.PRODUCER_GROUP);
 
         String omsNamesrv = clientConfiguration.namesrvAddr;
         Properties properties = new Properties();
-        properties.put("ACCESS_POINTS", omsNamesrv);
-        properties.put("REGION", "namespace");
-        properties.put("RMQ_PRODUCER_GROUP", producerGroup);
-        properties.put("OPERATION_TIMEOUT", 3000);
-        properties.put("PRODUCER_ID", producerGroup);
+        properties.put(Constants.ACCESS_POINTS, omsNamesrv);
+        properties.put(Constants.REGION, Constants.NAMESPACE);
+        properties.put(Constants.RMQ_PRODUCER_GROUP, producerGroup);
+        properties.put(Constants.OPERATION_TIMEOUT, 3000);
+        properties.put(Constants.PRODUCER_ID, producerGroup);
 
         producer = new ProducerImpl(properties);
 
