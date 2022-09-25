@@ -48,6 +48,7 @@ import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -277,12 +278,12 @@ public class ClientGroupWrapper {
         }
 
         Properties keyValue = new Properties();
-        keyValue.put("producerGroup", group);
-        keyValue.put("instanceName", EventMeshUtil
-            .buildMeshTcpClientID(sysId, "PUB", eventMeshTCPConfiguration.eventMeshCluster));
+        keyValue.put(EventMeshConstants.PRODUCER_GROUP, group);
+        keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil
+                .buildMeshTcpClientID(sysId, EventMeshConstants.PURPOSE_PUB_UPPER_CASE, eventMeshTCPConfiguration.eventMeshCluster));
 
         //TODO for defibus
-        keyValue.put("eventMeshIDC", eventMeshTCPConfiguration.eventMeshIDC);
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshTCPConfiguration.eventMeshIDC);
 
         mqProducerWrapper.init(keyValue);
         mqProducerWrapper.start();
@@ -414,23 +415,23 @@ public class ClientGroupWrapper {
         }
 
         Properties keyValue = new Properties();
-        keyValue.put("isBroadcast", "false");
-        keyValue.put("consumerGroup", group);
-        keyValue.put("eventMeshIDC", eventMeshTCPConfiguration.eventMeshIDC);
-        keyValue.put("instanceName", EventMeshUtil
-            .buildMeshTcpClientID(sysId, "SUB", eventMeshTCPConfiguration.eventMeshCluster));
+        keyValue.put(EventMeshConstants.IS_BROADCAST, "false");
+        keyValue.put(EventMeshConstants.CONSUMER_GROUP, group);
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshTCPConfiguration.eventMeshIDC);
+        keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil
+                .buildMeshTcpClientID(sysId, EventMeshConstants.PURPOSE_SUB_UPPER_CASE, eventMeshTCPConfiguration.eventMeshCluster));
 
         persistentMsgConsumer.init(keyValue);
 
         EventListener listener = (CloudEvent event, AsyncConsumeContext context) -> {
             String protocolVersion =
-                Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_VERSION)).toString();
+                Objects.requireNonNull(event.getSpecVersion()).toString();
 
             Span span = TraceUtils.prepareServerSpan(
                 EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
 
-            try (Scope scope = span.makeCurrent()) {
+            try {
                 eventMeshTcpMonitor.getTcpSummaryMetrics().getMq2eventMeshMsgNum()
                     .incrementAndGet();
                 event = CloudEventBuilder.from(event)
@@ -525,21 +526,21 @@ public class ClientGroupWrapper {
         }
 
         Properties keyValue = new Properties();
-        keyValue.put("isBroadcast", "true");
-        keyValue.put("consumerGroup", group);
-        keyValue.put("eventMeshIDC", eventMeshTCPConfiguration.eventMeshIDC);
-        keyValue.put("instanceName", EventMeshUtil
-            .buildMeshTcpClientID(sysId, "SUB", eventMeshTCPConfiguration.eventMeshCluster));
+        keyValue.put(EventMeshConstants.IS_BROADCAST, "true");
+        keyValue.put(EventMeshConstants.CONSUMER_GROUP, group);
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshTCPConfiguration.eventMeshIDC);
+        keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil
+                .buildMeshTcpClientID(sysId, EventMeshConstants.PURPOSE_SUB_UPPER_CASE, eventMeshTCPConfiguration.eventMeshCluster));
         broadCastMsgConsumer.init(keyValue);
 
         EventListener listener = (event, context) -> {
             String protocolVersion =
-                Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_VERSION)).toString();
+                Objects.requireNonNull(event.getSpecVersion()).toString();
 
             Span span = TraceUtils.prepareServerSpan(
                 EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                 EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
-            try (Scope scope = span.makeCurrent()) {
+            try {
                 eventMeshTcpMonitor.getTcpSummaryMetrics().getMq2eventMeshMsgNum()
                     .incrementAndGet();
                 event = CloudEventBuilder.from(event)
@@ -700,19 +701,19 @@ public class ClientGroupWrapper {
 
         try {
             logger.info("pushMsgToEventMesh,targetUrl:{},msg:{}", targetUrl,
-                msg);
+                    msg);
             List<String> paramValues = new ArrayList<String>();
-            paramValues.add("msg");
+            paramValues.add(EventMeshConstants.MANAGE_MSG);
             paramValues.add(JsonUtils.serialize(msg));
-            paramValues.add("group");
+            paramValues.add(EventMeshConstants.MANAGE_GROUP);
             paramValues.add(group);
 
             result = HttpTinyClient.httpPost(
-                targetUrl.toString(),
-                null,
-                paramValues,
-                "UTF-8",
-                3000);
+                    targetUrl.toString(),
+                    null,
+                    paramValues,
+                    StandardCharsets.UTF_8.name(),
+                    3000);
         } catch (Exception e) {
             logger.error("httpPost " + targetUrl + " is fail,", e);
             throw e;
@@ -754,7 +755,7 @@ public class ClientGroupWrapper {
                                 + " topic:{}", group, bizSeqNo, topic);
                     }
 
-                });
+                    });
             eventMeshTcpMonitor.getTcpSummaryMetrics().getEventMesh2mqMsgNum().incrementAndGet();
         } catch (Exception e) {
             logger.warn("try send msg back to broker failed");

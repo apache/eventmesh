@@ -35,6 +35,7 @@ header:
     - '**/*.crt'
     - '**/*.pem'
     - '**/go.sum'
+    - '**/Cargo.lock'
     - 'LICENSE'
     - 'NOTICE'
     - 'DISCLAIMER-WIP'

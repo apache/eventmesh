@@ -2,23 +2,22 @@
 
 The documentation introduces the steps to install the latest release of EventMesh Runtime with Docker and connect to Apache RocketMQ. It's recommended to use a Linux-based system with [Docker Engine](https://docs.docker.com/engine/install/). Please follow the [Docker tutorial](https://docs.docker.com/get-started/) to get familiar with the basic concepts (registry, volume, etc.) and commands of Docker.
 
+
+## Dependencies
+```
+64-bit OS，we recommend Linux/Unix；
+64-bit JDK 1.8+;
+Gradle 7.0+, we recommend 7.0.*
+4g+ available disk to deploy eventmesh-store
+If you choose standalone mode, you could skip this file and go to the next step: Start Eventmesh-Runtime; if not, you could choose RocketMQ as the store layer.
+```
+
 ## Pull EventMesh Image
 
 Download the pre-built image of [`eventmesh`](https://hub.docker.com/r/eventmesh/eventmesh) from Docker Hub with `docker pull`:
 
 ```console
 $ sudo docker pull eventmesh/eventmesh:v1.4.0
-v1.4.0: Pulling from eventmesh/eventmesh
-2d473b07cdd5: Pull complete
-2b97b2e51c1a: Pull complete
-ccef593d4fe7: Pull complete
-70beb7ae51cd: Pull complete
-0a2cf32321af: Pull complete
-5d764ea8950d: Pull complete
-d97f44e8825f: Pull complete
-Digest: sha256:0edc758be313c61758c1b598ef3315e3b6f707b127ad649063caf67d8876cc45
-Status: Downloaded newer image for eventmesh/eventmesh:v1.4.0
-docker.io/eventmesh/eventmesh:v1.4.0
 ```
 
 To verify that the `eventmesh/eventmesh` image is successfully installed, list the downloaded images with `docker images`:
@@ -105,3 +104,4 @@ sudo docker stop [container id or name]
 
 sudo docker rm -f [container id or name]
 ```
+
