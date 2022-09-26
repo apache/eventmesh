@@ -33,7 +33,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * 解析AmqpMessage或CloudEvent
+ * Resolve AmqpMessage or CloudEvent
  */
 public class AmqpProtocolResolver {
     public static CloudEvent buildEvent(AmqpMessage amqpMessage) {
