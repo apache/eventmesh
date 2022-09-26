@@ -47,6 +47,8 @@ dependencies {
 
     implementation "com.github.stefanbirkner:system-rules"
 
+    implementation "com.rabbitmq:amqp-client:5.15.0"
+
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
