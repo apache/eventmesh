@@ -27,7 +27,7 @@ import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import java.util.List;
 
 /**
- * Amqp协议适配器，amqp与cloudEvent之间的转换
+ * Conversion between amqp message to cloudEvent
  */
 public class AmqpProtocolAdaptor implements ProtocolAdaptor<ProtocolTransportObject> {
     @Override
