@@ -15,16 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.metrics.prometheus.config;
+package org.apache.eventmesh.client.workflow.config;
 
-import org.junit.Assert;
-import org.junit.Test;
+import lombok.Builder;
+import lombok.Data;
+import lombok.ToString;
 
-public class PrometheusConfigurationTest {
+@Data
+@Builder
+@ToString
+public class EventMeshWorkflowClientConfig {
+    @Builder.Default
+    private String serverName = "eventmesh-workflow";
 
-    @Test
-    public void getEventMeshPrometheusPort() {
-        int eventMeshPrometheusPort = PrometheusConfiguration.getEventMeshPrometheusPort();
-        Assert.assertEquals(19090, eventMeshPrometheusPort);
-    }
+    @Builder.Default
+    private String selectorType = "nacos";
 }
