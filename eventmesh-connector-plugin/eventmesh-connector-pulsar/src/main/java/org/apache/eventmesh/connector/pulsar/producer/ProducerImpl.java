@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.protobuf.ProtobufFormat;
+import io.cloudevents.jackson.JsonFormat;
 
 public class ProducerImpl extends AbstractProducer {
     private final AtomicBoolean started = new AtomicBoolean(false);
@@ -53,7 +53,7 @@ public class ProducerImpl extends AbstractProducer {
 
             byte[] serializedCloudEvent = EventFormatProvider
                     .getInstance()
-                    .resolveFormat(ProtobufFormat.PROTO_CONTENT_TYPE)
+                    .resolveFormat(JsonFormat.CONTENT_TYPE)
                     .serialize(cloudEvent);
 
             producer.sendAsync(serializedCloudEvent).thenAccept(messageId -> {

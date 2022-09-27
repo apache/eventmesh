@@ -13,12 +13,9 @@ byte-buddy-1.11.0.jar
 cache-api-1.1.1.jar
 checker-qual-3.12.0.jar
 cloudevents-api-2.2.0.jar
-cloudevents-api-2.3.0.jar
 cloudevents-core-2.2.0.jar
-cloudevents-core-2.3.0.jar
 cloudevents-json-jackson-2.2.0.jar
 cloudevents-kafka-2.2.1.jar
-cloudevents-protobuf-2.3.0.jar
 commons-beanutils-1.9.4.jar
 commons-cli-1.2.jar
 commons-codec-1.11.jar
@@ -157,7 +154,6 @@ pravega-shared-security-0.11.0.jar
 protobuf-java-3.18.2.jar
 protobuf-java-3.19.4.jar
 protobuf-java-3.21.5.jar
-protobuf-java-util-3.15.0.jar
 protobuf-java-util-3.21.5.jar
 protobuf-java-util-3.5.1.jar
 proto-google-common-protos-2.0.1.jar
