@@ -41,5 +41,6 @@ header:
     - 'DISCLAIMER-WIP'
     - 'gradlew'
     - 'gradlew.bat'
+    - '**/*.txt'
 
   comment: on-failure
