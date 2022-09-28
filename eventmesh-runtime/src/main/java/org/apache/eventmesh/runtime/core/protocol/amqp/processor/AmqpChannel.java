@@ -1,5 +1,26 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.eventmesh.runtime.core.protocol.amqp.processor;
 
+import org.apache.eventmesh.runtime.core.protocol.amqp.ExchangeContainer;
+import org.apache.eventmesh.runtime.core.protocol.amqp.ExchangeService;
+import org.apache.eventmesh.runtime.core.protocol.amqp.QueueContainer;
+import org.apache.eventmesh.runtime.core.protocol.amqp.QueueService;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.AMQPFrame;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ErrorCodes;
 
@@ -19,13 +40,13 @@ public class AmqpChannel implements ChannelMethodProcessor {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
-    private int channelId;
-    private AmqpConnection connection;
-    private long amqpMaxMessageSize;
+    private  int channelId;
+    private  AmqpConnection connection;
+    private  long amqpMaxMessageSize;
     /**
      * Maps from consumer tag to consumers instance.
      */
-    //private final Map<String, Consumer> tag2ConsumersMap = new ConcurrentHashMap<>();
+    //    private final Map<String, Consumer> tag2ConsumersMap = new ConcurrentHashMap<>();
 
     /**
      * The current message - which may be partial in the sense that not all frames have been received yet - which has
@@ -45,6 +66,19 @@ public class AmqpChannel implements ChannelMethodProcessor {
      */
     private AtomicLong deliveryTag = new AtomicLong(0);
 
+    private ExchangeService exchangeService;
+    private QueueService queueService;
+    private ExchangeContainer exchangeContainer;
+    private QueueContainer queueContainer;
+
+    public AmqpChannel(int channelId, AmqpConnection amqpConnection) {
+        this.channelId = channelId;
+        this.connection = amqpConnection;
+        this.exchangeService = this.connection.getAmqpBrokerService().getExchangeService();
+        this.queueService = this.connection.getAmqpBrokerService().getQueueService();
+        this.exchangeContainer = this.connection.getAmqpBrokerService().getExchangeContainer();
+        this.queueContainer = this.connection.getAmqpBrokerService().getQueueContainer();
+    }
 
     @Override
     public void receiveChannelFlow(boolean active) {
@@ -77,6 +111,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
         }
 
         if (hasCurrentMessage()) {
+            // TODO: 2022/9/20 send message to mq
 //            try {
 //                if (currentMessage.handleFrame(data)) {
 //                    processSendMessage();
@@ -91,7 +126,8 @@ public class AmqpChannel implements ChannelMethodProcessor {
 //                        "system error");
 //            }
         } else {
-            closeChannel(ErrorCodes.COMMAND_INVALID, "Attempt to send a content without first sending a publish frame");
+            closeChannel(ErrorCodes.COMMAND_INVALID,
+                    "Attempt to send a content without first sending a publish frame");
         }
     }
 
@@ -102,6 +138,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
         }
 
         if (hasCurrentMessage()) {
+            // TODO: 2022/9/20 send message to mq
 //            try {
 //                if (currentMessage.handleFrame(frame)) {
 //                    processSendMessage();
@@ -119,21 +156,27 @@ public class AmqpChannel implements ChannelMethodProcessor {
             long bodySize = currentMessage.getContentHeader().getBodySize();
             if (bodySize > amqpMaxMessageSize) {
                 log.error("RECV[{}] too large message bodySize {}", channelId, bodySize);
-                closeChannel(ErrorCodes.MESSAGE_TOO_LARGE, "Message size of " + bodySize + " greater than allowed maximum of " + amqpMaxMessageSize);
+                closeChannel(ErrorCodes.MESSAGE_TOO_LARGE,
+                        "Message size of " + bodySize + " greater than allowed maximum of " + amqpMaxMessageSize);
             }
 
         } else {
-            closeChannel(ErrorCodes.COMMAND_INVALID, "Attempt to send a content without first sending a publish frame");
+            closeChannel(ErrorCodes.COMMAND_INVALID,
+                    "Attempt to send a content without first sending a publish frame");
         }
     }
 
     /**
      * send message
      */
-    private void processSendMessage() {
+    private void processSendMessage(){
+        // TODO: 2022/9/20 convert to cloudEvent and send to mq
+
 
 
     }
+
+
 
 
     @Override
@@ -157,8 +200,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     }
 
     @Override
-    public void receiveExchangeDeclare(String exchange, String type, boolean passive, boolean durable, boolean autoDelete, boolean internal,
-                                       boolean nowait, Map<String, Object> arguments) {
+    public void receiveExchangeDeclare(String exchange, String type, boolean passive, boolean durable, boolean autoDelete, boolean internal, boolean nowait, Map<String, Object> arguments) {
 
     }
 
@@ -173,8 +215,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     }
 
     @Override
-    public void receiveQueueDeclare(String queue, boolean passive, boolean durable, boolean exclusive, boolean autoDelete, boolean nowait,
-                                    Map<String, Object> arguments) {
+    public void receiveQueueDeclare(String queue, boolean passive, boolean durable, boolean exclusive, boolean autoDelete, boolean nowait, Map<String, Object> arguments) {
 
     }
 
@@ -209,10 +250,9 @@ public class AmqpChannel implements ChannelMethodProcessor {
     }
 
     @Override
-    public void receiveBasicConsume(String queue, String consumerTag, boolean noLocal, boolean noAck, boolean exclusive, boolean nowait,
-                                    Map<String, Object> arguments) {
-        log.info("RECV BasicConsume[queue:{} consumerTag:{} noLocal:{} noAck:{} exclusive:{} nowait:{}" + " arguments:{}]", queue, consumerTag,
-            noLocal, noAck, exclusive, nowait, arguments);
+    public void receiveBasicConsume(String queue, String consumerTag, boolean noLocal, boolean noAck, boolean exclusive, boolean nowait, Map<String, Object> arguments) {
+        log.info("RECV BasicConsume[queue:{} consumerTag:{} noLocal:{} noAck:{} exclusive:{} nowait:{}"
+                + " arguments:{}]",  queue, consumerTag, noLocal, noAck, exclusive, nowait, arguments);
 
         // TODO check queue exist
 
@@ -223,7 +263,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
             consumerTag1 = consumerTag;
         }
 
-        //tag2ConsumersMap.computeIfAbsent(consumerTag1, (c) ->new ConsumerImpl());
+        // tag2ConsumersMap.computeIfAbsent(consumerTag1, (c) ->new ConsumerImpl());
         if (!nowait) {
             //connection.writeMethod(connection.getCommandFactory().createBasicConsumeOkBody(consumer.getConsumerTag()), channelId);
         }
