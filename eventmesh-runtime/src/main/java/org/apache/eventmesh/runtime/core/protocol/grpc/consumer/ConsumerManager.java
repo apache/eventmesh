@@ -126,21 +126,21 @@ public class ConsumerManager {
         }
     }
 
-    public void updateClientTime(ConsumerGroupClient client) {
+    public boolean updateClientTime(ConsumerGroupClient client) {
         String consumerGroup = client.getConsumerGroup();
         List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
-        if (CollectionUtils.isEmpty(localClients)) {
-            return;
-        }
-        for (ConsumerGroupClient localClient : localClients) {
-            if (StringUtils.equals(localClient.getIp(), client.getIp())
-                && StringUtils.equals(localClient.getPid(), client.getPid())
-                && StringUtils.equals(localClient.getSys(), client.getSys())
-                && StringUtils.equals(localClient.getTopic(), client.getTopic())) {
-                localClient.setLastUpTime(new Date());
-                break;
+        if (CollectionUtils.isNotEmpty(localClients)) {
+            for (ConsumerGroupClient localClient : localClients) {
+                if (StringUtils.equals(localClient.getIp(), client.getIp())
+                    && StringUtils.equals(localClient.getPid(), client.getPid())
+                    && StringUtils.equals(localClient.getSys(), client.getSys())
+                    && StringUtils.equals(localClient.getTopic(), client.getTopic())) {
+                    localClient.setLastUpTime(new Date());
+                    return true;
+                }
             }
         }
+        return false;
     }
 
     public synchronized void deregisterClient(ConsumerGroupClient client) {
