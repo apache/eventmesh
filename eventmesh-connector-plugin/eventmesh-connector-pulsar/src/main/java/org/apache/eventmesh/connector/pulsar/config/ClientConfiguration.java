@@ -17,11 +17,12 @@
 
 package org.apache.eventmesh.connector.pulsar.config;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Preconditions;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter

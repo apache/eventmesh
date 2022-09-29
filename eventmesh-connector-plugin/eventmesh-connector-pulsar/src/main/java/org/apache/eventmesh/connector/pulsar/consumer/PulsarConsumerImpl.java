@@ -17,15 +17,12 @@
 
 package org.apache.eventmesh.connector.pulsar.consumer;
 
-import io.cloudevents.core.format.EventDeserializationException;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
-import org.apache.eventmesh.api.EventMeshAction;
-import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
-import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
+import org.apache.eventmesh.api.EventMeshAction;
+import org.apache.eventmesh.api.EventMeshAsyncConsumeContext;
 import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
 
@@ -33,11 +30,14 @@ import org.apache.pulsar.client.api.MessageListener;
 import org.apache.pulsar.client.api.PulsarClient;
 import org.apache.pulsar.client.api.PulsarClientException;
 
-import io.cloudevents.CloudEvent;
-
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.format.EventDeserializationException;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -103,7 +103,7 @@ public class PulsarConsumerImpl implements Consumer {
                       throw new ConnectorRuntimeException(
                         String.format("Failed to unsubscribe the topic:%s with exception: %s", topic, ex.getMessage()));
                   } catch (EventDeserializationException ex) {
-                      log.warn("The Message isn't json format, with exception:{}", ex.getMessage() );
+                      log.warn("The Message isn't json format, with exception:{}", ex.getMessage());
                   }
               }).subscribe();
     }
