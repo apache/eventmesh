@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -233,5 +234,14 @@ public class ConsumerManager {
                 }
             }, 10000, 10000, TimeUnit.MILLISECONDS);
         }
+    }
+
+    public List<String> getAllConsumerTopic() {
+        return clientTable.values()
+            .stream()
+            .flatMap(List::stream)
+            .map(ConsumerGroupClient::getTopic)
+            .distinct()
+            .collect(Collectors.toList());
     }
 }
