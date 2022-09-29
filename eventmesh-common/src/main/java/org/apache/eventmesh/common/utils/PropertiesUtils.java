@@ -21,6 +21,10 @@ import org.apache.eventmesh.common.Constants;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Properties;
 
 public class PropertiesUtils {
@@ -60,5 +64,33 @@ public class PropertiesUtils {
             }
         );
         return to;
+    }
+
+    /**
+     * Load properties from file when file is exist
+     *
+     * @param properties
+     * @param path
+     * @throws IOException Exception when loading properties, like illegal content, file permission denies
+     */
+    public static void loadPropertiesWhenFileExist(Properties properties, String path) throws IOException {
+        FileReader reader = null;
+        try {
+            if (properties != null && new File(path).exists()) {
+                reader = new FileReader(path);
+                properties.load(new BufferedReader(reader));
+            }
+        } catch (IOException e) {
+            throw e;
+        } finally {
+            if (null != reader) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    // close fail, ignore
+                    return;
+                }
+            }
+        }
     }
 }

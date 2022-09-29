@@ -63,9 +63,7 @@ public class ConfigurationWrapper {
         }
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONF_FILE;
-            if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
-            }
+            PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath);
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", CONF_FILE));
         }
