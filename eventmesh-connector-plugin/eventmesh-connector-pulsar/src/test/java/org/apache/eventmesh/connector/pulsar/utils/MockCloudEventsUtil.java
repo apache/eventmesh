@@ -15,28 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.pulsar.config;
+package org.apache.eventmesh.connector.pulsar.utils;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
 
-import com.google.common.base.Preconditions;
+import java.net.URI;
+import java.time.OffsetDateTime;
 
-@Getter
-@Setter
-public class ClientConfiguration {
+public class MockCloudEventsUtil {
 
-    private String serviceAddr;
+    private static CloudEvent cloudEvent = CloudEventBuilder.v1()
+      .withId("001")
+      .withTime(OffsetDateTime.now())
+      .withSource(URI.create("testsource"))
+      .withSubject("testTopic")
+      .withType(String.class.getCanonicalName())
+      .withDataContentType("text/plain")
+      .withData("data".getBytes())
+      .build();
 
-    public void init() {
-        String serviceAddrStr = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR);
-        Preconditions.checkState(StringUtils.isNotEmpty(serviceAddrStr),
-                String.format("%s error", ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR));
-        serviceAddr = StringUtils.trim(serviceAddrStr);
+    public static CloudEvent getCloudEvent() {
+        return cloudEvent;
     }
 
-    static class ConfKeys {
-        public static final String KEYS_EVENTMESH_PULSAR_SERVICE_ADDR = "eventMesh.server.pulsar.service";
-    }
 }
