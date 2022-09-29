@@ -49,7 +49,7 @@ public class GithubProtocol implements ManufacturerProtocol {
         }
 
         try {
-            webHookRequest.setManufacturerEventId(header.get("X-GitHub-Delivery"));
+            webHookRequest.setManufacturerEventId(header.get("x-github-delivery"));
             webHookRequest.setManufacturerEventName(webHookConfig.getManufacturerEventName());
             webHookRequest.setManufacturerSource(getManufacturerName());
         } catch (Exception e) {

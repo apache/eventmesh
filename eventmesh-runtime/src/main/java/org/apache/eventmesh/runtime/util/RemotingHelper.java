@@ -28,9 +28,6 @@ import org.slf4j.LoggerFactory;
 import io.netty.channel.Channel;
 
 public class RemotingHelper {
-    public static final String DEFAULT_CHARSET = "UTF-8";
-
-    public static Logger logger = LoggerFactory.getLogger(RemotingHelper.class);
 
     public static String exceptionSimpleDesc(final Throwable e) {
         StringBuilder sb = new StringBuilder();
