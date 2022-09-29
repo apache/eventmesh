@@ -19,11 +19,11 @@ package org.apache.eventmesh.connector.pravega.client;
 
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.SendResult;
-import org.apache.eventmesh.connector.pravega.SubscribeTask;
 import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 import org.apache.eventmesh.connector.pravega.exception.PravegaConnectorException;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +84,7 @@ public class PravegaClient {
     }
 
     public void start() {
-        if (PravegaClient.getInstance().createScope()) {
+        if (createScope()) {
             log.info("Create Pravega scope[{}] success.", PravegaConnectorConfig.getInstance().getScope());
         } else {
             log.info("Pravega scope[{}] has already been created.", PravegaConnectorConfig.getInstance().getScope());
@@ -101,6 +101,15 @@ public class PravegaClient {
         streamManager.close();
     }
 
+    /**
+     * Publish CloudEvent to Pravega stream named topic. Note that the messageId in SendResult is always -1
+     * since {@link EventStreamWriter#writeEvent(Object)} just return {@link java.util.concurrent.CompletableFuture}
+     * with {@link Void} which couldn't get messageId.
+     *
+     * @param topic      topic
+     * @param cloudEvent cloudEvent
+     * @return SendResult whose messageId is always -1
+     */
     public SendResult publish(String topic, CloudEvent cloudEvent) {
         if (!createStream(topic)) {
             log.debug("stream[{}] has already been created.", topic);
@@ -121,32 +130,29 @@ public class PravegaClient {
 
     }
 
-    public boolean subscribe(String topic, String consumerGroup, EventListener listener) {
+    public boolean subscribe(String topic, boolean isBroadcast, String consumerGroup, String instanceName, EventListener listener) {
         if (subscribeTaskMap.containsKey(topic)) {
             return true;
         }
-        String readerGroup = buildReaderGroup(topic, consumerGroup);
-        // clear the readerGroup first to ensure a readerGroup only has one reader
-        try {
-            deleteReaderGroup(readerGroup);
-        } catch (Exception e) {
-            log.debug("clear readerGroup[{}] fail since it doesn't exist.", readerGroup);
-        }
-        createReaderGroup(topic, readerGroup);
-        String readerId = buildReaderId(readerGroup);
-        EventStreamReader<byte[]> reader = createReader(readerId, readerGroup);
+        String readerGroupName = buildReaderGroupName(isBroadcast, consumerGroup, topic);
+        createReaderGroup(topic, readerGroupName);
+        String readerId = buildReaderId(instanceName);
+        EventStreamReader<byte[]> reader = createReader(readerId, readerGroupName);
         SubscribeTask subscribeTask = new SubscribeTask(topic, reader, listener);
         subscribeTask.start();
         subscribeTaskMap.put(topic, subscribeTask);
         return true;
     }
 
-    public boolean unsubscribe(String topic, String consumerGroup) {
+    public boolean unsubscribe(String topic, boolean isBroadcast, String consumerGroup) {
         if (!subscribeTaskMap.containsKey(topic)) {
             return true;
         }
-        deleteReaderGroup(buildReaderGroup(topic, consumerGroup));
+        if (!isBroadcast) {
+            deleteReaderGroup(buildReaderGroupName(false, consumerGroup, topic));
+        }
         subscribeTaskMap.remove(topic).stopRead();
+        writerMap.remove(topic).close();
         return true;
     }
 
@@ -167,21 +173,28 @@ public class PravegaClient {
         return clientFactory.createEventWriter(topic, new ByteArraySerializer(), EventWriterConfig.builder().build());
     }
 
-    private String buildReaderGroup(String topic, String consumerGroup) {
-        return String.format("%s-%s", topic, consumerGroup);
+    private String buildReaderGroupName(boolean isBroadcast, String consumerGroup, String topic) {
+        if (isBroadcast) {
+            return UUID.randomUUID().toString();
+        } else {
+            return String.format("%s-%s", consumerGroup, topic);
+        }
     }
 
-    private String buildReaderId(String readerGroup) {
-        return String.format("%s-reader", readerGroup);
+    private String buildReaderId(String instanceName) {
+        return String.format("%s-reader", instanceName).replaceAll("\\(", "-").replaceAll("\\)", "-");
     }
 
-    private void createReaderGroup(String topic, String readerGroup) {
+    private void createReaderGroup(String topic, String readerGroupName) {
         if (!checkTopicExist(topic)) {
             createStream(topic);
         }
         ReaderGroupConfig readerGroupConfig =
-            ReaderGroupConfig.builder().stream(NameUtils.getScopedStreamName(config.getScope(), topic)).build();
-        readerGroupManager.createReaderGroup(readerGroup, readerGroupConfig);
+            ReaderGroupConfig.builder()
+                .stream(NameUtils.getScopedStreamName(config.getScope(), topic))
+                .retentionType(ReaderGroupConfig.StreamDataRetention.AUTOMATIC_RELEASE_AT_LAST_CHECKPOINT)
+                .build();
+        readerGroupManager.createReaderGroup(readerGroupName, readerGroupConfig);
     }
 
     private void deleteReaderGroup(String readerGroup) {

@@ -49,15 +49,11 @@ import org.slf4j.LoggerFactory;
 
 public class WebhookFileListener {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private String filePath;
-
-    private Map<String, WebHookConfig> cacheWebHookConfig;
-
     private final Set<String> pathSet = new LinkedHashSet<>(); // monitored subdirectory
-
     private final Map<WatchKey, String> watchKeyPathMap = new HashMap<>(); // WatchKey's path
+    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    private String filePath;
+    private Map<String, WebHookConfig> cacheWebHookConfig;
 
     public WebhookFileListener() {
     }
@@ -113,7 +109,11 @@ public class WebhookFileListener {
             logger.error("cacheInit failed", e);
         }
         WebHookConfig webHookConfig = JsonUtils.deserialize(fileContent.toString(), WebHookConfig.class);
-        cacheWebHookConfig.put(webHookConfig.getCallbackPath(), webHookConfig);
+        cacheWebHookConfig.put(webhookConfigFile.getName(), webHookConfig);
+    }
+
+    public void deleteConfig(File webhookConfigFile) {
+        cacheWebHookConfig.remove(webhookConfigFile.getName());
     }
 
     /**
@@ -155,18 +155,25 @@ public class WebhookFileListener {
                 for (WatchEvent<?> event : key.pollEvents()) {
                     String flashPath = watchKeyPathMap.get(key);
                     // manufacturer change
-                    if (flashPath.equals(filePath)) {
-                        if (ENTRY_CREATE == event.kind()) {
+                    String path = flashPath + "/" + event.context();
+                    File file = new File(path);
+                    if (ENTRY_CREATE == event.kind() || ENTRY_MODIFY == event.kind()) {
+                        if (file.isFile()) {
+                            cacheInit(file);
+                        } else {
                             try {
-                                key = Paths.get(filePath + WebHookOperationConstant.FILE_SEPARATOR + event.context())
-                                    .register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+                                key = Paths.get(path).register(service, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+                                watchKeyPathMap.put(key, path);
                             } catch (IOException e) {
                                 logger.error("registerWatchKey failed", e);
                             }
-                            watchKeyPathMap.put(key, filePath + WebHookOperationConstant.FILE_SEPARATOR + event.context());
                         }
-                    } else { // config change
-                        cacheInit(new File(flashPath + WebHookOperationConstant.FILE_SEPARATOR + event.context()));
+                    } else if (ENTRY_DELETE == event.kind()) {
+                        if (file.isDirectory()) {
+                            watchKeyPathMap.remove(key);
+                        } else {
+                            deleteConfig(file);
+                        }
                     }
                 }
                 if (!key.reset()) {

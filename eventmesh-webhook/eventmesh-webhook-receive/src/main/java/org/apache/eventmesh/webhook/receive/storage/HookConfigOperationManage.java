@@ -26,6 +26,7 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
+import org.apache.eventmesh.webhook.api.utils.StringUtils;
 
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -43,16 +44,13 @@ import com.alibaba.nacos.api.exception.NacosException;
 
 public class HookConfigOperationManage implements WebHookConfigOperation {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private String operationMode;
-
-    private ConfigService nacosConfigService;
-
     /**
      * webhook config pool -> key is CallbackPath
      */
     private final Map<String, WebHookConfig> cacheWebHookConfig = new ConcurrentHashMap<>();
+    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    private String operationMode;
+    private ConfigService nacosConfigService;
 
     public HookConfigOperationManage() {
     }
@@ -60,7 +58,7 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     /**
      * Initialize according to operationMode
      *
-     * @param configurationWrapper 
+     * @param configurationWrapper
      */
     public HookConfigOperationManage(ConfigurationWrapper configurationWrapper) throws FileNotFoundException, NacosException {
 
@@ -80,7 +78,7 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
     @Override
     public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
         if ("file".equals(operationMode)) {
-            return cacheWebHookConfig.get(webHookConfig.getCallbackPath());
+            return cacheWebHookConfig.get(StringUtils.getFileName(webHookConfig.getCallbackPath()));
         } else if ("nacos".equals(operationMode)) {
             try {
                 String content = nacosConfigService.getConfig(webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION,

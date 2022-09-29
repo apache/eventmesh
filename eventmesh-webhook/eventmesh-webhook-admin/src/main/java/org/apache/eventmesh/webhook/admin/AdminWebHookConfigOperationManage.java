@@ -33,14 +33,14 @@ import org.slf4j.LoggerFactory;
 
 public class AdminWebHookConfigOperationManage {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
-
     private static final Map<String, Class<? extends WebHookConfigOperation>> map = new HashMap<>();
 
     static {
         map.put("file", FileWebHookConfigOperation.class);
         map.put("nacos", NacosWebHookConfigOperation.class);
     }
+
+    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ConfigurationWrapper configurationWrapper;
 
