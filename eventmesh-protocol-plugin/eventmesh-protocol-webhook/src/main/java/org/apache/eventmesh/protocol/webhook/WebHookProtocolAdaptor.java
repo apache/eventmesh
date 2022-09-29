@@ -46,7 +46,7 @@ public class WebHookProtocolAdaptor implements ProtocolAdaptor<WebhookProtocolTr
             .withDataContentType(protocol.getDataContentType())
             .withType(protocol.getEventType())
             .withData(protocol.getBody())
-            .withExtension(Constants.PROTOCOL_TYPE, "webhookProtocolAdaptor")
+            .withExtension(Constants.PROTOCOL_TYPE, "webhook")
             .build();
     }
 

@@ -105,6 +105,7 @@ public class ReplyMessageProcessor {
 
         SendMessageContext sendMessageContext = new SendMessageContext(message.getSeqNum(), cloudEvent, eventMeshProducer, eventMeshGrpcServer);
 
+        eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
         eventMeshProducer.reply(sendMessageContext, new SendCallback() {
             @Override
