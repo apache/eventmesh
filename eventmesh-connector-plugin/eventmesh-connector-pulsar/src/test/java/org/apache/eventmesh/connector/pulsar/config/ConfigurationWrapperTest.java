@@ -17,26 +17,15 @@
 
 package org.apache.eventmesh.connector.pulsar.config;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
+import org.junit.Test;
 
-import com.google.common.base.Preconditions;
+public class ConfigurationWrapperTest {
 
-@Getter
-@Setter
-public class ClientConfiguration {
-
-    private String serviceAddr;
-
-    public void init() {
-        String serviceAddrStr = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR);
-        Preconditions.checkState(StringUtils.isNotEmpty(serviceAddrStr),
-                String.format("%s error", ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR));
-        serviceAddr = StringUtils.trim(serviceAddrStr);
+    @Test
+    public void getProp() {
+        String namesrcAddr = ConfigurationWrapper.getProp("eventMesh.server.pulsar.service");
+        Assert.assertNotNull(namesrcAddr);
     }
 
-    static class ConfKeys {
-        public static final String KEYS_EVENTMESH_PULSAR_SERVICE_ADDR = "eventMesh.server.pulsar.service";
-    }
 }
