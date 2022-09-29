@@ -6,7 +6,7 @@
 >
 > EventMesh-sdk-java support both async and broadcast.
 >
-> EventMesh-sdk-java support HTT, TCP and gRPC.
+> EventMesh-sdk-java support HTTP, TCP and gRPC.
 
 The test demos of TCP, HTTP 和 GRPC are in the module **eventmesh-examples**
 
@@ -48,7 +48,7 @@ More information about EventMesh-TCP, please refer to [EventMesh TCP](docs/zh/sd
 
 ### 2.1 ASYNC
 
-- The subscriber is a SpringBoot demo, so run this demo to start subscriber (we have created the topic TEST-TOPIC-HTTP-ASYNCT by default, you can also create other topic to test)
+- The subscriber is a SpringBoot demo, so run this demo to start subscriber (we have created the topic TEST-TOPIC-HTTP-ASYNC by default, you can also create other topic to test)
 
 ```
 Run the main method of org.apache.eventmesh.http.demo.sub.SpringBootDemoApplication
