@@ -74,7 +74,7 @@ public class TcpMessageProtocolResolver {
         cloudEventBuilder = cloudEventBuilder
                 .withId(header.getSeq())
                 .withSource(URI.create("/"))
-                .withType("eventmeshmessage")
+                .withType(MeshMessageProtocolConstant.PROTOCOL_NAME)
                 .withSubject(topic)
                 .withData(content.getBytes(StandardCharsets.UTF_8));
 

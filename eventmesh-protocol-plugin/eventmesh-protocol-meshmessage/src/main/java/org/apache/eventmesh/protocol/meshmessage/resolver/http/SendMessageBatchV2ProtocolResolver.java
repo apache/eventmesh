@@ -25,6 +25,7 @@ import org.apache.eventmesh.common.protocol.http.common.ProtocolVersion;
 import org.apache.eventmesh.common.protocol.http.header.Header;
 import org.apache.eventmesh.common.protocol.http.header.message.SendMessageBatchV2RequestHeader;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
+import org.apache.eventmesh.protocol.meshmessage.MeshMessageProtocolConstant;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -65,7 +66,7 @@ public class SendMessageBatchV2ProtocolResolver {
 
                 cloudEventBuilder = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
                         .withSubject(sendMessageBatchV2RequestBody.getTopic())
-                        .withType("eventmeshmessage")
+                        .withType(MeshMessageProtocolConstant.PROTOCOL_NAME)
                         .withSource(URI.create("/"))
                         .withData(content.getBytes(StandardCharsets.UTF_8))
                         .withExtension(ProtocolKey.REQUEST_CODE, code)
@@ -92,7 +93,7 @@ public class SendMessageBatchV2ProtocolResolver {
                 cloudEventBuilder = CloudEventBuilder.v03();
                 cloudEventBuilder = cloudEventBuilder.withId(sendMessageBatchV2RequestBody.getBizSeqNo())
                         .withSubject(sendMessageBatchV2RequestBody.getTopic())
-                        .withType("eventmeshmessage")
+                        .withType(MeshMessageProtocolConstant.PROTOCOL_NAME)
                         .withSource(URI.create("/"))
                         .withData(content.getBytes(StandardCharsets.UTF_8))
                         .withExtension(ProtocolKey.REQUEST_CODE, code)
