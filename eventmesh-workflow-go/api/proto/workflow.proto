@@ -28,7 +28,8 @@ service Workflow {
 message ExecuteRequest {
 	string id = 1;
 	string instance_id = 2;
-	string input = 3;
+	string task_instance_id = 3;
+	string input = 4;
 }
 
 message ExecuteResponse {
