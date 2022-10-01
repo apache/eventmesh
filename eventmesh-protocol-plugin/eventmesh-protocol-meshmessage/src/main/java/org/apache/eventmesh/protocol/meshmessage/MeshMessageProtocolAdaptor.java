@@ -111,16 +111,16 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
 
     @Override
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
-        String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
+        String protocolDesc = cloudEvent.getExtension(MeshMessageProtocolConstant.PROTOCOL_DESC_GRPC).toString();
 
-        if (StringUtils.equals("http", protocolDesc)) {
+        if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_HTTP, protocolDesc)) {
             HttpCommand httpCommand = new HttpCommand();
             Body body = new Body() {
                 final Map<String, Object> map = new HashMap<>();
 
                 @Override
                 public Map<String, Object> toMap() {
-                    map.put("content", new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
+                    map.put(MeshMessageProtocolConstant.PROTOCOL_KEY_CONTENT, new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
                     return map;
                 }
             };
@@ -129,7 +129,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             return httpCommand;
         } else if (StringUtils.equals(Constants.PROTOCOL_GRPC, protocolDesc)) {
             return GrpcMessageProtocolResolver.buildSimpleMessage(cloudEvent);
-        } else if (StringUtils.equals("tcp", protocolDesc)) {
+        } else if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_TCP, protocolDesc)) {
             return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));
