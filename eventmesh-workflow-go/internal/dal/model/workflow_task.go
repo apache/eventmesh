@@ -27,9 +27,9 @@ type WorkflowTask struct {
 	CreateTime         time.Time               `json:"create_time"`
 	UpdateTime         time.Time               `json:"update_time"`
 	Actions            []*WorkflowTaskAction   `json:"-" gorm:"-"`
-	Relations          []*WorkflowTaskRelation `json:"-" gorm:"-"`
 	TaskIDs            []string                `json:"-" gorm:"-"`
 	WorkflowInstanceID string                  `json:"-" gorm:"-"`
+	ChildTasks         []*WorkflowTaskRelation `json:"-" gorm:"-"`
 }
 
 func (w WorkflowTask) TableName() string {
@@ -72,14 +72,15 @@ type WorkflowTaskInstance struct {
 	WorkflowInstanceID string        `json:"workflow_instance_id" gorm:"column:workflow_instance_id;type:varchar;size:1024"`
 	WorkflowID         string        `json:"workflow_id" gorm:"column:workflow_id;type:varchar;size:1024"`
 	TaskID             string        `json:"task_id" gorm:"column:task_id;type:varchar;size:1024"`
-	TaskInstanceId     string        `json:"task_instance_id" gorm:"column:task_instance_id;type:varchar;size:1024"`
+	TaskInstanceID     string        `json:"task_instance_id" gorm:"column:task_instance_id;type:varchar;size:1024"`
 	Status             int           `json:"status" gorm:"column:status;type:int"`
 	Input              string        `json:"input" gorm:"column:input;type:text;"`
 	RetryTimes         int           `json:"retry_times" gorm:"column:retry_times;type:int"`
-	CreateTime         time.Time     `json:"create_time"`
-	UpdateTime         time.Time     `json:"update_time"`
-	Task               *WorkflowTask `gorm:"-"`
-	Order              string        `gorm:"-"`
+	CreateTime         time.Time     `json:"create_time" gorm:"column:create_time"`
+	UpdateTime         time.Time     `json:"update_time" gorm:"column:update_time"`
+	Task               *WorkflowTask `json:"task" gorm:"-"`
+	Order              string        `json:"order" gorm:"-"`
+	IsStart            bool          `json:"is_start" gorm:"-"`
 }
 
 func (w WorkflowTaskInstance) TableName() string {
