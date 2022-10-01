@@ -111,7 +111,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
 
     @Override
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
-        String protocolDesc = cloudEvent.getExtension(MeshMessageProtocolConstant.PROTOCOL_DESC_GRPC).toString();
+        String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
 
         if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_HTTP, protocolDesc)) {
             HttpCommand httpCommand = new HttpCommand();
@@ -127,7 +127,7 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
             body.toMap();
             httpCommand.setBody(body);
             return httpCommand;
-        } else if (StringUtils.equals(Constants.PROTOCOL_GRPC, protocolDesc)) {
+        } else if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_GRPC, protocolDesc)) {
             return GrpcMessageProtocolResolver.buildSimpleMessage(cloudEvent);
         } else if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_TCP, protocolDesc)) {
             return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
