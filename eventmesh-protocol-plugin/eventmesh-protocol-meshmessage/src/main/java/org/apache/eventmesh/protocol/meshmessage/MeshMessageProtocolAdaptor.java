@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.protocol.meshmessage;
 
-import javafx.scene.shape.Mesh;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.grpc.common.BatchMessageWrapper;
