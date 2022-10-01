@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.protocol.meshmessage;
 
-import javafx.scene.shape.Mesh;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.grpc.common.BatchMessageWrapper;
@@ -114,23 +113,23 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
         String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
 
-        if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_HTTP, protocolDesc)) {
+        if (StringUtils.equals("http", protocolDesc)) {
             HttpCommand httpCommand = new HttpCommand();
             Body body = new Body() {
                 final Map<String, Object> map = new HashMap<>();
 
                 @Override
                 public Map<String, Object> toMap() {
-                    map.put(MeshMessageProtocolConstant.PROTOCOL_KEY_CONTENT, new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
+                    map.put("content", new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
                     return map;
                 }
             };
             body.toMap();
             httpCommand.setBody(body);
             return httpCommand;
-        } else if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_GRPC, protocolDesc)) {
+        } else if (StringUtils.equals(Constants.PROTOCOL_GRPC, protocolDesc)) {
             return GrpcMessageProtocolResolver.buildSimpleMessage(cloudEvent);
-        } else if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_TCP, protocolDesc)) {
+        } else if (StringUtils.equals("tcp", protocolDesc)) {
             return TcpMessageProtocolResolver.buildEventMeshMessage(cloudEvent);
         } else {
             throw new ProtocolHandleException(String.format("Unsupported protocolDesc: %s", protocolDesc));
