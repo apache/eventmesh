@@ -26,6 +26,7 @@ import org.apache.eventmesh.common.protocol.grpc.protos.Response;
 import org.apache.eventmesh.common.protocol.grpc.protos.SimpleMessage;
 import org.apache.eventmesh.common.protocol.grpc.protos.Subscription;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.grpc.consumer.consumergroup.GrpcType;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -118,7 +119,7 @@ public class ServiceUtils {
     public static void sendRespAndDone(StatusCode code, String message, EventEmitter<Response> emitter) {
         Response response = Response.newBuilder()
             .setRespCode(code.getRetCode())
-            .setRespMsg(code.getErrMsg() + " " + message)
+            .setRespMsg(code.getErrMsg() + EventMeshConstants.BLANK_SPACE + message)
             .setRespTime(String.valueOf(System.currentTimeMillis()))
             .build();
         emitter.onNext(response);
@@ -127,8 +128,8 @@ public class ServiceUtils {
 
     public static void sendStreamResp(RequestHeader header, StatusCode code, String message, EventEmitter<SimpleMessage> emitter) {
         Map<String, String> resp = new HashMap<>();
-        resp.put("respCode", code.getRetCode());
-        resp.put("respMsg", code.getErrMsg() + " " + message);
+        resp.put(EventMeshConstants.RESP_CODE, code.getRetCode());
+        resp.put(EventMeshConstants.RESP_MSG, code.getErrMsg() + EventMeshConstants.BLANK_SPACE + message);
 
         SimpleMessage simpleMessage = SimpleMessage.newBuilder()
             .setHeader(header)
@@ -145,8 +146,8 @@ public class ServiceUtils {
 
     public static void sendStreamRespAndDone(RequestHeader header, StatusCode code, EventEmitter<SimpleMessage> emitter) {
         Map<String, String> resp = new HashMap<>();
-        resp.put("respCode", code.getRetCode());
-        resp.put("respMsg", code.getErrMsg());
+        resp.put(EventMeshConstants.RESP_CODE, code.getRetCode());
+        resp.put(EventMeshConstants.RESP_MSG, code.getErrMsg());
 
         SimpleMessage simpleMessage = SimpleMessage.newBuilder()
             .setHeader(header)
