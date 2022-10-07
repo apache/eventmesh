@@ -21,17 +21,20 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Preconditions;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class ClientConfiguration {
 
-    public String serviceAddr = "";
+    private String serviceAddr;
 
     public void init() {
         String serviceAddrStr = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR);
         Preconditions.checkState(StringUtils.isNotEmpty(serviceAddrStr),
                 String.format("%s error", ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR));
         serviceAddr = StringUtils.trim(serviceAddrStr);
-        String[] temp = serviceAddr.split(";");
-        serviceAddr = temp[1];
     }
 
     static class ConfKeys {

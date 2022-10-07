@@ -28,6 +28,7 @@ import java.util.Properties;
 import io.cloudevents.CloudEvent;
 
 public class PulsarProducerImpl implements Producer {
+
     private ProducerImpl producer;
 
     @Override
@@ -35,7 +36,7 @@ public class PulsarProducerImpl implements Producer {
         final ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.init();
 
-        properties.put("url", clientConfiguration.serviceAddr);
+        properties.put("url", clientConfiguration.getServiceAddr());
         producer = new ProducerImpl(properties);
     }
 
