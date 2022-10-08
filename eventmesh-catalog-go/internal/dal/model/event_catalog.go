@@ -21,6 +21,7 @@ import (
 
 type EventCatalog struct {
 	ID          int       `json:"id" gorm:"column:id;type:int;primaryKey;autoIncrement"`
+	ServiceName string    `json:"service_name" gorm:"column:service_name;type:varchar;size:256"`
 	OperationID string    `json:"operation_id" gorm:"column:operation_id;type:varchar;size:1024"`
 	ChannelName string    `json:"channel_name" gorm:"column:channel_name;type:varchar;size:1024"`
 	Type        string    `json:"type" gorm:"column:type;type:string"`
