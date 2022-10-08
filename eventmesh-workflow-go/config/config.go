@@ -16,14 +16,15 @@
 package config
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
+	"gopkg.in/yaml.v3"
+	"io/ioutil"
+)
+
+var (
+	cfg *Config
 )
 
 type Config struct {
-	Server struct {
-		Port uint16 `yaml:"port"`
-		Name string `yaml:"name"`
-	}
 	Flow struct {
 		Queue struct {
 			Store string `yaml:"store"`
@@ -31,6 +32,50 @@ type Config struct {
 		Schedule struct {
 			Interval int `yaml:"interval"`
 		} `yaml:"schedule"`
+		Selector string `yaml:"selector"`
+		Protocol string `yaml:"protocol"`
 	} `yaml:"flow"`
-	Plugins plugin.Config `yaml:"plugins,omitempty"`
+	Catalog struct {
+		ServerName string `yaml:"server_name"`
+	} `yaml:"catalog"`
+	EventMesh struct {
+		Host string `yaml:"host"`
+		Env  string `yaml:"env"`
+		IDC  string `yaml:"idc"`
+		GRPC struct {
+			Port int `yaml:"port"`
+		} `yaml:"grpc"`
+		Sys           string `yaml:"sys"`
+		UserName      string `yaml:"username"`
+		Password      string `yaml:"password"`
+		ProducerGroup string `yaml:"producer_group"`
+		TTL           int    `yaml:"ttl"`
+	} `yaml:"eventmesh"`
+}
+
+// Setup setup config
+func Setup(path string) error {
+	var err error
+	cfg, err = parseConfigFromFile(path)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Get get config
+func Get() *Config {
+	return cfg
+}
+
+func parseConfigFromFile(configPath string) (*Config, error) {
+	buf, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, err
+	}
+	c := &Config{}
+	if err = yaml.Unmarshal(buf, c); err != nil {
+		return nil, err
+	}
+	return c, nil
 }

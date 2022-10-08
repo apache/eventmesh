@@ -22,6 +22,19 @@ flow:
     store: in-memory
   schedule:
     interval: 500 # milliseconds
+  selector: nacos
+  protocol: meshmessage
+eventmesh:
+  host: "127.0.0.1"
+  env: ""
+  idc: ""
+  sys: ""
+  username: ""
+  password: ""
+  producer_group: ""
+  ttl: 10
+  grpc:
+    port: 11011
 plugins:
   registry:
     nacos:
