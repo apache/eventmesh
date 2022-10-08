@@ -16,20 +16,36 @@
 package task
 
 import (
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/flow"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
 )
 
-type EventTask struct {
-	BaseTask
-	Actions    []*model.WorkflowTaskAction
-	Transition *model.WorkflowTaskRelation
+type eventTask struct {
+	baseTask
+	operationTask Task
+	action        *model.WorkflowTaskAction
+	transition    *model.WorkflowTaskRelation
+	flowEngine    *flow.Engine
 }
 
-func (t *EventTask) Type() string {
-	return constants.TaskTypeEvent
+func NewEventTask(instance *model.WorkflowTaskInstance) Task {
+	var t eventTask
+	if instance == nil || instance.Task == nil {
+		return nil
+	}
+	t.baseTask = baseTask{taskID: instance.TaskID, taskInstanceID: instance.TaskInstanceID, input: instance.Input,
+		workflowID: instance.WorkflowID, workflowInstanceID: instance.WorkflowInstanceID, taskType: instance.Task.TaskType}
+	t.action = instance.Task.Actions[0]
+	t.transition = instance.Task.ChildTasks[0]
+	t.operationTask = NewOperationTask(instance)
+	t.flowEngine = flow.NewEngine()
+	return &t
 }
 
-func (t *EventTask) Run() error {
-	return nil
+func (t *eventTask) Run() error {
+	if t.transition == nil {
+		return nil
+	}
+	// TODO event ref validate
+	return t.operationTask.Run()
 }
