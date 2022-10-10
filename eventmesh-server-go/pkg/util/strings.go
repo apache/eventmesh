@@ -13,14 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package grpc
+package util
 
-import "github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+// DefaultIfEmpty return the given if the result is empty
+func DefaultIfEmpty() {
 
-type SimpleMessageWrapper struct {
-	SimpleMessage *pb.SimpleMessage `json:"simpleMessage"`
-}
-
-type BatchMessageWrapper struct {
-	BatchMessage *pb.BatchMessage `json:"batchMessage"`
 }
