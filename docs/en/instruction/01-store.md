@@ -37,7 +37,7 @@ nohup sh bin/mqbroker -n localhost:9876 &
 tail -f ~/logs/rocketmqlogs/broker.log
 ```
 
-The deployment of eventmesh-store has finished, please go to the next step: [Start Eventmesh-Runtime](docs/en/instruction/02-runtime.md)
+The deployment of eventmesh-store has finished, please go to the next step: [Start Eventmesh-Runtime](02-runtime.md)
 
 
 ## Reference
