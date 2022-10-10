@@ -11,7 +11,7 @@
 
 [![License](https://img.shields.io/github/license/apache/incubator-eventmesh?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![GitHub Release](https://img.shields.io/github/v/release/apache/eventmesh?style=for-the-badge)](https://github.com/apache/incubator-eventmesh/releases)
-[![Slack Status](https://img.shields.io/badge/slack-join_chat-blue.svg?logo=slack&style=for-the-badge)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1fal6hggw-PJ3~N6Js_ZFlEvPtpQR7jg)
+[![Slack Status](https://img.shields.io/badge/slack-join_chat-blue.svg?logo=slack&style=for-the-badge)](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1hgto0wcm-KXKz8pJGUwrWdk00juaQSw)
 
 [📦 Documentation](https://eventmesh.apache.org/docs/introduction) |
 [📔 Examples](https://github.com/apache/incubator-eventmesh/tree/master/eventmesh-examples) |
@@ -107,7 +107,7 @@ Apache EventMesh (Incubating) is licensed under the [Apache License, Version 2.0
 
 |WeChat Assistant|WeChat Public Account|Slack|
 |-|-|-|
-|<img src="docs/images/contact/wechat-assistant.jpg" width="128"/>|<img src="docs/images/contact/wechat-official.jpg" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1fal6hggw-PJ3~N6Js_ZFlEvPtpQR7jg)|
+|<img src="docs/images/contact/wechat-assistant.jpg" width="128"/>|<img src="docs/images/contact/wechat-official.jpg" width="128"/>|[Join Slack Chat](https://join.slack.com/t/apacheeventmesh/shared_invite/zt-1hgto0wcm-KXKz8pJGUwrWdk00juaQSw)|
 
 ### Mailing List
 
