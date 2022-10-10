@@ -23,8 +23,6 @@ import org.apache.eventmesh.filter.api.FilterType;
 import java.util.Comparator;
 import java.util.SortedSet;
 
-import io.cloudevents.CloudEvent;
-
 public interface FilterLoader {
 
     Comparator<EventMeshFilter<?, ?>> FILTER_COMPARATOR =
