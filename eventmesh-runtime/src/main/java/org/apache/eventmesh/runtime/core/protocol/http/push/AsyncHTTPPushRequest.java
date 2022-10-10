@@ -148,6 +148,7 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             }
 
         } catch (Exception ex) {
+            logger.error("Failed to convert EventMeshMessage from CloudEvent", ex);
             return;
         }
 

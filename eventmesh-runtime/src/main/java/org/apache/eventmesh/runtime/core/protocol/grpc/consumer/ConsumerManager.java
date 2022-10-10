@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,21 +127,21 @@ public class ConsumerManager {
         }
     }
 
-    public void updateClientTime(ConsumerGroupClient client) {
+    public boolean updateClientTime(ConsumerGroupClient client) {
         String consumerGroup = client.getConsumerGroup();
         List<ConsumerGroupClient> localClients = clientTable.get(consumerGroup);
-        if (CollectionUtils.isEmpty(localClients)) {
-            return;
-        }
-        for (ConsumerGroupClient localClient : localClients) {
-            if (StringUtils.equals(localClient.getIp(), client.getIp())
-                && StringUtils.equals(localClient.getPid(), client.getPid())
-                && StringUtils.equals(localClient.getSys(), client.getSys())
-                && StringUtils.equals(localClient.getTopic(), client.getTopic())) {
-                localClient.setLastUpTime(new Date());
-                break;
+        if (CollectionUtils.isNotEmpty(localClients)) {
+            for (ConsumerGroupClient localClient : localClients) {
+                if (StringUtils.equals(localClient.getIp(), client.getIp())
+                    && StringUtils.equals(localClient.getPid(), client.getPid())
+                    && StringUtils.equals(localClient.getSys(), client.getSys())
+                    && StringUtils.equals(localClient.getTopic(), client.getTopic())) {
+                    localClient.setLastUpTime(new Date());
+                    return true;
+                }
             }
         }
+        return false;
     }
 
     public synchronized void deregisterClient(ConsumerGroupClient client) {
@@ -233,5 +234,14 @@ public class ConsumerManager {
                 }
             }, 10000, 10000, TimeUnit.MILLISECONDS);
         }
+    }
+
+    public List<String> getAllConsumerTopic() {
+        return clientTable.values()
+            .stream()
+            .flatMap(List::stream)
+            .map(ConsumerGroupClient::getTopic)
+            .distinct()
+            .collect(Collectors.toList());
     }
 }

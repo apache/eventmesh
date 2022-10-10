@@ -31,10 +31,11 @@ const (
 
 // task instance status
 const (
-	TaskInstanceWaitStatus    = 1
-	TaskInstanceProcessStatus = 2
-	TaskInstanceSuccessStatus = 3
-	TaskInstanceFailStatus    = 4
+	TaskInstanceSleepStatus   = 1
+	TaskInstanceWaitStatus    = 2
+	TaskInstanceProcessStatus = 3
+	TaskInstanceSuccessStatus = 4
+	TaskInstanceFailStatus    = 5
 )
 
 // workflow instance status
@@ -56,5 +57,12 @@ const (
 )
 
 const (
-	OrderDesc = "DESC"
+	// RetryAttempts fail retry max times
+	RetryAttempts = 5
+)
+
+const (
+	EventTypePublish                 = "publish"
+	EventPropsWorkflowInstanceID     = "workflow_instance_id"
+	EventPropsWorkflowTaskInstanceID = "workflow_task_instance_id"
 )

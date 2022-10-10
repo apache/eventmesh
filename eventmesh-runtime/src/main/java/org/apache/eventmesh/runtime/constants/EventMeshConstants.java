@@ -136,4 +136,10 @@ public class EventMeshConstants {
     public static final String EVENT_MESH_IDC = "eventMeshIDC";
     public static final String IS_BROADCAST = "isBroadcast";
 
+    public static final String RESP_CODE = "respCode";
+    public static final String RESP_MSG = "respMsg";
+    public static final String BLANK_SPACE = " ";
+
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String APPLICATION_JSON = "application/json";
 }

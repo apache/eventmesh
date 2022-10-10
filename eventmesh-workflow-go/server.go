@@ -25,6 +25,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api/proto"
+	pconfig "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
@@ -38,7 +39,7 @@ import (
 
 type Server struct {
 	Server   *grpc.Server
-	schedule *schedule.Scheduler
+	schedule schedule.Scheduler
 	queue    queue.ObserveQueue
 }
 
@@ -91,8 +92,10 @@ func (s *Server) SetupConfig() error {
 		return err
 	}
 	config.SetGlobalConfig(cfg)
-
-	return config.Setup(cfg)
+	if err := config.Setup(cfg); err != nil {
+		return err
+	}
+	return pconfig.Setup(config.ServerConfigPath)
 }
 
 func (s *Server) listen() (net.Listener, error) {

@@ -55,6 +55,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "AsyncPublish",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
             eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+        eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
         
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
@@ -73,6 +74,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "RequestReply",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
             eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+        eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
         EventEmitter<SimpleMessage> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {
@@ -91,6 +93,7 @@ public class ProducerService extends PublisherServiceGrpc.PublisherServiceImplBa
         cmdLogger.info("cmd={}|{}|client2eventMesh|from={}|to={}", "BatchPublish",
             EventMeshConstants.PROTOCOL_GRPC, request.getHeader().getIp(),
             eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+        eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient(request.getMessageItemCount());
 
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         threadPoolExecutor.submit(() -> {

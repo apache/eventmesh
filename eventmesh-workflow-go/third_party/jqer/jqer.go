@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	wrapBeginCharacter                 = "$"
-	jqStartToken       lexer.TokenType = iota
+	defaultWrapBeginCharacter                 = "$"
+	jqStartToken              lexer.TokenType = iota
 	stringToken
 	errorToken
 	noToken
@@ -71,7 +71,17 @@ type jqer struct {
 
 // NewJQ constructor jq instance
 func NewJQ(options ...Option) JQ {
-	return &jqer{options: loadOptions(options...)}
+	jq := &jqer{options: loadOptions(options...)}
+	if len(jq.options.WrapLeftSeparator) == 0 {
+		jq.options.WrapBegin = defaultWrapBeginCharacter
+	}
+	if len(jq.options.WrapLeftSeparator) == 0 {
+		jq.options.WrapLeftSeparator = defaultWrapBeginCharacter
+	}
+	if len(jq.options.WrapRightSeparator) == 0 {
+		jq.options.WrapRightSeparator = defaultWrapBeginCharacter
+	}
+	return jq
 }
 
 // One single jq
@@ -176,7 +186,7 @@ func (j *jqer) jqState(l *lexer.L) lexer.StateFunc {
 		}
 		src[i] = string(r)
 
-		if src[i] == wrapBeginCharacter && i > 0 {
+		if src[i] == defaultWrapBeginCharacter && i > 0 {
 			jdxJ = i
 		}
 	}

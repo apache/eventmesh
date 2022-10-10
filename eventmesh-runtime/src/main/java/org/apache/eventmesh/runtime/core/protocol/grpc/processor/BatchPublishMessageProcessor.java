@@ -104,6 +104,7 @@ public class BatchPublishMessageProcessor {
 
             SendMessageContext sendMessageContext = new SendMessageContext(seqNum, event, eventMeshProducer, eventMeshGrpcServer);
 
+            eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
             long startTime = System.currentTimeMillis();
             eventMeshProducer.send(sendMessageContext, new SendCallback() {
                 @Override
