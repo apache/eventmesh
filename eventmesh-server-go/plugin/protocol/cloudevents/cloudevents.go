@@ -21,6 +21,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/tcp"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"github.com/cloudevents/sdk-go/v2"
@@ -38,7 +39,7 @@ type CloudeventsPlugin struct {
 }
 
 func (c *CloudeventsPlugin) Type() string {
-	return "cloudevents"
+	return protocol.CloudEvents
 }
 
 func (c *CloudeventsPlugin) Setup(name string, dec plugin.Decoder) error {

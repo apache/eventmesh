@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package service
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
@@ -24,16 +24,16 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// GRPCServer grpc server api, used to handle the client
-type GRPCServer struct {
+// GRPCContext grpc server api, used to handle the client
+type GRPCContext struct {
 	ConsumerMgr *consumer.Manager
 	ProducerMgr *producer.Manager
 	RateLimiter *rate.Limiter
 	Registry    registry.Registry
 }
 
-// NewGRPCServer create new grpc server
-func NewGRPCServer() (*GRPCServer, error) {
+// New create new grpc server
+func New() (*GRPCContext, error) {
 	log.Infof("create new grpc serer")
 	msgReqPerSeconds := config.GlobalConfig().Server.GRPCOption.MsgReqNumPerSecond
 	limiter := rate.NewLimiter(rate.Limit(msgReqPerSeconds), 10)
@@ -48,7 +48,7 @@ func NewGRPCServer() (*GRPCServer, error) {
 
 	registryName := config.GlobalConfig().Server.GRPCOption.RegistryName
 	regis := registry.Get(registryName)
-	return &GRPCServer{
+	return &GRPCContext{
 		ConsumerMgr: cmgr,
 		ProducerMgr: pmgr,
 		RateLimiter: limiter,
@@ -56,7 +56,7 @@ func NewGRPCServer() (*GRPCServer, error) {
 	}, nil
 }
 
-func (g *GRPCServer) Start() error {
+func (g *GRPCContext) Start() error {
 	if err := g.ProducerMgr.Start(); err != nil {
 		return err
 	}

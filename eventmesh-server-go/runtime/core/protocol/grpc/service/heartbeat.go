@@ -13,19 +13,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package producer
+package service
 
 import (
-	"context"
-	cloudv2 "github.com/cloudevents/sdk-go/v2"
-	"time"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	"github.com/panjf2000/ants/v2"
 )
 
-// SendMessageContext context in produce message
-type SendMessageContext struct {
-	Ctx         context.Context
-	Event       *cloudv2.Event
-	BizSeqNO    string
-	ProducerAPI *EventMeshProducer
-	CreateTime  time.Time
+type Heartbeat struct {
+	pb.UnimplementedHeartbeatServiceServer
+	gctx *GRPCContext
+	pool *ants.Pool
+}
+
+func NewHeartbeatServiceServer(gctx *GRPCContext) (*Heartbeat, error) {
+	sp := config.GlobalConfig().Server.GRPCOption.SubscribePoolSize
+	pl, err := ants.NewPool(sp)
+	if err != nil {
+		return nil, err
+	}
+	return &Heartbeat{
+		gctx: gctx,
+		pool: pl,
+	}, nil
 }

@@ -24,9 +24,11 @@ require (
 	github.com/lestrrat-go/strftime v1.0.6
 	github.com/liyue201/gostl v1.0.1
 	github.com/nacos-group/nacos-sdk-go/v2 v2.0.3
+	github.com/panjf2000/ants/v2 v2.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.5.0
 	go.uber.org/zap v1.22.0
+	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
 	google.golang.org/grpc v1.36.1
 	gopkg.in/yaml.v3 v3.0.1
 )
