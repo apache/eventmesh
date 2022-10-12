@@ -24,25 +24,21 @@ import org.apache.eventmesh.runtime.registry.Registry;
 
 public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
 
-    private EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
+    private final EventMeshGrpcConfiguration eventMeshGrpcConfiguration;
 
     private EventMeshGrpcServer eventMeshGrpcServer;
-
-    private final ConfigurationWrapper configurationWrapper;
 
     private final Registry registry;
 
     public EventMeshGrpcBootstrap(ConfigurationWrapper configurationWrapper, Registry registry) {
-        this.configurationWrapper = configurationWrapper;
         this.registry = registry;
+        this.eventMeshGrpcConfiguration = new EventMeshGrpcConfiguration(configurationWrapper);
+        eventMeshGrpcConfiguration.init();
+        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, eventMeshGrpcConfiguration);
     }
 
     @Override
     public void init() throws Exception {
-        this.eventMeshGrpcConfiguration = new EventMeshGrpcConfiguration(configurationWrapper);
-        eventMeshGrpcConfiguration.init();
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, eventMeshGrpcConfiguration);
-
         // registry init
         if (eventMeshGrpcConfiguration != null && eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
             registry.init(eventMeshGrpcConfiguration.eventMeshRegistryPluginType);

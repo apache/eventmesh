@@ -24,13 +24,11 @@ import org.apache.eventmesh.runtime.registry.Registry;
 
 public class EventMeshHttpBootstrap implements EventMeshBootstrap {
 
-    private EventMeshHTTPConfiguration eventMeshHttpConfiguration;
+    private final EventMeshHTTPConfiguration eventMeshHttpConfiguration;
 
-    public EventMeshHTTPServer eventMeshHTTPServer;
+    public EventMeshHTTPServer eventMeshHttpServer;
 
     private final EventMeshServer eventMeshServer;
-
-    private final ConfigurationWrapper configurationWrapper;
 
     private final Registry registry;
 
@@ -38,20 +36,19 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
                                   ConfigurationWrapper configurationWrapper,
                                   Registry registry) {
         this.eventMeshServer = eventMeshServer;
-        this.configurationWrapper = configurationWrapper;
         this.registry = registry;
-    }
-
-    @Override
-    public void init() throws Exception {
         this.eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(configurationWrapper);
         eventMeshHttpConfiguration.init();
         ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, eventMeshHttpConfiguration);
 
+    }
+
+    @Override
+    public void init() throws Exception {
         // server init
         if (eventMeshHttpConfiguration != null) {
-            eventMeshHTTPServer = new EventMeshHTTPServer(eventMeshServer, eventMeshHttpConfiguration);
-            eventMeshHTTPServer.init();
+            eventMeshHttpServer = new EventMeshHTTPServer(eventMeshServer, eventMeshHttpConfiguration);
+            eventMeshHttpServer.init();
         }
     }
 
@@ -59,14 +56,14 @@ public class EventMeshHttpBootstrap implements EventMeshBootstrap {
     public void start() throws Exception {
         // server start
         if (eventMeshHttpConfiguration != null) {
-            eventMeshHTTPServer.start();
+            eventMeshHttpServer.start();
         }
     }
 
     @Override
     public void shutdown() throws Exception {
         if (eventMeshHttpConfiguration != null) {
-            eventMeshHTTPServer.shutdown();
+            eventMeshHttpServer.shutdown();
         }
     }
 }
