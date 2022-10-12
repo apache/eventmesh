@@ -27,11 +27,11 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.registry.Registry;
 import org.apache.eventmesh.runtime.trace.Trace;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EventMeshServer {
 
@@ -49,7 +49,7 @@ public class EventMeshServer {
 
     private final CommonConfiguration configuration;
 
-    private final static List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
+    private static final List<EventMeshBootstrap> BOOTSTRAP_LIST = new CopyOnWriteArrayList<>();
 
     public EventMeshServer(ConfigurationWrapper configurationWrapper) {
         CommonConfiguration configuration = new CommonConfiguration(configurationWrapper);
