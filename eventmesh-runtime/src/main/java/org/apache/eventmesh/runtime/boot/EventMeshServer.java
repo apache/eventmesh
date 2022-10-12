@@ -78,6 +78,9 @@ public class EventMeshServer {
     }
 
     public void init() throws Exception {
+        if (configuration != null && configuration.eventMeshServerSecurityEnable) {
+            acl.init(configuration.eventMeshSecurityPluginType);
+        }
         // registry init
         if (configuration != null && configuration.eventMeshServerRegistryEnable) {
             registry.init(configuration.eventMeshRegistryPluginType);
