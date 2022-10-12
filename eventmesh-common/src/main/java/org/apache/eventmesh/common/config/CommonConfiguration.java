@@ -17,11 +17,13 @@
 
 package org.apache.eventmesh.common.config;
 
+import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.common.utils.IPUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -36,6 +38,7 @@ public class CommonConfiguration {
     public String eventMeshIDC = "FT";
     public String eventMeshCluster = "LS";
     public String eventMeshName = "";
+    public List<String> eventMeshProvideServerProtocols;
     public String sysID = "5477";
     public String eventMeshConnectorPluginType = "rocketmq";
     public String eventMeshSecurityPluginType = "security";
@@ -102,6 +105,16 @@ public class CommonConfiguration {
                     .collect(Collectors.toList());
             }
 
+            String provideProtocols = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_PROVIDE_PROTOCOLS);
+            if (StringUtils.isNotEmpty(provideProtocols)) {
+                eventMeshProvideServerProtocols = Arrays.stream(provideProtocols.split(","))
+                        .filter(StringUtils::isNotBlank)
+                        .map(String::trim)
+                        .collect(Collectors.toList());
+            } else {
+                eventMeshProvideServerProtocols = Collections.singletonList(ConfigurationContextUtil.HTTP);
+            }
+
             eventMeshServerTraceEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_TRACE_ENABLED, () -> "false"));
             if (eventMeshServerTraceEnable) {
                 eventMeshTracePluginType = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_TRACE_PLUGIN_TYPE);
@@ -145,6 +158,8 @@ public class CommonConfiguration {
         public static final String KEYS_EVENTMESH_SERVER_CLUSTER = "eventMesh.server.cluster";
 
         public static final String KEYS_EVENTMESH_SERVER_NAME = "eventMesh.server.name";
+
+        public static final String KEYS_EVENTMESH_SERVER_PROVIDE_PROTOCOLS = "eventMesh.server.provide.protocols";
 
         public static final String KEYS_EVENTMESH_SERVER_HOST_IP = "eventMesh.server.hostIp";
 
