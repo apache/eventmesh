@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+/**
+ * concrete server bootstrap
+ */
 public interface EventMeshBootstrap {
 
     void init() throws Exception;
