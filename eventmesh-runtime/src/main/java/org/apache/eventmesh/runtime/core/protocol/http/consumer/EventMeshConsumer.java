@@ -56,6 +56,8 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Scope;
 
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.*;
+
 public class EventMeshConsumer {
 
     private EventMeshHTTPServer eventMeshHTTPServer;
@@ -90,10 +92,10 @@ public class EventMeshConsumer {
     public synchronized void init() throws Exception {
         httpMessageHandler = new HTTPMessageHandler(this);
         Properties keyValue = new Properties();
-        keyValue.put("isBroadcast", "false");
-        keyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
-        keyValue.put("eventMeshIDC", eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
-        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
+        keyValue.put(IS_BROADCAST, "false");
+        keyValue.put(CONSUMER_GROUP, consumerGroupConf.getConsumerGroup());
+        keyValue.put(EVENT_MESH_IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+        keyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
             eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
         persistentMqConsumer.init(keyValue);
 
@@ -162,10 +164,10 @@ public class EventMeshConsumer {
 
         //broacast consumer
         Properties broadcastKeyValue = new Properties();
-        broadcastKeyValue.put("isBroadcast", "true");
-        broadcastKeyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
-        broadcastKeyValue.put("eventMeshIDC", eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
-        broadcastKeyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
+        broadcastKeyValue.put(IS_BROADCAST, "true");
+        broadcastKeyValue.put(CONSUMER_GROUP, consumerGroupConf.getConsumerGroup());
+        broadcastKeyValue.put(EVENT_MESH_IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+        broadcastKeyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
             eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
         broadcastMqConsumer.init(broadcastKeyValue);
 
