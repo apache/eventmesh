@@ -39,11 +39,6 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
 
     @Override
     public void init() throws Exception {
-        // registry init
-        if (eventMeshGrpcConfiguration != null && eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
-            registry.init(eventMeshGrpcConfiguration.eventMeshRegistryPluginType);
-        }
-
         // server init
         if (eventMeshGrpcConfiguration != null) {
             eventMeshGrpcServer = new EventMeshGrpcServer(eventMeshGrpcConfiguration, registry);
@@ -53,11 +48,6 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
 
     @Override
     public void start() throws Exception {
-        // registry start
-        if (eventMeshGrpcConfiguration != null && eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
-            registry.start();
-        }
-
         // server start
         if (eventMeshGrpcConfiguration != null) {
             eventMeshGrpcServer.start();
@@ -68,11 +58,6 @@ public class EventMeshGrpcBootstrap implements EventMeshBootstrap {
     public void shutdown() throws Exception {
         if (eventMeshGrpcConfiguration != null) {
             eventMeshGrpcServer.shutdown();
-        }
-
-        if (eventMeshGrpcConfiguration != null
-                && eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
-            registry.shutdown();
         }
     }
 }
