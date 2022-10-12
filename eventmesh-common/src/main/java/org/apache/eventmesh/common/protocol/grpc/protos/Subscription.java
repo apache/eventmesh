@@ -1598,7 +1598,9 @@ private static final long serialVersionUID = 0L;
       if (key == null) { throw new NullPointerException(); }
       java.util.Map<String, String> map =
           internalGetProperties().getMap();
-      return map.containsKey(key) ? map.get(key) : defaultValue;
+      String value = map.get(key);
+      if(value == null) return defaultValue;
+      return value;
     }
     /**
      * <code>map&lt;string, string&gt; properties = 8;</code>
@@ -2595,7 +2597,9 @@ private static final long serialVersionUID = 0L;
         if (key == null) { throw new NullPointerException(); }
         java.util.Map<String, String> map =
             internalGetProperties().getMap();
-        return map.containsKey(key) ? map.get(key) : defaultValue;
+        String value = map.get(key);
+        if(value == null) return defaultValue;
+        return value;
       }
       /**
        * <code>map&lt;string, string&gt; properties = 8;</code>
