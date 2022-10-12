@@ -52,8 +52,6 @@ import org.slf4j.LoggerFactory;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.*;
-
 public class EventMeshConsumer {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -136,20 +134,20 @@ public class EventMeshConsumer {
         }
 
         Properties keyValue = new Properties();
-        keyValue.put(IS_BROADCAST, "false");
-        keyValue.put(CONSUMER_GROUP, consumerGroup);
-        keyValue.put(EVENT_MESH_IDC, eventMeshGrpcConfiguration.eventMeshIDC);
-        keyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroup,
+        keyValue.put(EventMeshConstants.IS_BROADCAST, "false");
+        keyValue.put(EventMeshConstants.CONSUMER_GROUP, consumerGroup);
+        keyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.eventMeshIDC);
+        keyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroup,
             eventMeshGrpcConfiguration.eventMeshCluster));
         persistentMqConsumer.init(keyValue);
         EventListener clusterEventListner = createEventListener(SubscriptionMode.CLUSTERING);
         persistentMqConsumer.registerEventListener(clusterEventListner);
 
         Properties broadcastKeyValue = new Properties();
-        broadcastKeyValue.put(IS_BROADCAST, "true");
-        broadcastKeyValue.put(CONSUMER_GROUP, consumerGroup);
-        broadcastKeyValue.put(EVENT_MESH_IDC, eventMeshGrpcConfiguration.eventMeshIDC);
-        broadcastKeyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroup,
+        broadcastKeyValue.put(EventMeshConstants.IS_BROADCAST, "true");
+        broadcastKeyValue.put(EventMeshConstants.CONSUMER_GROUP, consumerGroup);
+        broadcastKeyValue.put(EventMeshConstants.EVENT_MESH_IDC, eventMeshGrpcConfiguration.eventMeshIDC);
+        broadcastKeyValue.put(EventMeshConstants.INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroup,
             eventMeshGrpcConfiguration.eventMeshCluster));
         broadcastMqConsumer.init(broadcastKeyValue);
         EventListener broadcastEventListner = createEventListener(SubscriptionMode.BROADCASTING);
