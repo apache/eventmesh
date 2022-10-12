@@ -18,6 +18,7 @@
 package org.apache.eventmesh.metrics.prometheus.config;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.PropertiesUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,8 +36,8 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 public class PrometheusConfiguration {
 
-    private static final String     CONFIG_FILE = "prometheus.properties";
-    private static final Properties properties  = new Properties();
+    private static final String CONFIG_FILE = "prometheus.properties";
+    private static final Properties properties = new Properties();
 
     private int eventMeshPrometheusPort = 19090;
 
@@ -70,9 +71,7 @@ public class PrometheusConfiguration {
         }
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONFIG_FILE;
-            if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
-            }
+            PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath);
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", CONFIG_FILE));
         }
