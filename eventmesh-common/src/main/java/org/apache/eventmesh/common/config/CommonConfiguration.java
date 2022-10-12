@@ -105,15 +105,7 @@ public class CommonConfiguration {
                     .collect(Collectors.toList());
             }
 
-            String provideProtocols = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_PROVIDE_PROTOCOLS);
-            if (StringUtils.isNotEmpty(provideProtocols)) {
-                eventMeshProvideServerProtocols = Arrays.stream(provideProtocols.split(","))
-                        .filter(StringUtils::isNotBlank)
-                        .map(String::trim)
-                        .collect(Collectors.toList());
-            } else {
-                eventMeshProvideServerProtocols = Collections.singletonList(ConfigurationContextUtil.HTTP);
-            }
+            eventMeshProvideServerProtocols = getProvideServerProtocols();
 
             eventMeshServerTraceEnable = Boolean.parseBoolean(get(ConfKeys.KEYS_EVENTMESH_TRACE_ENABLED, () -> "false"));
             if (eventMeshServerTraceEnable) {
@@ -146,6 +138,18 @@ public class CommonConfiguration {
             value = StringUtils.deleteWhitespace(value);
         }
         return StringUtils.isEmpty(value) ? defaultValueSupplier.get() : value;
+    }
+
+    public List<String> getProvideServerProtocols() {
+        String provideProtocols = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SERVER_PROVIDE_PROTOCOLS);
+        if (StringUtils.isNotEmpty(provideProtocols)) {
+            return Arrays.stream(provideProtocols.split(","))
+                    .filter(StringUtils::isNotBlank)
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.singletonList(ConfigurationContextUtil.HTTP);
+        }
     }
 
     static class ConfKeys {
