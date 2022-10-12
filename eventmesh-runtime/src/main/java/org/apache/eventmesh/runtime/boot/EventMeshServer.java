@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.common.config.CommonConfiguration;
+import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.runtime.acl.Acl;
 import org.apache.eventmesh.runtime.common.ServiceState;
@@ -30,6 +32,8 @@ import org.apache.eventmesh.runtime.trace.Trace;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class EventMeshServer {
 
@@ -57,20 +61,30 @@ public class EventMeshServer {
 
     private ServiceState serviceState;
 
-    public EventMeshServer(EventMeshHTTPConfiguration eventMeshHttpConfiguration,
-                           EventMeshTCPConfiguration eventMeshTcpConfiguration,
-                           EventMeshGrpcConfiguration eventMeshGrpcConfiguration) {
-        this.eventMeshHttpConfiguration = eventMeshHttpConfiguration;
-        this.eventMeshTcpConfiguration = eventMeshTcpConfiguration;
-        this.eventMeshGrpcConfiguration = eventMeshGrpcConfiguration;
+    public EventMeshServer(ConfigurationWrapper configurationWrapper) {
+        CommonConfiguration configuration = new CommonConfiguration(configurationWrapper);
+        List<String> provideServerProtocols = configuration.getProvideServerProtocols();
+        for (String provideServerProtocol : provideServerProtocols) {
+            if(ConfigurationContextUtil.HTTP.equals(provideServerProtocol)){
+                this.eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(configurationWrapper);
+                eventMeshHttpConfiguration.init();
+                ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, eventMeshHttpConfiguration);
+            }
+            if(ConfigurationContextUtil.TCP.equals(provideServerProtocol)){
+                this.eventMeshTcpConfiguration = new EventMeshTCPConfiguration(configurationWrapper);
+                eventMeshTcpConfiguration.init();
+                ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.TCP, eventMeshTcpConfiguration);
+            }
+            if(ConfigurationContextUtil.GRPC.equals(provideServerProtocol)){
+                this.eventMeshGrpcConfiguration = new EventMeshGrpcConfiguration(configurationWrapper);
+                eventMeshGrpcConfiguration.init();
+                ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, eventMeshGrpcConfiguration);
+            }
+        }
         this.acl = new Acl();
         this.registry = new Registry();
         this.trace = new Trace(eventMeshHttpConfiguration.eventMeshServerTraceEnable);
         this.connectorResource = new ConnectorResource();
-
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.TCP, eventMeshTcpConfiguration);
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.GRPC, eventMeshGrpcConfiguration);
-        ConfigurationContextUtil.putIfAbsent(ConfigurationContextUtil.HTTP, eventMeshHttpConfiguration);
     }
 
     public void init() throws Exception {
@@ -97,7 +111,9 @@ public class EventMeshServer {
             trace.init(eventMeshHttpConfiguration.eventMeshTracePluginType);
         }
 
-        connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
+        if (eventMeshHttpConfiguration != null) {
+            connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
+        }
 
         // server init
         if (eventMeshGrpcConfiguration != null) {
