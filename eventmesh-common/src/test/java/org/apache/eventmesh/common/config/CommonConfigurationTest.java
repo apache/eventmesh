@@ -42,4 +42,9 @@ public class CommonConfigurationTest {
         Assert.assertEquals("value2", configuration.eventMeshIDC);
         Assert.assertEquals("3", configuration.sysID);
     }
+
+    @Test
+    public void testGetProvideServerProtocols() {
+        Assert.assertEquals("HTTP", configuration.getProvideServerProtocols().get(0));
+    }
 }
