@@ -42,7 +42,7 @@ func New(cfg *conf.GRPCConfig, opts ...GRPCOption) (Interface, error) {
 // eventMeshGRPCClient define the grpc client for eventmesh api
 type eventMeshGRPCClient struct {
 	grpcConn *grpc.ClientConn
-	// producer used to send msg to evenmesh
+	// producer used to send msg to eventmesh
 	*eventMeshProducer
 	// consumer used to subscribe msg from eventmesh
 	*eventMeshConsumer
