@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONSUMER_GROUP;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.EVENT_MESH_IDC;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.INSTANCE_NAME;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.IS_BROADCAST;
+
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
@@ -51,8 +56,6 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-
-import static org.apache.eventmesh.runtime.constants.EventMeshConstants.*;
 
 public class EventMeshConsumer {
 
