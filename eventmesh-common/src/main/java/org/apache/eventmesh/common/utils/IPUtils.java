@@ -111,9 +111,9 @@ public class IPUtils {
             final InetAddress localHost = InetAddress.getLocalHost();
             return normalizeHostAddress(localHost);
         } catch (SocketException e) {
-            e.printStackTrace();
+            logger.error("Socket Exception :", e);
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            logger.error("Unknown Host : ", e);
         }
 
         return null;
