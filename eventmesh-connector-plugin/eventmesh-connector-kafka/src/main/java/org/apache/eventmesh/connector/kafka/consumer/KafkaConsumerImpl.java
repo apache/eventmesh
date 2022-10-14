@@ -22,25 +22,18 @@ import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.consumer.Consumer;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.util.List;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.cloudevents.CloudEvent;
 
 public class KafkaConsumerImpl implements Consumer {
-    public Logger messageLogger = LoggerFactory.getLogger("message");
-
     private ConsumerImpl consumer;
 
     @Override
     public synchronized void init(Properties props) throws Exception {
         String consumerGroup = props.getProperty("consumerGroup");
-        String bootstrapServers = props.getProperty("bootstrapServers");
         // Other config props
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 
