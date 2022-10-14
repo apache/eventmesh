@@ -18,10 +18,11 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.File;
+
+import org.junit.Before;
+import org.junit.Test;
 
 public class EventMeshBootstrapTest {
 
