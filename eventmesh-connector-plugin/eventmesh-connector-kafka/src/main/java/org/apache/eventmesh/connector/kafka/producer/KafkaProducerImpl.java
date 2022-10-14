@@ -29,12 +29,9 @@ public class KafkaProducerImpl implements Producer {
 
     private ProducerImpl producer;
 
-    private Properties properties;
-
     @Override
     public synchronized void init(Properties keyValue) {
         keyValue.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        Properties properties = (Properties) keyValue.clone();
         this.producer = new ProducerImpl(keyValue);
     }
 
@@ -83,7 +80,6 @@ public class KafkaProducerImpl implements Producer {
     public void setExtFields() {
         // producer.setExtFields();
     }
-
 
     @Override
     public void sendOneway(CloudEvent message) {
