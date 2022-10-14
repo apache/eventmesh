@@ -78,7 +78,7 @@ public final class SimpleMessage extends
                         break;
                     }
                     case 10: {
-                        RFequestHeader.Builder subBuilder = null;
+                        RequestHeader.Builder subBuilder = null;
                         if (header_ != null) {
                             subBuilder = header_.toBuilder();
                         }
