@@ -29,8 +29,6 @@ public class KafkaProducerImpl implements Producer {
 
     private ProducerImpl producer;
 
-    private Properties properties;
-
     @Override
     public synchronized void init(Properties keyValue) {
         keyValue.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
