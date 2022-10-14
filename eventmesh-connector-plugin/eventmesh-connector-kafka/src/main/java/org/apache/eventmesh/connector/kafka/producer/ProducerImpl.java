@@ -43,7 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SuppressWarnings("deprecation")
 public class ProducerImpl {
-    private Logger logger = LoggerFactory.getLogger(ProducerImpl.class);
     private KafkaProducer<String, CloudEvent> producer;
     Properties properties;
 
