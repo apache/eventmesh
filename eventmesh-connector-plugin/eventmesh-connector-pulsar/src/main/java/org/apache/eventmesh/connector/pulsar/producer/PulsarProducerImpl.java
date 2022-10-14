@@ -21,7 +21,6 @@ import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.producer.Producer;
-import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
 
 import java.util.Properties;
 
@@ -33,10 +32,6 @@ public class PulsarProducerImpl implements Producer {
 
     @Override
     public synchronized void init(Properties properties) {
-        final ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.init();
-
-        properties.put("url", clientConfiguration.getServiceAddr());
         producer = new ProducerImpl(properties);
     }
 

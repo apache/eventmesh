@@ -20,8 +20,10 @@ package org.apache.eventmesh.connector.pulsar.producer;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
 import org.apache.eventmesh.connector.pulsar.utils.CloudEventUtils;
 
+import org.apache.pulsar.client.api.ClientBuilder;
 import org.apache.pulsar.client.api.Producer;
 import org.apache.pulsar.client.api.PulsarClient;
 
@@ -33,12 +35,18 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 
+import com.google.common.base.Preconditions;
+
 public class ProducerImpl extends AbstractProducer {
+
     private final AtomicBoolean started = new AtomicBoolean(false);
+
+    private final ClientConfiguration clientConfiguration;
     private PulsarClient pulsarClient;
 
     public ProducerImpl(final Properties properties) {
         super(properties);
+        this.clientConfiguration = ClientConfiguration.getInstance();
     }
 
     public void publish(CloudEvent cloudEvent, SendCallback sendCallback) {
@@ -75,9 +83,19 @@ public class ProducerImpl extends AbstractProducer {
     public void start() {
         try {
             this.started.compareAndSet(false, true);
-            this.pulsarClient = PulsarClient.builder()
-                    .serviceUrl(this.properties().get("url").toString())
-                    .build();
+            ClientBuilder clientBuilder = PulsarClient.builder()
+                .serviceUrl(clientConfiguration.getServiceAddr());
+
+            if (clientConfiguration.getAuthPlugin() != null) {
+                Preconditions.checkNotNull(clientConfiguration.getAuthParams(),
+                    "Authentication Enabled in pulsar cluster, Please set authParams in pulsar-client.properties");
+                clientBuilder.authentication(
+                    clientConfiguration.getAuthPlugin(),
+                    clientConfiguration.getAuthParams()
+                );
+            }
+
+            this.pulsarClient = clientBuilder.build();
         } catch (Exception ignored) {
             // ignored
         }
