@@ -31,8 +31,8 @@ public class EventMeshServerTest {
     public void before() {
         String file = EventMeshServerTest.class.getResource("/eventmesh.properties").getFile();
         File f = new File(file);
-        System.setProperty("confPath", f.getParent());
         wrapper = new ConfigurationWrapper(f.getParent(), f.getName(), false);
+        System.setProperty("confPath", f.getParent());
     }
 
     @Test
