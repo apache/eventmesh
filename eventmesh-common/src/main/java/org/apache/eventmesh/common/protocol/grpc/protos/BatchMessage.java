@@ -1665,8 +1665,10 @@ private static final long serialVersionUID = 0L;
     if (!getTopicBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 3, topic_);
     }
-    for (int i = 0; i < messageItem_.size(); i++) {
-      output.writeMessage(4, messageItem_.get(i));
+
+    java.util.Iterator<MessageItem> messageItemIterator = messageItem_.iterator();
+    while(messageItemIterator.hasNext()) {
+      output.writeMessage(4, messageItemIterator.next());
     }
     unknownFields.writeTo(output);
   }
@@ -1686,9 +1688,10 @@ private static final long serialVersionUID = 0L;
     if (!getTopicBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, topic_);
     }
-    for (int i = 0; i < messageItem_.size(); i++) {
+    java.util.Iterator<MessageItem> messageItemIterator = messageItem_.iterator();
+    while(messageItemIterator.hasNext()) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(4, messageItem_.get(i));
+        .computeMessageSize(4, messageItemIterator.next());
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
