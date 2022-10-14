@@ -86,11 +86,9 @@ public class ZipkinConfiguration {
             }
         }
         // get from config home
-        try {
-            String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONFIG_FILE;
-            if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
-            }
+        String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONFIG_FILE;
+        try (BufferedReader reader = new BufferedReader(new FileReader(configPath))) {
+            properties.load(reader);
         } catch (IOException e) {
             throw new IllegalArgumentException("Cannot load zipkin.properties file from conf");
         }

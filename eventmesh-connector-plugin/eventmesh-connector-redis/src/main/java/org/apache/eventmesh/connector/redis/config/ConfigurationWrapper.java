@@ -61,11 +61,9 @@ public class ConfigurationWrapper {
         } catch (IOException e) {
             throw new RuntimeException(String.format("Load %s file from classpath error", CONF_FILE));
         }
-        try {
-            String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONF_FILE;
-            if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
-            }
+        String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONF_FILE;
+        try (BufferedReader reader = new BufferedReader(new FileReader(configPath))) {
+            properties.load(reader);
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", CONF_FILE));
         }

@@ -47,8 +47,8 @@ public class ConfigurationWrapper {
 
         logger.info("loading auth config: {}", configFilePath);
         Properties properties = new Properties();
-        try {
-            properties.load(new BufferedReader(new FileReader(configFilePath)));
+        try (BufferedReader reader = new BufferedReader(new FileReader(configFilePath))) {
+            properties.load(reader);
         } catch (IOException e) {
             throw new IllegalArgumentException(
                     String.format("Cannot load RocketMQ configuration file from :%s", configFilePath));
