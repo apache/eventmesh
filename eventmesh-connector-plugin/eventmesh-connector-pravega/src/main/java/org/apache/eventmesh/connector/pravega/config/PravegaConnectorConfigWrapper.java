@@ -60,10 +60,12 @@ public class PravegaConnectorConfigWrapper {
             throw new RuntimeException(String.format("Load %s.properties file from classpath error", PRAVEGA_CONF_FILE));
         }
         String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + PRAVEGA_CONF_FILE;
-        try (BufferedReader reader = new BufferedReader(new FileReader(configPath))) {
-            properties.load(reader);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Cannot load %s file from conf", PRAVEGA_CONF_FILE));
+        if (new File(configPath).exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(configPath))) {
+                properties.load(reader);
+            } catch (IOException e) {
+                throw new IllegalArgumentException(String.format("Cannot load %s file from conf", PRAVEGA_CONF_FILE));
+            }
         }
     }
 }
