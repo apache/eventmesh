@@ -22,7 +22,7 @@ import org.apache.eventmesh.common.config.ConfigurationWrapper;
 
 public class EventMeshAmqpConfiguration extends CommonConfiguration {
 
-    public int eventMeshAmqpServerPort = 10000;
+    public int eventMeshAmqpServerPort = 5672;
 
     // default frame size of broker
     public int defaultNetworkBufferSize = 256 * 1024;
@@ -36,6 +36,13 @@ public class EventMeshAmqpConfiguration extends CommonConfiguration {
      * default max size of frame
      */
     public int maxFrameSize = 4096;
+
+
+    public int maxNoOfChannels = 64;
+
+    public int heartBeat = 60 * 1000;
+
+    public long maxMessageSize = 4 * 1024 * 1024;
 
     public EventMeshAmqpConfiguration(ConfigurationWrapper configurationWrapper) {
         super(configurationWrapper);

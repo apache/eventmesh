@@ -44,7 +44,7 @@ public class AMQPFrame implements AMQData {
      */
     private final int channel;
 
-    private final ByteBuf payload;
+    private ByteBuf payload;
 
 
     public AMQPFrame(int type, int channel, ByteBuf payload) {
@@ -52,6 +52,12 @@ public class AMQPFrame implements AMQData {
         this.channel = channel;
         this.payload = payload;
     }
+
+    public AMQPFrame(int type, int channel) {
+        this.type = type;
+        this.channel = channel;
+    }
+
 
     public static AMQPFrame get(ByteBuf buf) throws IOException {
         int type = buf.readUnsignedByte();

@@ -15,21 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.amqp;
+package org.apache.eventmesh.runtime.core.protocol.amqp.exchange;
 
-import lombok.Getter;
+import org.apache.eventmesh.runtime.core.protocol.amqp.metadata.model.BindingInfo;
 
-/**
- * a service that manage meta message, including the exchange, queue and vhost related to a single connection
- */
-public class MetaMessageService {
-    @Getter
-    private ExchangeContainer exchangeContainer;
-    @Getter
-    private QueueContainer queueContainer;
-    @Getter
-    private ExchangeService exchangeService;
-    @Getter
-    private QueueService queueService;
+import java.util.Map;
+import java.util.Set;
+
+public interface RouteComponent {
+
+    RoutingResult routMessage(Set<BindingInfo> bindingInfos, AmqpRouter.Type type,
+                              Map<String, Object> routingInfo);
 
 }

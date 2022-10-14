@@ -44,12 +44,12 @@ public abstract class AmqpHandler extends ChannelInboundHandlerAdapter implement
     protected ChannelHandlerContext ctx;
     protected SocketAddress remoteAddress;
     // TODO
-    protected final EventMeshAmqpServer amqpServer;
+    protected final EventMeshAmqpServer amqpService;
     @Getter
     protected AtomicBoolean isActive = new AtomicBoolean(false);
 
     protected AmqpHandler(EventMeshAmqpServer amqpServer) {
-        this.amqpServer = amqpServer;
+        this.amqpService = amqpServer;
     }
 
     @Override
@@ -393,4 +393,7 @@ public abstract class AmqpHandler extends ChannelInboundHandlerAdapter implement
         return ctx;
     }
 
+    public EventMeshAmqpServer getAmqpService() {
+        return amqpService;
+    }
 }

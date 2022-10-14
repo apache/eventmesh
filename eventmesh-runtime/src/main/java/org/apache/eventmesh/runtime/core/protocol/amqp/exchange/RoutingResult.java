@@ -15,10 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.core.protocol.amqp;
+package org.apache.eventmesh.runtime.core.protocol.amqp.exchange;
 
-/**
- * provide services to use QueueContainer
- */
-public class QueueService {
+import java.util.HashSet;
+import java.util.Set;
+
+public class RoutingResult {
+
+    Set<String> queues;
+
+    public RoutingResult(Set<String> queues) {
+        this.queues = queues;
+    }
+
+    public RoutingResult() {
+    }
+
+    public void addQueue(String queue) {
+        if (queues == null) {
+            queues = new HashSet<>();
+        }
+        queues.add(queue);
+    }
+
+    public Set<String> getQueues() {
+        return queues;
+    }
+
+    public boolean hasNoMatch() {
+        return queues == null || queues.isEmpty();
+    }
+
 }
