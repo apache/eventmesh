@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.core.protocol.amqp.remoting.codec;
 
+import io.netty.util.AttributeKey;
 import org.apache.eventmesh.runtime.core.protocol.amqp.exception.MalformedFrameException;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.AMQPFrame;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ProtocolFrame;
@@ -37,6 +38,10 @@ public class AmqpCodeDecoder extends AbstractBatchDecoder {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    public static final AttributeKey<Integer> ATTRIBUTE_KEY_MAX_FRAME_SIZE = AttributeKey.valueOf("maxFrameSize");
+
+
+
     /**
      * the length of protocol code
      */
@@ -47,12 +52,6 @@ public class AmqpCodeDecoder extends AbstractBatchDecoder {
      */
     private static final ProtocolVersion DEFAULT_PROTOCOL_VERSION = ProtocolVersion.v0_91;
 
-    protected int maxFrameSize;
-
-    public AmqpCodeDecoder(int maxFrameSize) {
-        super();
-        this.maxFrameSize = maxFrameSize;
-    }
 
     private boolean firstRead = true;
 
@@ -116,9 +115,12 @@ public class AmqpCodeDecoder extends AbstractBatchDecoder {
                 in.readUnsignedShort();
                 int payloadSize = in.readInt();
                 in.resetReaderIndex();
-                if (payloadSize > maxFrameSize) {
-                    throw new MalformedFrameException(
-                        "frame > maxFrameSize exception remoteAddress:" + RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+                if (ctx.channel().attr(ATTRIBUTE_KEY_MAX_FRAME_SIZE).get() != null) {
+                    int maxFrameSize = ctx.channel().attr(ATTRIBUTE_KEY_MAX_FRAME_SIZE).get();
+                    if (payloadSize > maxFrameSize) {
+                        throw new MalformedFrameException(
+                                "frame > maxFrameSize exception remoteAddress:" + RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+                    }
                 }
 
                 if (in.readableBytes() >= (AMQPFrame.NON_BODY_SIZE + payloadSize)) {
