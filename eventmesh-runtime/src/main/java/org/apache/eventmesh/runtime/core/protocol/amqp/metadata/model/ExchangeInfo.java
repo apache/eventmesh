@@ -34,6 +34,17 @@ public class ExchangeInfo {
 
     private Map<String, Set<BindingInfo>> bindings;
 
+
+    public ExchangeInfo() {
+    }
+
+    public ExchangeInfo(String exchangeName, boolean durable, boolean autoDelete, ExchangeType exchangeType) {
+        this.exchangeName = exchangeName;
+        this.durable = durable;
+        this.autoDelete = autoDelete;
+        this.exchangeType = exchangeType;
+    }
+
     public void setExchangeName(String exchangeName) {
         this.exchangeName = exchangeName;
     }
