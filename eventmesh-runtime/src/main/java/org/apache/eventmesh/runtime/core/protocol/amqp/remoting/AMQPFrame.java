@@ -18,17 +18,15 @@
 package org.apache.eventmesh.runtime.core.protocol.amqp.remoting;
 
 
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.impl.Frame;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.Unpooled;
 import org.apache.eventmesh.runtime.core.protocol.amqp.exception.MalformedFrameException;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.buffer.Unpooled;
-
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.impl.Frame;
 
 public class AMQPFrame implements AMQData {
 
@@ -44,7 +42,7 @@ public class AMQPFrame implements AMQData {
      */
     private final int channel;
 
-    private final ByteBuf payload;
+    private ByteBuf payload;
 
 
     public AMQPFrame(int type, int channel, ByteBuf payload) {
@@ -52,6 +50,12 @@ public class AMQPFrame implements AMQData {
         this.channel = channel;
         this.payload = payload;
     }
+
+    public AMQPFrame(int type, int channel) {
+        this.type = type;
+        this.channel = channel;
+    }
+
 
     public static AMQPFrame get(ByteBuf buf) throws IOException {
         int type = buf.readUnsignedByte();
