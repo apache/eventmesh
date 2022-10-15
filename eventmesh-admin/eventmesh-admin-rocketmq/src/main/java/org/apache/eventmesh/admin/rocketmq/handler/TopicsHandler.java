@@ -61,48 +61,41 @@ public class TopicsHandler implements HttpHandler {
 
     public void createTopicHandler(HttpExchange httpExchange) throws IOException {
         String result;
-        OutputStream out = httpExchange.getResponseBody();
-        try {
-            String params = NetUtils.parsePostBody(httpExchange);
-            TopicCreateRequest topicCreateRequest =
-                JsonUtils.toObject(params, TopicCreateRequest.class);
-            String topic = topicCreateRequest.getName();
+        try (OutputStream out = httpExchange.getResponseBody()) {
+            try {
+                String params = NetUtils.parsePostBody(httpExchange);
+                TopicCreateRequest topicCreateRequest =
+                        JsonUtils.toObject(params, TopicCreateRequest.class);
+                String topic = topicCreateRequest.getName();
 
-            if (StringUtils.isBlank(topic)) {
-                result = "Create topic failed. Parameter topic not found.";
-                logger.error(result);
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-                return;
-            }
+                if (StringUtils.isBlank(topic)) {
+                    result = "Create topic failed. Parameter topic not found.";
+                    logger.error(result);
+                    out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+                    return;
+                }
 
-            //TBD: A new rocketmq service will be implemented for creating topics
-            TopicResponse topicResponse = null;
-            if (topicResponse != null) {
-                logger.info("create a new topic: {}", topic);
+                //TBD: A new rocketmq service will be implemented for creating topics
+                TopicResponse topicResponse = null;
+                if (topicResponse != null) {
+                    logger.info("create a new topic: {}", topic);
+                    httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
+                    httpExchange.sendResponseHeaders(200, 0);
+                    result = JsonUtils.toJson(topicResponse);
+                    logger.info(result);
+                    out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+                } else {
+                    httpExchange.sendResponseHeaders(500, 0);
+                    result = TOPIC_ERROR;
+                    logger.error(result);
+                    out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+                }
+            } catch (Exception e) {
                 httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
-                httpExchange.sendResponseHeaders(200, 0);
-                result = JsonUtils.toJson(topicResponse);
-                logger.info(result);
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-            } else {
                 httpExchange.sendResponseHeaders(500, 0);
                 result = TOPIC_ERROR;
-                logger.error(result);
+                logger.error(result, e);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-            }
-        } catch (Exception e) {
-            httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
-            httpExchange.sendResponseHeaders(500, 0);
-            result = TOPIC_ERROR;
-            logger.error(result,e);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
             }
         }
     }
