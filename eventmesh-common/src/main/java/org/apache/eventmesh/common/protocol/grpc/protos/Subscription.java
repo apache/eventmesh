@@ -2875,8 +2875,8 @@ private static final long serialVersionUID = 0L;
     if (!getConsumerGroupBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, consumerGroup_);
     }
-    for (int i = 0; i < subscriptionItems_.size(); i++) {
-      output.writeMessage(3, subscriptionItems_.get(i));
+    for (Subscription.SubscriptionItem item : subscriptionItems_) {
+      output.writeMessage(3, item);
     }
     if (!getUrlBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 4, url_);
@@ -2899,9 +2899,9 @@ private static final long serialVersionUID = 0L;
     if (!getConsumerGroupBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, consumerGroup_);
     }
-    for (int i = 0; i < subscriptionItems_.size(); i++) {
+    for (Subscription.SubscriptionItem item : subscriptionItems_) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(3, subscriptionItems_.get(i));
+        .computeMessageSize(3, item);
     }
     if (!getUrlBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, url_);
