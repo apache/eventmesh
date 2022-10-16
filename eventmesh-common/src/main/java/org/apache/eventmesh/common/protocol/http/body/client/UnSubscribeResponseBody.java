@@ -56,7 +56,7 @@ public class UnSubscribeResponseBody extends Body {
         this.resTime = resTime;
     }
 
-    public static UnSubscribeResponseBody buildBody(Integer retCode, String retMsg) throws Exception {
+    public static UnSubscribeResponseBody buildBody(Integer retCode, String retMsg) {
         UnSubscribeResponseBody regResponseBody = new UnSubscribeResponseBody();
         regResponseBody.setRetMsg(retMsg);
         regResponseBody.setResTime(System.currentTimeMillis());
