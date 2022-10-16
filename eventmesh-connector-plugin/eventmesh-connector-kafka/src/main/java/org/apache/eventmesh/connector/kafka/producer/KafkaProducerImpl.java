@@ -17,13 +17,15 @@
 
 package org.apache.eventmesh.connector.kafka.producer;
 
-import java.util.Properties;
-
-import io.cloudevents.CloudEvent;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.api.producer.Producer;
+
 import org.apache.kafka.clients.producer.ProducerConfig;
+
+import java.util.Properties;
+
+import io.cloudevents.CloudEvent;
 
 public class KafkaProducerImpl implements Producer {
 
