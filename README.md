@@ -45,10 +45,11 @@ Apache EventMesh (Incubating) consists of multiple components that integrate dif
 - **eventmesh-runtime**: The middleware that transmits events between producers and consumers, which supports cloud-native apps and microservices.
 - **eventmesh-sdk-java**: The Java SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
 - **eventmesh-sdk-go**: The Golang SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
-- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache RocketMQ](https://rocketmq.apache.org)(implemented) [Apache Kafka](https://kafka.apache.org)(in progress), [Apache Pulsar](https://pulsar.apache.org)(in progress), [Pravega](https://cncf.pravega.io)(in progress), [Redis](https://redis.io) (in progress) and [RDMS](https://en.wikipedia.org/wiki/Relational_database) using [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity) (in progress).
+- **eventmesh-sdk-rust**: The Rust SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
+- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org)(incubator), [Apache Pulsar](https://pulsar.apache.org)(incubator), [RabbitMQ](https://rabbitmq.com)(in progress), [Redis](https://redis.io) (incubator), [Pravega](https://cncf.pravega.io)(incubator), and [RDMS](https://en.wikipedia.org/wiki/Relational_database)(in progress) using [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity) (in progress).
 - **eventmesh-registry-plugin**: The collection of plugins that integrate service registries such as [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io) and [ETCD](https://etcd.io).
 - **eventmesh-security-plugin**: The collection of plugins that implement security mechanisms, such as ACL (access control list), authentication, and authorization.
-- **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io), [AMQP](https://www.amqp.org/) and [MQTT](https://mqtt.org).
+- **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io), [AMQP](https://www.amqp.org/)(in progress) and [MQTT](https://mqtt.org)(in progress).
 - **eventmesh-workflow-go**: The [Serverless workflow](https://serverlessworkflow.io/) engine implementation.
 - **eventmesh-catalog-go**: The catalog implementation follow [AsyncAPI](https://www.asyncapi.com/).
 - **eventmesh-admin**: The control plane that manages clients, topics, and subscriptions.
