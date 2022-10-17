@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.trace.api.config;
 
+import org.apache.eventmesh.common.utils.PropertiesUtils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.lang3.StringUtils;
@@ -107,11 +108,8 @@ public class ExporterConfiguration {
         }
         // get from config home
         try {
-            String configPath =
-                System.getProperty("confPath", System.getenv("confPath")) + File.separator + CONFIG_FILE;
-            if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
-            }
+            String configPath = System.getProperty("confPath", System.getenv("confPath")) + File.separator + CONFIG_FILE;
+            PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath);
         } catch (IOException e) {
             throw new IllegalArgumentException("Cannot load exporter.properties file from conf");
         }
