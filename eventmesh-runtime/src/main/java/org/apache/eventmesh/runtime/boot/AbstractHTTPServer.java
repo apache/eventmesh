@@ -167,7 +167,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         super.start();
         Runnable r = () -> {
             ServerBootstrap b = new ServerBootstrap();
-            SSLContext sslContext = useTLS ? SSLContextFactory.getSslContext() : null;
+            SSLContext sslContext = useTLS ? SSLContextFactory.getSslContext(eventMeshHttpConfiguration) : null;
             b.group(this.bossGroup, this.workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new HttpsServerInitializer(sslContext))
