@@ -62,9 +62,9 @@ import com.google.common.base.Preconditions;
 @EventMeshTrace(isEnable = false)
 public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
-    public Logger aclLogger = LoggerFactory.getLogger("acl");
+    public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     public RemoteUnSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
@@ -80,7 +80,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
         HttpEventWrapper requestWrapper = asyncContext.getRequest();
 
         httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-            EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress()
+                EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress()
         );
 
         // user request header
@@ -94,7 +94,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
         Map<String, Object> responseHeaderMap = new HashMap<>();
         responseHeaderMap.put(ProtocolKey.REQUEST_URI, requestWrapper.getRequestURI());
         responseHeaderMap
-            .put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
+                .put(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster);
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv);
         responseHeaderMap.put(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
@@ -105,11 +105,11 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
 
         //validate header
         if (StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.IDC).toString())
-            || StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString())
-            || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString())
-            || StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString())) {
+                || StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString())
+                || !StringUtils.isNumeric(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.PID).toString())
+                || StringUtils.isBlank(sysHeaderMap.get(ProtocolKey.ClientInstanceKey.SYS).toString())) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_HEADER_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
@@ -117,17 +117,17 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
         byte[] requestBody = requestWrapper.getBody();
 
         Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {});
+                new TypeReference<HashMap<String, Object>>() {});
 
-        if (requestBodyMap.get("url") == null || requestBodyMap.get("topic") == null || requestBodyMap.get("consumerGroup") == null) {
+        if (requestBodyMap.get(EventMeshConstants.URL) == null || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
             return;
         }
 
-        String unSubscribeUrl = requestBodyMap.get("url").toString();
-        String consumerGroup = requestBodyMap.get("consumerGroup").toString();
-        String topic = requestBodyMap.get("topic").toString();
+        String unSubscribeUrl = requestBodyMap.get(EventMeshConstants.URL).toString();
+        String consumerGroup = requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP).toString();
+        String topic = requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC).toString();
 
         long startTime = System.currentTimeMillis();
         try {
@@ -136,7 +136,7 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
             String idc = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC;
             String cluster = eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster;
             String sysId = eventMeshHTTPServer.getEventMeshHttpConfiguration().sysID;
-            String meshGroup = env + "-" + idc + "-" + cluster + "-" + sysId;
+            String meshGroup = env + EventMeshConstants.HYPHEN + idc + EventMeshConstants.HYPHEN + cluster + EventMeshConstants.HYPHEN + sysId;
 
             Map<String, String> remoteHeaderMap = new HashMap<>();
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.ENV, env);
@@ -144,27 +144,27 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, IPUtils.getLocalAddress());
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PID, String.valueOf(ThreadUtils.getPID()));
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS, sysId);
-            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, "eventmesh");
-            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, "pass");
+            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, EventMeshConstants.USER_NAME);
+            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, EventMeshConstants.PASSWD);
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, meshGroup);
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, meshGroup);
 
             // local unSubscription url
-            String unsubscribeUrl = "http://" + IPUtils.getLocalAddress() + ":"
-                + eventMeshHTTPServer.getEventMeshHttpConfiguration().httpServerPort
-                + RequestURI.PUBLISH_BRIDGE.getRequestURI();
+            String unsubscribeUrl = EventMeshConstants.PROTOCOL_HTTP + EventMeshConstants.IP_PORT_SEPARATOR + EventMeshConstants.DOUBLE_SLASH + IPUtils.getLocalAddress() + EventMeshConstants.IP_PORT_SEPARATOR
+                    + eventMeshHTTPServer.getEventMeshHttpConfiguration().httpServerPort
+                    + RequestURI.PUBLISH_BRIDGE.getRequestURI();
 
             Map<String, Object> remoteBodyMap = new HashMap<>();
-            remoteBodyMap.put("url", unsubscribeUrl);
-            remoteBodyMap.put("consumerGroup", meshGroup);
-            remoteBodyMap.put("topic", requestBodyMap.get("topic"));
+            remoteBodyMap.put(EventMeshConstants.URL, unsubscribeUrl);
+            remoteBodyMap.put(EventMeshConstants.CONSUMER_GROUP, meshGroup);
+            remoteBodyMap.put(EventMeshConstants.MANAGE_TOPIC, requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
-            List<String> unSubTopicList = JsonUtils.deserialize(JsonUtils.serialize(requestBodyMap.get("topic")), new TypeReference<List<String>>() {
+            List<String> unSubTopicList = JsonUtils.deserialize(JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)), new TypeReference<List<String>>() {
             });
 
             String targetMesh = "";
-            if (!Objects.isNull(requestBodyMap.get("remoteMesh"))) {
-                targetMesh = requestBodyMap.get("remoteMesh").toString();
+            if (!Objects.isNull(requestBodyMap.get(EventMeshConstants.REMOTE_MESH))) {
+                targetMesh = requestBodyMap.get(EventMeshConstants.REMOTE_MESH).toString();
             }
 
             List<SubscriptionItem> subscriptionList = unSubTopicList.stream().map(s -> {
@@ -181,27 +181,27 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
             CloseableHttpClient closeableHttpClient = eventMeshHTTPServer.httpClientPool.getClient();
 
             String remoteResult = post(closeableHttpClient, targetMesh, remoteHeaderMap, remoteBodyMap,
-                response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
+                    response -> EntityUtils.toString(response.getEntity(), Constants.DEFAULT_CHARSET));
 
             Map<String, String> remoteResultMap = JsonUtils.deserialize(remoteResult, new TypeReference<Map<String, String>>() {
             });
 
-            if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get("retCode"))) {
-                responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
-                responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg());
+            if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get(EventMeshConstants.RET_CODE))) {
+                responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
+                responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg());
                 handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
             } else {
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
-                    responseBodyMap, null);
+                        responseBodyMap, null);
             }
         } catch (Exception e) {
             long endTime = System.currentTimeMillis();
             httpLogger.error(
-                "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
-                    + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
-                topic, unSubscribeUrl, e);
+                    "message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}"
+                            + "|bizSeqNo={}|uniqueId={}", endTime - startTime,
+                    topic, unSubscribeUrl, e);
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
-                responseBodyMap, null);
+                    responseBodyMap, null);
         }
     }
 
@@ -238,8 +238,8 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
         //ttl
         RequestConfig.Builder configBuilder = RequestConfig.custom();
         configBuilder.setSocketTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)))
-            .setConnectTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)))
-            .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)));
+                .setConnectTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)))
+                .setConnectionRequestTimeout(Integer.parseInt(String.valueOf(Constants.DEFAULT_HTTP_TIME_OUT)));
 
         httpPost.setConfig(configBuilder.build());
 
