@@ -298,6 +298,10 @@ public class EventMeshConsumer {
         return consumerGroupConf;
     }
 
+    public void setConsumerGroupConf(ConsumerGroupConf consumerGroupConf) {
+        this.consumerGroupConf = consumerGroupConf;
+    }
+
     public EventMeshHTTPServer getEventMeshHTTPServer() {
         return eventMeshHTTPServer;
     }
