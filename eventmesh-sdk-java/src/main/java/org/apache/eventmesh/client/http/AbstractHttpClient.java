@@ -72,8 +72,7 @@ public abstract class AbstractHttpClient implements AutoCloseable {
         }
         SSLContext sslContext;
         try {
-            // todo: config in properties file?
-            String protocol = System.getProperty("ssl.client.protocol", "TLSv1.2");
+            String protocol = eventMeshHttpClientConfig.getSslClientProtocol();
             TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
             sslContext = SSLContext.getInstance(protocol);
             sslContext.init(null, tm, new SecureRandom());

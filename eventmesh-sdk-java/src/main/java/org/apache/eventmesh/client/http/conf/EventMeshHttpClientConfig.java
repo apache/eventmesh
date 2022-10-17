@@ -77,4 +77,7 @@ public class EventMeshHttpClientConfig {
     @Builder.Default
     private boolean useTls = false;
 
+    @Builder.Default
+    private String sslClientProtocol = "TLSv1.2";
+
 }
