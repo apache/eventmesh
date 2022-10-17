@@ -38,6 +38,7 @@ import org.apache.eventmesh.runtime.core.protocol.http.processor.inf.HttpRequest
 import org.apache.eventmesh.runtime.metrics.http.HTTPMetricsServer;
 import org.apache.eventmesh.runtime.trace.TraceUtils;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
+import org.apache.eventmesh.runtime.util.Utils;
 import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.MapUtils;
@@ -218,19 +219,6 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
         this.eventProcessorTable.put(requestURI, pair);
     }
 
-    private Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
-        Map<String, Object> headerParam = new HashMap<>();
-        for (String key : fullReq.headers().names()) {
-            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
-                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
-                continue;
-            }
-            headerParam.put(key, fullReq.headers().get(key));
-        }
-        return headerParam;
-    }
-
     /**
      * Validate request, return error status.
      *
@@ -320,7 +308,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
 
                 preProcessHttpRequestHeader(ctx, httpRequest);
 
-                final Map<String, Object> headerMap = parseHttpHeader(httpRequest);
+                final Map<String, Object> headerMap = Utils.parseHttpHeader(httpRequest);
 
 
                 final HttpResponseStatus errorStatus = validateHttpRequest(httpRequest);
