@@ -160,6 +160,12 @@ public class Utils {
         }
     }
 
+    /**
+     * parse http header
+     *
+     * @param fullReq request parameter
+     * @return http header
+     */
     public static Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
         Map<String, Object> headerParam = new HashMap<>();
         for (String key : fullReq.headers().names()) {
