@@ -19,6 +19,7 @@
 
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 import org.apache.commons.lang3.StringUtils;
@@ -45,15 +46,15 @@ public class SSLContextFactory {
     private static String pass;
 
 
-    public static SSLContext getSslContext() {
+    public static SSLContext getSslContext(EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
         SSLContext sslContext;
         try {
-            protocol = System.getProperty("ssl.server.protocol", "TLSv1.1");
+            protocol = eventMeshHttpConfiguration.eventMeshServerSSLProtocol;
 
-            fileName = System.getProperty("ssl.server.cer", "sChat2.jks");
+            fileName = eventMeshHttpConfiguration.eventMeshServerSSLCer;
 
             char[] filePass = null;
-            pass = System.getProperty("ssl.server.pass", "sNetty");
+            pass = eventMeshHttpConfiguration.eventMeshServerSSLPass;
             if (StringUtils.isNotBlank(pass)) {
                 filePass = pass.toCharArray();
             }
