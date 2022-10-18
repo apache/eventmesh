@@ -61,7 +61,7 @@ public class HeartbeatResponseBody extends Body {
         this.resTime = resTime;
     }
 
-    public static HeartbeatResponseBody buildBody(Integer retCode, String retMsg) throws Exception {
+    public static HeartbeatResponseBody buildBody(Integer retCode, String retMsg)  {
         HeartbeatResponseBody heartbeatResponseBody = new HeartbeatResponseBody();
         heartbeatResponseBody.setRetMsg(retMsg);
         heartbeatResponseBody.setResTime(System.currentTimeMillis());

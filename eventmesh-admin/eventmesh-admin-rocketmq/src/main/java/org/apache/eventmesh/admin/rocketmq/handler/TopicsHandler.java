@@ -94,7 +94,7 @@ public class TopicsHandler implements HttpHandler {
             httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
             httpExchange.sendResponseHeaders(500, 0);
             result = TOPIC_ERROR;
-            logger.error(result);
+            logger.error(result, e);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } finally {
             if (out != null) {

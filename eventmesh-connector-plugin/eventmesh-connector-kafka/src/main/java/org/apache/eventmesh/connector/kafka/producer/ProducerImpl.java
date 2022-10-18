@@ -43,7 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SuppressWarnings("deprecation")
 public class ProducerImpl {
-    private Logger logger = LoggerFactory.getLogger(ProducerImpl.class);
     private KafkaProducer<String, CloudEvent> producer;
     Properties properties;
 
@@ -81,9 +80,6 @@ public class ProducerImpl {
     }
 
     public void send(CloudEvent cloudEvent) {
-        // ProducerRecord<Void, byte[]> msg =
-        //    KafkaMessageFactory.createWriter(Objects.requireNonNull(cloudEvent.getSubject()))
-        //    .writeBinary(cloudEvent);
         try {
             this.producer.send(new ProducerRecord<>(cloudEvent.getSubject(), cloudEvent));
         } catch (Exception e) {

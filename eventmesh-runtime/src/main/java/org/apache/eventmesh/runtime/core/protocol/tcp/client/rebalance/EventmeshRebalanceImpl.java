@@ -180,10 +180,10 @@ public class EventmeshRebalanceImpl implements EventMeshRebalanceStrategy {
 
     private List<String> selectRedirectEventMesh(String group, Map<String, String> eventMeshMap,
                                                  Map<String, Integer> clientDistributionMap, int judge,
-                                                 String evenMeshName) throws Exception {
+                                                 String eventMeshName) throws Exception {
         EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
         return eventMeshRecommendStrategy.calculateRedirectRecommendEventMesh(eventMeshMap, clientDistributionMap,
-                group, judge, evenMeshName);
+                group, judge, eventMeshName);
     }
 
     public int caculateRedirectNum(String eventMeshName, String group, String purpose,

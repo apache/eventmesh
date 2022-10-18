@@ -37,7 +37,7 @@ nohup sh bin/mqbroker -n localhost:9876 &
 tail -f ~/logs/rocketmqlogs/broker.log
 ```
 
-The deployment of eventmesh-store has finished, please go to the next step: [Start Eventmesh-Runtime](docs/en/instruction/02-runtime.md)
+The deployment of eventmesh-store has finished, please go to the next step: [Start Eventmesh-Runtime](02-runtime.md)
 
 
 
@@ -64,7 +64,7 @@ sudo docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root
 Please note that the **rocketmq-broker ip** is **pod ip**. If you want to modify this ip, you can set it your custom value in **broker.conf**。
 
 
-By now, the deployment of eventmesh-store has finished, please go to the next step: [Start Eventmesh-Runtime Using Docker](docs/en/instruction/02-runtime-with-docker.md)
+By now, the deployment of eventmesh-store has finished, please go to the next step: [Start Eventmesh-Runtime Using Docker](02-runtime-with-docker.md)
 
 
 ## Reference
