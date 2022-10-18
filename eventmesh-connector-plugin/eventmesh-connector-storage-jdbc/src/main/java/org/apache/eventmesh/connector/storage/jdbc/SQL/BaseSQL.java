@@ -15,13 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventesh.connector.storage.jdbc.SQL;
+package org.apache.eventmesh.connector.storage.jdbc.SQL;
 
-public interface BaseSQLOperation {
+import lombok.Data;
 
-    public String createDatabases();
+@Data
+public class BaseSQL {
 
-    public String queryConsumerGroupTableSQL();
+    private String createDatabases;
 
-    public String queryCloudEventTablesSQL();
+    private String queryConsumerGroupTableSQL;
+
+    private String queryCloudEventTablesSQL;
 }
