@@ -29,19 +29,19 @@ import (
 )
 
 type Consumer struct {
-	broker        *Broker
-	subscribes    map[string]*SubscribeWorker
-	consumeOffset map[string]*atomic.Int64
-	mutex         sync.Mutex
-	listener      connector.EventListener
-	started       atomic.Bool
+	broker          *Broker
+	subscribes      map[string]*SubscribeWorker
+	committedOffset map[string]*atomic.Int64
+	mutex           sync.Mutex
+	listener        connector.EventListener
+	started         atomic.Bool
 }
 
 func NewConsumer() *Consumer {
 	return &Consumer{
-		broker:        GetBroker(),
-		subscribes:    make(map[string]*SubscribeWorker),
-		consumeOffset: make(map[string]*atomic.Int64),
+		broker:          GetBroker(),
+		subscribes:      make(map[string]*SubscribeWorker),
+		committedOffset: make(map[string]*atomic.Int64),
 	}
 }
 
@@ -67,7 +67,7 @@ func (c *Consumer) Subscribe(topicName string) error {
 			quit:      make(chan struct{}, 1),
 		}
 
-		c.consumeOffset[topicName] = offset
+		c.committedOffset[topicName] = offset
 		c.subscribes[topicName] = worker
 		go worker.run()
 	}
@@ -90,9 +90,12 @@ func (c *Consumer) UpdateOffset(ctx context.Context, events []*ce.Event) error {
 	for _, event := range events {
 		topicName := event.Subject()
 		offset := GetOffsetFromEvent(event)
-		if curOffset, ok := c.consumeOffset[topicName]; ok {
+		if curOffset, ok := c.committedOffset[topicName]; ok {
 			if offset <= 0 {
 				return fmt.Errorf("fail to update offset, invalid param, topic %s, offset : %d", topicName, offset)
+			}
+			if offset < curOffset.Load() {
+				return nil
 			}
 			curOffset.Store(offset)
 		}
@@ -170,7 +173,7 @@ func (w *SubscribeWorker) pollMessage() error {
 			return nil
 		}
 	} else {
-		message, err = w.broker.TakeMessageByOffset(w.topicName, w.offset.Load())
+		message, err = w.broker.TakeMessageByOffset(w.topicName, w.offset.Load()+1)
 	}
 	if err != nil {
 		return errors.Wrap(err, "fail to take message from standalone broker")
@@ -180,12 +183,12 @@ func (w *SubscribeWorker) pollMessage() error {
 		switch action {
 		case connector.CommitMessage:
 			// update offset
-			w.offset.Add(1)
+			w.offset.Store(message.GetOffset())
 		case connector.ReconsumeLater:
 			// No-Op
 		case connector.ManualAck:
 			// update offset
-			w.offset.Add(1)
+			w.offset.Store(message.GetOffset())
 		default:
 		}
 		return nil
