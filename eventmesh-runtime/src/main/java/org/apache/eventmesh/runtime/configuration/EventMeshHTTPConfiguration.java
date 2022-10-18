@@ -85,6 +85,12 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
     public boolean eventMeshServerUseTls = false;
 
+    public String eventMeshServerSSLProtocol = "TLSv1.1";
+
+    public String eventMeshServerSSLCer = "sChat2.jks";
+
+    public String eventMeshServerSSLPass = "sNetty";
+
     public int eventMeshHttpMsgReqNumPerSecond = 15000;
 
     public int eventMeshBatchMsgRequestNumPerSecond = 20000;
@@ -275,6 +281,20 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
                 eventMeshServerUseTls = Boolean.parseBoolean(StringUtils.deleteWhitespace(eventMeshServerUseTlsStr));
             }
 
+            String eventMeshServerSslProtocolStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_HTTPS_SSL_PROTOCOL);
+            if (StringUtils.isNotEmpty(eventMeshServerSslProtocolStr)) {
+                eventMeshServerSSLProtocol = StringUtils.deleteWhitespace(eventMeshServerSslProtocolStr);
+            }
+
+            String eventMeshServerSslCerStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_HTTPS_SSL_CER);
+            if (StringUtils.isNotEmpty(eventMeshServerSslCerStr)) {
+                eventMeshServerSSLCer = StringUtils.deleteWhitespace(eventMeshServerSslCerStr);
+            }
+
+            String eventMeshServerSslPassStr = configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_HTTPS_SSL_PASS);
+            if (StringUtils.isNotEmpty(eventMeshServerSslPassStr)) {
+                eventMeshServerSSLPass = StringUtils.deleteWhitespace(eventMeshServerSslPassStr);
+            }
 
             String eventMeshHttpMsgReqNumPerSecondStr =
                     configurationWrapper.getProp(ConfKeys.KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND);
@@ -366,6 +386,12 @@ public class EventMeshHTTPConfiguration extends CommonConfiguration {
         public static final String KEY_EVENTMESH_CONSUMER_ENABLED = "eventMesh.server.consumer.enabled";
 
         public static final String KEY_EVENTMESH_HTTPS_ENABLED = "eventMesh.server.useTls.enabled";
+
+        public static final String KEY_EVENTMESH_HTTPS_SSL_PROTOCOL = "eventMesh.server.ssl.protocol";
+
+        public static final String KEY_EVENTMESH_HTTPS_SSL_CER = "eventMesh.server.ssl.cer";
+
+        public static final String KEY_EVENTMESH_HTTPS_SSL_PASS = "eventMesh.server.ssl.pass";
 
         public static final String KEY_EVENTMESH_SERVER_MSG_REQ_NUM_PER_SECOND = "eventMesh.server.http.msgReqnumPerSecond";
 

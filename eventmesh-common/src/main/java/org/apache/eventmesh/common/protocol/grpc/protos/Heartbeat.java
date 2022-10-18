@@ -1063,8 +1063,8 @@ private static final long serialVersionUID = 0L;
     if (!getConsumerGroupBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 4, consumerGroup_);
     }
-    for (int i = 0; i < heartbeatItems_.size(); i++) {
-      output.writeMessage(5, heartbeatItems_.get(i));
+    for (HeartbeatItem heartbeatItem: heartbeatItems_) {
+      output.writeMessage(5, heartbeatItem);
     }
     unknownFields.writeTo(output);
   }
@@ -1088,9 +1088,9 @@ private static final long serialVersionUID = 0L;
     if (!getConsumerGroupBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, consumerGroup_);
     }
-    for (int i = 0; i < heartbeatItems_.size(); i++) {
+    for (HeartbeatItem heartbeatItem: heartbeatItems_) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(5, heartbeatItems_.get(i));
+        .computeMessageSize(5, heartbeatItem);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;

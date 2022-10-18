@@ -29,15 +29,32 @@ import lombok.Setter;
 public class ClientConfiguration {
 
     private String serviceAddr;
+    private String authPlugin;
+    private String authParams;
+
+    private static ClientConfiguration INSTANCE = null;
 
     public void init() {
         String serviceAddrStr = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR);
         Preconditions.checkState(StringUtils.isNotEmpty(serviceAddrStr),
                 String.format("%s error", ConfKeys.KEYS_EVENTMESH_PULSAR_SERVICE_ADDR));
         serviceAddr = StringUtils.trim(serviceAddrStr);
+        authPlugin = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULSAR_AUTH_PLUGIN);
+        authParams = ConfigurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_PULSAR_AUTH_PARAMS);
+    }
+
+    public static ClientConfiguration getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new ClientConfiguration();
+            INSTANCE.init();
+        }
+        return INSTANCE;
     }
 
     static class ConfKeys {
         public static final String KEYS_EVENTMESH_PULSAR_SERVICE_ADDR = "eventMesh.server.pulsar.service";
+        public static final String KEYS_EVENTMESH_PULSAR_AUTH_PLUGIN = "eventMesh.server.pulsar.authPlugin";
+        public static final String KEYS_EVENTMESH_PULSAR_AUTH_PARAMS = "eventMesh.server.pulsar.authParams";
     }
+
 }

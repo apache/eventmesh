@@ -104,12 +104,9 @@ public class EventMeshServer {
             eventMeshGrpcServer = new EventMeshGrpcServer(eventMeshGrpcConfiguration, registry);
             eventMeshGrpcServer.init();
         }
-
-        if (eventMeshHttpConfiguration != null) {
-            eventMeshHTTPServer = new EventMeshHTTPServer(this, eventMeshHttpConfiguration);
-            eventMeshHTTPServer.init();
-        }
-
+        eventMeshHTTPServer = new EventMeshHTTPServer(this, eventMeshHttpConfiguration);
+        eventMeshHTTPServer.init();
+    
         if (eventMeshTcpConfiguration != null) {
             eventMeshTCPServer = new EventMeshTCPServer(this, eventMeshTcpConfiguration, registry);
             if (eventMeshTcpConfiguration.eventMeshTcpServerEnabled) {
