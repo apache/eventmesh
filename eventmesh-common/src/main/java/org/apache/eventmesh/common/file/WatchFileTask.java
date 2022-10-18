@@ -90,7 +90,7 @@ public class WatchFileTask extends Thread {
                 for (WatchEvent<?> event : events) {
                     WatchEvent.Kind<?> kind = event.kind();
                     if (kind.equals(StandardWatchEventKinds.OVERFLOW)) {
-                        LOGGER.warn("[WatchFileTask] file overflow: {}" , event.context());
+                        LOGGER.warn("[WatchFileTask] file overflow: {}", event.context());
                         continue;
                     }
                     precessWatchEvent(event);
