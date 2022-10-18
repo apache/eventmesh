@@ -16,11 +16,12 @@
 
 server:
   port: 11012
-  name: "eventmesh-workflow"
+  name: "EVENTMESH-workflow"
 flow:
   queue:
     store: in-memory
-  schedule:
+  scheduler:
+    type: in-line
     interval: 500 # milliseconds
   selector: nacos
   protocol: meshmessage
