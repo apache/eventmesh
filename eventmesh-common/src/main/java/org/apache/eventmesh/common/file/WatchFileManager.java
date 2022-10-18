@@ -64,7 +64,7 @@ public class WatchFileManager {
         }
         LOGGER.warn("[WatchFileManager] start close");
         for (Map.Entry<String, WatchFileTask> entry : WATCH_FILE_TASK_MAP.entrySet()) {
-            LOGGER.warn("[WatchFileManager] start to shutdown : " + entry.getKey());
+            LOGGER.warn("[WatchFileManager] start to shutdown : {}" , entry.getKey());
             try {
                 entry.getValue().shutdown();
             } catch (Throwable ex) {
