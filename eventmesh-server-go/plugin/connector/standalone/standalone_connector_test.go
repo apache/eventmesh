@@ -107,6 +107,48 @@ func TestConsumer_Subscribe(t *testing.T) {
 	assert.Equal(t, int64(1275), sum.Load())
 }
 
+func TestConsumer_ManualAck(t *testing.T) {
+	sum := atomic.NewInt64(0)
+	var wg sync.WaitGroup
+	wg.Add(50)
+
+	listener := connector.EventListener{
+		Consume: func(event *ce.Event, commitFunc connector.CommitFunc) error {
+			defer wg.Done()
+
+			var data map[string]interface{}
+			event.DataAs(&data)
+			index := int64(data["val"].(float64))
+			sum.Add(index)
+			commitFunc(connector.ManualAck)
+			return nil
+		},
+	}
+
+	factory := plugin.Get(connector.PluginType, pluginName).(connector.Factory)
+	consumer, _ := factory.GetConsumer()
+	consumer.Start()
+	consumer.RegisterEventListener(&listener)
+	consumer.Subscribe(topicName)
+	defer consumer.Shutdown()
+
+	producer, _ := factory.GetProducer()
+	producer.Start()
+	defer producer.Shutdown()
+	for i := 1; i <= 50; i++ {
+		err := producer.Publish(context.Background(), getTestEventOfData(map[string]interface{}{
+			"val": i,
+		}), getEmptyPublishCallback())
+
+		if err != nil {
+			t.Fail()
+			return
+		}
+	}
+	wg.Wait()
+	assert.Equal(t, int64(1275), sum.Load())
+}
+
 func TestConsumer_UpdateOffset(t *testing.T) {
 	sum := atomic.NewInt64(0)
 	ch := make(chan struct{})
@@ -127,7 +169,7 @@ func TestConsumer_UpdateOffset(t *testing.T) {
 	defer consumer.Shutdown()
 	consumer.RegisterEventListener(&listener)
 	event := getTestEvent()
-	event.SetExtension("offset", "50")
+	event.SetExtension("offset", "49")
 	consumer.Subscribe(topicName)
 	consumer.UpdateOffset(context.Background(), []*ce.Event{event})
 
