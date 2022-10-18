@@ -129,7 +129,7 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor impleme
 
         String url = requestBodyMap.get("url").toString();
         String consumerGroup = requestBodyMap.get("consumerGroup").toString();
-        String topic = JsonUtils.serialize(requestBodyMap.get("topic"));
+        String topic = requestBodyMap.get("topic").toString();
 
         // SubscriptionItem
         List<SubscriptionItem> subscriptionList = JsonUtils.deserialize(topic, new TypeReference<List<SubscriptionItem>>() {
