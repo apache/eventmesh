@@ -64,7 +64,9 @@ public class ConfigurationWrapper {
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + EventMeshConstants.EVENTMESH_CONF_FILE;
             if (new File(configPath).exists()) {
-                try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(configPath), StandardCharsets.UTF_8))) {
+                try(FileInputStream fileInputStream = new FileInputStream(configPath);
+                    InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8);
+                    BufferedReader reader = new BufferedReader(inputStreamReader)) {
                     properties.load(reader);
                 }
             }
