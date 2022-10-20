@@ -17,6 +17,7 @@ package protocol
 
 import (
 	"context"
+	"fmt"
 	pgrpc "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	eventmesh "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
@@ -70,5 +71,8 @@ func (m *MeshMessage) Publish(ctx context.Context, topic string, content string,
 		return err
 	}
 	log.Get(constants.LogSchedule).Debugf("publish event result: %v", resp.String())
+	if resp.RespCode != "0" {
+		return fmt.Errorf("eventmesh publish message error: [code]%v[msg]%v", resp.RespCode, resp.RespMsg)
+	}
 	return nil
 }

@@ -21,6 +21,8 @@ github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221019110652
 github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221019110652-3768a592fc3f/go.mod h1:5V5tuoj3sI0hyW+yVwsARYEJMQ41ty0ssfQVenqS26k=
 github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20220923152713-86455c587c5b h1:0UIzwfZ5ViQ16vONWteAEw+vpFslRbPnxlxUmk1QRF8=
 github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20220923152713-86455c587c5b/go.mod h1:jvTQE6fSkOk/eOH0pT0faPDe1wT4SFJ/W9Jq1XDCwrA=
+github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20221020081227-6e7625cedab8 h1:B91gs4zEhbqmAwuLoeia3xOj6wc3XOwYKZbBouOU+bk=
+github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20221020081227-6e7625cedab8/go.mod h1:jvTQE6fSkOk/eOH0pT0faPDe1wT4SFJ/W9Jq1XDCwrA=
 github.com/apache/incubator-eventmesh/eventmesh-server-go v0.0.0-20220812021948-0945ab92daea h1:2HgaPliO/+mIcOEY3YXIv+uTyZK+TjXzm+P9rYxACh0=
 github.com/apache/incubator-eventmesh/eventmesh-server-go v0.0.0-20220812021948-0945ab92daea/go.mod h1:Z0G6PXEFojRm73fadnqMFuPcaTdIr5s8Bgq/PCKOu40=
 github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a/go.mod h1:lB+ZfQJz7igIIfQNfa7Ml4HSf2uFQQRzpGGRXenZAgY=
