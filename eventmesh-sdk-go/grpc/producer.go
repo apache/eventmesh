@@ -48,7 +48,7 @@ func newProducer(grpcConn *grpc.ClientConn) (*eventMeshProducer, error) {
 
 // Close recover all resource hold in the producer
 func (e *eventMeshProducer) Close() error {
-	log.Infof("close eventmesh producer")
+	log.Infof("close eventmesh grpc conn")
 	return nil
 }
 
