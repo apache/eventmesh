@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.protocol.http;
 
+import static org.apache.eventmesh.protocol.http.HttpProtocolConstant.CONSTANTS_KEY_BODY;
+import static org.apache.eventmesh.protocol.http.HttpProtocolConstant.CONSTANTS_KEY_HEADERS;
+import static org.apache.eventmesh.protocol.http.HttpProtocolConstant.CONSTANTS_KEY_METHOD;
+import static org.apache.eventmesh.protocol.http.HttpProtocolConstant.CONSTANTS_KEY_PATH;
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
@@ -35,8 +40,6 @@ import java.util.Set;
 import io.cloudevents.CloudEvent;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-
-import static org.apache.eventmesh.protocol.http.HttpProtocolConstant.*;
 
 /**
  * CloudEvents protocol adaptor, used to transform CloudEvents message to CloudEvents message.
