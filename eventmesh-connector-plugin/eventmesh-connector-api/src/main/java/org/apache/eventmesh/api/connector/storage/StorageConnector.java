@@ -37,10 +37,7 @@ import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.LifeCycle;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.connector.storage.data.ConsumerGroupInfo;
 import org.apache.eventmesh.api.connector.storage.data.PullRequest;
-import org.apache.eventmesh.api.connector.storage.data.TopicInfo;
-import org.apache.eventmesh.api.connector.storage.data.MetaData;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
@@ -53,24 +50,21 @@ import io.cloudevents.CloudEvent;
 @EventMeshSPI(isSingleton = false, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
 public interface StorageConnector extends LifeCycle {
 
-
     void init(Properties properties) throws Exception;
 
     void publish(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception;
 
     void request(CloudEvent cloudEvent, RequestReplyCallback rrCallback, long timeout) throws Exception;
 
-    public List<CloudEvent> pull(PullRequest pullRequest);
+    public boolean reply(CloudEvent cloudEvent, SendCallback sendCallback) throws Exception;
+
+    public List<CloudEvent> pull(PullRequest pullRequest) throws Exception;
 
     void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context);
 
-    public MetaData queryMetaData();
-
-    public int deleteCloudEvent();
-
-    public int createTopic(TopicInfo topicInfo);
-
-    public int createConsumerGroup(ConsumerGroupInfo consumerGroupInfo);
+    public default int deleteCloudEvent(CloudEvent cloudEvent) {
+        return 0;
+    }
 
     @Override
     public default boolean isStarted() {
