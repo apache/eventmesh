@@ -23,10 +23,11 @@ flow:
   scheduler:
     type: in-line
     interval: 500 # milliseconds
-  selector: nacos
   protocol: meshmessage
+catalog:
+  server_name: "EVENTMESH-catalog"
 eventmesh:
-  host: "127.0.0.1"
+  host: "9.135.90.236"
   env: ""
   idc: ""
   sys: ""

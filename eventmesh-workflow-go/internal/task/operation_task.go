@@ -53,5 +53,5 @@ func (t *operationTask) Run() error {
 	if err := t.baseTask.queue.Publish([]*model.WorkflowTaskInstance{&taskInstance}); err != nil {
 		return err
 	}
-	return publishEvent(t.workflowInstanceID, taskInstanceID, t.input, t.action.OperationName)
+	return publishEvent(t.workflowInstanceID, taskInstanceID, t.action.OperationName, t.input)
 }

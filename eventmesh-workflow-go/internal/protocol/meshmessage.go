@@ -65,7 +65,7 @@ func (m *MeshMessage) Publish(ctx context.Context, topic string, content string,
 		SeqNum:        uuid.New().String(),
 		Properties:    properties,
 	}
-	resp, err := client.Publish(ctx, message)
+	resp, err := client.Publish(context.Background(), message)
 	if err != nil {
 		return err
 	}
