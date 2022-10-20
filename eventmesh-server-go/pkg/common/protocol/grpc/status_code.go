@@ -15,9 +15,16 @@
 
 package grpc
 
+import jsoniter "github.com/json-iterator/go"
+
 type StatusCode struct {
-	RetCode string `json:"retCode"`
-	ErrMsg  string `json:"errMsg"`
+	RetCode string `json:"respCode"`
+	ErrMsg  string `json:"respMsg"`
+}
+
+func (s *StatusCode) ToJSONString() string {
+	str, _ := jsoniter.MarshalToString(s)
+	return str
 }
 
 var (

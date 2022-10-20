@@ -18,31 +18,103 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/producer"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-	"time"
 )
 
 var (
 	ErrProtocolPluginNotFound = fmt.Errorf("protocol plugin not found")
 )
 
-// AsyncMessage process async message
-func AsyncMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage) error {
+// SubscribeProcessor Subscribe process subscribe message
+func SubscribeProcessor(ctx context.Context, gctx *GRPCContext, emiter *EventEmitter, msg *pb.Subscription) error {
 	hdr := msg.Header
 	if err := ValidateHeader(hdr); err != nil {
 		log.Warnf("invalid header:%v", err)
-		gctx.SendResp(grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
+		return err
+	}
+	if err := ValidateSubscription(WEBHOOK, msg); err != nil {
+		log.Warnf("invalid body:%v", err)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
+		return err
+	}
+
+	return nil
+}
+
+func SubscribeStreamProcessor(ctx context.Context, gctx *GRPCContext, emiter *EventEmitter, msg *pb.Subscription) error {
+	hdr := msg.Header
+	if err := ValidateHeader(hdr); err != nil {
+		log.Warnf("invalid header:%v", err)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
+		return err
+	}
+	if err := ValidateSubscription(WEBHOOK, msg); err != nil {
+		log.Warnf("invalid body:%v", err)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
+		return err
+	}
+	cmgr := gctx.ConsumerMgr
+	consumerGroup := msg.ConsumerGroup
+	var clients []*GroupClient
+	for _, item := range msg.SubscriptionItems {
+		clients = append(clients, &GroupClient{
+			ENV:              hdr.Env,
+			IDC:              hdr.Idc,
+			SYS:              hdr.Sys,
+			IP:               hdr.Ip,
+			PID:              hdr.Pid,
+			ConsumerGroup:    consumerGroup,
+			Topic:            item.Topic,
+			SubscriptionMode: item.Mode,
+			GRPCType:         STREAM,
+			LastUPTime:       time.Now(),
+			Emiter:           emiter,
+		})
+	}
+	for _, cli := range clients {
+		if err := cmgr.RegisterClient(cli); err != nil {
+			return err
+		}
+	}
+	meshConsumer, err := cmgr.GetConsumer(consumerGroup)
+	if err != nil {
+		return err
+	}
+	requireRestart := false
+	for _, cli := range clients {
+		if meshConsumer.RegisterClient(cli) {
+			requireRestart = true
+		}
+	}
+	if requireRestart {
+		log.Infof("ConsumerGroup %v topic info changed, restart EventMesh Consumer", consumerGroup)
+		cmgr.restartConsumer(consumerGroup)
+	} else {
+		log.Warnf("EventMesh consumer [%v] didn't restart.", consumerGroup)
+	}
+
+	return nil
+}
+
+// AsyncMessageProcessor process async message
+func AsyncMessageProcessor(ctx context.Context, gctx *GRPCContext, emiter *EventEmitter, msg *pb.SimpleMessage) error {
+	hdr := msg.Header
+	if err := ValidateHeader(hdr); err != nil {
+		log.Warnf("invalid header:%v", err)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
 		return err
 	}
 	if err := ValidateMessage(msg); err != nil {
 		log.Warnf("invalid body:%v", err)
-		gctx.SendResp(grpc.EVENTMESH_PROTOCOL_BODY_ERR)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
 		return err
 	}
 
@@ -66,7 +138,7 @@ func AsyncMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage)
 		return err
 	}
 	return ep.Send(
-		producer.SendMessageContext{
+		SendMessageContext{
 			Ctx:         ctx,
 			Event:       cevt,
 			BizSeqNO:    seqNum,
@@ -75,12 +147,12 @@ func AsyncMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage)
 		},
 		&connector.SendCallback{
 			OnSuccess: func(result *connector.SendResult) {
-				gctx.SendResp(grpc.SUCCESS)
+				emiter.sendStreamResp(hdr, grpc.SUCCESS)
 				log.Infof("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%vms|topic=%v|bizSeqNo=%v|uniqueId=%v",
 					time.Now().Sub(start).Milliseconds(), topic, seqNum, uid)
 			},
 			OnError: func(result *connector.ErrorResult) {
-				gctx.SendResp(grpc.EVENTMESH_SEND_ASYNC_MSG_ERR)
+				emiter.sendStreamResp(hdr, grpc.EVENTMESH_SEND_ASYNC_MSG_ERR)
 				log.Errorf("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%vms|topic=%v|bizSeqNo=%v|uniqueId=%v, err:%v",
 					time.Now().Sub(start).Milliseconds(), topic, seqNum, uid, result.Err)
 			},

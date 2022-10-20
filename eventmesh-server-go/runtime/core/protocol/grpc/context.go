@@ -19,7 +19,6 @@ import (
 	"context"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	cloudv2 "github.com/cloudevents/sdk-go/v2"
@@ -72,13 +71,14 @@ func (g *GRPCContext) Start() error {
 	return nil
 }
 
-func (g *GRPCContext) SendResp(code *grpc.StatusCode) {
-	//resp := &pb.Response{
-	//	RespCode: code.RetCode,
-	//	RespMsg:  code.ErrMsg,
-	//	RespTime: fmt.Sprintf("%v", time.Now().UnixMilli()),
-	//}
-}
+//
+//func (g *GRPCContext) SendResp(code *grpc.StatusCode) {
+//	resp := &pb.Response{
+//		RespCode: code.RetCode,
+//		RespMsg:  code.ErrMsg,
+//		RespTime: fmt.Sprintf("%v", time.Now().UnixMilli()),
+//	}
+//}
 
 type MessageContext struct {
 	MsgRandomNo      string

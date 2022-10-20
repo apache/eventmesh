@@ -15,8 +15,18 @@
 
 package grpc
 
-import "github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+)
 
 type EventEmitter struct {
 	emitter pb.ConsumerService_SubscribeStreamServer
+}
+
+func (e *EventEmitter) sendStreamResp(hdr *pb.RequestHeader, code *grpc.StatusCode) error {
+	return e.emitter.Send(&pb.SimpleMessage{
+		Header:  hdr,
+		Content: code.ToJSONString(),
+	})
 }

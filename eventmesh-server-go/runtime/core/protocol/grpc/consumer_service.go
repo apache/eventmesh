@@ -113,7 +113,8 @@ func (c *ConsumerService) Unsubscribe(context.Context, *pb.Subscription) (*pb.Re
 
 func (c *ConsumerService) handleSubscriptionStream(sub *pb.Subscription, stream pb.ConsumerService_SubscribeStreamServer) error {
 	c.subscribePool.Submit(func() {
-		SubscribeStream(context.TODO(), c.gctx, stream, sub)
+		emiter := &EventEmitter{emitter: stream}
+		SubscribeStreamProcessor(context.TODO(), c.gctx, emiter, sub)
 	})
 	return nil
 }

@@ -21,7 +21,6 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/push"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	cloudv2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/liyue201/gostl/ds/set"
@@ -40,7 +39,7 @@ var (
 type Request struct {
 	*Context
 
-	MessageContext *push.MessageContext
+	MessageContext *MessageContext
 	CreateTime     time.Time
 	LastPushTime   time.Time
 	Complete       *atomic.Bool
@@ -48,7 +47,7 @@ type Request struct {
 	Try            func() error
 }
 
-func NewRequest(mctx *push.MessageContext) (*Request, error) {
+func NewRequest(mctx *MessageContext) (*Request, error) {
 	sm, err := eventToSimpleMessage(mctx.Event)
 	if err != nil {
 		return nil, err
@@ -84,7 +83,7 @@ type StreamRequest struct {
 	startIdx int
 }
 
-func NewStreamRequest(mctx *push.MessageContext) (*StreamRequest, error) {
+func NewStreamRequest(mctx *MessageContext) (*StreamRequest, error) {
 	r, err := NewRequest(mctx)
 	if err != nil {
 		return nil, err
@@ -113,7 +112,7 @@ type WebhookRequest struct {
 	subscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
 }
 
-func NewWebhookRequest(mctx *push.MessageContext) (*WebhookRequest, error) {
+func NewWebhookRequest(mctx *MessageContext) (*WebhookRequest, error) {
 	r, err := NewRequest(mctx)
 	if err != nil {
 		return nil, err

@@ -35,4 +35,5 @@ type GroupClient struct {
 	Hostname         string
 	APIVersion       string
 	LastUPTime       time.Time
+	Emiter           *EventEmitter
 }
