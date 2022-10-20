@@ -17,11 +17,14 @@
 
 package org.apache.eventmesh.api.connector.storage.data;
 
+import lombok.Data;
+
 /**
  * {tablename-queue}
  *
  * @author laohu
  */
+@Data
 public class TopicInfo {
 
     private String topicName;
@@ -33,5 +36,7 @@ public class TopicInfo {
     private int topicSysFlag = 0;
 
     private boolean order = false;
+
+    private Long currentId;
 
 }
