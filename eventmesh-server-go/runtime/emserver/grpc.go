@@ -17,7 +17,7 @@ package emserver
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/service"
+	grpc2 "github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -43,20 +43,20 @@ func NewGRPCServer(opt *config.GRPCOption) (GracefulServer, error) {
 		err error
 	)
 
-	grpcCtx, err := service.New()
+	grpcCtx, err := grpc2.New()
 	if err != nil {
 		return nil, err
 	}
 
-	consumerSVC, err := service.NewConsumerServiceServer(grpcCtx)
+	consumerSVC, err := grpc2.NewConsumerServiceServer(grpcCtx)
 	if err != nil {
 		return nil, err
 	}
-	producerSVC, err := service.NewProducerServiceServer(grpcCtx)
+	producerSVC, err := grpc2.NewProducerServiceServer(grpcCtx)
 	if err != nil {
 		return nil, err
 	}
-	hbSVC, err := service.NewHeartbeatServiceServer(grpcCtx)
+	hbSVC, err := grpc2.NewHeartbeatServiceServer(grpcCtx)
 	if err != nil {
 		return nil, err
 	}

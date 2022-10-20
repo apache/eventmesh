@@ -13,21 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package service
+package grpc
 
 import (
+	"context"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/consumer"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/producer"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	cloudv2 "github.com/cloudevents/sdk-go/v2"
 	"golang.org/x/time/rate"
+	"time"
 )
 
 // GRPCContext grpc server api, used to handle the client
 type GRPCContext struct {
-	ConsumerMgr *consumer.Manager
-	ProducerMgr *producer.Manager
+	ConsumerMgr *ConsumerManager
+	ProducerMgr *ProducerManager
 	RateLimiter *rate.Limiter
 	Registry    registry.Registry
 }
@@ -37,11 +40,11 @@ func New() (*GRPCContext, error) {
 	log.Infof("create new grpc serer")
 	msgReqPerSeconds := config.GlobalConfig().Server.GRPCOption.MsgReqNumPerSecond
 	limiter := rate.NewLimiter(rate.Limit(msgReqPerSeconds), 10)
-	cmgr, err := consumer.NewManager()
+	cmgr, err := NewConsumerManager()
 	if err != nil {
 		return nil, err
 	}
-	pmgr, err := producer.NewManager()
+	pmgr, err := NewProducerManager()
 	if err != nil {
 		return nil, err
 	}
@@ -67,4 +70,32 @@ func (g *GRPCContext) Start() error {
 	//	return err
 	//}
 	return nil
+}
+
+func (g *GRPCContext) SendResp(code *grpc.StatusCode) {
+	//resp := &pb.Response{
+	//	RespCode: code.RetCode,
+	//	RespMsg:  code.ErrMsg,
+	//	RespTime: fmt.Sprintf("%v", time.Now().UnixMilli()),
+	//}
+}
+
+type MessageContext struct {
+	MsgRandomNo      string
+	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
+	GrpcType         GRPCType
+	ConsumerGroup    string
+	Event            *cloudv2.Event
+	TopicConfig      *ConsumerGroupTopicConfig
+	// channel for server
+	Consumer *EventMeshConsumer
+}
+
+// SendMessageContext context in produce message
+type SendMessageContext struct {
+	Ctx         context.Context
+	Event       *cloudv2.Event
+	BizSeqNO    string
+	ProducerAPI *EventMeshProducer
+	CreateTime  time.Time
 }

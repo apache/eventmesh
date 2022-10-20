@@ -13,8 +13,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package grpc
 
-type ProducerGroupConfig struct {
-	GroupName string `json:"groupName"`
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	"github.com/panjf2000/ants/v2"
+)
+
+type HeartbeatService struct {
+	pb.UnimplementedHeartbeatServiceServer
+	gctx *GRPCContext
+	pool *ants.Pool
+}
+
+func NewHeartbeatServiceServer(gctx *GRPCContext) (*HeartbeatService, error) {
+	sp := config.GlobalConfig().Server.GRPCOption.SubscribePoolSize
+	pl, err := ants.NewPool(sp)
+	if err != nil {
+		return nil, err
+	}
+	return &HeartbeatService{
+		gctx: gctx,
+		pool: pl,
+	}, nil
 }

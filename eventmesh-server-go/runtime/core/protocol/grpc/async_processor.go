@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package processor
+package grpc
 
 import (
 	"context"
@@ -24,10 +24,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/producer"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/service"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-	ce "github.com/cloudevents/sdk-go/v2"
-	"strconv"
 	"time"
 )
 
@@ -35,15 +32,17 @@ var (
 	ErrProtocolPluginNotFound = fmt.Errorf("protocol plugin not found")
 )
 
-type AsyncMessage struct {
-}
-
-func (a *AsyncMessage) ProcessAsyncMessage(ctx context.Context, gctx *service.GRPCContext, msg *pb.SimpleMessage) error {
+// AsyncMessage process async message
+func AsyncMessage(ctx context.Context, gctx *GRPCContext, msg *pb.SimpleMessage) error {
 	hdr := msg.Header
 	if err := ValidateHeader(hdr); err != nil {
+		log.Warnf("invalid header:%v", err)
+		gctx.SendResp(grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
 		return err
 	}
 	if err := ValidateMessage(msg); err != nil {
+		log.Warnf("invalid body:%v", err)
+		gctx.SendResp(grpc.EVENTMESH_PROTOCOL_BODY_ERR)
 		return err
 	}
 
@@ -52,10 +51,7 @@ func (a *AsyncMessage) ProcessAsyncMessage(ctx context.Context, gctx *service.GR
 	uid := msg.UniqueId
 	topic := msg.Topic
 	pg := msg.ProducerGroup
-	ttl, err := strconv.ParseInt(msg.Ttl, 10, 32)
-	if err != nil {
-		return err
-	}
+	start := time.Now()
 	protocolType := hdr.ProtocolType
 	adp := plugin.Get(plugin.Protocol, protocolType).(protocol.Adapter)
 	if adp == nil {
@@ -69,7 +65,7 @@ func (a *AsyncMessage) ProcessAsyncMessage(ctx context.Context, gctx *service.GR
 	if err != nil {
 		return err
 	}
-	return ep.Request(
+	return ep.Send(
 		producer.SendMessageContext{
 			Ctx:         ctx,
 			Event:       cevt,
@@ -77,19 +73,16 @@ func (a *AsyncMessage) ProcessAsyncMessage(ctx context.Context, gctx *service.GR
 			ProducerAPI: ep,
 			CreateTime:  time.Now(),
 		},
-		&connector.RequestReplyCallback{
-			OnSuccess: func(event *ce.Event) {
-				m, err := adp.FromCloudEvent(event)
-				if err != nil {
-					log.Warnf("onsuccess, but serialize message err:%v", err)
-					return
-				}
-				mp := m.(grpc.SimpleMessageWrapper)
-
-				log.Info("")
+		&connector.SendCallback{
+			OnSuccess: func(result *connector.SendResult) {
+				gctx.SendResp(grpc.SUCCESS)
+				log.Infof("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%vms|topic=%v|bizSeqNo=%v|uniqueId=%v",
+					time.Now().Sub(start).Milliseconds(), topic, seqNum, uid)
 			},
 			OnError: func(result *connector.ErrorResult) {
-
+				gctx.SendResp(grpc.EVENTMESH_SEND_ASYNC_MSG_ERR)
+				log.Errorf("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%vms|topic=%v|bizSeqNo=%v|uniqueId=%v, err:%v",
+					time.Now().Sub(start).Milliseconds(), topic, seqNum, uid, result.Err)
 			},
-		}, time.Duration(ttl)*time.Millisecond)
+		})
 }

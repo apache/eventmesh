@@ -13,27 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package grpc
 
-import (
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/config"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
-	"time"
-)
+import "time"
 
-// GroupClient consumer group client details
-type GroupClient struct {
-	ENV              string
-	IDC              string
-	ConsumerGroup    string
-	Topic            string
-	GRPCType         config.GRPCType
-	URL              string
-	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
-	SYS              string
-	IP               string
-	PID              string
-	Hostname         string
-	APIVersion       string
-	LastUPtime       time.Time
+type Context struct {
+	RetryTimes  int
+	ExecuteTime time.Time
+	Do          func() error
+}
+
+func (c *Context) SetDelay(delay time.Duration) *Context {
+	c.ExecuteTime = time.Now().Add(delay)
+	return c
+}
+
+func (c *Context) GetDelay() time.Duration {
+	return c.ExecuteTime.Sub(time.Now())
 }

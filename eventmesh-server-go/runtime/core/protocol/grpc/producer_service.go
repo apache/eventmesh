@@ -13,50 +13,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package service
+package grpc
 
 import (
 	"context"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
-	"github.com/panjf2000/ants/v2"
-
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	"github.com/panjf2000/ants/v2"
 )
 
-// Consumer grpc service
-type Consumer struct {
-	pb.UnimplementedConsumerServiceServer
-	gctx          *GRPCContext
-	subscribePool *ants.Pool
-	replyPool     *ants.Pool
+type ProducerService struct {
+	pb.UnimplementedPublisherServiceServer
+	gctx     *GRPCContext
+	sendPool *ants.Pool
 }
 
-func NewConsumerServiceServer(gctx *GRPCContext) (*Consumer, error) {
-	ss := config.GlobalConfig().Server.GRPCOption.SubscribePoolSize
-	subPool, err := ants.NewPool(ss)
+func NewProducerServiceServer(gctx *GRPCContext) (*ProducerService, error) {
+	ps := config.GlobalConfig().Server.GRPCOption.SendPoolSize
+	pl, err := ants.NewPool(ps)
 	if err != nil {
 		return nil, err
 	}
-	rs := config.GlobalConfig().Server.GRPCOption.ReplyPoolSize
-	replyPool, err := ants.NewPool(rs)
-	if err != nil {
-		return nil, err
-	}
-	return &Consumer{
-		gctx:          gctx,
-		subscribePool: subPool,
-		replyPool:     replyPool,
+	return &ProducerService{
+		gctx:     gctx,
+		sendPool: pl,
 	}, nil
 }
 
-func (c *Consumer) Subscribe(ctx context.Context, sub *pb.Subscription) (*pb.Response, error) {
+func (p *ProducerService) Publish(ctx context.Context, msg *pb.SimpleMessage) (*pb.Response, error) {
+	ctx = context.WithValue(ctx, "UNIQID", msg.UniqueId)
+	log.Infof("cmd:%v, protocol:grpc, from:%v", "AsyncPublish", msg.Header.Ip)
 	return nil, nil
 }
 
-func (c *Consumer) SubscribeStream(srv pb.ConsumerService_SubscribeStreamServer) error {
-	return nil
+func (p *ProducerService) RequestReply(ctx context.Context, msg *pb.SimpleMessage) (*pb.SimpleMessage, error) {
+	return nil, nil
 }
 
-func (c *Consumer) Unsubscribe(context.Context, *pb.Subscription) (*pb.Response, error) {
+func (p *ProducerService) BatchPublish(ctx context.Context, msg *pb.BatchMessage) (*pb.Response, error) {
 	return nil, nil
 }

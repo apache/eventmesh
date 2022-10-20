@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package producer
+package grpc
 
 import (
 	"fmt"
@@ -22,18 +22,17 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
 	"time"
 )
 
 type EventMeshProducer struct {
-	cfg          *config.ProducerGroupConfig
+	cfg          *ProducerGroupConfig
 	producer     *wrapper.Producer
 	ServiceState consts.ServiceState
 }
 
-func NewEventMeshProducer(cfg *config.ProducerGroupConfig) (*EventMeshProducer, error) {
+func NewEventMeshProducer(cfg *ProducerGroupConfig) (*EventMeshProducer, error) {
 	pm, err := wrapper.NewProducer()
 	if err != nil {
 		return nil, err

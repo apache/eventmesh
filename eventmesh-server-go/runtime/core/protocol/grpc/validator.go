@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package processor
+package grpc
 
 import (
 	"fmt"
@@ -35,6 +35,12 @@ var (
 	ErrMessageNoTopic   = fmt.Errorf("no topic found in message")
 	ErrMessageNoContent = fmt.Errorf("no content found in message")
 	ErrMessageNoTTL     = fmt.Errorf("no ttl found in message")
+
+	ErrSubscriptionNoURL     = fmt.Errorf("no subscription url on webhook type")
+	ErrSubscriptionNoCG      = fmt.Errorf("no subscription consumer group on grpc type")
+	ErrSubscriptionWrongType = fmt.Errorf("wrong subscription type on grpc type")
+	ErrSubscriptionNoItem    = fmt.Errorf("no items subscription on grpc type")
+	ErrSubscriptionWrongMode = fmt.Errorf("wrong subscription mode on grpc type")
 )
 
 func ValidateHeader(hdr *pb.RequestHeader) error {
@@ -80,6 +86,17 @@ func ValidateMessage(msg *pb.SimpleMessage) error {
 	}
 	if msg.Ttl == "" {
 		return ErrMessageNoTTL
+	}
+	return nil
+}
+
+func ValidateSubscription(stype GRPCType, msg *pb.Subscription) error {
+	if stype == WEBHOOK && msg.Url == "" {
+		return ErrSubscriptionNoURL
+	}
+
+	if len(msg.SubscriptionItems) == 0 {
+		return ErrSubscriptionNoItem
 	}
 	return nil
 }

@@ -13,19 +13,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package producer
+package grpc
 
 import (
-	"context"
-	cloudv2 "github.com/cloudevents/sdk-go/v2"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"time"
 )
 
-// SendMessageContext context in produce message
-type SendMessageContext struct {
-	Ctx         context.Context
-	Event       *cloudv2.Event
-	BizSeqNO    string
-	ProducerAPI *EventMeshProducer
-	CreateTime  time.Time
+// GroupClient consumer group client details
+type GroupClient struct {
+	ENV              string
+	IDC              string
+	ConsumerGroup    string
+	Topic            string
+	GRPCType         GRPCType
+	URL              string
+	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
+	SYS              string
+	IP               string
+	PID              string
+	Hostname         string
+	APIVersion       string
+	LastUPTime       time.Time
 }
