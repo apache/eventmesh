@@ -17,11 +17,10 @@
 
 package org.apache.eventmesh.common.protocol.http.body.client;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
-
-import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,7 +54,7 @@ public class SubscribeResponseBody extends Body {
         this.resTime = resTime;
     }
 
-    public static SubscribeResponseBody buildBody(Integer retCode, String retMsg) throws Exception {
+    public static SubscribeResponseBody buildBody(Integer retCode, String retMsg) {
         SubscribeResponseBody regResponseBody = new SubscribeResponseBody();
         regResponseBody.setRetMsg(retMsg);
         regResponseBody.setResTime(System.currentTimeMillis());
