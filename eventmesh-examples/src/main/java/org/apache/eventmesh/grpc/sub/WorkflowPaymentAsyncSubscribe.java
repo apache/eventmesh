@@ -39,16 +39,16 @@ import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class WorkflowAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
+public class WorkflowPaymentAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static WorkflowAsyncSubscribe handler = new WorkflowAsyncSubscribe();
+    public static WorkflowPaymentAsyncSubscribe handler = new WorkflowPaymentAsyncSubscribe();
     public static EventMeshWorkflowClient workflowClient;
 
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
-        final String serverName = "express";
+        final String serverName = "payment";
         final String catalogServerName = properties.getProperty(ExampleConstants.EVENTMESH_CATALOG_NAME);
         final String selectorType = properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_TYPE);
 

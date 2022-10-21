@@ -34,7 +34,7 @@ eventmesh:
   username: "username"
   password: "password"
   producer_group: "EventMeshTest-producerGroup"
-  ttl: 10
+  ttl: 4000
   grpc:
     port: 10205
 plugins:
