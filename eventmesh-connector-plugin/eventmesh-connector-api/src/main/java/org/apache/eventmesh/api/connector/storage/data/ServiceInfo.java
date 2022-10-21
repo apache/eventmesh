@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.api.connector.storage.data;
 
-public class MetaData {
+/**
+ * mysql instance can't be registered
+ * 127.0.0.1:3306
+ * serviceInfo mysql address, to get meta data\table name
+ */
+public class ServiceInfo {
 
 }
