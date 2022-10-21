@@ -24,12 +24,22 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.EventMeshException;
 import org.apache.eventmesh.common.loadbalance.LoadBalanceSelector;
 
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.DefaultConnectionReuseStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -53,7 +63,7 @@ public abstract class AbstractHttpClient implements AutoCloseable {
 
         this.eventMeshHttpClientConfig = eventMeshHttpClientConfig;
         this.eventMeshServerSelector = HttpLoadBalanceUtils.createEventMeshServerLoadBalanceSelector(
-                eventMeshHttpClientConfig);
+            eventMeshHttpClientConfig);
         this.httpClient = setHttpClient();
     }
 
@@ -73,18 +83,31 @@ public abstract class AbstractHttpClient implements AutoCloseable {
         SSLContext sslContext;
         try {
             String protocol = eventMeshHttpClientConfig.getSslClientProtocol();
-            TrustManager[] tm = new TrustManager[]{new MyX509TrustManager()};
+            TrustManager[] tm = new TrustManager[] {new MyX509TrustManager()};
             sslContext = SSLContext.getInstance(protocol);
             sslContext.init(null, tm, new SecureRandom());
-            // todo: custom client pool
+
             return HttpClients.custom()
-                    .setSSLContext(sslContext)
-                    .setSSLHostnameVerifier(new DefaultHostnameVerifier())
-                    .build();
+                .setConnectionManager(getHttpPoolManager(sslContext, eventMeshHttpClientConfig.getMaxConnectionPoolSize()))
+                .setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy())
+                .evictIdleConnections(eventMeshHttpClientConfig.getConnectionIdleTimeSeconds(), TimeUnit.SECONDS)
+                .setConnectionReuseStrategy(new DefaultConnectionReuseStrategy())
+                .build();
         } catch (Exception e) {
             log.error("Error in creating HttpClient.", e);
             throw new EventMeshException(e);
         }
+    }
+
+    private HttpClientConnectionManager getHttpPoolManager(SSLContext sslContext, int poolSize) {
+        SSLConnectionSocketFactory sslFactory = new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier());
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+            .register("http", PlainConnectionSocketFactory.getSocketFactory())
+            .register("https", sslFactory)
+            .build();
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+        connectionManager.setMaxTotal(poolSize);
+        return connectionManager;
     }
 
     protected String selectEventMesh() {
