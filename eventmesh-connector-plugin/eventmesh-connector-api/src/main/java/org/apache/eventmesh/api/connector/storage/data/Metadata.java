@@ -17,20 +17,15 @@
 
 package org.apache.eventmesh.api.connector.storage.data;
 
+import java.util.List;
+import java.util.Set;
+
 import lombok.Data;
 
 @Data
-public class ClusterInfo {
+public class Metadata {
 
-    private String storageType;
+    private List<PullRequest> pullRequest;
 
-    private String clusterName;
-
-    private boolean isCreateTopic = false;
-
-    private boolean isCreateConsumerGroupInfo = false;
-
-    private boolean isCreateMessageId = false;
-
-    private String serviceUrl;
+    private volatile Set<String> topicSet;
 }
