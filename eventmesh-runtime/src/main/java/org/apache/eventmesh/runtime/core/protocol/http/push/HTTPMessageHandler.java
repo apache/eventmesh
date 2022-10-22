@@ -64,7 +64,7 @@ public class HTTPMessageHandler implements MessageHandler {
         });
     }
 
-    public static Map<String, Set<AbstractHTTPPushRequest>> waitingRequests = Maps.newConcurrentMap();
+    public static final Map<String, Set<AbstractHTTPPushRequest>> waitingRequests = Maps.newConcurrentMap();
 
     public HTTPMessageHandler(EventMeshConsumer eventMeshConsumer) {
         this.eventMeshConsumer = eventMeshConsumer;
