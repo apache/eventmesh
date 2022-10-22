@@ -62,7 +62,7 @@ import com.google.common.base.Preconditions;
 @EventMeshTrace(isEnable = false)
 public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
