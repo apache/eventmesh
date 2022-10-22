@@ -73,7 +73,7 @@ import com.google.common.base.Preconditions;
 
 public class ClientGroupWrapper {
 
-    public static Logger logger = LoggerFactory.getLogger(ClientGroupWrapper.class);
+    public static final Logger logger = LoggerFactory.getLogger(ClientGroupWrapper.class);
 
     private String sysId;
 
