@@ -34,6 +34,8 @@ import org.apache.eventmesh.runtime.util.Utils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +75,7 @@ public class HelloTask extends AbstractTask {
             Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
         } catch (Throwable e) {
             messageLogger.error("HelloTask failed|address={},errMsg={}", ctx.channel().remoteAddress(), e);
-            res.setHeader(new Header(HELLO_RESPONSE, OPStatus.FAIL.getCode(), e.getStackTrace().toString(), pkg
+            res.setHeader(new Header(HELLO_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
                     .getHeader().getSeq()));
             ctx.writeAndFlush(res).addListener(
                     new ChannelFutureListener() {
