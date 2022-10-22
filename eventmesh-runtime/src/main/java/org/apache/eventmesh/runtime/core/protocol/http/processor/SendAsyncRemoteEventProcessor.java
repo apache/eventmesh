@@ -66,7 +66,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
 
     public Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 

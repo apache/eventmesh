@@ -60,7 +60,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
     public Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
