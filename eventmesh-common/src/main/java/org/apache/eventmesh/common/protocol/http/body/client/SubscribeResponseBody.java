@@ -17,10 +17,11 @@
 
 package org.apache.eventmesh.common.protocol.http.body.client;
 
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.http.body.Body;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
+
+import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,9 +67,9 @@ public class SubscribeResponseBody extends Body {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("regResponseBody={")
-                .append("retCode=").append(retCode).append(",")
-                .append("retMsg=").append(retMsg).append(",")
-                .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT)).append("}");
+            .append("retCode=").append(retCode).append(",")
+            .append("retMsg=").append(retMsg).append(",")
+            .append("resTime=").append(DateFormatUtils.format(resTime, Constants.DATE_FORMAT)).append("}");
         return sb.toString();
     }
 
