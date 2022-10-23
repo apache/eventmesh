@@ -120,5 +120,19 @@ func (c *ConsumerService) handleSubscriptionStream(sub *pb.Subscription, stream 
 }
 
 func (c *ConsumerService) handleSubscribeReply(sub *pb.Subscription, stream pb.ConsumerService_SubscribeStreamServer) error {
+	c.replyPool.Submit(func() {
+		emiter := &EventEmitter{emitter: stream}
+		reply := sub.Reply
+		ReplyMessageProcessor(context.TODO(), c.gctx, emiter, &pb.SimpleMessage{
+			Header:        sub.Header,
+			ProducerGroup: reply.ProducerGroup,
+			Content:       reply.Content,
+			UniqueId:      reply.UniqueId,
+			SeqNum:        reply.SeqNum,
+			Topic:         reply.Topic,
+			Ttl:           reply.Ttl,
+			Properties:    reply.Properties,
+		})
+	})
 	return nil
 }

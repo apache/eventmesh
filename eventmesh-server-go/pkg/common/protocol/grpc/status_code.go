@@ -51,4 +51,7 @@ var (
 	EVENTMESH_ACL_ERR                           = &StatusCode{"20", "eventMesh acl err"}
 	EVENTMESH_SEND_MESSAGE_SPEED_OVER_LIMIT_ERR = &StatusCode{"21", "eventMesh send message speed over the limit err."}
 	EVENTMESH_REQUEST_REPLY_MSG_ERR             = &StatusCode{"22", "eventMesh request reply msg err, "}
+	EVENTMESH_Plugin_NotFound_ERR               = &StatusCode{"23", "eventMesh plugin not found err"}
+	EVENTMESH_Transfer_Protocol_ERR             = &StatusCode{"24", "eventMesh plugin build event message err"}
+	EVENTMESH_Producer_Group_NotFound_ERR       = &StatusCode{"25", "eventMesh producer not found err build event message err"}
 )

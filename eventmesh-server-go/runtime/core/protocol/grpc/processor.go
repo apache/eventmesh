@@ -25,6 +25,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 )
 
@@ -96,7 +97,7 @@ func SubscribeStreamProcessor(ctx context.Context, gctx *GRPCContext, emiter *Ev
 	}
 	if requireRestart {
 		log.Infof("ConsumerGroup %v topic info changed, restart EventMesh Consumer", consumerGroup)
-		cmgr.restartConsumer(consumerGroup)
+		return cmgr.restartConsumer(consumerGroup)
 	} else {
 		log.Warnf("EventMesh consumer [%v] didn't restart.", consumerGroup)
 	}
@@ -127,10 +128,13 @@ func AsyncMessageProcessor(ctx context.Context, gctx *GRPCContext, emiter *Event
 	protocolType := hdr.ProtocolType
 	adp := plugin.Get(plugin.Protocol, protocolType).(protocol.Adapter)
 	if adp == nil {
+		log.Warnf("protocol plugin not found:%v", protocolType)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_Plugin_NotFound_ERR)
 		return ErrProtocolPluginNotFound
 	}
 	cevt, err := adp.ToCloudEvent(&grpc.SimpleMessageWrapper{SimpleMessage: msg})
 	if err != nil {
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_Transfer_Protocol_ERR)
 		return err
 	}
 	ep, err := gctx.ProducerMgr.GetProducer(pg)
@@ -156,5 +160,73 @@ func AsyncMessageProcessor(ctx context.Context, gctx *GRPCContext, emiter *Event
 				log.Errorf("message|eventMesh2mq|REQ|ASYNC|send2MQCost=%vms|topic=%v|bizSeqNo=%v|uniqueId=%v, err:%v",
 					time.Now().Sub(start).Milliseconds(), topic, seqNum, uid, result.Err)
 			},
-		})
+		},
+	)
+}
+
+func ReplyMessageProcessor(ctx context.Context, gctx *GRPCContext, emiter *EventEmitter, msg *pb.SimpleMessage) error {
+	hdr := msg.Header
+	if err := ValidateHeader(hdr); err != nil {
+		log.Warnf("invalid header:%v", err)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
+		return err
+	}
+	if err := ValidateMessage(msg); err != nil {
+		log.Warnf("invalid body:%v", err)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
+		return err
+	}
+	seqNum := msg.SeqNum
+	uniqID := msg.UniqueId
+	producerGroup := msg.ProducerGroup
+	mqCluster := defaultIfEmpty(msg.Properties[consts.PROPERTY_MESSAGE_CLUSTER], "defaultCluster")
+	replyTopic := mqCluster + "_" + consts.RR_REPLY_TOPIC
+	msg.Topic = replyTopic
+	protocolType := hdr.ProtocolType
+	adp := plugin.Get(plugin.Protocol, protocolType).(protocol.Adapter)
+	if adp == nil {
+		log.Warnf("protocol plugin not found:%v", protocolType)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_Plugin_NotFound_ERR)
+		return ErrProtocolPluginNotFound
+	}
+	cevt, err := adp.ToCloudEvent(&grpc.SimpleMessageWrapper{SimpleMessage: msg})
+	if err != nil {
+		log.Warnf("transfer to cloud event msg err:%v", err)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_Transfer_Protocol_ERR)
+		return err
+	}
+	emProducer, err := gctx.ProducerMgr.GetProducer(producerGroup)
+	if err != nil {
+		log.Warnf("no eventmesh producer found, err:%v, group:%v", err, producerGroup)
+		emiter.sendStreamResp(hdr, grpc.EVENTMESH_Producer_Group_NotFound_ERR)
+		return err
+	}
+	start := time.Now()
+	return emProducer.Reply(
+		SendMessageContext{
+			Ctx:         ctx,
+			Event:       cevt,
+			BizSeqNO:    seqNum,
+			ProducerAPI: emProducer,
+			CreateTime:  time.Now(),
+		},
+		&connector.SendCallback{
+			OnSuccess: func(result *connector.SendResult) {
+				log.Infof("message|mq2eventmesh|REPLY|ReplyToServer|send2MQCost=%vms|topic=%v|bizSeqNo=%v|uniqueId=%v",
+					time.Now().Sub(start).Milliseconds(), replyTopic, seqNum, uniqID)
+			},
+			OnError: func(result *connector.ErrorResult) {
+				emiter.sendStreamResp(hdr, grpc.EVENTMESH_REPLY_MSG_ERR)
+				log.Warnf("message|mq2eventmesh|REPLY|ReplyToServer|send2MQCost=%vms|topic=%v|bizSeqNo=%v|uniqueId=%v",
+					time.Now().Sub(start).Milliseconds(), replyTopic, seqNum, uniqID, result.Err)
+			},
+		},
+	)
+}
+
+func defaultIfEmpty(in interface{}, def string) string {
+	if in == nil {
+		return def
+	}
+	return in.(string)
 }
