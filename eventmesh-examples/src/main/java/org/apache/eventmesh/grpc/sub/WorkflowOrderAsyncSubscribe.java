@@ -77,7 +77,7 @@ public class WorkflowOrderAsyncSubscribe implements ReceiveMsgHook<EventMeshMess
         EventMeshWorkflowClientConfig eventMeshWorkflowClientConfig = EventMeshWorkflowClientConfig.builder().serverName(workflowServerName).build();
         workflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
 
-        Thread.sleep(6000000);
+        Thread.sleep(60000);
         eventMeshCatalogClient.destroy();
     }
 
@@ -90,6 +90,7 @@ public class WorkflowOrderAsyncSubscribe implements ReceiveMsgHook<EventMeshMess
         String taskInstanceId = props.get("workflowtaskinstanceid");
 
         ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setId("storeorderworkflow")
+            .setTaskInstanceId(taskInstanceId)
             .setInstanceId(workflowInstanceId).build();
         ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);
         log.info("receive workflow msg: {}", response.getInstanceId());

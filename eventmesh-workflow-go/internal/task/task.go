@@ -25,6 +25,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/flow"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
@@ -45,6 +46,7 @@ type baseTask struct {
 	input              string
 	taskType           string
 	queue              queue.ObserveQueue
+	workflowDAL        dal.WorkflowDAL
 }
 
 func New(instance *model.WorkflowTaskInstance) Task {

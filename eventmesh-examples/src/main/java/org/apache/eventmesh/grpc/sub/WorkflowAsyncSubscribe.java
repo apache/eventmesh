@@ -25,6 +25,7 @@ import org.apache.eventmesh.client.grpc.consumer.ReceiveMsgHook;
 import org.apache.eventmesh.client.selector.SelectorFactory;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.client.workflow.EventMeshWorkflowClient;
+import org.apache.eventmesh.client.workflow.config.EventMeshWorkflowClientConfig;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
@@ -50,14 +51,15 @@ public class WorkflowAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> 
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
         final String serverName = "express";
         final String catalogServerName = properties.getProperty(ExampleConstants.EVENTMESH_CATALOG_NAME);
+        final String workflowServerName = properties.getProperty(ExampleConstants.EVENTMESH_WORKFLOW_NAME);
         final String selectorType = properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_TYPE);
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
             .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .env("env").idc("idc")
-            .sys("1234").build();
+            .env("env").idc("default").password("password")
+            .sys("default").build();
 
         EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();
@@ -72,7 +74,10 @@ public class WorkflowAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> 
         EventMeshCatalogClient eventMeshCatalogClient = new EventMeshCatalogClient(eventMeshCatalogClientConfig, eventMeshGrpcConsumer);
         eventMeshCatalogClient.init();
 
-        Thread.sleep(6000000);
+        EventMeshWorkflowClientConfig eventMeshWorkflowClientConfig = EventMeshWorkflowClientConfig.builder().serverName(workflowServerName).build();
+        workflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
+
+        Thread.sleep(60000);
         eventMeshCatalogClient.destroy();
     }
 
@@ -83,7 +88,9 @@ public class WorkflowAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> 
         String workflowInstanceId = props.get("workflowinstanceid");
         String taskInstanceId = props.get("workflowtaskinstanceid");
 
-        ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setId(workflowInstanceId).setInstanceId(taskInstanceId).build();
+        ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setId("storeorderworkflow")
+            .setTaskInstanceId(taskInstanceId)
+            .setInstanceId(workflowInstanceId).build();
         ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);
         log.info("receive workflow msg: {}", response.getInstanceId());
         return Optional.empty();

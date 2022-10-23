@@ -22,15 +22,15 @@ flow:
     store: in-memory
   scheduler:
     type: in-line
-    interval: 500 # milliseconds
+    interval: 10 # milliseconds
   protocol: meshmessage
 catalog:
   server_name: "EVENTMESH-catalog"
 eventmesh:
-  host: "9.135.90.236"
-  env: "test"
-  idc: "default"
-  sys: "default"
+  host: "127.0.0.1"
+  env: "PRD"
+  idc: "DEFAULT"
+  sys: "DEFAULT"
   username: "username"
   password: "password"
   producer_group: "EventMeshTest-producerGroup"
@@ -40,10 +40,10 @@ eventmesh:
 plugins:
   registry:
     nacos:
-      address_list: "9.135.90.236:8848"
+      address_list: "127.0.0.1:8848"
   selector:
     nacos:
-      address_list: "9.135.90.236:8848"
+      address_list: "127.0.0.1:8848"
   database:
     mysql:
       dsn: "root:123456@(127.0.0.1:3306)/db_workflow?charset=utf8&parseTime=True&loc=Local"
@@ -52,9 +52,7 @@ plugins:
       max_lifetime: 180000
   log:
     default:                                      
-      - writer: console                           
-        level: debug                              
-      - writer: file                              
+      - writer: file
         level: info                               
         writer_config:
           filename: ./workflow.log                    
@@ -63,8 +61,6 @@ plugins:
           max_age: 7                              
           compress:  false
     schedule:
-      - writer: console
-        level: debug
       - writer: file
         level: info
         writer_config:
@@ -74,8 +70,6 @@ plugins:
           max_age: 7
           compress:  false
     queue:
-      - writer: console
-        level: debug
       - writer: file
         level: info
         writer_config:

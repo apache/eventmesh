@@ -23,15 +23,12 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api"
-	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api/proto"
 	pconfig "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/schedule"
-	"github.com/gogf/gf/util/gconv"
 	"google.golang.org/grpc"
 	"net"
 	"time"
@@ -80,8 +77,7 @@ func (s *Server) Run() error {
 	if err = reg.Register(config.GlobalConfig().Server.Name); err != nil {
 		return err
 	}
-	// tmpInsert()
-	//tmpExecute()
+	//tmpInsert()
 	return s.Server.Serve(l)
 }
 
@@ -106,26 +102,13 @@ func (s *Server) listen() (net.Listener, error) {
 	return listener, nil
 }
 
-func tmpExecute() {
-	var s = api.NewWorkflowService()
-	var req = proto.ExecuteRequest{}
-	req.Id = "storeorderworkflow"
-	req.Input = "{\n    \"orderNo\":\"1234233\",\n    \"amount\":\"123\",\n    \"itemName\":\"goodsname\",\n    \"buyerUserId\":\"buyerUserId\"\n}"
-	r, err := s.Execute(context.Background(), &req)
-	if err != nil {
-		log.Infof("err=%v", err)
-		return
-	}
-	log.Infof("result=%s", gconv.String(r))
-}
-
 func tmpInsert() {
 	var wf = model.Workflow{}
 	wf.WorkflowID = "storeorderworkflow"
 	wf.Status = 1
 	wf.Version = "1.0.0"
 	wf.WorkflowName = "Store Order Management Workflow"
-	wf.Definition = "id: storeorderworkflow\nversion: '1.0'\nspecVersion: '0.8'\nname: Store Order Management Workflow\nstart: Receive New Order Event\nstates:\n  - name: Receive New Order Event\n    type: event\n    onEvents:\n      - eventRefs:\n          - NewOrderEvent\n        actions:\n          - functionRef:\n              refName: \"OrderServiceSendEvent\"\n    transition: Check New Order Result\n  - name: Check New Order Result\n    type: switch\n    dataConditions:\n      - name: New Order Successfull\n        condition: \"${ .order.order_no != '' }\"\n        transition: Send Order Payment\n      - name: New Order Failed\n        condition: \"${ .order.order_no == '' }\"\n        end: true\n    defaultCondition:\n      end: true\n  - name: Send Order Payment\n    type: operation\n    actions:\n      - functionRef:\n          refName: \"PaymentServiceSendEvent\"\n    transition: Check Payment Status\n  - name: Check Payment Status\n    type: switch\n    dataConditions:\n      - name: Payment Successfull\n        condition: \"${ .payment.order_no != '' }\"\n        transition: Send Order Shipment\n      - name: Payment Denied\n        condition: \"${ .payment.order_no == '' }\"\n        end: true\n    defaultCondition:\n      end: true\n  - name: Send Order Shipment\n    type: operation\n    actions:\n      - functionRef:\n          refName: \"ShipmentServiceSendEvent\"\n    end: true\nevents:\n  - name: NewOrderEvent\n    source: store/order\n    type: online.store.newOrder\nfunctions:\n  - name: OrderServiceSendEvent\n    operation: file://orderService.yaml#sendOrder\n    type: asyncapi\n  - name: PaymentServiceSendEvent\n    operation: file://paymentService.yaml#sendPayment\n    type: asyncapi\n  - name: ShipmentServiceSendEvent\n    operation: file://shipmentService.yaml#sendShipment\n    type: asyncapi"
+	wf.Definition = "id: storeorderworkflow\nversion: '1.0'\nspecVersion: '0.8'\nname: Store Order Management Workflow\nstart: Receive New Order Event\nstates:\n  - name: Receive New Order Event\n    type: event\n    onEvents:\n      - eventRefs:\n          - NewOrderEvent\n        actions:\n          - functionRef:\n              refName: \"OrderServiceSendEvent\"\n    transition: Check New Order Result\n  - name: Check New Order Result\n    type: switch\n    dataConditions:\n      - name: New Order Successfull\n        condition: \"${ .order.order_no != '' }\"\n        transition: Send Order Payment\n      - name: New Order Failed\n        condition: \"${ .order.order_no == '' }\"\n        end: true\n    defaultCondition:\n      end: true\n  - name: Send Order Payment\n    type: operation\n    actions:\n      - functionRef:\n          refName: \"PaymentServiceSendEvent\"\n    transition: Check Payment Status\n  - name: Check Payment Status\n    type: switch\n    dataConditions:\n      - name: Payment Successfull\n        condition: \"${ .payment.order_no != '' }\"\n        transition: Send Order Shipment\n      - name: Payment Denied\n        condition: \"${ .payment.order_no == '' }\"\n        end: true\n    defaultCondition:\n      end: true\n  - name: Send Order Shipment\n    type: operation\n    actions:\n      - functionRef:\n          refName: \"ShipmentServiceSendEvent\"\n    end: true\nevents:\n  - name: NewOrderEvent\n    source: store/order\n    type: online.store.newOrder\nfunctions:\n  - name: OrderServiceSendEvent\n    operation: file://orderapp.yaml#sendOrder\n    type: asyncapi\n  - name: PaymentServiceSendEvent\n    operation: file://paymentapp.yaml#sendPayment\n    type: asyncapi\n  - name: ShipmentServiceSendEvent\n    operation: file://shipmentapp.yaml#sendShipment\n    type: asyncapi"
 	wf.CreateTime = time.Now()
 	wf.UpdateTime = time.Now()
 	err := dal.NewWorkflowDAL().Insert(context.Background(), &wf)

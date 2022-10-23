@@ -22,14 +22,9 @@ import org.apache.eventmesh.client.grpc.producer.EventMeshGrpcProducer;
 import org.apache.eventmesh.client.selector.SelectorFactory;
 import org.apache.eventmesh.client.workflow.EventMeshWorkflowClient;
 import org.apache.eventmesh.client.workflow.config.EventMeshWorkflowClientConfig;
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.ExampleConstants;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequest;
-import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteRequestOrBuilder;
 import org.apache.eventmesh.common.protocol.workflow.protos.ExecuteResponse;
-import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.selector.NacosSelector;
 import org.apache.eventmesh.util.Utils;
 
@@ -48,8 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkflowAsyncPublishInstance {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowAsyncPublishInstance.class);
-    // This messageSize is also used in SubService.java (Subscriber)
-    public static final int messageSize = 5;
 
     public static void main(String[] args) throws Exception {
 
@@ -63,8 +56,8 @@ public class WorkflowAsyncPublishInstance {
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
             .producerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP)
-            .env("env").idc("idc")
-            .sys("1234").build();
+            .env("PRD").idc("DEFAULT").password("password")
+            .sys("DEFAULT").build();
 
         EventMeshGrpcProducer eventMeshGrpcProducer = new EventMeshGrpcProducer(eventMeshClientConfig);
         eventMeshGrpcProducer.init();
@@ -78,13 +71,13 @@ public class WorkflowAsyncPublishInstance {
 
         ExecuteRequest.Builder executeRequest = ExecuteRequest.newBuilder();
         Map<String, String> content = new HashMap<>();
-        content.put("content", "workflowmessage");
+        content.put("order_no", "workflowmessage");
         executeRequest.setInput(new Gson().toJson(content));
         executeRequest.setId("storeorderworkflow");
         ExecuteResponse response = eventMeshWorkflowClient.getWorkflowClient().execute(executeRequest.build());
         logger.info("received response: {}", response.toString());
 
-        Thread.sleep(300000000);
+        Thread.sleep(60000);
         try (EventMeshGrpcProducer ignore = eventMeshGrpcProducer) {
             // ignore
         }
