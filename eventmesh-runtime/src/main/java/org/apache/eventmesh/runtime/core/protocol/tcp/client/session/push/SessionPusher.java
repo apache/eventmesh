@@ -116,9 +116,7 @@ public class SessionPusher {
 
             try {
                 session.getContext().writeAndFlush(pkg).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
+                        (ChannelFutureListener) future -> {
                             if (!future.isSuccess()) {
                                 logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, event:{}", downStreamMsgContext.seq,
                                     downStreamMsgContext.retryTimes, downStreamMsgContext.event);
@@ -147,7 +145,6 @@ public class SessionPusher {
                                 }
                             }
                         }
-                    }
                 );
             } finally {
                 TraceUtils.finishSpan(span, downStreamMsgContext.event);
