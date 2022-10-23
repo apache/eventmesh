@@ -38,6 +38,8 @@ import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
+import java.util.Objects;
+
 public class UpStreamMsgContext extends RetryContext {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -136,7 +138,7 @@ public class UpStreamMsgContext extends RetryContext {
                 // retry
                 // reset delay time
                 retryContext.delay(10000);
-                session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(retryContext);
+                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(retryContext);
 
                 session.getSender().failMsgCount.incrementAndGet();
                 logger.error("upstreamMsg mq message error|user={}|callback cost={}, errMsg={}", session.getClient(),
