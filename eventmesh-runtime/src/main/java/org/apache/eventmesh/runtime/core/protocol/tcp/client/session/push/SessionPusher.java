@@ -108,7 +108,7 @@ public class SessionPusher {
         } catch (Exception e) {
             pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), downStreamMsgContext.seq));
         } finally {
-            session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
+            Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
 
             //TODO uploadTrace
             String protocolVersion = Objects.requireNonNull(downStreamMsgContext.event.getSpecVersion()).toString();
@@ -137,7 +137,7 @@ public class SessionPusher {
                                     ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
                                     : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
                                 downStreamMsgContext.delay(delayTime);
-                                session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
+                                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {
                                 deliveredMsgsCount.incrementAndGet();
                                 logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
