@@ -32,6 +32,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,9 +134,9 @@ public class DownStreamMsgContext extends RetryContext {
             Session rechoosen = null;
             String topic = this.event.getSubject();
             if (!SubscriptionMode.BROADCASTING.equals(this.subscriptionItem.getMode())) {
-                rechoosen = this.session.getClientGroupWrapper()
-                        .get().getDownstreamDispatchStrategy().select(this.session.getClientGroupWrapper().get().getSysId(),
-                                topic, this.session.getClientGroupWrapper().get().getGroupConsumerSessions());
+                rechoosen = Objects.requireNonNull(this.session.getClientGroupWrapper().get())
+                        .getDownstreamDispatchStrategy().select(Objects.requireNonNull(this.session.getClientGroupWrapper().get()).getSysId(),
+                                topic, Objects.requireNonNull(this.session.getClientGroupWrapper().get()).getGroupConsumerSessions());
             } else {
                 rechoosen = this.session;
             }
