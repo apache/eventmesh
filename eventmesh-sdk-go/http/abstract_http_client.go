@@ -18,6 +18,7 @@ package http
 import (
 	gcommon "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/selector"
 	nethttp "net/http"
 	"time"
 )
@@ -25,11 +26,17 @@ import (
 type AbstractHttpClient struct {
 	EventMeshHttpClientConfig conf.EventMeshHttpClientConfig
 	HttpClient                *nethttp.Client
+	selector                  selector.LoadBalanceSelector
 }
 
 func NewAbstractHttpClient(eventMeshHttpClientConfig conf.EventMeshHttpClientConfig) *AbstractHttpClient {
 	c := &AbstractHttpClient{EventMeshHttpClientConfig: eventMeshHttpClientConfig}
 	c.HttpClient = c.SetHttpClient()
+	selector, err := selector.CreateNewSelector(eventMeshHttpClientConfig.GetLoadBalanceType(), &eventMeshHttpClientConfig)
+	if err != nil {
+		panic(err)
+	}
+	c.selector = selector
 	return c
 }
 
@@ -47,8 +54,8 @@ func (c *AbstractHttpClient) SetHttpClient() *nethttp.Client {
 }
 
 func (c *AbstractHttpClient) SelectEventMesh() string {
-	// FIXME Add load balance support
-	uri := c.EventMeshHttpClientConfig.LiteEventMeshAddr()
+	meshNode := c.selector.Select()
+	uri := meshNode.Addr
 
 	if c.EventMeshHttpClientConfig.UseTls() {
 		return gcommon.Constants.HTTPS_PROTOCOL_PREFIX + uri
