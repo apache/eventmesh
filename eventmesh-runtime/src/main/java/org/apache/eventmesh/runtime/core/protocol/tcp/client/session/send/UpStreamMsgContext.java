@@ -44,15 +44,15 @@ public class UpStreamMsgContext extends RetryContext {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private Session session;
+    private final Session session;
 
-    private long createTime = System.currentTimeMillis();
+    private final long createTime = System.currentTimeMillis();
 
-    private Header header;
+    private final Header header;
 
-    private long startTime;
+    private final long startTime;
 
-    private long taskExecuteTime;
+    private final long taskExecuteTime;
 
     public UpStreamMsgContext(Session session, CloudEvent event, Header header, long startTime, long taskExecuteTime) {
         this.seq = header.getSeq();
