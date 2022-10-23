@@ -1,0 +1,3 @@
+createDatabases: "create database if not exists event_mesh_storage"
+queryConsumerGroupTableSQL: "select table_name from information_schema.tables where TABLE_SCHEMA = ? and table_name = ?"
+queryCloudEventTablesSQL: "select table_name from information_schema.tables where TABLE_SCHEMA = ? and table_name like 'cloud_event_%'"

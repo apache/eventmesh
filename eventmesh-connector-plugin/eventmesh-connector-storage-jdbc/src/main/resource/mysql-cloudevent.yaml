@@ -1,0 +1,33 @@
+createCloudEventSQL: "create table `cloud_event_{table}`(
+													`cloud_event_info_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+													`cloud_event_id` varchar(255) not null default '' comment 'cloudevent 对象id',
+													`cloud_event_topic` varchar(511) not null comment 'tpoic',
+													`cloud_event_storage_node_adress` varchar(31) not null comment '存储节点地址',
+													`cloud_event_type` varchar(31) not null comment '事件类型',
+													`cloud_event_producer_group_name` varchar(255) not null comment '生产者组名',
+													`cloud_event_source` varchar(255) not null comment '事件来源',
+													`cloud_event_content_type` varchar(31) not null comment '事件内容类型',
+													`cloud_event_tag` json not null default (json_array()) comment '事件标签',
+													`cloud_event_extensions` text not null  comment '存储扩展信息',
+													`cloud_event_data` longtext not null comment '事件数据',
+													`cloud_event_reply_data`  not null  comment '事件reply数据',
+													`cloud_event_consume_location` json not null default (json_object()) comment '扩展信息',
+													`cloud_event_state` varchar(31) not null default '' comment '存储节点地址',
+													`cloud_event_reply_state` varchar(31) not null default 'NOTHING' comment '存储节点地址',
+													`cloud_event_create_time` datetime not null default current_timestamp comment '创建时间',
+													`cloud_event_consume_time` datetime not null default current_timestamp comment '消费时间',
+													`cloud_event_offset_time` datetime not null default current_timestamp comment '消费时间',
+													PRIMARY KEY (`cloud_event_info_id`),
+													key (`cloud_event_create_time`)
+											)"
+insertCloudEventSQL: "insert into cloud_event_{table}(cloud_event_id,cloud_event_topic,cloud_event_storage_node_adress,cloud_event_type,cloud_event_producer_group_name,
+cloud_event_source,cloud_event_content_type,cloud_event_tag,cloud_event_extensions,cloud_event_data) values(?,?,?,?,?,?,?,?,?,?)"
+updateCloudEventOffsetSQL: "update cloud_event_{table} set cloud_event_state = 'SUCCESS'  where cloud_event_info_id = ?"
+updateCloudEventReplySQL: "update cloud_event_{table}  set  cloud_event_reply_data = ? , cloud_event_reply_state = 'NOTHING' where cloud_event_info_id = ?"
+selectCloudEventByReplySQL: "select * from cloud_event_{table} where cloud_event_info_id in({id}) and cloud_event_reply_data is not null"
+locationEventSQL: "update cloud_event_{table} set json_set( cloud_event_consume_location , ? ,? ) where cloud_event_info_id > ? and json_extract(cloud_event_consume_location, ?) is null limit 200"
+queryLocationEventSQL: "select * from cloud_event_{table} where cloud_event_info_id > ? and JSON_CONTAINS_PATH(cloud_event_consume_location, 'one', ?)"
+selectFastMessageSQL: "select 'cloud_event_test' as tableName , cloud_event_info_id from cloud_event_{table}  order by  cloud_event_info_id limit 1"
+selectLastMessageSQL: "select 'cloud_event_test' as tableName , cloud_event_info_id from cloud_event_{table}  order by  cloud_event_info_id desc  limit 1"
+selectNoConsumptionMessageSQL: "select 'cloud_event_test' as tableName , cloud_event_info_id from cloud_event_{table} where  json_extract(cloud_event_consume_location, ?) is not null order by  cloud_event_info_id desc  limit 1"
+selectAppointTimeMessageSQL: ""
