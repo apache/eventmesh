@@ -89,7 +89,7 @@ public class SessionSender {
         try {
             if (upstreamBuff.tryAcquire(TRY_PERMIT_TIME_OUT, TimeUnit.MILLISECONDS)) {
                 upMsgs.incrementAndGet();
-                UpStreamMsgContext upStreamMsgContext = null;
+                UpStreamMsgContext upStreamMsgContext;
                 Command cmd = header.getCmd();
 
                 String protocolVersion = header.getProperty(Constants.PROTOCOL_VERSION).toString();
@@ -105,7 +105,7 @@ public class SessionSender {
                     Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                         EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
-                        session.getClientGroupWrapper().get()
+                        Objects.requireNonNull(session.getClientGroupWrapper().get())
                             .request(upStreamMsgContext, initSyncRRCallback(header,
                                 startTime, taskExecuteTime, event), ttl);
                         upstreamBuff.release();
@@ -121,7 +121,7 @@ public class SessionSender {
                     }
 
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
-                    session.getClientGroupWrapper().get().reply(upStreamMsgContext);
+                    Objects.requireNonNull(session.getClientGroupWrapper().get()).reply(upStreamMsgContext);
                     upstreamBuff.release();
                 } else {
                     upStreamMsgContext = new UpStreamMsgContext(session, event, header, startTime, taskExecuteTime);
@@ -129,14 +129,14 @@ public class SessionSender {
                     Span span = TraceUtils.prepareClientSpan(EventMeshUtil.getCloudEventExtensionMap(protocolVersion, event),
                         EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_CLIENT_SPAN, false);
                     try {
-                        session.getClientGroupWrapper().get()
+                        Objects.requireNonNull(session.getClientGroupWrapper().get())
                             .send(upStreamMsgContext, sendCallback);
                     } finally {
                         TraceUtils.finishSpan(span, event);
                     }
                 }
 
-                session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2mqMsgNum().incrementAndGet();
+                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2mqMsgNum().incrementAndGet();
             } else {
                 logger.warn("send too fast,session flow control,session:{}", session.getClient());
                 return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.SEND_TOO_FAST, EventMeshTcpSendStatus.SEND_TOO_FAST.name());
@@ -162,7 +162,7 @@ public class SessionSender {
                     .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .withExtension(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP, session.getEventMeshTCPConfiguration().eventMeshServerIp)
                     .build();
-                session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getTcpSummaryMetrics().getMq2eventMeshMsgNum().incrementAndGet();
+                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getMq2eventMeshMsgNum().incrementAndGet();
 
                 Command cmd;
                 if (header.getCmd().equals(Command.REQUEST_TO_SERVER)) {
