@@ -21,7 +21,6 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
 import org.apache.eventmesh.common.protocol.tcp.Command;
-import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -44,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.core.builder.CloudEventBuilder;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.opentelemetry.api.trace.Span;
 
@@ -54,13 +52,13 @@ public class SessionPusher {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private AtomicLong deliveredMsgsCount = new AtomicLong(0);
+    private final AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
-    private AtomicLong deliverFailMsgsCount = new AtomicLong(0);
+    private final AtomicLong deliverFailMsgsCount = new AtomicLong(0);
 
-    private ConcurrentHashMap<String /** seq */, DownStreamMsgContext> downStreamMap = new ConcurrentHashMap<String, DownStreamMsgContext>();
+    private final ConcurrentHashMap<String /* seq */, DownStreamMsgContext> downStreamMap = new ConcurrentHashMap<>();
 
-    private Session session;
+    private final Session session;
 
     public SessionPusher(Session session) {
         this.session = session;
@@ -108,7 +106,7 @@ public class SessionPusher {
         } catch (Exception e) {
             pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), downStreamMsgContext.seq));
         } finally {
-            session.getClientGroupWrapper().get().getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
+            Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
 
             //TODO uploadTrace
             String protocolVersion = Objects.requireNonNull(downStreamMsgContext.event.getSpecVersion()).toString();
@@ -118,9 +116,7 @@ public class SessionPusher {
 
             try {
                 session.getContext().writeAndFlush(pkg).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
+                        (ChannelFutureListener) future -> {
                             if (!future.isSuccess()) {
                                 logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, event:{}", downStreamMsgContext.seq,
                                     downStreamMsgContext.retryTimes, downStreamMsgContext.event);
@@ -137,7 +133,7 @@ public class SessionPusher {
                                     ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
                                     : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
                                 downStreamMsgContext.delay(delayTime);
-                                session.getClientGroupWrapper().get().getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
+                                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
                             } else {
                                 deliveredMsgsCount.incrementAndGet();
                                 logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
@@ -149,7 +145,6 @@ public class SessionPusher {
                                 }
                             }
                         }
-                    }
                 );
             } finally {
                 TraceUtils.finishSpan(span, downStreamMsgContext.event);
