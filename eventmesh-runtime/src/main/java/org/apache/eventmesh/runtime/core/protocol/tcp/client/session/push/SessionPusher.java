@@ -52,13 +52,13 @@ public class SessionPusher {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private AtomicLong deliveredMsgsCount = new AtomicLong(0);
+    private final AtomicLong deliveredMsgsCount = new AtomicLong(0);
 
-    private AtomicLong deliverFailMsgsCount = new AtomicLong(0);
+    private final AtomicLong deliverFailMsgsCount = new AtomicLong(0);
 
-    private ConcurrentHashMap<String /** seq */, DownStreamMsgContext> downStreamMap = new ConcurrentHashMap<String, DownStreamMsgContext>();
+    private final ConcurrentHashMap<String /* seq */, DownStreamMsgContext> downStreamMap = new ConcurrentHashMap<>();
 
-    private Session session;
+    private final Session session;
 
     public SessionPusher(Session session) {
         this.session = session;
