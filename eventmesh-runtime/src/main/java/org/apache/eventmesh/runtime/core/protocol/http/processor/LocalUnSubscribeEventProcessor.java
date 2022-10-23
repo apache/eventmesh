@@ -56,7 +56,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 @EventMeshTrace(isEnable = false)
 public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     public LocalUnSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
@@ -115,15 +115,15 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor imple
         Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
             new TypeReference<HashMap<String, Object>>() {});
 
-        if (requestBodyMap.get("url") == null || requestBodyMap.get("topic") == null || requestBodyMap.get("consumerGroup") == null) {
+        if (requestBodyMap.get(EventMeshConstants.URL) == null || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                 responseBodyMap, null);
             return;
         }
 
-        String unSubscribeUrl = requestBodyMap.get("url").toString();
-        String consumerGroup = requestBodyMap.get("consumerGroup").toString();
-        String topic = JsonUtils.serialize(requestBodyMap.get("topic"));
+        String unSubscribeUrl = requestBodyMap.get(EventMeshConstants.URL).toString();
+        String consumerGroup = requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP).toString();
+        String topic = JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
         // unSubscriptionItem
         List<String> unSubTopicList = JsonUtils.deserialize(topic, new TypeReference<List<String>>() {
@@ -206,8 +206,8 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor imple
                     eventMeshHTTPServer.getConsumerManager().notifyConsumerManager(consumerGroup,
                         eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup));
 
-                    responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
-                    responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg());
+                    responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
+                    responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg());
 
                     handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
 
@@ -225,8 +225,8 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor imple
                 try {
                     eventMeshHTTPServer.getConsumerManager()
                         .notifyConsumerManager(consumerGroup, null);
-                    responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
-                    responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg());
+                    responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
+                    responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg());
 
                     handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
                     // clean ClientInfo
