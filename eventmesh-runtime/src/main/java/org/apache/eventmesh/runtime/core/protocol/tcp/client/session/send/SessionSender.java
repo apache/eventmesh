@@ -20,6 +20,7 @@ package org.apache.eventmesh.runtime.core.protocol.tcp.client.session.send;
 import org.apache.eventmesh.api.RequestReplyCallback;
 import org.apache.eventmesh.api.SendCallback;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.Header;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
@@ -53,7 +54,7 @@ public class SessionSender {
     private final Logger messageLogger = LoggerFactory.getLogger("message");
     private final Logger logger = LoggerFactory.getLogger(SessionSender.class);
 
-    private Session session;
+    private final Session session;
 
     public long createTime = System.currentTimeMillis();
 
@@ -78,7 +79,7 @@ public class SessionSender {
         return upstreamBuff;
     }
 
-    private Semaphore upstreamBuff;
+    private final Semaphore upstreamBuff;
 
     public SessionSender(Session session) {
         this.session = session;
@@ -176,7 +177,7 @@ public class SessionSender {
                     .build();
                 String protocolType = Objects.requireNonNull(event.getExtension(Constants.PROTOCOL_TYPE)).toString();
 
-                ProtocolAdaptor protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
+                ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
 
                 Package pkg = new Package();
 
