@@ -13,19 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package producer
+package consts
 
-import (
-	"context"
-	cloudv2 "github.com/cloudevents/sdk-go/v2"
-	"time"
+var (
+	PROPERTY_MESSAGE_CLUSTER = "cluster"
+	RR_REPLY_TOPIC           = "rr-reply-topic"
+	RESP_CODE                = "respCode"
+	RESP_MSG                 = "respMsg"
 )
-
-// SendMessageContext context in produce message
-type SendMessageContext struct {
-	Ctx         context.Context
-	Event       *cloudv2.Event
-	BizSeqNO    string
-	producerAPI *EventMeshProducer
-	CreateTime  time.Time
-}

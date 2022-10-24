@@ -13,13 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package grpc
 
 import (
 	config2 "github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/config"
 	"github.com/liyue201/gostl/ds/set"
 	"github.com/pkg/errors"
 	"sync"
@@ -30,7 +29,7 @@ var (
 	ErrNoConsumerClient = errors.New("no consumer group client")
 )
 
-type Manager struct {
+type ConsumerManager struct {
 	// consumerClients store all consumer clients
 	// key is consumer group, value is set *GroupClient
 	consumerGroupClients *sync.Map
@@ -40,15 +39,15 @@ type Manager struct {
 	consumers *sync.Map
 }
 
-// NewManager create new consumer manager
-func NewManager() (*Manager, error) {
-	return &Manager{
+// NewConsumerManager create new consumer manager
+func NewConsumerManager() (*ConsumerManager, error) {
+	return &ConsumerManager{
 		consumers:            new(sync.Map),
 		consumerGroupClients: new(sync.Map),
 	}, nil
 }
 
-func (c *Manager) GetConsumer(consumerGroup string) (*EventMeshConsumer, error) {
+func (c *ConsumerManager) GetConsumer(consumerGroup string) (*EventMeshConsumer, error) {
 	val, ok := c.consumers.Load(consumerGroup)
 	if ok {
 		return val.(*EventMeshConsumer), nil
@@ -61,7 +60,7 @@ func (c *Manager) GetConsumer(consumerGroup string) (*EventMeshConsumer, error) 
 	return cu, nil
 }
 
-func (c *Manager) RegisterClient(cli *GroupClient) error {
+func (c *ConsumerManager) RegisterClient(cli *GroupClient) error {
 	val, ok := c.consumerGroupClients.Load(cli.ConsumerGroup)
 	if !ok {
 		cliset := set.New(set.WithGoroutineSafe())
@@ -73,15 +72,15 @@ func (c *Manager) RegisterClient(cli *GroupClient) error {
 	found := false
 	for iter := localClients.Begin(); iter.IsValid(); iter.Next() {
 		lc := iter.Value().(*GroupClient)
-		if lc.GRPCType == config.WEBHOOK {
+		if lc.GRPCType == WEBHOOK {
 			lc.URL = cli.URL
-			lc.LastUPtime = cli.LastUPtime
+			lc.LastUPTime = cli.LastUPTime
 			found = true
 			break
 		}
-		if lc.GRPCType == config.STREAM {
+		if lc.GRPCType == STREAM {
 			// TODO add event emitter
-			lc.LastUPtime = cli.LastUPtime
+			lc.LastUPTime = cli.LastUPTime
 			found = true
 			break
 		}
@@ -92,7 +91,7 @@ func (c *Manager) RegisterClient(cli *GroupClient) error {
 	return nil
 }
 
-func (c *Manager) DeRegisterClient(cli *GroupClient) error {
+func (c *ConsumerManager) DeRegisterClient(cli *GroupClient) error {
 	val, ok := c.consumerGroupClients.Load(cli.ConsumerGroup)
 	if !ok {
 		log.Debugf("no consumer group client found, name:%v", cli.ConsumerGroup)
@@ -102,7 +101,7 @@ func (c *Manager) DeRegisterClient(cli *GroupClient) error {
 	for iter := localClients.Begin(); iter.IsValid(); iter.Next() {
 		lc := iter.Value().(*GroupClient)
 		if lc.Topic == cli.Topic {
-			if lc.GRPCType == config.STREAM {
+			if lc.GRPCType == STREAM {
 				// TODO
 				// close the GRPC client stream before removing it
 			}
@@ -115,7 +114,7 @@ func (c *Manager) DeRegisterClient(cli *GroupClient) error {
 	return nil
 }
 
-func (c *Manager) restartConsumer(consumerGroup string) error {
+func (c *ConsumerManager) restartConsumer(consumerGroup string) error {
 	val, ok := c.consumers.Load(consumerGroup)
 	if !ok {
 		return nil
@@ -139,7 +138,7 @@ func (c *Manager) restartConsumer(consumerGroup string) error {
 	return nil
 }
 
-func (c *Manager) UpdateClientTime(cli *GroupClient) {
+func (c *ConsumerManager) UpdateClientTime(cli *GroupClient) {
 	val, ok := c.consumerGroupClients.Load(cli.ConsumerGroup)
 	if !ok {
 		log.Debugf("no consumer group client found, name:%v", cli.ConsumerGroup)
@@ -147,11 +146,11 @@ func (c *Manager) UpdateClientTime(cli *GroupClient) {
 	}
 	localClients := val.(*set.Set)
 	for iter := localClients.Begin(); iter.IsValid(); iter.Next() {
-		iter.Value().(*GroupClient).LastUPtime = time.Now()
+		iter.Value().(*GroupClient).LastUPTime = time.Now()
 	}
 }
 
-func (c *Manager) clientCheck() {
+func (c *ConsumerManager) clientCheck() {
 	sessionExpiredInMills := config2.GlobalConfig().Server.GRPCOption.SessionExpiredInMills
 	tk := time.NewTicker(sessionExpiredInMills)
 	go func() {
@@ -161,9 +160,9 @@ func (c *Manager) clientCheck() {
 				localClients := value.(*set.Set)
 				for iter := localClients.Begin(); iter.IsValid(); iter.Next() {
 					lc := iter.Value().(*GroupClient)
-					if time.Now().Sub(lc.LastUPtime) > sessionExpiredInMills {
+					if time.Now().Sub(lc.LastUPTime) > sessionExpiredInMills {
 						log.Warnf("client:%v lastUpdate time:%v over three heartbeat cycles. Removing it",
-							lc.ConsumerGroup, lc.LastUPtime)
+							lc.ConsumerGroup, lc.LastUPTime)
 						emconsumer, err := c.GetConsumer(lc.ConsumerGroup)
 						if err != nil {
 							log.Warnf("get eventmesh consumer:%v failed, err:%v", lc.ConsumerGroup, err)
@@ -192,11 +191,11 @@ func (c *Manager) clientCheck() {
 	}()
 }
 
-func (c *Manager) Start() error {
+func (c *ConsumerManager) Start() error {
 	log.Infof("start consumer manager")
 	return nil
 }
 
-func (c *Manager) Stop() error {
+func (c *ConsumerManager) Stop() error {
 	return nil
 }
