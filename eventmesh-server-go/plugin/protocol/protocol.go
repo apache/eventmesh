@@ -19,6 +19,10 @@ import (
 	cloudv2 "github.com/cloudevents/sdk-go/v2"
 )
 
+var (
+	CloudEvents = "cloudevents"
+)
+
 // Adapter protocol adapter
 // transfer the message with given protocol and events message
 type Adapter interface {
