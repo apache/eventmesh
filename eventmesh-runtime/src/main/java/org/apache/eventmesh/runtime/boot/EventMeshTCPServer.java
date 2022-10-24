@@ -130,8 +130,6 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         this.rateLimiter = rateLimiter;
     }
 
-    private ScheduledFuture<?> tcpRegisterTask;
-
     private RateLimiter rateLimiter;
 
     public EventMeshTCPServer(EventMeshServer eventMeshServer,
