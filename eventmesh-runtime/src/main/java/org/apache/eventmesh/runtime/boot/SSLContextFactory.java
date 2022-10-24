@@ -25,6 +25,7 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -72,9 +73,14 @@ public class SSLContextFactory {
         } catch (Exception e) {
             httpLogger.warn("sslContext init failed", e);
             sslContext = null;
-        } finally {
+        }
+        finally {
             if (inputStream != null) {
-                inputStream.close();
+                try{
+                    inputStream.close();
+                }catch(IOException e){
+                    httpLogger.warn("IOException found", e);
+                }
             }
         }
         return sslContext;
