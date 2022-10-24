@@ -37,7 +37,7 @@ import inet.ipaddr.IPAddressString;
 
 public class EventMeshHTTPConfiguration extends CommonConfiguration {
 
-    public static Logger logger = LoggerFactory.getLogger(EventMeshHTTPConfiguration.class);
+    public static final Logger logger = LoggerFactory.getLogger(EventMeshHTTPConfiguration.class);
 
     public int httpServerPort = 10105;
 
