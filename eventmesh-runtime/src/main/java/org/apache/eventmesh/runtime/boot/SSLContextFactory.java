@@ -49,7 +49,7 @@ public class SSLContextFactory {
 
     public static SSLContext getSslContext(EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
         SSLContext sslContext;
-        InputStream inputStream;
+        InputStream inputStream = null;
         try {
             protocol = eventMeshHttpConfiguration.eventMeshServerSSLProtocol;
 
@@ -64,7 +64,7 @@ public class SSLContextFactory {
             KeyStore keyStore = KeyStore.getInstance("JKS");
             inputStream = Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME
                                               + File.separator
-                                              + fileName), StandardOpenOption.READ)
+                                              + fileName), StandardOpenOption.READ);
             keyStore.load(inputStream, filePass);
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(keyStore, filePass);
