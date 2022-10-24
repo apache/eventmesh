@@ -30,6 +30,7 @@ import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.codec.AmqpCodeDe
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ErrorCodes;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ProtocolFrame;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ProtocolVersion;
+import org.apache.eventmesh.runtime.core.protocol.amqp.util.AmqpInOutputConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,6 +83,7 @@ public class AmqpConnection extends AmqpHandler {
     private String virtualHostName;
     private final Object channelAddRemoveLock = new Object();
     private AtomicBoolean blocked = new AtomicBoolean();
+    private AmqpInOutputConverter amqpInOutputConverter;
     //private AmqpMessageSender amqpOutputConverter;
 
 
@@ -96,6 +98,7 @@ public class AmqpConnection extends AmqpHandler {
         this.maxChannels = amqpConfig.maxNoOfChannels;
         this.maxFrameSize = amqpConfig.maxFrameSize;
         this.heartBeat = amqpConfig.heartBeat;
+        this.amqpInOutputConverter = new AmqpInOutputConverter(this);
         //this.amqpOutputConverter = new AmqpMessageSender(this);
     }
 
@@ -620,6 +623,10 @@ public class AmqpConnection extends AmqpHandler {
 
     public boolean isActive() {
         return ctx.channel().isActive();
+    }
+
+    public AmqpInOutputConverter getAmqpInOutputConverter() {
+        return amqpInOutputConverter;
     }
 
 }
