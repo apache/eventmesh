@@ -1,0 +1,33 @@
+create_sql:"
+create table `cloud_event_test1`(
+	`cloud_event_info_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+	`cloud_event_id` varchar(255) not null default '' comment 'cloudevent oject id',
+	`cloud_event_topic` varchar(511) not null comment 'topic',
+	`cloud_event_storage_node_adress` varchar(31) not null comment 'storage node address',
+	`cloud_event_type` varchar(31) not null comment 'event type',
+	`cloud_event_producer_group_name` varchar(255) not null comment 'producer group',
+	`cloud_event_source` varchar(255) not null comment 'event source',
+	`cloud_event_content_type` varchar(31) not null comment 'event content type',
+	`cloud_event_tag` json not null default (json_array()) comment 'event tag',
+	`cloud_event_extensions` text not null  comment 'event extension',
+	`cloud_event_data` longtext not null comment 'event data',
+	`cloud_event_reply_data` longtext  comment 'event data for reply',
+	`cloud_event_consume_location` json not null default (json_object()) comment 'event consume location',
+	`cloud_event_state` varchar(31) not null default '' comment 'event state',
+	`cloud_event_reply_state` varchar(31) not null default 'NOTHING' comment 'reply state',
+	`cloud_event_create_time` datetime not null default current_timestamp comment 'create time',
+	`cloud_event_consume_time` datetime not null default current_timestamp comment 'consume time',
+	`cloud_event_offset_time` datetime not null default current_timestamp comment 'update offset time',
+	PRIMARY KEY (`cloud_event_info_id`),
+	key (`cloud_event_create_time`)
+)
+"
+insert_sql:
+- insert into cloud_event_test1(cloud_event_id,cloud_event_topic,cloud_event_storage_node_adress,cloud_event_type,cloud_event_producer_group_name,cloud_event_source,cloud_event_content_type,cloud_event_tag,cloud_event_extensions,cloud_event_data) values("1","test","mysql-127.0.0.1","ordinary","test","test","json",json_array(),"{}","a");
+- insert into cloud_event_test1(cloud_event_id,cloud_event_topic,cloud_event_storage_node_adress,cloud_event_type,cloud_event_producer_group_name,cloud_event_source,cloud_event_content_type,cloud_event_tag,cloud_event_extensions,cloud_event_data) values("1","test","mysql-127.0.0.1","ordinary","test","test","json",json_array(),"{}","b");
+- insert into cloud_event_test1(cloud_event_id,cloud_event_topic,cloud_event_storage_node_adress,cloud_event_type,cloud_event_producer_group_name,cloud_event_source,cloud_event_content_type,cloud_event_tag,cloud_event_extensions,cloud_event_data) values("1","test","mysql-127.0.0.1","ordinary","test","test","json",json_array(),"{}","c");
+- insert into cloud_event_test1(cloud_event_id,cloud_event_topic,cloud_event_storage_node_adress,cloud_event_type,cloud_event_producer_group_name,cloud_event_source,cloud_event_content_type,cloud_event_tag,cloud_event_extensions,cloud_event_data) values("1","test","mysql-127.0.0.1","ordinary","test","test","json",json_array(),"{}","d");
+- insert into cloud_event_test1(cloud_event_id,cloud_event_topic,cloud_event_storage_node_adress,cloud_event_type,cloud_event_producer_group_name,cloud_event_source,cloud_event_content_type,cloud_event_tag,cloud_event_extensions,cloud_event_data) values("1","test","mysql-127.0.0.1","ordinary","test","test","json",json_array(),"{}","e");
+- insert into cloud_event_test1(cloud_event_id,cloud_event_topic,cloud_event_storage_node_adress,cloud_event_type,cloud_event_producer_group_name,cloud_event_source,cloud_event_content_type,cloud_event_tag,cloud_event_extensions,cloud_event_data) values("1","test","mysql-127.0.0.1","ordinary","test","test","json",json_array(),"{}","f");
+- insert into cloud_event_test1(cloud_event_id,cloud_event_topic,cloud_event_storage_node_adress,cloud_event_type,cloud_event_producer_group_name,cloud_event_source,cloud_event_content_type,cloud_event_tag,cloud_event_extensions,cloud_event_data) values("1","test","mysql-127.0.0.1","ordinary","test","test","json",json_array(),"{}","g");
+- insert into cloud_event_test1(cloud_event_id,cloud_event_topic,cloud_event_storage_node_adress,cloud_event_type,cloud_event_producer_group_name,cloud_event_source,cloud_event_content_type,cloud_event_tag,cloud_event_extensions,cloud_event_data) values("1","test","mysql-127.0.0.1","ordinary","test","test","json",json_array(),"{}","h");
