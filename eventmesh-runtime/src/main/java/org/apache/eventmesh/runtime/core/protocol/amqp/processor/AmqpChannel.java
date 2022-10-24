@@ -101,7 +101,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     public AmqpChannel(int channelId, AmqpConnection connection) {
         this.channelId = channelId;
         this.connection = connection;
-        this.amqpServer = connection.getAmqpService();
+        this.amqpServer = connection.getAmqpServer();
         this.exchangeService = amqpServer.getExchangeService();
         this.queueService = amqpServer.getQueueService();
         this.amqpConfiguration = amqpServer.getEventMeshAmqpConfiguration();
