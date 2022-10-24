@@ -16,18 +16,18 @@
 package grpc
 
 import (
+	"sync"
+	"time"
+
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/push"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	cloudv2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/pkg/errors"
-	"sync"
-	"time"
 )
 
 var (
@@ -210,7 +210,7 @@ func (e *EventMeshConsumer) createEventListener(mode pb.Subscription_Subscriptio
 
 			topicConfig := val.(*ConsumerGroupTopicOption)
 			tpy := topicConfig.GRPCType
-			mctx := &push.MessageContext{
+			mctx := &MessageContext{
 				GrpcType:         tpy,
 				ConsumerGroup:    e.ConsumerGroup,
 				SubscriptionMode: mode,
