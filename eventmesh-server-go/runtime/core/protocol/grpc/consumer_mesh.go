@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package grpc
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
@@ -40,7 +40,7 @@ type EventMeshConsumer struct {
 	ConsumerGroup      string
 	persistentConsumer *wrapper.Consumer
 	broadcastConsumer  *wrapper.Consumer
-	messageHandler     *push.MessageHandler
+	messageHandler     *MessageHandler
 	ServiceState       consts.ServiceState
 	// consumerGroupTopicConfig key is topic
 	// value is ConsumerGroupTopicOption
@@ -48,7 +48,7 @@ type EventMeshConsumer struct {
 }
 
 func NewEventMeshConsumer(consumerGroup string) (*EventMeshConsumer, error) {
-	pushHandler, err := push.NewMessageHandler(consumerGroup)
+	pushHandler, err := NewMessageHandler(consumerGroup)
 	if err != nil {
 		return nil, err
 	}
