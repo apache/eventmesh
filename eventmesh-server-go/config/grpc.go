@@ -29,6 +29,9 @@ type GRPCOption struct {
 	// on http://ip:port/pprof/debug
 	*PProfOption `yaml:"pprof" toml:"pprof"`
 
+	// SendPoolSize pool in handle send msg
+	// default to 10
+	SendPoolSize int `yaml:"send-pool-size" toml:"send-pool-size"`
 	// SubscribePoolSize pool in handle subscribe msg
 	// default to 10
 	SubscribePoolSize int `yaml:"subscribe-pool-size" toml:"subscribe-pool-size"`
@@ -38,6 +41,9 @@ type GRPCOption struct {
 	// PushMessagePoolSize pool to push message
 	// default to 10
 	PushMessagePoolSize int `yaml:"push-message-pool-size" toml:"push-message-pool-size"`
+	// ReplyPoolSize pool in handle reply msg
+	// default to 10
+	ReplyPoolSize int `yaml:"reply-pool-size" toml:"reply-pool-size"`
 
 	//MsgReqNumPerSecond
 	MsgReqNumPerSecond float64 `yaml:"msg-req-num-per-second" toml:"msg-req-num-per-second"`
@@ -53,4 +59,7 @@ type GRPCOption struct {
 
 	// SessionExpiredInMills internal to clean the not work session consumer
 	SessionExpiredInMills time.Duration `yaml:"session-expired-in-mills"`
+	// SendMessageTimeout timeout in send message
+	// default to 5s
+	SendMessageTimeout time.Duration `yaml:"send-message-timeout"`
 }
