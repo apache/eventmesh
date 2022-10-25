@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +71,7 @@ public class Utils {
                                 logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
 
                                 if (session != null) {
-                                    session.getClientGroupWrapper().get()
+                                    Objects.requireNonNull(session.getClientGroupWrapper().get())
                                         .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
                                 }
                             }

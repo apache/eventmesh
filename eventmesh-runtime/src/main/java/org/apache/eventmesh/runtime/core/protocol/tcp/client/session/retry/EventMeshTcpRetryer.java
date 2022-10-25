@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 public class EventMeshTcpRetryer {
 
-    public static Logger logger = LoggerFactory.getLogger(EventMeshTcpRetryer.class);
+    public static final Logger logger = LoggerFactory.getLogger(EventMeshTcpRetryer.class);
 
     private EventMeshTCPServer eventMeshTCPServer;
 

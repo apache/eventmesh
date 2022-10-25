@@ -59,11 +59,11 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class ReplyMessageProcessor implements HttpRequestProcessor {
 
-    public Logger messageLogger = LoggerFactory.getLogger("message");
+    public Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    public Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -199,7 +199,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             //omsMsg.setBody(replyMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
             event = CloudEventBuilder.from(event)
                     .withSubject(replyTopic)
-                    .withExtension("msgtype", "persistent")
+                    .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
                     .withExtension(Constants.PROPERTY_MESSAGE_TIMEOUT, String.valueOf(EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS))
                     .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .build();

@@ -79,7 +79,9 @@ public class RedirectClientByIpPortHandler implements HttpHandler {
                     for (Session session : sessionMap.values()) {
                         if (session.getClient().getHost().equals(ip) && String.valueOf(
                                 session.getClient().getPort()).equals(port)) {
-                                redirectResult.append("|").append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
+                            redirectResult.append("|");
+                            redirectResult.append(
+                                EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
                                     destEventMeshIp, Integer.parseInt(destEventMeshPort),
                                     session, clientSessionGroupMapping));
                         }
@@ -92,7 +94,8 @@ public class RedirectClientByIpPortHandler implements HttpHandler {
                 result = String.format("redirectClientByIpPort fail! sessionMap size {%d}, {clientIp=%s clientPort=%s "
                                 +
                                 "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
-                        sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult, e
+                        sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort,
+                    redirectResult.toString(), e
                                 .getMessage());
                 httpExchange.sendResponseHeaders(200, 0);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
@@ -101,7 +104,8 @@ public class RedirectClientByIpPortHandler implements HttpHandler {
             result = String.format("redirectClientByIpPort success! sessionMap size {%d}, {ip=%s port=%s "
                             +
                             "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
-                    sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort, redirectResult);
+                    sessionMap.size(), ip, port, destEventMeshIp, destEventMeshPort,
+                redirectResult.toString());
             httpExchange.sendResponseHeaders(200, 0);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
