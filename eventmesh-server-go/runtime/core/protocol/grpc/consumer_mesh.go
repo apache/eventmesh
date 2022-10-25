@@ -13,21 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consumer
+package grpc
 
 import (
+	"sync"
+	"time"
+
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/push"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/wrapper"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	cloudv2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/pkg/errors"
-	"sync"
-	"time"
 )
 
 var (
@@ -40,7 +40,7 @@ type EventMeshConsumer struct {
 	ConsumerGroup      string
 	persistentConsumer *wrapper.Consumer
 	broadcastConsumer  *wrapper.Consumer
-	messageHandler     *push.MessageHandler
+	messageHandler     *MessageHandler
 	ServiceState       consts.ServiceState
 	// consumerGroupTopicConfig key is topic
 	// value is ConsumerGroupTopicOption
@@ -48,7 +48,7 @@ type EventMeshConsumer struct {
 }
 
 func NewEventMeshConsumer(consumerGroup string) (*EventMeshConsumer, error) {
-	pushHandler, err := push.NewMessageHandler(consumerGroup)
+	pushHandler, err := NewMessageHandler(consumerGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +210,7 @@ func (e *EventMeshConsumer) createEventListener(mode pb.Subscription_Subscriptio
 
 			topicConfig := val.(*ConsumerGroupTopicOption)
 			tpy := topicConfig.GRPCType
-			mctx := &push.MessageContext{
+			mctx := &MessageContext{
 				GrpcType:         tpy,
 				ConsumerGroup:    e.ConsumerGroup,
 				SubscriptionMode: mode,

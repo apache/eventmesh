@@ -13,32 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package producer
+package grpc
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/config"
 	"sync"
 )
 
-// Manager manger for all producer
-type Manager struct {
+// ProducerManager manger for all producer
+type ProducerManager struct {
 	// EventMeshProducers {groupName, *EventMeshProducer}
 	EventMeshProducers *sync.Map
 }
 
-func NewManager() (*Manager, error) {
-	return &Manager{
+func NewProducerManager() (*ProducerManager, error) {
+	return &ProducerManager{
 		EventMeshProducers: new(sync.Map),
 	}, nil
 }
 
-func (m *Manager) GetProducer(groupName string) (*EventMeshProducer, error) {
+func (m *ProducerManager) GetProducer(groupName string) (*EventMeshProducer, error) {
 	p, ok := m.EventMeshProducers.Load(groupName)
 	if ok {
 		return p.(*EventMeshProducer), nil
 	}
-	pgc := &config.ProducerGroupConfig{GroupName: groupName}
+	pgc := &ProducerGroupConfig{GroupName: groupName}
 	pg, err := m.CreateProducer(pgc)
 	if err != nil {
 		return nil, err
@@ -46,7 +45,7 @@ func (m *Manager) GetProducer(groupName string) (*EventMeshProducer, error) {
 	return pg, nil
 }
 
-func (m *Manager) CreateProducer(producerGroupConfig *config.ProducerGroupConfig) (*EventMeshProducer, error) {
+func (m *ProducerManager) CreateProducer(producerGroupConfig *ProducerGroupConfig) (*EventMeshProducer, error) {
 	val, ok := m.EventMeshProducers.Load(producerGroupConfig.GroupName)
 	if ok {
 		return val.(*EventMeshProducer), nil
@@ -59,12 +58,12 @@ func (m *Manager) CreateProducer(producerGroupConfig *config.ProducerGroupConfig
 	return pg, nil
 }
 
-func (m *Manager) Start() error {
+func (m *ProducerManager) Start() error {
 	log.Infof("start producer manager")
 	return nil
 }
 
-func (m *Manager) Shutdown() error {
+func (m *ProducerManager) Shutdown() error {
 	log.Infof("shutdown producer manager")
 
 	m.EventMeshProducers.Range(func(key, value any) bool {

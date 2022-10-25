@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package grpc
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"

@@ -16,17 +16,8 @@
 package consts
 
 var (
-	// EVENT_STORE_ENV evn for store plugin
-	// default to defibus
-	EVENT_STORE_ENV = "EVENT_STORE"
-
-	REQ_MQ2EVENTMESH_TIMESTAMP = "reqmq2eventmeshtimestamp"
-
-	PROPERTY_MESSAGE_SEARCH_KEYS = "searchkeys"
-
-	RMB_UNIQ_ID = "rmbuniqid"
-
-	PROTOCOL_TYPE = "protocoltype"
-
-	CONTENT_TYPE_CLOUDEVENTS_JSON = "application/cloudevents+json"
+	PROPERTY_MESSAGE_CLUSTER = "cluster"
+	RR_REPLY_TOPIC           = "rr-reply-topic"
+	RESP_CODE                = "respCode"
+	RESP_MSG                 = "respMsg"
 )

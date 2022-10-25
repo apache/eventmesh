@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package push
+package grpc
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
@@ -21,7 +21,6 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc/retry"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	cloudv2 "github.com/cloudevents/sdk-go/v2"
 	"github.com/liyue201/gostl/ds/set"
@@ -38,7 +37,7 @@ var (
 )
 
 type Request struct {
-	*retry.Context
+	*Context
 
 	MessageContext *MessageContext
 	CreateTime     time.Time
