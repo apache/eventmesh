@@ -80,4 +80,10 @@ public class EventMeshHttpClientConfig {
     @Builder.Default
     private String sslClientProtocol = "TLSv1.2";
 
+    @Builder.Default
+    private int maxConnectionPoolSize = 30;
+
+    @Builder.Default
+    private int connectionIdleTimeSeconds = 10;
+
 }

@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 public class EventMeshStartup {
 
-    public static Logger logger = LoggerFactory.getLogger(EventMeshStartup.class);
+    public static final Logger logger = LoggerFactory.getLogger(EventMeshStartup.class);
 
     public static void main(String[] args) throws Exception {
         try {

@@ -62,9 +62,9 @@ import com.google.common.base.Preconditions;
 @EventMeshTrace(isEnable = false)
 public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor implements AsyncHttpProcessor {
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
-    public Logger aclLogger = LoggerFactory.getLogger("acl");
+    public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     public RemoteUnSubscribeEventProcessor(EventMeshHTTPServer eventMeshHTTPServer) {
         super(eventMeshHTTPServer);
@@ -119,15 +119,15 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
         Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
             new TypeReference<HashMap<String, Object>>() {});
 
-        if (requestBodyMap.get("url") == null || requestBodyMap.get("topic") == null || requestBodyMap.get("consumerGroup") == null) {
+        if (requestBodyMap.get(EventMeshConstants.URL) == null || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                 responseBodyMap, null);
             return;
         }
 
-        String unSubscribeUrl = requestBodyMap.get("url").toString();
-        String consumerGroup = requestBodyMap.get("consumerGroup").toString();
-        String topic = requestBodyMap.get("topic").toString();
+        String unSubscribeUrl = requestBodyMap.get(EventMeshConstants.URL).toString();
+        String consumerGroup = requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP).toString();
+        String topic = requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC).toString();
 
         long startTime = System.currentTimeMillis();
         try {
@@ -144,8 +144,8 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.IP, IPUtils.getLocalAddress());
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PID, String.valueOf(ThreadUtils.getPID()));
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.SYS, sysId);
-            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, "eventmesh");
-            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, "pass");
+            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.USERNAME, EventMeshConstants.USER_NAME);
+            remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PASSWD, EventMeshConstants.PASSWD);
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.PRODUCERGROUP, meshGroup);
             remoteHeaderMap.put(ProtocolKey.ClientInstanceKey.CONSUMERGROUP, meshGroup);
 
@@ -155,11 +155,11 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
                 + RequestURI.PUBLISH_BRIDGE.getRequestURI();
 
             Map<String, Object> remoteBodyMap = new HashMap<>();
-            remoteBodyMap.put("url", unsubscribeUrl);
-            remoteBodyMap.put("consumerGroup", meshGroup);
-            remoteBodyMap.put("topic", requestBodyMap.get("topic"));
+            remoteBodyMap.put(EventMeshConstants.URL, unsubscribeUrl);
+            remoteBodyMap.put(EventMeshConstants.CONSUMER_GROUP, meshGroup);
+            remoteBodyMap.put(EventMeshConstants.MANAGE_TOPIC, requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
-            List<String> unSubTopicList = JsonUtils.deserialize(JsonUtils.serialize(requestBodyMap.get("topic")), new TypeReference<List<String>>() {
+            List<String> unSubTopicList = JsonUtils.deserialize(JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)), new TypeReference<List<String>>() {
             });
 
             String targetMesh = "";
@@ -186,9 +186,9 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
             Map<String, String> remoteResultMap = JsonUtils.deserialize(remoteResult, new TypeReference<Map<String, String>>() {
             });
 
-            if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get("retCode"))) {
-                responseBodyMap.put("retCode", EventMeshRetCode.SUCCESS.getRetCode());
-                responseBodyMap.put("retMsg", EventMeshRetCode.SUCCESS.getErrMsg());
+            if (String.valueOf(EventMeshRetCode.SUCCESS.getRetCode()).equals(remoteResultMap.get(EventMeshConstants.RET_CODE))) {
+                responseBodyMap.put(EventMeshConstants.RET_CODE, EventMeshRetCode.SUCCESS.getRetCode());
+                responseBodyMap.put(EventMeshConstants.RET_MSG, EventMeshRetCode.SUCCESS.getErrMsg());
                 handlerSpecific.sendResponse(responseHeaderMap, responseBodyMap);
             } else {
                 handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_UNSUBSCRIBE_ERR, responseHeaderMap,
