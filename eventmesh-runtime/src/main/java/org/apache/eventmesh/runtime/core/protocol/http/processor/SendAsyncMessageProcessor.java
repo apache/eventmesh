@@ -61,13 +61,13 @@ import io.opentelemetry.api.trace.Span;
 
 public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
-    public Logger messageLogger = LoggerFactory.getLogger("message");
+    public Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    public Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public Logger aclLogger = LoggerFactory.getLogger("acl");
+    public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -251,7 +251,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
         try {
             event = CloudEventBuilder.from(event)
-                .withExtension("msgtype", "persistent")
+                .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
                 .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, asyncContext.getRequest().reqTime)
                 .withExtension(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerIp)

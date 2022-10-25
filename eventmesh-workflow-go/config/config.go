@@ -29,12 +29,12 @@ type Config struct {
 		Queue struct {
 			Store string `yaml:"store"`
 		} `yaml:"queue"`
-		Schedule struct {
-			Interval int `yaml:"interval"`
-		} `yaml:"schedule"`
-		Selector  string `yaml:"selector"`
-		Protocol  string `yaml:"protocol"`
-		Scheduler string `yaml:"scheduler"`
+		Scheduler struct {
+			Type     string `yaml:"type"`
+			Interval int    `yaml:"interval"`
+		} `yaml:"scheduler"`
+		Selector string `yaml:"selector"`
+		Protocol string `yaml:"protocol"`
 	} `yaml:"flow"`
 	Catalog struct {
 		ServerName string `yaml:"server_name"`

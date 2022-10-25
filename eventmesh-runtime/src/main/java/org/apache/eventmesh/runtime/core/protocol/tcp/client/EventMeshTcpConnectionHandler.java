@@ -32,7 +32,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 
 public class EventMeshTcpConnectionHandler extends ChannelDuplexHandler {
 
-    public static AtomicInteger connections = new AtomicInteger(0);
+    public static final AtomicInteger connections = new AtomicInteger(0);
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private EventMeshTCPServer eventMeshTCPServer;
 

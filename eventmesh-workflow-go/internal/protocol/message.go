@@ -22,7 +22,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 )
 
-var messageBuilder map[string]Message
+var messageBuilder = make(map[string]Message)
 
 // Message workflow message definition
 type Message interface {

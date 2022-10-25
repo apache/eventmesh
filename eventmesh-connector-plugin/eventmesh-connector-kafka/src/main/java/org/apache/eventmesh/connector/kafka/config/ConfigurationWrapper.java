@@ -24,9 +24,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import lombok.experimental.UtilityClass;
@@ -52,7 +54,7 @@ public class ConfigurationWrapper {
      */
     private void loadProperties() {
         try (InputStream resourceAsStream = ConfigurationWrapper.class.getResourceAsStream(
-                "/" + EventMeshConstants.EVENTMESH_CONF_FILE)) {
+            "/" + EventMeshConstants.EVENTMESH_CONF_FILE)) {
             if (resourceAsStream != null) {
                 properties.load(resourceAsStream);
             }
@@ -62,7 +64,11 @@ public class ConfigurationWrapper {
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + EventMeshConstants.EVENTMESH_CONF_FILE;
             if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
+                try (FileInputStream fileInputStream = new FileInputStream(configPath);
+                     InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8);
+                     BufferedReader reader = new BufferedReader(inputStreamReader)) {
+                    properties.load(reader);
+                }
             }
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", EventMeshConstants.EVENTMESH_CONF_FILE));

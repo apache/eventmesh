@@ -48,14 +48,14 @@ func NewServer() (*Server, error) {
 	plugin.Register(constants.LogQueue, log.DefaultLogFactory)
 
 	var s Server
+	if err := s.SetupConfig(); err != nil {
+		return nil, err
+	}
 	scheduler, err := schedule.NewScheduler()
 	if err != nil {
 		return nil, err
 	}
 	s.schedule = scheduler
-	if err = s.SetupConfig(); err != nil {
-		return nil, err
-	}
 	if err = dal.Open(); err != nil {
 		return nil, err
 	}
