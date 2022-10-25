@@ -56,7 +56,7 @@ git rebase upstream_master
 
 原始仓库：https://github.com/apache/incubator-eventmesh Eventmesh的apache仓库在文中被称为原始仓库。
 
-叉子库。从 https://github.com/apache/eventmesh 分叉到你自己的个人仓库，成为一个分叉库。
+fork库: 从 https://github.com/apache/eventmesh fork到你自己的个人仓库，成为一个fork库。
 
 因此，将原EventMesh仓库分叉到你自己的仓库中。
 
