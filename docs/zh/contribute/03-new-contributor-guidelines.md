@@ -25,9 +25,9 @@
 
 ### 工作流程
 
-以下是贡献者投稿的工作流程:
+以下是贡献者提交代码的工作流程:
 
-1. 将愿仓库的项目eventmesh fork到自己仓库当中
+1. 将源仓库的项目eventmesh fork到自己仓库当中
 
 2. 克隆fork到本地存储库，就是将自己仓库的eventmesh克隆到本地
 ```git
@@ -62,7 +62,7 @@ fork库: 从 https://github.com/apache/eventmesh fork到你自己的个人仓库
 
 ## 开发分支
 
-**Eventmesh 当前的开发分支是 Master。请向该分支提交 PR。**
+**Eventmesh 当前的开发分支是 master。请向该分支提交 PR。**
 
 - 我们建议你在你的存储库中创建一个新的开发分支，并将该分支提交给 eventmesh 的 master分支。
 
@@ -112,7 +112,7 @@ There are two ways for new contributors to contribute to the eventmesh community
 
 - 一个拉动请求不应该太大。如果需要大量的修改，最好将这些修改分成几个单独的 PR。
 
-- 在创建PR后，一个或多个提交人将帮助审查该拉动请求，在批准后，该PR将被合并到eventmesh资源库中，相关的Issue将被关闭。
+- 在创建PR后，一个或多个提交人将帮助审查该拉动请求，在批准后，该PR将被合并到eventmesh主源库中，相关的Issue将被关闭。
 
 ## 审查
 
