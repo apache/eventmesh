@@ -46,6 +46,7 @@ import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -110,7 +111,7 @@ public class MessageTransferTask extends AbstractTask {
                 throw new Exception("event is null");
             }
 
-            String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+            String content = new String(Objects.requireNonNull(event.getData()).toBytes(), StandardCharsets.UTF_8);
             if (content.length() > eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshEventSize) {
                 throw new Exception("event size exceeds the limit: "
                     + eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshEventSize);
@@ -255,7 +256,8 @@ public class MessageTransferTask extends AbstractTask {
                 UpStreamMsgContext upStreamMsgContext = new UpStreamMsgContext(
                     session, event, pkg.getHeader(), startTime, taskExecuteTime);
                 upStreamMsgContext.delay(10000);
-                session.getClientGroupWrapper().get().getEventMeshTcpRetryer()
+                Objects.requireNonNull(
+                        session.getClientGroupWrapper().get()).getEventMeshTcpRetryer()
                     .pushRetry(upStreamMsgContext);
 
                 session.getSender().failMsgCount.incrementAndGet();

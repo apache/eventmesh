@@ -75,15 +75,15 @@ public class RedirectClientBySubSystemHandler implements HttpHandler {
                     subSystem, destEventMeshIp, destEventMeshPort);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            String redirectResult = "";
+            StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {
                     for (Session session : sessionMap.values()) {
                         if (session.getClient().getSubsystem().equals(subSystem)) {
-                            redirectResult += "|";
-                            redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
+                            redirectResult.append("|");
+                            redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
                                     destEventMeshIp, Integer.parseInt(destEventMeshPort),
-                                    session, clientSessionGroupMapping);
+                                    session, clientSessionGroupMapping));
                         }
                     }
                 }
