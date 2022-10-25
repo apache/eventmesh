@@ -43,11 +43,11 @@ func NewEventMeshHttpConsumer(eventMeshHttpClientConfig conf.EventMeshHttpClient
 }
 
 func (e *EventMeshHttpConsumer) HeartBeat(topicList []protocol.SubscriptionItem, subscribeUrl string) {
-
-	// FIXME check topicList, subscribeUrl is not blank
+	if len(topicList) == 0 || len(subscribeUrl) == 0 {
+		return
+	}
 
 	for range time.Tick(time.Duration(gcommon.Constants.HEARTBEAT) * time.Millisecond) {
-
 		var heartbeatEntities []client.HeartbeatEntity
 		for _, item := range topicList {
 			entity := client.HeartbeatEntity{Topic: item.Topic, Url: subscribeUrl}
@@ -56,8 +56,7 @@ func (e *EventMeshHttpConsumer) HeartBeat(topicList []protocol.SubscriptionItem,
 
 		requestParam := e.buildCommonRequestParam()
 		requestParam.AddHeader(common.ProtocolKey.REQUEST_CODE, strconv.Itoa(common.DefaultRequestCode.HEARTBEAT.RequestCode))
-		// FIXME Java is name of SUB name
-		//requestParam.AddBody(client.HeartbeatRequestBodyKey.CLIENTTYPE, common.DefaultClientType.SUB.name())
+		requestParam.AddBody(client.HeartbeatRequestBodyKey.CLIENTTYPE, common.DefaultClientType.SUB.Name)
 		requestParam.AddBody(client.HeartbeatRequestBodyKey.CLIENTTYPE, "SUB")
 		requestParam.AddBody(client.HeartbeatRequestBodyKey.HEARTBEATENTITIES, gutils.MarshalJsonString(heartbeatEntities))
 
@@ -68,14 +67,14 @@ func (e *EventMeshHttpConsumer) HeartBeat(topicList []protocol.SubscriptionItem,
 		if ret.RetCode != common.DefaultEventMeshRetCode.SUCCESS.RetCode {
 			log.Fatalf("Request failed, error code: %d", ret.RetCode)
 		}
-
 	}
 
 }
 
 func (e *EventMeshHttpConsumer) Subscribe(topicList []protocol.SubscriptionItem, subscribeUrl string) {
-
-	// FIXME check topicList, subscribeUrl is not blank
+	if len(topicList) == 0 || len(subscribeUrl) == 0 {
+		return
+	}
 
 	requestParam := e.buildCommonRequestParam()
 	requestParam.AddHeader(common.ProtocolKey.REQUEST_CODE, strconv.Itoa(common.DefaultRequestCode.SUBSCRIBE.RequestCode))
