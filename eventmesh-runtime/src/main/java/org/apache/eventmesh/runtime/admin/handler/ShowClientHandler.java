@@ -50,7 +50,7 @@ public class ShowClientHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         OutputStream out = httpExchange.getResponseBody();
         try {
             String newLine = System.getProperty("line.separator");
@@ -71,14 +71,12 @@ public class ShowClientHandler implements HttpHandler {
                 }
 
                 for (Map.Entry<String, AtomicInteger> entry : statMap.entrySet()) {
-                    result += String.format("System=%s | ClientNum=%d", entry.getKey(), entry.getValue().intValue())
-                            +
-                            newLine;
+                    result.append(String.format("System=%s | ClientNum=%d", entry.getKey(), entry.getValue().intValue())).append(newLine);
                 }
             }
 
             httpExchange.sendResponseHeaders(200, 0);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("ShowClientHandler fail...", e);
         } finally {
