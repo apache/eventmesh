@@ -73,16 +73,15 @@ public class RedirectClientByIpPortHandler implements HttpHandler {
                     port, destEventMeshIp, destEventMeshPort);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            String redirectResult = "";
+            StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {
                     for (Session session : sessionMap.values()) {
                         if (session.getClient().getHost().equals(ip) && String.valueOf(
                                 session.getClient().getPort()).equals(port)) {
-                            redirectResult += "|";
-                            redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
+                                redirectResult.append("|").append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
                                     destEventMeshIp, Integer.parseInt(destEventMeshPort),
-                                    session, clientSessionGroupMapping);
+                                    session, clientSessionGroupMapping));
                         }
                     }
                 }
