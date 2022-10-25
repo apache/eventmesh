@@ -157,7 +157,7 @@ public class EventMeshUtil {
         Set<String> extensionSet = event.getExtensionNames();
         Map<String, String> prop = new HashMap<>();
         for (String extensionKey : extensionSet) {
-            prop.put(extensionKey, event.getExtension(extensionKey).toString());
+            prop.put(extensionKey, event.getExtension(extensionKey) == null ? "" : event.getExtension(extensionKey).toString());
         }
         return prop;
     }

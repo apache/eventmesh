@@ -148,6 +148,13 @@ func (e *eventMeshGRPCClient) UnSubscribe() error {
 // setupContext set up the context, add id if not exist
 func (e *eventMeshGRPCClient) setupContext(ctx context.Context) context.Context {
 	val := ctx.Value(GRPC_ID_KEY)
+
+	defer func() {
+		if err := recover(); err != nil {
+			log.Warnf("send as rece err:%v", err)
+		}
+	}()
+
 	if val == nil {
 		ctx = context.WithValue(ctx, GRPC_ID_KEY, e.idg.Next())
 	}

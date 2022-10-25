@@ -25,6 +25,8 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -48,6 +50,7 @@ public class SSLContextFactory {
 
     public static SSLContext getSslContext(EventMeshHTTPConfiguration eventMeshHttpConfiguration) {
         SSLContext sslContext;
+        InputStream inputStream = null;
         try {
             protocol = eventMeshHttpConfiguration.eventMeshServerSSLProtocol;
 
@@ -60,15 +63,25 @@ public class SSLContextFactory {
             }
             sslContext = SSLContext.getInstance(protocol);
             KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME
-                    + File.separator
-                    + fileName), StandardOpenOption.READ), filePass);
+            inputStream = Files.newInputStream(Paths.get(EventMeshConstants.EVENTMESH_CONF_HOME
+                                              + File.separator
+                                              + fileName), StandardOpenOption.READ);
+            keyStore.load(inputStream, filePass);
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(keyStore, filePass);
             sslContext.init(kmf.getKeyManagers(), null, null);
         } catch (Exception e) {
             httpLogger.warn("sslContext init failed", e);
             sslContext = null;
+        }
+        finally {
+            if (inputStream != null) {
+                try{
+                    inputStream.close();
+                }catch(IOException e){
+                    httpLogger.warn("IOException found", e);
+                }
+            }
         }
         return sslContext;
     }
