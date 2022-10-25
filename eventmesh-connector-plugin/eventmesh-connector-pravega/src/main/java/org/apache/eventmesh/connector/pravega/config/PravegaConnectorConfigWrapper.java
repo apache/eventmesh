@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.pravega.config;
 
 import org.apache.eventmesh.common.Constants;
-
+import org.apache.eventmesh.common.utils.PropertiesUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
@@ -62,7 +62,7 @@ public class PravegaConnectorConfigWrapper {
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + PRAVEGA_CONF_FILE;
             if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
+                PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath);
             }
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", PRAVEGA_CONF_FILE));
