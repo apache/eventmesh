@@ -47,8 +47,8 @@ func NewProducer() (*Producer, error) {
 		return nil, ErrNoConnectorName
 	}
 	log.Infof("init producer with connector name:%s", connectorPluginName)
-	factory := plugin.Get(connector.PluginType, connectorPluginName.Value).(connector.Factory)
-	consu, err := factory.GetProducer()
+	factory := plugin.Get(connector.ProducerPluginType, connectorPluginName.Value).(connector.ProducerFactory)
+	consu, err := factory.Get()
 	if err != nil {
 		return nil, err
 	}

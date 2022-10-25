@@ -13,20 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package consts
+package grpc
 
 var (
-	// EVENT_STORE_ENV evn for store plugin
-	// default to defibus
-	EVENT_STORE_ENV = "EVENT_STORE"
-
-	REQ_MQ2EVENTMESH_TIMESTAMP = "reqmq2eventmeshtimestamp"
-
-	PROPERTY_MESSAGE_SEARCH_KEYS = "searchkeys"
-
-	RMB_UNIQ_ID = "rmbuniqid"
-
-	PROTOCOL_TYPE = "protocoltype"
-
-	CONTENT_TYPE_CLOUDEVENTS_JSON = "application/cloudevents+json"
+	ENV              = "env"
+	IDC              = "idc"
+	SYS              = "sys"
+	PID              = "pid"
+	IP               = "ip"
+	USERNAME         = "username"
+	PASSWD           = "passwd"
+	LANGUAGE         = "language"
+	PROTOCOL_TYPE    = "protocoltype"
+	PROTOCOL_VERSION = "protocolversion"
+	PROTOCOL_DESC    = "protocoldesc"
+	SEQ_NUM          = "seqnum"
+	UNIQUE_ID        = "uniqueid"
+	TTL              = "ttl"
+	PRODUCERGROUP    = "producergroup"
+	TAG              = "tag"
+	CONTENT_TYPE     = "contenttype"
 )

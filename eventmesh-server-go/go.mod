@@ -21,12 +21,16 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.11.0
 	github.com/gogf/gf v1.16.9
 	github.com/hashicorp/go-multierror v1.1.1
+	github.com/json-iterator/go v1.1.12
 	github.com/lestrrat-go/strftime v1.0.6
 	github.com/liyue201/gostl v1.0.1
 	github.com/nacos-group/nacos-sdk-go/v2 v2.0.3
+	github.com/panjf2000/ants/v2 v2.6.0
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.13.0
 	github.com/spf13/cobra v1.5.0
 	go.uber.org/zap v1.22.0
+	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
 	google.golang.org/grpc v1.36.1
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -48,7 +52,6 @@ require (
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
-	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
@@ -58,7 +61,6 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_golang v1.13.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
@@ -95,6 +97,5 @@ require (
 	go.uber.org/atomic v1.7.0
 	go.uber.org/fx v1.18.1
 	golang.org/x/sys v0.0.0-20220908164124-27713097b956 // indirect
-	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/protobuf v1.28.1
 )

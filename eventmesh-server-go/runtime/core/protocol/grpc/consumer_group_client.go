@@ -13,8 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+package grpc
 
-type ProducerGroupConfig struct {
-	GroupName string `json:"groupName"`
+import (
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
+	"time"
+)
+
+// GroupClient consumer group client details
+type GroupClient struct {
+	ENV              string
+	IDC              string
+	ConsumerGroup    string
+	Topic            string
+	GRPCType         GRPCType
+	URL              string
+	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
+	SYS              string
+	IP               string
+	PID              string
+	Hostname         string
+	APIVersion       string
+	LastUPTime       time.Time
+	Emiter           *EventEmitter
 }
