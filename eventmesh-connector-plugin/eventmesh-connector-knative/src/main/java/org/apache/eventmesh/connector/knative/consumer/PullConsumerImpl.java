@@ -39,6 +39,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import io.cloudevents.CloudEvent;
 
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PullConsumerImpl {
 
@@ -53,6 +55,8 @@ public class PullConsumerImpl {
     // Store received message:
     public ConcurrentMap<String /* topic */, String /* responseBody */> subscriptionInner;
     public EventListener eventListener;
+
+    private static final Logger logger = LoggerFactory.getLogger(PullConsumerImpl.class);
 
     public PullConsumerImpl(final Properties properties) throws Exception {
         this.properties = properties;
@@ -76,12 +80,12 @@ public class PullConsumerImpl {
                     try {
                         subscriptionInner.put(item.getTopic(), defaultConsumer.pullMessage(item.getTopic(), properties.getProperty("serviceAddr")));
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error(e.getMessage());
                     }
                 }
             );
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
@@ -90,7 +94,7 @@ public class PullConsumerImpl {
             // Unsubscribe topic:
             topicList.remove(topic);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
