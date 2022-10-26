@@ -53,6 +53,26 @@ git rebase upstream_master
 ```
 
 5. 提交您的修改（确保您的提交信息简洁明了）  
+
+**特别注意：在提交代码之前要确保你提交代码的邮箱要与GitHub邮箱一致，不然在统计contributor数量时会发生无法正常计入的情况**
+
+- 在IDEA中打开Terminal(终端)，输入以下命令查看本地使用的邮箱信息
+```git
+git config --global --list
+```
+如图：  
+![contributor12](../../images/contributor12.png)  
+如果你在提交之前还未登陆邮箱，使用注册GitHub账号时的邮箱  
+
+- 如果你发现你的邮箱与GitHub邮箱不一致可通过以下git命令进行修改
+```git
+git config --global user.name 你的目标用户名
+git config --global user.email 你的目标邮箱名
+```
+如图：  
+![contributor13](../../images/contributor13.png)   
+修改邮箱同理(也可以用这个命令来登陆邮箱)
+
 例：用IDEA提交代码为例，如果您在IDEA本地修改完毕  
    a.点击Commit，点击图片中两个地方中任意一个即可
    ![contributor03](../../images/contributor03.png)  
@@ -75,7 +95,7 @@ git rebase upstream_master
 例：  
    a.当您成功push到自己的仓库当中后，会出现下图界面  
    ![contributor10](../../images/contributor10.png)
-   b.点击Compare & pull request，即可创建pull请求，就会出现以下界面，按照图中操作即可创建pull request  
+   b.点击Compare & pull request，就会出现以下界面，按照图中操作即可创建pull request  
    ![contributor11](../../images/contributor11.png)
    
 
@@ -89,7 +109,7 @@ fork库: 从 https://github.com/apache/eventmesh fork到你自己的个人仓库
 
 ## 开发分支
 
-**Eventmesh 当前的开发分支是 master。请向该分支提交 PR。**
+**EventMesh 当前的开发分支是 master。请向该分支提交 PR。**
 
 - 我们建议您在您的存储库中创建一个新的开发分支，并将该分支提交给 eventmesh 的 master分支。
 
