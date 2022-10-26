@@ -53,17 +53,31 @@ git rebase upstream_master
 ```
 
 5. 提交你的修改（确保你的提交信息简洁明了）  
-例：用IDEA提交代码为例，如果你在IDEA本地修改完毕  
+例：用IDEA提交代码为例，如果你在IDEA本地修改完毕
    a.点击Commit，点击图片中两个地方中任意一个即可
    ![contributor03](../../images/contributor03.png)  
    b.就会出现一下图中界面  
    ![contributor04](../../images/contributor04.png)  
+   （注：如果是新添加的文件需要Add一下，再Commit，一般IDEA都会提示，如果没有提示，按下图操作即可，文件由红色变为绿色Add成功）
+   ![contributor09](../../images/contributor09.png)  
    
+6. 推送你的提交到你的fork仓库，将修改先推送到自己的仓库   
+   a.然后需要push到远程仓库当中，也就是你自己的仓库，你需要点击  
+   ![contributor05](../../images/contributor05.png)  
+   或者是  
+   ![contributor06](../../images/contributor06.png)  
+   b.就会出现以下界面，确认无误后点击右下角push，就push到自己的仓库了  
+   ![contributor07](../../images/contributor07.png)  
+   c.当您成功push到自己仓库就会出现下图的提示（在IDEA界面的右下角）  
+   ![contributor08](../../images/contributor08.png)  
 
-
-6. 推送你的提交到你的fork仓库，将修改先推送到自己的仓库
-
-7. 创建一个pull请求
+7. 创建一个pull请求  
+例：  
+   a.当您成功push到自己的仓库当中后，会出现下图界面  
+   ![contributor10](../../images/contributor10.png)
+   b.点击这个Compare & pull request，即可创建pull请求，就会出现以下界面  
+   ![contributor11](../../images/contributor11.png)
+   
 
 ## 解释
 
