@@ -11,7 +11,7 @@
 
 ### 代码风格
 
-将[EventMesh CheckStyle](https://github.com/apache/incubator-eventmesh/blob/master/style/checkStyle.xml) 文件导入到你的IDEA。
+将[EventMesh CheckStyle](https://github.com/apache/incubator-eventmesh/blob/master/style/checkStyle.xml) 文件导入到您的IDEA。
 
 对于IDEA，您可以通过以下方式导入检查样式文件:
 ```shell
@@ -53,7 +53,7 @@ git rebase upstream_master
 ```
 
 5. 提交您的修改（确保您的提交信息简洁明了）  
-例：用IDEA提交代码为例，如果您在IDEA本地修改完毕
+例：用IDEA提交代码为例，如果您在IDEA本地修改完毕  
    a.点击Commit，点击图片中两个地方中任意一个即可
    ![contributor03](../../images/contributor03.png)  
    b.就会出现以下图中界面  
