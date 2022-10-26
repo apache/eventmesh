@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.grpc.sub.app.controller;
 
+import io.cloudevents.CloudEventData;
+import io.cloudevents.core.format.EventFormat;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -58,10 +60,15 @@ public class SubController {
         if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
             String contentType = request.getHeader(ProtocolKey.CONTENT_TYPE);
 
-            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(contentType)
-                .deserialize(content.getBytes(StandardCharsets.UTF_8));
-            String data = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-            log.info("=======receive data======= {}", data);
+            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(contentType);
+            if (eventFormat != null) {
+                CloudEvent event = eventFormat.deserialize(content.getBytes(StandardCharsets.UTF_8));
+                CloudEventData cloudEventData = event.getData();
+                if (cloudEventData != null) {
+                    String data = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
+                    log.info("=======receive data======= {}", data);
+                }
+            }
         }
 
         subService.consumeMessage(content);
