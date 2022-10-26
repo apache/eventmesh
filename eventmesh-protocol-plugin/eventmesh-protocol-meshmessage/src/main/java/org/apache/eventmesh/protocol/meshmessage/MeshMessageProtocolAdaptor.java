@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.cloudevents.CloudEvent;
+import com.google.common.base.Preconditions;
 
 public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTransportObject> {
 
@@ -111,7 +112,8 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
 
     @Override
     public ProtocolTransportObject fromCloudEvent(CloudEvent cloudEvent) throws ProtocolHandleException {
-        String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
+        validateCloudEvent(cloudEvent);
+        String protocolDesc = cloudEvent.getExtension(Constants.PROTOCOL_DESC) == null ? null : cloudEvent.getExtension(Constants.PROTOCOL_DESC).toString();
 
         if (StringUtils.equals(MeshMessageProtocolConstant.PROTOCOL_DESC_HTTP, protocolDesc)) {
             HttpCommand httpCommand = new HttpCommand();
@@ -120,6 +122,9 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
 
                 @Override
                 public Map<String, Object> toMap() {
+                    if(cloudEvent.getData() == null){
+                        return map;
+                    }
                     map.put(MeshMessageProtocolConstant.PROTOCOL_KEY_CONTENT, new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
                     return map;
                 }
@@ -139,5 +144,9 @@ public class MeshMessageProtocolAdaptor implements ProtocolAdaptor<ProtocolTrans
     @Override
     public String getProtocolType() {
         return MeshMessageProtocolConstant.PROTOCOL_NAME;
+    }
+
+    private void validateCloudEvent(CloudEvent cloudEvent) {
+        Preconditions.checkNotNull(cloudEvent, "CloudEvent cannot be null");
     }
 }
