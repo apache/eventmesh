@@ -56,8 +56,7 @@ public class KnativeMessageWriter implements MessageWriter<CloudEventWriter<Stri
         if (message != null && message.getData() != null) {
             return message.getData().toString();
         }
-        return null;
-
+        throw new CloudEventRWException("message data is null") ;
     }
 
     @Override
