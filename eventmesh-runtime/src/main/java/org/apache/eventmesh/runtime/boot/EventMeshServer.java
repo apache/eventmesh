@@ -97,7 +97,9 @@ public class EventMeshServer {
             trace.init(eventMeshHttpConfiguration.eventMeshTracePluginType);
         }
 
-        connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
+        if (eventMeshHttpConfiguration != null) {
+            connectorResource.init(eventMeshHttpConfiguration.eventMeshConnectorPluginType);
+        }
 
         // server init
         if (eventMeshGrpcConfiguration != null) {
