@@ -152,8 +152,10 @@ public class PushConsumerImpl {
                 .getDefaultMQPushConsumerImpl().getConsumeMessageService();
         List<MessageExt> msgExtList = new ArrayList<>(cloudEvents.size());
         for (CloudEvent msg : cloudEvents) {
-            msgExtList.add(CloudEventUtils.msgConvertExt(
-                    RocketMQMessageFactory.createWriter(msg.getSubject()).writeBinary(msg)));
+            if(msg != null) {
+                msgExtList.add(CloudEventUtils.msgConvertExt(
+                         RocketMQMessageFactory.createWriter(msg.getSubject()).writeBinary(msg)));
+            }
         }
         ((ConsumeMessageConcurrentlyService) consumeMessageService)
                 .updateOffset(msgExtList, (EventMeshConsumeConcurrentlyContext) context);
