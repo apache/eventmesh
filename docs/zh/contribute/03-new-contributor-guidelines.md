@@ -56,8 +56,10 @@ git rebase upstream_master
 例：用IDEA提交代码为例，如果你在IDEA本地修改完毕  
    a.点击Commit，点击图片中两个地方中任意一个即可
    ![contributor03](../../images/contributor03.png)  
-   b.
+   b.就会出现一下图中界面  
+   ![contributor04](../../images/contributor04.png)  
    
+
 
 6. 推送你的提交到你的fork仓库，将修改先推送到自己的仓库
 
