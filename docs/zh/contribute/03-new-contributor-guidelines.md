@@ -58,7 +58,7 @@ git rebase upstream_master
    ![contributor03](../../images/contributor03.png)  
    b.就会出现一下图中界面  
    ![contributor04](../../images/contributor04.png)  
-   （注：如果是新添加的文件需要Add一下，再Commit，一般IDEA都会提示，如果没有提示，按下图操作即可，文件由红色变为绿色Add成功）
+   （注：如果是新添加的文件需要Add一下，再Commit，一般IDEA都会提示，如果没有提示，按下图操作即可，文件由红色变为绿色Add成功）  
    ![contributor09](../../images/contributor09.png)  
    
 6. 推送你的提交到你的fork仓库，将修改先推送到自己的仓库   
@@ -75,7 +75,7 @@ git rebase upstream_master
 例：  
    a.当您成功push到自己的仓库当中后，会出现下图界面  
    ![contributor10](../../images/contributor10.png)
-   b.点击这个Compare & pull request，即可创建pull请求，就会出现以下界面  
+   b.点击这个Compare & pull request，即可创建pull请求，就会出现以下界面，按照图中操作即可创建pull request  
    ![contributor11](../../images/contributor11.png)
    
 
