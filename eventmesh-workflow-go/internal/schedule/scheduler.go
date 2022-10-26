@@ -16,15 +16,20 @@
 package schedule
 
 import (
+	"errors"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/config"
 )
 
-var schedulerBuilder map[string]func() (Scheduler, error)
+var schedulerBuilder = make(map[string]func() Scheduler)
 
 type Scheduler interface {
 	Run()
 }
 
 func NewScheduler() (Scheduler, error) {
-	return schedulerBuilder[config.Get().Flow.Scheduler]()
+	scheduler := schedulerBuilder[config.Get().Flow.Scheduler.Type]
+	if scheduler == nil {
+		return nil, errors.New("must config scheduler type")
+	}
+	return scheduler(), nil
 }

@@ -17,6 +17,7 @@ package id
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net"
 	"strconv"
@@ -44,9 +45,15 @@ func NewFlake() Interface {
 	}
 }
 
+func NewFlakeWithSonyflake(sonyflake *sonyflake.Sonyflake) Interface {
+	return &flake{
+		sf: sonyflake,
+	}
+}
+
 // getMacAddr return the current machine mac address
 func getMacAddr() (addr string) {
-	interfaces, err := net.Interfaces()
+	interfaces, err := GetNetInterfaces()
 	if err == nil {
 		for _, i := range interfaces {
 			if i.Flags&net.FlagUp != 0 && bytes.Compare(i.HardwareAddr, nil) != 0 {
@@ -55,8 +62,15 @@ func getMacAddr() (addr string) {
 				break
 			}
 		}
+	} else {
+		panic(errors.New("flake not created"))
 	}
+
 	return
+}
+
+func GetNetInterfaces() ([]net.Interface, error) {
+	return net.Interfaces()
 }
 
 // Nextv generates next id as an uint64
@@ -66,12 +80,14 @@ func (f *flake) Nextv() (id uint64, err error) {
 		i, err = f.sf.NextID()
 		if err == nil {
 			id = i
+		} else {
+			panic(err)
 		}
 	}
 	return
 }
 
-// Next generates next id as a string
+// Next generates id as a string
 func (f *flake) Next() string {
 	var i uint64
 	i, _ = f.Nextv()

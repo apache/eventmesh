@@ -33,6 +33,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
@@ -112,8 +113,8 @@ public class EventMeshConsumer {
                     EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
                 try {
                     String topic = event.getSubject();
-                    String bizSeqNo = (String) event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
-                    String uniqueId = (String) event.getExtension(Constants.RMB_UNIQ_ID);
+                    String bizSeqNo = event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO).toString();
+                    String uniqueId = event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID).toString();
 
                     event = CloudEventBuilder.from(event)
                         .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
@@ -193,9 +194,8 @@ public class EventMeshConsumer {
                         .build();
 
                     String topic = event.getSubject();
-                    String bizSeqNo =
-                        event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS).toString();
-                    String uniqueId = event.getExtension(Constants.RMB_UNIQ_ID).toString();
+                    String bizSeqNo = event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO).toString();
+                    String uniqueId = event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID).toString();
 
                     if (messageLogger.isDebugEnabled()) {
                         messageLogger.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
@@ -296,6 +296,10 @@ public class EventMeshConsumer {
 
     public ConsumerGroupConf getConsumerGroupConf() {
         return consumerGroupConf;
+    }
+
+    public void setConsumerGroupConf(ConsumerGroupConf consumerGroupConf) {
+        this.consumerGroupConf = consumerGroupConf;
     }
 
     public EventMeshHTTPServer getEventMeshHTTPServer() {
