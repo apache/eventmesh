@@ -16,6 +16,7 @@
 package producer
 
 import (
+	"fmt"
 	gcommon "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/http/common"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/http/message"
@@ -96,9 +97,7 @@ func (c *CloudEventProducer) enhanceCloudEvent(event cloudevents.Event) cloudeve
 	event.SetExtension(common.ProtocolKey.ClientInstanceKey.BIZSEQNO, gutils.RandomNumberStr(bizSeqNoLength))
 	event.SetExtension(common.ProtocolKey.ClientInstanceKey.UNIQUEID, gutils.RandomNumberStr(uniqueIdLen))
 	event.SetExtension(common.ProtocolKey.LANGUAGE, gcommon.Constants.LANGUAGE_GO)
-	// FIXME Java is name of spec version name
-	//event.SetExtension(common.ProtocolKey.PROTOCOL_DESC, event.SpecVersion())
+	event.SetExtension(common.ProtocolKey.PROTOCOL_DESC, fmt.Sprintf("V%s", event.SpecVersion()))
 	event.SetExtension(common.ProtocolKey.PROTOCOL_VERSION, event.SpecVersion())
-
 	return event
 }
