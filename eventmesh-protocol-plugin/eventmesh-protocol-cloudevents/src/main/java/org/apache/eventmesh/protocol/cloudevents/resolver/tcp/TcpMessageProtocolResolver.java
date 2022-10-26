@@ -47,10 +47,11 @@ public class TcpMessageProtocolResolver {
 
         if (StringUtils.isBlank(protocolType)
                 || StringUtils.isBlank(protocolVersion)
-                || StringUtils.isBlank(protocolDesc)) {
+                || StringUtils.isBlank(protocolDesc)
+                || StringUtils.isBlank(cloudEventJson)) {
             throw new ProtocolHandleException(
-                    String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s",
-                            protocolType, protocolVersion, protocolDesc));
+                    String.format("invalid protocol params protocolType %s|protocolVersion %s|protocolDesc %s|cloudEventJson %s",
+                            protocolType, protocolVersion, protocolDesc, cloudEventJson));
         }
 
         if (!StringUtils.equals(CloudEventsProtocolConstant.PROTOCOL_NAME, protocolType)) {
