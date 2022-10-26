@@ -19,11 +19,13 @@ import (
 	"context"
 	"fmt"
 	catalog "github.com/apache/incubator-eventmesh/eventmesh-catalog-go/api/proto"
+	pconfig "github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/selector"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/flow"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
@@ -44,6 +46,7 @@ type baseTask struct {
 	input              string
 	taskType           string
 	queue              queue.ObserveQueue
+	workflowDAL        dal.WorkflowDAL
 }
 
 func New(instance *model.WorkflowTaskInstance) Task {
@@ -80,20 +83,25 @@ func queryPublishCatalog(operationID string) (*flow.WorkflowEventCatalog, error)
 	defer closeGRPCConn(grpcConn)
 
 	catalogClient := catalog.NewCatalogClient(grpcConn)
-	rsp, err := catalogClient.Query(context.Background(), &catalog.QueryRequest{
+	rsp, err := catalogClient.QueryOperations(context.Background(), &catalog.QueryOperationsRequest{
 		OperationId: operationID,
 	})
 	if err != nil {
 		return nil, err
 	}
-	if rsp.Type != constants.EventTypePublish {
+	if len(rsp.Operations) == 0 {
 		return nil, fmt.Errorf("operationID %s invalid, please check it", operationID)
 	}
-	return &flow.WorkflowEventCatalog{Topic: rsp.ChannelName, Schema: rsp.Schema, OperationID: operationID}, nil
+	operation := rsp.Operations[0]
+	if operation.Type != constants.EventTypePublish {
+		return nil, fmt.Errorf("operationID %s invalid, please check it", operationID)
+	}
+	return &flow.WorkflowEventCatalog{Topic: operation.ChannelName, Schema: operation.Schema,
+		OperationID: operationID}, nil
 }
 
 func getGRPCConn() (*grpc.ClientConn, error) {
-	namingClient := selector.Get(config.Get().Flow.Selector)
+	namingClient := selector.Get(pconfig.GlobalConfig().Server.Name)
 	if namingClient == nil {
 		return nil, fmt.Errorf("naming client is not registered.please register it")
 	}

@@ -18,8 +18,8 @@ module github.com/apache/incubator-eventmesh/eventmesh-workflow-go
 go 1.16
 
 require (
-	github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20220925090247-b560c2a3a363
-	github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20220923152713-86455c587c5b
+	github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221019110652-3768a592fc3f
+	github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20221020081227-6e7625cedab8
 	github.com/apache/incubator-eventmesh/eventmesh-server-go v0.0.0-20220812021948-0945ab92daea
 	github.com/avast/retry-go/v4 v4.0.1
 	github.com/bbuck/go-lexer v1.0.0

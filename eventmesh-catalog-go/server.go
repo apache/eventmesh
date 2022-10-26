@@ -85,56 +85,31 @@ func tmpInsert() {
 	var s = api.NewCatalogImpl()
 	var request = proto.RegistryRequest{}
 	raw := []byte(`
-asyncapi: '2.0.0'
+asyncapi: 2.3.0
 info:
-  title: Streetlights API
-  version: '1.0.0'
-  description: |
-    The Smartylighting Streetlights API allows you
-    to remotely manage the city lights.
-  license:
-    name: Apache 2.0
-    url: 'https://www.apache.org/licenses/LICENSE-2.0'
-servers:
-  mosquitto:
-    url: mqtt://test.mosquitto.org
-    protocol: mqtt
+  title: payment
+  version: '0.1.0'
 channels:
-  light/measured:
+  payment/create:
     publish:
-      summary: Inform about environmental lighting conditions for a particular streetlight.
-      operationId: onLightMeasured
+      operationId: sendPayment
       message:
-        oneOf:
-          - $ref: '#/components/messages/lightMeasured'
-          - $ref: '#/components/messages/lightMeasured2'
+        $ref: '#/components/messages/PaymentOrder'
+    subscribe:
+      operationId: receivePayment
+      message:
+        $ref: '#/components/messages/PaymentOrder'
 components:
   messages:
-    lightMeasured:
-       name: LightMeasured
-       payload:
-         $ref: "#/components/schemas/lightMeasuredPayload"
-    lightMeasured2:
-       name: LightMeasured
-       payload:
-         $ref: "#/components/schemas/lightMeasuredPayload"
-  schemas:
-    lightMeasuredPayload:
-      type: object
-      properties:
-        id:
-          type: integer
-          minimum: 0
-          description: Id of the streetlight.
-        lumens:
-          type: integer
-          minimum: 0
-          description: Light intensity measured in lumens.
-        sentAt:
-          type: string
-          format: date-time
-          description: Date and time when the message was sent.`)
-	request.FileName = "test.yaml"
+    PaymentOrder:
+      payload:
+        type: object
+        properties:
+          orderNo:
+            type: string
+          Amount:
+            type: string`)
+	request.FileName = "paymentapp.yaml"
 	request.Definition = gconv.String(raw)
 	_, err := s.Registry(context.Background(), &request)
 	log.Info(err)

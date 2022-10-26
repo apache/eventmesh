@@ -20,10 +20,10 @@ server:
 plugins:
   registry:
     nacos:
-      address_list: "9.135.90.236:8848"
+      address_list: "127.0.0.1:8848"
   selector:
     nacos:
-      address_list: "9.135.90.236:8848"
+      address_list: "127.0.0.1:8848"
   database:
     mysql:
       dsn: "root:123456@(127.0.0.1:3306)/db_catalog?charset=utf8&parseTime=True&loc=Local"
