@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
