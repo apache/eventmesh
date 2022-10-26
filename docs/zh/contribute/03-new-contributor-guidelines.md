@@ -58,7 +58,7 @@ git rebase upstream_master
 
 fork库: 从 https://github.com/apache/eventmesh fork到你自己的个人仓库，成为一个fork库。
 
-因此，将原EventMesh仓库分叉到你自己的仓库中。
+因此，首先需要将原EventMesh仓库fork到你自己的仓库中。
 
 ## 开发分支
 
