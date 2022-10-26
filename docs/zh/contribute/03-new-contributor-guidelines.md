@@ -27,7 +27,13 @@
 
 以下是贡献者提交代码的工作流程:
 
-1. 将源仓库的项目eventmesh fork到自己仓库当中
+1. 将源仓库的项目eventmesh fork到自己仓库当中  
+例：  
+   a.点击eventmesh右上角的fork     
+   ![contributor01](../../images/contributor01.png)  
+   b.就会出现下图，点击Create fork即可将eventmesh fork到自己的仓库
+   ![contributor02](../../images/contributor02.png)
+   
 
 2. 克隆fork到本地存储库，就是将自己仓库的eventmesh克隆到本地
 ```git
@@ -46,7 +52,12 @@ git fetch upstream master:upstream_master
 git rebase upstream_master
 ```
 
-5. 提交你的修改（确保你的提交信息简洁明了）
+5. 提交你的修改（确保你的提交信息简洁明了）  
+例：用IDEA提交代码为例，如果你在IDEA本地修改完毕  
+   a.点击Commit，点击图片中两个地方中任意一个即可
+   ![contributor03](../../images/contributor03.png)  
+   b.
+   
 
 6. 推送你的提交到你的fork仓库，将修改先推送到自己的仓库
 
