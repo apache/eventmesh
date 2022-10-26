@@ -71,6 +71,10 @@ public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
 
     @Override
     public Optional<CloudEvent> handle(CloudEvent event) {
+        if (event.getData() == null) {
+            log.warn("receive sync msg's data is null.");
+            return Optional.empty();
+        }
         String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
         log.info("receive sync rr msg: {}|{}", event, content);
         return Optional.of(event);

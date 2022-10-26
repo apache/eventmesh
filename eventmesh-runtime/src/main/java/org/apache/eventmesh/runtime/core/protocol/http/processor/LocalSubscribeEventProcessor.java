@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -233,20 +234,23 @@ public class LocalSubscribeEventProcessor extends AbstractEventProcessor impleme
                         newTopicConf.setIdcUrls(idcUrls);
                         map.put(subTopic.getTopic(), newTopicConf);
                     }
-                    for (String key : map.keySet()) {
-                        if (StringUtils.equals(subTopic.getTopic(), key)) {
-                            ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
-                            latestTopicConf.setConsumerGroup(consumerGroup);
-                            latestTopicConf.setTopic(subTopic.getTopic());
-                            latestTopicConf.setSubscriptionItem(subTopic);
-                            latestTopicConf.setUrls(new HashSet<>(Arrays.asList(url)));
-
-                            ConsumerGroupTopicConf currentTopicConf = map.get(key);
-                            latestTopicConf.getUrls().addAll(currentTopicConf.getUrls());
-                            latestTopicConf.setIdcUrls(idcUrls);
-
-                            map.put(key, latestTopicConf);
+                    Set<Map.Entry<String, ConsumerGroupTopicConf>> entrySet = map.entrySet();
+                    for (Map.Entry<String, ConsumerGroupTopicConf> set : entrySet) {
+                        if (!StringUtils.equals(subTopic.getTopic(), set.getKey())) {
+                            continue;
                         }
+
+                        ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
+                        latestTopicConf.setConsumerGroup(consumerGroup);
+                        latestTopicConf.setTopic(subTopic.getTopic());
+                        latestTopicConf.setSubscriptionItem(subTopic);
+                        latestTopicConf.setUrls(new HashSet<>(Arrays.asList(url)));
+
+                        ConsumerGroupTopicConf currentTopicConf = set.getValue();
+                        latestTopicConf.getUrls().addAll(currentTopicConf.getUrls());
+                        latestTopicConf.setIdcUrls(idcUrls);
+
+                        map.put(set.getKey(), latestTopicConf);
                     }
                 }
                 eventMeshHTTPServer.localConsumerGroupMapping.put(consumerGroup, consumerGroupConf);

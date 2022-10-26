@@ -17,8 +17,8 @@ package schedule
 
 import (
 	"context"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
@@ -41,15 +41,15 @@ type inlineScheduler struct {
 	workflowDAL dal.WorkflowDAL
 }
 
-func NewInlineScheduler() (Scheduler, error) {
+func NewInlineScheduler() Scheduler {
 	var s inlineScheduler
 	s.workflowDAL = dal.NewWorkflowDAL()
-	return &s, nil
+	return &s
 }
 
 func (s *inlineScheduler) Run() {
 	go func() {
-		ticker := time.NewTicker(time.Millisecond * time.Duration(config.GlobalConfig().Flow.Schedule.Interval))
+		ticker := time.NewTicker(time.Millisecond * time.Duration(config.Get().Flow.Scheduler.Interval))
 		defer func() {
 			if err := recover(); err != nil {
 				log.Get(constants.LogSchedule).Errorf("schedule run error=%+v", err)

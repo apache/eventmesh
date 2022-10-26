@@ -33,7 +33,7 @@ import io.cloudevents.CloudEvent;
 
 public abstract class AbstractProducer implements Producer {
 
-    static final Logger logger = LoggerFactory.getLogger(AbstractProducer.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractProducer.class);
     protected final AtomicBoolean started = new AtomicBoolean(false);
     final Properties properties;
     AsyncHttpClient asyncHttpClient;

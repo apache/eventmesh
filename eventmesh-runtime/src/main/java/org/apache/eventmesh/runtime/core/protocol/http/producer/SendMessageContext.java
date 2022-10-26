@@ -37,7 +37,7 @@ import io.cloudevents.CloudEvent;
 
 public class SendMessageContext extends RetryContext {
 
-    public static Logger logger = LoggerFactory.getLogger("retry");
+    public static final Logger logger = LoggerFactory.getLogger("retry");
 
     private CloudEvent event;
 

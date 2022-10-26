@@ -22,8 +22,7 @@ type EventMeshHttpClientConfig struct {
 	//	If you use Random strategy, the format like: 127.0.0.1:10105;127.0.0.2:10105
 	//	If you use weighted round robin or weighted random strategy, the format like: 127.0.0.1:10105:1;127.0.0.2:10105:2
 	liteEventMeshAddr string
-	// TODO support load balance
-	//loadBalanceType string
+	loadBalanceType   string
 	consumeThreadCore int
 	consumeThreadMax  int
 	env               string
@@ -142,8 +141,17 @@ func (e *EventMeshHttpClientConfig) SetUseTls(useTls bool) {
 	e.useTls = useTls
 }
 
+func (e *EventMeshHttpClientConfig) SetLoadBalanceType(loadBalanceType string) {
+	e.loadBalanceType = loadBalanceType
+}
+
+func (e *EventMeshHttpClientConfig) GetLoadBalanceType() string {
+	return e.loadBalanceType
+}
+
 var DefaultEventMeshHttpClientConfig = EventMeshHttpClientConfig{
 	liteEventMeshAddr: "127.0.0.1:10105",
+	loadBalanceType:   "random",
 	consumeThreadCore: 2,
 	consumeThreadMax:  5,
 	env:               "",

@@ -175,9 +175,9 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-            String user = event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME).toString();
-            String pass = event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD).toString();
-            String subsystem = event.getExtension(ProtocolKey.ClientInstanceKey.SYS).toString();
+            String user = event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME).toString();
+            String pass = event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD).toString();
+            String subsystem = event.getExtension(ProtocolKey.ClientInstanceKey.SYS) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.SYS).toString();
             try {
                 Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestCode);
             } catch (Exception e) {
@@ -223,8 +223,8 @@ public class BatchSendMessageV2Processor implements HttpRequestProcessor {
 
         String ttl = String.valueOf(EventMeshConstants.DEFAULT_MSG_TTL_MILLS);
         // todo: use hashmap to avoid copy
-        if (StringUtils.isBlank(event.getExtension(SendMessageRequestBody.TTL).toString())
-                && !StringUtils.isNumeric(event.getExtension(SendMessageRequestBody.TTL).toString())) {
+        if (StringUtils.isBlank(event.getExtension(SendMessageRequestBody.TTL) == null ? "" : event.getExtension(SendMessageRequestBody.TTL).toString())
+                && !StringUtils.isNumeric(event.getExtension(SendMessageRequestBody.TTL) == null ? "" : event.getExtension(SendMessageRequestBody.TTL).toString())) {
             event = CloudEventBuilder.from(event).withExtension(SendMessageRequestBody.TTL, ttl)
                     .build();
         }
