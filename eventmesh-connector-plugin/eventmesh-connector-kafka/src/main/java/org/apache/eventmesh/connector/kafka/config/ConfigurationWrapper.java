@@ -34,9 +34,13 @@ import java.util.Properties;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Slf4j
 @UtilityClass
 public class ConfigurationWrapper {
+    public static final Logger logger = LoggerFactory.getLogger(ConfigurationWrapper.class);
 
     private static final Properties properties = new Properties();
 
@@ -59,6 +63,7 @@ public class ConfigurationWrapper {
                 properties.load(resourceAsStream);
             }
         } catch (IOException e) {
+            logger.error("Error while loading from classpath:", e);
             throw new RuntimeException(String.format("Load %s.properties file from classpath error", EventMeshConstants.EVENTMESH_CONF_FILE));
         }
         try {
@@ -71,6 +76,7 @@ public class ConfigurationWrapper {
                 }
             }
         } catch (IOException e) {
+            logger.error("Error while loading from conf home: ", e);
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", EventMeshConstants.EVENTMESH_CONF_FILE));
         }
     }
