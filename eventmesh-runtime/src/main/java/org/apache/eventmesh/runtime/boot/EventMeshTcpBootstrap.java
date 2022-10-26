@@ -48,24 +48,21 @@ public class EventMeshTcpBootstrap implements EventMeshBootstrap {
         // server init
         if (eventMeshTcpConfiguration != null) {
             eventMeshTcpServer = new EventMeshTCPServer(eventMeshServer, eventMeshTcpConfiguration, registry);
-            if (eventMeshTcpConfiguration.eventMeshTcpServerEnabled) {
-                eventMeshTcpServer.init();
-            }
+            eventMeshTcpServer.init();
         }
     }
 
     @Override
     public void start() throws Exception {
         // server start
-        if (eventMeshTcpConfiguration != null && eventMeshTcpConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTcpConfiguration != null) {
             eventMeshTcpServer.start();
         }
     }
 
     @Override
     public void shutdown() throws Exception {
-        if (eventMeshTcpConfiguration != null
-                && eventMeshTcpConfiguration.eventMeshTcpServerEnabled) {
+        if (eventMeshTcpConfiguration != null) {
             eventMeshTcpServer.shutdown();
         }
     }
