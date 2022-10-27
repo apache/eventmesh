@@ -45,6 +45,13 @@ var (
 	ErrHeartbeatNoConsumerGroup = fmt.Errorf("hearbeat SUB but consumer group is empty")
 	ErrHeartbeatNoProducerGroup = fmt.Errorf("hearbeat PUB but producer group is empty")
 	ErrHeartbeatNoTopic         = fmt.Errorf("hearbeat but topic is empty")
+
+	ErrBatchMsgNoTopic         = fmt.Errorf("batch message no topic provided")
+	ErrBatchMsgNoProducerGroup = fmt.Errorf("batch message no producer group provided")
+	ErrBatchMsgNoContent       = fmt.Errorf("batch message no content provided")
+	ErrBatchMsgNoSeqNUM        = fmt.Errorf("batch message no seq num provided")
+	ErrBatchMsgNoTTL           = fmt.Errorf("batch message no ttl provided")
+	ErrBatchMsgNoUID           = fmt.Errorf("batch message no uid provided")
 )
 
 func ValidateHeader(hdr *pb.RequestHeader) error {
@@ -121,5 +128,25 @@ func ValidateHeartBeat(hb *pb.Heartbeat) error {
 }
 
 func ValidateBatchMessage(msg *pb.BatchMessage) error {
+	if msg.Topic == "" {
+		return ErrBatchMsgNoTopic
+	}
+	if msg.ProducerGroup == "" {
+		return ErrBatchMsgNoProducerGroup
+	}
+	for _, item := range msg.MessageItem {
+		if item.Content == "" {
+			return ErrBatchMsgNoContent
+		}
+		if item.SeqNum == "" {
+			return ErrBatchMsgNoSeqNUM
+		}
+		if item.Ttl == "" {
+			return ErrBatchMsgNoTTL
+		}
+		if item.UniqueId == "" {
+			return ErrBatchMsgNoUID
+		}
+	}
 	return nil
 }

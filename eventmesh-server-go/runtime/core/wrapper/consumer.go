@@ -38,8 +38,8 @@ func NewConsumer() (*Consumer, error) {
 	if !ok {
 		return nil, ErrNoConnectorName
 	}
-	factory := plugin.Get(connector.ConsumerPluginType, connectorPluginName.Value).(connector.ConsumerFactory)
-	consu, err := factory.Get()
+	factory := plugin.Get(connector.PluginType, connectorPluginName.Value).(connector.Factory)
+	consu, err := factory.GetConsumer()
 	if err != nil {
 		return nil, err
 	}

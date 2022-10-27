@@ -34,7 +34,7 @@ type Config struct {
 	Name   string `yaml:"name" toml:"name"`
 	Server struct {
 		*HTTPOption `yaml:"http" toml:"http"`
-		*GRPCOption `yaml:"http" toml:"http"`
+		*GRPCOption `yaml:"grpc" toml:"grpc"`
 		*TCPOption  `yaml:"tcp" toml:"tcp"`
 	}
 	Plugins plugin.Config `yaml:"plugins,omitempty"`
