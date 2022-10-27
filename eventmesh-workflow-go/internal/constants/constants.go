@@ -63,6 +63,6 @@ const (
 
 const (
 	EventTypePublish                 = "publish"
-	EventPropsWorkflowInstanceID     = "workflow_instance_id"
-	EventPropsWorkflowTaskInstanceID = "workflow_task_instance_id"
+	EventPropsWorkflowInstanceID     = "workflowinstanceid"
+	EventPropsWorkflowTaskInstanceID = "workflowtaskinstanceid"
 )
