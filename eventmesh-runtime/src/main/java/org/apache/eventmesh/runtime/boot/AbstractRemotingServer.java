@@ -61,8 +61,7 @@ public abstract class AbstractRemotingServer {
 
             @Override
             public Thread newThread(Runnable r) {
-                Thread t = new Thread(r, threadPrefix + "-io-" + count.incrementAndGet());
-                return t;
+                return new Thread(r, threadPrefix + "-io-" + count.incrementAndGet());
             }
         });
         return ioGroup;
