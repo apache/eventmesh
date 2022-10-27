@@ -75,7 +75,9 @@ public class WebHookProtocolAdaptor implements ProtocolAdaptor<WebhookProtocolTr
         sysHeaderMap.put("cloudEventSource", cloudEvent.getSource().toString());
         sysHeaderMap.put("type", cloudEvent.getType());
         httpEventWrapper.setSysHeaderMap(sysHeaderMap);
-        httpEventWrapper.setBody(cloudEvent.getData().toBytes());
+        if (cloudEvent.getData() != null) {
+            httpEventWrapper.setBody(cloudEvent.getData().toBytes());
+        }
         return httpEventWrapper;
     }
 
