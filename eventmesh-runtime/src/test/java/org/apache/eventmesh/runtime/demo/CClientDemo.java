@@ -35,7 +35,7 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class CClientDemo {
 
-    public static Logger logger = LoggerFactory.getLogger(CClientDemo.class);
+    public static final Logger logger = LoggerFactory.getLogger(CClientDemo.class);
 
     private static final String SYNC_TOPIC = "TEST-TOPIC-TCP-SYNC";
     private static final String ASYNC_TOPIC = "TEST-TOPIC-TCP-ASYNC";
