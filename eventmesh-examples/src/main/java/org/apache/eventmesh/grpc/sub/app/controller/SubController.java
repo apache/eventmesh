@@ -54,7 +54,6 @@ public class SubController {
         String protocolType = request.getHeader(ProtocolKey.PROTOCOL_TYPE);
         String content = request.getParameter("content");
         log.info("=======receive message======= {}", content);
-        Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
         if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
             String contentType = request.getHeader(ProtocolKey.CONTENT_TYPE);
 

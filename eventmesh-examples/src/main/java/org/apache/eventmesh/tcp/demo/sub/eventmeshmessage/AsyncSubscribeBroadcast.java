@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static AsyncSubscribeBroadcast handler = new AsyncSubscribeBroadcast();
+    public static final AsyncSubscribeBroadcast handler = new AsyncSubscribeBroadcast();
 
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);

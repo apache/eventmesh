@@ -22,14 +22,11 @@ import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
 public abstract class AbstractProducer {
 
-    static final Logger logger = LoggerFactory.getLogger(AbstractProducer.class);
     protected final AtomicBoolean started = new AtomicBoolean(false);
     final Properties properties;
 
