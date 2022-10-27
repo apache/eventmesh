@@ -42,4 +42,13 @@ public class ExampleConstants {
     public static final String DEFAULT_EVENTMESH_TEST_PRODUCER_GROUP = "EventMeshTest-producerGroup";
     public static final String DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP = "EventMeshTest-consumerGroup";
 
+    public static final String SERVER_NAME = "server.name";
+
+    public static final String EVENTMESH_CATALOG_NAME = "eventmesh.catalog.name";
+
+    public static final String EVENTMESH_WORKFLOW_NAME = "eventmesh.workflow.name";
+
+    public static final String EVENTMESH_SELECTOR_NACOS_ADDRESS = "eventmesh.selector.nacos.address";
+
+    public static final String EVENTMESH_SELECTOR_TYPE = "eventmesh.selector.type";
 }
