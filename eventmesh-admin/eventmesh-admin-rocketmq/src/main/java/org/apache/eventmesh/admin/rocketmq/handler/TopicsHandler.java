@@ -76,18 +76,26 @@ public class TopicsHandler implements HttpHandler {
             }
 
             //TBD: A new rocketmq service will be implemented for creating topics
-            httpExchange.sendResponseHeaders(500, 0);
-            result = TOPIC_ERROR;
-            logger.error(result);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-
+            TopicResponse topicResponse = null;
+            if (topicResponse != null) {
+                logger.info("create a new topic: {}", topic);
+                httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
+                httpExchange.sendResponseHeaders(200, 0);
+                result = JsonUtils.toJson(topicResponse);
+                logger.info(result);
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            } else {
+                httpExchange.sendResponseHeaders(500, 0);
+                result = TOPIC_ERROR;
+                logger.error(result);
+                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+            }
         } catch (Exception e) {
             httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
             httpExchange.sendResponseHeaders(500, 0);
             result = TOPIC_ERROR;
             logger.error(result, e);
             eout.write(result.getBytes(Constants.DEFAULT_CHARSET));
-
         }
     }
 
