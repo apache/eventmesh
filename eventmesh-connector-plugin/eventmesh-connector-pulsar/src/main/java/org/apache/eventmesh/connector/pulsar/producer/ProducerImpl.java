@@ -18,62 +18,32 @@
 package org.apache.eventmesh.connector.pulsar.producer;
 
 import org.apache.eventmesh.api.SendCallback;
-import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
-import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.connector.pulsar.client.PulsarClientWrapper;
 import org.apache.eventmesh.connector.pulsar.config.ClientConfiguration;
-import org.apache.eventmesh.connector.pulsar.utils.CloudEventUtils;
-
-import org.apache.pulsar.client.api.ClientBuilder;
-import org.apache.pulsar.client.api.Producer;
-import org.apache.pulsar.client.api.PulsarClient;
 
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.CloudEvent;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
 
-import com.google.common.base.Preconditions;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ProducerImpl extends AbstractProducer {
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
-    private final ClientConfiguration clientConfiguration;
-    private PulsarClient pulsarClient;
+    private ClientConfiguration config;
+    private PulsarClientWrapper pulsarClient;
 
     public ProducerImpl(final Properties properties) {
         super(properties);
-        this.clientConfiguration = ClientConfiguration.getInstance();
+        this.config = new ClientConfiguration();
+        this.config.init();
     }
 
     public void publish(CloudEvent cloudEvent, SendCallback sendCallback) {
-
-        try {
-            Producer<byte[]> producer = this.pulsarClient.newProducer()
-                    .topic(cloudEvent.getSubject())
-                    .batchingMaxPublishDelay(10, TimeUnit.MILLISECONDS)
-                    .sendTimeout(10, TimeUnit.SECONDS)
-                    .blockIfQueueFull(true)
-                    .create();
-
-            byte[] serializedCloudEvent = EventFormatProvider
-                    .getInstance()
-                    .resolveFormat(JsonFormat.CONTENT_TYPE)
-                    .serialize(cloudEvent);
-
-            producer.sendAsync(serializedCloudEvent).thenAccept(messageId -> {
-                sendCallback.onSuccess(CloudEventUtils.convertSendResult(cloudEvent));
-            });
-        } catch (Exception e) {
-            ConnectorRuntimeException onsEx = this.checkProducerException(cloudEvent, e);
-            OnExceptionContext context = new OnExceptionContext();
-            context.setTopic(cloudEvent.getSubject());
-            context.setException(onsEx);
-            sendCallback.onException(context);
-        }
+        this.pulsarClient.publish(cloudEvent, sendCallback);
     }
 
     public void init(Properties properties) {
@@ -81,39 +51,25 @@ public class ProducerImpl extends AbstractProducer {
     }
 
     public void start() {
-        try {
-            this.started.compareAndSet(false, true);
-            ClientBuilder clientBuilder = PulsarClient.builder()
-                .serviceUrl(clientConfiguration.getServiceAddr());
-
-            if (clientConfiguration.getAuthPlugin() != null) {
-                Preconditions.checkNotNull(clientConfiguration.getAuthParams(),
-                    "Authentication Enabled in pulsar cluster, Please set authParams in pulsar-client.properties");
-                clientBuilder.authentication(
-                    clientConfiguration.getAuthPlugin(),
-                    clientConfiguration.getAuthParams()
-                );
-            }
-
-            this.pulsarClient = clientBuilder.build();
-        } catch (Exception ignored) {
-            // ignored
-        }
+        this.started.compareAndSet(false, true);
+        this.pulsarClient = new PulsarClientWrapper(config);
     }
 
     public void shutdown() {
         try {
             this.started.compareAndSet(true, false);
-            this.pulsarClient.close();
+            this.pulsarClient.shutdown();
         } catch (Exception ignored) {
             // ignored
         }
     }
 
+    @Override
     public boolean isStarted() {
         return this.started.get();
     }
 
+    @Override
     public boolean isClosed() {
         return !this.isStarted();
     }
