@@ -61,7 +61,6 @@ public class TopicsHandler implements HttpHandler {
 
     public void createTopicHandler(HttpExchange httpExchange) throws IOException {
         String result;
-        OutputStream eout = null;
         try (OutputStream out = httpExchange.getResponseBody()) {
             String params = NetUtils.parsePostBody(httpExchange);
             TopicCreateRequest topicCreateRequest =
@@ -95,7 +94,6 @@ public class TopicsHandler implements HttpHandler {
             httpExchange.sendResponseHeaders(500, 0);
             result = TOPIC_ERROR;
             logger.error(result, e);
-            eout.write(result.getBytes(Constants.DEFAULT_CHARSET));
         }
     }
 
