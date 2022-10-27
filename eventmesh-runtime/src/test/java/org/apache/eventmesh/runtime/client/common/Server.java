@@ -17,8 +17,9 @@
 
 package org.apache.eventmesh.runtime.client.common;
 
+import org.apache.eventmesh.common.config.ConfigurationWrapper;
 import org.apache.eventmesh.runtime.boot.EventMeshServer;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
+import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 public class Server {
 
@@ -32,9 +33,10 @@ public class Server {
     }
 
     public void startAccessServer() throws Exception {
-        EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(null);
-        eventMeshHttpConfiguration.init();
-        server = new EventMeshServer(eventMeshHttpConfiguration, null, null);
+        ConfigurationWrapper configurationWrapper =
+                new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
+                        EventMeshConstants.EVENTMESH_CONF_FILE, false);
+        server = new EventMeshServer(configurationWrapper);
         server.init();
         server.start();
     }
