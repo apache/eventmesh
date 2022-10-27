@@ -41,6 +41,12 @@ import lombok.Setter;
 
 public class WebHookController {
 
+    private static final String WEBHOOK_PRODUCER_CONNECTOR_PROP = "eventMesh.webHook.producer.connector";
+
+    private static final String PROTOCOL_ADAPTOR = "webhook";
+
+    private static final String CONTENT_TYPE = "content-type";
+
     /**
      * protocol pool
      */
@@ -60,9 +66,9 @@ public class WebHookController {
 
     public void init() throws Exception {
         this.webHookMQProducer = new WebHookMQProducer(configurationWrapper.getProperties(),
-            configurationWrapper.getProp("eventMesh.webHook.producer.connector"));
+            configurationWrapper.getProp(WEBHOOK_PRODUCER_CONNECTOR_PROP));
         this.hookConfigOperationManage = new HookConfigOperationManage(configurationWrapper);
-        this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor("webhook");
+        this.protocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(PROTOCOL_ADAPTOR);
     }
 
     /**
@@ -83,9 +89,9 @@ public class WebHookController {
             throw new Exception("No matching webhookConfig.");
         }
 
-        if (!Objects.equals(webHookConfig.getContentType(), header.get("content-type"))) {
+        if (!Objects.equals(webHookConfig.getContentType(), header.get(CONTENT_TYPE))) {
             throw new Exception(
-                "http request header content-type value is mismatch. current value " + header.get("content-type"));
+                "http request header content-type value is mismatch. current value " + header.get(CONTENT_TYPE));
         }
 
         // 2. get ManufacturerProtocol and execute
