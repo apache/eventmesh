@@ -61,8 +61,8 @@ public class TopicsHandler implements HttpHandler {
 
     public void createTopicHandler(HttpExchange httpExchange) throws IOException {
         String result;
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        OutputStream eout = null;
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String params = NetUtils.parsePostBody(httpExchange);
             TopicCreateRequest topicCreateRequest =
                 JsonUtils.toObject(params, TopicCreateRequest.class);
@@ -76,34 +76,18 @@ public class TopicsHandler implements HttpHandler {
             }
 
             //TBD: A new rocketmq service will be implemented for creating topics
-            TopicResponse topicResponse = null;
-            if (topicResponse != null) {
-                logger.info("create a new topic: {}", topic);
-                httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
-                httpExchange.sendResponseHeaders(200, 0);
-                result = JsonUtils.toJson(topicResponse);
-                logger.info(result);
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-            } else {
-                httpExchange.sendResponseHeaders(500, 0);
-                result = TOPIC_ERROR;
-                logger.error(result);
-                out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-            }
+            httpExchange.sendResponseHeaders(500, 0);
+            result = TOPIC_ERROR;
+            logger.error(result);
+            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
+
         } catch (Exception e) {
             httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
             httpExchange.sendResponseHeaders(500, 0);
             result = TOPIC_ERROR;
             logger.error(result, e);
-            out.write(result.getBytes(Constants.DEFAULT_CHARSET));
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
-            }
+            eout.write(result.getBytes(Constants.DEFAULT_CHARSET));
+
         }
     }
 
