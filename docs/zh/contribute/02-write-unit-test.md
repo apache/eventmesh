@@ -1,40 +1,41 @@
-# Unit Test Requirement
+# 单元测试要求
 
-- Each unit test case should use assertions instead of `System.out` output or `if` statement
-- Each unit test case shouldn't call other cases or depend on the order of execution.
-- Each unit test case should be repeatable and not depend on the external environment because the test might be executed in the continuous integration.
-- The scope of each unit test should be small enough to help locate the problem at the method level.
+- 每个单元测试都应该使用断言`assertions` 而不是 `System.out` 打印或者`if`语句
+- 每个单元测试都不应该调用其他用例，或者依赖于执行顺序
+- 每个单元测试都应该是可以循环执行的，并且单元测试不可以依赖外部环境，因为单元测试可能在持续集成环境中运行。
+- 每个单元测试的测试范围应该足够小且精准，以便于定位方法级别的问题。
 
-## Location and Naming Rules
+## 路径和命名规则
 
-- The unit test should be placed in `src/test/java`.
-- The unit test configuration file should be placed in `src/test/resources`. For example:
-  - Class to be tested: `src/main/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBody.java`
-  - Unit test: `src/test/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBodyTest.java`
-  - Unit test configuration: `src/test/resources/configuration.properties`
-- The package name of the unit test class should be identical to the class to be tested.
-- The name of the unit test class should be `{class or interface to be tested}Test`. For example:
-  - Class to be tested: `EventMeshUtil`
-  - Unit test class: `EventMeshUtilTest`
-- The name of each test case should be `test{method name}`. For example:
-  - Method to be tested: `addProp(String key, String val)`
-  - Unit test case: `testAddProp`
+- 单元测试应该写在`src/test/java`目录下。
+- 单元测试的配置文件应该放在`src/test/resources`目录下，如下示例：
+  - 将被测试的类：`src/main/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBody.java`
+  - 单元测试类：`src/test/java/org/apache/eventmesh/common/protocol/http/body/BaseResponseBodyTest.java`
+  - 单元测试配置文件：`src/test/resources/configuration.properties`
+- 单元测试类的包名应该和被测试的类的包名相同
+-  单元测试的类的名字应该是`{被测试的类名+}Test`。 比如：
+   - 将被测试的类是：`EventMeshUtil`
+   - 单元测试类的类名就是： `EventMeshUtilTest`
+- 每个单元测试的名字必须是 `test{+方法名}`，比如：
+  - 将被测试的方法：`addProp(String key, String val)`
+  - 单元测试的名字就是：`testAddProp`
 
-## Assertion Usage
+## 断言的用法
 
-### Common Assertion
+
+### 常见的断言
 
 | Methods | Instructions |
 | :-------------- | :-------------- |
-| `assertEquals`    | Determines whether two objects or primitive types are equal |
-| `assertNotEquals` | Determines whether two objects or primitive types are not equal |
-| `assertTrue`      | Determines whether the given Boolean value is `true` |
-| `assertFalse`    | Determines whether the given Boolean value is `false` |
-| `assertNull`      | Determines whether the given object reference is `null` |
-| `assertNotNull`   | Determines whether the given object reference is not `null` |
-| `assertAll`       | When multiple decision logic are processed together if only one error is reported, the whole test will fail |
+| `assertEquals`    | 确定两个对象或原语类型是否相等 |
+| `assertNotEquals` | 确定两个对象或原语类型是否不相等 |
+| `assertTrue`      | 确定给定的布尔值是否是 `true` |
+| `assertFalse`    | 确定给定的布尔值是否是 `false` |
+| `assertNull`      | 确定给定的对象是否是 `null` |
+| `assertNotNull`   | 确定给定的对象是否不是 `null` |
+| `assertAll`       | 如果同时处理多个逻辑，如果只有一个逻辑断言失败，整个测试将会失败|
 
-### Example
+### 示例
 
 #### `assertEquals()`
 
