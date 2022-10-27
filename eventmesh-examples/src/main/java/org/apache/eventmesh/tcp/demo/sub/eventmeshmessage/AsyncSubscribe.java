@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static final AsyncSubscribe handler = new AsyncSubscribe()
+    public static final AsyncSubscribe handler = new AsyncSubscribe();
 
     private static EventMeshTCPClient<EventMeshMessage> client;
 
