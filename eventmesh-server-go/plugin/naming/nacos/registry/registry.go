@@ -140,7 +140,7 @@ func (r *Registry) register(conf *PluginConfig) error {
 	if err != nil {
 		return err
 	}
-	serverName := config.GlobalConfig().Server.Name
+	serverName := conf.ServiceName
 	cfg := &Config{
 		ServiceName: serverName,
 		Address:     fmt.Sprintf("%s:%d", ip, config.GlobalConfig().Server.Port),
