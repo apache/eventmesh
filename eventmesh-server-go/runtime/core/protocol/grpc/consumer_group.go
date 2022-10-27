@@ -25,7 +25,7 @@ type ConsumerGroupConfig struct {
 	ConsumerGroup string
 
 	// key is topic, value is  ConsumerGroupTopicConfig
-	ConsumerGroupTopicConfigs sync.Map[ConsumerGroupTopicConfig]
+	ConsumerGroupTopicConfigs *sync.Map
 }
 
 type GRPCType string
