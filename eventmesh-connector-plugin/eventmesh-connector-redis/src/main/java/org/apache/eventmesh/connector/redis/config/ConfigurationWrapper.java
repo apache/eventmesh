@@ -60,7 +60,7 @@ public class ConfigurationWrapper {
                 properties.load(resourceAsStream);
             }
         } catch (IOException e) {
-            log.error(String.format("Load %s file from classpath error", CONF_FILE),e);
+            log.error(String.format("Load %s file from classpath error", CONF_FILE), e);
             throw new RuntimeException(String.format("Load %s file from classpath error", CONF_FILE));
         }
         try {
@@ -69,7 +69,7 @@ public class ConfigurationWrapper {
                 properties.load(new BufferedReader(new FileReader(configPath)));
             }
         } catch (IOException e) {
-            log.error(String.format("Cannot load %s file from conf", CONF_FILE),e);
+            log.error(String.format("Cannot load %s file from conf", CONF_FILE), e);
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", CONF_FILE));
         }
     }
