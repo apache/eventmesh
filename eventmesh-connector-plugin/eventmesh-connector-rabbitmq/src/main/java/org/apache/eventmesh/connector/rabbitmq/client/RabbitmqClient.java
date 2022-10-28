@@ -55,9 +55,8 @@ public class RabbitmqClient {
         ConnectionFactory factory = rabbitmqConnectionFactory.createConnectionFactory();
         factory.setHost(host.trim());
         factory.setPort(port);
-        virtualHost = virtualHost.trim().startsWith("/") ? virtualHost : "/" + virtualHost;
         if (StringUtils.isNotEmpty(virtualHost)) {
-            factory.setVirtualHost(virtualHost);
+            factory.setVirtualHost(virtualHost.trim());
         }
         factory.setUsername(username);
         factory.setPassword(passwd.trim());
@@ -99,14 +98,6 @@ public class RabbitmqClient {
             channel.queueBind(queueName, exchangeName, routingKey);
         } catch (Exception ex) {
             logger.error("[RabbitmqClient] binding happen exception.", ex);
-        } finally {
-            try {
-                if (channel != null && channel.isOpen()) {
-                    channel.close();
-                }
-            } catch (Exception ex) {
-                logger.error("[RabbitmqClient] binding channel close happen exception.", ex);
-            }
         }
     }
 
@@ -123,14 +114,6 @@ public class RabbitmqClient {
             channel.queueUnbind(queueName, exchangeName, routingKey);
         } catch (Exception ex) {
             logger.error("[RabbitmqClient] unbinding happen exception.", ex);
-        } finally {
-            try {
-                if (channel != null && channel.isOpen()) {
-                    channel.close();
-                }
-            } catch (Exception ex) {
-                logger.error("[RabbitmqClient] unbinding channel close happen exception.", ex);
-            }
         }
     }
 
