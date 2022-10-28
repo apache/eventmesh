@@ -37,6 +37,16 @@ import io.cloudevents.core.builder.CloudEventBuilder;
 public class RabbitmqProducerTest extends RabbitmqServer {
 
     @Test
+    public void isStarted() {
+        Assert.assertTrue(rabbitmqProducer.isStarted());
+    }
+
+    @Test
+    public void isClosed() {
+        Assert.assertFalse(rabbitmqProducer.isClosed());
+    }
+
+    @Test
     public void publish() throws Exception {
         final int expectedCount = 5;
         final CountDownLatch downLatch = new CountDownLatch(expectedCount);
