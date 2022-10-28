@@ -75,23 +75,17 @@ func TestEventMeshHttpConsumer_Unsubscribe(t *testing.T) {
 	eventMeshHttpConsumer := NewEventMeshHttpConsumer(eventMeshClientConfig)
 
 	subscribeUrl := "http://mock-url"
-	topicList := []protocol.SubscriptionItem{
+	subscribeList := []protocol.SubscriptionItem{
 		{
 			Topic: "mock-topic",
 			Mode:  protocol.DefaultSubscriptionMode.CLUSTERING,
 			Type:  protocol.DefaultSubscriptionType.ASYNC,
 		},
 	}
-	eventMeshHttpConsumer.Subscribe(topicList, subscribeUrl)
+	eventMeshHttpConsumer.Subscribe(subscribeList, subscribeUrl)
 	assert.Equal(t, 1, len(eventMeshHttpConsumer.subscriptions))
 
-	topicList = []protocol.SubscriptionItem{
-		{
-			Topic: "mock-topic",
-			Mode:  protocol.DefaultSubscriptionMode.CLUSTERING,
-			Type:  protocol.DefaultSubscriptionType.ASYNC,
-		},
-	}
+	var topicList = []string{"mock-topic"}
 	eventMeshHttpConsumer.Unsubscribe(topicList, subscribeUrl)
 	assert.Equal(t, 0, len(eventMeshHttpConsumer.subscriptions))
 }
