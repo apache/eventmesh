@@ -311,7 +311,6 @@ public class ConsumerManager {
                     return;
                 }
                 manager.getConsumerGroupConfig().getConsumerGroupTopicConf().remove(event.topic);
-                return;
             }
         } catch (Exception ex) {
             logger.error("onChange event:{} err", event, ex);
