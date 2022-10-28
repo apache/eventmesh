@@ -256,7 +256,7 @@ public class ConsumerManager {
     /**
      * get consumer
      */
-    public ConsumerGroupManager getConsumer(String consumerGroup) throws Exception {
+    public ConsumerGroupManager getConsumer(String consumerGroup) {
         ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
         return cgm;
     }
@@ -311,7 +311,6 @@ public class ConsumerManager {
                     return;
                 }
                 manager.getConsumerGroupConfig().getConsumerGroupTopicConf().remove(event.topic);
-                return;
             }
         } catch (Exception ex) {
             logger.error("onChange event:{} err", event, ex);
