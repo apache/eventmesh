@@ -17,21 +17,19 @@
 
 package org.apache.eventmesh.client.http.demo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.producer.EventMeshHttpProducer;
 import org.apache.eventmesh.common.EventMeshMessage;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.common.utils.ThreadUtils;
-
-import org.apache.commons.lang3.StringUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SyncRequestInstance {
 
-    public static Logger logger = LoggerFactory.getLogger(SyncRequestInstance.class);
+    public static final Logger logger = LoggerFactory.getLogger(SyncRequestInstance.class);
 
     public static void main(String[] args) throws Exception {
 
