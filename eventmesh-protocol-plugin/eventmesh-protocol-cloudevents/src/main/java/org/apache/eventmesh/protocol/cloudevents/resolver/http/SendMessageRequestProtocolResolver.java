@@ -62,6 +62,10 @@ public class SendMessageRequestProtocolResolver {
 
             CloudEvent event = null;
             if (StringUtils.equals(SpecVersion.V1.toString(), protocolVersion)) {
+                if(EventFormatProvider.getInstance() == null ||
+                        EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE) == null){
+                    return null;
+                }
                 event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
                         .deserialize(content.getBytes(StandardCharsets.UTF_8));
                 event = CloudEventBuilder.v1(event)
@@ -81,6 +85,10 @@ public class SendMessageRequestProtocolResolver {
                         .withExtension(SendMessageRequestBody.PRODUCERGROUP, producerGroup)
                         .build();
             } else if (StringUtils.equals(SpecVersion.V03.toString(), protocolVersion)) {
+                if(EventFormatProvider.getInstance() == null ||
+                        EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE) == null){
+                    return null;
+                }
                 event = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE)
                         .deserialize(content.getBytes(StandardCharsets.UTF_8));
                 event = CloudEventBuilder.v03(event)
