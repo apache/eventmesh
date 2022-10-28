@@ -18,13 +18,12 @@
 package org.apache.eventmesh.connector.rocketmq.config;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.PropertiesUtils;
 import org.apache.eventmesh.connector.rocketmq.common.EventMeshConstants;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -61,9 +60,7 @@ public class ConfigurationWrapper {
         }
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + EventMeshConstants.EVENTMESH_CONF_FILE;
-            if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
-            }
+            PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath);
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", EventMeshConstants.EVENTMESH_CONF_FILE));
         }

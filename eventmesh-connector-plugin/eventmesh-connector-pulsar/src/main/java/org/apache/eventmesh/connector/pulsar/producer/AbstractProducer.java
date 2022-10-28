@@ -40,9 +40,9 @@ public abstract class AbstractProducer {
 
     ConnectorRuntimeException checkProducerException(CloudEvent cloudEvent, Throwable e) {
         if (cloudEvent.getData() == null) {
-            return new ConnectorRuntimeException(String.format("CloudEvent message data does not exist.", e));
+            return new ConnectorRuntimeException(String.format("CloudEvent message data does not exist, %s", e.getMessage()));
         }
-        return new ConnectorRuntimeException(String.format("Unknown connector runtime exception.", e));
+        return new ConnectorRuntimeException(String.format("Unknown connector runtime exception, %s", e.getMessage()));
     }
 
     public boolean isStarted() {

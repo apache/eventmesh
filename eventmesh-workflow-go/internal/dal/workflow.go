@@ -38,6 +38,7 @@ type WorkflowDAL interface {
 	Insert(ctx context.Context, record *model.Workflow) error
 	InsertInstance(ctx context.Context, record *model.WorkflowInstance) error
 	InsertTaskInstance(ctx context.Context, record *model.WorkflowTaskInstance) error
+	UpdateInstance(ctx context.Context, record *model.WorkflowInstance) error
 	UpdateTaskInstance(tx *gorm.DB, record *model.WorkflowTaskInstance) error
 }
 
@@ -104,15 +105,15 @@ func (w *workflowDALImpl) SelectTaskInstance(ctx context.Context, condition mode
 	var childTasks []*model.WorkflowTaskRelation
 	var taskActions []*model.WorkflowTaskAction
 	handlers = append(handlers, func() error {
-		tasks, err = w.selectTask(context.Background(), condition.WorkflowID, []string{r.TaskID})
+		tasks, err = w.selectTask(context.Background(), r.WorkflowID, []string{r.TaskID})
 		return err
 	})
 	handlers = append(handlers, func() error {
-		childTasks, err = w.selectTaskRelation(context.Background(), condition.WorkflowID, condition.TaskID)
+		childTasks, err = w.selectTaskRelation(context.Background(), r.WorkflowID, r.TaskID)
 		return err
 	})
 	handlers = append(handlers, func() error {
-		taskActions, err = w.selectTaskAction(context.Background(), condition.WorkflowID, []string{r.TaskID})
+		taskActions, err = w.selectTaskAction(context.Background(), r.WorkflowID, []string{r.TaskID})
 		if err != nil {
 			return err
 		}
@@ -171,8 +172,15 @@ func (w *workflowDALImpl) InsertTaskInstance(ctx context.Context,
 	return workflowDB.WithContext(ctx).Create(&record).Error
 }
 
+func (w *workflowDALImpl) UpdateInstance(ctx context.Context, record *model.WorkflowInstance) error {
+	var condition = model.WorkflowInstance{WorkflowInstanceID: record.WorkflowInstanceID}
+	record.UpdateTime = time.Now()
+	return workflowDB.WithContext(ctx).Where(&condition).Updates(&record).Error
+}
+
 func (w *workflowDALImpl) UpdateTaskInstance(tx *gorm.DB, record *model.WorkflowTaskInstance) error {
-	var condition = model.WorkflowInstance{ID: record.ID}
+	var condition = model.WorkflowTaskInstance{ID: record.ID}
+	record.UpdateTime = time.Now()
 	return tx.Where(&condition).Updates(&record).Error
 }
 
@@ -228,6 +236,7 @@ func (w *workflowDALImpl) buildTaskRelation(workflow *pmodel.Workflow,
 		}
 		switch state.GetType() {
 		case pmodel.StateTypeOperation:
+			fallthrough
 		case pmodel.StateTypeEvent:
 			taskRelations = append(taskRelations, w.doBuildTaskRelation(workflow, state, taskIDs))
 		case pmodel.StateTypeSwitch:

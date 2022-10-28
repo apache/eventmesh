@@ -249,7 +249,7 @@ public class ClientSessionGroupMapping {
             logger.info("readySession session[{}]", session);
             ClientGroupWrapper cgw = session.getClientGroupWrapper().get();
 
-            boolean flag = cgw.addGroupConsumerSession(session);
+            boolean flag = cgw != null && cgw.addGroupConsumerSession(session);
             if (!flag) {
                 throw new Exception("addGroupConsumerSession fail");
             }
@@ -266,13 +266,13 @@ public class ClientSessionGroupMapping {
 
     private void cleanClientGroupWrapperByCloseSub(Session session) throws Exception {
         cleanSubscriptionInSession(session);
-        session.getClientGroupWrapper().get().removeGroupConsumerSession(session);
+        Objects.requireNonNull(session.getClientGroupWrapper().get()).removeGroupConsumerSession(session);
         handleUnackMsgsInSession(session);
         cleanClientGroupWrapperCommon(session);
     }
 
     private void cleanClientGroupWrapperByClosePub(Session session) throws Exception {
-        session.getClientGroupWrapper().get().removeGroupProducerSession(session);
+        Objects.requireNonNull(session.getClientGroupWrapper().get()).removeGroupProducerSession(session);
         cleanClientGroupWrapperCommon(session);
     }
 
@@ -283,9 +283,9 @@ public class ClientSessionGroupMapping {
      */
     private void cleanSubscriptionInSession(Session session) throws Exception {
         for (SubscriptionItem item : session.getSessionContext().subscribeTopics.values()) {
-            session.getClientGroupWrapper().get().removeSubscription(item, session);
-            if (!session.getClientGroupWrapper().get().hasSubscription(item.getTopic())) {
-                session.getClientGroupWrapper().get().unsubscribe(item);
+            Objects.requireNonNull(session.getClientGroupWrapper().get()).removeSubscription(item, session);
+            if (!Objects.requireNonNull(session.getClientGroupWrapper().get()).hasSubscription(item.getTopic())) {
+                Objects.requireNonNull(session.getClientGroupWrapper().get()).unsubscribe(item);
             }
         }
     }
@@ -297,7 +297,7 @@ public class ClientSessionGroupMapping {
      */
     private void handleUnackMsgsInSession(Session session) {
         ConcurrentHashMap<String /** seq */, DownStreamMsgContext> unAckMsg = session.getPusher().getUnAckMsg();
-        if (unAckMsg.size() > 0 && session.getClientGroupWrapper().get().getGroupConsumerSessions().size() > 0) {
+        if (unAckMsg.size() > 0 && Objects.requireNonNull(session.getClientGroupWrapper().get()).getGroupConsumerSessions().size() > 0) {
             for (Map.Entry<String, DownStreamMsgContext> entry : unAckMsg.entrySet()) {
                 DownStreamMsgContext downStreamMsgContext = entry.getValue();
                 if (SubscriptionMode.BROADCASTING.equals(downStreamMsgContext.subscriptionItem.getMode())) {
@@ -306,8 +306,8 @@ public class ClientSessionGroupMapping {
                             session.getClient());
                     continue;
                 }
-                Session reChooseSession = session.getClientGroupWrapper().get().getDownstreamDispatchStrategy()
-                        .select(session.getClientGroupWrapper().get().getGroup(),
+                Session reChooseSession = Objects.requireNonNull(session.getClientGroupWrapper().get()).getDownstreamDispatchStrategy()
+                        .select(Objects.requireNonNull(session.getClientGroupWrapper().get()).getGroup(),
                                 downStreamMsgContext.event.getSubject(),
                                 Objects.requireNonNull(session.getClientGroupWrapper().get()).groupConsumerSessions);
                 if (reChooseSession != null) {
@@ -326,37 +326,37 @@ public class ClientSessionGroupMapping {
 
     private void cleanClientGroupWrapperCommon(Session session) throws Exception {
         logger.info("GroupConsumerSessions size:{}",
-                session.getClientGroupWrapper().get().getGroupConsumerSessions().size());
-        if (session.getClientGroupWrapper().get().getGroupConsumerSessions().size() == 0) {
+                Objects.requireNonNull(session.getClientGroupWrapper().get()).getGroupConsumerSessions().size());
+        if (Objects.requireNonNull(session.getClientGroupWrapper().get()).getGroupConsumerSessions().size() == 0) {
             shutdownClientGroupConsumer(session);
         }
 
         logger.info("GroupProducerSessions size:{}",
-                session.getClientGroupWrapper().get().getGroupProducerSessions().size());
-        if ((session.getClientGroupWrapper().get().getGroupConsumerSessions().size() == 0)
-                && (session.getClientGroupWrapper().get().getGroupProducerSessions().size() == 0)) {
+                Objects.requireNonNull(session.getClientGroupWrapper().get()).getGroupProducerSessions().size());
+        if ((Objects.requireNonNull(session.getClientGroupWrapper().get()).getGroupConsumerSessions().size() == 0)
+                && (Objects.requireNonNull(session.getClientGroupWrapper().get()).getGroupProducerSessions().size() == 0)) {
             shutdownClientGroupProducer(session);
 
-            clientGroupMap.remove(session.getClientGroupWrapper().get().getGroup());
-            lockMap.remove(session.getClientGroupWrapper().get().getGroup());
-            logger.info("remove clientGroupWrapper group[{}]", session.getClientGroupWrapper().get().getGroup());
+            clientGroupMap.remove(Objects.requireNonNull(session.getClientGroupWrapper().get()).getGroup());
+            lockMap.remove(Objects.requireNonNull(session.getClientGroupWrapper().get()).getGroup());
+            logger.info("remove clientGroupWrapper group[{}]", Objects.requireNonNull(session.getClientGroupWrapper().get()).getGroup());
         }
     }
 
     private void shutdownClientGroupConsumer(Session session) throws Exception {
-        if (session.getClientGroupWrapper().get().started4Broadcast.get() == Boolean.TRUE) {
-            session.getClientGroupWrapper().get().shutdownBroadCastConsumer();
+        if (Objects.requireNonNull(session.getClientGroupWrapper().get()).started4Broadcast.get() == Boolean.TRUE) {
+            Objects.requireNonNull(session.getClientGroupWrapper().get()).shutdownBroadCastConsumer();
         }
 
-        if (session.getClientGroupWrapper().get().started4Persistent.get() == Boolean.TRUE) {
-            session.getClientGroupWrapper().get().shutdownPersistentConsumer();
+        if (Objects.requireNonNull(session.getClientGroupWrapper().get()).started4Persistent.get() == Boolean.TRUE) {
+            Objects.requireNonNull(session.getClientGroupWrapper().get()).shutdownPersistentConsumer();
         }
     }
 
 
     private void shutdownClientGroupProducer(Session session) throws Exception {
-        if (session.getClientGroupWrapper().get().producerStarted.get() == Boolean.TRUE) {
-            session.getClientGroupWrapper().get().shutdownProducer();
+        if (Objects.requireNonNull(session.getClientGroupWrapper().get()).producerStarted.get() == Boolean.TRUE) {
+            Objects.requireNonNull(session.getClientGroupWrapper().get()).shutdownProducer();
         }
     }
 

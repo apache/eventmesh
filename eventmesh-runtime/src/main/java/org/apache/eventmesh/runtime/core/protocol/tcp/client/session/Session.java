@@ -261,13 +261,13 @@ public class Session {
             return false;
         }
         Session session = (Session) o;
-        if (client != null ? !client.equals(session.client) : session.client != null) {
+        if (!Objects.equals(client, session.client)) {
             return false;
         }
-        if (context != null ? !context.equals(session.context) : session.context != null) {
+        if (!Objects.equals(context, session.context)) {
             return false;
         }
-        if (sessionState != null ? !sessionState.equals(session.sessionState) : session.sessionState != null) {
+        if (!Objects.equals(sessionState, session.sessionState)) {
             return false;
         }
         return true;
