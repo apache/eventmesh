@@ -100,7 +100,7 @@ public class WebhookFileListener {
      */
     public void cacheInit(File webhookConfigFile) {
         StringBuilder fileContent = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(webhookConfigFile)))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(webhookConfigFile), StandardCharsets.UFT_8))) {
             String line = null;
             while ((line = br.readLine()) != null) {
                 fileContent.append(line);
