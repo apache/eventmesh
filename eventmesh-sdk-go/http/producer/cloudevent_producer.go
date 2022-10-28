@@ -23,6 +23,7 @@ import (
 	gutils "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/constant"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/utils"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
@@ -76,9 +77,8 @@ func (c *CloudEventProducer) buildCommonPostParam(event cloudevents.Event) *mode
 	requestParam.AddHeader(common.ProtocolKey.ClientInstanceKey.USERNAME, c.EventMeshHttpClientConfig.UserName())
 	requestParam.AddHeader(common.ProtocolKey.ClientInstanceKey.PASSWORD, c.EventMeshHttpClientConfig.Password())
 	requestParam.AddHeader(common.ProtocolKey.LANGUAGE, gcommon.Constants.LANGUAGE_GO)
-	// FIXME Improve constants
-	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_TYPE, "cloudevents")
-	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_DESC, "http")
+	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_TYPE, constant.CloudEventsProtocol)
+	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_DESC, constant.ProtocolDesc)
 	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_VERSION, event.SpecVersion())
 
 	// todo: move producerGroup tp header

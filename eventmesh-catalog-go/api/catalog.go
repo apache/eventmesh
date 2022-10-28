@@ -57,7 +57,7 @@ func (c *catalogImpl) Registry(ctx context.Context, request *proto.RegistryReque
 		var handlers []func() error
 		for _, channel := range doc.Channels() {
 			for _, operation := range channel.Operations() {
-				var record = c.buildEventCatalog(request.FileName, channel, operation)
+				var record = c.buildEventCatalog(doc.Info().Title(), request.FileName, channel, operation)
 				handlers = append(handlers, func() error {
 					return c.catalogDAL.Insert(context.Background(), tx, record)
 				})
@@ -81,15 +81,16 @@ func (c *catalogImpl) QueryOperations(ctx context.Context, in *proto.QueryOperat
 	if err != nil {
 		return rsp, err
 	}
-	if err = gconv.Structs(rsp.Operations, &res); err != nil {
+	if err = gconv.Structs(res, &rsp.Operations); err != nil {
 		return nil, err
 	}
 	return rsp, nil
 }
 
-func (c *catalogImpl) buildEventCatalog(fileName string, channel asyncapi.Channel,
+func (c *catalogImpl) buildEventCatalog(serviceName string, fileName string, channel asyncapi.Channel,
 	operation asyncapi.Operation) *model.EventCatalog {
 	var record model.EventCatalog
+	record.ServiceName = serviceName
 	record.OperationID = fmt.Sprintf("file://%s#%s", fileName, operation.ID())
 	record.ChannelName = channel.ID()
 	record.Type = string(operation.Type())

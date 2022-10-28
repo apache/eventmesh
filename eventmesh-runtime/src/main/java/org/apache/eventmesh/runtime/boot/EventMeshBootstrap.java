@@ -15,27 +15,16 @@
  * limitations under the License.
  */
 
-syntax = "proto3";
+package org.apache.eventmesh.runtime.boot;
 
-package eventmesh.workflow.api.protocol;
+/**
+ * concrete server bootstrap
+ */
+public interface EventMeshBootstrap {
 
-option java_multiple_files = true;
-option java_package="org.apache.eventmesh.common.protocol.workflow.protos";
-option java_outer_classname = "EventmeshWorkflowGrpc";
+    void init() throws Exception;
 
-option go_package = "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/api/proto";
+    void start() throws Exception;
 
-service Workflow {
-    rpc Execute (ExecuteRequest) returns (ExecuteResponse) {}
-}
-
-message ExecuteRequest {
-	string id = 1;
-	string instance_id = 2;
-	string task_instance_id = 3;
-	string input = 4;
-}
-
-message ExecuteResponse {
-	string instance_id = 1;
+    void shutdown() throws Exception;
 }
