@@ -36,7 +36,7 @@ func Open() error {
 	d.SetConnMaxLifetime(time.Millisecond * time.Duration(pmysql.PluginConfig.MaxLifetime))
 
 	catalogDB, err = gorm.Open(mysql.New(mysql.Config{Conn: d}),
-		&gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
+		&gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
 	if err != nil {
 		return err
 	}
