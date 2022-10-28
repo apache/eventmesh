@@ -33,23 +33,35 @@ import org.slf4j.LoggerFactory;
 
 public class GithubProtocol implements ManufacturerProtocol {
 
+    private static final String MANU_FACTURER_NAME = "github";
+
+    private static final String FROM_SIGNATURE = "x-hub-signature-256";
+
+    private static final String MANU_FACTURER_EVENT_ID = "x-github-delivery";
+
+    private static final String HASH = "sha256=";
+
+    private static final String H_MAC_SHA = "HmacSHA256";
+
+    private static final Char ZERO_CHAR = '0';
+
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public String getManufacturerName() {
-        return "github";
+        return MANU_FACTURER_NAME;
     }
 
     @Override
     public void execute(WebHookRequest webHookRequest, WebHookConfig webHookConfig, Map<String, String> header) throws Exception {
 
-        String fromSignature = header.get("x-hub-signature-256");
+        String fromSignature = header.get(FROM_SIGNATURE);
         if (!isValid(fromSignature, webHookRequest.getData(), webHookConfig.getSecret())) {
             throw new Exception("webhook-GithubProtocol authenticate failed");
         }
 
         try {
-            webHookRequest.setManufacturerEventId(header.get("x-github-delivery"));
+            webHookRequest.setManufacturerEventId(header.get(MANU_FACTURER_EVENT_ID));
             webHookRequest.setManufacturerEventName(webHookConfig.getManufacturerEventName());
             webHookRequest.setManufacturerSource(getManufacturerName());
         } catch (Exception e) {
@@ -66,10 +78,10 @@ public class GithubProtocol implements ManufacturerProtocol {
      * @return Authentication result
      */
     private Boolean isValid(String fromSignature, byte[] data, String secret) {
-        String hash = "sha256=";
+        String hash = HASH;
         try {
-            Mac sha = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(Constants.DEFAULT_CHARSET), "HmacSHA256");
+            Mac sha = Mac.getInstance(H_MAC_SHA);
+            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(Constants.DEFAULT_CHARSET), H_MAC_SHA);
             sha.init(secretKey);
             byte[] bytes = sha.doFinal(data);
             hash += byteArrayToHexString(bytes);
@@ -91,7 +103,7 @@ public class GithubProtocol implements ManufacturerProtocol {
         for (int n = 0; b != null && n < b.length; n++) {
             stmp = Integer.toHexString(b[n] & 0XFF);
             if (stmp.length() == 1) {
-                hs.append('0');
+                hs.append(ZERO_CHAR);
             }
             hs.append(stmp);
         }
