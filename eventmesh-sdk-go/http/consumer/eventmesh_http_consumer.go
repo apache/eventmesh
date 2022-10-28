@@ -97,7 +97,7 @@ func (e *EventMeshHttpConsumer) Subscribe(topicList []protocol.SubscriptionItem,
 	e.subscriptions = append(e.subscriptions, topicList...)
 }
 
-func (e *EventMeshHttpConsumer) Unsubscribe(topicList []protocol.SubscriptionItem, subscribeUrl string) {
+func (e *EventMeshHttpConsumer) Unsubscribe(topicList []string, subscribeUrl string) {
 	if len(topicList) == 0 || len(subscribeUrl) == 0 {
 		return
 	}
@@ -117,7 +117,7 @@ func (e *EventMeshHttpConsumer) Unsubscribe(topicList []protocol.SubscriptionIte
 	defer e.mutex.Unlock()
 	topicSet := make(map[string]struct{})
 	for _, topic := range topicList {
-		topicSet[topic.Topic] = struct{}{}
+		topicSet[topic] = struct{}{}
 	}
 
 	subscriptions := make([]protocol.SubscriptionItem, 0, len(e.subscriptions))
