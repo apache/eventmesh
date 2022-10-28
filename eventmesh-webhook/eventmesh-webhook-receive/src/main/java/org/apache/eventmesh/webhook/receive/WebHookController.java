@@ -47,6 +47,10 @@ public class WebHookController {
 
     private static final String CONTENT_TYPE = "content-type";
 
+    private static final String UUID_GENERATE_MODE = "uuid";
+
+    private static final String DOT = ".";
+
     /**
      * protocol pool
      */
@@ -106,9 +110,9 @@ public class WebHookController {
         }
 
         // 3. convert to cloudEvent obj
-        String cloudEventId = "uuid".equals(webHookConfig.getCloudEventIdGenerateMode()) ? UUID.randomUUID().toString()
+        String cloudEventId = UUID_GENERATE_MODE.equals(webHookConfig.getCloudEventIdGenerateMode()) ? UUID.randomUUID().toString()
             : webHookRequest.getManufacturerEventId();
-        String eventType = manufacturerName + "." + webHookConfig.getManufacturerEventName();
+        String eventType = manufacturerName + DOT + webHookConfig.getManufacturerEventName();
 
         WebhookProtocolTransportObject webhookProtocolTransportObject = WebhookProtocolTransportObject.builder()
             .cloudEventId(cloudEventId).eventType(eventType).cloudEventName(webHookConfig.getCloudEventName())
