@@ -40,6 +40,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -212,17 +213,17 @@ public class Session {
                 return;
             }
             context.writeAndFlush(pkg).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            if (!future.isSuccess()) {
-                                messageLogger.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
-                            } else {
-                                clientGroupWrapper.get().getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum()
-                                    .incrementAndGet();
-                            }
+                new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        if (!future.isSuccess()) {
+                            messageLogger.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
+                        } else {
+                            clientGroupWrapper.get().getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum()
+                                .incrementAndGet();
                         }
                     }
+                }
             );
         } catch (Exception e) {
             logger.error("exception while write2Client", e);
@@ -232,24 +233,24 @@ public class Session {
     @Override
     public String toString() {
         return "Session{"
-                +
-                "sysId=" + clientGroupWrapper.get().getSysId()
-                +
-                ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
-                +
-                ",client=" + client
-                +
-                ",sessionState=" + sessionState
-                +
-                ",sessionContext=" + sessionContext
-                +
-                ",pusher=" + pusher
-                +
-                ",sender=" + sender
-                +
-                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
-                +
-                ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
+            +
+            "sysId=" + clientGroupWrapper.get().getSysId()
+            +
+            ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
+            +
+            ",client=" + client
+            +
+            ",sessionState=" + sessionState
+            +
+            ",sessionContext=" + sessionContext
+            +
+            ",pusher=" + pusher
+            +
+            ",sender=" + sender
+            +
+            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
+            +
+            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
     @Override
