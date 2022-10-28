@@ -256,7 +256,7 @@ public class ConsumerManager {
     /**
      * get consumer
      */
-    public ConsumerGroupManager getConsumer(String consumerGroup) throws Exception {
+    public ConsumerGroupManager getConsumer(String consumerGroup) {
         ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
         return cgm;
     }
