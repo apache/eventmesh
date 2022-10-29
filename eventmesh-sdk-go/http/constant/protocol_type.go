@@ -13,36 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dal
+package constant
 
-import (
-	"database/sql"
-	"gorm.io/gorm/logger"
-	"time"
-
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-
-	pmysql "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/database/mysql"
+const (
+	EventMeshMessageProtocol = "eventmeshmessage"
+	CloudEventsProtocol      = "cloudevents"
+	OpenMessageProtocol      = "openmessage"
 )
 
-var catalogDB *gorm.DB
-
-func Open() error {
-	var err error
-	d, err := sql.Open("mysql", pmysql.PluginConfig.DSN)
-	d.SetMaxOpenConns(pmysql.PluginConfig.MaxOpen)
-	d.SetMaxIdleConns(pmysql.PluginConfig.MaxIdle)
-	d.SetConnMaxLifetime(time.Millisecond * time.Duration(pmysql.PluginConfig.MaxLifetime))
-
-	catalogDB, err = gorm.Open(mysql.New(mysql.Config{Conn: d}),
-		&gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func GetDalClient() *gorm.DB {
-	return catalogDB
-}
+const ProtocolDesc = "http"
