@@ -17,11 +17,14 @@
 
 package org.apache.eventmesh.client.http.util;
 
-import org.apache.eventmesh.client.http.model.RequestParam;
-import org.apache.eventmesh.common.Constants;
-
+import com.google.common.base.Preconditions;
+import io.netty.handler.codec.http.HttpMethod;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.client.http.model.RequestParam;
+import org.apache.eventmesh.common.Constants;
 import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ResponseHandler;
@@ -34,19 +37,11 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import io.netty.handler.codec.http.HttpMethod;
-
-import com.google.common.base.Preconditions;
-
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class HttpUtils {
