@@ -16,6 +16,7 @@
 package producer
 
 import (
+	"errors"
 	"fmt"
 	gcommon "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/http/common"
@@ -27,6 +28,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/utils"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
+	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 
@@ -46,7 +48,7 @@ func NewCloudEventProducer(eventMeshHttpClientConfig conf.EventMeshHttpClientCon
 	return c
 }
 
-func (c *CloudEventProducer) Publish(event cloudevents.Event) {
+func (c *CloudEventProducer) Publish(event *cloudevents.Event) error {
 	enhancedEvent := c.enhanceCloudEvent(event)
 	requestParam := c.buildCommonPostParam(enhancedEvent)
 	requestParam.AddHeader(common.ProtocolKey.REQUEST_CODE, strconv.Itoa(common.DefaultRequestCode.MSG_SEND_ASYNC.RequestCode))
@@ -56,12 +58,48 @@ func (c *CloudEventProducer) Publish(event cloudevents.Event) {
 	var ret http.EventMeshRetObj
 	gutils.UnMarshalJsonString(resp, &ret)
 	if ret.RetCode != common.DefaultEventMeshRetCode.SUCCESS.RetCode {
-		log.Fatalf("Request failed, error code: %d", ret.RetCode)
+		return fmt.Errorf("publish failed, http request error code: %d", ret.RetCode)
 	}
+	return nil
 }
 
-func (c *CloudEventProducer) buildCommonPostParam(event cloudevents.Event) *model.RequestParam {
+func (c *CloudEventProducer) Request(event *cloudevents.Event, timeout time.Duration) (*cloudevents.Event, error) {
+	enhancedEvent := c.enhanceCloudEvent(event)
+	requestParam := c.buildCommonPostParam(enhancedEvent)
+	requestParam.AddHeader(common.ProtocolKey.REQUEST_CODE, strconv.Itoa(common.DefaultRequestCode.MSG_SEND_SYNC.RequestCode))
+	requestParam.SetTimeout(timeout.Milliseconds())
+	target := c.SelectEventMesh()
+	resp := utils.HttpPost(c.HttpClient, target, requestParam)
+	var ret http.EventMeshRetObj
+	gutils.UnMarshalJsonString(resp, &ret)
+	if ret.RetCode != common.DefaultEventMeshRetCode.SUCCESS.RetCode {
+		return nil, fmt.Errorf("request failed, http request code: %d", ret.RetCode)
+	}
+	retMessage, err := c.transferMessage(&ret)
+	if err != nil {
+		return nil, err
+	}
+	return retMessage, nil
+}
 
+func (c *CloudEventProducer) transferMessage(retObj *http.EventMeshRetObj) (event *cloudevents.Event, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New("fail to transfer from EventMeshRetObj to CloudEvent")
+		}
+	}()
+	var message http.ReplyMessage
+	gutils.UnMarshalJsonString(retObj.RetMsg, &message)
+	retEvent := cloudevents.NewEvent()
+	retEvent.SetSubject(message.Topic)
+	retEvent.SetData("application/json", []byte(message.Body))
+	for k, v := range message.Properties {
+		retEvent.SetExtension(k, v)
+	}
+	return &retEvent, nil
+}
+
+func (c *CloudEventProducer) buildCommonPostParam(event *cloudevents.Event) *model.RequestParam {
 	eventBytes, err := event.MarshalJSON()
 	if err != nil {
 		log.Fatalf("Failed to marshal cloudevent")
@@ -88,7 +126,7 @@ func (c *CloudEventProducer) buildCommonPostParam(event cloudevents.Event) *mode
 	return requestParam
 }
 
-func (c *CloudEventProducer) enhanceCloudEvent(event cloudevents.Event) cloudevents.Event {
+func (c *CloudEventProducer) enhanceCloudEvent(event *cloudevents.Event) *cloudevents.Event {
 	event.SetExtension(common.ProtocolKey.ClientInstanceKey.ENV, c.EventMeshHttpClientConfig.Env())
 	event.SetExtension(common.ProtocolKey.ClientInstanceKey.IDC, c.EventMeshHttpClientConfig.Idc())
 	event.SetExtension(common.ProtocolKey.ClientInstanceKey.IP, c.EventMeshHttpClientConfig.Ip())
