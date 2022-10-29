@@ -30,9 +30,11 @@ import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.logging.log4j.util.Strings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 
@@ -63,6 +65,7 @@ public class ConfigurationWrapper {
     };
 
     public ConfigurationWrapper(String directoryPath, String fileName, boolean reload) {
+        Preconditions.checkArgument(Strings.isNotEmpty(directoryPath),"please configure environment variable 'confPath'");
         this.directoryPath = directoryPath
             .replace('/', File.separator.charAt(0))
             .replace('\\', File.separator.charAt(0));
