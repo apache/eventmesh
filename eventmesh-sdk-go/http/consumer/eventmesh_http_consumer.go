@@ -28,17 +28,19 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
 	nethttp "net/http"
 	"strconv"
+	"sync"
 	"time"
 )
 
 type EventMeshHttpConsumer struct {
 	*http.AbstractHttpClient
 	subscriptions []protocol.SubscriptionItem
+	mutex         sync.Mutex
 }
 
 func NewEventMeshHttpConsumer(eventMeshHttpClientConfig conf.EventMeshHttpClientConfig) *EventMeshHttpConsumer {
 	c := &EventMeshHttpConsumer{AbstractHttpClient: http.NewAbstractHttpClient(eventMeshHttpClientConfig)}
-	c.subscriptions = make([]protocol.SubscriptionItem, 1000)
+	c.subscriptions = make([]protocol.SubscriptionItem, 0, 1000)
 	return c
 }
 
@@ -89,7 +91,42 @@ func (e *EventMeshHttpConsumer) Subscribe(topicList []protocol.SubscriptionItem,
 	if ret.RetCode != common.DefaultEventMeshRetCode.SUCCESS.RetCode {
 		log.Fatalf("Request failed, error code: %d", ret.RetCode)
 	}
+
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
 	e.subscriptions = append(e.subscriptions, topicList...)
+}
+
+func (e *EventMeshHttpConsumer) Unsubscribe(topicList []string, subscribeUrl string) {
+	if len(topicList) == 0 || len(subscribeUrl) == 0 {
+		return
+	}
+	requestParam := e.buildCommonRequestParam()
+	requestParam.AddHeader(common.ProtocolKey.REQUEST_CODE, strconv.Itoa(common.DefaultRequestCode.UNSUBSCRIBE.RequestCode))
+	requestParam.AddBody(client.SubscribeRequestBodyKey.TOPIC, gutils.MarshalJsonString(topicList))
+	requestParam.AddBody(client.SubscribeRequestBodyKey.URL, subscribeUrl)
+	target := e.SelectEventMesh()
+	resp := utils.HttpPost(e.HttpClient, target, requestParam)
+	var ret http.EventMeshRetObj
+	gutils.UnMarshalJsonString(resp, &ret)
+	if ret.RetCode != common.DefaultEventMeshRetCode.SUCCESS.RetCode {
+		log.Fatalf("Request failed, error code: %d", ret.RetCode)
+	}
+
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
+	topicSet := make(map[string]struct{})
+	for _, topic := range topicList {
+		topicSet[topic] = struct{}{}
+	}
+
+	subscriptions := make([]protocol.SubscriptionItem, 0, len(e.subscriptions))
+	for _, sub := range e.subscriptions {
+		if _, ok := topicSet[sub.Topic]; !ok {
+			subscriptions = append(subscriptions, sub)
+		}
+	}
+	e.subscriptions = subscriptions
 }
 
 func (e *EventMeshHttpConsumer) buildCommonRequestParam() *model.RequestParam {
