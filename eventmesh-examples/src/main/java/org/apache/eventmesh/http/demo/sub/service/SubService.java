@@ -44,6 +44,11 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
+import static org.apache.eventmesh.common.ExampleConstants.ENV;
+import static org.apache.eventmesh.common.ExampleConstants.IDC;
+import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
+
 @Component
 public class SubService implements InitializingBean {
 
@@ -57,13 +62,10 @@ public class SubService implements InitializingBean {
             new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
     );
     final String localIp = IPUtils.getLocalAddress();
-    final String localPort = properties.getProperty("server.port");
+    final String localPort = properties.getProperty(SERVER_PORT);
     final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
     final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
     final String url = "http://" + localIp + ":" + localPort + "/sub/test";
-    final String env = "P";
-    final String idc = "FT";
-    final String subsys = "1234";
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
@@ -75,10 +77,10 @@ public class SubService implements InitializingBean {
         EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
                 .liteEventMeshAddr(eventMeshIPPort)
                 .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-                .env(env)
-                .idc(idc)
+                .env(ENV)
+                .idc(IDC)
                 .ip(IPUtils.getLocalAddress())
-                .sys(subsys)
+                .sys(SUB_SYS)
                 .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);

@@ -43,7 +43,7 @@ public class GithubProtocol implements ManufacturerProtocol {
 
     private static final String H_MAC_SHA = "HmacSHA256";
 
-    private static final Char ZERO_CHAR = '0';
+    private static final Character ZERO_CHAR = '0';
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
