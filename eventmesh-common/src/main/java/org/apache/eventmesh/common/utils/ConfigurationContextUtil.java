@@ -33,7 +33,6 @@ public class ConfigurationContextUtil {
     private static final ConcurrentHashMap<String, CommonConfiguration> CONFIGURATION_MAP = new ConcurrentHashMap<>();
 
     public static final String HTTP = "HTTP";
-
     public static final String TCP = "TCP";
     public static final String GRPC = "GRPC";
 

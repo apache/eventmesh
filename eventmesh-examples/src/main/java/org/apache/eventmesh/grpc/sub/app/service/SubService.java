@@ -43,7 +43,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SubService implements InitializingBean {
 
-    public static Logger logger = LoggerFactory.getLogger(SubService.class);
+    public static final Logger logger = LoggerFactory.getLogger(SubService.class);
 
     private EventMeshGrpcConsumer eventMeshGrpcConsumer;
 
