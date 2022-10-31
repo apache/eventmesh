@@ -68,8 +68,6 @@ func SubCloudEvents() {
 	eventMeshHttpConsumer.Subscribe(topicList, subscribeUrl)
 	eventMeshHttpConsumer.HeartBeat(topicList, subscribeUrl)
 
-	// FIXME Add unsubscribe
-
 	// Wait for exit
 	<-exit
 }

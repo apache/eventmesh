@@ -139,7 +139,7 @@ public class BatchSendMessageProcessor implements HttpRequestProcessor {
                 return;
             }
 
-            String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+            String content = event.getData() == null ? "" : new String(event.getData().toBytes(), StandardCharsets.UTF_8);
             if (content.length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize) {
                 batchMessageLogger.error("Event size exceeds the limit: {}",
                     eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize);
