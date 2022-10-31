@@ -40,6 +40,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
+import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
+import static org.apache.eventmesh.common.ExampleConstants.ENV;
+import static org.apache.eventmesh.common.ExampleConstants.IDC;
+import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
+
 @Component
 public class SubService implements InitializingBean {
 
@@ -52,13 +57,10 @@ public class SubService implements InitializingBean {
     final SubscriptionItem subscriptionItem = new SubscriptionItem();
 
     final String localIp = IPUtils.getLocalAddress();
-    final String localPort = properties.getProperty("server.port");
+    final String localPort = properties.getProperty(SERVER_PORT);
     final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
     final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
     final String url = "http://" + localIp + ":" + localPort + "/sub/test";
-    final String env = "P";
-    final String idc = "FT";
-    final String subsys = "1234";
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
@@ -70,8 +72,8 @@ public class SubService implements InitializingBean {
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
             .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .env(env).idc(idc)
-            .sys(subsys).build();
+            .env(ENV).idc(IDC)
+            .sys(SUB_SYS).build();
 
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();
