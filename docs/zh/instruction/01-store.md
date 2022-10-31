@@ -41,7 +41,7 @@ tail -f ~/logs/rocketmqlogs/broker.log
 
 如果在看到The broker boot success...，则说明Broker启动成功
 
-至此eventmesh-store的部署已完成，请转至下一步完成[eventmesh-runtime](docs/zh/instruction/02-runtime-with-docker.md docs/zh/instruction/02-runtime.md) 的部署
+至此eventmesh-store的部署已完成，请转至下一步完成 [eventmesh-runtime](https://github.com/apache/incubator-eventmesh/blob/master/docs/zh/instruction/02-runtime.md) 的部署
 
 
 ## 参考
