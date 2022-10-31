@@ -31,7 +31,7 @@ public class KnativeBinaryMessageReader extends BaseGenericBinaryMessageReaderIm
 
     @Override
     protected boolean isContentTypeHeader(String key) {
-        return key.equals(KnativeHeaders.CONTENT_TYPE);
+        return KnativeHeaders.CONTENT_TYPE.equals(key);
     }
 
     @Override

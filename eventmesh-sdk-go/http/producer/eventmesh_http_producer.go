@@ -16,8 +16,10 @@
 package producer
 
 import (
+	"errors"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
+	"time"
 )
 
 type EventMeshHttpProducer struct {
@@ -30,13 +32,17 @@ func NewEventMeshHttpProducer(eventMeshHttpClientConfig conf.EventMeshHttpClient
 	}
 }
 
-func (e *EventMeshHttpProducer) Publish(eventMeshMessage interface{}) {
-
-	// FIXME Check eventMeshMessage is not nil
-
-	// CloudEvent
-	if _, ok := eventMeshMessage.(cloudevents.Event); ok {
-		event := eventMeshMessage.(cloudevents.Event)
-		e.cloudEventProducer.Publish(event)
+func (e *EventMeshHttpProducer) Publish(event *cloudevents.Event) error {
+	if event == nil {
+		return errors.New("publish message failed, message is nil")
 	}
+
+	return e.cloudEventProducer.Publish(event)
+}
+
+func (e *EventMeshHttpProducer) Request(event *cloudevents.Event, timeout time.Duration) (*cloudevents.Event, error) {
+	if event == nil {
+		return nil, errors.New("request message failed, message is nil")
+	}
+	return e.cloudEventProducer.Request(event, timeout)
 }

@@ -213,17 +213,17 @@ public class Session {
                 return;
             }
             context.writeAndFlush(pkg).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            if (!future.isSuccess()) {
-                                messageLogger.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
-                            } else {
-                                Objects.requireNonNull(clientGroupWrapper.get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum()
-                                    .incrementAndGet();
-                            }
+                new ChannelFutureListener() {
+                    @Override
+                    public void operationComplete(ChannelFuture future) throws Exception {
+                        if (!future.isSuccess()) {
+                            messageLogger.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
+                        } else {
+                            Objects.requireNonNull(clientGroupWrapper.get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum()
+                                .incrementAndGet();
                         }
                     }
+                }
             );
         } catch (Exception e) {
             logger.error("exception while write2Client", e);
@@ -233,24 +233,24 @@ public class Session {
     @Override
     public String toString() {
         return "Session{"
-                +
-                "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
-                +
-                ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
-                +
-                ",client=" + client
-                +
-                ",sessionState=" + sessionState
-                +
-                ",sessionContext=" + sessionContext
-                +
-                ",pusher=" + pusher
-                +
-                ",sender=" + sender
-                +
-                ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
-                +
-                ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
+            +
+            "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
+            +
+            ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
+            +
+            ",client=" + client
+            +
+            ",sessionState=" + sessionState
+            +
+            ",sessionContext=" + sessionContext
+            +
+            ",pusher=" + pusher
+            +
+            ",sender=" + sender
+            +
+            ",createTime=" + DateFormatUtils.format(createTime, EventMeshConstants.DATE_FORMAT)
+            +
+            ",lastHeartbeatTime=" + DateFormatUtils.format(lastHeartbeatTime, EventMeshConstants.DATE_FORMAT) + '}';
     }
 
     @Override
@@ -262,13 +262,13 @@ public class Session {
             return false;
         }
         Session session = (Session) o;
-        if (client != null ? !client.equals(session.client) : session.client != null) {
+        if (!Objects.equals(client, session.client)) {
             return false;
         }
-        if (context != null ? !context.equals(session.context) : session.context != null) {
+        if (!Objects.equals(context, session.context)) {
             return false;
         }
-        if (sessionState != null ? !sessionState.equals(session.sessionState) : session.sessionState != null) {
+        if (!Objects.equals(sessionState, session.sessionState)) {
             return false;
         }
         return true;

@@ -176,15 +176,16 @@ public class LocalUnSubscribeEventProcessor extends AbstractEventProcessor imple
                             eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
                         Map<String, ConsumerGroupTopicConf> map =
                             consumerGroupConf.getConsumerGroupTopicConf();
-                        for (String topicKey : map.keySet()) {
+                        Set<Map.Entry<String, ConsumerGroupTopicConf>> entryMap = map.entrySet();
+                        for (Map.Entry<String, ConsumerGroupTopicConf> entry : entryMap) {
                             // only modify the topic to subscribe
-                            if (StringUtils.equals(unSubTopic, topicKey)) {
+                            if (StringUtils.equals(unSubTopic, entry.getKey())) {
                                 ConsumerGroupTopicConf latestTopicConf =
                                     new ConsumerGroupTopicConf();
                                 latestTopicConf.setConsumerGroup(consumerGroup);
                                 latestTopicConf.setTopic(unSubTopic);
                                 latestTopicConf
-                                    .setSubscriptionItem(map.get(topicKey).getSubscriptionItem());
+                                    .setSubscriptionItem(entry.getValue().getSubscriptionItem());
                                 latestTopicConf.setUrls(clientUrls);
 
                                 latestTopicConf.setIdcUrls(idcUrls);

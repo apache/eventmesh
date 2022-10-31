@@ -48,7 +48,6 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     public FileWebHookConfigOperation(Properties properties) throws FileNotFoundException {
         String webHookFilePath = WebHookOperationConstant.getFilePath(properties.getProperty("filePath"));
 
-        assert webHookFilePath != null;
         File webHookFileDir = new File(webHookFilePath);
         if (!webHookFileDir.exists()) {
             webHookFileDir.mkdirs();

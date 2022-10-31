@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
 
-    public static AsyncSubscribe handler = new AsyncSubscribe();
+    public static final AsyncSubscribe handler = new AsyncSubscribe();
 
     private static EventMeshTCPClient<CloudEvent> client;
 
@@ -68,6 +68,10 @@ public class AsyncSubscribe implements ReceiveMsgHook<CloudEvent> {
 
     @Override
     public Optional<CloudEvent> handle(CloudEvent msg) {
+        if (msg.getData() == null) {
+            log.warn("receive async msg's data is null.");
+            return Optional.empty();
+        }
         String content = new String(msg.getData().toBytes(), StandardCharsets.UTF_8);
         log.info("receive async msg: {}|{}", msg, content);
         return Optional.empty();

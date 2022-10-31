@@ -40,7 +40,7 @@ Run the main method of org.apache.eventmesh.tcp.demo.sub.eventmeshmessage.AsyncS
 Run the main method of org.apache.eventmesh.tcp.demo.pub.eventmeshmessage.AsyncPublishBroadcast
 ```
 
-More information about EventMesh-TCP, please refer to [EventMesh TCP](docs/zh/sdk-java/03-tcp.md)
+More information about EventMesh-TCP, please refer to [EventMesh TCP](/docs/en/sdk-java/03-tcp.md)
 
 
 ## 2 HTTP DEMO
@@ -59,7 +59,7 @@ Run the main method of org.apache.eventmesh.http.demo.sub.SpringBootDemoApplicat
 ```
 Run the main method of org.apache.eventmesh.http.demo.pub.eventmeshmessage.AsyncPublishInstance
 ```
-More information about EventMesh-HTTP, please refer to [EventMesh HTTP](docs/zh/sdk-java/02-http.md)
+More information about EventMesh-HTTP, please refer to [EventMesh HTTP](/docs/en/sdk-java/02-http.md)
 
 ## 3 GRPC DEMO
 
@@ -99,11 +99,11 @@ Run the main method of org.apache.eventmesh.grpc.sub.EventmeshAsyncSubscribe
 Run the main method of org.apache.eventmesh.grpc.pub.eventmeshmessage.BatchPublishInstance
 ```
 
-More information about EventMesh-gRPC, please refer to [EventMesh gRPC](docs/zh/sdk-java/04-grpc.md)
+More information about EventMesh-gRPC, please refer to [EventMesh gRPC](/docs/en/sdk-java/04-grpc.md)
 
 ## 4 Run these demos by yourself
 
-Please refer to [EventMesh Store](docs/zh/instruction/01-store.md) and [EventMesh Runtime](docs/zh/instruction/02-runtime.md) to finish the necessary deployment before try our demo
+Please refer to [EventMesh Store](/docs/en/instruction/01-store.md) and [EventMesh Runtime](/docs/en/instruction/02-runtime.md) to finish the necessary deployment before try our demo
 
 After finishing the deployment of store and runtime, you can run our demos in module `eventmesh-examples`:
 
