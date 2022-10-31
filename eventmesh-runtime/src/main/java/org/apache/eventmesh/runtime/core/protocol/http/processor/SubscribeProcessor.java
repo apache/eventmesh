@@ -240,19 +240,19 @@ public class SubscribeProcessor implements HttpRequestProcessor {
                         newTopicConf.setIdcUrls(idcUrls);
                         map.put(subTopic.getTopic(), newTopicConf);
                     }
-                    for (String key : map.keySet()) {
-                        if (StringUtils.equals(subTopic.getTopic(), key)) {
+                    for (Map.Entry<String, ConsumerGroupTopicConf> set: map.entrySet()) {
+                        if (StringUtils.equals(subTopic.getTopic(), set.getKey())) {
                             ConsumerGroupTopicConf latestTopicConf = new ConsumerGroupTopicConf();
                             latestTopicConf.setConsumerGroup(consumerGroup);
                             latestTopicConf.setTopic(subTopic.getTopic());
                             latestTopicConf.setSubscriptionItem(subTopic);
                             latestTopicConf.setUrls(new HashSet<>(Arrays.asList(url)));
 
-                            ConsumerGroupTopicConf currentTopicConf = map.get(key);
+                            ConsumerGroupTopicConf currentTopicConf = set.getValue();
                             latestTopicConf.getUrls().addAll(currentTopicConf.getUrls());
                             latestTopicConf.setIdcUrls(idcUrls);
 
-                            map.put(key, latestTopicConf);
+                            map.put(set.getKey(), latestTopicConf);
                         }
                     }
                 }
