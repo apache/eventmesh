@@ -211,7 +211,7 @@ public class GrpcMessageProtocolResolver {
                 .withExtension(ProtocolKey.PRODUCERGROUP, producerGroup)
                 .withExtension(ProtocolKey.TTL, ttl);
 
-            item.getPropertiesMap().forEach((k, v) -> eventBuilder.withExtension(k, v));
+            item.getPropertiesMap().forEach(eventBuilder::withExtension);
 
             cloudEvents.add(eventBuilder.build());
         }

@@ -65,5 +65,5 @@ func AsyncPubCloudEvents() {
 
 	// Publish event
 	httpProducer := producer.NewEventMeshHttpProducer(eventMeshClientConfig)
-	httpProducer.Publish(event)
+	httpProducer.Publish(&event)
 }
