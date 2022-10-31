@@ -168,11 +168,11 @@ public class Session {
     public void subscribe(List<SubscriptionItem> items) throws Exception {
         for (SubscriptionItem item : items) {
             sessionContext.subscribeTopics.putIfAbsent(item.getTopic(), item);
-            clientGroupWrapper.get().subscribe(item);
+            Objects.requireNonNull(clientGroupWrapper.get()).subscribe(item);
 
-            clientGroupWrapper.get().getMqProducerWrapper().getMeshMQProducer().checkTopicExist(item.getTopic());
+            Objects.requireNonNull(clientGroupWrapper.get()).getMqProducerWrapper().getMeshMQProducer().checkTopicExist(item.getTopic());
 
-            clientGroupWrapper.get().addSubscription(item, this);
+            Objects.requireNonNull(clientGroupWrapper.get()).addSubscription(item, this);
             subscribeLogger.info("subscribe|succeed|topic={}|user={}", item.getTopic(), client);
         }
     }
@@ -180,10 +180,10 @@ public class Session {
     public void unsubscribe(List<SubscriptionItem> items) throws Exception {
         for (SubscriptionItem item : items) {
             sessionContext.subscribeTopics.remove(item.getTopic());
-            clientGroupWrapper.get().removeSubscription(item, this);
+            Objects.requireNonNull(clientGroupWrapper.get()).removeSubscription(item, this);
 
-            if (!clientGroupWrapper.get().hasSubscription(item.getTopic())) {
-                clientGroupWrapper.get().unsubscribe(item);
+            if (!Objects.requireNonNull(clientGroupWrapper.get()).hasSubscription(item.getTopic())) {
+                Objects.requireNonNull(clientGroupWrapper.get()).unsubscribe(item);
                 subscribeLogger.info("unSubscribe|succeed|topic={}|lastUser={}", item.getTopic(), client);
             }
         }
@@ -219,7 +219,7 @@ public class Session {
                         if (!future.isSuccess()) {
                             messageLogger.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
                         } else {
-                            clientGroupWrapper.get().getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum()
+                            Objects.requireNonNull(clientGroupWrapper.get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum()
                                 .incrementAndGet();
                         }
                     }
@@ -234,7 +234,7 @@ public class Session {
     public String toString() {
         return "Session{"
             +
-            "sysId=" + clientGroupWrapper.get().getSysId()
+            "sysId=" + Objects.requireNonNull(clientGroupWrapper.get()).getSysId()
             +
             ",remoteAddr=" + RemotingHelper.parseSocketAddressAddr(remoteAddress)
             +
