@@ -37,14 +37,14 @@ func NewEventMeshHttpProducer(eventMeshHttpClientConfig conf.EventMeshHttpClient
 
 func (e *EventMeshHttpProducer) PublishCloudEvent(event *cloudevents.Event) error {
 	if event == nil {
-		return errors.New("publish cloud event message failed, message is nil")
+		return errors.New("publish CloudEvent message failed, message is nil")
 	}
 	return e.cloudEventProducer.Publish(event)
 }
 
 func (e *EventMeshHttpProducer) RequestCloudEvent(event *cloudevents.Event, timeout time.Duration) (*cloudevents.Event, error) {
 	if event == nil {
-		return nil, errors.New("request cloud event message failed, message is nil")
+		return nil, errors.New("request CloudEvent message failed, message is nil")
 	}
 	return e.cloudEventProducer.Request(event, timeout)
 }

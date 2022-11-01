@@ -87,7 +87,7 @@ func (c *EventMeshMessageProducer) Request(message *protocol.EventMeshMessage, t
 func (c *EventMeshMessageProducer) transferMessage(retObj *http.EventMeshRetObj) (message *protocol.EventMeshMessage, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = errors.New("fail to transfer from EventMeshRetObj to CloudEvent")
+			err = errors.New("fail to transfer from EventMeshRetObj to EventMeshMessage")
 		}
 	}()
 	var replyMessage http.ReplyMessage
