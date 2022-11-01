@@ -99,7 +99,7 @@ public class HTTP {
 
 ### 事件发送
 
-启动EventMesh运行时服务后，可以使用Curl命令将事件用HTTP POST方法发布到指定的主题，Body内容必须是JSON格式，执行命令示例如下:
+启动EventMesh Runtime服务后，可以使用Curl命令将事件用HTTP POST方法发布到指定的主题，Body内容必须是JSON格式，执行命令示例如下:
 
 ```shell
 curl -H "Content-Type:application/json" -X POST -d '{"name": "admin", "pass":"12345678"}' http://127.0.0.1:10105/eventmesh/publish/TEST-TOPIC-HTTP-ASYNC
@@ -109,7 +109,7 @@ curl -H "Content-Type:application/json" -X POST -d '{"name": "admin", "pass":"12
 
 ### 事件订阅
 
-启动EventMesh运行时服务器后，可以使用Curl命令用HTTP POST方法订阅指定的主题列表，Body内容必须是JSON格式，执行命令示例如下: ，您将获得订阅成功的结果:
+启动EventMesh Runtime服务后，可以使用Curl命令用HTTP POST方法订阅指定的主题列表，Body内容必须是JSON格式，执行命令示例如下:
 
 ```shell
 curl -H "Content-Type:application/json" -X POST -d '{"url": "http://127.0.0.1:8088/sub/test", "consumerGroup":"TEST-GROUP", "topic":[{"mode":"CLUSTERING","topic":"TEST-TOPIC-HTTP-ASYNC","type":"ASYNC"}]}' http://127.0.0.1:10105/eventmesh/subscribe/local
