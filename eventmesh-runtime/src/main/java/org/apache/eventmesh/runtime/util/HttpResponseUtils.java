@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.runtime.util;
 
-import org.apache.eventmesh.common.Constants;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -29,29 +27,30 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
+import org.apache.eventmesh.common.Constants;
 
 public class HttpResponseUtils {
 
-    public static final HttpResponse createSuccess() {
+    public static HttpResponse createSuccess() {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
     }
 
-    public static final HttpResponse createNotFound() {
+    public static HttpResponse createNotFound() {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
     }
 
-    public static final HttpResponse createInternalServerError() {
+    public static HttpResponse createInternalServerError() {
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private static final ByteBuf crateByteBuf(ChannelHandlerContext ctx, String body) {
+    private static ByteBuf crateByteBuf(ChannelHandlerContext ctx, String body) {
         byte[] bytes = body.getBytes(Constants.DEFAULT_CHARSET);
         ByteBuf byteBuf = ctx.alloc().buffer(bytes.length);
         byteBuf.writeBytes(bytes);
         return byteBuf;
     }
 
-    public static final HttpResponse setResponseJsonBody(String body, ChannelHandlerContext ctx) {
+    public static HttpResponse setResponseJsonBody(String body, ChannelHandlerContext ctx) {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, crateByteBuf(ctx, body),
@@ -59,7 +58,7 @@ public class HttpResponseUtils {
 
     }
 
-    public static final HttpResponse setResponseTextBody(String body, ChannelHandlerContext ctx) {
+    public static HttpResponse setResponseTextBody(String body, ChannelHandlerContext ctx) {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_HTML);
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, crateByteBuf(ctx, body),
