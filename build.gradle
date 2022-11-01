@@ -419,7 +419,7 @@ subprojects {
         sign publishing.publications.mavenJava
     }
 
-    def grpcVersion = '1.42.2'
+    def grpcVersion = '1.43.2'
 
     dependencyManagement {
         dependencies {
@@ -444,7 +444,7 @@ subprojects {
             dependency "org.asynchttpclient:async-http-client:2.12.0"
             dependency "org.apache.httpcomponents:httpclient:4.5.13"
 
-            dependency "io.netty:netty-all:4.1.73.Final"
+            dependency "io.netty:netty-all:4.1.79.Final"
 
             dependency 'io.dropwizard.metrics:metrics-core:4.1.0'
             dependency "io.dropwizard.metrics:metrics-healthchecks:4.1.0"
@@ -492,6 +492,8 @@ subprojects {
 
             dependency "org.yaml:snakeyaml:1.30"
             dependency "org.javassist:javassist:3.24.0-GA"
+
+            dependency "com.alibaba.nacos:nacos-client:2.1.0"
 
         }
     }
