@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,25 +17,25 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ServerGlobal {
+/**
+ * ServerGlobal test cases.
+ */
+public class ServerGlobalTest {
 
-    private static class SerGlobalHolder {
-        private static final ServerGlobal singleton = new ServerGlobal();
+    @Test
+    public void testGetMsgCounter() {
+        ServerGlobal.getInstance().setMsgCounter(new AtomicLong(1L));
+        Assert.assertEquals(1L, ServerGlobal.getInstance().getMsgCounter().get());
     }
 
-    public static ServerGlobal getInstance() {
-        return SerGlobalHolder.singleton;
-    }
-
-    private AtomicLong msgCounter = new AtomicLong();
-
-    public AtomicLong getMsgCounter() {
-        return msgCounter;
-    }
-
-    public void setMsgCounter(AtomicLong msgCounter) {
-        this.msgCounter = msgCounter;
+    @Test
+    public void testSetMsgCounter() {
+        ServerGlobal.getInstance().setMsgCounter(new AtomicLong(1L));
+        Assert.assertEquals(1L, ServerGlobal.getInstance().getMsgCounter().get());
     }
 }
