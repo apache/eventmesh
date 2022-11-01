@@ -120,7 +120,6 @@ netty-handler-4.1.79.Final.jar
 netty-handler-proxy-4.1.79.Final.jar
 netty-reactive-streams-2.0.4.jar
 netty-resolver-4.1.79.Final.jar
-netty-resolver-dns-4.1.73.Final.jar
 netty-resolver-dns-4.1.79.Final.jar
 netty-resolver-dns-classes-macos-4.1.79.Final.jar
 netty-resolver-dns-native-macos-4.1.79.Final-osx-aarch_64.jar
