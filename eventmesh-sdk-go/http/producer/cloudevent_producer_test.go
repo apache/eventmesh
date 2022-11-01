@@ -31,7 +31,7 @@ import (
 	"time"
 )
 
-func TestEventMeshHttpProducer_Publish(t *testing.T) {
+func TestEventMeshHttpProducer_PublishCloudEvent(t *testing.T) {
 	f := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"retCode":0}`))
@@ -57,11 +57,11 @@ func TestEventMeshHttpProducer_Publish(t *testing.T) {
 	}
 	// Publish event
 	httpProducer := NewEventMeshHttpProducer(eventMeshClientConfig)
-	err = httpProducer.Publish(&event)
+	err = httpProducer.PublishCloudEvent(&event)
 	assert.Nil(t, err)
 }
 
-func TestEventMeshHttpProducer_Request(t *testing.T) {
+func TestEventMeshHttpProducer_RequestCloudEvent(t *testing.T) {
 	f := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"retCode":0, "retMsg":"{\"topic\":\"test-topic\",\"body\":\"{\\\"data\\\":1}\",\"properties\":null}"}`))
@@ -88,7 +88,7 @@ func TestEventMeshHttpProducer_Request(t *testing.T) {
 	}
 
 	httpProducer := NewEventMeshHttpProducer(eventMeshClientConfig)
-	ret, err := httpProducer.Request(&event, time.Second)
+	ret, err := httpProducer.RequestCloudEvent(&event, time.Second)
 	assert.Nil(t, err)
 	retData := make(map[string]interface{})
 	utils.UnMarshalJsonString(string(ret.DataEncoded), &retData)

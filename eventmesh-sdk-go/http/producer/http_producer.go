@@ -17,32 +17,48 @@ package producer
 
 import (
 	"errors"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"time"
 )
 
 type EventMeshHttpProducer struct {
-	cloudEventProducer *CloudEventProducer
+	cloudEventProducer       *CloudEventProducer
+	eventMeshMessageProducer *EventMeshMessageProducer
 }
 
 func NewEventMeshHttpProducer(eventMeshHttpClientConfig conf.EventMeshHttpClientConfig) *EventMeshHttpProducer {
 	return &EventMeshHttpProducer{
-		cloudEventProducer: NewCloudEventProducer(eventMeshHttpClientConfig),
+		cloudEventProducer:       NewCloudEventProducer(eventMeshHttpClientConfig),
+		eventMeshMessageProducer: NewEventMeshMessageProducer(eventMeshHttpClientConfig),
 	}
 }
 
-func (e *EventMeshHttpProducer) Publish(event *cloudevents.Event) error {
+func (e *EventMeshHttpProducer) PublishCloudEvent(event *cloudevents.Event) error {
 	if event == nil {
-		return errors.New("publish message failed, message is nil")
+		return errors.New("publish cloud event message failed, message is nil")
 	}
-
 	return e.cloudEventProducer.Publish(event)
 }
 
-func (e *EventMeshHttpProducer) Request(event *cloudevents.Event, timeout time.Duration) (*cloudevents.Event, error) {
+func (e *EventMeshHttpProducer) RequestCloudEvent(event *cloudevents.Event, timeout time.Duration) (*cloudevents.Event, error) {
 	if event == nil {
-		return nil, errors.New("request message failed, message is nil")
+		return nil, errors.New("request cloud event message failed, message is nil")
 	}
 	return e.cloudEventProducer.Request(event, timeout)
+}
+
+func (e *EventMeshHttpProducer) PublishEventMeshMessage(message *protocol.EventMeshMessage) error {
+	if message == nil {
+		return errors.New("publish EventMesh message failed, message is nil")
+	}
+	return e.eventMeshMessageProducer.Publish(message)
+}
+
+func (e *EventMeshHttpProducer) RequestEventMeshMessage(message *protocol.EventMeshMessage, timeout time.Duration) (*protocol.EventMeshMessage, error) {
+	if message == nil {
+		return nil, errors.New("request EventMesh message failed, message is nil")
+	}
+	return e.eventMeshMessageProducer.Request(message, timeout)
 }
