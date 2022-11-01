@@ -16,13 +16,22 @@
 package producer
 
 import (
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"time"
 )
 
 type EventMeshProtocolProducer interface {
-	Publish(event *cloudevents.Event) error
-	Request(event *cloudevents.Event, timeout time.Duration) (*cloudevents.Event, error)
 
-	// TODO: add EventMeshMessage and OpenMessage support
+	// PublishCloudEvent publish with CloudEvent protocol
+	PublishCloudEvent(event *cloudevents.Event) error
+	// RequestCloudEvent request with CloudEvent protocol
+	RequestCloudEvent(event *cloudevents.Event, timeout time.Duration) (*cloudevents.Event, error)
+
+	// PublishEventMeshMessage publish with EventMeshMessage protocol
+	PublishEventMeshMessage(message *protocol.EventMeshMessage) error
+	// RequestEventMeshMessage request with EventMeshMessage protocol
+	RequestEventMeshMessage(message *protocol.EventMeshMessage, timeout time.Duration) (*protocol.EventMeshMessage, error)
+
+	// TODO: add OpenMessage support
 }

@@ -20,11 +20,11 @@ import (
 	"fmt"
 	gcommon "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/http/common"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/http/message"
+	protocol_message "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/http/message"
 	gutils "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/constant"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/utils"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
@@ -115,13 +115,13 @@ func (c *CloudEventProducer) buildCommonPostParam(event *cloudevents.Event) *mod
 	requestParam.AddHeader(common.ProtocolKey.ClientInstanceKey.USERNAME, c.EventMeshHttpClientConfig.UserName())
 	requestParam.AddHeader(common.ProtocolKey.ClientInstanceKey.PASSWORD, c.EventMeshHttpClientConfig.Password())
 	requestParam.AddHeader(common.ProtocolKey.LANGUAGE, gcommon.Constants.LANGUAGE_GO)
-	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_TYPE, constant.CloudEventsProtocol)
-	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_DESC, constant.ProtocolDesc)
+	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_TYPE, constants.CloudEventsProtocol)
+	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_DESC, constants.ProtocolDesc)
 	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_VERSION, event.SpecVersion())
 
 	// todo: move producerGroup tp header
-	requestParam.AddBody(message.SendMessageRequestBodyKey.PRODUCERGROUP, c.EventMeshHttpClientConfig.ProducerGroup())
-	requestParam.AddBody(message.SendMessageRequestBodyKey.CONTENT, content)
+	requestParam.AddBody(protocol_message.SendMessageRequestBodyKey.PRODUCERGROUP, c.EventMeshHttpClientConfig.ProducerGroup())
+	requestParam.AddBody(protocol_message.SendMessageRequestBodyKey.CONTENT, content)
 
 	return requestParam
 }
