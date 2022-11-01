@@ -40,16 +40,16 @@ import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class WorkflowAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
+public class WorkflowExpressAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static WorkflowAsyncSubscribe handler = new WorkflowAsyncSubscribe();
+    public static WorkflowExpressAsyncSubscribe handler = new WorkflowExpressAsyncSubscribe();
     public static EventMeshWorkflowClient workflowClient;
 
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
-        final String serverName = "express";
+        final String serverName = "expressapp";
         final String catalogServerName = properties.getProperty(ExampleConstants.EVENTMESH_CATALOG_NAME);
         final String workflowServerName = properties.getProperty(ExampleConstants.EVENTMESH_WORKFLOW_NAME);
         final String selectorType = properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_TYPE);
@@ -77,7 +77,7 @@ public class WorkflowAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> 
         EventMeshWorkflowClientConfig eventMeshWorkflowClientConfig = EventMeshWorkflowClientConfig.builder().serverName(workflowServerName).build();
         workflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
 
-        Thread.sleep(60000);
+        Thread.sleep(60000000);
         eventMeshCatalogClient.destroy();
     }
 
@@ -88,7 +88,7 @@ public class WorkflowAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> 
         String workflowInstanceId = props.get("workflowinstanceid");
         String taskInstanceId = props.get("workflowtaskinstanceid");
 
-        ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setId("storeorderworkflow")
+        ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setId("testcreateworkflow")
             .setTaskInstanceId(taskInstanceId)
             .setInstanceId(workflowInstanceId).build();
         ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);

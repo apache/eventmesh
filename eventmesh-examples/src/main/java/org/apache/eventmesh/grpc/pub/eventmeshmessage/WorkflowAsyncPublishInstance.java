@@ -73,7 +73,7 @@ public class WorkflowAsyncPublishInstance {
         Map<String, String> content = new HashMap<>();
         content.put("order_no", "workflowmessage");
         executeRequest.setInput(new Gson().toJson(content));
-        executeRequest.setId("storeorderworkflow");
+        executeRequest.setId("testcreateworkflow");
         ExecuteResponse response = eventMeshWorkflowClient.getWorkflowClient().execute(executeRequest.build());
         logger.info("received response: {}", response.toString());
 
