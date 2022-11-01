@@ -49,7 +49,7 @@ public class WorkflowOrderAsyncSubscribe implements ReceiveMsgHook<EventMeshMess
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
         final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
-        final String serverName = "order";
+        final String serverName = "orderapp";
         final String workflowServerName = properties.getProperty(ExampleConstants.EVENTMESH_WORKFLOW_NAME);
         final String catalogServerName = properties.getProperty(ExampleConstants.EVENTMESH_CATALOG_NAME);
         final String selectorType = properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_TYPE);
@@ -58,8 +58,8 @@ public class WorkflowOrderAsyncSubscribe implements ReceiveMsgHook<EventMeshMess
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
             .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .env("test").idc("default").password("password")
-            .sys("default").build();
+            .env("PRD").idc("DEFAULT").password("password")
+            .sys("DEFAULT").build();
 
         EventMeshGrpcConsumer eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();
@@ -77,7 +77,7 @@ public class WorkflowOrderAsyncSubscribe implements ReceiveMsgHook<EventMeshMess
         EventMeshWorkflowClientConfig eventMeshWorkflowClientConfig = EventMeshWorkflowClientConfig.builder().serverName(workflowServerName).build();
         workflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
 
-        Thread.sleep(60000);
+        Thread.sleep(60000000);
         eventMeshCatalogClient.destroy();
     }
 
@@ -89,7 +89,7 @@ public class WorkflowOrderAsyncSubscribe implements ReceiveMsgHook<EventMeshMess
         String workflowInstanceId = props.get("workflowinstanceid");
         String taskInstanceId = props.get("workflowtaskinstanceid");
 
-        ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setId("storeorderworkflow")
+        ExecuteRequest executeRequest = ExecuteRequest.newBuilder().setId("testcreateworkflow")
             .setTaskInstanceId(taskInstanceId)
             .setInstanceId(workflowInstanceId).build();
         ExecuteResponse response = workflowClient.getWorkflowClient().execute(executeRequest);
