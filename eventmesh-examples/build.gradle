@@ -30,7 +30,7 @@ dependencies {
     implementation "io.cloudevents:cloudevents-core"
     implementation "io.cloudevents:cloudevents-json-jackson"
     implementation "io.openmessaging:openmessaging-api"
-    implementation 'com.alibaba.nacos:nacos-client:2.1.0'
+    implementation 'com.alibaba.nacos:nacos-client'
 
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
     implementation "io.grpc:grpc-stub:${grpcVersion}"
