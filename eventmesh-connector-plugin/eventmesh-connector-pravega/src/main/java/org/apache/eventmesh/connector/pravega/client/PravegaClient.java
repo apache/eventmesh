@@ -153,7 +153,6 @@ public class PravegaClient {
             deleteReaderGroup(buildReaderGroupName(false, consumerGroup, topic));
         }
         subscribeTaskMap.remove(topic).stopRead();
-        writerMap.remove(topic).close();
         return true;
     }
 
