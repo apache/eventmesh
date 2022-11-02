@@ -17,10 +17,11 @@
 
 package org.apache.eventmesh.runtime.util;
 
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpVersion;
 import org.junit.Assert;
 import org.junit.Test;
+
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 
 /**
  * HttpResponseUtils test cases.

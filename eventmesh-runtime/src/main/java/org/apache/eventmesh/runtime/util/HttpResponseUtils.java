@@ -18,6 +18,7 @@
 package org.apache.eventmesh.runtime.util;
 
 import org.apache.eventmesh.common.Constants;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -54,7 +55,7 @@ public class HttpResponseUtils {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON);
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, crateByteBuf(ctx, body),
-                responseHeaders, responseHeaders);
+            responseHeaders, responseHeaders);
 
     }
 
@@ -62,7 +63,7 @@ public class HttpResponseUtils {
         HttpHeaders responseHeaders = new DefaultHttpHeaders();
         responseHeaders.add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.TEXT_HTML);
         return new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, crateByteBuf(ctx, body),
-                responseHeaders, responseHeaders);
+            responseHeaders, responseHeaders);
     }
 
 }
