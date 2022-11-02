@@ -59,7 +59,7 @@ public class SubScribeTask implements Runnable {
                     if (message != null) {
                         Object tmpOffset = message.getExtension("offset");
                         if (tmpOffset instanceof Integer) {
-                            offset = new AtomicInteger((Integer) tmpOffset);
+                            offset = new AtomicInteger(Integer.parseInt(tmpOffset.toString()));
                         } else {
                             offset = new AtomicInteger(0);
                         }
