@@ -19,11 +19,10 @@ package org.apache.eventmesh.connector.pravega.config;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.PropertiesUtils;
+
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -47,7 +46,7 @@ public class PravegaConnectorConfigWrapper {
     }
 
     /**
-     * Load DLedger properties file from classpath and conf home.
+     * Load Pravega properties file from classpath and conf home.
      * The properties defined in conf home will override classpath.
      */
     private void loadProperties() {
