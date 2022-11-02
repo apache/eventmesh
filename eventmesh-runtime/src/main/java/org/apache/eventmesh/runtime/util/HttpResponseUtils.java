@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.apache.eventmesh.common.Constants;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -27,7 +28,6 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import org.apache.eventmesh.common.Constants;
 
 public class HttpResponseUtils {
 
