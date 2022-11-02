@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.trace.pinpoint.exporter;
 
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.REQ_IP;
 import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.UNKNOWN_REQ_IP;
+
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.IPUtils;
@@ -284,7 +285,6 @@ public final class PinpointSpanExporter implements SpanExporter {
 
     private Span toSpan(SpanData spanData) {
         long startTimestamp = toMillis(spanData.getStartEpochNanos());
-        long endTimestamp = toMillis(spanData.getEndEpochNanos());
         long transactionId = hex32StringToLong(spanData.getTraceId());
         long spanId = hex16StringToLong(spanData.getSpanId());
         final long[] parentSpanId = {SpanId.NULL};
@@ -315,6 +315,7 @@ public final class PinpointSpanExporter implements SpanExporter {
         }
 
         span.setStartTime(startTimestamp);
+        long endTimestamp = toMillis(spanData.getEndEpochNanos());
         span.setElapsedTime((int) (endTimestamp - startTimestamp));
         span.setServiceType(ServiceType.STAND_ALONE.getCode());
         span.setRemoteAddr(UNKNOWN_REQ_IP);
@@ -373,6 +374,10 @@ public final class PinpointSpanExporter implements SpanExporter {
     }
 
     private static String getEndpoint(Resource resource) {
+        if (resource == null) {
+            return null;
+        }
+
         Attributes resourceAttributes = resource.getAttributes();
 
         String serviceNameValue = resourceAttributes.get(ResourceAttributes.SERVICE_NAME);
