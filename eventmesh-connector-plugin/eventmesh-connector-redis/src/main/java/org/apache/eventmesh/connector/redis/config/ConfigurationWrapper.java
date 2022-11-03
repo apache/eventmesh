@@ -17,15 +17,17 @@
 
 package org.apache.eventmesh.connector.redis.config;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.PropertiesUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ConfigurationWrapper {

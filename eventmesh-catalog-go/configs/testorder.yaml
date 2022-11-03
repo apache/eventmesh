@@ -21,11 +21,11 @@ info:
 channels:
   order/create:
     publish:
-      operationId: rsendOrder
+      operationId: sendOrder
       message:
         $ref: '#/components/messages/Order'
     subscribe:
-      operationId: rreceiveOrder
+      operationId: receiveOrder
       message:
         $ref: '#/components/messages/Order'
 components:

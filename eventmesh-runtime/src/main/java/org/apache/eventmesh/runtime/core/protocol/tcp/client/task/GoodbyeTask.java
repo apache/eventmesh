@@ -27,9 +27,9 @@ import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.util.Utils;
 
-import io.netty.channel.ChannelHandlerContext;
-
 import java.util.Arrays;
+
+import io.netty.channel.ChannelHandlerContext;
 
 public class GoodbyeTask extends AbstractTask {
 

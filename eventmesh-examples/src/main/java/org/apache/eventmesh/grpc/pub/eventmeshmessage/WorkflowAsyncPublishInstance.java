@@ -66,14 +66,15 @@ public class WorkflowAsyncPublishInstance {
         nacosSelector.init();
         SelectorFactory.register(selectorType, nacosSelector);
 
-        EventMeshWorkflowClientConfig eventMeshWorkflowClientConfig = EventMeshWorkflowClientConfig.builder().serverName(workflowServerName).build();
-        EventMeshWorkflowClient eventMeshWorkflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
 
         ExecuteRequest.Builder executeRequest = ExecuteRequest.newBuilder();
         Map<String, String> content = new HashMap<>();
         content.put("order_no", "workflowmessage");
         executeRequest.setInput(new Gson().toJson(content));
-        executeRequest.setId("storeorderworkflow");
+        executeRequest.setId("testcreateworkflow");
+
+        EventMeshWorkflowClientConfig eventMeshWorkflowClientConfig = EventMeshWorkflowClientConfig.builder().serverName(workflowServerName).build();
+        EventMeshWorkflowClient eventMeshWorkflowClient = new EventMeshWorkflowClient(eventMeshWorkflowClientConfig);
         ExecuteResponse response = eventMeshWorkflowClient.getWorkflowClient().execute(executeRequest.build());
         logger.info("received response: {}", response.toString());
 
