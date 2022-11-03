@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * ServerGlobal test cases.
