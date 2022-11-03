@@ -19,6 +19,11 @@
 
 package org.apache.eventmesh.grpc.sub.app.service;
 
+import static org.apache.eventmesh.common.ExampleConstants.ENV;
+import static org.apache.eventmesh.common.ExampleConstants.IDC;
+import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
+import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
+
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.common.ExampleConstants;
@@ -39,11 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
-
-import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
-import static org.apache.eventmesh.common.ExampleConstants.ENV;
-import static org.apache.eventmesh.common.ExampleConstants.IDC;
-import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
 
 @Component
 public class SubService implements InitializingBean {
