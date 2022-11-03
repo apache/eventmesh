@@ -28,9 +28,9 @@ import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
 
-import io.netty.channel.ChannelHandlerContext;
-
 import java.util.Objects;
+
+import io.netty.channel.ChannelHandlerContext;
 
 public class HeartBeatTask extends AbstractTask {
 

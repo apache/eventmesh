@@ -55,7 +55,8 @@ public class ClientAckContext {
         this.events = events;
         this.consumer = consumer;
         this.createTime = System.currentTimeMillis();
-        String ttlStr = events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL) == null ? "" : events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL).toString();
+        String ttlStr = events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL) == null ? "" :
+            events.get(0).getExtension(EventMeshConstants.PROPERTY_MESSAGE_TTL).toString();
         long ttl = StringUtils.isNumeric(ttlStr) ? Long.parseLong(ttlStr) : EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS;
         this.expireTime = System.currentTimeMillis() + ttl;
     }
