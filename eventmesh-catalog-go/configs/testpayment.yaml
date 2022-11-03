@@ -21,11 +21,11 @@ info:
 channels:
   payment/create:
     publish:
-      operationId: sendOrder
+      operationId: sendPayment
       message:
         $ref: '#/components/messages/Order'
     subscribe:
-      operationId: receiveOrder
+      operationId: receivePayment
       message:
         $ref: '#/components/messages/Order'
 components:
