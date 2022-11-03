@@ -22,14 +22,11 @@ import org.apache.eventmesh.api.exception.ConnectorRuntimeException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
 
 public abstract class AbstractProducer {
 
-    static final Logger logger = LoggerFactory.getLogger(AbstractProducer.class);
     protected final AtomicBoolean started = new AtomicBoolean(false);
     final Properties properties;
 
@@ -43,9 +40,9 @@ public abstract class AbstractProducer {
 
     ConnectorRuntimeException checkProducerException(CloudEvent cloudEvent, Throwable e) {
         if (cloudEvent.getData() == null) {
-            return new ConnectorRuntimeException(String.format("CloudEvent message data does not exist.", e));
+            return new ConnectorRuntimeException(String.format("CloudEvent message data does not exist, %s", e.getMessage()));
         }
-        return new ConnectorRuntimeException(String.format("Unknown connector runtime exception.", e));
+        return new ConnectorRuntimeException(String.format("Unknown connector runtime exception, %s", e.getMessage()));
     }
 
     public boolean isStarted() {

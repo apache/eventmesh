@@ -42,8 +42,8 @@ git checkout -b fix_patch_xx
 4. Keep your branch in sync
 ```git
 git remote add upstream git@github.com:apache/incubator-eventmesh.git
-git fetch upstream develop:upstream_develop
-git rebase upstream_develop
+git fetch upstream master:upstream_master
+git rebase upstream_master
 ```
 
 5. Commit your changes (make sure your commit message concise)

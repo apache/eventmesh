@@ -120,6 +120,7 @@ public class PravegaClient {
         try {
             writer.writeEvent(PravegaEvent.toByteArray(pravegaEvent)).get(5, TimeUnit.SECONDS);
         } catch (ExecutionException | InterruptedException | TimeoutException e) {
+            log.error(String.format("Write topic[%s] fail.", topic),e);
             throw new PravegaConnectorException(String.format("Write topic[%s] fail.", topic));
         }
         SendResult sendResult = new SendResult();
