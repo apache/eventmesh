@@ -17,8 +17,11 @@
 
 package org.apache.eventmesh.protocol.http;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import io.cloudevents.CloudEvent;
+import static org.apache.eventmesh.protocol.http.HttpProtocolConstant.CONSTANTS_KEY_BODY;
+import static org.apache.eventmesh.protocol.http.HttpProtocolConstant.CONSTANTS_KEY_HEADERS;
+import static org.apache.eventmesh.protocol.http.HttpProtocolConstant.CONSTANTS_KEY_METHOD;
+import static org.apache.eventmesh.protocol.http.HttpProtocolConstant.CONSTANTS_KEY_PATH;
+
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
@@ -34,7 +37,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.eventmesh.protocol.http.HttpProtocolConstant.*;
+import io.cloudevents.CloudEvent;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
 
 /**
  * CloudEvents protocol adaptor, used to transform CloudEvents message to CloudEvents message.
@@ -92,8 +98,8 @@ public class HttpProtocolAdaptor<T extends ProtocolTransportObject>
         // ce data
         if (null != cloudEvent.getData()) {
             Map<String, Object> dataContentMap = JsonUtils.deserialize(new String(cloudEvent.getData().toBytes(), Constants.DEFAULT_CHARSET),
-                    new TypeReference<Map<String, Object>>() {
-                    });
+                new TypeReference<Map<String, Object>>() {
+                });
             String requestHeader = JsonUtils.serialize(dataContentMap.get(CONSTANTS_KEY_HEADERS));
             byte[] requestBody = JsonUtils.serialize(dataContentMap.get(CONSTANTS_KEY_BODY)).getBytes(StandardCharsets.UTF_8);
             Map<String, Object> requestHeaderMap = JsonUtils.deserialize(requestHeader, new TypeReference<Map<String, Object>>() {

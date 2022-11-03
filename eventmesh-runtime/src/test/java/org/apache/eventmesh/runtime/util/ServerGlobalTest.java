@@ -15,9 +15,27 @@
  * limitations under the License.
  */
 
-dependencies {
-    implementation "com.alibaba.nacos:nacos-client"
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-api")
-    implementation project(":eventmesh-common")
-    testImplementation "org.mockito:mockito-core"
+package org.apache.eventmesh.runtime.util;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+/**
+ * ServerGlobal test cases.
+ */
+public class ServerGlobalTest {
+
+    @Test
+    public void testGetMsgCounter() {
+        ServerGlobal.getInstance().setMsgCounter(new AtomicLong(1L));
+        Assert.assertEquals(1L, ServerGlobal.getInstance().getMsgCounter().get());
+    }
+
+    @Test
+    public void testSetMsgCounter() {
+        ServerGlobal.getInstance().setMsgCounter(new AtomicLong(1L));
+        Assert.assertEquals(1L, ServerGlobal.getInstance().getMsgCounter().get());
+    }
 }

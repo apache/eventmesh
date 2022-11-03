@@ -65,10 +65,13 @@ func (t *switchTask) Run() error {
 		}
 		res, err := t.jq.One(jqData, transition.Condition)
 		if err != nil {
-			continue
+			return err
 		}
 		boolValue, err := strconv.ParseBool(gconv.String(res))
-		if err != nil || !boolValue {
+		if err != nil {
+			return err
+		}
+		if !boolValue {
 			continue
 		}
 		var taskInstance = model.WorkflowTaskInstance{WorkflowInstanceID: t.workflowInstanceID,

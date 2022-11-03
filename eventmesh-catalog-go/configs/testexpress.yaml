@@ -13,14 +13,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-server.port=8088
-server.name=orderapp
-eventmesh.ip=127.0.0.1
-eventmesh.http.port=10105
-eventmesh.tcp.port=10000
-eventmesh.grpc.port=10205
-eventmesh.selector.type=nacos
-eventmesh.selector.nacos.address=127.0.0.1:8848
-eventmesh.catalog.name=EVENTMESH-catalog
-eventmesh.workflow.name=EVENTMESH-workflow
+
+asyncapi: 2.3.0
+info:
+  title: expressapp
+  version: '0.1.0'
+channels:
+  express/create:
+    publish:
+      operationId: sendExpress
+      message:
+        $ref: '#/components/messages/Order'
+    subscribe:
+      operationId: receiveExpress
+      message:
+        $ref: '#/components/messages/Order'
+components:
+  messages:
+    Order:
+      payload:
+        type: object
+        properties:
+          orderNo:
+            type: string
+          Amount:
+            type: string
