@@ -34,10 +34,10 @@ import org.apache.eventmesh.trace.api.common.EventMeshTraceConstants;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +106,11 @@ public class SessionPusher {
         } catch (Exception e) {
             pkg.setHeader(new Header(cmd, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), downStreamMsgContext.seq));
         } finally {
-            Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
+            Objects.requireNonNull(session.getClientGroupWrapper().get())
+                .getEventMeshTcpMonitor()
+                .getTcpSummaryMetrics()
+                .getEventMesh2clientMsgNum()
+                .incrementAndGet();
 
             //TODO uploadTrace
             String protocolVersion = Objects.requireNonNull(downStreamMsgContext.event.getSpecVersion()).toString();
@@ -116,35 +120,35 @@ public class SessionPusher {
 
             try {
                 session.getContext().writeAndFlush(pkg).addListener(
-                        (ChannelFutureListener) future -> {
-                            if (!future.isSuccess()) {
-                                logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, event:{}", downStreamMsgContext.seq,
-                                    downStreamMsgContext.retryTimes, downStreamMsgContext.event);
-                                deliverFailMsgsCount.incrementAndGet();
+                    (ChannelFutureListener) future -> {
+                        if (!future.isSuccess()) {
+                            logger.error("downstreamMsg fail,seq:{}, retryTimes:{}, event:{}", downStreamMsgContext.seq,
+                                downStreamMsgContext.retryTimes, downStreamMsgContext.event);
+                            deliverFailMsgsCount.incrementAndGet();
 
-                                //how long to isolate client when push fail
-                                long isolateTime = System.currentTimeMillis()
-                                    + session.getEventMeshTCPConfiguration().eventMeshTcpPushFailIsolateTimeInMills;
-                                session.setIsolateTime(isolateTime);
-                                logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
+                            //how long to isolate client when push fail
+                            long isolateTime = System.currentTimeMillis()
+                                + session.getEventMeshTCPConfiguration().eventMeshTcpPushFailIsolateTimeInMills;
+                            session.setIsolateTime(isolateTime);
+                            logger.warn("isolate client:{},isolateTime:{}", session.getClient(), isolateTime);
 
-                                //retry
-                                long delayTime = SubscriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
-                                    ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
-                                    : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
-                                downStreamMsgContext.delay(delayTime);
-                                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
-                            } else {
-                                deliveredMsgsCount.incrementAndGet();
-                                logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
-                                    downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.event));
+                            //retry
+                            long delayTime = SubscriptionType.SYNC.equals(downStreamMsgContext.subscriptionItem.getType())
+                                ? session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetrySyncDelayInMills
+                                : session.getEventMeshTCPConfiguration().eventMeshTcpMsgRetryAsyncDelayInMills;
+                            downStreamMsgContext.delay(delayTime);
+                            Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpRetryer().pushRetry(downStreamMsgContext);
+                        } else {
+                            deliveredMsgsCount.incrementAndGet();
+                            logger.info("downstreamMsg success,seq:{}, retryTimes:{}, bizSeq:{}", downStreamMsgContext.seq,
+                                downStreamMsgContext.retryTimes, EventMeshUtil.getMessageBizSeq(downStreamMsgContext.event));
 
-                                if (session.isIsolated()) {
-                                    logger.info("cancel isolated,client:{}", session.getClient());
-                                    session.setIsolateTime(System.currentTimeMillis());
-                                }
+                            if (session.isIsolated()) {
+                                logger.info("cancel isolated,client:{}", session.getClient());
+                                session.setIsolateTime(System.currentTimeMillis());
                             }
                         }
+                    }
                 );
             } finally {
                 TraceUtils.finishSpan(span, downStreamMsgContext.event);

@@ -219,7 +219,10 @@ public class Session {
                         if (!future.isSuccess()) {
                             messageLogger.error("write2Client fail, pkg[{}] session[{}]", pkg, this);
                         } else {
-                            Objects.requireNonNull(clientGroupWrapper.get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum()
+                            Objects.requireNonNull(clientGroupWrapper.get())
+                                .getEventMeshTcpMonitor()
+                                .getTcpSummaryMetrics()
+                                .getEventMesh2clientMsgNum()
                                 .incrementAndGet();
                         }
                     }

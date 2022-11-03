@@ -117,9 +117,12 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
         byte[] requestBody = requestWrapper.getBody();
 
         Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {});
+            new TypeReference<HashMap<String, Object>>() {
+            });
 
-        if (requestBodyMap.get(EventMeshConstants.URL) == null || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null) {
+        if (requestBodyMap.get(EventMeshConstants.URL) == null
+            || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
+            || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                 responseBodyMap, null);
             return;
@@ -159,8 +162,9 @@ public class RemoteUnSubscribeEventProcessor extends AbstractEventProcessor impl
             remoteBodyMap.put(EventMeshConstants.CONSUMER_GROUP, meshGroup);
             remoteBodyMap.put(EventMeshConstants.MANAGE_TOPIC, requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC));
 
-            List<String> unSubTopicList = JsonUtils.deserialize(JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)), new TypeReference<List<String>>() {
-            });
+            List<String> unSubTopicList =
+                JsonUtils.deserialize(JsonUtils.serialize(requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC)), new TypeReference<List<String>>() {
+                });
 
             String targetMesh = "";
             if (!Objects.isNull(requestBodyMap.get("remoteMesh"))) {
