@@ -43,10 +43,17 @@ var _ = Describe("id_snake test", func() {
 					ret = err.(error).Error()
 					Ω(ret).To(Equal(want))
 				}
+
+				So(ret, ShouldEqual, want)
+
 				mockPatches.Reset()
 			}()
 
 			_ = NewFlake()
+<<<<<<< HEAD
+=======
+
+>>>>>>> c5eee894 (bug fix id_snake_test)
 		})
 	})
 
@@ -77,10 +84,15 @@ var _ = Describe("id_snake test", func() {
 					ret = err.(error).Error()
 					Ω(want).To(Equal(ret))
 				}
+				So(ret, ShouldEqual, want)
 				mockPatches.Reset()
 			}()
 
 			_ = flake.Next()
+<<<<<<< HEAD
+=======
+
+>>>>>>> c5eee894 (bug fix id_snake_test)
 		})
 	})
 
