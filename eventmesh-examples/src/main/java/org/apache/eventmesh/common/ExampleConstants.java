@@ -52,8 +52,8 @@ public class ExampleConstants {
 
     public static final String EVENTMESH_SELECTOR_TYPE = "eventmesh.selector.type";
 
-	public static final String ENV = "P";
-	public static final String IDC = "FT";
-	public static final String SUB_SYS = "1234";
-	public static final String SERVER_PORT = "server.port";
+    public static final String ENV = "P";
+    public static final String IDC = "FT";
+    public static final String SUB_SYS = "1234";
+    public static final String SERVER_PORT = "server.port";
 }
