@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.knative.cloudevent;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeMessageWriter;
 
 import java.nio.charset.StandardCharsets;
@@ -24,6 +25,7 @@ import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
 
+@Slf4j
 public final class KnativeMessageFactory {
 
     private KnativeMessageFactory() {
@@ -31,6 +33,10 @@ public final class KnativeMessageFactory {
     }
 
     public static String createReader(final CloudEvent message) {
+        if (message.getData() == null) {
+            log.warn("CloudEvent message's data is null.");
+            return "";
+        }
         return new String(message.getData().toBytes(), StandardCharsets.UTF_8);
     }
 

@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 public class AsyncPublishBroadcast {
 
-    public static Logger logger = LoggerFactory.getLogger(AsyncPublishBroadcast.class);
+    public static final Logger logger = LoggerFactory.getLogger(AsyncPublishBroadcast.class);
 
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);

@@ -44,6 +44,14 @@ import com.alibaba.nacos.api.exception.NacosException;
 
 public class HookConfigOperationManage implements WebHookConfigOperation {
 
+    private static final String FILE_OPERATION_MODE = "file";
+
+    private static final String WEBHOOK_FILEMODE_FILEPATH_PROP = "eventMesh.webHook.fileMode.filePath";
+
+    private static final String NACOS_OPERATION_MODE = "nacos";
+
+    private static final String WEBHOOK_NACOSMODE = "eventMesh.webHook.nacosMode";
+
     /**
      * webhook config pool -> key is CallbackPath
      */
@@ -64,10 +72,10 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
 
         this.operationMode = configurationWrapper.getProp(WebHookOperationConstant.OPERATION_MODE_CONFIG_NAME);
 
-        if ("file".equals(operationMode)) {
-            new WebhookFileListener(configurationWrapper.getProp("eventMesh.webHook.fileMode.filePath"), cacheWebHookConfig);
-        } else if ("nacos".equals(operationMode)) {
-            nacosModeInit(configurationWrapper.getPropertiesByConfig("eventMesh.webHook.nacosMode", true));
+        if (FILE_OPERATION_MODE.equals(operationMode)) {
+            new WebhookFileListener(configurationWrapper.getProp(WEBHOOK_FILEMODE_FILEPATH_PROP), cacheWebHookConfig);
+        } else if (NACOS_OPERATION_MODE.equals(operationMode)) {
+            nacosModeInit(configurationWrapper.getPropertiesByConfig(WEBHOOK_NACOSMODE, true));
         }
     }
 
@@ -77,9 +85,9 @@ public class HookConfigOperationManage implements WebHookConfigOperation {
 
     @Override
     public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig) {
-        if ("file".equals(operationMode)) {
+        if (FILE_OPERATION_MODE.equals(operationMode)) {
             return cacheWebHookConfig.get(StringUtils.getFileName(webHookConfig.getCallbackPath()));
-        } else if ("nacos".equals(operationMode)) {
+        } else if (NACOS_OPERATION_MODE.equals(operationMode)) {
             try {
                 String content = nacosConfigService.getConfig(webHookConfig.getManufacturerEventName() + DATA_ID_EXTENSION,
                     GROUP_PREFIX + webHookConfig.getManufacturerName(), TIMEOUT_MS);

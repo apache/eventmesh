@@ -30,6 +30,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.SpecVersion;
@@ -101,11 +102,11 @@ public class TcpMessageProtocolResolver {
     public static Package buildEventMeshMessage(CloudEvent cloudEvent) {
         EventMeshMessage eventMeshMessage = new EventMeshMessage();
         eventMeshMessage.setTopic(cloudEvent.getSubject());
-        eventMeshMessage.setBody(new String(cloudEvent.getData().toBytes(), StandardCharsets.UTF_8));
+        eventMeshMessage.setBody(new String(Objects.requireNonNull(cloudEvent.getData()).toBytes(), StandardCharsets.UTF_8));
 
         Map<String, String> prop = new HashMap<>();
         for (String extKey : cloudEvent.getExtensionNames()) {
-            prop.put(extKey, cloudEvent.getExtension(extKey).toString());
+            prop.put(extKey, Objects.requireNonNull(cloudEvent.getExtension(extKey)).toString());
         }
         eventMeshMessage.setProperties(prop);
 

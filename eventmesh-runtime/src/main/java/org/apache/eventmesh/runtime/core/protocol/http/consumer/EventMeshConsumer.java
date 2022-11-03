@@ -194,8 +194,8 @@ public class EventMeshConsumer {
                         .build();
 
                     String topic = event.getSubject();
-                    String bizSeqNo = event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO).toString();
-                    String uniqueId = event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID).toString();
+                    String bizSeqNo = event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO).toString();
+                    String uniqueId = event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID).toString();
 
                     if (messageLogger.isDebugEnabled()) {
                         messageLogger.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);

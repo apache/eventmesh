@@ -27,7 +27,7 @@ dependencies {
         exclude group: 'io.netty', module: 'netty-codec-http2:4.1.30.Final'
     }
     // use newer version to avoid CVE
-    implementation 'io.netty:netty-codec-http2:4.1.79.Final'
+    implementation 'io.netty:netty-codec-http2'
 
     testImplementation "org.testcontainers:testcontainers:1.17.3"
 

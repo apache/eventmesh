@@ -27,8 +27,8 @@ import lombok.Data;
 @Builder
 public class WebhookProtocolTransportObject implements ProtocolTransportObject {
 
-    private static final long serialVersionUID = -7247618154228090320L;
-
+    private static final long serialVersionUID = 7821703624838598761L;
+    
     private String cloudEventId;
 
     private String eventType;

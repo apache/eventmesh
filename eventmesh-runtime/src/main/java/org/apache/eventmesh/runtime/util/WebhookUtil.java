@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  */
 public class WebhookUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(WebhookUtil.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(WebhookUtil.class);
 
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String REQUEST_ORIGIN_HEADER = "WebHook-Request-Origin";

@@ -35,7 +35,7 @@ import io.cloudevents.CloudEvent;
 
 public class AsyncPublish {
 
-    public static Logger logger = LoggerFactory.getLogger(AsyncPublish.class);
+    public static final Logger logger = LoggerFactory.getLogger(AsyncPublish.class);
 
     private static EventMeshTCPClient<CloudEvent> client;
 
