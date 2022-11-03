@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-create database db_event_catalog;
+create database db_catalog;
 create table if not exists t_event
 (
     id          int auto_increment comment '主键、自增'
