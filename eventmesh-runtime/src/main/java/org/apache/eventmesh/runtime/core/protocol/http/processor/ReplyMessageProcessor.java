@@ -182,7 +182,8 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         String origTopic = event.getSubject();
 
-        final String replyMQCluster = event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER) == null ? "" : event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER).toString();
+        final String replyMQCluster = event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER) == null ? "" :
+            event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER).toString();
         if (!org.apache.commons.lang3.StringUtils.isEmpty(replyMQCluster)) {
             replyTopic = replyMQCluster + "-" + replyTopic;
         } else {
