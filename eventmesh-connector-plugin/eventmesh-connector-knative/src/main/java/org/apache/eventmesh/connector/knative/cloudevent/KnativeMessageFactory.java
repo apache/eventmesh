@@ -17,13 +17,14 @@
 
 package org.apache.eventmesh.connector.knative.cloudevent;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeMessageWriter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import io.cloudevents.CloudEvent;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public final class KnativeMessageFactory {
