@@ -10,7 +10,7 @@ Naturally, Pravega connector makes each topic correspond to a pravega stream. Be
 - Publish success will respond `-1` as messageId since writing to Pravega will not return message offset of the stream. If you want to use EventMesh with Pravega, please ensure messageId is unimportant.
 - Name and ID in Pravega must be `0-9`, `A-Z`, `a-z`, `.`, `-`.
   - Topic must be legal in Pravega.
-  - ReaderGroup name format is `String.format("%s-%s", consumerGroup, topic)`
+  - ReaderGroup name format is `String.format("%s-%s", consumerGroup, topic)` for cluster message model, while random UUID for broadcast message model.
   - Reader name format is `String.format("%s-reader", instanceName).replaceAll("\\(", "-").replaceAll("\\)", "-")`. The `instanceName` consists of `consumerGroup`, config `eventMesh.server.cluster`, EventMesh version and PID. 
 
 ![pravega-connector](./pravega-connector.jpg)

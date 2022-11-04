@@ -33,7 +33,7 @@ sudo docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root
 请注意 **rocketmq-broker ip** 是 **pod ip**, 如果你想修改这个ip, 可以通过挂载容器中 **broker.conf** 文件的方式并修改文件中的 **brokerIP1** 配置项为自定义值
 
 
-至此eventmesh-store的部署已完成，请转至下一步完成[eventmesh-runtime](docs/zh/instruction/02-runtime-with-docker.md docs/zh/instruction/02-runtime.md)的部署
+至此eventmesh-store的部署已完成，请转至下一步完成 [eventmesh-runtime](https://github.com/apache/incubator-eventmesh/blob/master/docs/zh/instruction/02-runtime-with-docker.md) 的部署
 
 
 ## 参考

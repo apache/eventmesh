@@ -33,10 +33,10 @@ states:
     type: switch
     dataConditions:
       - name: New Order Successfull
-        condition: "${ .order.order_no != '' }"
+        condition: '${ .order_no != "" }'
         transition: Send Order Payment
       - name: New Order Failed
-        condition: "${ .order.order_no == '' }"
+        condition: '${ .order_no == "" }'
         end: true
     defaultCondition:
       end: true
@@ -50,10 +50,10 @@ states:
     type: switch
     dataConditions:
       - name: Payment Successfull
-        condition: "${ .payment.order_no != '' }"
+        condition: '${ .order_no != "" }'
         transition: Send Order Shipment
       - name: Payment Denied
-        condition: "${ .payment.order_no == '' }"
+        condition: '${ .order_no == "" }'
         end: true
     defaultCondition:
       end: true

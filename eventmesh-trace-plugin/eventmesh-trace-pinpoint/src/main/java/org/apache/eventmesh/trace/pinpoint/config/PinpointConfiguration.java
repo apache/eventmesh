@@ -17,12 +17,13 @@
 
 package org.apache.eventmesh.trace.pinpoint.config;
 
-import static java.util.Objects.requireNonNull;
 import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.AGENT_ID_KEY;
 import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.AGENT_NAME_KEY;
 import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.APPLICATION_NAME;
 import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.APPLICATION_NAME_KEY;
 import static org.apache.eventmesh.trace.pinpoint.common.PinpointConstants.PROPERTY_KEY_PREFIX;
+
+import static java.util.Objects.requireNonNull;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.exception.JsonException;

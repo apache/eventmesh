@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ServerGlobal {
 
     private static class SerGlobalHolder {
-        private static ServerGlobal singleton = new ServerGlobal();
+        private static final ServerGlobal singleton = new ServerGlobal();
     }
 
     public static ServerGlobal getInstance() {
