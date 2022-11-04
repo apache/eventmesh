@@ -66,7 +66,7 @@ public class EventMeshCatalogClient {
         List<Operation> operations;
         try {
             QueryOperationsResponse response = catalogClient.queryOperations(request);
-            logger.info("received response " + response.toString());
+            logger.info("received response: {}", response.toString());
             operations = response.getOperationsList();
             if (CollectionUtils.isEmpty(operations)) {
                 return;
@@ -76,6 +76,9 @@ public class EventMeshCatalogClient {
             throw e;
         }
         for (Operation operation : operations) {
+            if (!operation.getType().equals("subscribe")) {
+                continue;
+            }
             SubscriptionItem subscriptionItem = new SubscriptionItem();
             subscriptionItem.setTopic(operation.getChannelName());
             subscriptionItem.setMode(clientConfig.getSubscriptionMode());

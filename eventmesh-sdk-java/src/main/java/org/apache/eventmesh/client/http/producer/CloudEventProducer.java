@@ -118,6 +118,7 @@ class CloudEventProducer extends AbstractHttpClient implements EventMeshProtocol
     }
 
     private RequestParam buildCommonPostParam(CloudEvent cloudEvent) {
+        validateCloudEvent(cloudEvent);
         byte[] bodyByte = EventFormatProvider.getInstance().resolveFormat(cloudEvent.getDataContentType())
                 .serialize(cloudEvent);
         String content = new String(bodyByte, StandardCharsets.UTF_8);

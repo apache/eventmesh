@@ -178,15 +178,15 @@ public class UnSubscribeProcessor implements HttpRequestProcessor {
                                 eventMeshHTTPServer.localConsumerGroupMapping.get(consumerGroup);
                         Map<String, ConsumerGroupTopicConf> map =
                                 consumerGroupConf.getConsumerGroupTopicConf();
-                        for (String topicKey : map.keySet()) {
+                        for (Map.Entry<String, ConsumerGroupTopicConf> topicConf : map.entrySet()) {
                             // only modify the topic to subscribe
-                            if (StringUtils.equals(unSubTopic, topicKey)) {
+                            if (StringUtils.equals(unSubTopic, topicConf.getKey())) {
                                 ConsumerGroupTopicConf latestTopicConf =
                                         new ConsumerGroupTopicConf();
                                 latestTopicConf.setConsumerGroup(consumerGroup);
                                 latestTopicConf.setTopic(unSubTopic);
                                 latestTopicConf
-                                        .setSubscriptionItem(map.get(topicKey).getSubscriptionItem());
+                                        .setSubscriptionItem(topicConf.getValue().getSubscriptionItem());
                                 latestTopicConf.setUrls(clientUrls);
 
                                 latestTopicConf.setIdcUrls(idcUrls);

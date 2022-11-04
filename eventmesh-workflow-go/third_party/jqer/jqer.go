@@ -19,12 +19,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/third_party/lexer"
 	"reflect"
 	"sort"
 	"strings"
 	"time"
 
-	"github.com/bbuck/go-lexer"
 	"github.com/itchyny/gojq"
 )
 
