@@ -46,7 +46,7 @@ public class PravegaConnectorConfigWrapper {
     }
 
     /**
-     * Load DLedger properties file from classpath and conf home.
+     * Load Pravega properties file from classpath and conf home.
      * The properties defined in conf home will override classpath.
      */
     private void loadProperties() {
