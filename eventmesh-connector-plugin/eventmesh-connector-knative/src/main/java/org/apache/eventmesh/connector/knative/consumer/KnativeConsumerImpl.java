@@ -25,9 +25,10 @@ import org.apache.eventmesh.connector.knative.config.ClientConfiguration;
 import java.util.List;
 import java.util.Properties;
 
-import io.cloudevents.CloudEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.cloudevents.CloudEvent;
 
 public class KnativeConsumerImpl implements Consumer {
 
