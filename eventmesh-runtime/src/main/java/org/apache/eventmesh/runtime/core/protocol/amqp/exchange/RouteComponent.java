@@ -25,6 +25,6 @@ import java.util.Set;
 public interface RouteComponent {
 
     RoutingResult routMessage(Set<BindingInfo> bindingInfos, AmqpRouter.Type type,
-                              Map<String, Object> routingInfo);
+                              String  routingKey);
 
 }
