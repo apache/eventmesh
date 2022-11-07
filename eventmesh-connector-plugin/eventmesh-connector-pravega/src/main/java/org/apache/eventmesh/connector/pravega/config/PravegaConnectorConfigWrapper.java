@@ -19,11 +19,10 @@ package org.apache.eventmesh.connector.pravega.config;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.PropertiesUtils;
+
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -47,24 +46,26 @@ public class PravegaConnectorConfigWrapper {
     }
 
     /**
-     * Load DLedger properties file from classpath and conf home.
+     * Load Pravega properties file from classpath and conf home.
      * The properties defined in conf home will override classpath.
      */
     private void loadProperties() {
-        try (InputStream resourceAsStream = PravegaConnectorConfigWrapper.class.getResourceAsStream(
-            "/" + PRAVEGA_CONF_FILE)) {
+        String path = File.separator + PRAVEGA_CONF_FILE;
+        try (InputStream resourceAsStream = PravegaConnectorConfigWrapper.class.getResourceAsStream(path)) {
             if (resourceAsStream != null) {
                 properties.load(resourceAsStream);
             }
         } catch (IOException e) {
+            log.error("Load {}.properties file from classpath error", path);
             throw new RuntimeException(String.format("Load %s.properties file from classpath error", PRAVEGA_CONF_FILE));
         }
+        String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + PRAVEGA_CONF_FILE;
         try {
-            String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + PRAVEGA_CONF_FILE;
             if (new File(configPath).exists()) {
                 PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath);
             }
         } catch (IOException e) {
+            log.error("Cannot load {} file from conf", configPath);
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", PRAVEGA_CONF_FILE));
         }
     }

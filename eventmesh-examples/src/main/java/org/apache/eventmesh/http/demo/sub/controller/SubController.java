@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.http.demo.sub.controller;
 
-import io.cloudevents.CloudEventData;
-import io.cloudevents.core.format.EventFormat;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -38,11 +36,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.CloudEventData;
+import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 @RestController

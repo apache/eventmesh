@@ -137,7 +137,11 @@ public class SessionSender {
                     }
                 }
 
-                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2mqMsgNum().incrementAndGet();
+                Objects.requireNonNull(session.getClientGroupWrapper().get())
+                    .getEventMeshTcpMonitor()
+                    .getTcpSummaryMetrics()
+                    .getEventMesh2mqMsgNum()
+                    .incrementAndGet();
             } else {
                 logger.warn("send too fast,session flow control,session:{}", session.getClient());
                 return new EventMeshTcpSendResult(header.getSeq(), EventMeshTcpSendStatus.SEND_TOO_FAST, EventMeshTcpSendStatus.SEND_TOO_FAST.name());
@@ -163,7 +167,8 @@ public class SessionSender {
                     .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .withExtension(EventMeshConstants.RSP_RECEIVE_EVENTMESH_IP, session.getEventMeshTCPConfiguration().eventMeshServerIp)
                     .build();
-                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getMq2eventMeshMsgNum().incrementAndGet();
+                Objects.requireNonNull(session.getClientGroupWrapper().get()).getEventMeshTcpMonitor().getTcpSummaryMetrics().getMq2eventMeshMsgNum()
+                    .incrementAndGet();
 
                 Command cmd;
                 if (header.getCmd().equals(Command.REQUEST_TO_SERVER)) {
