@@ -37,7 +37,7 @@ import qunar.tc.qmq.PullConsumer;
 import qunar.tc.qmq.consumer.MessageConsumerProvider;
 
 public class QMQPullMessageTask implements Runnable {
-    private final static Logger LOG = LoggerFactory.getLogger(QMQPullMessageTask.class);
+    private static final Logger LOG = LoggerFactory.getLogger(QMQPullMessageTask.class);
 
     private transient boolean stopFlag = false;
     private MessageConsumerProvider consumer;
