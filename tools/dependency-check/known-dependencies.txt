@@ -105,6 +105,7 @@ metrics-json-4.1.0.jar
 nacos-auth-plugin-2.1.0.jar
 nacos-client-2.1.0.jar
 nacos-encryption-plugin-2.1.0.jar
+netty-3.7.0.Final.jar
 netty-3.10.6.Final.jar
 netty-all-4.1.79.Final.jar
 netty-buffer-4.1.79.Final.jar
