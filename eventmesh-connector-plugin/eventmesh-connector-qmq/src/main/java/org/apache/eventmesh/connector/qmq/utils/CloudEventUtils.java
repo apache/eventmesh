@@ -19,57 +19,15 @@ package org.apache.eventmesh.connector.qmq.utils;
 
 import org.apache.eventmesh.api.SendResult;
 
-import org.apache.commons.lang3.StringUtils;
-
-import java.awt.*;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-
 import io.cloudevents.CloudEvent;
 
-import java.time.ZoneId;
-
-import qunar.tc.qmq.Message;
-
 public class CloudEventUtils {
+
     public static SendResult convertSendResult(CloudEvent cloudEvent) {
         SendResult sendResult = new SendResult();
         sendResult.setTopic(cloudEvent.getSubject());
         sendResult.setMessageId(cloudEvent.getId());
         return sendResult;
     }
-
-    //
-    ///**
-    // * "yyyy-MM-dd HH:mm:ss"
-    // *
-    // * @param dateTime
-    // * @return
-    // */
-    //public static OffsetDateTime convertDateTime(String dateTime) {
-    //    if (StringUtils.isBlank(dateTime)) {
-    //        return null;
-    //    }
-    //    LocalDateTime localDateTime = LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-    //
-    //    return OffsetDateTime.of(localDateTime, ZoneId.systemDefault().getRules().getOffset(localDateTime));
-    //}
-    //
-    //public static String convertOffsetDateTime(OffsetDateTime offsetDateTime) {
-    //
-    //    if (offsetDateTime == null) {
-    //        return null;
-    //    }
-    //    return offsetDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-    //}
-    //
-    //public static CloudEvent convertMessage2CloudEvent(Message message) {
-    //    return null;
-    //}
-    //
-    //public static Message convertCloudEvent2Message(CloudEvent event) {
-    //    return null;
-    //}
 
 }
