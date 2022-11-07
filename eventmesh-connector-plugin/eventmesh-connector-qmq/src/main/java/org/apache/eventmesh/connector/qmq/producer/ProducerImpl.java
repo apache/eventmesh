@@ -43,7 +43,7 @@ import qunar.tc.qmq.common.ClientInfo;
 import qunar.tc.qmq.producer.MessageProducerProvider;
 
 public class ProducerImpl extends AbstractProducer {
-    private final static Logger LOG = LoggerFactory.getLogger(ProducerImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProducerImpl.class);
 
     private final AtomicBoolean started = new AtomicBoolean(false);
 
@@ -80,7 +80,9 @@ public class ProducerImpl extends AbstractProducer {
             producer.sendMessage(message, new MessageSendStateListener() {
                 @Override
                 public void onSuccess(Message message) {
-                    if (LOG.isInfoEnabled()) LOG.info("message send success id:{}", message.getMessageId());
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info("message send success id:{}", message.getMessageId());
+                    }
 
                     final SendResult sr = new SendResult();
                     sr.setTopic(message.getSubject());
@@ -90,7 +92,9 @@ public class ProducerImpl extends AbstractProducer {
 
                 @Override
                 public void onFailed(Message message) {
-                    if (LOG.isInfoEnabled()) LOG.info("message send failed id:{}", message.getMessageId());
+                    if (LOG.isInfoEnabled()) {
+                        LOG.info("message send failed id:{}", message.getMessageId());
+                    }
 
                     Exception e = new Exception("message send failed id:" + message.getMessageId());
                     final ConnectorRuntimeException onsEx = checkProducerException(cloudEvent, e);
