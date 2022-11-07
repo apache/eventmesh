@@ -51,7 +51,6 @@ import qunar.tc.qmq.producer.MessageProducerProvider;
 @RunWith(MockitoJUnitRunner.class)
 public class QMQProducerImplTest {
 
-
     @Mock
     private MessageProducerProvider producer;
 
@@ -81,8 +80,8 @@ public class QMQProducerImplTest {
         SendCallback callback = new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
-                Assert.assertEquals(sendResult.getTopic(),"HELLO_TOPIC");
-                Assert.assertEquals(sendResult.getMessageId(),"123456");
+                Assert.assertEquals(sendResult.getTopic(), "HELLO_TOPIC");
+                Assert.assertEquals(sendResult.getMessageId(), "123456");
             }
 
             @Override
@@ -101,8 +100,7 @@ public class QMQProducerImplTest {
                 callback.onSuccess(sr);
                 return null;
             }
-        }).when(this.producer).sendMessage(Mockito.any(Message.class),Mockito.any(MessageSendStateListener.class));
-
+        }).when(this.producer).sendMessage(Mockito.any(Message.class), Mockito.any(MessageSendStateListener.class));
 
 
         Message message = new Message() {
@@ -319,23 +317,17 @@ public class QMQProducerImplTest {
 
         Mockito.when(this.producer.generateMessage(Mockito.any(String.class))).thenReturn(message);
 
-        CloudEvent cloudEvent = CloudEventBuilder.v1()
-                .withId("id1")
-                .withSource(URI.create("https://github.com/cloudevents/*****"))
-                .withType("producer.example")
-                .withSubject("HELLO_TOPIC")
-                .withData("hello world".getBytes(Constants.DEFAULT_CHARSET))
-                .build();
+        CloudEvent cloudEvent = CloudEventBuilder.v1().withId("id1").withSource(URI.create("https://github.com/cloudevents/*****")).withType("producer.example").withSubject("HELLO_TOPIC").withData("hello world".getBytes(Constants.DEFAULT_CHARSET)).build();
 
 
         try {
-            qmqProducer.publish(cloudEvent,callback);
+            qmqProducer.publish(cloudEvent, callback);
             qmqProducer.shutdown();
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
 
-        Mockito.verify(this.producer).sendMessage(Mockito.any(Message.class),Mockito.any(MessageSendStateListener.class));
+        Mockito.verify(this.producer).sendMessage(Mockito.any(Message.class), Mockito.any(MessageSendStateListener.class));
         Mockito.verify(this.producer).generateMessage(Mockito.any(String.class));
     }
 
@@ -356,14 +348,14 @@ public class QMQProducerImplTest {
 
             @Override
             public void onException(OnExceptionContext context) {
-                Assert.assertEquals(context.getTopic(),"HELLO_TOPIC");
-                Assert.assertEquals(context.getException().getMessage(),"Unknown connector runtime exception.");
+                Assert.assertEquals(context.getTopic(), "HELLO_TOPIC");
+                Assert.assertEquals(context.getException().getMessage(), "Unknown connector runtime exception.");
             }
         };
 
 
-        Mockito.doThrow(new RuntimeException("testerror")).when(this.producer).sendMessage(Mockito.any(Message.class),Mockito.any(MessageSendStateListener.class));
-
+        Mockito.doThrow(new RuntimeException("testerror")).when(this.producer).sendMessage(Mockito.any(Message.class),
+                Mockito.any(MessageSendStateListener.class));
 
 
         Message message = new Message() {
@@ -580,23 +572,17 @@ public class QMQProducerImplTest {
 
         Mockito.when(this.producer.generateMessage(Mockito.any(String.class))).thenReturn(message);
 
-        CloudEvent cloudEvent = CloudEventBuilder.v1()
-                .withId("id1")
-                .withSource(URI.create("https://github.com/cloudevents/*****"))
-                .withType("producer.example")
-                .withSubject("HELLO_TOPIC")
-                .withData("hello world".getBytes(Constants.DEFAULT_CHARSET))
-                .build();
+        CloudEvent cloudEvent = CloudEventBuilder.v1().withId("id1").withSource(URI.create("https://github.com/cloudevents/*****")).withType("producer.example").withSubject("HELLO_TOPIC").withData("hello world".getBytes(Constants.DEFAULT_CHARSET)).build();
 
 
         try {
-            qmqProducer.publish(cloudEvent,callback);
+            qmqProducer.publish(cloudEvent, callback);
             qmqProducer.shutdown();
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
 
-        Mockito.verify(this.producer).sendMessage(Mockito.any(Message.class),Mockito.any(MessageSendStateListener.class));
+        Mockito.verify(this.producer).sendMessage(Mockito.any(Message.class), Mockito.any(MessageSendStateListener.class));
         Mockito.verify(this.producer).generateMessage(Mockito.any(String.class));
     }
 }
