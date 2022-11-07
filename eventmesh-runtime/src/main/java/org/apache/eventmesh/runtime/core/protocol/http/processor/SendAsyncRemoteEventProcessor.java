@@ -86,7 +86,7 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         HttpEventWrapper requestWrapper = asyncContext.getRequest();
 
         httpLogger.info("uri={}|{}|client2eventMesh|from={}|to={}", requestWrapper.getRequestURI(),
-                EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
+            EventMeshConstants.PROTOCOL_HTTP, RemotingHelper.parseChannelRemoteAddr(ctx.channel()), IPUtils.getLocalAddress());
 
         // user request header
         Map<String, Object> requestHeaderMap = requestWrapper.getHeaderMap();
@@ -112,7 +112,8 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
 
         // process remote event body
         Map<String, Object> bodyMap = JsonUtils.deserialize(new String(requestWrapper.getBody(), Constants.DEFAULT_CHARSET),
-            new TypeReference<Map<String, Object>>() {});
+            new TypeReference<Map<String, Object>>() {
+            });
 
         byte[] convertedBody = bodyMap.get("content").toString().getBytes(StandardCharsets.UTF_8);
         requestWrapper.setBody(convertedBody);
@@ -167,9 +168,12 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
-        idc = event.getExtension(ProtocolKey.ClientInstanceKey.IDC) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.IDC).toString();
-        String pid = event.getExtension(ProtocolKey.ClientInstanceKey.PID) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.PID).toString();
-        String sys = event.getExtension(ProtocolKey.ClientInstanceKey.SYS) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.SYS).toString();
+        idc = event.getExtension(ProtocolKey.ClientInstanceKey.IDC) == null ? "" :
+            event.getExtension(ProtocolKey.ClientInstanceKey.IDC).toString();
+        String pid = event.getExtension(ProtocolKey.ClientInstanceKey.PID) == null ? "" :
+            event.getExtension(ProtocolKey.ClientInstanceKey.PID).toString();
+        String sys = event.getExtension(ProtocolKey.ClientInstanceKey.SYS) == null ? "" :
+            event.getExtension(ProtocolKey.ClientInstanceKey.SYS).toString();
 
         //validate event-extension
         if (StringUtils.isBlank(idc)
@@ -181,8 +185,8 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
             return;
         }
 
-
-        String producerGroup = event.getExtension(ProtocolKey.ClientInstanceKey.PRODUCERGROUP) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.PRODUCERGROUP).toString();
+        String producerGroup = event.getExtension(ProtocolKey.ClientInstanceKey.PRODUCERGROUP) == null ? "" :
+            event.getExtension(ProtocolKey.ClientInstanceKey.PRODUCERGROUP).toString();
         String topic = event.getSubject();
 
         //validate body
@@ -199,9 +203,12 @@ public class SendAsyncRemoteEventProcessor implements AsyncHttpProcessor {
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-            String user = event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME).toString();
-            String pass = event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD).toString();
-            String subsystem = event.getExtension(ProtocolKey.ClientInstanceKey.SYS) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.SYS).toString();
+            String user = event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME) == null ? "" :
+                event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME).toString();
+            String pass = event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD) == null ? "" :
+                event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD).toString();
+            String subsystem =
+                event.getExtension(ProtocolKey.ClientInstanceKey.SYS) == null ? "" : event.getExtension(ProtocolKey.ClientInstanceKey.SYS).toString();
             String requestURI = requestWrapper.getRequestURI();
             try {
                 Acl.doAclCheckInHttpSend(remoteAddr, user, pass, subsystem, topic, requestURI);

@@ -21,11 +21,11 @@ info:
 channels:
   express/create:
     publish:
-      operationId: sendOrder
+      operationId: sendExpress
       message:
         $ref: '#/components/messages/Order'
     subscribe:
-      operationId: receiveOrder
+      operationId: receiveExpress
       message:
         $ref: '#/components/messages/Order'
 components:

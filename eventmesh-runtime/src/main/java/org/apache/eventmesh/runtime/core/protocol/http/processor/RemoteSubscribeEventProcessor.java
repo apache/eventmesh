@@ -120,10 +120,13 @@ public class RemoteSubscribeEventProcessor extends AbstractEventProcessor implem
         byte[] requestBody = requestWrapper.getBody();
 
         Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
-            new TypeReference<HashMap<String, Object>>() {});
+            new TypeReference<HashMap<String, Object>>() {
+            });
 
 
-        if (requestBodyMap.get(EventMeshConstants.URL) == null || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null) {
+        if (requestBodyMap.get(EventMeshConstants.URL) == null
+            || requestBodyMap.get(EventMeshConstants.MANAGE_TOPIC) == null
+            || requestBodyMap.get(EventMeshConstants.CONSUMER_GROUP) == null) {
             handlerSpecific.sendErrorResponse(EventMeshRetCode.EVENTMESH_PROTOCOL_BODY_ERR, responseHeaderMap,
                 responseBodyMap, null);
             return;
