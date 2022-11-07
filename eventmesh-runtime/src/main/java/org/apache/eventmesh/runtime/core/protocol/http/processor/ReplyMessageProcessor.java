@@ -59,11 +59,11 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class ReplyMessageProcessor implements HttpRequestProcessor {
 
-    public Logger messageLogger = LoggerFactory.getLogger("message");
+    public Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    public Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -152,7 +152,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+        String content = event.getData() == null ? "" : new String(event.getData().toBytes(), StandardCharsets.UTF_8);
         if (content.length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize) {
             httpLogger.error("Event size exceeds the limit: {}",
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize);
@@ -182,7 +182,8 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
 
         String origTopic = event.getSubject();
 
-        final String replyMQCluster = event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER).toString();
+        final String replyMQCluster = event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER) == null ? "" :
+            event.getExtension(EventMeshConstants.PROPERTY_MESSAGE_CLUSTER).toString();
         if (!org.apache.commons.lang3.StringUtils.isEmpty(replyMQCluster)) {
             replyTopic = replyMQCluster + "-" + replyTopic;
         } else {
@@ -199,7 +200,7 @@ public class ReplyMessageProcessor implements HttpRequestProcessor {
             //omsMsg.setBody(replyMessageRequestBody.getContent().getBytes(EventMeshConstants.DEFAULT_CHARSET));
             event = CloudEventBuilder.from(event)
                     .withSubject(replyTopic)
-                    .withExtension("msgtype", "persistent")
+                    .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
                     .withExtension(Constants.PROPERTY_MESSAGE_TIMEOUT, String.valueOf(EventMeshConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS))
                     .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .build();

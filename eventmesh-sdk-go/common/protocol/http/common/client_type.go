@@ -18,6 +18,7 @@ package common
 type ClientType struct {
 	Type int    `json:"type"`
 	Desc string `json:"desc"`
+	Name string `json:"name"`
 }
 
 var DefaultClientType = struct {
@@ -27,9 +28,11 @@ var DefaultClientType = struct {
 	PUB: ClientType{
 		Type: 1,
 		Desc: "Client for publishing",
+		Name: "PUB",
 	},
 	SUB: ClientType{
 		Type: 2,
 		Desc: "Client for subscribing",
+		Name: "SUB",
 	},
 }

@@ -53,11 +53,11 @@ func (c *catalogImpl) Registry(ctx context.Context, request *proto.RegistryReque
 	if len(doc.Channels()) == 0 {
 		return rsp, nil
 	}
-	if err := dal.GetDalClient().Transaction(func(tx *gorm.DB) error {
+	if err := dal.GetDalClient().WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var handlers []func() error
 		for _, channel := range doc.Channels() {
 			for _, operation := range channel.Operations() {
-				var record = c.buildEventCatalog(request.FileName, channel, operation)
+				var record = c.buildEventCatalog(doc.Info().Title(), request.FileName, channel, operation)
 				handlers = append(handlers, func() error {
 					return c.catalogDAL.Insert(context.Background(), tx, record)
 				})
@@ -74,21 +74,23 @@ func (c *catalogImpl) Registry(ctx context.Context, request *proto.RegistryReque
 	return rsp, nil
 }
 
-func (c *catalogImpl) Query(ctx context.Context, in *proto.QueryRequest) (*proto.QueryResponse, error) {
-	var rsp = &proto.QueryResponse{}
-	res, err := c.catalogDAL.Select(ctx, in.OperationId)
+func (c *catalogImpl) QueryOperations(ctx context.Context, in *proto.QueryOperationsRequest) (*proto.
+	QueryOperationsResponse, error) {
+	var rsp = &proto.QueryOperationsResponse{}
+	res, err := c.catalogDAL.SelectOperations(ctx, in.ServiceName, in.OperationId)
 	if err != nil {
 		return rsp, err
 	}
-	rsp.Type = res.Type
-	rsp.ChannelName = res.ChannelName
-	rsp.Schema = res.Schema
+	if err = gconv.Structs(res, &rsp.Operations); err != nil {
+		return nil, err
+	}
 	return rsp, nil
 }
 
-func (c *catalogImpl) buildEventCatalog(fileName string, channel asyncapi.Channel,
+func (c *catalogImpl) buildEventCatalog(serviceName string, fileName string, channel asyncapi.Channel,
 	operation asyncapi.Operation) *model.EventCatalog {
 	var record model.EventCatalog
+	record.ServiceName = serviceName
 	record.OperationID = fmt.Sprintf("file://%s#%s", fileName, operation.ID())
 	record.ChannelName = channel.ID()
 	record.Type = string(operation.Type())

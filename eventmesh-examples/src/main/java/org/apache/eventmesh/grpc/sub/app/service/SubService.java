@@ -19,6 +19,11 @@
 
 package org.apache.eventmesh.grpc.sub.app.service;
 
+import static org.apache.eventmesh.common.ExampleConstants.ENV;
+import static org.apache.eventmesh.common.ExampleConstants.IDC;
+import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
+import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
+
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.consumer.EventMeshGrpcConsumer;
 import org.apache.eventmesh.common.ExampleConstants;
@@ -43,7 +48,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SubService implements InitializingBean {
 
-    public static Logger logger = LoggerFactory.getLogger(SubService.class);
+    public static final Logger logger = LoggerFactory.getLogger(SubService.class);
 
     private EventMeshGrpcConsumer eventMeshGrpcConsumer;
 
@@ -52,13 +57,10 @@ public class SubService implements InitializingBean {
     final SubscriptionItem subscriptionItem = new SubscriptionItem();
 
     final String localIp = IPUtils.getLocalAddress();
-    final String localPort = properties.getProperty("server.port");
+    final String localPort = properties.getProperty(SERVER_PORT);
     final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
     final String eventMeshGrpcPort = properties.getProperty(ExampleConstants.EVENTMESH_GRPC_PORT);
     final String url = "http://" + localIp + ":" + localPort + "/sub/test";
-    final String env = "P";
-    final String idc = "FT";
-    final String subsys = "1234";
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
@@ -70,8 +72,8 @@ public class SubService implements InitializingBean {
             .serverAddr(eventMeshIp)
             .serverPort(Integer.parseInt(eventMeshGrpcPort))
             .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .env(env).idc(idc)
-            .sys(subsys).build();
+            .env(ENV).idc(IDC)
+            .sys(SUB_SYS).build();
 
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();

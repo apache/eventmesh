@@ -36,10 +36,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.cloudevents.CloudEvent;
+import io.cloudevents.CloudEventData;
+import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 
 import lombok.extern.slf4j.Slf4j;
-
 
 @Slf4j
 @RestController
@@ -54,14 +55,18 @@ public class SubController {
         String protocolType = request.getHeader(ProtocolKey.PROTOCOL_TYPE);
         String content = request.getParameter("content");
         log.info("=======receive message======= {}", content);
-        Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
         if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, protocolType)) {
             String contentType = request.getHeader(ProtocolKey.CONTENT_TYPE);
 
-            CloudEvent event = EventFormatProvider.getInstance().resolveFormat(contentType)
-                .deserialize(content.getBytes(StandardCharsets.UTF_8));
-            String data = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
-            log.info("=======receive data======= {}", data);
+            EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(contentType);
+            if (eventFormat != null) {
+                CloudEvent event = eventFormat.deserialize(content.getBytes(StandardCharsets.UTF_8));
+                CloudEventData cloudEventData = event.getData();
+                if (cloudEventData != null) {
+                    String data = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
+                    log.info("=======receive data======= {}", data);
+                }
+            }
         }
 
         subService.consumeMessage(content);

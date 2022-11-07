@@ -17,12 +17,16 @@
 
 package org.apache.eventmesh.client.grpc.consumer;
 
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
+
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
 import org.apache.eventmesh.client.grpc.util.EventMeshClientUtil;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
 import org.apache.eventmesh.common.protocol.SubscriptionType;
+import org.apache.eventmesh.common.protocol.grpc.common.StatusCode;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.protos.ConsumerServiceGrpc.ConsumerServiceStub;
@@ -40,6 +44,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +62,8 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     private final EventMeshGrpcClientConfig clientConfig;
 
-    private final Map<String, String> subscriptionMap = new ConcurrentHashMap<>();
+    private final Map<String, SubscriptionInfo> subscriptionMap = new ConcurrentHashMap<>();
+
     private final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(
         Runtime.getRuntime().availableProcessors(),
         new ThreadFactoryBuilder().setNameFormat("GRPCClientScheduler").setDaemon(true).build());
@@ -124,7 +130,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
     private void addSubscription(List<SubscriptionItem> subscriptionItems, String url) {
         for (SubscriptionItem item : subscriptionItems) {
-            subscriptionMap.put(item.getTopic(), url);
+            subscriptionMap.put(item.getTopic(), new SubscriptionInfo(item, url));
         }
     }
 
@@ -164,7 +170,7 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
 
             // there is no stream subscriptions, stop the subscription stream handler
             synchronized (this) {
-                if (!subscriptionMap.containsValue(SDK_STREAM_URL) && subStreamHandler != null) {
+                if (subscriptionMap.isEmpty() && subStreamHandler != null) {
                     subStreamHandler.close();
                     subStreamHandler = null;
                 }
@@ -231,10 +237,11 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
                 .setConsumerGroup(clientConfig.getConsumerGroup())
                 .setClientType(Heartbeat.ClientType.SUB);
 
-            for (Map.Entry<String, String> entry : subscriptionMap.entrySet()) {
+            for (Map.Entry<String, SubscriptionInfo> entry : subscriptionMap.entrySet()) {
                 Heartbeat.HeartbeatItem heartbeatItem = Heartbeat.HeartbeatItem
                     .newBuilder()
-                    .setTopic(entry.getKey()).setUrl(entry.getValue())
+                    .setTopic(entry.getKey())
+                    .setUrl(entry.getValue().getUrl())
                     .build();
                 heartbeatBuilder.addHeartbeatItems(heartbeatItem);
             }
@@ -245,12 +252,32 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Grpc Consumer Heartbeat response: {}", response);
                 }
+
+                if (StatusCode.CLIENT_RESUBSCRIBE.getRetCode().equals(response.getRespCode())) {
+                    resubscribe();
+                }
             } catch (Exception e) {
                 logger.error("Error in sending out heartbeat. error {}", e.getMessage());
             }
         }, 10000, EventMeshCommon.HEARTBEAT, TimeUnit.MILLISECONDS);
 
         logger.info("Grpc Consumer Heartbeat started.");
+    }
+
+    private void resubscribe() {
+        if (subscriptionMap.isEmpty()) {
+            return;
+        }
+
+        Map<String, List<SubscriptionItem>> subscriptionGroup =
+            subscriptionMap.values().stream()
+                .collect(Collectors.groupingBy(SubscriptionInfo::getUrl,
+                    mapping(SubscriptionInfo::getSubscriptionItem, toList())));
+
+        subscriptionGroup.forEach((url, items) -> {
+            Subscription subscription = buildSubscription(items, url);
+            subStreamHandler.sendSubscription(subscription);
+        });
     }
 
     @Override
@@ -260,5 +287,31 @@ public class EventMeshGrpcConsumer implements AutoCloseable {
         }
         channel.shutdown();
         scheduler.shutdown();
+    }
+
+    private static class SubscriptionInfo {
+        private SubscriptionItem subscriptionItem;
+        private String url;
+
+        SubscriptionInfo(SubscriptionItem subscriptionItem, String url) {
+            this.subscriptionItem = subscriptionItem;
+            this.url = url;
+        }
+
+        public SubscriptionItem getSubscriptionItem() {
+            return subscriptionItem;
+        }
+
+        public void setSubscriptionItem(SubscriptionItem subscriptionItem) {
+            this.subscriptionItem = subscriptionItem;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
     }
 }

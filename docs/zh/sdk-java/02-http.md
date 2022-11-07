@@ -95,20 +95,24 @@ public class HTTP {
 
 ## 使用Curl 命令
 
-也可以不通过Event Mesh SDK来体验事件的收发功能
+本段落介绍通过Curl命令体验事件的收发功能
 
 ### 事件发送
+
+启动EventMesh Runtime服务后，可以使用Curl命令将事件用HTTP POST方法发布到指定的主题，Body内容必须是JSON格式，执行命令示例如下:
 
 ```shell
 curl -H "Content-Type:application/json" -X POST -d '{"name": "admin", "pass":"12345678"}' http://127.0.0.1:10105/eventmesh/publish/TEST-TOPIC-HTTP-ASYNC
 ```
 
-启动eventmesh运行时服务后，可以使用curl命令将事件用HTTP post方法发布到指定的主题，并且Body必须是JSON格式。发布事件的url类似于(http://127.0.0.1:10105/eventmesh/publish/TEST-TOPIC-HTTP-ASYNC)，您将获得成功发布的结果。
+
 
 ### 事件订阅
+
+启动EventMesh Runtime服务后，可以使用Curl命令用HTTP POST方法订阅指定的主题列表，Body内容必须是JSON格式，执行命令示例如下:
 
 ```shell
 curl -H "Content-Type:application/json" -X POST -d '{"url": "http://127.0.0.1:8088/sub/test", "consumerGroup":"TEST-GROUP", "topic":[{"mode":"CLUSTERING","topic":"TEST-TOPIC-HTTP-ASYNC","type":"ASYNC"}]}' http://127.0.0.1:10105/eventmesh/subscribe/local
 ```
 
-启动eventmesh运行时服务器后，可以使用curl命令用HTTP post方法订阅指定的主题列表，并且Body必须是JSON格式。订阅url类似于(http://127.0.0.1:10105/eventmesh/subscribe/local)，您将获得订阅成功的结果。你应该注意Body中的`url`字段，这意味着你需要在指定的url上启动HTTP服务实现监听，你可以在`eventmesh-examples`模块中看到这个例子。
+你可以在项目`eventmesh-examples`模块中看到这个例子。

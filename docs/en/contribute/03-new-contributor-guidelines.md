@@ -42,8 +42,8 @@ git checkout -b fix_patch_xx
 4. Keep your branch in sync
 ```git
 git remote add upstream git@github.com:apache/incubator-eventmesh.git
-git fetch upstream develop:upstream_develop
-git rebase upstream_develop
+git fetch upstream master:upstream_master
+git rebase upstream_master
 ```
 
 5. Commit your changes (make sure your commit message concise)
@@ -78,7 +78,7 @@ So fork the original EventMesh repository into your own repository.
 
 ### Documentation Improvement
 
-- You can find the eventmesh documentation at [evenmesh-docs](https://github.com/apache/incubator-eventmesh/tree/master/docs), and the documentation is supplemented or improved in a way that is also essential for eventmesh.
+- You can find the eventmesh documentation at [eventmesh-docs](https://github.com/apache/incubator-eventmesh/tree/master/docs), and the documentation is supplemented or improved in a way that is also essential for eventmesh.
 
 ## Contribution method
 

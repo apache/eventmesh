@@ -72,11 +72,6 @@ public class SendAsyncMessageProcessor {
             return;
         }
 
-        String seqNum = message.getSeqNum();
-        String uniqueId = message.getUniqueId();
-        String topic = message.getTopic();
-        String producerGroup = message.getProducerGroup();
-
         try {
             doAclCheck(message);
         } catch (Exception e) {
@@ -97,11 +92,17 @@ public class SendAsyncMessageProcessor {
         ProtocolAdaptor<ProtocolTransportObject> grpcCommandProtocolAdaptor = ProtocolPluginFactory.getProtocolAdaptor(protocolType);
         CloudEvent cloudEvent = grpcCommandProtocolAdaptor.toCloudEvent(new SimpleMessageWrapper(message));
 
+        String seqNum = message.getSeqNum();
+        String uniqueId = message.getUniqueId();
+        String topic = message.getTopic();
+        String producerGroup = message.getProducerGroup();
+
         ProducerManager producerManager = eventMeshGrpcServer.getProducerManager();
         EventMeshProducer eventMeshProducer = producerManager.getEventMeshProducer(producerGroup);
 
         SendMessageContext sendMessageContext = new SendMessageContext(message.getSeqNum(), cloudEvent, eventMeshProducer, eventMeshGrpcServer);
 
+        eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToQueue();
         long startTime = System.currentTimeMillis();
         eventMeshProducer.send(sendMessageContext, new SendCallback() {
             @Override
@@ -110,6 +111,7 @@ public class SendAsyncMessageProcessor {
                 long endTime = System.currentTimeMillis();
                 logger.info("message|eventMesh2mq|REQ|ASYNC|send2MQCost={}ms|topic={}|bizSeqNo={}|uniqueId={}",
                     endTime - startTime, topic, seqNum, uniqueId);
+                eventMeshGrpcServer.getMetricsMonitor().recordSendMsgToClient();
             }
 
             @Override

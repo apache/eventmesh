@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.protocol.grpc.consumer;
 
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONSUMER_GROUP;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.EVENT_MESH_IDC;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.INSTANCE_NAME;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.IS_BROADCAST;
+
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.api.EventMeshAction;
@@ -134,20 +139,20 @@ public class EventMeshConsumer {
         }
 
         Properties keyValue = new Properties();
-        keyValue.put("isBroadcast", "false");
-        keyValue.put("consumerGroup", consumerGroup);
-        keyValue.put("eventMeshIDC", eventMeshGrpcConfiguration.eventMeshIDC);
-        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroup,
+        keyValue.put(IS_BROADCAST, "false");
+        keyValue.put(CONSUMER_GROUP, consumerGroup);
+        keyValue.put(EVENT_MESH_IDC, eventMeshGrpcConfiguration.eventMeshIDC);
+        keyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroup,
             eventMeshGrpcConfiguration.eventMeshCluster));
         persistentMqConsumer.init(keyValue);
         EventListener clusterEventListner = createEventListener(SubscriptionMode.CLUSTERING);
         persistentMqConsumer.registerEventListener(clusterEventListner);
 
         Properties broadcastKeyValue = new Properties();
-        broadcastKeyValue.put("isBroadcast", "true");
-        broadcastKeyValue.put("consumerGroup", consumerGroup);
-        broadcastKeyValue.put("eventMeshIDC", eventMeshGrpcConfiguration.eventMeshIDC);
-        broadcastKeyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroup,
+        broadcastKeyValue.put(IS_BROADCAST, "true");
+        broadcastKeyValue.put(CONSUMER_GROUP, consumerGroup);
+        broadcastKeyValue.put(EVENT_MESH_IDC, eventMeshGrpcConfiguration.eventMeshIDC);
+        broadcastKeyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroup,
             eventMeshGrpcConfiguration.eventMeshCluster));
         broadcastMqConsumer.init(broadcastKeyValue);
         EventListener broadcastEventListner = createEventListener(SubscriptionMode.BROADCASTING);
@@ -240,6 +245,7 @@ public class EventMeshConsumer {
                 logger.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
             } else {
                 logger.info("message|mq2eventMesh|topic={}|bizSeqNo={}|uniqueId={}", topic, bizSeqNo, uniqueId);
+                eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromQueue();
             }
 
             EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;

@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.runtime.admin.handler;
 
-import static org.apache.eventmesh.admin.rocketmq.Constants.APPLICATION_JSON;
-import static org.apache.eventmesh.admin.rocketmq.Constants.CONTENT_TYPE;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.APPLICATION_JSON;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_TYPE;
 
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
 import org.apache.eventmesh.admin.rocketmq.util.NetUtils;

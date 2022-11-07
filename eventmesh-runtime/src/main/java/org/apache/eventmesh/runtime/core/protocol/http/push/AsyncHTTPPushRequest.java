@@ -139,15 +139,17 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
             } else {
                 HttpEventWrapper httpEventWrapper = (HttpEventWrapper) protocolTransportObject;
                 Map<String, Object> sysHeaderMap = httpEventWrapper.getSysHeaderMap();
+                Set<Map.Entry<String, Object>> sysHeaderMapEntry = sysHeaderMap.entrySet();
                 content = new String(httpEventWrapper.getBody(), StandardCharsets.UTF_8);
-                for (String header : sysHeaderMap.keySet()) {
-                    if (!builder.containsHeader(header)) {
-                        builder.addHeader(header, sysHeaderMap.get(header).toString());
+                for (Map.Entry<String, Object> header : sysHeaderMapEntry) {
+                    if (!builder.containsHeader(header.getKey())) {
+                        builder.addHeader(header.getKey(), header.getValue().toString());
                     }
                 }
             }
 
         } catch (Exception ex) {
+            logger.error("Failed to convert EventMeshMessage from CloudEvent", ex);
             return;
         }
 

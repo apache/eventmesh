@@ -18,12 +18,11 @@
 package org.apache.eventmesh.metrics.prometheus.config;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.PropertiesUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -70,9 +69,7 @@ public class PrometheusConfiguration {
         }
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONFIG_FILE;
-            if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
-            }
+            PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath);
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", CONFIG_FILE));
         }

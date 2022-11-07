@@ -16,20 +16,56 @@
 package task
 
 import (
+	"context"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
+	"github.com/google/uuid"
 )
 
-type OperationTask struct {
-	BaseTask
-	Actions    []*model.WorkflowTaskAction
-	Transition *model.WorkflowTaskRelation
+type operationTask struct {
+	baseTask
+	action     *model.WorkflowTaskAction
+	transition *model.WorkflowTaskRelation
 }
 
-func (t *OperationTask) Type() string {
-	return constants.TaskTypeOperation
+func NewOperationTask(instance *model.WorkflowTaskInstance) Task {
+	var t operationTask
+	if instance == nil || instance.Task == nil {
+		return nil
+	}
+	t.baseTask = baseTask{taskID: instance.TaskID, taskInstanceID: instance.TaskInstanceID, input: instance.Input,
+		workflowID: instance.WorkflowID, workflowInstanceID: instance.WorkflowInstanceID, taskType: instance.Task.TaskType}
+	t.action = instance.Task.Actions[0]
+	t.transition = instance.Task.ChildTasks[0]
+	t.baseTask.queue = queue.GetQueue(config.GlobalConfig().Flow.Queue.Store)
+	t.workflowDAL = dal.NewWorkflowDAL()
+	return &t
 }
 
-func (t *OperationTask) Run() error {
-	return nil
+func (t *operationTask) Run() error {
+	if t.action == nil {
+		return nil
+	}
+	// match end
+	if t.transition.ToTaskID == constants.TaskEndID {
+		if t.action != nil {
+			if err := publishEvent(t.workflowInstanceID, uuid.New().String(), t.action.OperationName, t.input); err != nil {
+				return err
+			}
+		}
+		return t.workflowDAL.UpdateInstance(context.Background(),
+			&model.WorkflowInstance{WorkflowInstanceID: t.workflowInstanceID,
+				WorkflowStatus: constants.WorkflowInstanceSuccessStatus})
+	}
+	var taskInstanceID = uuid.New().String()
+	var taskInstance = model.WorkflowTaskInstance{WorkflowInstanceID: t.workflowInstanceID, WorkflowID: t.workflowID,
+		TaskID: t.transition.ToTaskID, TaskInstanceID: taskInstanceID, Status: constants.TaskInstanceSleepStatus,
+		Input: t.baseTask.input}
+	if err := t.baseTask.queue.Publish([]*model.WorkflowTaskInstance{&taskInstance}); err != nil {
+		return err
+	}
+	return publishEvent(t.workflowInstanceID, taskInstanceID, t.action.OperationName, t.input)
 }

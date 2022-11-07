@@ -25,7 +25,7 @@ import io.netty.handler.codec.http.HttpResponse;
  */
 public interface HttpProcessor {
 
-    public String[] paths();
+    String[] paths();
 
-    public HttpResponse handler(HttpRequest httpRequest);
+    HttpResponse handler(HttpRequest httpRequest);
 }

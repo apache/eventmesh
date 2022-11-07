@@ -36,6 +36,7 @@ private static final long serialVersionUID = 0L;
   private ExecuteRequest() {
     id_ = "";
     instanceId_ = "";
+    taskInstanceId_ = "";
     input_ = "";
   }
 
@@ -82,6 +83,12 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 26: {
+            String s = input.readStringRequireUtf8();
+
+            taskInstanceId_ = s;
+            break;
+          }
+          case 34: {
             String s = input.readStringRequireUtf8();
 
             input_ = s;
@@ -195,10 +202,48 @@ private static final long serialVersionUID = 0L;
     }
   }
 
-  public static final int INPUT_FIELD_NUMBER = 3;
+  public static final int TASK_INSTANCE_ID_FIELD_NUMBER = 3;
+  private volatile Object taskInstanceId_;
+  /**
+   * <code>string task_instance_id = 3;</code>
+   * @return The taskInstanceId.
+   */
+  @Override
+  public String getTaskInstanceId() {
+    Object ref = taskInstanceId_;
+    if (ref instanceof String) {
+      return (String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      String s = bs.toStringUtf8();
+      taskInstanceId_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string task_instance_id = 3;</code>
+   * @return The bytes for taskInstanceId.
+   */
+  @Override
+  public com.google.protobuf.ByteString
+      getTaskInstanceIdBytes() {
+    Object ref = taskInstanceId_;
+    if (ref instanceof String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (String) ref);
+      taskInstanceId_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int INPUT_FIELD_NUMBER = 4;
   private volatile Object input_;
   /**
-   * <code>string input = 3;</code>
+   * <code>string input = 4;</code>
    * @return The input.
    */
   @Override
@@ -215,7 +260,7 @@ private static final long serialVersionUID = 0L;
     }
   }
   /**
-   * <code>string input = 3;</code>
+   * <code>string input = 4;</code>
    * @return The bytes for input.
    */
   @Override
@@ -253,8 +298,11 @@ private static final long serialVersionUID = 0L;
     if (!getInstanceIdBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 2, instanceId_);
     }
+    if (!getTaskInstanceIdBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, taskInstanceId_);
+    }
     if (!getInputBytes().isEmpty()) {
-      com.google.protobuf.GeneratedMessageV3.writeString(output, 3, input_);
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 4, input_);
     }
     unknownFields.writeTo(output);
   }
@@ -271,8 +319,11 @@ private static final long serialVersionUID = 0L;
     if (!getInstanceIdBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, instanceId_);
     }
+    if (!getTaskInstanceIdBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, taskInstanceId_);
+    }
     if (!getInputBytes().isEmpty()) {
-      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, input_);
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, input_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -293,6 +344,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getId())) return false;
     if (!getInstanceId()
         .equals(other.getInstanceId())) return false;
+    if (!getTaskInstanceId()
+        .equals(other.getTaskInstanceId())) return false;
     if (!getInput()
         .equals(other.getInput())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
@@ -310,6 +363,8 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getId().hashCode();
     hash = (37 * hash) + INSTANCE_ID_FIELD_NUMBER;
     hash = (53 * hash) + getInstanceId().hashCode();
+    hash = (37 * hash) + TASK_INSTANCE_ID_FIELD_NUMBER;
+    hash = (53 * hash) + getTaskInstanceId().hashCode();
     hash = (37 * hash) + INPUT_FIELD_NUMBER;
     hash = (53 * hash) + getInput().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
@@ -449,6 +504,8 @@ private static final long serialVersionUID = 0L;
 
       instanceId_ = "";
 
+      taskInstanceId_ = "";
+
       input_ = "";
 
       return this;
@@ -479,6 +536,7 @@ private static final long serialVersionUID = 0L;
       ExecuteRequest result = new ExecuteRequest(this);
       result.id_ = id_;
       result.instanceId_ = instanceId_;
+      result.taskInstanceId_ = taskInstanceId_;
       result.input_ = input_;
       onBuilt();
       return result;
@@ -534,6 +592,10 @@ private static final long serialVersionUID = 0L;
       }
       if (!other.getInstanceId().isEmpty()) {
         instanceId_ = other.instanceId_;
+        onChanged();
+      }
+      if (!other.getTaskInstanceId().isEmpty()) {
+        taskInstanceId_ = other.taskInstanceId_;
         onChanged();
       }
       if (!other.getInput().isEmpty()) {
@@ -721,9 +783,85 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
+    private Object taskInstanceId_ = "";
+    /**
+     * <code>string task_instance_id = 3;</code>
+     * @return The taskInstanceId.
+     */
+    public String getTaskInstanceId() {
+      Object ref = taskInstanceId_;
+      if (!(ref instanceof String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        taskInstanceId_ = s;
+        return s;
+      } else {
+        return (String) ref;
+      }
+    }
+    /**
+     * <code>string task_instance_id = 3;</code>
+     * @return The bytes for taskInstanceId.
+     */
+    public com.google.protobuf.ByteString
+        getTaskInstanceIdBytes() {
+      Object ref = taskInstanceId_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        taskInstanceId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string task_instance_id = 3;</code>
+     * @param value The taskInstanceId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTaskInstanceId(
+        String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      taskInstanceId_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string task_instance_id = 3;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearTaskInstanceId() {
+      
+      taskInstanceId_ = getDefaultInstance().getTaskInstanceId();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string task_instance_id = 3;</code>
+     * @param value The bytes for taskInstanceId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTaskInstanceIdBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      taskInstanceId_ = value;
+      onChanged();
+      return this;
+    }
+
     private Object input_ = "";
     /**
-     * <code>string input = 3;</code>
+     * <code>string input = 4;</code>
      * @return The input.
      */
     public String getInput() {
@@ -739,7 +877,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string input = 3;</code>
+     * <code>string input = 4;</code>
      * @return The bytes for input.
      */
     public com.google.protobuf.ByteString
@@ -756,7 +894,7 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
-     * <code>string input = 3;</code>
+     * <code>string input = 4;</code>
      * @param value The input to set.
      * @return This builder for chaining.
      */
@@ -771,7 +909,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string input = 3;</code>
+     * <code>string input = 4;</code>
      * @return This builder for chaining.
      */
     public Builder clearInput() {
@@ -781,7 +919,7 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>string input = 3;</code>
+     * <code>string input = 4;</code>
      * @param value The bytes for input to set.
      * @return This builder for chaining.
      */

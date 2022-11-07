@@ -90,7 +90,12 @@ public class HeartbeatProcessor {
                 .topic(item.getTopic())
                 .lastUpTime(new Date())
                 .build();
-            consumerManager.updateClientTime(hbClient);
+
+            // consumer group client is lost, and the client needs to resubscribe.
+            if (!consumerManager.updateClientTime(hbClient)) {
+                ServiceUtils.sendRespAndDone(StatusCode.CLIENT_RESUBSCRIBE, emitter);
+                return;
+            }
         }
 
         ServiceUtils.sendRespAndDone(StatusCode.SUCCESS, "heartbeat success", emitter);
@@ -103,7 +108,7 @@ public class HeartbeatProcessor {
             String user = header.getUsername();
             String pass = header.getPassword();
             String sys = header.getSys();
-            int requestCode = Integer.valueOf(RequestCode.HEARTBEAT.getRequestCode());
+            int requestCode = RequestCode.HEARTBEAT.getRequestCode();
             for (Heartbeat.HeartbeatItem item : heartbeat.getHeartbeatItemsList()) {
                 Acl.doAclCheckInHttpHeartbeat(remoteAdd, user, pass, sys, item.getTopic(), requestCode);
             }

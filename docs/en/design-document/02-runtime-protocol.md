@@ -246,7 +246,7 @@ The request header of the Send Async message is identical to the request header 
 
 ### Protobuf
 
-The `eventmesh-protocol-gprc` module contains the [protobuf definition file](https://github.com/apache/incubator-eventmesh/blob/master/eventmesh-protocol-plugin/eventmesh-protocol-grpc/src/main/proto/eventmesh-client.proto) of the Evenmesh client. The `gradle build` command generates the gRPC codes, which are located in `/build/generated/source/proto/main`. The generated gRPC codes are used in `eventmesh-sdk-java` module.
+The `eventmesh-protocol-gprc` module contains the [protobuf definition file](https://github.com/apache/incubator-eventmesh/blob/master/eventmesh-protocol-plugin/eventmesh-protocol-grpc/src/main/proto/eventmesh-client.proto) of the Eventmesh client. The `gradle build` command generates the gRPC codes, which are located in `/build/generated/source/proto/main`. The generated gRPC codes are used in `eventmesh-sdk-java` module.
 
 ### Data Model
 

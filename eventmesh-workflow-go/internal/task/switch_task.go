@@ -16,19 +16,71 @@
 package task
 
 import (
+	"context"
+	"encoding/json"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/third_party/jqer"
+	"github.com/gogf/gf/util/gconv"
+	"github.com/google/uuid"
+	"strconv"
 )
 
-type SwitchTask struct {
-	BaseTask
-	Transitions []*model.WorkflowTaskRelation
+type switchTask struct {
+	baseTask
+	transitions []*model.WorkflowTaskRelation
+	jq          jqer.JQ
 }
 
-func (t *SwitchTask) Type() string {
-	return constants.TaskTypeSwitch
+func NewSwitchTask(instance *model.WorkflowTaskInstance) Task {
+	var t switchTask
+	if instance == nil || instance.Task == nil {
+		return nil
+	}
+	t.baseTask = baseTask{taskID: instance.TaskID, input: instance.Input,
+		workflowID: instance.WorkflowID, workflowInstanceID: instance.WorkflowInstanceID,
+		taskType: instance.Task.TaskType}
+	t.transitions = instance.Task.ChildTasks
+	t.baseTask.queue = queue.GetQueue(config.GlobalConfig().Flow.Queue.Store)
+	t.workflowDAL = dal.NewWorkflowDAL()
+	t.jq = jqer.NewJQ()
+	return &t
 }
 
-func (t *SwitchTask) Run() error {
-	return nil
+func (t *switchTask) Run() error {
+	if len(t.transitions) == 0 {
+		return nil
+	}
+	for _, transition := range t.transitions {
+		if transition.ToTaskID == constants.TaskEndID {
+			continue
+		}
+		var jqData interface{}
+		err := json.Unmarshal([]byte(t.input), &jqData)
+		if err != nil {
+			return err
+		}
+		res, err := t.jq.One(jqData, transition.Condition)
+		if err != nil {
+			return err
+		}
+		boolValue, err := strconv.ParseBool(gconv.String(res))
+		if err != nil {
+			return err
+		}
+		if !boolValue {
+			continue
+		}
+		var taskInstance = model.WorkflowTaskInstance{WorkflowInstanceID: t.workflowInstanceID,
+			WorkflowID: t.workflowID, TaskID: transition.ToTaskID, TaskInstanceID: uuid.New().String(),
+			Status: constants.TaskInstanceWaitStatus, Input: t.baseTask.input}
+		return t.baseTask.queue.Publish([]*model.WorkflowTaskInstance{&taskInstance})
+	}
+	// not match
+	return t.workflowDAL.UpdateInstance(context.Background(),
+		&model.WorkflowInstance{WorkflowInstanceID: t.workflowInstanceID,
+			WorkflowStatus: constants.WorkflowInstanceSuccessStatus})
 }
