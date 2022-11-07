@@ -13,16 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package producer
+package constants
 
-import (
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"time"
+const (
+	EventMeshMessageProtocol = "eventmeshmessage"
+	CloudEventsProtocol      = "cloudevents"
+	OpenMessageProtocol      = "openmessage"
+
+	ProtocolDesc             = "http"
+	EventMeshMessageConstTTL = "ttl"
 )
-
-type EventMeshProtocolProducer interface {
-	Publish(event *cloudevents.Event) error
-	Request(event *cloudevents.Event, timeout time.Duration) (*cloudevents.Event, error)
-
-	// TODO: add EventMeshMessage and OpenMessage support
-}
