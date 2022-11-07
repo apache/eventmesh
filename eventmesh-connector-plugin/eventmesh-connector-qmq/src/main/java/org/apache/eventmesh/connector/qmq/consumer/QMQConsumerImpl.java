@@ -42,7 +42,7 @@ import qunar.tc.qmq.consumer.MessageConsumerProvider;
 
 
 public class QMQConsumerImpl implements Consumer {
-    private final static Logger LOG = LoggerFactory.getLogger(QMQConsumerImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(QMQConsumerImpl.class);
 
     private final AtomicBoolean started = new AtomicBoolean(false);
     private Properties properties;
@@ -56,7 +56,7 @@ public class QMQConsumerImpl implements Consumer {
 
     private boolean isBroadcast = false;
 
-    private final static QMQMessageCache messageMap = new QMQMessageCache();
+    private static final QMQMessageCache messageMap = new QMQMessageCache();
 
     private QMQPullMessageTask qmqPullMessageTask;
 
@@ -125,7 +125,9 @@ public class QMQConsumerImpl implements Consumer {
 
     @Override
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
-        if (cloudEvents == null) return;
+        if (cloudEvents == null) {
+            return;
+        }
 
         for (CloudEvent event : cloudEvents) {
             try {
