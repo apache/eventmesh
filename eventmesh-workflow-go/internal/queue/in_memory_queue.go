@@ -80,6 +80,12 @@ func (q *inMemoryQueue) handle(item rxgo.Item) {
 		return
 	}
 	log.Get(constants.LogQueue).Infof("handle=%s", gconv.String(v))
+	if v.ID != 0 {
+		if err := q.workflowDAL.UpdateTaskInstance(dal.GetDalClient(), v); err != nil {
+			log.Get(constants.LogQueue).Errorf("Observe UpdateTaskInstance error=%v", err)
+		}
+		return
+	}
 	if err := q.workflowDAL.InsertTaskInstance(context.Background(), v); err != nil {
 		log.Get(constants.LogQueue).Errorf("Observe InsertTaskInstance error=%v", err)
 	}

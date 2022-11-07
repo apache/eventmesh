@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EventmeshAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static EventmeshAsyncSubscribe handler = new EventmeshAsyncSubscribe();
+    public static final EventmeshAsyncSubscribe handler = new EventmeshAsyncSubscribe();
 
     public static void main(String[] args) throws InterruptedException {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);

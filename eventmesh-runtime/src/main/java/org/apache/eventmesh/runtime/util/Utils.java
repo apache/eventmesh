@@ -26,7 +26,9 @@ import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.SessionStat
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpRequest;
 
 public class Utils {
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
@@ -67,7 +71,7 @@ public class Utils {
                                 logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
 
                                 if (session != null) {
-                                    session.getClientGroupWrapper().get()
+                                    Objects.requireNonNull(session.getClientGroupWrapper().get())
                                         .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
                                 }
                             }
@@ -155,5 +159,24 @@ public class Utils {
         } else {
             return null;
         }
+    }
+
+    /**
+     * parse http header
+     *
+     * @param fullReq request parameter
+     * @return http header
+     */
+    public static Map<String, Object> parseHttpHeader(HttpRequest fullReq) {
+        Map<String, Object> headerParam = new HashMap<>();
+        for (String key : fullReq.headers().names()) {
+            if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
+                    || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
+                    || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
+                continue;
+            }
+            headerParam.put(key, fullReq.headers().get(key));
+        }
+        return headerParam;
     }
 }

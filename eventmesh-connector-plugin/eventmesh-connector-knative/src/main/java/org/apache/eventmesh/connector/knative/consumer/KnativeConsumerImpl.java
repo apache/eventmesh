@@ -25,11 +25,16 @@ import org.apache.eventmesh.connector.knative.config.ClientConfiguration;
 import java.util.List;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.cloudevents.CloudEvent;
 
 public class KnativeConsumerImpl implements Consumer {
 
     private PullConsumerImpl pullConsumer;
+
+    private static final Logger logger = LoggerFactory.getLogger(KnativeConsumerImpl.class);
 
     @Override
     public synchronized void init(Properties properties) throws Exception {
@@ -52,7 +57,7 @@ public class KnativeConsumerImpl implements Consumer {
         try {
             pullConsumer.unsubscribe(topic);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 

@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
 
-    public static SyncResponse handler = new SyncResponse();
+    public static final SyncResponse handler = new SyncResponse();
 
     private static EventMeshTCPClient<CloudEvent> client;
 
@@ -71,6 +71,10 @@ public class SyncResponse implements ReceiveMsgHook<CloudEvent> {
 
     @Override
     public Optional<CloudEvent> handle(CloudEvent event) {
+        if (event.getData() == null) {
+            log.warn("receive sync msg's data is null.");
+            return Optional.empty();
+        }
         String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
         log.info("receive sync rr msg: {}|{}", event, content);
         return Optional.of(event);

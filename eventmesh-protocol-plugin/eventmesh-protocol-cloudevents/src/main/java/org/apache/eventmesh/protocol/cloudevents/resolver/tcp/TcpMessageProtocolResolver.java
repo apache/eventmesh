@@ -53,6 +53,11 @@ public class TcpMessageProtocolResolver {
                             protocolType, protocolVersion, protocolDesc));
         }
 
+        if (StringUtils.isBlank(cloudEventJson)) {
+            throw new ProtocolHandleException(
+                String.format("invalid method params cloudEventJson %s", cloudEventJson));
+        }
+
         if (!StringUtils.equals(CloudEventsProtocolConstant.PROTOCOL_NAME, protocolType)) {
             throw new ProtocolHandleException(String.format("Unsupported protocolType: %s", protocolType));
         }

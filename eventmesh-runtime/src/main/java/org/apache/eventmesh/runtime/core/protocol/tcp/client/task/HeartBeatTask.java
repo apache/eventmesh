@@ -28,6 +28,8 @@ import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.util.RemotingHelper;
 import org.apache.eventmesh.runtime.util.Utils;
 
+import java.util.Objects;
+
 import io.netty.channel.ChannelHandlerContext;
 
 public class HeartBeatTask extends AbstractTask {
@@ -52,11 +54,11 @@ public class HeartBeatTask extends AbstractTask {
             }
             res.setHeader(new Header(HEARTBEAT_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq()));
         } catch (Exception e) {
-            logger.error("HeartBeatTask failed|user={}|errMsg={}", session.getClient(), e);
+            logger.error("HeartBeatTask failed|user={}|errMsg={}", Objects.requireNonNull(session).getClient(), e);
             res.setHeader(new Header(HEARTBEAT_RESPONSE, OPStatus.FAIL.getCode(), "exception while "
                     + "heartbeating", pkg.getHeader().getSeq()));
         } finally {
-            Utils.writeAndFlush(res, startTime, taskExecuteTime, session.getContext(), session);
+            Utils.writeAndFlush(res, startTime, taskExecuteTime, Objects.requireNonNull(session).getContext(), session);
         }
     }
 }

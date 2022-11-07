@@ -22,6 +22,7 @@ import org.apache.eventmesh.common.file.FileChangeListener;
 import org.apache.eventmesh.common.file.WatchFileManager;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -63,6 +64,7 @@ public class ConfigurationWrapper {
     };
 
     public ConfigurationWrapper(String directoryPath, String fileName, boolean reload) {
+        Preconditions.checkArgument(Strings.isNotEmpty(directoryPath), "please configure environment variable 'confPath'");
         this.directoryPath = directoryPath
             .replace('/', File.separator.charAt(0))
             .replace('\\', File.separator.charAt(0));

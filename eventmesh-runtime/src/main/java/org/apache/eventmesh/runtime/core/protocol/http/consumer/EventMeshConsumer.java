@@ -17,6 +17,11 @@
 
 package org.apache.eventmesh.runtime.core.protocol.http.consumer;
 
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONSUMER_GROUP;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.EVENT_MESH_IDC;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.INSTANCE_NAME;
+import static org.apache.eventmesh.runtime.constants.EventMeshConstants.IS_BROADCAST;
+
 import org.apache.eventmesh.api.AbstractContext;
 import org.apache.eventmesh.api.AsyncConsumeContext;
 import org.apache.eventmesh.api.EventListener;
@@ -28,6 +33,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.SubscriptionItem;
 import org.apache.eventmesh.common.protocol.SubscriptionMode;
+import org.apache.eventmesh.common.protocol.http.common.ProtocolKey;
 import org.apache.eventmesh.runtime.boot.EventMeshHTTPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.consumergroup.ConsumerGroupConf;
@@ -54,7 +60,6 @@ import org.slf4j.LoggerFactory;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Scope;
 
 public class EventMeshConsumer {
 
@@ -90,10 +95,10 @@ public class EventMeshConsumer {
     public synchronized void init() throws Exception {
         httpMessageHandler = new HTTPMessageHandler(this);
         Properties keyValue = new Properties();
-        keyValue.put("isBroadcast", "false");
-        keyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
-        keyValue.put("eventMeshIDC", eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
-        keyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
+        keyValue.put(IS_BROADCAST, "false");
+        keyValue.put(CONSUMER_GROUP, consumerGroupConf.getConsumerGroup());
+        keyValue.put(EVENT_MESH_IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+        keyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
             eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
         persistentMqConsumer.init(keyValue);
 
@@ -108,8 +113,8 @@ public class EventMeshConsumer {
                     EventMeshTraceConstants.TRACE_DOWNSTREAM_EVENTMESH_SERVER_SPAN, false);
                 try {
                     String topic = event.getSubject();
-                    String bizSeqNo = (String) event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
-                    String uniqueId = (String) event.getExtension(Constants.RMB_UNIQ_ID);
+                    String bizSeqNo = event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO).toString();
+                    String uniqueId = event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID).toString();
 
                     event = CloudEventBuilder.from(event)
                         .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
@@ -162,10 +167,10 @@ public class EventMeshConsumer {
 
         //broacast consumer
         Properties broadcastKeyValue = new Properties();
-        broadcastKeyValue.put("isBroadcast", "true");
-        broadcastKeyValue.put("consumerGroup", consumerGroupConf.getConsumerGroup());
-        broadcastKeyValue.put("eventMeshIDC", eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
-        broadcastKeyValue.put("instanceName", EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
+        broadcastKeyValue.put(IS_BROADCAST, "true");
+        broadcastKeyValue.put(CONSUMER_GROUP, consumerGroupConf.getConsumerGroup());
+        broadcastKeyValue.put(EVENT_MESH_IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+        broadcastKeyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
             eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
         broadcastMqConsumer.init(broadcastKeyValue);
 
@@ -189,9 +194,10 @@ public class EventMeshConsumer {
                         .build();
 
                     String topic = event.getSubject();
-                    String bizSeqNo =
-                        event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS).toString();
-                    String uniqueId = event.getExtension(Constants.RMB_UNIQ_ID).toString();
+                    String bizSeqNo = event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO) == null ? "" :
+                        event.getExtension(ProtocolKey.ClientInstanceKey.BIZSEQNO).toString();
+                    String uniqueId = event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID) == null ? "" :
+                        event.getExtension(ProtocolKey.ClientInstanceKey.UNIQUEID).toString();
 
                     if (messageLogger.isDebugEnabled()) {
                         messageLogger.debug("message|mq2eventMesh|topic={}|msg={}", topic, event);
@@ -292,6 +298,10 @@ public class EventMeshConsumer {
 
     public ConsumerGroupConf getConsumerGroupConf() {
         return consumerGroupConf;
+    }
+
+    public void setConsumerGroupConf(ConsumerGroupConf consumerGroupConf) {
+        this.consumerGroupConf = consumerGroupConf;
     }
 
     public EventMeshHTTPServer getEventMeshHTTPServer() {

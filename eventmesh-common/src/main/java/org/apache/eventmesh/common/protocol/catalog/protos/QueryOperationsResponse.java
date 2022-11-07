@@ -180,8 +180,8 @@ public final class QueryOperationsResponse extends
     @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
         throws java.io.IOException {
-        for (int i = 0; i < operations_.size(); i++) {
-            output.writeMessage(1, operations_.get(i));
+        for (Operation operation : operations_) {
+            output.writeMessage(1, operation);
         }
         unknownFields.writeTo(output);
     }
@@ -194,9 +194,9 @@ public final class QueryOperationsResponse extends
         }
 
         size = 0;
-        for (int i = 0; i < operations_.size(); i++) {
+        for (Operation operation : operations_) {
             size += com.google.protobuf.CodedOutputStream
-                .computeMessageSize(1, operations_.get(i));
+                .computeMessageSize(1, operation);
         }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;

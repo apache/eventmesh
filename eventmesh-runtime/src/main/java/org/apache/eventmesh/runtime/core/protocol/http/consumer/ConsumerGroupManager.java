@@ -78,6 +78,7 @@ public class ConsumerGroupManager {
         }
 
         this.consumerGroupConfig = consumerGroupConfig;
+        this.eventMeshConsumer.setConsumerGroupConf(consumerGroupConfig);
         init();
         start();
     }

@@ -27,6 +27,8 @@ import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.util.Utils;
 
+import java.util.Arrays;
+
 import io.netty.channel.ChannelHandlerContext;
 
 public class GoodbyeTask extends AbstractTask {
@@ -49,7 +51,7 @@ public class GoodbyeTask extends AbstractTask {
             }
         } catch (Exception e) {
             logger.error("GoodbyeTask failed|user={}|errMsg={}", session.getClient(), e);
-            msg.setHeader(new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.FAIL.getCode(), e.getStackTrace().toString(), pkg
+            msg.setHeader(new Header(CLIENT_GOODBYE_RESPONSE, OPStatus.FAIL.getCode(), Arrays.toString(e.getStackTrace()), pkg
                     .getHeader().getSeq()));
         } finally {
             this.eventMeshTCPServer.getScheduler().submit(new Runnable() {

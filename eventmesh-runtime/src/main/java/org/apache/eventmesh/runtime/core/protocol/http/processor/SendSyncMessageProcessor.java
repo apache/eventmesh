@@ -56,13 +56,13 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
-    public Logger messageLogger = LoggerFactory.getLogger("message");
+    public Logger messageLogger = LoggerFactory.getLogger(EventMeshConstants.MESSAGE);
 
-    public Logger cmdLogger = LoggerFactory.getLogger("cmd");
+    public Logger cmdLogger = LoggerFactory.getLogger(EventMeshConstants.CMD);
 
-    public Logger httpLogger = LoggerFactory.getLogger("http");
+    public Logger httpLogger = LoggerFactory.getLogger(EventMeshConstants.PROTOCOL_HTTP);
 
-    public Logger aclLogger = LoggerFactory.getLogger("acl");
+    public Logger aclLogger = LoggerFactory.getLogger(EventMeshConstants.ACL);
 
     private EventMeshHTTPServer eventMeshHTTPServer;
 
@@ -159,8 +159,8 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
         //do acl check
         if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-            String user = event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME).toString();
-            String pass = event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD).toString();
+            String user = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME)).toString();
+            String pass = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD)).toString();
             int requestCode = Integer.parseInt(asyncContext.getRequest().getRequestCode());
 
             try {
@@ -192,7 +192,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
             return;
         }
 
-        String content = new String(event.getData().toBytes(), StandardCharsets.UTF_8);
+        String content = new String(Objects.requireNonNull(event.getData()).toBytes(), StandardCharsets.UTF_8);
         if (content.length() > eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize) {
             httpLogger.error("Event size exceeds the limit: {}",
                 eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEventSize);
@@ -220,7 +220,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
 
         try {
             event = CloudEventBuilder.from(event)
-                    .withExtension("msgtype", "persistent")
+                    .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
                     .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                     .build();
@@ -280,7 +280,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                                 .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP,
                                         String.valueOf(System.currentTimeMillis()))
                                 .build();
-                        final String rtnMsg = new String(event.getData().toBytes(),
+                        final String rtnMsg = new String(Objects.requireNonNull(event.getData()).toBytes(),
                                 EventMeshConstants.DEFAULT_CHARSET);
 
                         HttpCommand succ = asyncContext.getRequest().createHttpCommandResponse(

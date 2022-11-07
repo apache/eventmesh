@@ -18,9 +18,6 @@
 package org.apache.eventmesh.runtime.boot;
 
 import org.apache.eventmesh.common.config.ConfigurationWrapper;
-import org.apache.eventmesh.runtime.configuration.EventMeshGrpcConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshHTTPConfiguration;
-import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 
 import org.slf4j.Logger;
@@ -28,20 +25,14 @@ import org.slf4j.LoggerFactory;
 
 public class EventMeshStartup {
 
-    public static Logger logger = LoggerFactory.getLogger(EventMeshStartup.class);
+    public static final Logger logger = LoggerFactory.getLogger(EventMeshStartup.class);
 
     public static void main(String[] args) throws Exception {
         try {
             ConfigurationWrapper configurationWrapper =
                     new ConfigurationWrapper(EventMeshConstants.EVENTMESH_CONF_HOME,
                             EventMeshConstants.EVENTMESH_CONF_FILE, false);
-            EventMeshHTTPConfiguration eventMeshHttpConfiguration = new EventMeshHTTPConfiguration(configurationWrapper);
-            eventMeshHttpConfiguration.init();
-            EventMeshTCPConfiguration eventMeshTcpConfiguration = new EventMeshTCPConfiguration(configurationWrapper);
-            eventMeshTcpConfiguration.init();
-            EventMeshGrpcConfiguration eventMeshGrpcConfiguration = new EventMeshGrpcConfiguration(configurationWrapper);
-            eventMeshGrpcConfiguration.init();
-            EventMeshServer server = new EventMeshServer(eventMeshHttpConfiguration, eventMeshTcpConfiguration, eventMeshGrpcConfiguration);
+            EventMeshServer server = new EventMeshServer(configurationWrapper);
             server.init();
             server.start();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

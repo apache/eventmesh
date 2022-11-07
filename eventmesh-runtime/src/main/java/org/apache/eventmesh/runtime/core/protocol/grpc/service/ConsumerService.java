@@ -58,6 +58,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             "subscribe", EventMeshConstants.PROTOCOL_GRPC,
             request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+        eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         subscribeThreadPoolExecutor.submit(() -> {
@@ -82,6 +83,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
                     logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
                         "subscribeStream", EventMeshConstants.PROTOCOL_GRPC,
                         subscription.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+                    eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
                     handleSubscriptionStream(subscription, emitter);
                 } else {
@@ -149,6 +151,7 @@ public class ConsumerService extends ConsumerServiceGrpc.ConsumerServiceImplBase
         logger.info("cmd={}|{}|client2eventMesh|from={}|to={}",
             "unsubscribe", EventMeshConstants.PROTOCOL_GRPC,
             request.getHeader().getIp(), eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshIp);
+        eventMeshGrpcServer.getMetricsMonitor().recordReceiveMsgFromClient();
 
         EventEmitter<Response> emitter = new EventEmitter<>(responseObserver);
         subscribeThreadPoolExecutor.submit(() -> {

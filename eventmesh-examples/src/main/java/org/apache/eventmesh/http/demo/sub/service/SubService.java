@@ -19,6 +19,11 @@
 
 package org.apache.eventmesh.http.demo.sub.service;
 
+import static org.apache.eventmesh.common.ExampleConstants.ENV;
+import static org.apache.eventmesh.common.ExampleConstants.IDC;
+import static org.apache.eventmesh.common.ExampleConstants.SERVER_PORT;
+import static org.apache.eventmesh.common.ExampleConstants.SUB_SYS;
+
 import org.apache.eventmesh.client.http.conf.EventMeshHttpClientConfig;
 import org.apache.eventmesh.client.http.consumer.EventMeshHttpConsumer;
 import org.apache.eventmesh.common.ExampleConstants;
@@ -47,23 +52,20 @@ import com.google.common.collect.Lists;
 @Component
 public class SubService implements InitializingBean {
 
-    public static Logger logger = LoggerFactory.getLogger(SubService.class);
+    public static final Logger logger = LoggerFactory.getLogger(SubService.class);
 
     private EventMeshHttpConsumer eventMeshHttpConsumer;
 
     final Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
 
     final List<SubscriptionItem> topicList = Lists.newArrayList(
-            new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
+        new SubscriptionItem(ExampleConstants.EVENTMESH_HTTP_ASYNC_TEST_TOPIC, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC)
     );
     final String localIp = IPUtils.getLocalAddress();
-    final String localPort = properties.getProperty("server.port");
+    final String localPort = properties.getProperty(SERVER_PORT);
     final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
     final String eventMeshHttpPort = properties.getProperty(ExampleConstants.EVENTMESH_HTTP_PORT);
     final String url = "http://" + localIp + ":" + localPort + "/sub/test";
-    final String env = "P";
-    final String idc = "FT";
-    final String subsys = "1234";
 
     // CountDownLatch size is the same as messageSize in AsyncPublishInstance.java (Publisher)
     private CountDownLatch countDownLatch = new CountDownLatch(AsyncPublishInstance.messageSize);
@@ -73,13 +75,13 @@ public class SubService implements InitializingBean {
 
         final String eventMeshIPPort = eventMeshIp + ":" + eventMeshHttpPort;
         EventMeshHttpClientConfig eventMeshClientConfig = EventMeshHttpClientConfig.builder()
-                .liteEventMeshAddr(eventMeshIPPort)
-                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-                .env(env)
-                .idc(idc)
-                .ip(IPUtils.getLocalAddress())
-                .sys(subsys)
-                .pid(String.valueOf(ThreadUtils.getPID())).build();
+            .liteEventMeshAddr(eventMeshIPPort)
+            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+            .env(ENV)
+            .idc(IDC)
+            .ip(IPUtils.getLocalAddress())
+            .sys(SUB_SYS)
+            .pid(String.valueOf(ThreadUtils.getPID())).build();
 
         eventMeshHttpConsumer = new EventMeshHttpConsumer(eventMeshClientConfig);
         eventMeshHttpConsumer.heartBeat(topicList, url);

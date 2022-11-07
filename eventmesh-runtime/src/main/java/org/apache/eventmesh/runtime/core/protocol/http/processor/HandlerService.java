@@ -65,11 +65,11 @@ import lombok.Setter;
 
 public class HandlerService {
 
-    private Logger httpServerLogger = LoggerFactory.getLogger(this.getClass());
+    private final Logger httpServerLogger = LoggerFactory.getLogger(this.getClass());
 
-    private Logger httpLogger = LoggerFactory.getLogger("http");
+    private final Logger httpLogger = LoggerFactory.getLogger("http");
 
-    private Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
+    private final Map<String, ProcessorWrapper> httpProcessorMap = new ConcurrentHashMap<>();
 
     @Setter
     private HTTPMetricsServer metrics;

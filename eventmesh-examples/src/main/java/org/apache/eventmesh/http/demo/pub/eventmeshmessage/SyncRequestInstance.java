@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 public class SyncRequestInstance {
 
-    public static Logger logger = LoggerFactory.getLogger(SyncRequestInstance.class);
+    public static final Logger logger = LoggerFactory.getLogger(SyncRequestInstance.class);
 
     public static void main(String[] args) throws Exception {
 
