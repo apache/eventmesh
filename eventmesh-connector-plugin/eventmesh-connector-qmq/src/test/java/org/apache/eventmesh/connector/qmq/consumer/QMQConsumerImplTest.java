@@ -82,7 +82,8 @@ public class QMQConsumerImplTest {
         try {
             qmqConsumer.setConsumer(this.consumer);
 
-            Mockito.when(this.consumer.getOrCreatePullConsumer(Mockito.any(String.class), Mockito.any(String.class), Mockito.any(boolean.class))).thenReturn(this.pullConsumer);
+            Mockito.when(this.consumer.getOrCreatePullConsumer(Mockito.any(String.class), Mockito.any(String.class),
+                    Mockito.any(boolean.class))).thenReturn(this.pullConsumer);
 
             List<Message> list = new ArrayList<Message>();
             Message msg = new Message() {
@@ -320,7 +321,6 @@ public class QMQConsumerImplTest {
             qmqConsumer.registerEventListener(new EventListener() {
                 @Override
                 public void consume(CloudEvent cloudEvent, AsyncConsumeContext context) {
-                    System.out.println(cloudEvent.getSubject());
                     Assert.assertEquals(cloudEvent.getSubject(), "HELLO_TOPIC");
                 }
             });
@@ -332,7 +332,7 @@ public class QMQConsumerImplTest {
         try {
             Thread.sleep(1 * 200);
         } catch (InterruptedException e) {
-
+            Assert.fail(e.getMessage());
         }
 
         qmqConsumer.shutdown();
