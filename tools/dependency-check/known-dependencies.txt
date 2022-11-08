@@ -1,3 +1,4 @@
+amqp-client-5.16.0.jar
 animal-sniffer-annotations-1.19.jar
 annotations-4.1.1.4.jar
 aopalliance-1.0.jar
