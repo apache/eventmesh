@@ -35,6 +35,7 @@ dependencies {
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-kafka")
+    implementation project(":eventmesh-connector-plugin:eventmesh-connector-rabbitmq")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     implementation project(":eventmesh-security-plugin:eventmesh-security-auth-http-basic")
