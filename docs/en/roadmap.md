@@ -30,6 +30,7 @@ The development roadmap of Apache EventMesh (Incubating) is an overview of the p
 | **Implemented in 1.6.0**                  | Support Webhook                 | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 | **Implemented in 1.6.0**                  | Support etcd                    | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/417) |
 <<<<<<< HEAD
+<<<<<<< HEAD
 | **Implemented in 1.7.0**                           | Support Knative Eventing Infrastructure | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/790), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-463) |
 | **Implemented in 1.7.0**                           | Support Pravega as EventStore   | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/270)  |
 | **Implemented in 1.7.0**                           | Support Kafka as EventStore     | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/676) |
@@ -44,6 +45,8 @@ The development roadmap of Apache EventMesh (Incubating) is an overview of the p
 | **In Progress**                           | Metadata consistency persistent | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/817)  |
 | Planned                                   | Transaction Event               | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/697) |
 =======
+=======
+>>>>>>> e7d99426 (Update roadmap.md)
 | **Implemented in 1.7.0(to be release)**                           | Support Knative Eventing Infrastructure | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/790), [GSoC '22](https://issues.apache.org/jira/browse/COMDEV-463) |
 | **Implemented in 1.7.0(to be release)**                           | Support Pravega as EventStore   | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/270)  |
 | **Implemented in 1.7.0(to be release)**                           | Support Kafka as EventStore     | [GitHub Issue](https://github.com/apache/incubator-eventmesh/issues/676) |
