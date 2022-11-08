@@ -17,7 +17,6 @@ package registry
 
 import (
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
@@ -143,7 +142,7 @@ func (r *Registry) register(conf *PluginConfig) error {
 	serverName := conf.ServiceName
 	cfg := &Config{
 		ServiceName: serverName,
-		Address:     fmt.Sprintf("%s:%d", ip, config.GlobalConfig().Server.Port),
+		Address:     fmt.Sprintf("%s:%d", ip, conf.Port),
 	}
 	registry.Register(serverName, newRegistry(provider, cfg))
 	return nil
