@@ -44,7 +44,7 @@ dependencies {
 
 
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-etcd")
+
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
@@ -69,7 +69,7 @@ dependencies {
 
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
-    
+
     implementation project(":eventmesh-webhook:eventmesh-webhook-admin")
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
     implementation project(":eventmesh-webhook:eventmesh-webhook-receive")
