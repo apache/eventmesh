@@ -20,7 +20,13 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime"
 
-	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
+	// load all plugin here if you add new plugin you need to import it by _
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector/rocketmq"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector/standalone"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/database/mysql"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/metrics/prometheus"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/naming/nacos/registry"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol/cloudevents"
 )
 
 func main() {

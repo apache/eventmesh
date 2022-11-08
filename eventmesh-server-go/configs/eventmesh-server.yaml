@@ -16,13 +16,14 @@
 
 server:
   grpc:
-    port: "10010"
+    port: 10010
     tls:
       enable-secure: false
       ca: ""
       certfile: ""
       keyfile: ""
-    pprof: "10011"
+    pprof:
+      port: 10011
     send-pool-size: 10
     subscribe-pool-size: 10
     retry-pool-size: 10
@@ -35,9 +36,6 @@ server:
     send-message-timeout: 5s
 plugins:
   registry:
-    nacos:
-      address_list: "9.135.90.236:8848"
-  selector:
     nacos:
       address_list: "9.135.90.236:8848"
   connector:
