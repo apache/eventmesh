@@ -17,21 +17,18 @@ package producer
 
 import (
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 )
 
-func TestEventMeshHttpProducer_PublishCloudEvent(t *testing.T) {
+func TestEventMeshHttpProducer_PublishEventMeshMessage(t *testing.T) {
 	f := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"retCode":0}`))
@@ -42,26 +39,21 @@ func TestEventMeshHttpProducer_PublishCloudEvent(t *testing.T) {
 	eventMeshClientConfig := conf.DefaultEventMeshHttpClientConfig
 	sp := strings.Split(server.URL, ":")
 	eventMeshClientConfig.SetLiteEventMeshAddr(fmt.Sprintf("127.0.0.1:%s", sp[len(sp)-1]))
-	// Make event to send
-	event := cloudevents.NewEvent()
-	event.SetID(uuid.New().String())
-	event.SetSubject("test-topic")
-	event.SetSource("test-uri")
-	event.SetType(common.Constants.CLOUD_EVENTS_PROTOCOL_NAME)
-	event.SetExtension(common.Constants.EVENTMESH_MESSAGE_CONST_TTL, strconv.Itoa(4*1000))
-	event.SetDataContentType(cloudevents.ApplicationCloudEventsJSON)
-	data := map[string]string{"hello": "EventMesh"}
-	err := event.SetData(cloudevents.ApplicationCloudEventsJSON, utils.MarshalJsonBytes(data))
-	if err != nil {
-		t.Fail()
+
+	message := &protocol.EventMeshMessage{
+		BizSeqNo: "test-biz-no",
+		UniqueId: "test-unique-id",
+		Topic:    "test-topic",
+		Content:  "test-content",
+		Prop:     map[string]string{"hello": "EventMesh"},
 	}
 	// Publish event
 	httpProducer := NewEventMeshHttpProducer(eventMeshClientConfig)
-	err = httpProducer.PublishCloudEvent(&event)
+	err := httpProducer.PublishEventMeshMessage(message)
 	assert.Nil(t, err)
 }
 
-func TestEventMeshHttpProducer_RequestCloudEvent(t *testing.T) {
+func TestEventMeshHttpProducer_RequestEventMeshMessage(t *testing.T) {
 	f := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"retCode":0, "retMsg":"{\"topic\":\"test-topic\",\"body\":\"{\\\"data\\\":1}\",\"properties\":null}"}`))
@@ -73,24 +65,18 @@ func TestEventMeshHttpProducer_RequestCloudEvent(t *testing.T) {
 	eventMeshClientConfig := conf.DefaultEventMeshHttpClientConfig
 	sp := strings.Split(server.URL, ":")
 	eventMeshClientConfig.SetLiteEventMeshAddr(fmt.Sprintf("127.0.0.1:%s", sp[len(sp)-1]))
-	// Make event to send
-	event := cloudevents.NewEvent()
-	event.SetID(uuid.New().String())
-	event.SetSubject("test-topic")
-	event.SetSource("test-uri")
-	event.SetType(common.Constants.CLOUD_EVENTS_PROTOCOL_NAME)
-	event.SetExtension(common.Constants.EVENTMESH_MESSAGE_CONST_TTL, strconv.Itoa(4*1000))
-	event.SetDataContentType(cloudevents.ApplicationCloudEventsJSON)
-	data := map[string]string{"hello": "EventMesh"}
-	err := event.SetData(cloudevents.ApplicationCloudEventsJSON, utils.MarshalJsonBytes(data))
-	if err != nil {
-		t.Fail()
-	}
 
+	message := &protocol.EventMeshMessage{
+		BizSeqNo: "test-biz-no",
+		UniqueId: "test-unique-id",
+		Topic:    "test-topic",
+		Content:  "test-content",
+		Prop:     map[string]string{"hello": "EventMesh"},
+	}
 	httpProducer := NewEventMeshHttpProducer(eventMeshClientConfig)
-	ret, err := httpProducer.RequestCloudEvent(&event, time.Second)
+	ret, err := httpProducer.RequestEventMeshMessage(message, time.Second)
 	assert.Nil(t, err)
 	retData := make(map[string]interface{})
-	utils.UnMarshalJsonString(string(ret.DataEncoded), &retData)
+	utils.UnMarshalJsonString(ret.Content, &retData)
 	assert.Equal(t, float64(1), retData["data"])
 }
