@@ -26,5 +26,6 @@ type Config struct {
 // PluginConfig define registry plugin config
 type PluginConfig struct {
 	ServiceName string `yaml:"service_name"`
+	Port        string `yaml:"port"`
 	AddressList string `yaml:"address_list"`
 }

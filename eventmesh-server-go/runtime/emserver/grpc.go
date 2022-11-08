@@ -86,7 +86,6 @@ func NewGRPCServer(opt *config.GRPCOption) (GracefulServer, error) {
 }
 
 func (g *GRPCServer) Serve() error {
-	// TODO register eventmesh grpc server handler
 	return g.grpcServer.Serve(g.lis)
 }
 
