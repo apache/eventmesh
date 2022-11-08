@@ -16,33 +16,22 @@
 package producer
 
 import (
-	"errors"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/conf"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"time"
 )
 
-type EventMeshHttpProducer struct {
-	cloudEventProducer *CloudEventProducer
-}
+type EventMeshProtocolProducer interface {
 
-func NewEventMeshHttpProducer(eventMeshHttpClientConfig conf.EventMeshHttpClientConfig) *EventMeshHttpProducer {
-	return &EventMeshHttpProducer{
-		cloudEventProducer: NewCloudEventProducer(eventMeshHttpClientConfig),
-	}
-}
+	// PublishCloudEvent publish with CloudEvent protocol
+	PublishCloudEvent(event *cloudevents.Event) error
+	// RequestCloudEvent request with CloudEvent protocol
+	RequestCloudEvent(event *cloudevents.Event, timeout time.Duration) (*cloudevents.Event, error)
 
-func (e *EventMeshHttpProducer) Publish(event *cloudevents.Event) error {
-	if event == nil {
-		return errors.New("publish message failed, message is nil")
-	}
+	// PublishEventMeshMessage publish with EventMeshMessage protocol
+	PublishEventMeshMessage(message *protocol.EventMeshMessage) error
+	// RequestEventMeshMessage request with EventMeshMessage protocol
+	RequestEventMeshMessage(message *protocol.EventMeshMessage, timeout time.Duration) (*protocol.EventMeshMessage, error)
 
-	return e.cloudEventProducer.Publish(event)
-}
-
-func (e *EventMeshHttpProducer) Request(event *cloudevents.Event, timeout time.Duration) (*cloudevents.Event, error) {
-	if event == nil {
-		return nil, errors.New("request message failed, message is nil")
-	}
-	return e.cloudEventProducer.Request(event, timeout)
+	// TODO: add OpenMessage support
 }
