@@ -35,6 +35,7 @@ dependencies {
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-kafka")
+    implementation project(":eventmesh-connector-plugin:eventmesh-connector-rabbitmq")
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     implementation project(":eventmesh-security-plugin:eventmesh-security-auth-http-basic")
@@ -43,7 +44,7 @@ dependencies {
 
 
     implementation project(":eventmesh-registry-plugin:eventmesh-registry-nacos")
-    implementation project(":eventmesh-registry-plugin:eventmesh-registry-etcd")
+
 
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-api")
 
@@ -68,7 +69,7 @@ dependencies {
 
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
-    
+
     implementation project(":eventmesh-webhook:eventmesh-webhook-admin")
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
     implementation project(":eventmesh-webhook:eventmesh-webhook-receive")

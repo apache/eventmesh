@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package constant
+package protocol
 
-const (
-	EventMeshMessageProtocol = "eventmeshmessage"
-	CloudEventsProtocol      = "cloudevents"
-	OpenMessageProtocol      = "openmessage"
-)
-
-const ProtocolDesc = "http"
+type EventMeshMessage struct {
+	BizSeqNo string            `json:"biz_seq_no"`
+	UniqueId string            `json:"unique_id"`
+	Topic    string            `json:"topic"`
+	Content  string            `json:"content"`
+	Prop     map[string]string `json:"prop"`
+}

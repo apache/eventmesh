@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	gcommon "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common"
+	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/http/common"
 	protocol_message "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/protocol/http/message"
 	gutils "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/common/utils"
@@ -27,30 +28,27 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/http/utils"
-	"github.com/apache/incubator-eventmesh/eventmesh-sdk-go/log"
-	"time"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
-
 	nethttp "net/http"
 	"strconv"
+	"time"
 )
 
-const bizSeqNoLength = 30
-const uniqueIdLen = 30
-
-type CloudEventProducer struct {
+type EventMeshMessageProducer struct {
 	*http.AbstractHttpClient
 }
 
-func NewCloudEventProducer(eventMeshHttpClientConfig conf.EventMeshHttpClientConfig) *CloudEventProducer {
-	c := &CloudEventProducer{AbstractHttpClient: http.NewAbstractHttpClient(eventMeshHttpClientConfig)}
+func NewEventMeshMessageProducer(eventMeshHttpClientConfig conf.EventMeshHttpClientConfig) *EventMeshMessageProducer {
+	c := &EventMeshMessageProducer{AbstractHttpClient: http.NewAbstractHttpClient(eventMeshHttpClientConfig)}
 	return c
 }
 
-func (c *CloudEventProducer) Publish(event *cloudevents.Event) error {
-	enhancedEvent := c.enhanceCloudEvent(event)
-	requestParam := c.buildCommonPostParam(enhancedEvent)
+func (c *EventMeshMessageProducer) Publish(message *protocol.EventMeshMessage) error {
+	err := c.validateEventMeshMessage(message)
+	if err != nil {
+		return err
+	}
+
+	requestParam := c.buildCommonPostParam(message)
 	requestParam.AddHeader(common.ProtocolKey.REQUEST_CODE, strconv.Itoa(common.DefaultRequestCode.MSG_SEND_ASYNC.RequestCode))
 
 	target := c.SelectEventMesh()
@@ -63,9 +61,13 @@ func (c *CloudEventProducer) Publish(event *cloudevents.Event) error {
 	return nil
 }
 
-func (c *CloudEventProducer) Request(event *cloudevents.Event, timeout time.Duration) (*cloudevents.Event, error) {
-	enhancedEvent := c.enhanceCloudEvent(event)
-	requestParam := c.buildCommonPostParam(enhancedEvent)
+func (c *EventMeshMessageProducer) Request(message *protocol.EventMeshMessage, timeout time.Duration) (*protocol.EventMeshMessage, error) {
+	err := c.validateEventMeshMessage(message)
+	if err != nil {
+		return nil, err
+	}
+
+	requestParam := c.buildCommonPostParam(message)
 	requestParam.AddHeader(common.ProtocolKey.REQUEST_CODE, strconv.Itoa(common.DefaultRequestCode.MSG_SEND_SYNC.RequestCode))
 	requestParam.SetTimeout(timeout.Milliseconds())
 	target := c.SelectEventMesh()
@@ -82,30 +84,22 @@ func (c *CloudEventProducer) Request(event *cloudevents.Event, timeout time.Dura
 	return retMessage, nil
 }
 
-func (c *CloudEventProducer) transferMessage(retObj *http.EventMeshRetObj) (event *cloudevents.Event, err error) {
+func (c *EventMeshMessageProducer) transferMessage(retObj *http.EventMeshRetObj) (message *protocol.EventMeshMessage, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = errors.New("fail to transfer from EventMeshRetObj to CloudEvent")
+			err = errors.New("fail to transfer from EventMeshRetObj to EventMeshMessage")
 		}
 	}()
-	var message http.ReplyMessage
-	gutils.UnMarshalJsonString(retObj.RetMsg, &message)
-	retEvent := cloudevents.NewEvent()
-	retEvent.SetSubject(message.Topic)
-	retEvent.SetData("application/json", []byte(message.Body))
-	for k, v := range message.Properties {
-		retEvent.SetExtension(k, v)
-	}
-	return &retEvent, nil
+	var replyMessage http.ReplyMessage
+	gutils.UnMarshalJsonString(retObj.RetMsg, &replyMessage)
+	return &protocol.EventMeshMessage{
+		Topic:   replyMessage.Topic,
+		Content: replyMessage.Body,
+		Prop:    replyMessage.Properties,
+	}, nil
 }
 
-func (c *CloudEventProducer) buildCommonPostParam(event *cloudevents.Event) *model.RequestParam {
-	eventBytes, err := event.MarshalJSON()
-	if err != nil {
-		log.Fatalf("Failed to marshal cloudevent")
-	}
-	content := string(eventBytes)
-
+func (c *EventMeshMessageProducer) buildCommonPostParam(message *protocol.EventMeshMessage) *model.RequestParam {
 	requestParam := model.NewRequestParam(nethttp.MethodPost)
 	requestParam.AddHeader(common.ProtocolKey.ClientInstanceKey.ENV, c.EventMeshHttpClientConfig.Env())
 	requestParam.AddHeader(common.ProtocolKey.ClientInstanceKey.IDC, c.EventMeshHttpClientConfig.Idc())
@@ -114,28 +108,30 @@ func (c *CloudEventProducer) buildCommonPostParam(event *cloudevents.Event) *mod
 	requestParam.AddHeader(common.ProtocolKey.ClientInstanceKey.SYS, c.EventMeshHttpClientConfig.Sys())
 	requestParam.AddHeader(common.ProtocolKey.ClientInstanceKey.USERNAME, c.EventMeshHttpClientConfig.UserName())
 	requestParam.AddHeader(common.ProtocolKey.ClientInstanceKey.PASSWORD, c.EventMeshHttpClientConfig.Password())
-	requestParam.AddHeader(common.ProtocolKey.LANGUAGE, gcommon.Constants.LANGUAGE_GO)
-	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_TYPE, constants.CloudEventsProtocol)
+	requestParam.AddHeader(common.ProtocolKey.VERSION, common.DefaultProtocolVersion.V1.Version())
+	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_TYPE, constants.EventMeshMessageProtocol)
 	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_DESC, constants.ProtocolDesc)
-	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_VERSION, event.SpecVersion())
+	requestParam.AddHeader(common.ProtocolKey.PROTOCOL_VERSION, common.DefaultProtocolVersion.V1.Version())
+	requestParam.AddHeader(common.ProtocolKey.LANGUAGE, gcommon.Constants.LANGUAGE_GO)
 
-	// todo: move producerGroup tp header
 	requestParam.AddBody(protocol_message.SendMessageRequestBodyKey.PRODUCERGROUP, c.EventMeshHttpClientConfig.ProducerGroup())
-	requestParam.AddBody(protocol_message.SendMessageRequestBodyKey.CONTENT, content)
-
+	requestParam.AddBody(protocol_message.SendMessageRequestBodyKey.TOPIC, message.Topic)
+	requestParam.AddBody(protocol_message.SendMessageRequestBodyKey.CONTENT, message.Content)
+	requestParam.AddBody(protocol_message.SendMessageRequestBodyKey.TTL, message.Prop[constants.EventMeshMessageConstTTL])
+	requestParam.AddBody(protocol_message.SendMessageRequestBodyKey.BIZSEQNO, message.BizSeqNo)
+	requestParam.AddBody(protocol_message.SendMessageRequestBodyKey.UNIQUEID, message.UniqueId)
 	return requestParam
 }
 
-func (c *CloudEventProducer) enhanceCloudEvent(event *cloudevents.Event) *cloudevents.Event {
-	event.SetExtension(common.ProtocolKey.ClientInstanceKey.ENV, c.EventMeshHttpClientConfig.Env())
-	event.SetExtension(common.ProtocolKey.ClientInstanceKey.IDC, c.EventMeshHttpClientConfig.Idc())
-	event.SetExtension(common.ProtocolKey.ClientInstanceKey.IP, c.EventMeshHttpClientConfig.Ip())
-	event.SetExtension(common.ProtocolKey.ClientInstanceKey.PID, c.EventMeshHttpClientConfig.Pid())
-	event.SetExtension(common.ProtocolKey.ClientInstanceKey.SYS, c.EventMeshHttpClientConfig.Sys())
-	event.SetExtension(common.ProtocolKey.ClientInstanceKey.BIZSEQNO, gutils.RandomNumberStr(bizSeqNoLength))
-	event.SetExtension(common.ProtocolKey.ClientInstanceKey.UNIQUEID, gutils.RandomNumberStr(uniqueIdLen))
-	event.SetExtension(common.ProtocolKey.LANGUAGE, gcommon.Constants.LANGUAGE_GO)
-	event.SetExtension(common.ProtocolKey.PROTOCOL_DESC, fmt.Sprintf("V%s", event.SpecVersion()))
-	event.SetExtension(common.ProtocolKey.PROTOCOL_VERSION, event.SpecVersion())
-	return event
+func (c *EventMeshMessageProducer) validateEventMeshMessage(message *protocol.EventMeshMessage) error {
+	if message == nil {
+		return errors.New("EventMeshMessage can not be nil")
+	}
+	if len(message.Topic) == 0 {
+		return errors.New("EventMeshMessage topic can not be empty")
+	}
+	if len(message.Content) == 0 {
+		return errors.New("EventMeshMessage content can not be empty")
+	}
+	return nil
 }

@@ -1,3 +1,4 @@
+amqp-client-5.16.0.jar
 animal-sniffer-annotations-1.19.jar
 annotations-4.1.1.4.jar
 aopalliance-1.0.jar
@@ -34,6 +35,9 @@ commons-logging-1.2.jar
 commons-text-1.9.jar
 commons-validator-1.7.jar
 consul-api-1.4.5.jar
+curator-client-4.0.1.jar
+curator-framework-4.0.1.jar
+curator-recipes-4.0.1.jar
 disruptor-3.4.2.jar
 dledger-0.2.3.jar
 error_prone_annotations-2.9.0.jar
@@ -82,6 +86,7 @@ jcommander-1.78.jar
 jetcd-common-0.3.0.jar
 jetcd-core-0.3.0.jar
 jetcd-resolver-0.3.0.jar
+jline-0.9.94.jar
 jna-4.2.2.jar
 jodd-bean-5.1.6.jar
 jodd-core-5.1.6.jar
@@ -89,6 +94,7 @@ jsr305-3.0.2.jar
 junit-4.13.2.jar
 kafka-clients-3.0.0.jar
 listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar
+log4j-1.2.16.jar
 log4j-api-2.17.1.jar
 log4j-core-2.17.1.jar
 log4j-slf4j-impl-2.17.1.jar
@@ -100,6 +106,7 @@ metrics-json-4.1.0.jar
 nacos-auth-plugin-2.1.0.jar
 nacos-client-2.1.0.jar
 nacos-encryption-plugin-2.1.0.jar
+netty-3.7.0.Final.jar
 netty-3.10.6.Final.jar
 netty-all-4.1.79.Final.jar
 netty-buffer-4.1.79.Final.jar
@@ -202,6 +209,7 @@ simpleclient_common-0.8.1.jar
 simpleclient_httpserver-0.8.1.jar
 simpleclient-0.8.1.jar
 slf4j-api-1.7.30.jar
+slf4j-log4j12-1.6.1.jar
 snakeyaml-1.30.jar
 snappy-java-1.1.8.1.jar
 system-rules-1.16.1.jar
@@ -210,4 +218,5 @@ validation-api-1.1.0.Final.jar
 zipkin-2.23.2.jar
 zipkin-reporter-2.16.3.jar
 zipkin-sender-okhttp3-2.16.3.jar
+zookeeper-3.4.6.jar
 zstd-jni-1.5.0-2.jar
