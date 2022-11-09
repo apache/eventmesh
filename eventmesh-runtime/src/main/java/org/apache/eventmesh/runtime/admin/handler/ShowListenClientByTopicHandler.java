@@ -58,10 +58,14 @@ public class ShowListenClientByTopicHandler extends AbstractHttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         StringBuilder result = new StringBuilder();
 <<<<<<< HEAD
+<<<<<<< HEAD
         try (OutputStream out = httpExchange.getResponseBody()) {
 =======
         try(OutputStream out = httpExchange.getResponseBody();) {
 >>>>>>> 7874f745 (Change to try-with-resources to manage resources)
+=======
+        try(OutputStream out = httpExchange.getResponseBody();) {
+>>>>>>> e510588d (Change to try-with-resources to manage resources)
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String topic = queryStringInfo.get(EventMeshConstants.MANAGE_TOPIC);
