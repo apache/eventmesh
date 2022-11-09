@@ -54,13 +54,12 @@ public class SyncRequest {
             .userAgent(userAgent)
             .build();
         try {
-            Package response;
             client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 
             CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
             log.info("begin send rr msg: {}", event);
-            response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+            Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             // check-NPE EventFormat
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             if (null == eventFormat) {
