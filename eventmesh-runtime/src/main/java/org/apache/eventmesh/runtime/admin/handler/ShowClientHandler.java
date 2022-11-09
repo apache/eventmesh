@@ -51,8 +51,7 @@ public class ShowClientHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         StringBuilder result = new StringBuilder();
-        OutputStream out = httpExchange.getResponseBody();
-        try {
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String newLine = System.getProperty("line.separator");
             logger.info("showAllClient=================");
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
@@ -79,15 +78,6 @@ public class ShowClientHandler implements HttpHandler {
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("ShowClientHandler fail...", e);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
-            }
         }
-
     }
 }
