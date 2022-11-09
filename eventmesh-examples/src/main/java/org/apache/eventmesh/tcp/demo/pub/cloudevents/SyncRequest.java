@@ -41,6 +41,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SyncRequest {
 
+    private static EventMeshTCPClient<CloudEvent> client;
+
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
         final String eventMeshIp = properties.getProperty(ExampleConstants.EVENTMESH_IP);
@@ -53,14 +55,12 @@ public class SyncRequest {
             .build();
         try {
             Package response;
-            try (EventMeshTCPClient<CloudEvent> client = EventMeshTCPClientFactory.createEventMeshTCPClient(
-                eventMeshTcpClientConfig, CloudEvent.class)) {
-                client.init();
+            client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
+            client.init();
 
-                CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
-                log.info("begin send rr msg: {}", event);
-                response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
-            }
+            CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
+            log.info("begin send rr msg: {}", event);
+            response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             // check-NPE EventFormat
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             if (null == eventFormat) {
