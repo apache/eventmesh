@@ -58,6 +58,9 @@ public class SyncRequest {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> ad83e9e6 ([ISSUE #2136] Remove the try-with-resource at [cloudevents/SyncRequest])
 
             client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
