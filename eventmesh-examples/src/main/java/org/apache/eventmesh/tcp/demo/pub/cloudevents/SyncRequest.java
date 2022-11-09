@@ -54,6 +54,7 @@ public class SyncRequest {
             .userAgent(userAgent)
             .build();
         try {
+<<<<<<< HEAD
 
             client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
@@ -61,6 +62,15 @@ public class SyncRequest {
             CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
             log.info("begin send rr msg: {}", event);
             Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+=======
+            Package response;
+            client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
+            client.init();
+
+            CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
+            log.info("begin send rr msg: {}", event);
+            response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+>>>>>>> a4b2fcd4 ([ISSUE #2136] Remove the try-with-resource at [cloudevents/SyncRequest])
             // check-NPE EventFormat
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             if (null == eventFormat) {
