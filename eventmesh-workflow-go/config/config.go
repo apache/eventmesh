@@ -28,6 +28,7 @@ type Config struct {
 	Flow struct {
 		Queue struct {
 			Store string `yaml:"store"`
+			Topic string `yaml:"topic"`
 		} `yaml:"queue"`
 		Scheduler struct {
 			Type     string `yaml:"type"`
@@ -50,6 +51,7 @@ type Config struct {
 		UserName      string `yaml:"username"`
 		Password      string `yaml:"password"`
 		ProducerGroup string `yaml:"producer_group"`
+		ConsumerGroup string `yaml:"consumer_group"`
 		TTL           int    `yaml:"ttl"`
 	} `yaml:"eventmesh"`
 }
