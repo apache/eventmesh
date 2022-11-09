@@ -55,7 +55,9 @@ public class AsyncSubscribeBroadcast implements ReceiveMsgHook<EventMeshMessage>
                     eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
 
-            client.subscribe(ExampleConstants.EVENTMESH_TCP_BROADCAST_TEST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
+            client.subscribe(ExampleConstants.EVENTMESH_TCP_BROADCAST_TEST_TOPIC,
+                    SubscriptionMode.BROADCASTING,
+                    SubscriptionType.ASYNC);
             client.registerSubBusiHandler(handler);
 
             client.listen();
