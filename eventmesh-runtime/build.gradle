@@ -66,7 +66,7 @@ dependencies {
     implementation project(":eventmesh-metrics-plugin:eventmesh-metrics-prometheus")
 
     implementation project(":eventmesh-trace-plugin:eventmesh-trace-api")
-    implementation project(":eventmesh-trace-plugin:eventmesh-trace-zipkin")
+    implementation project(":eventmesh-trace-plugin:eventmesh-trace-Ozipkin")
 
     implementation project(":eventmesh-webhook:eventmesh-webhook-admin")
     implementation project(":eventmesh-webhook:eventmesh-webhook-api")
