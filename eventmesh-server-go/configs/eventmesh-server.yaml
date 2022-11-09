@@ -37,7 +37,8 @@ server:
 plugins:
   registry:
     nacos:
-      address_list: "9.135.90.236:8848"
+      address_list: "youip:8848"
+      cache-dir: "d:\\nacas-cache"
   connector:
     standalone:
   log:
