@@ -142,7 +142,7 @@ func (r *Registry) register(conf *PluginConfig) error {
 	serverName := conf.ServiceName
 	cfg := &Config{
 		ServiceName: serverName,
-		Address:     fmt.Sprintf("%s:%d", ip, conf.Port),
+		Address:     fmt.Sprintf("%s:%v", ip, conf.Port),
 	}
 	registry.Register(serverName, newRegistry(provider, cfg))
 	return nil
@@ -161,7 +161,10 @@ func (r *Registry) newProvider(cfg *PluginConfig) (naming_client.INamingClient, 
 		}
 		p.ServerConfigs = append(p.ServerConfigs, constant.ServerConfig{IpAddr: ip, Port: gconv.Uint64(port)})
 	}
-	p.ClientConfig = &constant.ClientConfig{TimeoutMs: defaultConnectTimeout}
+	p.ClientConfig = &constant.ClientConfig{
+		TimeoutMs: defaultConnectTimeout,
+		CacheDir:  cfg.CacheDir,
+	}
 	provider, err := clients.NewNamingClient(p)
 	if err != nil {
 		return nil, err

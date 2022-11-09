@@ -16,6 +16,7 @@
 package emserver
 
 import (
+	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	grpc2 "github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/core/protocol/grpc"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
@@ -61,7 +62,7 @@ func NewGRPCServer(opt *config.GRPCOption) (GracefulServer, error) {
 		return nil, err
 	}
 
-	lis, err := net.Listen("tcp", opt.Port)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", opt.Port))
 	if err != nil {
 		return nil, err
 	}
