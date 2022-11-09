@@ -40,6 +40,7 @@ dependencies {
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-api")
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
 =======
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-standlone")
@@ -47,6 +48,9 @@ dependencies {
 =======
     implementation project(":eventmesh-connector-plugin:eventmesh-connector-standalone")
 >>>>>>> 245c9306 (fix miss spelling)
+=======
+    implementation project(":eventmesh-connector-plugin:eventmesh-connector-standlone")
+>>>>>>> 64941e80 ([ISSUE #2136] Remove the try-with-resource at [cloudevents/SyncRequest])
     implementation project(":eventmesh-security-plugin:eventmesh-security-api")
     implementation project(":eventmesh-security-plugin:eventmesh-security-acl")
     implementation project(":eventmesh-security-plugin:eventmesh-security-auth-http-basic")
