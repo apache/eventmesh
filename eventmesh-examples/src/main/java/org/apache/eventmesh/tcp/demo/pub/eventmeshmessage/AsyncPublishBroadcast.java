@@ -26,15 +26,16 @@ import org.apache.eventmesh.common.protocol.tcp.EventMeshMessage;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
-
-import java.util.Properties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Properties;
 
 public class AsyncPublishBroadcast {
 
     public static Logger logger = LoggerFactory.getLogger(AsyncPublishBroadcast.class);
+
+    private static EventMeshTCPClient<EventMeshMessage> client;
 
     public static void main(String[] args) throws Exception {
         Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
@@ -46,8 +47,9 @@ public class AsyncPublishBroadcast {
                 .port(eventMeshTcpPort)
                 .userAgent(userAgent)
                 .build();
-        try (final EventMeshTCPClient<EventMeshMessage> client =
-                     EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, EventMeshMessage.class)) {
+        try {
+            client = EventMeshTCPClientFactory.createEventMeshTCPClient(
+                    eventMeshTcpClientConfig, EventMeshMessage.class);
             client.init();
 
             EventMeshMessage eventMeshMessage = EventMeshTestUtils.generateBroadcastMqMsg();
