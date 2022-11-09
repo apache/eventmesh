@@ -22,6 +22,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
 	"net"
 )
 
@@ -62,7 +63,7 @@ func NewGRPCServer(opt *config.GRPCOption) (GracefulServer, error) {
 		return nil, err
 	}
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", opt.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%v", opt.Port))
 	if err != nil {
 		return nil, err
 	}
@@ -79,6 +80,8 @@ func NewGRPCServer(opt *config.GRPCOption) (GracefulServer, error) {
 	pb.RegisterConsumerServiceServer(srv, consumerSVC)
 	pb.RegisterHeartbeatServiceServer(srv, hbSVC)
 	pb.RegisterPublisherServiceServer(srv, producerSVC)
+	// Register reflection service on gRPC server.
+	reflection.Register(srv)
 	return &GRPCServer{
 		grpcOption: opt,
 		grpcServer: srv,
