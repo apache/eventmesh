@@ -53,7 +53,7 @@ func NewConsumerServiceServer(gctx *GRPCContext) (*ConsumerService, error) {
 }
 
 func (c *ConsumerService) Subscribe(ctx context.Context, sub *pb.Subscription) (*pb.Response, error) {
-	log.Infof("cmd={}|{}|client2eventMesh|from={}", "subscribe", "grpc", sub.Header.Ip)
+	log.Infof("cmd=%v|%v|client2eventMesh|from=%v", "subscribe", "grpc", sub.Header.Ip)
 	tmCtx, cancel := context.WithTimeout(ctx, defaultAsyncTimeout)
 	defer cancel()
 	var (
