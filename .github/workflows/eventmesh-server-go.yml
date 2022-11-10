@@ -32,14 +32,11 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Specify go Version
-        uses: actions/setup-go@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: '1.18' # The Go version to download (if necessary) and use.
-      
-      - name: Output current go version
+          go-version-file: 'eventmesh-server-go/go.mod'
       - run: go version
 
       - name: Download components
