@@ -27,6 +27,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/schedule"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/util"
 	"google.golang.org/grpc"
 	"net"
 )
@@ -79,6 +80,12 @@ func (s *Server) Run() error {
 
 func (s *Server) SetupConfig() error {
 	config.ServerConfigPath = "./configs/workflow.yaml"
+	if !util.Exists(config.ServerConfigPath) {
+		config.ServerConfigPath = "../configs/workflow.yaml"
+	}
+	if !util.Exists(config.ServerConfigPath) {
+		config.ServerConfigPath = "../conf/workflow.yaml"
+	}
 	cfg, err := config.LoadConfig(config.ServerConfigPath)
 	if err != nil {
 		return err
