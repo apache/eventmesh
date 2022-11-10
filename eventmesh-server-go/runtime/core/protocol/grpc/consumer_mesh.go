@@ -112,7 +112,7 @@ func (e *EventMeshConsumer) Start() error {
 
 	e.consumerGroupTopicConfig.Range(func(key, value any) bool {
 		topic := key.(string)
-		opt := value.(*ConsumerGroupTopicOption).SubscriptionMode
+		opt := value.(ConsumerGroupTopicOption).SubscriptionMode()
 		switch opt {
 		case pb.Subscription_SubscriptionItem_CLUSTERING:
 			e.persistentConsumer.Subscribe(topic)
@@ -137,7 +137,7 @@ func (e *EventMeshConsumer) Start() error {
 // return true if this EventMeshConsumer required restart because of the topic changes
 func (e *EventMeshConsumer) RegisterClient(cli *GroupClient) bool {
 	var (
-		consumerTopicOption *ConsumerGroupTopicOption
+		consumerTopicOption ConsumerGroupTopicOption
 		restart             = false
 	)
 	val, ok := e.consumerGroupTopicConfig.Load(cli.Topic)
@@ -146,9 +146,9 @@ func (e *EventMeshConsumer) RegisterClient(cli *GroupClient) bool {
 		e.consumerGroupTopicConfig.Store(cli.Topic, consumerTopicOption)
 		restart = true
 	} else {
-		consumerTopicOption = val.(*ConsumerGroupTopicOption)
+		consumerTopicOption = val.(ConsumerGroupTopicOption)
 	}
-	consumerTopicOption.RegisterClient(cli)
+	consumerTopicOption.RegisterClient()(cli)
 	return restart
 }
 
@@ -157,14 +157,14 @@ func (e *EventMeshConsumer) RegisterClient(cli *GroupClient) bool {
 // return true if the underlining EventMeshConsumer needs to restart later; false otherwise
 func (e *EventMeshConsumer) DeRegisterClient(cli *GroupClient) bool {
 	var (
-		consumerTopicOption *ConsumerGroupTopicOption
+		consumerTopicOption ConsumerGroupTopicOption
 	)
 	val, ok := e.consumerGroupTopicConfig.Load(cli.Topic)
 	if !ok {
 		return false
 	}
-	consumerTopicOption = val.(*ConsumerGroupTopicOption)
-	consumerTopicOption.DeregisterClient(cli)
+	consumerTopicOption = val.(ConsumerGroupTopicOption)
+	consumerTopicOption.DeregisterClient()(cli)
 	e.consumerGroupTopicConfig.Delete(cli.Topic)
 	return true
 }
@@ -208,8 +208,8 @@ func (e *EventMeshConsumer) createEventListener(mode pb.Subscription_Subscriptio
 				return nil
 			}
 
-			topicConfig := val.(*ConsumerGroupTopicOption)
-			tpy := topicConfig.GRPCType
+			topicConfig := val.(ConsumerGroupTopicOption)
+			tpy := topicConfig.GRPCType()
 			mctx := &MessageContext{
 				GrpcType:         tpy,
 				ConsumerGroup:    e.ConsumerGroup,
