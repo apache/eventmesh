@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-catalog-go/internal/dal"
+	"github.com/apache/incubator-eventmesh/eventmesh-catalog-go/internal/util"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/naming/registry"
 	"google.golang.org/grpc"
@@ -59,6 +60,12 @@ func (s *Server) Run() error {
 
 func (s *Server) SetupConfig() error {
 	config.ServerConfigPath = "./configs/catalog.yaml"
+	if !util.Exists(config.ServerConfigPath) {
+		config.ServerConfigPath = "../configs/catalog.yaml"
+	}
+	if !util.Exists(config.ServerConfigPath) {
+		config.ServerConfigPath = "../conf/catalog.yaml"
+	}
 	cfg, err := config.LoadConfig(config.ServerConfigPath)
 	if err != nil {
 		return err
