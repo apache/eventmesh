@@ -16,6 +16,7 @@
 package grpc
 
 import (
+	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	"github.com/liyue201/gostl/ds/set"
@@ -25,100 +26,254 @@ import (
 type RegisterClient func(*GroupClient)
 type DeregisterClient func(*GroupClient)
 
-// ConsumerGroupTopicOption refers to ConsumerGroupTopicConfig
-type ConsumerGroupTopicOption struct {
-	ConsumerGroup    string
-	Topic            string
-	SubscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
-	GRPCType         GRPCType
-	RegisterClient   RegisterClient
-	DeregisterClient DeregisterClient
+type ConsumerGroupTopicOption interface {
+	ConsumerGroup() string
+	Topic() string
+	SubscriptionMode() pb.Subscription_SubscriptionItem_SubscriptionMode
+	GRPCType() GRPCType
+	RegisterClient() RegisterClient
+	DeregisterClient() DeregisterClient
+	IDCURLs() *sync.Map
+	AllURLs() *set.Set
+	AllEmiters() *set.Set
+	IDCEmiters() *sync.Map
+	Size() int
 }
 
-func NewConsumerGroupTopicOption(cg string,
-	topic string,
-	mode pb.Subscription_SubscriptionItem_SubscriptionMode,
-	gtype GRPCType) *ConsumerGroupTopicOption {
-	return &ConsumerGroupTopicOption{
-		ConsumerGroup:    cg,
-		Topic:            topic,
-		SubscriptionMode: mode,
-		GRPCType:         gtype,
+// BaseConsumerGroupTopicOption refers to ConsumerGroupTopicConfig
+type BaseConsumerGroupTopicOption struct {
+	consumerGroup    string
+	topic            string
+	subscriptionMode pb.Subscription_SubscriptionItem_SubscriptionMode
+	gRPCType         GRPCType
+	registerClient   RegisterClient
+	deregisterClient DeregisterClient
+}
+
+func NewConsumerGroupTopicOption(cg string, topic string, mode pb.Subscription_SubscriptionItem_SubscriptionMode, gtype GRPCType) ConsumerGroupTopicOption {
+	if gtype == WEBHOOK {
+		return NewWebhookGroupTopicOption(cg, topic, mode, gtype)
 	}
+	return NewWStreamGroupTopicOption(cg, topic, mode, gtype)
 }
 
 // WebhookGroupTopicOption topic option for subscribe with webhook
 type WebhookGroupTopicOption struct {
-	*ConsumerGroupTopicOption
+	*BaseConsumerGroupTopicOption
 
 	// IDCWebhookURLs webhook urls seperated by IDC
 	// key is IDC, value is vector.Vector
-	IDCWebhookURLs *sync.Map
+	idcWebhookURLs *sync.Map
 
 	// AllURLs all webhook urls, ignore idc
-	AllURLs *set.Set
+	allURLs *set.Set
+}
+
+func (b *BaseConsumerGroupTopicOption) ConsumerGroup() string {
+	return b.consumerGroup
+}
+func (b *BaseConsumerGroupTopicOption) Topic() string {
+	return b.topic
+}
+func (b *BaseConsumerGroupTopicOption) SubscriptionMode() pb.Subscription_SubscriptionItem_SubscriptionMode {
+	return b.subscriptionMode
+}
+func (b *BaseConsumerGroupTopicOption) GRPCType() GRPCType {
+	return b.gRPCType
+}
+func (b *BaseConsumerGroupTopicOption) RegisterClient() RegisterClient {
+	return b.registerClient
+}
+func (b *BaseConsumerGroupTopicOption) DeregisterClient() DeregisterClient {
+	return b.deregisterClient
+}
+
+func (b *WebhookGroupTopicOption) IDCURLs() *sync.Map {
+	return b.idcWebhookURLs
+}
+
+func (b *WebhookGroupTopicOption) AllURLs() *set.Set {
+	return b.allURLs
+}
+
+func (b *WebhookGroupTopicOption) AllEmiters() *set.Set {
+	panic("webhook no emiter")
+}
+
+func (b *WebhookGroupTopicOption) IDCEmiters() *sync.Map {
+	panic("webhook no emiter")
+}
+
+func (b *WebhookGroupTopicOption) Size() int {
+	return b.allURLs.Size()
 }
 
 func NewWebhookGroupTopicOption(cg string,
 	topic string,
 	mode pb.Subscription_SubscriptionItem_SubscriptionMode,
-	gtype GRPCType) *WebhookGroupTopicOption {
+	gtype GRPCType) ConsumerGroupTopicOption {
 	opt := &WebhookGroupTopicOption{
-		ConsumerGroupTopicOption: NewConsumerGroupTopicOption(cg, topic, mode, WEBHOOK),
-		IDCWebhookURLs:           new(sync.Map),
-		AllURLs:                  set.New(set.WithGoroutineSafe()),
+		BaseConsumerGroupTopicOption: &BaseConsumerGroupTopicOption{
+			consumerGroup:    cg,
+			topic:            topic,
+			subscriptionMode: mode,
+			gRPCType:         gtype,
+		},
+		idcWebhookURLs: new(sync.Map),
+		allURLs:        set.New(set.WithGoroutineSafe()),
 	}
-	opt.ConsumerGroupTopicOption.RegisterClient = func(cli *GroupClient) {
+	opt.BaseConsumerGroupTopicOption.registerClient = func(cli *GroupClient) {
 		if cli.GRPCType != WEBHOOK {
 			log.Warnf("invalid grpc type:%v, with provide WEBHOOK", cli.GRPCType)
 			return
 		}
-		iwu, ok := opt.IDCWebhookURLs.Load(cli.IDC)
+		iwu, ok := opt.idcWebhookURLs.Load(cli.IDC)
 		if !ok {
 			newIDCURLs := set.New(set.WithGoroutineSafe())
 			newIDCURLs.Insert(cli.URL)
-			opt.IDCWebhookURLs.Store(cli.IDC, newIDCURLs)
+			opt.idcWebhookURLs.Store(cli.IDC, newIDCURLs)
 		} else {
 			val := iwu.(*set.Set)
 			val.Insert(cli.URL)
-			opt.IDCWebhookURLs.Store(cli.IDC, val)
+			opt.idcWebhookURLs.Store(cli.IDC, val)
 		}
-		opt.AllURLs.Insert(cli.URL)
+		opt.allURLs.Insert(cli.URL)
 	}
 
-	opt.ConsumerGroupTopicOption.DeregisterClient = func(cli *GroupClient) {
-		val, ok := opt.IDCWebhookURLs.Load(cli.IDC)
+	opt.BaseConsumerGroupTopicOption.deregisterClient = func(cli *GroupClient) {
+		val, ok := opt.idcWebhookURLs.Load(cli.IDC)
 		if !ok {
 			return
 		}
 		idcURLs := val.(*set.Set)
 		idcURLs.Erase(cli.URL)
-		opt.AllURLs.Erase(cli.URL)
+		opt.allURLs.Erase(cli.URL)
 	}
 	return opt
 }
 
 // StreamGroupTopicOption topic option for subscribe with stream
 type StreamGroupTopicOption struct {
-	*ConsumerGroupTopicOption
+	*BaseConsumerGroupTopicOption
+	// Key: IDC Value: list of emitters with Client_IP:port
+	idcEmitterMap *sync.Map
+	// Key: IDC Value: list of emitters
+	idcEmitters *sync.Map
+	// all emitters
+	totalEmitters *set.Set
+}
+
+func (b *StreamGroupTopicOption) RegisterClient() RegisterClient {
+	return b.registerClient
+}
+func (b *StreamGroupTopicOption) DeregisterClient() DeregisterClient {
+	return b.deregisterClient
+}
+
+func (b *StreamGroupTopicOption) IDCURLs() *sync.Map {
+	panic("stream no idc urls")
+}
+
+func (b *StreamGroupTopicOption) AllURLs() *set.Set {
+	panic("stream no all urls")
+}
+
+func (b *StreamGroupTopicOption) AllEmiters() *set.Set {
+	return b.totalEmitters
+}
+
+func (b *StreamGroupTopicOption) IDCEmiters() *sync.Map {
+	return b.idcEmitters
+}
+func (b *StreamGroupTopicOption) Size() int {
+	return b.totalEmitters.Size()
+}
+
+func (b *StreamGroupTopicOption) buildIdcEmitter() {
+	newIDCEmiters := new(sync.Map)
+	b.idcEmitterMap.Range(func(key, value interface{}) bool {
+		e1 := value.(*sync.Map)
+		elist := set.New(set.WithGoroutineSafe())
+		e1.Range(func(k1, v1 interface{}) bool {
+			elist.Insert(v1.(*EventEmitter))
+			return true
+		})
+		newIDCEmiters.Store(key, elist)
+		return true
+	})
+	b.idcEmitters = newIDCEmiters
+}
+
+func (b *StreamGroupTopicOption) buildTotalEmitter() {
+	s2 := set.New(set.WithGoroutineSafe())
+	b.idcEmitters.Range(func(key, value interface{}) bool {
+		s3 := value.(*set.Set)
+		for iter := s3.Begin(); iter.IsValid(); iter.Next() {
+			s2.Insert(iter)
+		}
+		return true
+	})
+	b.totalEmitters = s2
+}
+
+func uniqClient(ip, pid string) string {
+	return fmt.Sprintf("%v:%v", ip, pid)
 }
 
 func NewWStreamGroupTopicOption(cg string,
 	topic string,
 	mode pb.Subscription_SubscriptionItem_SubscriptionMode,
-	gtype GRPCType) *StreamGroupTopicOption {
+	gtype GRPCType) ConsumerGroupTopicOption {
 	opt := &StreamGroupTopicOption{
-		ConsumerGroupTopicOption: NewConsumerGroupTopicOption(cg, topic, mode, STREAM),
+		BaseConsumerGroupTopicOption: &BaseConsumerGroupTopicOption{
+			consumerGroup:    cg,
+			topic:            topic,
+			subscriptionMode: mode,
+			gRPCType:         gtype,
+		},
+		idcEmitterMap: new(sync.Map),
+		idcEmitters:   new(sync.Map),
+		totalEmitters: set.New(set.WithGoroutineSafe()),
 	}
-	opt.RegisterClient = func(cli *GroupClient) {
-		if cli.GRPCType != STREAM {
-			log.Warnf("invalid grpc type:%v, with provide STREAM", cli.GRPCType)
+	opt.registerClient = func(cli *GroupClient) {
+		idc := cli.IDC
+		clientIP := cli.IP
+		pid := cli.PID
+		emt := cli.Emiter
+		key := uniqClient(clientIP, pid)
+		var emiter *sync.Map
+		em, ok := opt.idcEmitterMap.Load(idc)
+		if !ok {
+			emiter = new(sync.Map)
+			opt.idcEmitterMap.Store(idc, emiter)
+		} else {
+			emiter = em.(*sync.Map)
+		}
+		emiter.Store(key, emt)
+		opt.buildIdcEmitter()
+		opt.buildTotalEmitter()
+	}
+	opt.deregisterClient = func(cli *GroupClient) {
+		idc := cli.IDC
+		clientIP := cli.IP
+		pid := cli.PID
+		num := 0
+		key := uniqClient(clientIP, pid)
+		em, ok := opt.idcEmitterMap.Load(idc)
+		if !ok {
 			return
 		}
-
-	}
-	opt.DeregisterClient = func(cli *GroupClient) {
-
+		emiter := em.(*sync.Map)
+		emiter.Delete(key)
+		emiter.Range(func(key, value any) bool {
+			num++
+			return true
+		})
+		if num == 0 {
+			opt.idcEmitterMap.Delete(key)
+		}
+		opt.buildIdcEmitter()
+		opt.buildTotalEmitter()
 	}
 	return opt
 }

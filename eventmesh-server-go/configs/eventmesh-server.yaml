@@ -34,6 +34,10 @@ server:
     idc: "idc1"
     session-expired-in-mills: 5s
     send-message-timeout: 5s
+active-plugins:
+  registry: nacos
+  connector: standalone
+  log: default
 plugins:
   registry:
     nacos:
@@ -52,4 +56,4 @@ plugins:
           max_size: 10                            
           max_backups: 10                         
           max_age: 7                              
-          compress:  false
+          compress: false

@@ -18,8 +18,6 @@ package wrapper
 import (
 	"context"
 	"fmt"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
-	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 	eventv2 "github.com/cloudevents/sdk-go/v2"
@@ -38,16 +36,7 @@ var (
 
 // NewProducer create new producer to handle the grpc request
 func NewProducer() (*Producer, error) {
-	connectorPlugin, ok := config.GlobalConfig().Plugins[config.ConnectorPluginType]
-	if !ok {
-		return nil, ErrNoConnectorPlugin
-	}
-	connectorPluginName, ok := connectorPlugin["name"]
-	if !ok {
-		return nil, ErrNoConnectorName
-	}
-	log.Infof("init producer with connector name:%s", connectorPluginName)
-	factory := plugin.Get(connector.PluginType, connectorPluginName.Value).(connector.Factory)
+	factory := plugin.GetByType(connector.PluginType).(connector.Factory)
 	prod, err := factory.GetProducer()
 	if err != nil {
 		return nil, err
