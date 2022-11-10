@@ -17,7 +17,7 @@ package util
 
 import "os"
 
-// Exists 判断所给路径文件是否存在
+// Exists check if the file exists
 func Exists(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {

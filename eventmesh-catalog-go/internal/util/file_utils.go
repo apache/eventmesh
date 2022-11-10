@@ -27,10 +27,14 @@ package util
 import "os"
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // Exists check if the file exists
 =======
 // Exists 判断所给路径文件是否存在
 >>>>>>> 3e2282ab (add workflow run scripts)
+=======
+// Exists check if the file exists
+>>>>>>> 5cd2cfbc (modify comment)
 func Exists(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {
