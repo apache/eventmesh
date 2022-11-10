@@ -53,7 +53,7 @@ public class RedirectClientByIpPortHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
         OutputStream out = httpExchange.getResponseBody();
-        try {
+        try(out) {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String ip = queryStringInfo.get(EventMeshConstants.MANAGE_IP);
@@ -110,14 +110,6 @@ public class RedirectClientByIpPortHandler implements HttpHandler {
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("redirectClientByIpPort fail...", e);
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                    logger.warn("out close failed...", e);
-                }
-            }
         }
 
     }
