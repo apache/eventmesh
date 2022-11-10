@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.http.HttpEventWrapper;
 import org.apache.eventmesh.common.protocol.http.WebhookProtocolTransportObject;
+import org.apache.eventmesh.common.utils.RandomStringUtils;
 import org.apache.eventmesh.protocol.api.ProtocolAdaptor;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 
@@ -47,6 +48,8 @@ public class WebHookProtocolAdaptor implements ProtocolAdaptor<WebhookProtocolTr
             .withType(protocol.getEventType())
             .withData(protocol.getBody())
             .withExtension(Constants.PROTOCOL_TYPE, "webhook")
+            .withExtension("bizseqno", RandomStringUtils.generateNum(30))
+            .withExtension("uniqueid", RandomStringUtils.generateNum(30))
             .build();
     }
 
