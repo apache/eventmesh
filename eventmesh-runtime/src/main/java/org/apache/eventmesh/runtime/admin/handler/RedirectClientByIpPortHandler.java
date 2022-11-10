@@ -52,7 +52,7 @@ public class RedirectClientByIpPortHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
-        try(OutputStream out = httpExchange.getResponseBody()) {
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String ip = queryStringInfo.get(EventMeshConstants.MANAGE_IP);
