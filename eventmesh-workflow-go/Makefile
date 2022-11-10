@@ -17,7 +17,7 @@
 lint:
 	golangci-lint run --tests=false
 build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o eventmesh-workflow
+	CGO_ENABLED=0 go build -o bin/eventmesh-workflow
 # goimports 
 # -e report all errors (not just the first 10 on different lines)
 # -d display diffs instead of rewriting files
