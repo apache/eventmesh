@@ -34,6 +34,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Download components
+        run: go mod tidy
+        working-directory: eventmesh-server-go
+
       - name: Build application
         run: make build
         working-directory: eventmesh-server-go
