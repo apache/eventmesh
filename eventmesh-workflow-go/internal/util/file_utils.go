@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 94c1cede (add file license header)
 // Licensed to the Apache Software Foundation (ASF) under one or more
 // contributor license agreements.  See the NOTICE file distributed with
 // this work for additional information regarding copyright ownership.
@@ -17,20 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-<<<<<<< HEAD
-=======
->>>>>>> 3e2282ab (add workflow run scripts)
-=======
->>>>>>> 94c1cede (add file license header)
 package util
 
 import "os"
 
-<<<<<<< HEAD
 // Exists check if the file exists
-=======
-// Exists 判断所给路径文件是否存在
->>>>>>> 3e2282ab (add workflow run scripts)
 func Exists(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {
