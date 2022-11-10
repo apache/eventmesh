@@ -206,8 +206,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         } else {
             Collections.sort(list, vc);
             logger.info("clientDistributionMap after sort:{}", list);
-            recommendProxy = eventMeshMap.get(list.get(0).getKey());
-            return recommendProxy;
+            return eventMeshMap.get(list.get(0).getKey());
         }
     }
 
