@@ -54,7 +54,7 @@ public class ShowListenClientByTopicHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
         StringBuilder result = new StringBuilder();
-        try(OutputStream out = httpExchange.getResponseBody();) {
+        try (OutputStream out = httpExchange.getResponseBody()) {
             String queryString = httpExchange.getRequestURI().getQuery();
             Map<String, String> queryStringInfo = NetUtils.formData2Dic(queryString);
             String topic = queryStringInfo.get(EventMeshConstants.MANAGE_TOPIC);
