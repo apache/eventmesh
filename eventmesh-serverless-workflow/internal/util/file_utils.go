@@ -1,3 +1,4 @@
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/util/file_utils.go
 // Licensed to the Apache Software Foundation (ASF) under one or more
 // contributor license agreements.  See the NOTICE file distributed with
 // this work for additional information regarding copyright ownership.
@@ -13,11 +14,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+=======
+>>>>>>> 3e2282ab (add workflow run scripts):eventmesh-workflow-go/internal/util/file_utils.go
 package util
 
 import "os"
 
+<<<<<<< HEAD:eventmesh-serverless-workflow/internal/util/file_utils.go
 // Exists check if the file exists
+=======
+// Exists 判断所给路径文件是否存在
+>>>>>>> 3e2282ab (add workflow run scripts):eventmesh-workflow-go/internal/util/file_utils.go
 func Exists(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {

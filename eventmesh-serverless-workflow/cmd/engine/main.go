@@ -101,11 +101,17 @@ func (s *Server) run() error {
 
 func (s *Server) setupConfig() error {
 	config.ServerConfigPath = "./configs/workflow.yaml"
+<<<<<<< HEAD:eventmesh-serverless-workflow/cmd/engine/main.go
 	// compatible local environment
 	if !util.Exists(config.ServerConfigPath) {
 		config.ServerConfigPath = "../configs/workflow.yaml"
 	}
 	// compatible deploy environment
+=======
+	if !util.Exists(config.ServerConfigPath) {
+		config.ServerConfigPath = "../configs/workflow.yaml"
+	}
+>>>>>>> 3e2282ab (add workflow run scripts):eventmesh-workflow-go/server.go
 	if !util.Exists(config.ServerConfigPath) {
 		config.ServerConfigPath = "../conf/workflow.yaml"
 	}
