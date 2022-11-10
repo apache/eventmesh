@@ -257,8 +257,7 @@ public class ConsumerManager {
      * get consumer
      */
     public ConsumerGroupManager getConsumer(String consumerGroup) {
-        ConsumerGroupManager cgm = consumerTable.get(consumerGroup);
-        return cgm;
+        return consumerTable.get(consumerGroup);
     }
 
     /**
