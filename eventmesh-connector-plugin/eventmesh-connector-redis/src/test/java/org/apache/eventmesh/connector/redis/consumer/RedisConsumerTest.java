@@ -77,7 +77,7 @@ public class RedisConsumerTest extends AbstractRedisServer {
                 .withSubject("topic")
                 .withType(String.class.getCanonicalName())
                 .withDataContentType("text/plain")
-                .withData("data".getBytes())
+                .withData("data".getBytes(StandardCharsets.UTF_8))
                 .build();
 
             redissonTopic.publish(cloudEvent);
