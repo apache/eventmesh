@@ -36,6 +36,7 @@ import org.redisson.api.RTopic;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
+import java.nio.charset.StandardCharsets;
 
 public class RedisConsumerTest extends AbstractRedisServer {
 
