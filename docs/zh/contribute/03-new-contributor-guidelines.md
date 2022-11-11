@@ -28,10 +28,13 @@
 以下是贡献者提交代码的工作流程:
 
 
+
 0. 在提交PR之前需要先创建一个ISSUE，它是用来表达你的想法的，比如你发现了代码中的bug，想修复这个bug，那么需要告知社区管理者或贡献者你的想法，就要创建一个ISSUE用于大家一起交流讨论。在EventMesh社区有ISSUE模板，可根据您提出的ISSUE使用模板。  
 
 ISSUE创建示例:  
    a.进入到项目仓库的主页，切换到issue标签，点击New issue  
+
+
 
    ![contributor01](../../images/contributor14.png)
    
@@ -46,13 +49,16 @@ ISSUE创建示例:
    Question: 对于EventMesh有疑问的，或者有什么不明白的想要提问的，请使用此模板  
    Unit Test: 想为EventMesh做一些单元测试的，请使用此模板  
 
+
    
    c.根据模板的提示，完成issue内容填写。主要是描述清楚问题所在和解决方案就可以了
    
 
+
    [ISSUE实例](https://github.com/apache/incubator-eventmesh/issues/2148)  
    如图：  
    ![contributor01](../../images/contributor16.png)  
+
 
 
 ISSUE与PR关联：
@@ -64,6 +70,8 @@ ISSUE与PR关联：
 
 
 1. 在issue创建完成后，将源仓库的项目eventmesh fork到自己仓库当中  
+
+
 
 例：  
    a.点击eventmesh右上角的fork     
