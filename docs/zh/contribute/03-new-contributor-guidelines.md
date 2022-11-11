@@ -66,6 +66,7 @@ c.当完成以上步骤之后就可以在您完成代码编写后进行样式检
 
 以下是贡献者提交代码的工作流程:
 
+<<<<<<< HEAD
 0. 在提交PR之前需要先创建一个ISSUE，它是用来表达你的想法的，比如你发现了代码中的bug，想修复这个bug，那么需要告知社区管理者或贡献者你的想法，就要创建一个ISSUE用于交流讨论。在EventMesh社区有ISSUE模板，可根据您提出的ISSUE中讨论的内容使用相应的模板。   
 
 ISSUE创建示例:  
@@ -74,6 +75,16 @@ ISSUE创建示例:
    
    b.就会出现下图界面  
    ![contributor01](../../images/contribute/zh/contribute15.png)  
+=======
+**ISSUE**: 在提交PR之前需要先创建一个ISSUE，它是用来表达你的想法的，比如你发现了代码中的bug，想修复这个bug，那么需要告知社区管理者或贡献者你的想法，就要创建一个ISSUE用于大家一起交流讨论。在EventMesh社区有ISSUE模板，可根据您提出的ISSUE使用模板。  
+
+ISSUE创建示例:  
+   a.点击New issue  
+   ![contributor01](../../images/contributor14.png)
+   
+   b.就会出现下图界面  
+   ![contributor01](../../images/contributor15.png)  
+>>>>>>> 873a09f8 (update new-contributor-guidelines)
    根据你的需要选择不同的ISSUE模板，如果你觉得没有模板合适，你可以选择打开一个空白模板。
    当前EventMesh提供了六种ISSUE模板  
    Bug report: 发现代码bug，请使用此模板  
@@ -82,6 +93,7 @@ ISSUE创建示例:
    Feature Request: 为EventMesh提供新的特性功能的使用此模板  
    Question: 对于EventMesh有疑问的，或者有什么不明白的想要提问的，请使用此模板  
    Unit Test: 想为EventMesh做一些单元测试的，请使用此模板  
+<<<<<<< HEAD
    
    c.根据模板的提示，完成issue内容填写。主要是描述清楚问题所在和解决方案就可以了
    
@@ -98,6 +110,18 @@ ISSUE与PR关联：
 
 
 1. 在issue创建完成后，将源仓库的项目eventmesh fork到自己仓库当中  
+=======
+
+   [ISSUE实例](https://github.com/apache/incubator-eventmesh/issues/2148)  
+   如图：  
+   ![contributor01](../../images/contributor16.png)  
+
+ISSUE与PR关联：  
+   ![contributor01](../../images/contributor17.png)  
+   上图ISSUE编号为2148，那么你的PR标题前就是 [ISSUE #2148]，这样就关联上了。
+
+1. 将源仓库的项目eventmesh fork到自己仓库当中  
+>>>>>>> 873a09f8 (update new-contributor-guidelines)
 例：  
    a.点击eventmesh右上角的fork     
    ![contributor01](../../images/contribute/zh/contribute01.png)  
