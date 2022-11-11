@@ -17,7 +17,7 @@
 
 .PHONY: build
 build:
-	mkdir -p bin/ && go build -o ./bin ./cmd/...
+	mkdir -p bin/ && go build -o ./bin 
 
 .PHONY: test
 test:
