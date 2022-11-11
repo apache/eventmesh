@@ -281,7 +281,7 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                                         String.valueOf(System.currentTimeMillis()))
                                 .build();
                         final String rtnMsg = new String(Objects.requireNonNull(event.getData()).toBytes(),
-                                EventMeshConstants.DEFAULT_CHARSET);
+                                StandardCharsets.UTF_8);
 
                         HttpCommand succ = asyncContext.getRequest().createHttpCommandResponse(
                                 sendMessageResponseHeader,
