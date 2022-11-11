@@ -27,44 +27,58 @@
 
 以下是贡献者提交代码的工作流程:
 
-0. 在提交PR之前需要先创建一个ISSUE，它是用来表达你的想法的，比如你发现了代码中的bug，想修复这个bug，那么需要告知社区管理者或贡献者你的想法，就要创建一个ISSUE用于大家一起交流讨论。在EventMesh社区有ISSUE模板，可根据您提出的ISSUE使用模板。  
+
+
+0. 在提交PR之前需要先创建一个ISSUE，它是用来表达你的想法的，比如你发现了代码中的bug，想修复这个bug，那么需要告知社区管理者或贡献者你的想法，就要创建一个ISSUE用于大家一起交流讨论。在EventMesh社区有ISSUE模板，可根据您提出的ISSUE使用模板。
 
 ISSUE创建示例:  
-   a.进入到项目仓库的主页，切换到issue标签，点击New issue  
-   ![contributor01](../../images/contributor14.png)
-   
-   b.就会出现下图界面  
-   ![contributor01](../../images/contributor15.png)  
-   根据你的需要选择不同的ISSUE模板，如果你觉得没有模板合适，你可以选择打开一个空白模板。
-   当前EventMesh提供了六种ISSUE模板  
-   Bug report: 发现代码bug，请使用此模板  
-   Documentation Related: 文档相关的，请使用此模板  
-   Enhancement Request: 代码优化，增强代码实现的，请使用此模板  
-   Feature Request: 为EventMesh提供新的特性功能的使用此模板  
-   Question: 对于EventMesh有疑问的，或者有什么不明白的想要提问的，请使用此模板  
-   Unit Test: 想为EventMesh做一些单元测试的，请使用此模板  
-   
-   c.根据模板的提示，完成issue内容填写。主要是描述清楚问题所在和解决方案就可以了
-   
-   [ISSUE实例](https://github.com/apache/incubator-eventmesh/issues/2148)  
-   如图：  
-   ![contributor01](../../images/contributor16.png)  
+a.进入到项目仓库的主页，切换到issue标签，点击New issue
+
+
+
+![contributor01](../../images/contributor14.png)
+
+b.就会出现下图界面  
+![contributor01](../../images/contributor15.png)  
+根据你的需要选择不同的ISSUE模板，如果你觉得没有模板合适，你可以选择打开一个空白模板。
+当前EventMesh提供了六种ISSUE模板  
+Bug report: 发现代码bug，请使用此模板  
+Documentation Related: 文档相关的，请使用此模板  
+Enhancement Request: 代码优化，增强代码实现的，请使用此模板  
+Feature Request: 为EventMesh提供新的特性功能的使用此模板  
+Question: 对于EventMesh有疑问的，或者有什么不明白的想要提问的，请使用此模板  
+Unit Test: 想为EventMesh做一些单元测试的，请使用此模板
+
+
+
+c.根据模板的提示，完成issue内容填写。主要是描述清楚问题所在和解决方案就可以了
+
+
+
+[ISSUE实例](https://github.com/apache/incubator-eventmesh/issues/2148)  
+如图：  
+![contributor01](../../images/contributor16.png)
+
+
 
 ISSUE与PR关联：
-   后续提交PR的时候，PR的标题和内容应该跟issue完成关联，这样才符合开源的规范，如下图所示
-   
-   ![contributor01](../../images/contributor17.png)  
-   
-   上图ISSUE编号为2148，那么你的PR标题前就是 [ISSUE #2148]，这样就关联上了。
+后续提交PR的时候，PR的标题和内容应该跟issue完成关联，这样才符合开源的规范，如下图所示
+
+![contributor01](../../images/contributor17.png)
+
+上图ISSUE编号为2148，那么你的PR标题前就是 [ISSUE #2148]，这样就关联上了。
 
 
-1. 在issue创建完成后，将源仓库的项目eventmesh fork到自己仓库当中  
+1. 在issue创建完成后，将源仓库的项目eventmesh fork到自己仓库当中
+
+
+
 例：  
-   a.点击eventmesh右上角的fork     
-   ![contributor01](../../images/contributor01.png)  
-   b.就会出现下图，点击Create fork即可将eventmesh fork到自己的仓库
-   ![contributor02](../../images/contributor02.png)
-   
+a.点击eventmesh右上角的fork     
+![contributor01](../../images/contributor01.png)  
+b.就会出现下图，点击Create fork即可将eventmesh fork到自己的仓库
+![contributor02](../../images/contributor02.png)
+
 
 2. 克隆fork到本地存储库，就是将自己仓库的eventmesh克隆到本地
 ```git
@@ -83,7 +97,7 @@ git fetch upstream master:upstream_master
 git rebase upstream_master
 ```
 
-5. 提交您的修改（确保您的提交信息简洁明了）  
+5. 提交您的修改（确保您的提交信息简洁明了）
 
 **特别注意：在提交代码之前要确保你提交代码的邮箱要与GitHub邮箱一致，不然在统计contributor数量时会发生无法正常计入的情况**
 
@@ -93,7 +107,7 @@ git config --global --list
 ```
 如图：  
 ![contributor12](../../images/contributor12.png)  
-如果你在提交之前还未登陆邮箱，使用注册GitHub账号时的邮箱  
+如果你在提交之前还未登陆邮箱，使用注册GitHub账号时的邮箱
 
 - 如果你发现你的邮箱与GitHub邮箱不一致可通过以下git命令进行修改
 ```git
@@ -105,13 +119,13 @@ git config --global user.email 你的目标邮箱名
 修改邮箱同理(也可以用这个命令来登陆邮箱)
 
 例：用IDEA提交代码为例，如果您在IDEA本地修改完毕  
-   a.点击Commit，点击图片中两个地方中任意一个即可
-   ![contributor03](../../images/contributor03.png)  
-   b.就会出现以下图中界面  
-   ![contributor04](../../images/contributor04.png)  
-   （注：如果是新添加的文件需要Add一下，再Commit，一般IDEA都会提示，如果没有提示，按下图操作即可，文件由红色变为绿色Add成功）  
-   ![contributor09](../../images/contributor09.png)  
-   
+a.点击Commit，点击图片中两个地方中任意一个即可
+![contributor03](../../images/contributor03.png)  
+b.就会出现以下图中界面  
+![contributor04](../../images/contributor04.png)  
+（注：如果是新添加的文件需要Add一下，再Commit，一般IDEA都会提示，如果没有提示，按下图操作即可，文件由红色变为绿色Add成功）  
+![contributor09](../../images/contributor09.png)
+
 6. 推送您的提交到你的fork仓库，将修改先推送到自己的仓库   
    a.然后需要push到远程仓库当中，也就是您自己的仓库，您需要点击  
    ![contributor05](../../images/contributor05.png)  
@@ -120,15 +134,15 @@ git config --global user.email 你的目标邮箱名
    b.就会出现以下界面，确认无误后点击右下角push，就push到自己的仓库了  
    ![contributor07](../../images/contributor07.png)  
    c.当您成功push到自己仓库就会出现下图的提示（在IDEA界面的右下角）  
-   ![contributor08](../../images/contributor08.png)  
+   ![contributor08](../../images/contributor08.png)
 
 7. 创建一个pull请求  
-例：  
+   例：  
    a.当您成功push到自己的仓库当中后，会出现下图界面  
    ![contributor10](../../images/contributor10.png)
    b.点击Compare & pull request，就会出现以下界面，按照图中操作即可创建pull request  
    ![contributor11](../../images/contributor11.png)
-   
+
 
 ## 解释
 
