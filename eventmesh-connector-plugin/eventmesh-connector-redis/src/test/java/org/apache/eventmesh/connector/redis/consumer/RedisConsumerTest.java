@@ -22,6 +22,7 @@ import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 import org.apache.eventmesh.connector.redis.client.RedissonClient;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -35,7 +36,6 @@ import org.redisson.api.RTopic;
 
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
-import java.nio.charset.StandardCharsets;
 
 public class RedisConsumerTest extends AbstractRedisServer {
 
