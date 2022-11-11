@@ -288,6 +288,11 @@ public class SendSyncMessageProcessor implements HttpRequestProcessor {
                                 .withExtension(EventMeshConstants.RSP_MQ2EVENTMESH_TIMESTAMP,
                                         String.valueOf(System.currentTimeMillis()))
                                 .build();
+<<<<<<< HEAD
+=======
+                        final String rtnMsg = new String(Objects.requireNonNull(event.getData()).toBytes(),
+                                StandardCharsets.UTF_8);
+>>>>>>> 0ba10ee0 (issue  2163)
 
                         final String rtnMsg = new String(Objects.requireNonNull(newEvent.getData()).toBytes(),
                                 StandardCharsets.UTF_8);
