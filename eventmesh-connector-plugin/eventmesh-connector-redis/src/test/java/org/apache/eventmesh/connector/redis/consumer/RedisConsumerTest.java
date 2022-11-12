@@ -22,6 +22,7 @@ import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 import org.apache.eventmesh.connector.redis.client.RedissonClient;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -77,7 +78,7 @@ public class RedisConsumerTest extends AbstractRedisServer {
                 .withSubject("topic")
                 .withType(String.class.getCanonicalName())
                 .withDataContentType("text/plain")
-                .withData("data".getBytes())
+                .withData("data".getBytes(StandardCharsets.UTF_8))
                 .build();
 
             redissonTopic.publish(cloudEvent);
