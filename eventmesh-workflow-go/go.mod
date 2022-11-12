@@ -22,7 +22,6 @@ require (
 	github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20220923152713-86455c587c5b
 	github.com/apache/incubator-eventmesh/eventmesh-server-go v0.0.0-20220812021948-0945ab92daea
 	github.com/avast/retry-go/v4 v4.0.1
-	github.com/bbuck/go-lexer v1.0.0
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gogf/gf v1.16.9
 	github.com/google/uuid v1.3.0
