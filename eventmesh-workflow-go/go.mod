@@ -18,7 +18,7 @@ module github.com/apache/incubator-eventmesh/eventmesh-workflow-go
 go 1.16
 
 require (
-	github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221019110652-3768a592fc3f
+	github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221112083457-68ee9cde7235
 	github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20220923152713-86455c587c5b
 	github.com/apache/incubator-eventmesh/eventmesh-server-go v0.0.0-20220812021948-0945ab92daea
 	github.com/avast/retry-go/v4 v4.0.1
@@ -30,7 +30,7 @@ require (
 	github.com/serverlessworkflow/sdk-go/v2 v2.1.1
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
-	google.golang.org/grpc v1.45.0
+	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.3.5
