@@ -18,7 +18,11 @@ module github.com/apache/incubator-eventmesh/eventmesh-workflow-go
 go 1.16
 
 require (
+<<<<<<< HEAD:eventmesh-serverless-workflow/go.mod
 	github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20230110063418-8d8aa909d909
+=======
+	github.com/apache/incubator-eventmesh/eventmesh-catalog-go v0.0.0-20221112083457-68ee9cde7235
+>>>>>>> 24d88fc3 (upgrade nacos version and remove go-lexer dependency):eventmesh-workflow-go/go.mod
 	github.com/apache/incubator-eventmesh/eventmesh-sdk-go v0.0.0-20220923152713-86455c587c5b
 	github.com/apache/incubator-eventmesh/eventmesh-server-go v0.0.0-20220812021948-0945ab92daea
 	github.com/avast/retry-go/v4 v4.0.1
@@ -35,6 +39,7 @@ require (
 	github.com/prometheus/client_golang v1.12.2
 	github.com/reactivex/rxgo/v2 v2.5.0
 	github.com/serverlessworkflow/sdk-go/v2 v2.1.1
+<<<<<<< HEAD:eventmesh-serverless-workflow/go.mod
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggo/files v1.0.0
 	github.com/swaggo/gin-swagger v1.5.3
@@ -44,6 +49,12 @@ require (
 	golang.org/x/tools v0.5.0 // indirect
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
+=======
+	github.com/spf13/cobra v1.5.0
+	github.com/stretchr/testify v1.8.0
+	google.golang.org/grpc v1.48.0
+	google.golang.org/protobuf v1.28.0
+>>>>>>> 24d88fc3 (upgrade nacos version and remove go-lexer dependency):eventmesh-workflow-go/go.mod
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.3.5
 	gorm.io/gorm v1.23.8
