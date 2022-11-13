@@ -143,10 +143,9 @@ public class Utils {
             bizSeqNo = properties.get(EventMeshConstants.KEYS_LOWERCASE);
         }
 
-        String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage
-                        .getTopic(), properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID),
+        return String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage.getTopic(),
+                properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID),
                 bizSeqNo);
-        return result;
     }
 
     /**
