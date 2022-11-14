@@ -2,8 +2,6 @@ package org.apache.eventmesh.runtime.core.protocol.amqp.downstreamstrategy;
 
 import org.apache.eventmesh.runtime.core.protocol.amqp.consumer.AmqpConsumer;
 import org.apache.eventmesh.runtime.core.protocol.amqp.consumer.QueueConsumerMapping;
-import org.apache.eventmesh.runtime.core.protocol.amqp.processor.AmqpChannel;
-import org.apache.eventmesh.runtime.core.protocol.amqp.util.AmqpGlobalMapping;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
