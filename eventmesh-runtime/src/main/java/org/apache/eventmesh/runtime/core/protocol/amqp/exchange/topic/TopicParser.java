@@ -37,7 +37,7 @@ public class TopicParser {
         private boolean _followedByAnyLoop;
 
         private Position(final int position, final TopicWord word, final boolean selfTransition,
-            final boolean endState) {
+                         final boolean endState) {
             _position = position;
             _word = word;
             _selfTransition = selfTransition;
@@ -227,8 +227,8 @@ public class TopicParser {
     }
 
     private void calculateNextStates(final SimpleState state,
-        final Map<Set<Position>, SimpleState> stateMap,
-        final Position[] positions) {
+                                     final Map<Set<Position>, SimpleState> stateMap,
+                                     final Position[] positions) {
         Map<TopicWord, Set<Position>> transitions = new HashMap<>();
 
         for (Position pos : state._positions) {
@@ -303,8 +303,8 @@ public class TopicParser {
                 stateForEntry._positions = dest.getValue();
                 stateMap.put(dest.getValue(), stateForEntry);
                 calculateNextStates(stateForEntry,
-                    stateMap,
-                    positions);
+                        stateMap,
+                        positions);
             }
             state._nextState.put(dest.getKey(), stateForEntry);
 
