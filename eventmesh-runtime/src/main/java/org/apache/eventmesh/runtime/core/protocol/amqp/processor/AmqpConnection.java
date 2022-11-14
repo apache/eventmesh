@@ -23,6 +23,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import lombok.Getter;
 import org.apache.eventmesh.runtime.boot.EventMeshAmqpServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshAmqpConfiguration;
+import org.apache.eventmesh.runtime.core.protocol.amqp.consumer.AmqpMessageSender;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.AMQData;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.AMQPFrame;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.CommandFactory;
@@ -83,8 +84,7 @@ public class AmqpConnection extends AmqpHandler {
     private String virtualHostName;
     private final Object channelAddRemoveLock = new Object();
     private AtomicBoolean blocked = new AtomicBoolean();
-    private AmqpInOutputConverter amqpInOutputConverter;
-    //private AmqpMessageSender amqpOutputConverter;
+    private AmqpMessageSender amqpOutputConverter;
 
 
     public AmqpConnection(EventMeshAmqpServer amqpBrokerService) {
@@ -98,8 +98,11 @@ public class AmqpConnection extends AmqpHandler {
         this.maxChannels = amqpConfig.maxNoOfChannels;
         this.maxFrameSize = amqpConfig.maxFrameSize;
         this.heartBeat = amqpConfig.heartBeat;
-        this.amqpInOutputConverter = new AmqpInOutputConverter(this);
-        //this.amqpOutputConverter = new AmqpMessageSender(this);
+        this.amqpOutputConverter = new AmqpMessageSender(this);
+    }
+
+    public AmqpMessageSender getAmqpOutputConverter() {
+        return amqpOutputConverter;
     }
 
     @Override
@@ -623,10 +626,6 @@ public class AmqpConnection extends AmqpHandler {
 
     public boolean isActive() {
         return ctx.channel().isActive();
-    }
-
-    public AmqpInOutputConverter getAmqpInOutputConverter() {
-        return amqpInOutputConverter;
     }
 
 }
