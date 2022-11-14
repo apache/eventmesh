@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.cloudevents.core.builder.CloudEventBuilder;
+import org.apache.eventmesh.runtime.core.protocol.amqp.downstreamstrategy.DownstreamDispatchStrategy;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import org.apache.eventmesh.runtime.util.EventMeshUtil;
 import org.slf4j.Logger;
@@ -45,7 +46,7 @@ public class ClientConsumerWrapper {
     /**
      * global mapping
      */
-    private AmqpGlobalMapping amqpGlobalMapping;
+    private QueueConsumerMapping queueConsumerMapping;
 
     /**
      * a MQConsumer that used to subscribe and consume message from mesh
@@ -58,12 +59,12 @@ public class ClientConsumerWrapper {
     private DownstreamDispatchStrategy downstreamDispatchStrategy;
 
     public ClientConsumerWrapper(EventMeshAmqpServer eventMeshAmqpServer,
-                                 AmqpGlobalMapping amqpGlobalMapping,
+                                 QueueConsumerMapping queueConsumerMapping,
                                  MQConsumerWrapper mqConsumerWrapper,
                                  DownstreamDispatchStrategy downstreamDispatchStrategy) {
         this.groupName = "amqpConsumerGroup";
         this.eventMeshAmqpServer = eventMeshAmqpServer;
-        this.amqpGlobalMapping = amqpGlobalMapping;
+        this.queueConsumerMapping = queueConsumerMapping;
         this.mqConsumerWrapper = mqConsumerWrapper;
         this.downstreamDispatchStrategy = downstreamDispatchStrategy;
     }
@@ -86,7 +87,7 @@ public class ClientConsumerWrapper {
                     .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
                             this.eventMeshAmqpServer.getEventMeshAmqpConfiguration().eventMeshServerIp).build();
             String topic = cloudEvent.getSubject();
-            AmqpConsumer selectedAmqpConsumer = downstreamDispatchStrategy.select(topic, amqpGlobalMapping);
+            AmqpConsumer selectedAmqpConsumer = downstreamDispatchStrategy.select(topic, queueConsumerMapping);
             EventMeshAsyncConsumeContext eventMeshAsyncConsumeContext = (EventMeshAsyncConsumeContext) context;
             PushMessageContext pushMessageContext = new PushMessageContext(cloudEvent, this.mqConsumerWrapper, eventMeshAsyncConsumeContext.getAbstractContext());
             selectedAmqpConsumer.pushMessage(pushMessageContext);
