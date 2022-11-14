@@ -33,7 +33,7 @@ public class TopicMatcherDFAState {
     private static final String TOPIC_DELIMITER = "\\.";
 
     public TopicMatcherDFAState(Map<TopicWord, TopicMatcherDFAState> nextStateMap,
-        Collection<TopicMatcherResult> results) {
+                                Collection<TopicMatcherResult> results) {
         _nextStateMap = nextStateMap;
         _results = results;
     }
@@ -52,7 +52,7 @@ public class TopicMatcherDFAState {
     }
 
     private Collection<TopicMatcherResult> parse(final TopicWordDictionary dictionary,
-        final Iterator<String> tokens) {
+                                                 final Iterator<String> tokens) {
         if (!tokens.hasNext()) {
             return _results;
         }
@@ -104,9 +104,9 @@ public class TopicMatcherDFAState {
     }
 
     private static void mergeStateMachines(
-        final Set<TopicMatcherDFAState> oldStates,
-        final Map<TopicWord, TopicMatcherDFAState> newNextStateMap,
-        final Map<Set<TopicMatcherDFAState>, TopicMatcherDFAState> newStateMap) {
+            final Set<TopicMatcherDFAState> oldStates,
+            final Map<TopicWord, TopicMatcherDFAState> newNextStateMap,
+            final Map<Set<TopicMatcherDFAState>, TopicMatcherDFAState> newStateMap) {
         Map<TopicWord, Set<TopicMatcherDFAState>> nfaMap = new HashMap<TopicWord, Set<TopicMatcherDFAState>>();
 
         for (TopicMatcherDFAState state : oldStates) {
@@ -161,9 +161,9 @@ public class TopicMatcherDFAState {
                     newStateMap.put(destinations, nextState);
 
                     mergeStateMachines(
-                        destinations,
-                        nextStateMap,
-                        newStateMap);
+                            destinations,
+                            nextStateMap,
+                            newStateMap);
 
                 }
 
@@ -206,12 +206,12 @@ public class TopicMatcherDFAState {
         StringBuilder result = new StringBuilder("Start state: " + getId() + "\n");
 
         SortedSet<TopicMatcherDFAState> reachableStates =
-            new TreeSet<TopicMatcherDFAState>(new Comparator<TopicMatcherDFAState>() {
-                @Override
-                public int compare(final TopicMatcherDFAState o1, final TopicMatcherDFAState o2) {
-                    return o1.getId() - o2.getId();
-                }
-            });
+                new TreeSet<TopicMatcherDFAState>(new Comparator<TopicMatcherDFAState>() {
+                    @Override
+                    public int compare(final TopicMatcherDFAState o1, final TopicMatcherDFAState o2) {
+                        return o1.getId() - o2.getId();
+                    }
+                });
         reachableStates.add(this);
 
         int count;
