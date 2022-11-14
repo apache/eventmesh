@@ -28,5 +28,5 @@ var (
 
 	PROTOCOL_TYPE = "protocoltype"
 
-	CONTENT_TYPE_CLOUDEVENTS_JSON = "application/cloudevents+json"
+	CONTENT_TYPE_CLOUDEVENTS_JSON = "application/json"
 )
