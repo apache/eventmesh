@@ -19,12 +19,14 @@
 
 package org.apache.eventmesh.common.protocol.amqp;
 
+import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
+import org.apache.eventmesh.common.protocol.amqp.common.ProtocolKey;
+
 import java.util.Map;
 
-import lombok.Data;
-
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import com.rabbitmq.client.AMQP.BasicProperties;
+
+import lombok.Data;
 
 /**
  * message body of Amqp, including content header and content body
@@ -49,5 +51,13 @@ public class AmqpMessage implements ProtocolTransportObject {
 
     public long getSize() {
         return contentBody == null ? 0 : contentHeader == null ? contentBody.length : contentBody.length + contentHeader.getBodySize();
+    }
+
+    public String getExchange() {
+        return extendInfo.getOrDefault(ProtocolKey.EXCHANGE, "").toString();
+    }
+
+    public String getRoutingKey() {
+        return extendInfo.getOrDefault(ProtocolKey.ROUTING_KEY, "").toString();
     }
 }
