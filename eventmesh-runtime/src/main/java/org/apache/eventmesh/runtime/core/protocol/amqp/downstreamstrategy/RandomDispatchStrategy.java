@@ -1,8 +1,7 @@
 package org.apache.eventmesh.runtime.core.protocol.amqp.downstreamstrategy;
 
 import org.apache.eventmesh.runtime.core.protocol.amqp.consumer.AmqpConsumer;
-import org.apache.eventmesh.runtime.core.protocol.amqp.processor.AmqpChannel;
-import org.apache.eventmesh.runtime.core.protocol.amqp.util.AmqpGlobalMapping;
+import org.apache.eventmesh.runtime.core.protocol.amqp.consumer.QueueConsumerMapping;
 
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,23 +17,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RandomDispatchStrategy implements DownstreamDispatchStrategy {
     @Override
-    public AmqpConsumer select(String topic, AmqpGlobalMapping amqpGlobalMapping) {
-        if (amqpGlobalMapping == null
-                || MapUtils.isEmpty(amqpGlobalMapping.getConnection2ChannelMap())
-                || MapUtils.isEmpty(amqpGlobalMapping.getQueue2ChannelMap())
-                || StringUtils.isBlank(topic)) {
+    public AmqpConsumer select(String queue, QueueConsumerMapping queueConsumerMapping) {
+
+        Set<AmqpConsumer> consumers = queueConsumerMapping.getConsumers(null, queue);
+        if (consumers == null || consumers.size() <= 0) {
             return null;
         }
 
-        ConcurrentHashMap<String, Set<AmqpConsumer>> queue2ChannelMap = amqpGlobalMapping.getQueue2ConsumerMap();
-        if (!queue2ChannelMap.containsKey(topic)) {
-            return null;
-        }
-
-        Set<AmqpConsumer> amqpConsumerSet = queue2ChannelMap.get(topic);
-        // TODO: 2022/10/19 Filter out invalid consumer
-
-        List<AmqpConsumer> amqpConsumerList = new ArrayList<>(amqpConsumerSet);
+        List<AmqpConsumer> amqpConsumerList = new ArrayList<>(consumers);
         Collections.shuffle(amqpConsumerList);
         return amqpConsumerList.get(0);
     }
