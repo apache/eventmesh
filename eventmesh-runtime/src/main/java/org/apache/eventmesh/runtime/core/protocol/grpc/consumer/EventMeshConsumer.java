@@ -134,7 +134,11 @@ public class EventMeshConsumer {
     }
 
     public synchronized void init() throws Exception {
+<<<<<<< HEAD
         if (MapUtils.isEmpty(consumerGroupTopicConfig)) {
+=======
+        if (consumerGroupTopicConfig.isEmpty()) {
+>>>>>>> 66c720df (Update EventMeshConsumer.java)
             // no topics, don't init the consumer
             return;
         }
@@ -164,7 +168,11 @@ public class EventMeshConsumer {
     }
 
     public synchronized void start() throws Exception {
+<<<<<<< HEAD
         if (MapUtils.isEmpty(consumerGroupTopicConfig)) {
+=======
+        if (consumerGroupTopicConfig.isEmpty()) {
+>>>>>>> 66c720df (Update EventMeshConsumer.java)
             // no topics, don't start the consumer
             return;
         }
