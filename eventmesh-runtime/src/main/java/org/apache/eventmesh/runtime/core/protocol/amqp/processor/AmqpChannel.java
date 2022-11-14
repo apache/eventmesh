@@ -24,7 +24,6 @@ import org.apache.eventmesh.runtime.core.protocol.amqp.metadata.model.QueueInfo;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.AMQPFrame;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ErrorCodes;
 import org.apache.eventmesh.runtime.core.protocol.amqp.service.ExchangeService;
-import org.apache.eventmesh.runtime.core.protocol.amqp.service.QueueService;
 import org.apache.eventmesh.runtime.core.protocol.amqp.util.NameUtils;
 
 import org.apache.commons.lang3.StringUtils;
