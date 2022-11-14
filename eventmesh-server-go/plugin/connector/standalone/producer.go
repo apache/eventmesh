@@ -98,9 +98,7 @@ func (p *Producer) InitProducer(properties map[string]string) error {
 }
 
 func (p *Producer) Start() error {
-	if ok := p.started.CAS(false, true); !ok {
-		return errors.New("fail to start standalone producer, producer has already been started")
-	}
+	p.started.CAS(false, true)
 	return nil
 }
 

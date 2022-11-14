@@ -130,6 +130,8 @@ func (e *EventMeshConsumer) Start() error {
 	if err := e.persistentConsumer.Start(); err != nil {
 		return err
 	}
+
+	e.ServiceState = consts.RUNNING
 	return nil
 }
 

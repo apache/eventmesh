@@ -70,3 +70,33 @@ grpcurl.exe -plaintext -d '
 }
 ' localhost:10010 eventmesh.common.protocol.grpc.ConsumerService/subscribe
 ```
+
+### publish
+```
+grpcurl.exe -plaintext -d '
+{
+    "header": {
+        "env": "11",
+        "region": "sh",
+        "idc": "test-idc",
+        "ip": "169.254.45.15",
+        "pid": "22345",
+        "sys": "test",
+        "username": "username",
+        "password": "password",
+        "language": "go",
+        "protocolType": "cloudevents",
+        "protocolVersion": "1.0",
+        "protocolDesc": "nil"
+    },
+    "producerGroup": "test-grpc-server-publish",
+    "topic": "grpc-topic",
+    "content": "first message from eventmesh go server publish",
+    "ttl": "10000",
+    "uniqueId": "1",
+    "seqNum": "1",
+    "tag": "empty",
+    "properties": {"contenttype": ""}
+}
+' localhost:10010 eventmesh.common.protocol.grpc.PublisherService/publish
+```

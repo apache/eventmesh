@@ -17,7 +17,6 @@ package standalone
 
 import (
 	"errors"
-
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 )
@@ -29,6 +28,8 @@ func init() {
 type Factory struct {
 	plugin.Plugin
 	properties map[string]string
+	consumer   connector.Consumer
+	producer   connector.Producer
 }
 
 func (f *Factory) Type() string {
@@ -44,21 +45,24 @@ func (f *Factory) Setup(name string, dec plugin.Decoder) error {
 		return err
 	}
 	f.properties = properties
+	consumer := NewConsumer()
+	consumer.InitConsumer(f.properties)
+	consumer.Start()
+	f.consumer = consumer
+
+	producer := NewProducer()
+	producer.InitProducer(f.properties)
+	producer.Start()
+	f.producer = producer
 	return nil
 }
 
 func (f *Factory) GetConsumer() (connector.Consumer, error) {
-	consumer := NewConsumer()
-	consumer.InitConsumer(f.properties)
-	consumer.Start()
-	return consumer, nil
+	return f.consumer, nil
 }
 
 func (f *Factory) GetProducer() (connector.Producer, error) {
-	producer := NewProducer()
-	producer.InitProducer(f.properties)
-	producer.Start()
-	return producer, nil
+	return f.producer, nil
 }
 
 func (f *Factory) GetResource() (connector.Resource, error) {

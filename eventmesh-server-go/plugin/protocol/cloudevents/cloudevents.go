@@ -30,7 +30,7 @@ import (
 )
 
 func init() {
-	plugin.Register(plugin.Protocol, &CloudeventsPlugin{})
+	plugin.Register(protocol.CloudEvents, &CloudeventsPlugin{})
 }
 
 // CloudeventsPlugin CloudEvents protocol adaptor
@@ -39,7 +39,7 @@ type CloudeventsPlugin struct {
 }
 
 func (c *CloudeventsPlugin) Type() string {
-	return protocol.CloudEvents
+	return plugin.Protocol
 }
 
 func (c *CloudeventsPlugin) Setup(name string, dec plugin.Decoder) error {
