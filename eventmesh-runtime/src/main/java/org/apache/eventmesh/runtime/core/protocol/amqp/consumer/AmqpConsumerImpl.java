@@ -8,18 +8,18 @@ import org.apache.eventmesh.protocol.api.ProtocolPluginFactory;
 import org.apache.eventmesh.protocol.api.exception.ProtocolHandleException;
 import org.apache.eventmesh.runtime.core.plugin.MQConsumerWrapper;
 import org.apache.eventmesh.runtime.core.protocol.amqp.processor.AmqpChannel;
-import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.AMQData;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ErrorCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.cloudevents.CloudEvent;
-import io.netty.channel.ChannelFutureListener;
 
 public class AmqpConsumerImpl implements AmqpConsumer {
 
@@ -70,20 +70,13 @@ public class AmqpConsumerImpl implements AmqpConsumer {
             addUnAckMsg(deliveryTag, pushMessageContext);
         }
 
-        // TODO: 2022/10/20 convert AmqpMessage to AMQData
-        AMQData amqData = this.amqpChannel.getConnection().getAmqpInOutputConverter().convertOutput(amqpMessage);
-
-        this.amqpChannel.getConnection().getCtx().writeAndFlush(amqData).addListener(
-                (ChannelFutureListener) future -> {
-                    if (!future.isSuccess()) {
-                        logger.error("push message fail, amqData: {}", amqData);
-                        // TODO: 2022/10/21 retry strategy
-                    } else {
-                        logger.info("push message success, amqData: {}", amqData);
-                        // TODO: 2022/10/21 push success strategy
-                    }
-                }
-        );
+        try {
+            amqpChannel.getConnection().getAmqpOutputConverter().writeDeliver(amqpMessage, this.amqpChannel.getChannelId(),
+                    false, deliveryTag, consumerTag);
+        } catch (IOException e) {
+            logger.error("sendMessages IOException", e);
+            amqpChannel.closeChannel(ErrorCodes.INTERNAL_ERROR, "system error");
+        }
     }
 
     @Override
