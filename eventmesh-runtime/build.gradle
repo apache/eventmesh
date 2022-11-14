@@ -61,6 +61,7 @@ dependencies {
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-cloudevents")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-meshmessage")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-openmessage")
+    implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-amqp")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-http")
     implementation project(":eventmesh-protocol-plugin:eventmesh-protocol-webhook")
 
