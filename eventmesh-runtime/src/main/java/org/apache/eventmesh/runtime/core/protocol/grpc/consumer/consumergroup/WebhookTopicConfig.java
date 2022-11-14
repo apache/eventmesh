@@ -73,7 +73,7 @@ public class WebhookTopicConfig extends ConsumerGroupTopicConfig {
             return;
         }
         urls.remove(url);
-        if (urls.size() == 0) {
+        if (urls.isEmpty()) {
             idcUrls.remove(idc);
         }
         totalUrls = buildTotalUrls();

@@ -133,7 +133,7 @@ public class EventMeshConsumer {
     }
 
     public synchronized void init() throws Exception {
-        if (consumerGroupTopicConfig.size() == 0) {
+        if (consumerGroupTopicConfig.isEmpty()) {
             // no topics, don't init the consumer
             return;
         }
@@ -163,7 +163,7 @@ public class EventMeshConsumer {
     }
 
     public synchronized void start() throws Exception {
-        if (consumerGroupTopicConfig.size() == 0) {
+        if (consumerGroupTopicConfig.isEmpty()) {
             // no topics, don't start the consumer
             return;
         }
