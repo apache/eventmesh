@@ -17,48 +17,33 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
-	"time"
-
-	"github.com/gin-gonic/gin"
+	"net/url"
+	"strings"
 )
 
 // Response indicate the http response
 type Response struct {
-	Code    int         `json:"code"`
-	Msg     string      `json:"msg"`
-	TraceID string      `json:"traceId"`
-	Data    interface{} `json:"data"`
-}
-
-// WithTraceID set the trace id for response
-func (r *Response) WithTraceID(traceID string) *Response {
-	r.TraceID = traceID
-	return r
+	RetCode string `json:"retCode"`
+	ErrMsg  string `json:"errMsg"`
 }
 
 // OK return the success response
 func OK(data interface{}) *Response {
 	return &Response{
-		Code: 0,
-		Msg:  "OK",
-		Data: data,
+		RetCode: "0",
+		ErrMsg:  "OK",
 	}
 }
 
 // Err return the error response
-func Err(err error, code int) *Response {
+func Err(err error, code string) *Response {
 	return &Response{
-		Code: code,
-		Msg:  err.Error(),
+		RetCode: code,
+		ErrMsg:  err.Error(),
 	}
-}
-
-var sleepTimeout int64 = 0
-
-func init() {
-	flag.Int64Var(&sleepTimeout, "s", 0, "set the sleep timeout")
 }
 
 // provide a webserver to handle the operator event callback
@@ -66,17 +51,20 @@ func main() {
 	flag.Parse()
 	router := gin.Default()
 	printAndReply := func(c *gin.Context) {
-		if sleepTimeout != 0 {
-			time.Sleep(time.Second * time.Duration(sleepTimeout))
-		}
 		buf, err := ioutil.ReadAll(c.Request.Body)
 		if err != nil {
-			c.JSON(http.StatusOK, Err(err, -1))
+			c.JSON(http.StatusOK, Err(err, "-1"))
 			return
 		}
-		name := c.Param("name")
-		version := c.Param("version")
-		fmt.Printf("name:%s, version:%s, data:%s\n", name, version, string(buf))
+		content, err := url.QueryUnescape(string(buf))
+		if err != nil {
+			c.JSON(http.StatusOK, Err(err, "-1"))
+			return
+		}
+		sps := strings.Split(content, "&")
+		for _, sp := range sps {
+			fmt.Println(sp)
+		}
 		c.JSON(http.StatusOK, OK("OK"))
 	}
 	router.Any("/*anypath", func(c *gin.Context) {
