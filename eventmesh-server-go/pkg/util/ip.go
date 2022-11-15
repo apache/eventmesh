@@ -20,17 +20,24 @@ import (
 	"net"
 )
 
-func GetIP() (string, error) {
+var ip string
+
+func init() {
 	addresses, err := net.InterfaceAddrs()
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 	for _, address := range addresses {
 		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
-				return ipnet.IP.String(), nil
+				ip = ipnet.IP.String()
+				return
 			}
 		}
 	}
-	return "", errors.New("can not find the client ip address")
+	panic(errors.New("can not find the client ip address"))
+}
+
+func GetIP() string {
+	return ip
 }

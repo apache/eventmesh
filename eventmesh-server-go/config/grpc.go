@@ -54,6 +54,9 @@ type GRPCOption struct {
 	// Cluster cluster for grpc server
 	Cluster string `yaml:"cluster" toml:"cluster"`
 
+	// Env for env variable
+	Env string `yaml:"env" toml:"env"`
+
 	// IDC idc for grpc server
 	IDC string `yaml:"idc" toml:"idc"`
 

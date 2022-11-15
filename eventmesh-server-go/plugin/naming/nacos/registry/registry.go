@@ -135,10 +135,7 @@ func (r *Registry) register(conf *PluginConfig) error {
 	if err != nil {
 		return err
 	}
-	ip, err := util.GetIP()
-	if err != nil {
-		return err
-	}
+	ip := util.GetIP()
 	serverName := conf.ServiceName
 	cfg := &Config{
 		ServiceName: serverName,

@@ -16,8 +16,9 @@
 package consts
 
 var (
-	PROPERTY_MESSAGE_CLUSTER = "cluster"
-	RR_REPLY_TOPIC           = "rr-reply-topic"
-	RESP_CODE                = "respCode"
-	RESP_MSG                 = "respMsg"
+	PROPERTY_MESSAGE_CLUSTER  = "cluster"
+	RR_REPLY_TOPIC            = "rr-reply-topic"
+	RESP_CODE                 = "respCode"
+	RESP_MSG                  = "respMsg"
+	REQ_EVENTMESH2C_TIMESTAMP = "reqeventmesh2ctimestamp"
 )
