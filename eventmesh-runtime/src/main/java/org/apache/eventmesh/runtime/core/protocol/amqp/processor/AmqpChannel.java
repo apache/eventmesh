@@ -14,25 +14,36 @@ package org.apache.eventmesh.runtime.core.protocol.amqp.processor;
 import static org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ErrorCodes.INTERNAL_ERROR;
 import static org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ErrorCodes.NOT_FOUND;
 
+import org.apache.eventmesh.api.SendCallback;
+import org.apache.eventmesh.api.SendResult;
+import org.apache.eventmesh.api.exception.OnExceptionContext;
+import org.apache.eventmesh.common.protocol.amqp.AmqpMessage;
 import org.apache.eventmesh.runtime.boot.EventMeshAmqpServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshAmqpConfiguration;
-import org.apache.eventmesh.runtime.core.protocol.amqp.consumer.PushMessageContext;
+import org.apache.eventmesh.runtime.core.protocol.amqp.consumer.AmqpConsumer;
+import org.apache.eventmesh.runtime.core.protocol.amqp.consumer.UnacknowledgedMessageMap;
 import org.apache.eventmesh.runtime.core.protocol.amqp.exception.AmqpException;
+import org.apache.eventmesh.runtime.core.protocol.amqp.exchange.AmqpRouter;
 import org.apache.eventmesh.runtime.core.protocol.amqp.exchange.ExchangeDefaults;
+import org.apache.eventmesh.runtime.core.protocol.amqp.exchange.RoutingResult;
+import org.apache.eventmesh.runtime.core.protocol.amqp.metadata.model.BindingInfo;
 import org.apache.eventmesh.runtime.core.protocol.amqp.metadata.model.ExchangeInfo;
 import org.apache.eventmesh.runtime.core.protocol.amqp.metadata.model.QueueInfo;
+import org.apache.eventmesh.runtime.core.protocol.amqp.producer.PutMessageContext;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.AMQPFrame;
+import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.AmqpCommand;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.protocol.ErrorCodes;
 import org.apache.eventmesh.runtime.core.protocol.amqp.service.ExchangeService;
+import org.apache.eventmesh.runtime.core.protocol.amqp.service.QueueService;
 import org.apache.eventmesh.runtime.core.protocol.amqp.util.NameUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,8 +53,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Sets;
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.impl.AMQCommand;
+import com.rabbitmq.client.impl.AMQImpl;
+import com.rabbitmq.client.impl.Method;
 
 /**
  * Amqp Channel level method processor.
@@ -64,21 +77,21 @@ public class AmqpChannel implements ChannelMethodProcessor {
      */
     private volatile QueueInfo defaultQueue;
 
-    //private final UnacknowledgedMessageMap unacknowledgedMessageMap;
+    private final UnacknowledgedMessageMap unacknowledgedMessageMap;
 
-//    /**
+    //    /**
 //     * Maps from consumer tag to consumers instance.
 //     */
-//    private final Map<String, CompletableFuture<Consumer>> tag2ConsumersMap = new ConcurrentHashMap<>();
+    private final Map<String, AmqpConsumer> tag2ConsumersMap = new ConcurrentHashMap<>();
 
-    private List<CompletableFuture<Void>> pendingPublishList = new CopyOnWriteArrayList<>();
+    private List<SendCallback> pendingPublishList = new CopyOnWriteArrayList<>();
 
     /**
      * The current message - which may be partial in the sense that not all frames have been received yet - which has
      * been received by this channel. As the frames are received the message gets updated and once all frames have been
      * received the message can then be routed.
      */
-    private AMQCommand currentMessage;
+    private AmqpCommand currentMessage;
 
     /**
      * This tag is unique per subscription to a queue. The server returns this in response to a basic.consume request.
@@ -102,11 +115,6 @@ public class AmqpChannel implements ChannelMethodProcessor {
 
     private String virtualHostName;
 
-    private Map<Long, PushMessageContext> unackMessageMap = new ConcurrentHashMap<>();
-
-    public Map<Long, PushMessageContext> getUnackMessageMap() {
-        return unackMessageMap;
-    }
 
     public AmqpChannel(int channelId, AmqpConnection connection) {
         this.channelId = channelId;
@@ -117,6 +125,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
         this.amqpConfiguration = amqpServer.getEventMeshAmqpConfiguration();
         this.virtualHostName = connection.getVirtualHostName();
         this.amqpMaxMessageSize = amqpServer.getEventMeshAmqpConfiguration().maxMessageSize;
+        this.unacknowledgedMessageMap = new UnacknowledgedMessageMap(this);
     }
 
 
@@ -124,7 +133,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     public void receiveAccessRequest(String realm, boolean exclusive, boolean passive, boolean active,
                                      boolean write, boolean read) {
         log.info("RECV[{}] AccessRequest[ realm: {}, exclusive: {}, passive: {}, active: {}, write: {}, read: {} ]",
-            getCurrentEnv(), realm, exclusive, passive, active, write, read);
+                getCurrentEnv(), realm, exclusive, passive, active, write, read);
 
         // We don't implement access control class, but to keep clients happy that expect it always use the "0" ticket.
         connection.writeMethod(connection.getCommandFactory().createAccessRequestOkBody(0), channelId);
@@ -135,8 +144,8 @@ public class AmqpChannel implements ChannelMethodProcessor {
     public void receiveExchangeDeclare(String exchange, String type, boolean passive, boolean durable,
                                        boolean autoDelete, boolean internal, boolean nowait, Map<String, Object> arguments) {
         log.info(
-            "RECV[{}] ExchangeDeclare[ exchange: {}, type: {}, passive: {}, durable: {}, autoDelete: {}, internal: {}, nowait: {}, arguments: {} ]",
-            getCurrentEnv(), exchange, type, passive, durable, autoDelete, internal, nowait, arguments);
+                "RECV[{}] ExchangeDeclare[ exchange: {}, type: {}, passive: {}, durable: {}, autoDelete: {}, internal: {}, nowait: {}, arguments: {} ]",
+                getCurrentEnv(), exchange, type, passive, durable, autoDelete, internal, nowait, arguments);
         if (StringUtils.isNotBlank(exchange)) {
             try {
                 NameUtils.checkName(exchange);
@@ -162,7 +171,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
 
         try {
             exchangeService.exchangeDeclare(connection.getVirtualHostName(), exchange, type, durable,
-                autoDelete, internal, arguments);
+                    autoDelete, internal, arguments);
             log.info("[{}]  {}exchangeDeclare success ", getCurrentEnv(), exchange);
             if (!nowait) {
                 final AMQP.Exchange.DeclareOk declareOkBody = connection.getCommandFactory().createExchangeDeclareOkBody();
@@ -177,7 +186,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     @Override
     public void receiveExchangeDelete(String exchange, boolean ifUnused, boolean nowait) {
         log.info("RECV[{}] ExchangeDelete[ exchange: {}, ifUnused: {}, nowait:{} ]", getCurrentEnv(), exchange,
-            ifUnused, nowait);
+                ifUnused, nowait);
 
         try {
             exchangeService.exchangeDelete(connection.getVirtualHostName(), exchange, ifUnused);
@@ -203,8 +212,8 @@ public class AmqpChannel implements ChannelMethodProcessor {
     public void receiveQueueDeclare(String queue, boolean passive, boolean durable, boolean exclusive,
                                     boolean autoDelete, boolean nowait, Map<String, Object> arguments) {
         log.info("RECV[{}] QueueDeclare[ queue: {}, passive: {}, durable:{}, "
-                + "exclusive:{}, autoDelete:{}, nowait:{}, arguments:{} ]",
-            getCurrentEnv(), queue, passive, durable, exclusive, autoDelete, nowait, arguments);
+                        + "exclusive:{}, autoDelete:{}, nowait:{}, arguments:{} ]",
+                getCurrentEnv(), queue, passive, durable, exclusive, autoDelete, nowait, arguments);
         if (StringUtils.isNotBlank(queue)) {
             try {
                 NameUtils.checkName(queue);
@@ -220,7 +229,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
         if (checkExclusiveQueue(queueInfo, connection.getConnectionId())) {
             log.error("checkExclusiveQueue failed {},{}", getCurrentEnv(), queueInfo);
             closeChannel(ErrorCodes.ALREADY_EXISTS, "Exclusive queue can not be used from other connection, queueName:"
-                + queueInfo.getQueueName());
+                    + queueInfo.getQueueName());
             return;
         }
 
@@ -230,7 +239,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
             } else {
                 if (!nowait) {
                     connection.writeMethod(connection.getCommandFactory().createQueueDeclareOkBody(queueInfo.getQueueName(),
-                        0, 0), channelId);
+                            0, 0), channelId);
                 }
             }
             return;
@@ -239,12 +248,12 @@ public class AmqpChannel implements ChannelMethodProcessor {
 
         try {
             QueueInfo q = queueService.queueDeclare(connection.getConnectionId(), connection.getVirtualHostName(), queue,
-                durable, exclusive, autoDelete, arguments);
+                    durable, exclusive, autoDelete, arguments);
             log.info("[{}]  {} queueDeclare success", getCurrentEnv(), queue);
             setDefaultQueue(q);
             if (!nowait) {
                 connection.writeMethod(connection.getCommandFactory().createQueueDeclareOkBody(q.getQueueName(),
-                    0, 0), channelId);
+                        0, 0), channelId);
             }
         } catch (AmqpException e) {
             log.info("[{}]  {} queueDeclare failed", getCurrentEnv(), queue, e);
@@ -256,7 +265,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     public void receiveQueueBind(String queue, String exchange, String bindingKey,
                                  boolean nowait, Map<String, Object> argumentsTable) {
         log.info("RECV[{}] QueueBind[ queue: {}, exchange: {}, bindingKey:{}, nowait:{}, arguments:{} ]",
-            getCurrentEnv(), queue, exchange, bindingKey, nowait, argumentsTable);
+                getCurrentEnv(), queue, exchange, bindingKey, nowait, argumentsTable);
 
         if (StringUtils.isNotBlank(bindingKey)) {
             try {
@@ -274,7 +283,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
 
         try {
             queueService.queueBind(connection.getVirtualHostName(), getDefaultQueue(), queue, exchange,
-                bindingKey, argumentsTable);
+                    bindingKey, argumentsTable);
             log.info("[{}] Success to bind exchange:{} to queue:{}", getCurrentEnv(), exchange, queue);
             if (!nowait) {
                 connection.writeMethod(connection.getCommandFactory().createQueueBindOkBody(), channelId);
@@ -303,7 +312,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     @Override
     public void receiveQueueDelete(String queue, boolean ifUnused, boolean ifEmpty, boolean nowait) {
         log.info("RECV[{}] QueueDelete[ queue: {}, ifUnused:{}, ifEmpty:{}, nowait:{} ]", getCurrentEnv(), queue,
-            ifUnused, ifEmpty, nowait);
+                ifUnused, ifEmpty, nowait);
 
         if (checkExclusiveQueue(queue, connection.getConnectionId())) {
             return;
@@ -325,7 +334,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     public void receiveQueueUnbind(String queue, String exchange, String bindingKey,
                                    Map<String, Object> arguments) {
         log.info("RECV[{}] QueueUnbind[ queue: {}, exchange:{}, bindingKey:{}, arguments:{} ]", getCurrentEnv(), queue,
-            exchange, bindingKey, arguments);
+                exchange, bindingKey, arguments);
         if (checkExclusiveQueue(queue, connection.getConnectionId())) {
             return;
         }
@@ -344,7 +353,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     @Override
     public void receiveBasicQos(long prefetchSize, int prefetchCount, boolean global) {
         log.info("RECV[{}] BasicQos[prefetchSize: {} prefetchCount: {} global: {}]",
-            getCurrentEnv(), prefetchSize, prefetchCount, global);
+                getCurrentEnv(), prefetchSize, prefetchCount, global);
         if (prefetchSize > 0) {
             closeChannel(ErrorCodes.NOT_IMPLEMENTED, "prefetchSize not supported ");
             return;
@@ -358,6 +367,24 @@ public class AmqpChannel implements ChannelMethodProcessor {
                                     boolean noLocal, boolean noAck, boolean exclusive,
                                     boolean nowait, Map<String, Object> arguments) {
 
+        log.info("RECV[{}] BasicConsume[queue:{} consumerTag:{} noLocal:{} noAck:{} exclusive:{} nowait:{}"
+                + " arguments:{}]", getCurrentEnv(), queue, consumerTag, noLocal, noAck, exclusive, nowait, arguments);
+
+        if (checkExclusiveQueue(queue, connection.getConnectionId())) {
+            return;
+        }
+
+        final String consumerTag1;
+        if (StringUtils.isBlank(consumerTag)) {
+            consumerTag1 = "consumerTag_" + getNextConsumerTag();
+        } else {
+            consumerTag1 = consumerTag;
+        }
+
+        // TODO
+
+
+
     }
 
     @Override
@@ -366,7 +393,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     }
 
     private void setPublishFrame(AMQP.Basic.Publish publishFrame) {
-        currentMessage = new AMQCommand(publishFrame);
+        currentMessage = AmqpCommand.get((Method) publishFrame);
     }
 
     @Override
@@ -395,7 +422,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     @Override
     public void receiveChannelClose(int replyCode, String replyText, int classId, int methodId) {
         log.info("RECV[{}] ChannelClose[replyCode: {} replyText: {} classId: {} methodId: {}",
-            getCurrentEnv(), replyCode, replyText, classId, methodId);
+                getCurrentEnv(), replyCode, replyText, classId, methodId);
         // TODO Process outstanding client requests
         processAsync();
         connection.closeChannel(this);
@@ -420,7 +447,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
                                     boolean immediate) {
         if (log.isDebugEnabled()) {
             log.debug("RECV[{}] BasicPublish[exchange: {} routingKey: {} mandatory: {} immediate: {}]",
-                getCurrentEnv(), exchange, routingKey, mandatory, immediate);
+                    getCurrentEnv(), exchange, routingKey, mandatory, immediate);
         }
         String exchangeName;
         if (isDefaultExchange(exchange)) {
@@ -448,22 +475,22 @@ public class AmqpChannel implements ChannelMethodProcessor {
         }
 
         if (hasCurrentMessage()) {
-//            try {
-////                if (currentMessage.handleFrame(frame)) {
-////                    deliverCurrentMessageIfComplete();
-////                }
-//            } catch (IOException e) {
-//                log.error("receiveMessageContent exception {}", e);
-//                closeChannel(ErrorCodes.COMMAND_INVALID,
-//                    "Attempt to send a content  not valid");
-//            } catch (Exception e) {
-//                log.error("receiveMessageContent exception {}", e);
-//                closeChannel(ErrorCodes.SYNTAX_ERROR,
-//                    "system error");
-//            }
+            try {
+                if (currentMessage.handleFrame(frame)) {
+                    deliverCurrentMessageIfComplete();
+                }
+            } catch (IOException e) {
+                log.error("receiveMessageContent exception: ", e);
+                closeChannel(ErrorCodes.COMMAND_INVALID,
+                        "Attempt to send a content  not valid");
+            } catch (Exception e) {
+                log.error("receiveMessageContent exception: ", e);
+                closeChannel(ErrorCodes.SYNTAX_ERROR,
+                        "system error");
+            }
         } else {
             closeChannel(ErrorCodes.COMMAND_INVALID,
-                "Attempt to send a content without first sending a publish frame");
+                    "Attempt to send a content without first sending a publish frame");
         }
     }
 
@@ -474,39 +501,127 @@ public class AmqpChannel implements ChannelMethodProcessor {
         }
 
         if (hasCurrentMessage()) {
-//            try {
-////                if (currentMessage.handleFrame(frame)) {
-////                    deliverCurrentMessageIfComplete();
-////                }
-//            } catch (IOException e) {
-//                log.error("receiveMessageHeader exce {}", e.getMessage());
-//                closeChannel(ErrorCodes.COMMAND_INVALID,
-//                    "Attempt to send a content  not valid");
-//            } catch (Exception e) {
-//                log.error("receiveMessageHeader exce {}", e.getMessage());
-//                closeChannel(ErrorCodes.SYNTAX_ERROR,
-//                    "system error");
-//            }
+            try {
+                if (currentMessage.handleFrame(frame)) {
+                    deliverCurrentMessageIfComplete();
+                }
+            } catch (IOException e) {
+                log.error("receiveMessageHeader exce {}", e.getMessage());
+                closeChannel(ErrorCodes.COMMAND_INVALID,
+                        "Attempt to send a content  not valid");
+            } catch (Exception e) {
+                log.error("receiveMessageHeader exce {}", e.getMessage());
+                closeChannel(ErrorCodes.SYNTAX_ERROR,
+                        "system error");
+            }
 
             long bodySize = currentMessage.getContentHeader().getBodySize();
             if (bodySize > amqpMaxMessageSize) {
                 log.error("RECV[{}] too large message bodySize {}", channelId, bodySize);
                 closeChannel(ErrorCodes.MESSAGE_TOO_LARGE,
-                    "Message size of " + bodySize + " greater than allowed maximum of " + amqpMaxMessageSize);
+                        "Message size of " + bodySize + " greater than allowed maximum of " + amqpMaxMessageSize);
             }
 
         } else {
             closeChannel(ErrorCodes.COMMAND_INVALID,
-                "Attempt to send a content without first sending a publish frame");
+                    "Attempt to send a content without first sending a publish frame");
         }
     }
 
     private void deliverCurrentMessageIfComplete() throws Exception {
 
+        try {
+            AMQImpl.Basic.Publish info = (AMQImpl.Basic.Publish) currentMessage.getMethod();
+            String routingKey = info.getRoutingKey();
+            // TODO body use byte[] or buffer?
+            AmqpMessage message = new AmqpMessage(currentMessage.getContentHeader(), currentMessage.getContentBody().array(), null);
+            String exchangeName = info.getExchange();
+            ExchangeInfo exchangeInfo = getExchangeInfo(exchangeName);
+            if (exchangeInfo == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("[{}] deliver current message if complete failed. not found exchange", getCurrentEnv());
+                }
+                closeChannel(NOT_FOUND, "find exchange:" + exchangeName + "error:");
+                return;
+            }
+
+            RoutingResult routingResult;
+            if (ExchangeDefaults.DEFAULT_EXCHANGE_NAME_DURABLE.equals(info.getExchange())) {
+                routingResult = new RoutingResult(Sets.newHashSet(routingKey));
+            } else {
+                Set<BindingInfo> bindingInfos = exchangeService.getBindings(virtualHostName, exchangeName);
+                routingResult = amqpServer.getRouteComponent()
+                        .routMessage(bindingInfos, AmqpRouter.Type.valueOf(exchangeInfo.getExchangeType().name()),
+                                routingKey);
+            }
+
+            if (routingResult.hasNoMatch()) {
+
+                boolean mandatory = info.getMandatory();
+
+                log.warn("Unroutable message exchange='{}', routing key='{}', mandatory={}, confirmOnPublish={}",
+                        exchangeName, routingKey, mandatory, confirmOnPublish);
+                try {
+                    if (info.getMandatory() || info.getImmediate()) {
+
+                        connection.getAmqpOutputConverter().writeReturn(message,
+                                channelId, ErrorCodes.NO_ROUTE, "No queue can be routing");
+                    }
+
+
+                    if (confirmOnPublish) {
+                        connection.writeMethod(connection.getCommandFactory().
+                                createBasicAckBody(getNextConfirmedCounter(), false), channelId);
+                    } else {
+                        unConfirmedMessageCount.incrementAndGet();
+                    }
+                } catch (IOException e) {
+                    log.error("writeReturn message exce.", e);
+                    closeChannel(INTERNAL_ERROR, "writeReturn message exce");
+                }
+                return;
+            }
+
+            if (!checkQueuesExist(routingResult.getQueues())) {
+                closeChannel(ErrorCodes.SYNTAX_ERROR, "has routing queues not found");
+                return;
+            }
+
+            AMQImpl.BasicProperties properties = (AMQImpl.BasicProperties) currentMessage.getContentHeader();
+            Map<String, Object> headers = null;
+            if (properties != null) {
+                headers = properties.getHeaders();
+            }
+            PutMessageContext putMessageContext = new PutMessageContext(exchangeName, routingKey, headers, message, routingResult.getQueues());
+            SendCallback callback = new SendCallback() {
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                    pendingPublishList.remove(this);
+                    if (confirmOnPublish) {
+                        connection.writeMethod(connection.getCommandFactory().
+                                createBasicAckBody(getNextConfirmedCounter(), false), channelId);
+                    }
+                }
+
+                @Override
+                public void onException(OnExceptionContext context) {
+                    log.error("[{}] Failed publish message.", getCurrentEnv(), context.getException().getMessage());
+                    closeChannel(INTERNAL_ERROR, "publish message error:" + context.getException().getMessage());
+                }
+            };
+            pendingPublishList.add(callback);
+            amqpServer.getProducerManager().getAmqpProducer(null).send(putMessageContext, callback);
+
+        } finally {
+            if (currentMessage != null) {
+                currentMessage.recycle();
+            }
+
+        }
 
     }
 
-    private boolean putMsgCheck(Set<String> queues) {
+    private boolean checkQueuesExist(Set<String> queues) {
 
         for (String queue : queues) {
             if (!checkQueueExist(queue)) {
@@ -698,10 +813,10 @@ public class AmqpChannel implements ChannelMethodProcessor {
         QueueInfo amqpQueue = getQueueInfo(queue);
 
         if (amqpQueue != null && amqpQueue.isExclusive()
-            && !amqpQueue.getConnectionId().equals(connectionId)) {
+                && !amqpQueue.getConnectionId().equals(connectionId)) {
             isExclusive.set(true);
             String message = "Exclusive queue can not be used from other connection, queueName:"
-                + amqpQueue.getQueueName();
+                    + amqpQueue.getQueueName();
             log.error("{},{}", getCurrentEnv(), message);
             closeChannel(ErrorCodes.ALREADY_EXISTS, message);
         }
@@ -711,7 +826,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
     private boolean checkExclusiveQueue(QueueInfo queueInfo, String connectionId) {
 
         if (queueInfo != null && queueInfo.isExclusive()
-            && !queueInfo.getConnectionId().equals(connectionId)) {
+                && !queueInfo.getConnectionId().equals(connectionId)) {
             return true;
         }
         return false;
@@ -761,7 +876,7 @@ public class AmqpChannel implements ChannelMethodProcessor {
         StringBuffer sb = new StringBuffer();
         sb.append("_amqp_env_>>");
         sb.append(connection.getConnectionId()).append("/").
-            append(channelId).append("/").append(virtualHostName);
+                append(channelId).append("/").append(virtualHostName);
         return sb.toString();
     }
 
@@ -776,5 +891,9 @@ public class AmqpChannel implements ChannelMethodProcessor {
             log.error("processChannelCommandException ", exce);
             closeChannel(INTERNAL_ERROR, exce.getMessage());
         }
+    }
+
+    public UnacknowledgedMessageMap getUnacknowledgedMessageMap() {
+        return unacknowledgedMessageMap;
     }
 }

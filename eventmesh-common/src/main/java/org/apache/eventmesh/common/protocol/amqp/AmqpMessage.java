@@ -24,6 +24,8 @@ import org.apache.eventmesh.common.protocol.amqp.common.ProtocolKey;
 
 import java.util.Map;
 
+import com.rabbitmq.client.ContentHeader;
+
 import com.rabbitmq.client.AMQP.BasicProperties;
 
 import lombok.Data;
@@ -33,7 +35,7 @@ import lombok.Data;
  */
 @Data
 public class AmqpMessage implements ProtocolTransportObject {
-    private BasicProperties contentHeader;
+    private ContentHeader contentHeader;
 
     private byte[] contentBody;
 
@@ -43,14 +45,10 @@ public class AmqpMessage implements ProtocolTransportObject {
         this(null, null, null);
     }
 
-    public AmqpMessage(BasicProperties contentHeader, byte[] contentBody, Map<String, Object> extendInfo) {
+    public AmqpMessage(ContentHeader contentHeader, byte[] contentBody, Map<String, Object> extendInfo) {
         this.contentHeader = contentHeader;
         this.contentBody = contentBody;
         this.extendInfo = extendInfo;
-    }
-
-    public long getSize() {
-        return contentBody == null ? 0 : contentHeader == null ? contentBody.length : contentBody.length + contentHeader.getBodySize();
     }
 
     public String getExchange() {

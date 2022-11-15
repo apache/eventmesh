@@ -17,13 +17,10 @@
 
 package org.apache.eventmesh.runtime.boot;
 
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.apache.eventmesh.runtime.configuration.EventMeshAmqpConfiguration;
+import org.apache.eventmesh.runtime.core.protocol.amqp.exchange.RouteComponent;
 import org.apache.eventmesh.runtime.core.protocol.amqp.metadata.MetaStore;
+import org.apache.eventmesh.runtime.core.protocol.amqp.producer.AmqpProducerManager;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.codec.AmqpCodeDecoder;
 import org.apache.eventmesh.runtime.core.protocol.amqp.remoting.codec.AmqpCodeEncoder;
 import org.apache.eventmesh.runtime.core.protocol.amqp.service.ExchangeService;
@@ -31,6 +28,12 @@ import org.apache.eventmesh.runtime.core.protocol.amqp.service.ExchangeServiceIm
 import org.apache.eventmesh.runtime.core.protocol.amqp.service.QueueService;
 import org.apache.eventmesh.runtime.core.protocol.amqp.service.QueueServiceImpl;
 import org.apache.eventmesh.runtime.registry.Registry;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.*;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 public class EventMeshAmqpServer extends AbstractRemotingServer {
 
@@ -46,12 +49,18 @@ public class EventMeshAmqpServer extends AbstractRemotingServer {
 
     private MetaStore metaStore;
 
+    private RouteComponent routeComponent;
+
+    private AmqpProducerManager producerManager;
+
     public EventMeshAmqpServer(EventMeshServer eventMeshServer,
-                               EventMeshAmqpConfiguration eventMeshAmqpConfiguration, Registry registry) {
+                               EventMeshAmqpConfiguration eventMeshAmqpConfiguration, Registry registry, RouteComponent routeComponent, AmqpProducerManager producerManager) {
         super();
         this.eventMeshServer = eventMeshServer;
         this.eventMeshAmqpConfiguration = eventMeshAmqpConfiguration;
         this.registry = registry;
+        this.routeComponent = routeComponent;
+        this.producerManager = producerManager;
         this.metaStore=new MetaStore(this);
         this.exchangeService=new ExchangeServiceImpl(this,metaStore);
         this.queueService=new QueueServiceImpl(this,metaStore);
@@ -129,6 +138,18 @@ public class EventMeshAmqpServer extends AbstractRemotingServer {
 
     public QueueService getQueueService() {
         return queueService;
+    }
+
+    public MetaStore getMetaStore() {
+        return metaStore;
+    }
+
+    public RouteComponent getRouteComponent() {
+        return routeComponent;
+    }
+
+    public AmqpProducerManager getProducerManager() {
+        return producerManager;
     }
 
     /**
