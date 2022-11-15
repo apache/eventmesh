@@ -217,6 +217,7 @@ func (e *EventMeshConsumer) createEventListener(mode pb.Subscription_Subscriptio
 				ConsumerGroup:    e.ConsumerGroup,
 				SubscriptionMode: mode,
 				Event:            &eventclone,
+				TopicConfig:      topicConfig,
 			}
 			if err := e.messageHandler.Handler(mctx); err != nil {
 				log.Warnf("handle msg err:%v, topic:%v, group:%v", err, topic, topicConfig.ConsumerGroup)
