@@ -73,7 +73,7 @@ public class MessageHandler {
 
         try {
             pushExecutor.submit(() -> {
-                AbstractPushRequest pushRequest = createHttpPushRequest(handleMsgContext);
+                AbstractPushRequest pushRequest = createGrpcPushRequest(handleMsgContext);
                 pushRequest.tryPushRequest();
             });
             return true;
@@ -82,7 +82,7 @@ public class MessageHandler {
         }
     }
 
-    private AbstractPushRequest createHttpPushRequest(HandleMsgContext handleMsgContext) {
+    private AbstractPushRequest createGrpcPushRequest(HandleMsgContext handleMsgContext) {
         GrpcType grpcType = handleMsgContext.getGrpcType();
         if (GrpcType.WEBHOOK.equals(grpcType)) {
             return new WebhookPushRequest(handleMsgContext, waitingRequests);
