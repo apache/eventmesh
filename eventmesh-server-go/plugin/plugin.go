@@ -21,6 +21,8 @@ package plugin
 
 var plugins = make(map[string]map[string]Plugin) // plugin type => { plugin name => plugin factory }
 
+var activePlugins = make(map[string]string) // store the active plugins{ plugin type => plugin name}
+
 // Plugin is the interface for plugin factory abstraction.
 // Custom Plugins need to implement this interface to be registered as a plugin with certain type.
 type Plugin interface {
@@ -49,7 +51,16 @@ func Register(name string, f Plugin) {
 	factories[name] = f
 }
 
+func SetActivePlugin(ap map[string]string) {
+	activePlugins = ap
+}
+
 // Get returns a plugin Plugin by its type and name.
 func Get(typ string, name string) Plugin {
 	return plugins[typ][name]
+}
+
+// GetByType return the single plugin
+func GetByType(typ string) Plugin {
+	return Get(typ, activePlugins[typ])
 }

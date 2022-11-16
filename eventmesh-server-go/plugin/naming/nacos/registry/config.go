@@ -25,5 +25,8 @@ type Config struct {
 
 // PluginConfig define registry plugin config
 type PluginConfig struct {
-	AddressList string `yaml:"address_list"`
+	ServiceName string `yaml:"service_name"`
+	CacheDir    string `yaml:"cache-dir"`
+	Port        string `yaml:"port"`         // nacos server port
+	AddressList string `yaml:"address_list"` // nacos server address list
 }

@@ -113,9 +113,7 @@ func (c *Consumer) InitConsumer(properties map[string]string) error {
 }
 
 func (c *Consumer) Start() error {
-	if ok := c.started.CAS(false, true); !ok {
-		return errors.New("fail to start standalone consumer, consumer has already been started")
-	}
+	c.started.CAS(false, true)
 	return nil
 }
 

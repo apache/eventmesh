@@ -34,3 +34,32 @@ var (
 	TAG              = "tag"
 	CONTENT_TYPE     = "contenttype"
 )
+
+// request code
+var (
+	HTTP_PUSH_CLIENT_ASYNC = "105"
+)
+
+// protocol key
+var (
+	REQUEST_CODE = "code"
+	Version      = "version"
+)
+
+// EventMeshInstanceKey
+var (
+	EVENTMESHCLUSTER = "eventmeshcluster"
+	EVENTMESHIP      = "eventmeship"
+	EVENTMESHENV     = "eventmeshenv"
+	EVENTMESHIDC     = "eventmeshidc"
+)
+
+// PushMessageRequestBody
+var (
+	RANDOMNO  = "randomNo"
+	TOPIC     = "topic"
+	BIZSEQNO  = "bizseqno"
+	UNIQUEID  = "uniqueId"
+	CONTENT   = "content"
+	EXTFIELDS = "extFields"
+)

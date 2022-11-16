@@ -16,25 +16,38 @@
 package grpc
 
 import (
+	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/common/protocol/grpc"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/pkg/util"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/consts"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime/proto/pb"
 	cloudv2 "github.com/cloudevents/sdk-go/v2"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/liyue201/gostl/ds/set"
-	"github.com/liyue201/gostl/ds/vector"
 	"github.com/pkg/errors"
 	"go.uber.org/atomic"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
+	"net/url"
 	"sync"
 	"time"
 )
 
 var (
 	ErrNoProtocolFound = errors.New("no protocol type found in event message")
+
+	defaultWebhookTimeout = time.Second * 5
 )
+
+type Response struct {
+	RetCode string `json:"retCode"`
+	ErrMsg  string `json:"errMsg"`
+}
 
 type Request struct {
 	*Context
@@ -70,7 +83,7 @@ func eventToSimpleMessage(ev *cloudv2.Event) (*pb.SimpleMessage, error) {
 	if err != nil {
 		return nil, err
 	}
-	return msg.(*pb.SimpleMessage), nil
+	return msg.(*grpc.SimpleMessageWrapper).SimpleMessage, nil
 }
 
 func (r *Request) timeout() bool {
@@ -101,7 +114,7 @@ func NewStreamRequest(mctx *MessageContext) (*StreamRequest, error) {
 type WebhookRequest struct {
 	*Request
 	// IDCWebhookURLs webhook urls seperated by IDC
-	// key is IDC, value is vector.Vector
+	// key is IDC, value is set.Set
 	IDCWebhookURLs *sync.Map
 
 	// AllURLs all webhook urls, ignore idc
@@ -119,13 +132,69 @@ func NewWebhookRequest(mctx *MessageContext) (*WebhookRequest, error) {
 	}
 	rand.Seed(time.Now().UnixMilli())
 	hr := &WebhookRequest{
-		IDCWebhookURLs:   mctx.TopicConfig.IDCWebhookURLs,
-		AllURLs:          mctx.TopicConfig.AllURLs,
+		IDCWebhookURLs:   mctx.TopicConfig.IDCURLs(),
+		AllURLs:          mctx.TopicConfig.AllURLs(),
 		Request:          r,
-		startIdx:         rand.Intn(mctx.TopicConfig.AllURLs.Size()),
+		startIdx:         rand.Intn(mctx.TopicConfig.Size()),
 		subscriptionMode: mctx.SubscriptionMode,
 	}
 	hr.Try = func() error {
+		hr.LastPushTime = time.Now()
+		httpClient := &http.Client{
+			Timeout: defaultWebhookTimeout,
+		}
+		httpHdr := http.Header{}
+		httpHdr.Set(grpc.REQUEST_CODE, grpc.HTTP_PUSH_CLIENT_ASYNC)
+		httpHdr.Set(grpc.LANGUAGE, "Go")
+		httpHdr.Set(grpc.Version, "1.0")
+		httpHdr.Set(grpc.EVENTMESHCLUSTER, config.GlobalConfig().Server.Cluster)
+		httpHdr.Set(grpc.EVENTMESHENV, config.GlobalConfig().Server.Env)
+		httpHdr.Set(grpc.EVENTMESHIP, util.GetIP())
+		httpHdr.Set(grpc.EVENTMESHIDC, config.GlobalConfig().Server.IDC)
+		httpHdr.Set(grpc.PROTOCOL_TYPE, hr.SimpleMessage.Header.ProtocolType)
+		httpHdr.Set(grpc.PROTOCOL_DESC, hr.SimpleMessage.Header.ProtocolDesc)
+		httpHdr.Set(grpc.PROTOCOL_VERSION, hr.SimpleMessage.Header.ProtocolVersion)
+		httpHdr.Set(grpc.CONTENT_TYPE, hr.SimpleMessage.Properties[grpc.CONTENT_TYPE])
+
+		formValues := url.Values{}
+		formValues.Set(grpc.CONTENT, hr.SimpleMessage.Content)
+		formValues.Set(grpc.BIZSEQNO, hr.SimpleMessage.SeqNum)
+		formValues.Set(grpc.UNIQUEID, hr.SimpleMessage.UniqueId)
+		formValues.Set(grpc.RANDOMNO, mctx.MsgRandomNo)
+		formValues.Set(grpc.TOPIC, hr.SimpleMessage.Topic)
+		content, _ := jsonPool.Get().(jsoniter.API).MarshalToString(hr.SimpleMessage.Properties)
+		formValues.Set(grpc.EXTFIELDS, content)
+
+		// TODO need to clone?
+		hr.SimpleMessage.Properties[consts.REQ_EVENTMESH2C_TIMESTAMP] = fmt.Sprintf("%v", hr.LastPushTime.UnixMilli())
+		urls := hr.getURLs()
+		for _, u := range urls {
+			log.Infof("message|eventMesh2client|url={}|topic={}|bizSeqNo={}|uniqueId={}",
+				u, hr.SimpleMessage.Topic, hr.SimpleMessage.SeqNum, hr.SimpleMessage.UniqueId)
+			resp, err := httpClient.PostForm(u, formValues)
+			if err != nil {
+				log.Warnf("err:%v in submit to url:%v|topic={}|bizSeqNo={}|uniqueId={}",
+					err, u, hr.SimpleMessage.Topic, hr.SimpleMessage.SeqNum, hr.SimpleMessage.UniqueId)
+				continue
+			}
+			if resp.StatusCode != http.StatusOK {
+				log.Warnf("status code:%v to submit to url:%v|topic={}|bizSeqNo={}|uniqueId={}",
+					resp.StatusCode, hr.SimpleMessage.Topic, hr.SimpleMessage.SeqNum, hr.SimpleMessage.UniqueId)
+				continue
+			}
+			buf, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Warnf("err:%v in read response url:%v|topic={}|bizSeqNo={}|uniqueId={}",
+					err, hr.SimpleMessage.Topic, hr.SimpleMessage.SeqNum, hr.SimpleMessage.UniqueId)
+				continue
+			}
+			res := &Response{}
+			if err := jsonPool.Get().(jsoniter.API).Unmarshal(buf, res); err != nil {
+				log.Warnf("err:%v in unmarshal response:%v url:%v|topic={}|bizSeqNo={}|uniqueId={}",
+					err, string(buf), hr.SimpleMessage.Topic, hr.SimpleMessage.SeqNum, hr.SimpleMessage.UniqueId)
+				continue
+			}
+		}
 		return nil
 	}
 	return hr, nil
@@ -139,7 +208,7 @@ func (w *WebhookRequest) getURLs() []string {
 
 	w.IDCWebhookURLs.Range(func(key, value any) bool {
 		idc := key.(string)
-		vc := value.(*vector.Vector)
+		vc := value.(*set.Set)
 		if idc == currentIDC {
 			for iter := vc.Begin(); iter.IsValid(); iter.Next() {
 				urls = append(urls, iter.Value().(string))

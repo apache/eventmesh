@@ -28,7 +28,7 @@ import (
 var (
 	// SetupTimeout is the timeout for initialization of each plugin.
 	// Modify it if some plugins' initialization does take a long time.
-	SetupTimeout = 3 * time.Second
+	SetupTimeout = 10 * time.Second
 
 	// MaxPluginSize is the max number of plugins.
 	MaxPluginSize = 1000

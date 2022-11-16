@@ -86,7 +86,7 @@ type MessageContext struct {
 	GrpcType         GRPCType
 	ConsumerGroup    string
 	Event            *cloudv2.Event
-	TopicConfig      *ConsumerGroupTopicConfig
+	TopicConfig      ConsumerGroupTopicOption
 	// channel for server
 	Consumer *EventMeshConsumer
 }
