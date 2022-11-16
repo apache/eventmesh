@@ -63,7 +63,6 @@ func (h *HTTPServer) Serve() error {
 }
 
 func (h *HTTPServer) Stop() error {
-
 	return nil
 }
 

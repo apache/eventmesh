@@ -71,7 +71,7 @@ func (p *ProducerService) Publish(ctx context.Context, msg *pb.SimpleMessage) (*
 }
 
 func (p *ProducerService) RequestReply(ctx context.Context, msg *pb.SimpleMessage) (*pb.SimpleMessage, error) {
-	log.Infof("cmd={}|{}|client2eventMesh|from={}", "RequestReply", "grpc", msg.Header.Ip)
+	log.Infof("cmd=%v|%v|client2eventMesh|from=%v", "RequestReply", "grpc", msg.Header.Ip)
 	tmCtx, cancel := context.WithTimeout(ctx, defaultAsyncTimeout)
 	defer cancel()
 	var (
@@ -96,7 +96,7 @@ func (p *ProducerService) RequestReply(ctx context.Context, msg *pb.SimpleMessag
 }
 
 func (p *ProducerService) BatchPublish(ctx context.Context, msg *pb.BatchMessage) (*pb.Response, error) {
-	log.Infof("cmd={}|{}|client2eventMesh|from={}", "BatchPublish", "grpc", msg.Header.Ip)
+	log.Infof("cmd=%v|%v|client2eventMesh|from=%v", "BatchPublish", "grpc", msg.Header.Ip)
 
 	tmCtx, cancel := context.WithTimeout(ctx, defaultAsyncTimeout)
 	defer cancel()

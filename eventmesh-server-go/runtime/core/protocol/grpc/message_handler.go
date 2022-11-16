@@ -69,10 +69,25 @@ func (m *MessageHandler) Handler(mctx *MessageContext) error {
 		return ErrRequestReachMaxThreshold
 	}
 
+	var (
+		try func() error
+	)
+	if mctx.GrpcType == WEBHOOK {
+		req, err := NewWebhookRequest(mctx)
+		if err != nil {
+			return err
+		}
+		try = req.Try
+	} else {
+		req, err := NewStreamRequest(mctx)
+		if err != nil {
+			return err
+		}
+		try = req.Try
+	}
 	go func() {
-		pushRequest := &Request{}
-		if err := pushRequest.Try(); err != nil {
-
+		if err := try(); err != nil {
+			log.Warnf("failed to handle msg, group:%v, topic:%v, err:%v", mctx.ConsumerGroup, mctx.TopicConfig, err)
 		}
 	}()
 	return nil

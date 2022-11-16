@@ -18,7 +18,16 @@ package main
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/config"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/runtime"
+
+	// load all plugin here if you add new plugin you need to import it by _
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector/rocketmq"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector/standalone"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/database/mysql"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/metrics/prometheus"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/naming/nacos/registry"
+	_ "github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/protocol/cloudevents"
 )
 
 func main() {
@@ -46,5 +55,6 @@ func SetupPlugins(cfg *config.Config) error {
 			return err
 		}
 	}
+	plugin.SetActivePlugin(cfg.ActivePlugins)
 	return nil
 }
