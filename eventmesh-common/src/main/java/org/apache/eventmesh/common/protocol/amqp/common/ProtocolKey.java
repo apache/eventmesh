@@ -19,8 +19,6 @@
 
 package org.apache.eventmesh.common.protocol.amqp.common;
 
-import java.util.Map;
-
 public class ProtocolKey {
     public static final String ROUTING_KEY = "routingKey";
 
@@ -32,7 +30,7 @@ public class ProtocolKey {
 
     public static final String QUEUE_NAME = "queueName";
 
-    public static final String BASIC_PROPERTIES = "basicProperties";
+    public static final String AMQ_CONTEND_HEADER = "contentHeader";
 
     public static class ContentHeaderProperties {
         public static final String CLASS_ID = "classId";
