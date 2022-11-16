@@ -21,6 +21,8 @@ type QueueType int
 const (
 	// QueueTypeInMemory in memory queue type
 	QueueTypeInMemory = "in-memory"
+	// QueueTypeEventMesh EventMesh queue
+	QueueTypeEventMesh = "eventmesh"
 )
 
 const (
