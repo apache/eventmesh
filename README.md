@@ -24,12 +24,11 @@
 
 **Apache EventMesh (Incubating)** is a dynamic [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture) application multi-runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
-## Features
-
 ### Multi-Runtime Architecture
 
 ![EventMesh Architecture](docs/images/eventmesh-architecture.png)
 
+## Core Features
 ### Orchestration
 
 ![EventMesh Orchestration](docs/images/eventmesh-orchestration.png)
@@ -42,12 +41,12 @@
 
 Apache EventMesh (Incubating) consists of multiple components that integrate different middlewares and messaging protocols to enhance the functionalities of the application runtime.
 
-- **eventmesh-runtime**: The middleware that transmits events between producers and consumers, which supports cloud-native apps and microservices.
+- **eventmesh-runtime**: The EventMesh core server designed by Microkernel Architecture.
 - **eventmesh-sdk-java**: The Java SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
 - **eventmesh-sdk-go**: The Golang SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
 - **eventmesh-sdk-rust**: The Rust SDK that supports HTTP, TCP, and [gRPC](https://grpc.io) protocols.
-- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org)(incubator), [Apache Pulsar](https://pulsar.apache.org)(incubator), [RabbitMQ](https://rabbitmq.com)(in progress), [Redis](https://redis.io) (incubator), [Pravega](https://cncf.pravega.io)(incubator), and [RDMS](https://en.wikipedia.org/wiki/Relational_database)(in progress) using [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity) (in progress).
-- **eventmesh-registry-plugin**: The collection of plugins that integrate service registries such as [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io) and [ETCD](https://etcd.io).
+- **eventmesh-connector-plugin**: The collection of plugins that connects middlewares such as [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org)(incubator), [Apache Pulsar](https://pulsar.apache.org)(incubator), [RabbitMQ](https://rabbitmq.com)(incubator), [Redis](https://redis.io) (incubator), [Pravega](https://cncf.pravega.io)(incubator), and [RDMS](https://en.wikipedia.org/wiki/Relational_database)(in progress) using [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity) (in progress).
+- **eventmesh-registry-plugin**: The collection of plugins that integrate service registries such as [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io) and [Zookeeper](https://zookeeper.apache.org/).
 - **eventmesh-security-plugin**: The collection of plugins that implement security mechanisms, such as ACL (access control list), authentication, and authorization.
 - **eventmesh-protocol-plugin**: The collection of plugins that implement messaging protocols, such as [CloudEvents](https://cloudevents.io), [AMQP](https://www.amqp.org/)(in progress) and [MQTT](https://mqtt.org)(in progress).
 - **eventmesh-workflow-go**: The [Serverless workflow](https://serverlessworkflow.io/) engine implementation.
