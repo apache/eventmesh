@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
-create database db_catalog;
+create database if not exists db_catalog;
+
+use db_catalog;
+
 create table if not exists t_event
 (
     id          int auto_increment comment '主键、自增'

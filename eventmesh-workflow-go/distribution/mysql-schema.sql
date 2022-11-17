@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
-create database db_workflow;
+create database if not exists db_workflow;
+
+use db_workflow;
+
 create table if not exists t_workflow
 (
     id            int auto_increment primary key,
