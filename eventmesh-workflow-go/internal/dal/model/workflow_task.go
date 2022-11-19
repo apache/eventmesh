@@ -23,6 +23,7 @@ type WorkflowTask struct {
 	TaskID             string                  `json:"task_id" gorm:"column:task_id;type:varchar;size:1024"`
 	TaskName           string                  `json:"task_name" gorm:"column:task_name;type:varchar;size:1024"`
 	TaskType           string                  `json:"task_type" gorm:"column:task_type;type:varchar;size:64"`
+	TaskInputFilter    string                  `json:"task_input_filter" gorm:"column:task_input_filter;type:varchar;size:1024"`
 	Status             int                     `json:"status" gorm:"column:status;type:int"`
 	CreateTime         time.Time               `json:"create_time"`
 	UpdateTime         time.Time               `json:"update_time"`
