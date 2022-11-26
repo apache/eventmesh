@@ -17,6 +17,12 @@
 
 package org.apache.eventmesh.runtime.client.impl;
 
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.eventmesh.common.protocol.tcp.Command;
 import org.apache.eventmesh.common.protocol.tcp.OPStatus;
 import org.apache.eventmesh.common.protocol.tcp.Package;
@@ -27,23 +33,15 @@ import org.apache.eventmesh.runtime.client.common.MessageUtils;
 import org.apache.eventmesh.runtime.client.common.RequestContext;
 import org.apache.eventmesh.runtime.client.common.TCPClient;
 import org.apache.eventmesh.runtime.client.hook.ReceiveMsgHook;
-
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
-
 public class PubClientImpl extends TCPClient implements PubClient {
 
-    private Logger publogger = LoggerFactory.getLogger(this.getClass());
+    private final Logger publogger = LoggerFactory.getLogger(this.getClass());
 
-    private UserAgent userAgent;
+    private final UserAgent userAgent;
 
     private ReceiveMsgHook callback;
 
@@ -79,19 +77,16 @@ public class PubClientImpl extends TCPClient implements PubClient {
     }
 
     public void heartbeat() throws Exception {
-        task = scheduler.scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (!isActive()) {
-                        PubClientImpl.this.reconnect();
-                    }
-                    Package msg = MessageUtils.heartBeat();
-                    publogger.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
-                    PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
-                } catch (Exception e) {
-                    //ignore
+        task = scheduler.scheduleAtFixedRate(() -> {
+            try {
+                if (!isActive()) {
+                    PubClientImpl.this.reconnect();
                 }
+                Package msg = MessageUtils.heartBeat();
+                publogger.debug("PubClientImpl|{}|send heartbeat|Command={}|msg={}", clientNo, msg.getHeader().getCommand(), msg);
+                PubClientImpl.this.dispatcher(msg, ClientConstants.DEFAULT_TIMEOUT_IN_MILLISECONDS);
+            } catch (Exception e) {
+                //ignore
             }
         }, ClientConstants.HEARTBEAT, ClientConstants.HEARTBEAT, TimeUnit.MILLISECONDS);
     }
@@ -116,7 +111,7 @@ public class PubClientImpl extends TCPClient implements PubClient {
      */
     @Override
     public Package rr(Package msg, long timeout) throws Exception {
-        publogger.info("PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, msg.getHeader().getCommand().REQUEST_TO_SERVER, msg);
+        publogger.info("PubClientImpl|{}|rr|send|Command={}|msg={}", clientNo, Command.REQUEST_TO_SERVER, msg);
         return dispatcher(msg, timeout);
     }
 
