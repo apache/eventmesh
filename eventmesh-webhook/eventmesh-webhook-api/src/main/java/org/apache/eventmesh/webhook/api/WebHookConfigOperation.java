@@ -24,14 +24,14 @@ import java.util.List;
  */
 public interface WebHookConfigOperation {
 
-    public Integer insertWebHookConfig(WebHookConfig webHookConfig);
+    Integer insertWebHookConfig(WebHookConfig webHookConfig);
 
-    public Integer updateWebHookConfig(WebHookConfig webHookConfig);
+    Integer updateWebHookConfig(WebHookConfig webHookConfig);
 
-    public Integer deleteWebHookConfig(WebHookConfig webHookConfig);
+    Integer deleteWebHookConfig(WebHookConfig webHookConfig);
 
-    public WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig);
+    WebHookConfig queryWebHookConfigById(WebHookConfig webHookConfig);
 
-    public List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
-                                                                Integer pageSize);
+    List<WebHookConfig> queryWebHookConfigByManufacturer(WebHookConfig webHookConfig, Integer pageNum,
+            Integer pageSize);
 }
