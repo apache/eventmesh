@@ -133,7 +133,7 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     }
 
     private WebHookConfig getWebHookConfigFromFile(File webhookConfigFile) {
-        StringBuffer fileContent = new StringBuffer();
+        StringBuilder fileContent = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(webhookConfigFile)))) {
             String line = null;
             while ((line = br.readLine()) != null) {
