@@ -78,16 +78,21 @@ public class RequestParam {
             return "";
         }
         StringBuilder stringBuilder = new StringBuilder();
-        for (Map.Entry<String, String[]> query : queryParams.entrySet()) {
-            for (String val : query.getValue()) {
-                stringBuilder.append("&")
-                        .append(URLEncoder.encode(query.getKey(), StandardCharsets.UTF_8));
+        try {
+            for (Map.Entry<String, String[]> query : queryParams.entrySet()) {
+                for (String val : query.getValue()) {
+                    stringBuilder.append(Constants.AND)
+                            .append(URLEncoder.encode(query.getKey(), StandardCharsets.UTF_8.name()));
 
-                if (val != null && !val.isEmpty()) {
-                    stringBuilder.append("=")
-                            .append(URLEncoder.encode(val, StandardCharsets.UTF_8));
+                    if (val != null && !val.isEmpty()) {
+                        stringBuilder.append("=")
+                                .append(URLEncoder.encode(val, StandardCharsets.UTF_8.name()));
+                    }
                 }
             }
+        } catch (UnsupportedEncodingException e) {
+            log.error("get query params failed.", e);
+            return "";
         }
         return stringBuilder.substring(1);
     }
