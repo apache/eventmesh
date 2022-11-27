@@ -28,8 +28,8 @@ import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 import org.apache.eventmesh.webhook.api.WebHookOperationConstant;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -182,13 +182,8 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
      * @return
      */
     private String getWebHookConfigDataId(WebHookConfig webHookConfig) {
-        try {
-            // use URLEncoder.encode before, because the path may contain some speacial char like '/', which is illegal as a data id.
-            return URLEncoder.encode(webHookConfig.getCallbackPath(), "UTF-8") + DATA_ID_EXTENSION;
-        } catch (UnsupportedEncodingException e) {
-            logger.error("get webhookConfig dataId {} failed", webHookConfig.getCallbackPath(), e);
-        }
-        return webHookConfig.getCallbackPath() + DATA_ID_EXTENSION;
+        // use URLEncoder.encode before, because the path may contain some speacial char like '/', which is illegal as a data id.
+        return URLEncoder.encode(webHookConfig.getCallbackPath(), StandardCharsets.UTF_8) + DATA_ID_EXTENSION;
     }
 
     private String getManuGroupId(WebHookConfig webHookConfig) {

@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.Constants;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -77,21 +78,16 @@ public class RequestParam {
             return "";
         }
         StringBuilder stringBuilder = new StringBuilder();
-        try {
-            for (Map.Entry<String, String[]> query : queryParams.entrySet()) {
-                for (String val : query.getValue()) {
-                    stringBuilder.append("&")
-                            .append(URLEncoder.encode(query.getKey(), "UTF-8"));
+        for (Map.Entry<String, String[]> query : queryParams.entrySet()) {
+            for (String val : query.getValue()) {
+                stringBuilder.append("&")
+                        .append(URLEncoder.encode(query.getKey(), StandardCharsets.UTF_8));
 
-                    if (val != null && !val.isEmpty()) {
-                        stringBuilder.append("=")
-                                .append(URLEncoder.encode(val, "UTF-8"));
-                    }
+                if (val != null && !val.isEmpty()) {
+                    stringBuilder.append("=")
+                            .append(URLEncoder.encode(val, StandardCharsets.UTF_8));
                 }
             }
-        } catch (UnsupportedEncodingException e) {
-            log.error("get query params failed.", e);
-            return "";
         }
         return stringBuilder.substring(1);
     }
