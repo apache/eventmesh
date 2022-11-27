@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.common.exception;
 
-public class EventMeshException extends Exception {
+public class EventMeshException extends RuntimeException {
 
     public EventMeshException(String message) {
         super(message);
