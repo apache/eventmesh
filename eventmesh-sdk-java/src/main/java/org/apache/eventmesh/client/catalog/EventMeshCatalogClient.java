@@ -27,7 +27,7 @@ import org.apache.eventmesh.common.protocol.catalog.protos.CatalogGrpc;
 import org.apache.eventmesh.common.protocol.catalog.protos.Operation;
 import org.apache.eventmesh.common.protocol.catalog.protos.QueryOperationsRequest;
 import org.apache.eventmesh.common.protocol.catalog.protos.QueryOperationsResponse;
-import org.apache.eventmesh.common.utils.Assert;
+import org.apache.eventmesh.common.utils.AssertUtils;
 
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -53,9 +53,9 @@ public class EventMeshCatalogClient {
 
     public void init() throws Exception {
         Selector selector = SelectorFactory.get(clientConfig.getSelectorType());
-        Assert.notNull(selector, String.format("selector=%s not register.please check it.", clientConfig.getSelectorType()));
+        AssertUtils.notNull(selector, String.format("selector=%s not register.please check it.", clientConfig.getSelectorType()));
         ServiceInstance instance = selector.selectOne(clientConfig.getServerName());
-        Assert.notNull(instance, "catalog server is not running.please check it.");
+        AssertUtils.notNull(instance, "catalog server is not running.please check it.");
         ManagedChannel channel = ManagedChannelBuilder.forAddress(instance.getHost(), instance.getPort())
             .usePlaintext().build();
         CatalogGrpc.CatalogBlockingStub catalogClient = CatalogGrpc.newBlockingStub(channel);
