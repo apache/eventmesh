@@ -56,7 +56,7 @@ public class FileWebHookConfigOperationTest {
             queryConfig.setManufacturerName("github");
             List<WebHookConfig> queryResult = fileWebHookConfigOperation.queryWebHookConfigByManufacturer(queryConfig, 1, 1);
             Assert.assertTrue(Objects.nonNull(queryResult) && queryResult.size() == 1);
-            Assert.assertTrue(queryResult.get(0).getCallbackPath().equals(config.getCallbackPath()));
+            Assert.assertEquals(queryResult.get(0).getCallbackPath(), config.getCallbackPath());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         } finally {
