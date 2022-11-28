@@ -59,18 +59,36 @@ public class EventMeshGrpcClientConfig {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("ClientConfig={")
-                .append("ServerAddr=").append(serverAddr).append(",")
-                .append("ServerPort=").append(serverPort).append(",")
-                .append("env=").append(env).append(",")
-                .append("idc=").append(idc).append(",")
-                .append("producerGroup=").append(producerGroup).append(",")
-                .append("consumerGroup=").append(consumerGroup).append(",")
-                .append("sys=").append(sys).append(",")
-                .append("userName=").append(userName).append(",")
-                .append("password=").append("***").append(",")
-                .append("useTls=").append(useTls).append("}");
-        return sb.toString();
+        return "ClientConfig={"
+            + "ServerAddr="
+            + serverAddr
+            + ","
+            + "ServerPort="
+            + serverPort
+            + ","
+            + "env="
+            + env
+            + ","
+            + "idc="
+            + idc
+            + ","
+            + "producerGroup="
+            + producerGroup
+            + ","
+            + "consumerGroup="
+            + consumerGroup
+            + ","
+            + "sys="
+            + sys
+            + ","
+            + "userName="
+            + userName
+            + ","
+            + "password="
+            + "***"
+            + ","
+            + "useTls="
+            + useTls
+            + "}";
     }
 }
