@@ -167,7 +167,7 @@ public final class PinpointSpanExporter implements SpanExporter {
                 agentId,
                 agentName,
                 applicationName,
-                Boolean.TRUE,
+                true,
                 agentStartTime,
                 ServiceType.STAND_ALONE);
 

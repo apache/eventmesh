@@ -38,9 +38,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -67,7 +67,7 @@ public class RedirectClientByPathHandlerTest {
 
     @Test
     public void testHandle() throws IOException {
-        OutputStream outputStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         final HttpExchange mockExchange = mock(HttpExchange.class);
 
         ClientSessionGroupMapping mapping = mock(ClientSessionGroupMapping.class);
@@ -101,7 +101,7 @@ public class RedirectClientByPathHandlerTest {
                 clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
                     any())).thenReturn("redirectResult");
                 redirectClientByPathHandler.handle(mockExchange);
-                String response = outputStream.toString();
+                String response = outputStream.toString(StandardCharsets.UTF_8.name());
                 Assert.assertTrue(response.startsWith("redirectClientByPath success!"));
             }
 
@@ -111,7 +111,7 @@ public class RedirectClientByPathHandlerTest {
             try (MockedStatic<StringUtils> dummyStatic = mockStatic(StringUtils.class)) {
                 dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(true);
                 redirectClientByPathHandler.handle(mockExchange);
-                String response = outputStream.toString();
+                String response = outputStream.toString(StandardCharsets.UTF_8.name());
                 Assert.assertEquals("params illegal!", response);
             }
 
