@@ -74,7 +74,7 @@ public class AdminWebHookConfigOperationManage {
             this.webHookConfigOperation = constructor.newInstance(properties);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             logger.error("can't find WebHookConfigOperation implementation");
-            throw new Exception("can't find WebHookConfigOperation implementation");
+            throw new Exception("can't find WebHookConfigOperation implementation", e);
         }
     }
 }
