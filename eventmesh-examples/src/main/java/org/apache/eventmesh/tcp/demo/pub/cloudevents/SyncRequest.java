@@ -27,6 +27,9 @@ import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.tcp.common.EventMeshTestUtils;
 import org.apache.eventmesh.util.Utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
@@ -35,9 +38,6 @@ import io.cloudevents.CloudEventData;
 import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SyncRequest {
 
