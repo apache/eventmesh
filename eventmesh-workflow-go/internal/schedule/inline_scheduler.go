@@ -23,6 +23,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/filter"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/metrics"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/task"
 	"github.com/avast/retry-go/v4"
 	"gorm.io/gorm"
@@ -102,7 +103,10 @@ func (s *inlineScheduler) handle() {
 }
 
 func (s *inlineScheduler) lock(h func() error) error {
+	start := time.Now()
 	l, err := dal.GetLockClient().ObtainTimeout(schedulerLockKey, schedulerLockTimeout)
+	elapsed := time.Since(start).Milliseconds()
+	metrics.RecordLatency("scheduler", "db_lock_acquire_time", float64(elapsed))
 	if err != nil {
 		return err
 	}
