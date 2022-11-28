@@ -21,6 +21,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/metrics"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
 	"github.com/google/uuid"
 )
@@ -46,6 +47,7 @@ func NewOperationTask(instance *model.WorkflowTaskInstance) Task {
 }
 
 func (t *operationTask) Run() error {
+	metrics.Inc("operation_task", "total")
 	if t.action == nil {
 		return nil
 	}
