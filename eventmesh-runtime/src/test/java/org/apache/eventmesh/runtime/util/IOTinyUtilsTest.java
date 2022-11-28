@@ -30,8 +30,9 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -66,7 +67,7 @@ public class IOTinyUtilsTest {
         File temp = null;
         try {
             temp = File.createTempFile("temp", ".txt");
-            BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(temp), StandardCharsets.UTF_8));
             bw.write("test toString");
             bw.close();
             String res = IOTinyUtils.toString(Files.newInputStream(temp.toPath()), EventMeshConstants.DEFAULT_CHARSET);
