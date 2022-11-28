@@ -36,10 +36,12 @@ import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class SyncRequest {
+
+    public static final Logger logger = LoggerFactory.getLogger(SyncRequest.class);
 
     private static EventMeshTCPClient<CloudEvent> client;
 
@@ -58,12 +60,12 @@ public class SyncRequest {
             client.init();
 
             CloudEvent event = EventMeshTestUtils.generateCloudEventV1SyncRR();
-            log.info("begin send rr msg: {}", event);
+            logger.info("begin send rr msg: {}", event);
             Package response = client.rr(event, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
             // check-NPE EventFormat
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             if (null == eventFormat) {
-                log.error("eventFormat is null. end the process");
+                logger.error("eventFormat is null. end the process");
                 return;
             }
             CloudEvent replyEvent = eventFormat
@@ -72,14 +74,14 @@ public class SyncRequest {
             // check-NPE CloudEventData
             CloudEventData cloudEventData = replyEvent.getData();
             if (null == cloudEventData) {
-                log.error("replyEvent.data is null. end the process");
+                logger.error("replyEvent.data is null. end the process");
                 return;
             }
             String content = new String(cloudEventData.toBytes(), StandardCharsets.UTF_8);
-            log.info("receive rr reply: {}|{}", response, content);
+            logger.info("receive rr reply: {}|{}", response, content);
 
         } catch (Exception e) {
-            log.warn("SyncRequest failed", e);
+            logger.warn("SyncRequest failed", e);
         }
     }
 }
