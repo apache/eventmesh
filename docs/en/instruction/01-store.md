@@ -41,4 +41,4 @@ The deployment of eventmesh-store has finished, please go to the next step: [Sta
 
 
 ## Reference
-For more details about RocketMQ，please refer to <https://rocketmq.apache.org/docs/quick-start/>
+For more details about RocketMQ, please refer to <https://rocketmq.apache.org/docs/quick-start/>
