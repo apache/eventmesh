@@ -22,7 +22,7 @@ import java.util.Objects;
 /**
  * Assert
  */
-public final class Assert {
+public final class AssertUtils {
 
     /**
      * assert obj not null
