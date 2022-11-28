@@ -44,7 +44,6 @@ public class CCSubClient {
         subClient.registerBusiHandler(new ReceiveMsgHook() {
             @Override
             public void handle(Package msg, ChannelHandlerContext ctx) {
-
                 logger.error("Received message: {}",msg);
                 if (msg.getHeader().getCommand() == Command.REQUEST_TO_CLIENT) {
                     Package rrResponse = MessageUtils.rrResponse(msg);
