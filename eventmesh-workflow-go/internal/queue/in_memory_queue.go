@@ -21,6 +21,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/metrics"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/reactivex/rxgo/v2"
 )
@@ -52,6 +53,7 @@ func (q *inMemoryQueue) Publish(tasks []*model.WorkflowTaskInstance) error {
 	if len(tasks) == 0 {
 		return nil
 	}
+	metrics.Add("task_queue_size", "in_memory", float64(len(tasks)))
 	for _, t := range tasks {
 		q.ch <- rxgo.Of(t)
 	}
@@ -70,6 +72,7 @@ func (q *inMemoryQueue) Observe() {
 			}
 		}()
 		for item := range q.observable.Observe() {
+			metrics.Dec("task_queue_size", "in_memory")
 			q.handle(item)
 		}
 	}()

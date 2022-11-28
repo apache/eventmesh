@@ -22,6 +22,7 @@ import (
 	sdk_conf "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/conf"
 	sdk_pb "github.com/apache/incubator-eventmesh/eventmesh-sdk-go/grpc/proto"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/metrics"
 	"github.com/gogf/gf/util/gconv"
 	"github.com/google/uuid"
 
@@ -104,6 +105,7 @@ func (q *eventMeshQueue) Publish(tasks []*model.WorkflowTaskInstance) error {
 			log.Get(constants.LogQueue).Errorf("EventMesh task queue, fail to publish task, error=%v", err)
 			return err
 		}
+		metrics.Inc("task_queue_size", "eventmesh_queue")
 	}
 	return nil
 }
@@ -127,6 +129,7 @@ func (q *eventMeshQueue) Observe() {
 }
 
 func (q *eventMeshQueue) handler(message *sdk_pb.SimpleMessage) interface{} {
+	metrics.Dec("task_queue_size", "eventmesh_queue")
 	workflowTask, err := q.toWorkflowTask(message)
 	if err != nil {
 		return err
