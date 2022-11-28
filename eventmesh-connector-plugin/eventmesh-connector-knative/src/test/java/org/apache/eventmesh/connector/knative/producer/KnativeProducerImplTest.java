@@ -45,7 +45,7 @@ public class KnativeProducerImplTest {
         knativehProducer.init(properties);
 
         // Publish an event message:
-        knativehProducer.publish(KnativeMessageFactory.createWriter(properties), new SendCallback() {
+        knativehProducer.publish(KnativeMessageFactory.createWriter(properties).getMessage(), new SendCallback() {
             @Override
             public void onSuccess(SendResult sendResult) {
             }

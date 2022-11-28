@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.knative.cloudevent.impl;
 
+import java.util.Locale;
 import java.util.function.BiConsumer;
 
 import io.cloudevents.SpecVersion;
@@ -26,7 +27,7 @@ import io.cloudevents.core.message.impl.BaseGenericBinaryMessageReaderImpl;
 public class KnativeBinaryMessageReader extends BaseGenericBinaryMessageReaderImpl<String, String> {
 
     protected KnativeBinaryMessageReader(SpecVersion version, byte[] body) {
-        super(version, body != null && body.length > 0 ? BytesCloudEventData.wrap(body) : null);
+        super(version, body != null && body.length > 0 ? BytesCloudEventData.wrap(body) : (BytesCloudEventData) null);
     }
 
     @Override
@@ -41,7 +42,7 @@ public class KnativeBinaryMessageReader extends BaseGenericBinaryMessageReaderIm
 
     @Override
     protected String toCloudEventsKey(String key) {
-        return key.toLowerCase();
+        return key.toLowerCase(Locale.getDefault());
     }
 
     @Override
