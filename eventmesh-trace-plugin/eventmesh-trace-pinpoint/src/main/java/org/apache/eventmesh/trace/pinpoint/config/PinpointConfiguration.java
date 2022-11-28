@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -113,9 +114,10 @@ public final class PinpointConfiguration {
     private static void loadProperties() {
         URL resource = PinpointConfiguration.class.getClassLoader().getResource(CONFIG_FILE);
         if (resource != null) {
-            try (InputStream inputStream = resource.openStream()) {
+            try (InputStream inputStream = resource.openStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 if (inputStream.available() > 0) {
-                    properties.load(new BufferedReader(new InputStreamReader(inputStream)));
+                    properties.load(reader);
                 }
             } catch (IOException e) {
                 throw new RuntimeException(String.format("Load %s file from classpath error", CONFIG_FILE));

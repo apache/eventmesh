@@ -20,9 +20,9 @@ package org.apache.eventmesh.common.loadbalance;
 import org.apache.eventmesh.common.exception.EventMeshException;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.RandomUtils;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This selector use the weighted random strategy to select from list.
@@ -58,7 +58,7 @@ public class WeightRandomLoadBalanceSelector<T> implements LoadBalanceSelector<T
     @Override
     public T select() {
         if (!sameWeightGroup) {
-            int targetWeight = RandomUtils.nextInt(0, totalWeight);
+            int targetWeight = ThreadLocalRandom.current().nextInt(totalWeight);
             for (Weight<T> weight : clusterGroup) {
                 targetWeight -= weight.getWeight();
                 if (targetWeight < 0) {
@@ -67,7 +67,7 @@ public class WeightRandomLoadBalanceSelector<T> implements LoadBalanceSelector<T
             }
         }
         int length = clusterGroup.size();
-        return clusterGroup.get(RandomUtils.nextInt(0, length)).getTarget();
+        return clusterGroup.get(ThreadLocalRandom.current().nextInt(length)).getTarget();
     }
 
     @Override
