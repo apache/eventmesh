@@ -17,6 +17,9 @@
 
 package org.apache.eventmesh.tcp.demo.pub.cloudevents;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
+
 import org.apache.eventmesh.client.tcp.EventMeshTCPClient;
 import org.apache.eventmesh.client.tcp.EventMeshTCPClientFactory;
 import org.apache.eventmesh.client.tcp.common.EventMeshCommon;
@@ -35,9 +38,6 @@ import io.cloudevents.CloudEventData;
 import io.cloudevents.core.format.EventFormat;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
 
 public class SyncRequest {
 
