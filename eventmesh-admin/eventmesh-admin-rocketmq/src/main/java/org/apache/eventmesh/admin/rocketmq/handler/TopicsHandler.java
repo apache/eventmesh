@@ -79,7 +79,6 @@ public class TopicsHandler implements HttpHandler {
                 logger.info("create a new topic: {}", topic);
                 httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
                 NetUtils.sendSuccessResponseHeaders(httpExchange);
-                NetUtils.sendSuccessResponseHeaders(httpExchange);
                 result = JsonUtils.toJson(topicResponse);
                 logger.info(result);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
