@@ -24,7 +24,6 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientGroupWrapper;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.util.NetUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -77,7 +76,7 @@ public class ShowListenClientByTopicHandler implements HttpHandler {
                     }
                 }
             }
-            httpExchange.sendResponseHeaders(200, 0);
+            NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("ShowListenClientByTopicHandler fail...", e);

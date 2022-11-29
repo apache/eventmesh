@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
-import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -46,7 +45,7 @@ public class DeleteWebHookConfigHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        httpExchange.sendResponseHeaders(200, 0);
+        NetUtils.sendSuccessResponseHeaders(httpExchange);
 
         // get requestBody and resolve to WebHookConfig
         String requestBody = NetUtils.parsePostBody(httpExchange);

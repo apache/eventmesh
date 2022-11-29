@@ -17,8 +17,6 @@
 
 package org.apache.eventmesh.admin.rocketmq.util;
 
-import org.apache.eventmesh.admin.rocketmq.HttpMethod;
-
 import com.sun.net.httpserver.HttpExchange;
 
 public class RequestMapping {

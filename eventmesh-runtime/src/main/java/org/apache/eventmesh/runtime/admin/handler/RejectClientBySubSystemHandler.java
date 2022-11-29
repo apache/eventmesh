@@ -23,7 +23,6 @@ import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.util.NetUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -78,7 +77,7 @@ public class RejectClientBySubSystemHandler implements HttpHandler {
             String subSystem = queryStringInfo.get(EventMeshConstants.MANAGE_SUBSYSTEM);
 
             if (StringUtils.isBlank(subSystem)) {
-                httpExchange.sendResponseHeaders(200, 0);
+                NetUtils.sendSuccessResponseHeaders(httpExchange);
                 result = "params illegal!";
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
@@ -104,14 +103,14 @@ public class RejectClientBySubSystemHandler implements HttpHandler {
                 result = String.format("rejectClientBySubSystem fail! sessionMap size {%d}, had reject {%d} , {"
                         +
                         "subSystemId=%s}, errorMsg : %s", sessionMap.size(), printClients(successRemoteAddrs), subSystem, e.getMessage());
-                httpExchange.sendResponseHeaders(200, 0);
+                NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
             result = String.format("rejectClientBySubSystem success! sessionMap size {%d}, had reject {%s} , {"
                     +
                     "subSystemId=%s}", sessionMap.size(), printClients(successRemoteAddrs), subSystem);
-            httpExchange.sendResponseHeaders(200, 0);
+            NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("rejectClientBySubSystem fail...", e);

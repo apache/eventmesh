@@ -25,7 +25,6 @@ import static org.apache.eventmesh.admin.rocketmq.Constants.TOPIC_MANAGE_PATH;
 import org.apache.eventmesh.admin.rocketmq.request.TopicCreateRequest;
 import org.apache.eventmesh.admin.rocketmq.response.TopicResponse;
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
-import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
 import org.apache.eventmesh.admin.rocketmq.util.RequestMapping;
 import org.apache.eventmesh.common.Constants;
 
@@ -79,7 +78,8 @@ public class TopicsHandler implements HttpHandler {
             if (topicResponse != null) {
                 logger.info("create a new topic: {}", topic);
                 httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
-                httpExchange.sendResponseHeaders(200, 0);
+                NetUtils.sendSuccessResponseHeaders(httpExchange);
+                NetUtils.sendSuccessResponseHeaders(httpExchange);
                 result = JsonUtils.toJson(topicResponse);
                 logger.info(result);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));

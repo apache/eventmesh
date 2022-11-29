@@ -74,7 +74,7 @@ public class ShowClientHandler implements HttpHandler {
                 }
             }
 
-            httpExchange.sendResponseHeaders(200, 0);
+            NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.toString().getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("ShowClientHandler fail...", e);
