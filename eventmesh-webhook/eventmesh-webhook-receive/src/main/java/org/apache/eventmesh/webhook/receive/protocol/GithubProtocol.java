@@ -87,7 +87,7 @@ public class GithubProtocol implements ManufacturerProtocol {
             byte[] bytes = sha.doFinal(data);
             hash += byteArrayToHexString(bytes);
         } catch (Exception e) {
-            LOGGRgit.error("Error HmacSHA256", e);
+            LOGGR.error("Error HmacSHA256", e);
         }
         return hash.equals(fromSignature);
     }
