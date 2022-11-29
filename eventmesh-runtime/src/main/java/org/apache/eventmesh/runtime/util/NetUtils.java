@@ -19,6 +19,7 @@ package org.apache.eventmesh.runtime.util;
 
 import org.apache.eventmesh.common.Constants;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -49,9 +50,13 @@ public class NetUtils {
         Arrays.stream(items).forEach(item -> {
             final String[] keyAndVal = item.split(Constants.EQ);
             if (keyAndVal.length == 2) {
-                final String key = URLDecoder.decode(keyAndVal[0], StandardCharsets.UTF_8);
-                final String val = URLDecoder.decode(keyAndVal[1], StandardCharsets.UTF_8);
-                result.put(key, val);
+                try {
+                    final String key = URLDecoder.decode(keyAndVal[0], StandardCharsets.UTF_8.name());
+                    final String val = URLDecoder.decode(keyAndVal[1], StandardCharsets.UTF_8.name());
+                    result.put(key, val);
+                } catch (UnsupportedEncodingException e) {
+                    logger.warn("formData2Dic:param decode failed...", e);
+                }
             }
         });
         return result;
