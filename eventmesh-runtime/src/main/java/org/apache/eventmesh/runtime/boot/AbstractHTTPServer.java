@@ -259,7 +259,7 @@ public abstract class AbstractHTTPServer extends AbstractRemotingServer {
             requestHeaders.set(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
         }
         requestHeaders.set(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, startTime);
-        requestHeaders.set(EventMeshConstants.REQ_SEND_EVENTMESH_IP, eventMeshHttpConfiguration.eventMeshServerIp);
+        requestHeaders.set(EventMeshConstants.REQ_SEND_EVENTMESH_IP, eventMeshHttpConfiguration.getEventMeshServerIp());
     }
 
     /**

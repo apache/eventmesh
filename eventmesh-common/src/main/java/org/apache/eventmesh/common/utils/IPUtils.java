@@ -44,7 +44,7 @@ import inet.ipaddr.IPAddressString;
 
 public class IPUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(IPUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IPUtils.class);
 
     public static String getLocalAddress() {
         // if the progress works under docker environment
@@ -96,11 +96,9 @@ public class IPUtils {
             // prefer ipv4
             if (!ipv4Result.isEmpty()) {
                 for (String ip : ipv4Result) {
-                    if (ip.startsWith("127.0") || ip.startsWith("192.168") || !isValidIPV4Address(ip)) {
-                        continue;
+                    if (isValidIPV4Address(ip) && !ip.startsWith("127.0") && !ip.startsWith("192.168")) {
+                        return ip;
                     }
-
-                    return ip;
                 }
 
                 return ipv4Result.get(ipv4Result.size() - 1);
@@ -111,9 +109,9 @@ public class IPUtils {
             final InetAddress localHost = InetAddress.getLocalHost();
             return normalizeHostAddress(localHost);
         } catch (SocketException e) {
-            logger.error(e.getMessage());
+            LOG.error("socket exception", e);
         } catch (UnknownHostException e) {
-            logger.error(e.getMessage());
+            LOG.error("unknown host exception", e);
         }
 
         return null;
@@ -146,7 +144,7 @@ public class IPUtils {
         return m.matches();
     }
 
-    private static void getIpResult(ArrayList<String> ipv4Result, ArrayList<String> ipv6Result,
+    private static void getIpResult(List<String> ipv4Result, List<String> ipv6Result,
                                     Enumeration<InetAddress> en) {
         while (en.hasMoreElements()) {
             final InetAddress address = en.nextElement();
@@ -214,7 +212,7 @@ public class IPUtils {
                 return new IPAddressString(new URL(url).getHost()).isValid();
             }
         } catch (Exception e) {
-            logger.warn("Invalid URL format url={}", url, e);
+            LOG.warn("Invalid URL format url={}", url, e);
             return false;
         }
         return true;
@@ -229,7 +227,7 @@ public class IPUtils {
             String host = new URL(url).getHost();
             return new HostName(host).getAddress();
         } catch (MalformedURLException e) {
-            logger.error("Invalid URL format url={}", url, e);
+            LOG.error("Invalid URL format url={}", url, e);
             return null;
         }
     }

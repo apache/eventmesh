@@ -49,8 +49,9 @@ public class ConfigurationWrapper {
         if (StringUtils.isBlank(prefix)) {
             return null;
         }
-        Properties to = new Properties();
-        return PropertiesUtils.getPropertiesByPrefix(properties, to, prefix);
+        //Properties to = new Properties();
+        return PropertiesUtils.getPropertiesByPrefix(properties, //to,
+                prefix);
     }
 
     private static void loadProperties() {

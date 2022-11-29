@@ -46,18 +46,27 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpServer;
 
-import lombok.Setter;
-
 @SuppressWarnings("restriction")
 public class ClientManageController {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientManageController.class);
 
+    public void setEventMeshTCPServer(EventMeshTCPServer eventMeshTCPServer) {
+        this.eventMeshTCPServer = eventMeshTCPServer;
+    }
+
+    public void setAdminController(AdminController adminController) {
+        this.adminController = adminController;
+    }
+
+    public void setAdminWebHookConfigOperationManage(AdminWebHookConfigOperationManage adminWebHookConfigOperationManage) {
+        this.adminWebHookConfigOperationManage = adminWebHookConfigOperationManage;
+    }
+
     private EventMeshTCPServer eventMeshTCPServer;
 
     private AdminController adminController;
 
-    @Setter
     private AdminWebHookConfigOperationManage adminWebHookConfigOperationManage;
 
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer) {

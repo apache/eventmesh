@@ -17,9 +17,6 @@
 
 package org.apache.eventmesh.webhook.receive;
 
-import lombok.Data;
-
-@Data
 public class WebHookRequest {
 
     /**
@@ -32,6 +29,7 @@ public class WebHookRequest {
      */
     private String manufacturerEventName;
 
+
     /**
      * manufacturer name
      */
@@ -41,4 +39,53 @@ public class WebHookRequest {
      * webhook request body
      */
     private byte[] data;
+
+    public void setManufacturerEventId(String manufacturerEventId) {
+        this.manufacturerEventId = manufacturerEventId;
+    }
+
+    public void setManufacturerEventName(String manufacturerEventName) {
+        this.manufacturerEventName = manufacturerEventName;
+    }
+
+    public void setManufacturerSource(String manufacturerSource) {
+        this.manufacturerSource = manufacturerSource;
+    }
+
+    public void setData(byte[] newData) {
+        if (newData == null || newData.length == 0) {
+            return;
+        }
+
+        int len = newData.length;
+        this.data = new byte[len];
+        System.arraycopy(newData, 0, this.data, 0, len);
+    }
+
+
+    public String getManufacturerEventId() {
+        return manufacturerEventId;
+    }
+
+    public String getManufacturerEventName() {
+        return manufacturerEventName;
+    }
+
+    public String getManufacturerSource() {
+        return manufacturerSource;
+    }
+
+    public byte[] getData() {
+
+        if (data == null) {
+            return new byte[0];
+        }
+
+        int len = data.length;
+        byte[] b = new byte[len];
+        System.arraycopy(data, 0, b, 0, len);
+        return b;
+    }
+
+
 }

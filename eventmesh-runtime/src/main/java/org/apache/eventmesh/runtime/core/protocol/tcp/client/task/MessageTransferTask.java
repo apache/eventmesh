@@ -77,7 +77,8 @@ public class MessageTransferTask extends AbstractTask {
         Command cmd = pkg.getHeader().getCmd();
 
         try {
-            if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerTraceEnable && !RESPONSE_TO_SERVER.equals(cmd)) {
+            if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerTraceEnable()
+                    && !RESPONSE_TO_SERVER.equals(cmd)) {
                 //attach the span to the server context
                 Span span = TraceUtils.prepareServerSpan(pkg.getHeader().getProperties(),
                     EventMeshTraceConstants.TRACE_UPSTREAM_EVENTMESH_SERVER_SPAN,
@@ -118,10 +119,10 @@ public class MessageTransferTask extends AbstractTask {
             }
 
             //do acl check in sending msg
-            if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable) {
+            if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
                 String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
                 Acl.doAclCheckInTcpSend(remoteAddr, session.getClient(), event.getSubject(),
-                    cmd.value());
+                    cmd.getValue());
             }
 
             if (!eventMeshTCPServer.getRateLimiter()
@@ -194,7 +195,7 @@ public class MessageTransferTask extends AbstractTask {
                 .withExtension(EventMeshConstants.RSP_EVENTMESH2MQ_TIMESTAMP,
                     String.valueOf(sendTime))
                 .withExtension(EventMeshConstants.RSP_SEND_EVENTMESH_IP,
-                    eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp)
+                        eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerIp())
                 .build();
         } else {
             event = CloudEventBuilder.from(event)
@@ -203,7 +204,7 @@ public class MessageTransferTask extends AbstractTask {
                 .withExtension(EventMeshConstants.REQ_EVENTMESH2MQ_TIMESTAMP,
                     String.valueOf(sendTime))
                 .withExtension(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
-                    eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerIp)
+                        eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshServerIp())
                 .build();
         }
         return event;

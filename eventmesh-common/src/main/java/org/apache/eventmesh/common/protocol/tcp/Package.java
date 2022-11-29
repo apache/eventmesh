@@ -20,21 +20,41 @@ package org.apache.eventmesh.common.protocol.tcp;
 
 import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Package implements ProtocolTransportObject {
 
-    private Header header;
+    public static final long serialVersionUID = 6523844038162094569L;
+
+    private transient Header header;
     private Object body;
 
+    public Header getHeader() {
+        return header;
+    }
+
+    public Object getBody() {
+        return body;
+    }
+
+
+    public void setHeader(Header header) {
+        this.header = header;
+    }
+
+    public void setBody(Object body) {
+        this.body = body;
+    }
+
+    public Package() {
+
+    }
+    
     public Package(Header header) {
         this.header = header;
+    }
+
+    public Package(Header header, Object body) {
+        this.header = header;
+        this.body = body;
     }
 
 }

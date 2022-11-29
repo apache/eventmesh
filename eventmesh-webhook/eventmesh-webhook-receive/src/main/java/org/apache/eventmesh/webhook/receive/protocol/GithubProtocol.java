@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 
 public class GithubProtocol implements ManufacturerProtocol {
 
+    private final static Logger LOG = LoggerFactory.getLogger(GithubProtocol.class);
+
     private static final String MANU_FACTURER_NAME = "github";
 
     private static final String FROM_SIGNATURE = "x-hub-signature-256";
@@ -45,7 +47,6 @@ public class GithubProtocol implements ManufacturerProtocol {
 
     private static final char ZERO_CHAR = '0';
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public String getManufacturerName() {
@@ -86,7 +87,7 @@ public class GithubProtocol implements ManufacturerProtocol {
             byte[] bytes = sha.doFinal(data);
             hash += byteArrayToHexString(bytes);
         } catch (Exception e) {
-            logger.error("Error HmacSHA256", e);
+            LOG.error("Error HmacSHA256", e);
         }
         return hash.equals(fromSignature);
     }

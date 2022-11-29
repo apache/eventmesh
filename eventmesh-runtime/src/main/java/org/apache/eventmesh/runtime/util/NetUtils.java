@@ -36,7 +36,7 @@ public class NetUtils {
      * Transform the url form string to Map
      *
      * @param formData
-     * @return
+     * @return url parameters map
      */
     public static Map<String, String> formData2Dic(String formData) {
         Map<String, String> result = new HashMap<>();

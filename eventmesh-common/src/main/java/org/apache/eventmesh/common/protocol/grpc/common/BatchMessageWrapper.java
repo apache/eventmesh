@@ -21,6 +21,7 @@ import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
 import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
 
 public class BatchMessageWrapper implements ProtocolTransportObject {
+    public static final long serialVersionUID = 7658452608197650205L;
 
     private final BatchMessage batchMessage;
 

@@ -77,10 +77,10 @@ public class ZookeeperRegistryService implements RegistryService {
             if (null == commonConfiguration) {
                 continue;
             }
-            if (StringUtils.isBlank(commonConfiguration.namesrvAddr)) {
+            if (StringUtils.isBlank(commonConfiguration.getNamesrvAddr())) {
                 throw new RegistryException("namesrvAddr cannot be null");
             }
-            this.serverAddr = commonConfiguration.namesrvAddr;
+            this.serverAddr = commonConfiguration.getNamesrvAddr();
             break;
         }
     }
@@ -95,10 +95,10 @@ public class ZookeeperRegistryService implements RegistryService {
         try {
             RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 5);
             zkClient = CuratorFrameworkFactory.builder()
-                .connectString(serverAddr)
-                .retryPolicy(retryPolicy)
-                .namespace(ZookeeperConstant.NAMESPACE)
-                .build();
+                    .connectString(serverAddr)
+                    .retryPolicy(retryPolicy)
+                    .namespace(ZookeeperConstant.NAMESPACE)
+                    .build();
             zkClient.start();
 
         } catch (Exception e) {
@@ -126,13 +126,13 @@ public class ZookeeperRegistryService implements RegistryService {
             if (Objects.isNull(configuration)) {
                 continue;
             }
-            String eventMeshName = configuration.eventMeshName;
+            String eventMeshName = configuration.getEventMeshName();
             try {
                 String serviceName = eventMeshName.concat("-").concat(key);
                 String servicePath = formatServicePath(clusterName, serviceName);
 
                 List<String> instances = zkClient.getChildren()
-                    .forPath(servicePath);
+                        .forPath(servicePath);
 
                 if (CollectionUtils.isEmpty(instances)) {
                     continue;
@@ -145,17 +145,20 @@ public class ZookeeperRegistryService implements RegistryService {
                     byte[] data;
                     try {
                         data = zkClient.getData()
-                            .storingStatIn(stat)
-                            .forPath(instancePath);
+                                .storingStatIn(stat)
+                                .forPath(instancePath);
                     } catch (Exception e) {
-                        logger.warn("[ZookeeperRegistryService][findEventMeshInfoByCluster] failed for path: {}", instancePath, e);
+                        logger.warn(String.format("[ZookeeperRegistryService]"
+                                + "[findEventMeshInfoByCluster] failed for path: %s", instancePath), e);
                         continue;
                     }
 
-                    EventMeshInstance eventMeshInstance = JsonUtils.deserialize(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
+                    EventMeshInstance eventMeshInstance = JsonUtils.deserialize(new String(data, StandardCharsets.UTF_8),
+                            EventMeshInstance.class);
 
                     EventMeshDataInfo eventMeshDataInfo =
-                        new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(), eventMeshInstance.getMetaData());
+                            new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(),
+                                    eventMeshInstance.getMetaData());
 
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
@@ -180,7 +183,7 @@ public class ZookeeperRegistryService implements RegistryService {
                 String servicePath = formatServicePath(clusterName, serviceName);
 
                 List<String> instances = zkClient.getChildren()
-                    .forPath(servicePath);
+                        .forPath(servicePath);
 
                 if (CollectionUtils.isEmpty(instances)) {
                     continue;
@@ -193,8 +196,8 @@ public class ZookeeperRegistryService implements RegistryService {
                     byte[] data;
                     try {
                         data = zkClient.getData()
-                            .storingStatIn(stat)
-                            .forPath(instancePath);
+                                .storingStatIn(stat)
+                                .forPath(instancePath);
                     } catch (Exception e) {
                         logger.warn("[ZookeeperRegistryService][findAllEventMeshInfo] failed for path: {}", instancePath, e);
                         continue;
@@ -203,7 +206,7 @@ public class ZookeeperRegistryService implements RegistryService {
                     EventMeshInstance eventMeshInstance = JsonUtils.deserialize(new String(data, StandardCharsets.UTF_8), EventMeshInstance.class);
 
                     EventMeshDataInfo eventMeshDataInfo =
-                        new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(), eventMeshInstance.getMetaData());
+                            new EventMeshDataInfo(clusterName, serviceName, endpoint, stat.getMtime(), eventMeshInstance.getMetaData());
 
                     eventMeshDataInfoList.add(eventMeshDataInfo);
                 }
@@ -218,7 +221,7 @@ public class ZookeeperRegistryService implements RegistryService {
 
     @Override
     public Map<String, Map<String, Integer>> findEventMeshClientDistributionData(String clusterName, String group, String purpose)
-        throws RegistryException {
+            throws RegistryException {
         // todo find metadata
         return null;
     }
@@ -253,10 +256,10 @@ public class ZookeeperRegistryService implements RegistryService {
             final String path = formatInstancePath(eventMeshClusterName, eventMeshName, eventMeshRegisterInfo.getEndPoint());
 
             zkClient.create()
-                .orSetData()
-                .creatingParentsIfNeeded()
-                .withMode(CreateMode.EPHEMERAL)
-                .forPath(path, JsonUtils.serialize(eventMeshInstance).getBytes(StandardCharsets.UTF_8));
+                    .orSetData()
+                    .creatingParentsIfNeeded()
+                    .withMode(CreateMode.EPHEMERAL)
+                    .forPath(path, JsonUtils.serialize(eventMeshInstance).getBytes(StandardCharsets.UTF_8));
 
             eventMeshRegisterInfoMap.put(eventMeshName, eventMeshRegisterInfo);
         } catch (Exception e) {
@@ -285,13 +288,13 @@ public class ZookeeperRegistryService implements RegistryService {
 
     private String formatInstancePath(String clusterName, String serviceName, String endPoint) {
         return ZookeeperConstant.PATH_SEPARATOR.concat(clusterName)
-            .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName)
-            .concat(ZookeeperConstant.PATH_SEPARATOR).concat(endPoint);
+                .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName)
+                .concat(ZookeeperConstant.PATH_SEPARATOR).concat(endPoint);
     }
 
     private String formatServicePath(String clusterName, String serviceName) {
         return ZookeeperConstant.PATH_SEPARATOR.concat(clusterName)
-            .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName);
+                .concat(ZookeeperConstant.PATH_SEPARATOR).concat(serviceName);
     }
 
     public String getServerAddr() {

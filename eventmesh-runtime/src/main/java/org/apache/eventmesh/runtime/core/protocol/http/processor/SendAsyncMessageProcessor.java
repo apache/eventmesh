@@ -89,9 +89,9 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
 
         SendMessageResponseHeader sendMessageResponseHeader =
             SendMessageResponseHeader.buildHeader(Integer.valueOf(asyncContext.getRequest().getRequestCode()),
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster,
-                IPUtils.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshEnv,
-                eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster(),
+                IPUtils.getLocalAddress(), eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshEnv(),
+                    eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
 
         String protocolType = sendMessageRequestHeader.getProtocolType();
         String protocolVersin = sendMessageRequestHeader.getProtocolVersion();
@@ -168,7 +168,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
         }
 
         //do acl check
-        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
             String user = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.USERNAME)).toString();
             String pass = Objects.requireNonNull(event.getExtension(ProtocolKey.ClientInstanceKey.PASSWD)).toString();
@@ -254,7 +254,7 @@ public class SendAsyncMessageProcessor implements HttpRequestProcessor {
                 .withExtension(EventMeshConstants.MSG_TYPE, EventMeshConstants.PERSISTENT)
                 .withExtension(EventMeshConstants.REQ_C2EVENTMESH_TIMESTAMP, asyncContext.getRequest().reqTime)
                 .withExtension(EventMeshConstants.REQ_SEND_EVENTMESH_IP,
-                    eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerIp)
+                        eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerIp())
                 .build();
 
             if (messageLogger.isDebugEnabled()) {
