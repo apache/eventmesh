@@ -118,7 +118,7 @@ public class EventMeshGrpcConsumerTest {
     @Test
     public void testSubscribeStream() {
         List<Object> result = new ArrayList<>();
-        eventMeshGrpcConsumer.registerListener(new ReceiveMsgHook<>() {
+        eventMeshGrpcConsumer.registerListener(new ReceiveMsgHook<Object>() {
             @Override
             public Optional<Object> handle(Object msg) {
                 result.add(msg);
