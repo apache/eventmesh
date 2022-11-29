@@ -74,15 +74,15 @@ public class RedirectClientByPathHandler implements HttpHandler {
                     destEventMeshIp, destEventMeshPort);
             ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
-            String redirectResult = "";
+            StringBuilder redirectResult = new StringBuilder();
             try {
                 if (!sessionMap.isEmpty()) {
                     for (Session session : sessionMap.values()) {
                         if (session.getClient().getPath().contains(path)) {
-                            redirectResult += "|";
-                            redirectResult += EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
-                                    destEventMeshIp, Integer.parseInt(destEventMeshPort),
-                                    session, clientSessionGroupMapping);
+                            redirectResult.append("|");
+                            redirectResult.append(EventMeshTcp2Client.redirectClient2NewEventMesh(eventMeshTCPServer,
+                                destEventMeshIp, Integer.parseInt(destEventMeshPort),
+                                session, clientSessionGroupMapping));
                         }
                     }
                 }
