@@ -76,12 +76,12 @@ public class NacosRegistryService implements RegistryService {
             if (null == commonConfiguration) {
                 continue;
             }
-            if (StringUtils.isBlank(commonConfiguration.namesrvAddr)) {
+            if (StringUtils.isBlank(commonConfiguration.getNamesrvAddr())) {
                 throw new RegistryException("namesrvAddr cannot be null");
             }
-            this.serverAddr = commonConfiguration.namesrvAddr;
-            this.username = commonConfiguration.eventMeshRegistryPluginUsername;
-            this.password = commonConfiguration.eventMeshRegistryPluginPassword;
+            this.serverAddr = commonConfiguration.getNamesrvAddr();
+            this.username = commonConfiguration.getEventMeshRegistryPluginUsername();
+            this.password = commonConfiguration.getEventMeshRegistryPluginPassword();
             break;
         }
     }
@@ -125,10 +125,10 @@ public class NacosRegistryService implements RegistryService {
             if (Objects.isNull(configuration)) {
                 continue;
             }
-            String eventMeshName = configuration.eventMeshName;
+            String eventMeshName = configuration.getEventMeshName();
             try {
                 List<Instance> instances =
-                    namingService.selectInstances(eventMeshName + "-" + key, configuration.eventMeshCluster, Collections.singletonList(clusterName),
+                    namingService.selectInstances(eventMeshName + "-" + key, configuration.getEventMeshCluster(), Collections.singletonList(clusterName),
                         true);
                 if (CollectionUtils.isEmpty(instances)) {
                     continue;
@@ -156,7 +156,7 @@ public class NacosRegistryService implements RegistryService {
             if (Objects.isNull(configuration)) {
                 continue;
             }
-            String eventMeshName = configuration.eventMeshName;
+            String eventMeshName = configuration.getEventMeshName();
             try {
                 List<Instance> instances =
                     namingService.selectInstances(eventMeshName + "-" + key, key + "-" + NacosConstant.GROUP, null,

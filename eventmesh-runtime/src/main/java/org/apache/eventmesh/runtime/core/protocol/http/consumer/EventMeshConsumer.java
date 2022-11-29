@@ -86,8 +86,8 @@ public class EventMeshConsumer {
     public EventMeshConsumer(EventMeshHTTPServer eventMeshHTTPServer, ConsumerGroupConf consumerGroupConf) {
         this.eventMeshHTTPServer = eventMeshHTTPServer;
         this.consumerGroupConf = consumerGroupConf;
-        this.persistentMqConsumer = new MQConsumerWrapper(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshConnectorPluginType);
-        this.broadcastMqConsumer = new MQConsumerWrapper(eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshConnectorPluginType);
+        this.persistentMqConsumer = new MQConsumerWrapper(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshConnectorPluginType());
+        this.broadcastMqConsumer = new MQConsumerWrapper(eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshConnectorPluginType());
     }
 
     private MessageHandler httpMessageHandler;
@@ -97,9 +97,9 @@ public class EventMeshConsumer {
         Properties keyValue = new Properties();
         keyValue.put(IS_BROADCAST, "false");
         keyValue.put(CONSUMER_GROUP, consumerGroupConf.getConsumerGroup());
-        keyValue.put(EVENT_MESH_IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+        keyValue.put(EVENT_MESH_IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
         keyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
-            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster()));
         persistentMqConsumer.init(keyValue);
 
         EventListener clusterEventListener = new EventListener() {
@@ -119,7 +119,7 @@ public class EventMeshConsumer {
                     event = CloudEventBuilder.from(event)
                         .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
                         .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
-                            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerIp)
+                                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerIp())
                         .build();
                     if (messageLogger.isDebugEnabled()) {
                         messageLogger.debug("message|mq2eventMesh|topic={}|event={}", topic, event);
@@ -169,9 +169,9 @@ public class EventMeshConsumer {
         Properties broadcastKeyValue = new Properties();
         broadcastKeyValue.put(IS_BROADCAST, "true");
         broadcastKeyValue.put(CONSUMER_GROUP, consumerGroupConf.getConsumerGroup());
-        broadcastKeyValue.put(EVENT_MESH_IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshIDC);
+        broadcastKeyValue.put(EVENT_MESH_IDC, eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshIDC());
         broadcastKeyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroupConf.getConsumerGroup(),
-            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshCluster));
+                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshCluster()));
         broadcastMqConsumer.init(broadcastKeyValue);
 
         EventListener broadcastEventListener = new EventListener() {
@@ -190,7 +190,7 @@ public class EventMeshConsumer {
                         .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
                             String.valueOf(System.currentTimeMillis()))
                         .withExtension(EventMeshConstants.REQ_RECEIVE_EVENTMESH_IP,
-                            eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerIp)
+                                eventMeshHTTPServer.getEventMeshHttpConfiguration().getEventMeshServerIp())
                         .build();
 
                     String topic = event.getSubject();

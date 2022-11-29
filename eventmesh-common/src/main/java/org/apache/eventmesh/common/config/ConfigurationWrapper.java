@@ -39,19 +39,19 @@ import com.google.common.base.Preconditions;
 
 public class ConfigurationWrapper {
 
-    public Logger logger = LoggerFactory.getLogger(this.getClass());
+    public static final Logger LOG = LoggerFactory.getLogger(ConfigurationWrapper.class);
 
-    private final String directoryPath;
+    private final transient String directoryPath;
 
-    private final String fileName;
+    private final transient String fileName;
 
-    private final Properties properties = new Properties();
+    private final transient Properties properties = new Properties();
 
-    private final String file;
+    private final transient String file;
 
-    private final boolean reload;
+    private final transient boolean reload;
 
-    private final FileChangeListener fileChangeListener = new FileChangeListener() {
+    private final transient FileChangeListener fileChangeListener = new FileChangeListener() {
         @Override
         public void onChanged(FileChangeContext changeContext) {
             load();
@@ -66,12 +66,12 @@ public class ConfigurationWrapper {
     public ConfigurationWrapper(String directoryPath, String fileName, boolean reload) {
         Preconditions.checkArgument(Strings.isNotEmpty(directoryPath), "please configure environment variable 'confPath'");
         this.directoryPath = directoryPath
-            .replace('/', File.separator.charAt(0))
-            .replace('\\', File.separator.charAt(0));
+                .replace('/', File.separator.charAt(0))
+                .replace('\\', File.separator.charAt(0));
         this.fileName = fileName;
         this.file = (directoryPath + File.separator + fileName)
-            .replace('/', File.separator.charAt(0))
-            .replace('\\', File.separator.charAt(0));
+                .replace('/', File.separator.charAt(0))
+                .replace('\\', File.separator.charAt(0));
         this.reload = reload;
         init();
     }
@@ -81,7 +81,7 @@ public class ConfigurationWrapper {
         if (this.reload) {
             WatchFileManager.registerFileChangeListener(directoryPath, fileChangeListener);
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                logger.info("Configuration reload task closed");
+                LOG.info("Configuration reload task closed");
                 WatchFileManager.deregisterFileChangeListener(directoryPath);
             }));
         }
@@ -89,10 +89,10 @@ public class ConfigurationWrapper {
 
     private void load() {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            logger.info("loading config: {}", file);
+            LOG.info("loading config: {}", file);
             properties.load(reader);
         } catch (IOException e) {
-            logger.error("loading properties [{}] error", file, e);
+            LOG.error("loading properties [{}] error", file, e);
         }
     }
 
@@ -106,7 +106,7 @@ public class ConfigurationWrapper {
             return defaultValue;
         }
         Preconditions.checkState(StringUtils.isNumeric(configValue),
-            String.format("key:%s, value:%s error", configKey, configValue));
+                String.format("key:%s, value:%s error", configKey, configValue));
         return Integer.parseInt(configValue);
     }
 
@@ -119,16 +119,16 @@ public class ConfigurationWrapper {
     }
 
     private String removePrefix(String key, String prefix, boolean removePrefix) {
-        return removePrefix ? key.replace(prefix, "") : key;
+        String newPrefix = prefix.endsWith(".") ? prefix : prefix + ".";
+        return removePrefix ? key.replace(newPrefix, "") : key;
     }
 
-    public Properties getPropertiesByConfig(String prefix, boolean removePrefix) {
+    public Properties getPropertiesByConfig(String prefix, boolean isRemovePrefix) {
         Properties properties = new Properties();
-        prefix = prefix.endsWith(".") ? prefix : prefix + ".";
         for (Entry<Object, Object> entry : this.properties.entrySet()) {
             String key = (String) entry.getKey();
             if (key.startsWith(prefix)) {
-                properties.put(removePrefix(key, prefix, removePrefix), entry.getValue());
+                properties.put(removePrefix(key, prefix, isRemovePrefix), entry.getValue());
             }
         }
         return properties;

@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 public class ConfigurationWrapper {
 
-    private static Logger logger = LoggerFactory.getLogger("ConfigurationWrapper");
+    private static final Logger LOG = LoggerFactory.getLogger(ConfigurationWrapper.class);
 
     private static final String EVENTMESH_CONFIG_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
@@ -45,13 +45,13 @@ public class ConfigurationWrapper {
             configFilePath = EVENTMESH_CONFIG_HOME + File.separator + configFile;
         }
 
-        logger.info("loading auth config: {}", configFilePath);
+        LOG.info("loading auth config: {}", configFilePath);
         Properties properties = new Properties();
         try {
             properties.load(new BufferedReader(new FileReader(configFilePath)));
         } catch (IOException e) {
             throw new IllegalArgumentException(
-                    String.format("Cannot load RocketMQ configuration file from :%s", configFilePath));
+                    String.format("Cannot load RocketMQ configuration file from :%s", configFilePath), e);
         }
         return properties;
     }

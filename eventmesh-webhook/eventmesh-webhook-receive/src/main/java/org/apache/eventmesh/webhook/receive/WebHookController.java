@@ -37,8 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import lombok.Setter;
-
 public class WebHookController {
 
     private static final String WEBHOOK_PRODUCER_CONNECTOR_PROP = "eventMesh.webHook.producer.connector";
@@ -65,7 +63,10 @@ public class WebHookController {
 
     private ProtocolAdaptor<ProtocolTransportObject> protocolAdaptor;
 
-    @Setter
+    public void setConfigurationWrapper(ConfigurationWrapper configurationWrapper) {
+        this.configurationWrapper = configurationWrapper;
+    }
+
     private ConfigurationWrapper configurationWrapper;
 
     public void init() throws Exception {

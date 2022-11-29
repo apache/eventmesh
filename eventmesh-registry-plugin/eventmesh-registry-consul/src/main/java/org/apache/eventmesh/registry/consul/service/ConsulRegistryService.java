@@ -67,7 +67,7 @@ public class ConsulRegistryService implements RegistryService {
             for (String key : ConfigurationContextUtil.KEYS) {
                 CommonConfiguration commonConfiguration = ConfigurationContextUtil.get(key);
                 if (null != commonConfiguration) {
-                    String namesrvAddr = commonConfiguration.namesrvAddr;
+                    String namesrvAddr = commonConfiguration.getNamesrvAddr();
                     if (StringUtils.isBlank(namesrvAddr)) {
                         throw new RegistryException("namesrvAddr cannot be null");
                     }

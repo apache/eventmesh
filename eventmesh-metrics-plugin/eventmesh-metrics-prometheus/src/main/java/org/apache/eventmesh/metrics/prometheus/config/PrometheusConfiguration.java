@@ -27,17 +27,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@UtilityClass
 public class PrometheusConfiguration {
 
     private static final String     CONFIG_FILE = "prometheus.properties";
     private static final Properties properties  = new Properties();
 
-    private int eventMeshPrometheusPort = 19090;
+    private static int eventMeshPrometheusPort = 19090;
 
     static {
         loadProperties();
@@ -48,7 +43,7 @@ public class PrometheusConfiguration {
         return eventMeshPrometheusPort;
     }
 
-    private void initializeConfig() {
+    private static void initializeConfig() {
         String eventMeshPrometheusPortStr = properties.getProperty("eventMesh.metrics.prometheus.port");
         if (StringUtils.isNotEmpty(eventMeshPrometheusPortStr)) {
             eventMeshPrometheusPort = Integer.parseInt(StringUtils.deleteWhitespace(eventMeshPrometheusPortStr));
@@ -59,7 +54,7 @@ public class PrometheusConfiguration {
      * Load properties file from classpath and conf home.
      * The properties defined in conf home will override classpath.
      */
-    private void loadProperties() {
+    private static void loadProperties() {
         try (InputStream resourceAsStream = PrometheusConfiguration.class.getResourceAsStream(File.separator + CONFIG_FILE)) {
             if (resourceAsStream != null) {
                 properties.load(resourceAsStream);

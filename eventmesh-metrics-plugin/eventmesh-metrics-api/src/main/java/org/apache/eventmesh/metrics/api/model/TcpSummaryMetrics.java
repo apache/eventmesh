@@ -19,13 +19,28 @@ package org.apache.eventmesh.metrics.api.model;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import lombok.Data;
 
-@Data
 public class TcpSummaryMetrics implements Metric {
     private final AtomicInteger client2eventMeshMsgNum;
     private final AtomicInteger eventMesh2mqMsgNum;
     private final AtomicInteger mq2eventMeshMsgNum;
+
+    public AtomicInteger getClient2eventMeshMsgNum() {
+        return client2eventMeshMsgNum;
+    }
+
+    public AtomicInteger getEventMesh2mqMsgNum() {
+        return eventMesh2mqMsgNum;
+    }
+
+    public AtomicInteger getMq2eventMeshMsgNum() {
+        return mq2eventMeshMsgNum;
+    }
+
+    public AtomicInteger getEventMesh2clientMsgNum() {
+        return eventMesh2clientMsgNum;
+    }
+
     private final AtomicInteger eventMesh2clientMsgNum;
 
     private int client2eventMeshTPS;

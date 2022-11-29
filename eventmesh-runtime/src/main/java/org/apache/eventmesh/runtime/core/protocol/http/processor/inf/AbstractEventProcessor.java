@@ -56,7 +56,7 @@ public class AbstractEventProcessor {
      * Add a topic with subscribers to the service's metadata.
      */
     protected void updateMetadata() {
-        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().eventMeshServerRegistryEnable) {
+        if (!eventMeshHTTPServer.getEventMeshHttpConfiguration().isEventMeshServerRegistryEnable()) {
             return;
         }
         try {
@@ -70,7 +70,7 @@ public class AbstractEventProcessor {
 
                 Map<String, ConsumerGroupTopicMetadata> consumerGroupTopicMetadataMap = new HashMap<>(1 << 4);
                 for (Map.Entry<String, ConsumerGroupTopicConf> consumerGroupTopicConfEntry : consumerGroupConf.getConsumerGroupTopicConf()
-                    .entrySet()) {
+                        .entrySet()) {
                     final String topic = consumerGroupTopicConfEntry.getKey();
                     ConsumerGroupTopicConf consumerGroupTopicConf = consumerGroupTopicConfEntry.getValue();
                     ConsumerGroupTopicMetadata consumerGroupTopicMetadata = new ConsumerGroupTopicMetadata();
@@ -92,10 +92,10 @@ public class AbstractEventProcessor {
 
 
     protected String getTargetMesh(String consumerGroup, List<SubscriptionItem> subscriptionList)
-        throws Exception {
+            throws Exception {
         // Currently only supports http
         CommonConfiguration httpConfiguration = eventMeshHTTPServer.getEventMeshHttpConfiguration();
-        if (!httpConfiguration.eventMeshServerRegistryEnable) {
+        if (!httpConfiguration.isEventMeshServerRegistryEnable()) {
             return "";
         }
 
@@ -103,12 +103,14 @@ public class AbstractEventProcessor {
         Registry registry = eventMeshHTTPServer.getRegistry();
         List<EventMeshDataInfo> allEventMeshInfo = registry.findAllEventMeshInfo();
         String httpServiceName =
-            ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.eventMeshName + "-" + ConfigurationContextUtil.HTTP;
+                ConfigurationContextUtil.HTTP + "-" + NacosConstant.GROUP + "@@" + httpConfiguration.getEventMeshName()
+                        + "-"
+                        + ConfigurationContextUtil.HTTP;
         for (EventMeshDataInfo eventMeshDataInfo : allEventMeshInfo) {
             if (!eventMeshDataInfo.getEventMeshName().equals(httpServiceName)) {
                 continue;
             }
-            if (httpConfiguration.eventMeshCluster.equals(eventMeshDataInfo.getEventMeshClusterName())) {
+            if (httpConfiguration.getEventMeshCluster().equals(eventMeshDataInfo.getEventMeshClusterName())) {
                 continue;
             }
             Map<String, String> metadata = eventMeshDataInfo.getMetadata();

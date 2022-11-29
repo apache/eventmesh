@@ -53,7 +53,7 @@ public class QueryRecommendEventMeshHandler implements HttpHandler {
     public void handle(HttpExchange httpExchange) throws IOException {
         String result = "";
         try (OutputStream out = httpExchange.getResponseBody()) {
-            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerRegistryEnable) {
+            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerRegistryEnable()) {
                 throw new Exception("registry enable config is false, not support");
             }
             String queryString = httpExchange.getRequestURI().getQuery();
