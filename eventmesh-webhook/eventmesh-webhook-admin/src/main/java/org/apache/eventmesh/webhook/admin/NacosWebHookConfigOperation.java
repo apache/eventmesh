@@ -106,7 +106,6 @@ public class NacosWebHookConfigOperation implements WebHookConfigOperation {
 
     @Override
     public Integer updateWebHookConfig(WebHookConfig webHookConfig) {
-        // 修改代码部分
         boolean result = false;
         try {
             if (configService.getConfig(getWebHookConfigDataId(webHookConfig), getManuGroupId(webHookConfig), TIMEOUT_MS) == null) {
