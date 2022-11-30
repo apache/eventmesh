@@ -18,12 +18,12 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
-import org.apache.eventmesh.runtime.util.NetUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -65,7 +65,7 @@ public class RedirectClientByPathHandler implements HttpHandler {
             if (StringUtils.isBlank(path) || StringUtils.isBlank(destEventMeshIp)
                     || StringUtils.isBlank(destEventMeshPort)
                     || !StringUtils.isNumeric(destEventMeshPort)) {
-                httpExchange.sendResponseHeaders(200, 0);
+                NetUtils.sendSuccessResponseHeaders(httpExchange);
                 result = "params illegal!";
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
@@ -95,7 +95,7 @@ public class RedirectClientByPathHandler implements HttpHandler {
                                 "destEventMeshIp=%s destEventMeshPort=%s}, result {%s}, errorMsg : %s",
                         sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult, e
                                 .getMessage());
-                httpExchange.sendResponseHeaders(200, 0);
+                NetUtils.sendSuccessResponseHeaders(httpExchange);
                 out.write(result.getBytes(Constants.DEFAULT_CHARSET));
                 return;
             }
@@ -103,7 +103,7 @@ public class RedirectClientByPathHandler implements HttpHandler {
                             +
                             "destEventMeshIp=%s destEventMeshPort=%s}, result {%s} ",
                     sessionMap.size(), path, destEventMeshIp, destEventMeshPort, redirectResult);
-            httpExchange.sendResponseHeaders(200, 0);
+            NetUtils.sendSuccessResponseHeaders(httpExchange);
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("redirectClientByPath fail...", e);

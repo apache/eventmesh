@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.admin.rocketmq;
+package org.apache.eventmesh.common.enums;
 
 public enum HttpMethod {
 

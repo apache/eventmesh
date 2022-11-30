@@ -25,6 +25,7 @@ import org.apache.eventmesh.connector.knative.cloudevent.impl.KnativeHeaders;
 
 import java.util.Properties;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class KnativeProducerImplTest {
@@ -42,17 +43,22 @@ public class KnativeProducerImplTest {
 
         // Create a Knative producer:
         KnativeProducerImpl knativehProducer = new KnativeProducerImpl();
-        knativehProducer.init(properties);
 
-        // Publish an event message:
-        knativehProducer.publish(KnativeMessageFactory.createWriter(properties).getMessage(), new SendCallback() {
-            @Override
-            public void onSuccess(SendResult sendResult) {
-            }
+        try {
+            knativehProducer.init(properties);
 
-            @Override
-            public void onException(OnExceptionContext context) {
-            }
-        });
+            // Publish an event message:
+            knativehProducer.publish(KnativeMessageFactory.createWriter(properties), new SendCallback() {
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                }
+
+                @Override
+                public void onException(OnExceptionContext context) {
+                }
+            });
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 }

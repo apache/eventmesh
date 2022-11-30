@@ -15,31 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.knative.consumer;
+package org.apache.eventmesh.common.utils;
 
-import java.util.Properties;
+import java.util.Objects;
 
-import org.junit.Assert;
-import org.junit.Test;
+/**
+ * Assert
+ */
+public final class AssertUtils {
 
-public class KnativeConsumerImplTest {
+    /**
+     * assert obj not null
+     *
+     * @param obj     obj
+     * @param message error message
+     */
+    public static void notNull(final Object obj, final String message) {
+        isTrue(Objects.nonNull(obj), message);
+    }
 
-    @Test
-    public void testSubscribe() throws Exception {
-        Properties properties = new Properties();
-        final String topic = "messages";
-        properties.put("topic", topic);
-
-        // Create a Knative consumer:
-        KnativeConsumerImpl knativeConsumer = new KnativeConsumerImpl();
-
-        try {
-            knativeConsumer.init(properties);
-
-            // Subscribe:
-            knativeConsumer.subscribe(properties.getProperty("topic"));
-        } catch (Exception e) {
-            Assert.fail(e.getMessage());
+    /**
+     * assert test is true
+     *
+     * @param test    test
+     * @param message error message
+     */
+    public static void isTrue(final Boolean test, final String message) {
+        if (!Boolean.TRUE.equals(test)) {
+            throw new IllegalArgumentException(message);
         }
     }
+
 }
