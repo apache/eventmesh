@@ -157,6 +157,8 @@ public class Constants {
 
     public static final String EMPTY = "";
 
+    public static final int SUCCESS_CODE = 200;
+
     /**
      * GRPC PROTOCOL
      */
