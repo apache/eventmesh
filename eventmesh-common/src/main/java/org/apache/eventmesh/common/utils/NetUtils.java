@@ -19,14 +19,13 @@ package org.apache.eventmesh.common.utils;
 
 import static org.apache.eventmesh.common.Constants.SUCCESS_CODE;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.enums.HttpMethod;
 
 import org.apache.http.Consts;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import org.apache.eventmesh.common.Constants;
-
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
