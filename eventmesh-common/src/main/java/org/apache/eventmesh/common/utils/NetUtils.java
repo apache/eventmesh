@@ -19,6 +19,7 @@ package org.apache.eventmesh.common.utils;
 
 import static org.apache.eventmesh.common.Constants.SUCCESS_CODE;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.enums.HttpMethod;
 
 import org.apache.http.Consts;
@@ -28,6 +29,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -56,13 +58,13 @@ public class NetUtils {
         if (formData == null || formData.trim().length() == 0) {
             return result;
         }
-        final String[] items = formData.split("&");
+        final String[] items = formData.split(Constants.AND);
         Arrays.stream(items).forEach(item -> {
-            final String[] keyAndVal = item.split("=");
+            final String[] keyAndVal = item.split(Constants.EQ);
             if (keyAndVal.length == 2) {
                 try {
-                    final String key = URLDecoder.decode(keyAndVal[0], "utf8");
-                    final String val = URLDecoder.decode(keyAndVal[1], "utf8");
+                    final String key = URLDecoder.decode(keyAndVal[0], StandardCharsets.UTF_8.name());
+                    final String val = URLDecoder.decode(keyAndVal[1], StandardCharsets.UTF_8.name());
                     result.put(key, val);
                 } catch (UnsupportedEncodingException e) {
                     logger.warn("formData2Dic:param decode failed...", e);
@@ -78,7 +80,7 @@ public class NetUtils {
         }
         StringBuilder sb = new StringBuilder();
         for (InetSocketAddress addr : clients) {
-            sb.append(addr).append("|");
+            sb.append(addr).append(Constants.VERTICAL_LINE);
         }
         return sb.toString();
     }
