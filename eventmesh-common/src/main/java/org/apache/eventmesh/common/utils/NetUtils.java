@@ -15,8 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.common.utils;
 
+import static org.apache.eventmesh.common.Constants.SUCCESS_CODE;
+
+import org.apache.eventmesh.common.enums.HttpMethod;
+
+import org.apache.http.Consts;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
@@ -28,6 +36,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.net.httpserver.HttpExchange;
+
+/**
+ * NetUtils
+ */
 public class NetUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
@@ -68,5 +81,26 @@ public class NetUtils {
             sb.append(addr).append("|");
         }
         return sb.toString();
+    }
+
+    public static String parsePostBody(HttpExchange exchange)
+        throws IOException {
+        StringBuilder body = new StringBuilder();
+        if (HttpMethod.POST.name().equalsIgnoreCase(exchange.getRequestMethod())
+            || HttpMethod.PUT.name().equalsIgnoreCase(exchange.getRequestMethod())) {
+            try (InputStreamReader reader =
+                     new InputStreamReader(exchange.getRequestBody(), Consts.UTF_8)) {
+                char[] buffer = new char[256];
+                int read;
+                while ((read = reader.read(buffer)) != -1) {
+                    body.append(buffer, 0, read);
+                }
+            }
+        }
+        return body.toString();
+    }
+
+    public static void sendSuccessResponseHeaders(HttpExchange httpExchange) throws IOException {
+        httpExchange.sendResponseHeaders(SUCCESS_CODE, 0);
     }
 }

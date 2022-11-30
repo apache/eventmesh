@@ -21,8 +21,8 @@ import static org.apache.eventmesh.runtime.constants.EventMeshConstants.APPLICAT
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_TYPE;
 
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
-import org.apache.eventmesh.admin.rocketmq.util.NetUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -49,7 +49,7 @@ public class QueryWebHookConfigByIdHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        httpExchange.sendResponseHeaders(200, 0);
+        NetUtils.sendSuccessResponseHeaders(httpExchange);
         httpExchange.getResponseHeaders().add(CONTENT_TYPE, APPLICATION_JSON);
 
         // get requestBody and resolve to WebHookConfig

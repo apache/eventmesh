@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.apache.eventmesh.common.utils.NetUtils;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
