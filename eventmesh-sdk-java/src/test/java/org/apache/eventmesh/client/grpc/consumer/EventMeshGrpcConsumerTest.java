@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.client.grpc.config.EventMeshGrpcClientConfig;
@@ -112,7 +112,7 @@ public class EventMeshGrpcConsumerTest {
     @Test
     public void testSubscribeStreamWithoutListener() {
         eventMeshGrpcConsumer.subscribe(Collections.singletonList(buildMockSubscriptionItem()));
-        verifyZeroInteractions(consumerAsyncClient);
+        verifyNoMoreInteractions(consumerAsyncClient);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class EventMeshGrpcConsumerTest {
         List<Object> result = new ArrayList<>();
         eventMeshGrpcConsumer.registerListener(new ReceiveMsgHook<Object>() {
             @Override
-            public Optional<Object> handle(Object msg) throws Throwable {
+            public Optional<Object> handle(Object msg) {
                 result.add(msg);
                 return Optional.empty();
             }
