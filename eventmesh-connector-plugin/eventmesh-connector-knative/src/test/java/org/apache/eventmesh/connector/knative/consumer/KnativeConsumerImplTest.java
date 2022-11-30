@@ -19,6 +19,7 @@ package org.apache.eventmesh.connector.knative.consumer;
 
 import java.util.Properties;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class KnativeConsumerImplTest {
@@ -31,9 +32,14 @@ public class KnativeConsumerImplTest {
 
         // Create a Knative consumer:
         KnativeConsumerImpl knativeConsumer = new KnativeConsumerImpl();
-        knativeConsumer.init(properties);
 
-        // Subscribe:
-        knativeConsumer.subscribe(properties.getProperty("topic"));
+        try {
+            knativeConsumer.init(properties);
+
+            // Subscribe:
+            knativeConsumer.subscribe(properties.getProperty("topic"));
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 }
