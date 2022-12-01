@@ -63,10 +63,14 @@ public class JsonUtils {
     }
 
     public static <T> byte[] serialize(String topic, Class<T> data) throws JsonProcessingException {
-        if (data == null) {
+        if (Objects.isNull(data)) {
             return null;
         }
-        return OBJECT_MAPPER.writeValueAsBytes(data);
+        try {
+            return OBJECT_MAPPER.writeValueAsBytes(data);
+        } catch (JsonProcessingException e) {
+            throw new JsonException("serialize to json error", e);
+        }
     }
 
     /**
@@ -88,13 +92,13 @@ public class JsonUtils {
         }
     }
 
-    public static <T> T deserialize(Class<T> clazz, byte[] bytes) throws IOException {
+    public static <T> T deserialize(Class<T> clazz, byte[] bytes) {
         if (bytes == null || bytes.length == 0) {
             return null;
         }
         try {
             return OBJECT_MAPPER.readValue(bytes, clazz);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             throw new JsonException(String.format("deserialize bytes to %s error", clazz), e);
         }
     }
@@ -118,7 +122,7 @@ public class JsonUtils {
         }
     }
 
-    public static JsonNode getJsonNode(String json) throws IOException {
+    public static JsonNode getJsonNode(String json) {
         if (StringUtils.isEmpty(json)) {
             return null;
         }
