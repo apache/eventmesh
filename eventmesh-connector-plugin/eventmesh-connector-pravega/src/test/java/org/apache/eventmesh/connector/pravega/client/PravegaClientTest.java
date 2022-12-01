@@ -27,6 +27,7 @@ import org.apache.eventmesh.api.EventListener;
 import org.apache.eventmesh.connector.pravega.config.PravegaConnectorConfig;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -160,7 +161,7 @@ public class PravegaClientTest {
             .withType("http_request")
             .withDataContentType("application/json")
             .withSubject("TEST-TOPIC-HTTP-ASYNC")
-            .withData(data.getBytes())
+            .withData(data.getBytes(StandardCharsets.UTF_8))
             .withExtension("reqeventmesh2mqtimestamp", "1659342713460")
             .withExtension("ip", "127.0.0.1:51226")
             .withExtension("idc", "idc")
