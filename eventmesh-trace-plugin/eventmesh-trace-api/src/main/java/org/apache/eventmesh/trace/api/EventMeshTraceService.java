@@ -31,7 +31,7 @@ import io.opentelemetry.context.Context;
 /**
  * EventMeshTraceService
  */
-@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.TRACE)
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.TRACE)
 public interface EventMeshTraceService {
     void init() throws TraceException;
 
