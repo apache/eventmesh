@@ -20,6 +20,8 @@ package org.apache.eventmesh.runtime.admin.handler;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
+import org.apache.eventmesh.runtime.common.EventHttpHandlerConfigEnum;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
 
@@ -34,20 +36,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 /**
  * This handler used to print the total client info
  */
-public class ShowClientHandler implements HttpHandler {
+@EventHttpHandler(path = "/clientManage/showClient", config = EventHttpHandlerConfigEnum.EVENT_MESH_TCP_SERVER)
+public class ShowClientHandler extends AbstractHttpHandler<EventMeshTCPServer>{
 
     private static final Logger logger = LoggerFactory.getLogger(ShowClientHandler.class);
-
-    private final EventMeshTCPServer eventMeshTCPServer;
-
-    public ShowClientHandler(EventMeshTCPServer eventMeshTCPServer) {
-        this.eventMeshTCPServer = eventMeshTCPServer;
-    }
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
@@ -55,7 +51,7 @@ public class ShowClientHandler implements HttpHandler {
         try (OutputStream out = httpExchange.getResponseBody()) {
             String newLine = System.getProperty("line.separator");
             logger.info("showAllClient=================");
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
+            ClientSessionGroupMapping clientSessionGroupMapping = getConfig().getClientSessionGroupMapping();
 
             HashMap<String, AtomicInteger> statMap = new HashMap<String, AtomicInteger>();
 

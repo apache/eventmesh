@@ -36,18 +36,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
-public class RejectAllClientHandler implements HttpHandler {
+public class RejectAllClientHandler extends AbstractHttpHandler<EventMeshTCPServer> {
 
     private static final Logger logger = LoggerFactory.getLogger(RejectAllClientHandler.class);
-
-    private final EventMeshTCPServer eventMeshTCPServer;
-
-    public RejectAllClientHandler(EventMeshTCPServer eventMeshTCPServer) {
-        this.eventMeshTCPServer = eventMeshTCPServer;
-    }
-
+    
     /**
      * remove all clients accessed by eventMesh
      *
@@ -59,7 +52,7 @@ public class RejectAllClientHandler implements HttpHandler {
         String result = "";
         OutputStream out = httpExchange.getResponseBody();
         try {
-            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
+            ClientSessionGroupMapping clientSessionGroupMapping = getConfig().getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
@@ -67,7 +60,7 @@ public class RejectAllClientHandler implements HttpHandler {
                 if (!sessionMap.isEmpty()) {
                     for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                         InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
-                                eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
+                                getConfig(), entry.getValue(), clientSessionGroupMapping);
                         if (addr != null) {
                             successRemoteAddrs.add(addr);
                         }
