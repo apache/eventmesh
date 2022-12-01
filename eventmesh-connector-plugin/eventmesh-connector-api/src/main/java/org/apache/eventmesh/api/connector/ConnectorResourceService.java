@@ -23,7 +23,7 @@ import org.apache.eventmesh.spi.EventMeshSPI;
 /**
  * ConnectorResourceService
  */
-@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.CONNECTOR)
 public interface ConnectorResourceService {
 
     /**
