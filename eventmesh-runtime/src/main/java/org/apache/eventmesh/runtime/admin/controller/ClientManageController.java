@@ -70,6 +70,17 @@ public class ClientManageController {
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
 
         //todo Optimized for automatic injection
+        initClientHandler(eventMeshTCPServer, httpHandlerManager);
+        
+        httpHandlerManager.registerHttpHandler(server);
+        AdminController adminController = new AdminController();
+        adminController.run(server);
+
+        server.start();
+        logger.info("ClientManageController start success, port:{}", port);
+    }
+
+    private void initClientHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
         new ShowClientHandler(eventMeshTCPServer, httpHandlerManager);
         new ShowClientBySystemHandler(eventMeshTCPServer, httpHandlerManager);
         new RejectAllClientHandler(eventMeshTCPServer, httpHandlerManager);
@@ -89,12 +100,6 @@ public class ClientManageController {
             new QueryWebHookConfigByIdHandler(webHookConfigOperation, httpHandlerManager);
             new QueryWebHookConfigByManufacturerHandler(webHookConfigOperation, httpHandlerManager);
         }
-        httpHandlerManager.registerHttpHandler(server);
-        AdminController adminController = new AdminController();
-        adminController.run(server);
-
-        server.start();
-        logger.info("ClientManageController start success, port:{}", port);
     }
 
 
