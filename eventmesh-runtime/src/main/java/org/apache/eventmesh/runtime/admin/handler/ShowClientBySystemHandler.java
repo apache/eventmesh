@@ -20,9 +20,9 @@ package org.apache.eventmesh.runtime.admin.handler;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
-import org.apache.eventmesh.runtime.common.EventHttpHandlerConfigEnum;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -38,11 +38,17 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
-@EventHttpHandler(path = "/clientManage/showClientBySystem", config = EventHttpHandlerConfigEnum.EVENT_MESH_TCP_SERVER)
-public class ShowClientBySystemHandler extends AbstractHttpHandler<EventMeshTCPServer> {
+@EventHttpHandler(path = "/clientManage/showClientBySystem")
+public class ShowClientBySystemHandler extends AbstractHttpHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(ShowClientBySystemHandler.class);
-    
+
+    private final EventMeshTCPServer eventMeshTCPServer;
+
+    public ShowClientBySystemHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
+        this.eventMeshTCPServer = eventMeshTCPServer;
+    }
 
     /**
      * print clientInfo by subsys
@@ -61,7 +67,7 @@ public class ShowClientBySystemHandler extends AbstractHttpHandler<EventMeshTCPS
 
             String newLine = System.getProperty("line.separator");
             logger.info("showClientBySubsys,subsys:{}=================", subSystem);
-            ClientSessionGroupMapping clientSessionGroupMapping = getConfig().getClientSessionGroupMapping();
+            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             if (!sessionMap.isEmpty()) {
                 for (Session session : sessionMap.values()) {

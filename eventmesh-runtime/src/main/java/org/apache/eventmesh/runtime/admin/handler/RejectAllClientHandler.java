@@ -19,7 +19,9 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.session.Session;
@@ -37,10 +39,18 @@ import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
 
-public class RejectAllClientHandler extends AbstractHttpHandler<EventMeshTCPServer> {
+@EventHttpHandler(path = "/clientManage/rejectAllClient")
+public class RejectAllClientHandler extends AbstractHttpHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(RejectAllClientHandler.class);
-    
+
+    private final EventMeshTCPServer eventMeshTCPServer;
+
+    public RejectAllClientHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
+        this.eventMeshTCPServer = eventMeshTCPServer;
+    }
+
     /**
      * remove all clients accessed by eventMesh
      *
@@ -52,7 +62,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler<EventMeshTCPServ
         String result = "";
         OutputStream out = httpExchange.getResponseBody();
         try {
-            ClientSessionGroupMapping clientSessionGroupMapping = getConfig().getClientSessionGroupMapping();
+            ClientSessionGroupMapping clientSessionGroupMapping = eventMeshTCPServer.getClientSessionGroupMapping();
             ConcurrentHashMap<InetSocketAddress, Session> sessionMap = clientSessionGroupMapping.getSessionMap();
             final List<InetSocketAddress> successRemoteAddrs = new ArrayList<>();
             try {
@@ -60,7 +70,7 @@ public class RejectAllClientHandler extends AbstractHttpHandler<EventMeshTCPServ
                 if (!sessionMap.isEmpty()) {
                     for (Map.Entry<InetSocketAddress, Session> entry : sessionMap.entrySet()) {
                         InetSocketAddress addr = EventMeshTcp2Client.serverGoodby2Client(
-                                getConfig(), entry.getValue(), clientSessionGroupMapping);
+                                eventMeshTCPServer, entry.getValue(), clientSessionGroupMapping);
                         if (addr != null) {
                             successRemoteAddrs.add(addr);
                         }

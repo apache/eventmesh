@@ -1,16 +1,21 @@
 package org.apache.eventmesh.runtime.admin.handler;
 
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
+
 import com.sun.net.httpserver.HttpHandler;
 
 import lombok.Data;
 
 /**
- * @author : wh
- * @date : 2022/12/1 16:26
- * @description:
+ * AbstractHttpHandler
  */
 @Data
-public abstract class AbstractHttpHandler<T> implements HttpHandler {
-    
-    private T config;
+public abstract class AbstractHttpHandler implements HttpHandler {
+
+    private final HttpHandlerManager httpHandlerManager;
+
+    public AbstractHttpHandler(HttpHandlerManager httpHandlerManager) {
+        this.httpHandlerManager = httpHandlerManager;
+        this.httpHandlerManager.register(this);
+    }
 }

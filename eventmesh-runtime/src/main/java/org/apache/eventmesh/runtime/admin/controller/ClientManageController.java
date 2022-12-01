@@ -18,7 +18,6 @@
 package org.apache.eventmesh.runtime.admin.controller;
 
 import org.apache.eventmesh.admin.rocketmq.controller.AdminController;
-import org.apache.eventmesh.runtime.admin.handler.AbstractHttpHandler;
 import org.apache.eventmesh.runtime.admin.handler.DeleteWebHookConfigHandler;
 import org.apache.eventmesh.runtime.admin.handler.InsertWebHookConfigHandler;
 import org.apache.eventmesh.runtime.admin.handler.QueryRecommendEventMeshHandler;
@@ -31,18 +30,15 @@ import org.apache.eventmesh.runtime.admin.handler.RejectAllClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.RejectClientByIpPortHandler;
 import org.apache.eventmesh.runtime.admin.handler.RejectClientBySubSystemHandler;
 import org.apache.eventmesh.runtime.admin.handler.ShowClientBySystemHandler;
+import org.apache.eventmesh.runtime.admin.handler.ShowClientHandler;
 import org.apache.eventmesh.runtime.admin.handler.ShowListenClientByTopicHandler;
 import org.apache.eventmesh.runtime.admin.handler.UpdateWebHookConfigHandler;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
-import org.apache.eventmesh.runtime.common.EventHttpHandler;
-import org.apache.eventmesh.runtime.common.EventHttpHandlerConfigEnum;
 import org.apache.eventmesh.webhook.admin.AdminWebHookConfigOperationManage;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -57,66 +53,49 @@ public class ClientManageController {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientManageController.class);
 
-    private EventMeshTCPServer eventMeshTCPServer;
-
-    private AdminController adminController;
-
-    private HttpServer server;
-
-    private final Map<EventHttpHandlerConfigEnum, Object> config = new HashMap<>();
+    private final EventMeshTCPServer eventMeshTCPServer;
 
     @Setter
     private AdminWebHookConfigOperationManage adminWebHookConfigOperationManage;
 
     public ClientManageController(EventMeshTCPServer eventMeshTCPServer) {
         this.eventMeshTCPServer = eventMeshTCPServer;
-        config.put(EventHttpHandlerConfigEnum.EVENT_MESH_TCP_SERVER, eventMeshTCPServer);
     }
 
 
     public void start() throws IOException {
         int port = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerAdminPort;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-        this.server = server;
-        registerHandler(new DeleteWebHookConfigHandler());
-        registerHandler(new ShowClientBySystemHandler());
 
-        registerHandler(new RejectAllClientHandler());
-        registerHandler(new ShowClientBySystemHandler());
-        registerHandler(new ShowClientBySystemHandler());
-        
-//        server.createContext("/clientManage/showClient", new ShowClientHandler(eventMeshTCPServer));
-//        server.createContext("/clientManage/showClientBySystem", new ShowClientBySystemHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/rejectAllClient", new RejectAllClientHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/rejectClientByIpPort", new RejectClientByIpPortHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/rejectClientBySubSystem", new RejectClientBySubSystemHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/redirectClientBySubSystem", new RedirectClientBySubSystemHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/redirectClientByPath", new RedirectClientByPathHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/redirectClientByIpPort", new RedirectClientByIpPortHandler(eventMeshTCPServer));
-        server.createContext("/clientManage/showListenClientByTopic", new ShowListenClientByTopicHandler(eventMeshTCPServer));
-        server.createContext("/eventMesh/recommend", new QueryRecommendEventMeshHandler(eventMeshTCPServer));
+        HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
+
+        //todo Optimized for automatic injection
+        new ShowClientHandler(eventMeshTCPServer, httpHandlerManager);
+        new ShowClientBySystemHandler(eventMeshTCPServer, httpHandlerManager);
+        new RejectAllClientHandler(eventMeshTCPServer, httpHandlerManager);
+        new RejectClientByIpPortHandler(eventMeshTCPServer, httpHandlerManager);
+        new RejectClientBySubSystemHandler(eventMeshTCPServer, httpHandlerManager);
+        new RedirectClientBySubSystemHandler(eventMeshTCPServer, httpHandlerManager);
+        new RedirectClientByPathHandler(eventMeshTCPServer, httpHandlerManager);
+        new RedirectClientByIpPortHandler(eventMeshTCPServer, httpHandlerManager);
+        new ShowListenClientByTopicHandler(eventMeshTCPServer, httpHandlerManager);
+        new QueryRecommendEventMeshHandler(eventMeshTCPServer, httpHandlerManager);
 
         if (Objects.nonNull(adminWebHookConfigOperationManage.getWebHookConfigOperation())) {
             WebHookConfigOperation webHookConfigOperation = adminWebHookConfigOperationManage.getWebHookConfigOperation();
-            config.put(EventHttpHandlerConfigEnum.ADMIN_WEB_HOOK_CONFIG_OPERATION_MANAGE,webHookConfigOperation)
-            server.createContext("/webhook/insertWebHookConfig", new InsertWebHookConfigHandler(webHookConfigOperation));
-            server.createContext("/webhook/updateWebHookConfig", new UpdateWebHookConfigHandler(webHookConfigOperation));
-//            server.createContext("/webhook/deleteWebHookConfig", new DeleteWebHookConfigHandler(webHookConfigOperation));
-            server.createContext("/webhook/queryWebHookConfigById", new QueryWebHookConfigByIdHandler(webHookConfigOperation));
-            server.createContext("/webhook/queryWebHookConfigByManufacturer", new QueryWebHookConfigByManufacturerHandler(webHookConfigOperation));
+            new InsertWebHookConfigHandler(webHookConfigOperation, httpHandlerManager);
+            new UpdateWebHookConfigHandler(webHookConfigOperation, httpHandlerManager);
+            new DeleteWebHookConfigHandler(webHookConfigOperation, httpHandlerManager);
+            new QueryWebHookConfigByIdHandler(webHookConfigOperation, httpHandlerManager);
+            new QueryWebHookConfigByManufacturerHandler(webHookConfigOperation, httpHandlerManager);
         }
-
-        adminController = new AdminController();
+        httpHandlerManager.registerHttpHandler(server);
+        AdminController adminController = new AdminController();
         adminController.run(server);
 
         server.start();
         logger.info("ClientManageController start success, port:{}", port);
     }
 
-    public void registerHandler(AbstractHttpHandler httpHandler) {
-        EventHttpHandler annotation = httpHandler.getClass().getAnnotation(EventHttpHandler.class);
-        httpHandler.setConfig(config.get(annotation.config()));
-        this.server.createContext(annotation.path(), httpHandler);
-        
-    }
+
 }
