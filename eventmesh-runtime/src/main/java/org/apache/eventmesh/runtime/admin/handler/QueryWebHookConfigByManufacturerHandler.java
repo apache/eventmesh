@@ -23,6 +23,8 @@ import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -35,16 +37,17 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 @SuppressWarnings("restriction")
-public class QueryWebHookConfigByManufacturerHandler implements HttpHandler {
+@EventHttpHandler(path = "/webhook/queryWebHookConfigByManufacturer")
+public class QueryWebHookConfigByManufacturerHandler extends AbstractHttpHandler {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private WebHookConfigOperation operation;
+    private final WebHookConfigOperation operation;
 
-    public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation) {
+    public QueryWebHookConfigByManufacturerHandler(WebHookConfigOperation operation, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.operation = operation;
     }
 

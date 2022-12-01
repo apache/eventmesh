@@ -20,8 +20,8 @@ package org.apache.eventmesh.runtime.admin.handler;
 import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.common.EventHttpHandler;
-import org.apache.eventmesh.runtime.common.EventHttpHandlerConfigEnum;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
@@ -34,11 +34,17 @@ import org.slf4j.LoggerFactory;
 import com.sun.net.httpserver.HttpExchange;
 
 @SuppressWarnings("restriction")
-@EventHttpHandler(path = "/clientManage/showClient", config = EventHttpHandlerConfigEnum.EVENT_MESH_TCP_SERVER)
-public class DeleteWebHookConfigHandler extends AbstractHttpHandler<WebHookConfigOperation> {
+@EventHttpHandler(path = "/webhook/deleteWebHookConfig")
+public class DeleteWebHookConfigHandler extends AbstractHttpHandler {
 
     public Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final WebHookConfigOperation operation;
+
+    public DeleteWebHookConfigHandler(WebHookConfigOperation operation, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
+        this.operation = operation;
+    }
 
 
     @Override
@@ -51,7 +57,7 @@ public class DeleteWebHookConfigHandler extends AbstractHttpHandler<WebHookConfi
 
         try (OutputStream out = httpExchange.getResponseBody()) {
 
-            Integer code = getConfig().deleteWebHookConfig(webHookConfig); // operating result
+            Integer code = operation.deleteWebHookConfig(webHookConfig); // operating result
             String result = 1 == code ? "deleteWebHookConfig Succeed!" : "deleteWebHookConfig Failed!";
             out.write(result.getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {

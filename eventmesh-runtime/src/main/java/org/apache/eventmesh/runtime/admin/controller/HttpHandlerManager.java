@@ -17,24 +17,32 @@
  * under the License.
  */
 
-package org.apache.eventmesh.runtime.common;
+package org.apache.eventmesh.runtime.admin.controller;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface EventHttpHandler {
+import java.util.ArrayList;
+import java.util.List;
 
-    /**
-     * request path
-     *
-     * @return path
-     */
-    String path();
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 
+/**
+ * httpHandlerManager
+ */
+public class HttpHandlerManager {
+
+    private final List<HttpHandler> httpHandlers = new ArrayList<>();
+
+    public void register(HttpHandler httpHandler) {
+        this.httpHandlers.add(httpHandler);
+    }
+
+    public void registerHttpHandler(HttpServer server) {
+        httpHandlers.forEach(httpHandler -> {
+            EventHttpHandler eventHttpHandler = httpHandler.getClass().getAnnotation(EventHttpHandler.class);
+            server.createContext(eventHttpHandler.path(), httpHandler);
+        });
+        
+    }
 }

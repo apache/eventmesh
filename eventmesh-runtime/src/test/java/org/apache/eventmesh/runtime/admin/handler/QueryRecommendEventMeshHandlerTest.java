@@ -28,6 +28,7 @@ import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.configuration.EventMeshTCPConfiguration;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
@@ -61,7 +62,8 @@ public class QueryRecommendEventMeshHandlerTest {
         OutputStream outputStream = new ByteArrayOutputStream();
         HttpExchange httpExchange = mock(HttpExchange.class);
         when(httpExchange.getRequestURI()).thenReturn(uri);
-        QueryRecommendEventMeshHandler handler = new QueryRecommendEventMeshHandler(eventMeshTCPServer);
+        HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
+        QueryRecommendEventMeshHandler handler = new QueryRecommendEventMeshHandler(eventMeshTCPServer, httpHandlerManager);
 
         // case 1: normal case
         tcpConfiguration.eventMeshServerRegistryEnable = true;
