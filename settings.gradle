@@ -33,6 +33,10 @@ include 'eventmesh-connector-plugin:eventmesh-connector-standalone'
 include 'eventmesh-connector-plugin:eventmesh-connector-kafka'
 include 'eventmesh-connector-plugin:eventmesh-connector-pulsar'
 include 'eventmesh-connector-plugin:eventmesh-connector-redis'
+<<<<<<< HEAD
+=======
+include 'eventmesh-connector-plugin:eventmesh-connector-qmq'
+>>>>>>> origin
 
 include 'eventmesh-security-plugin:eventmesh-security-api'
 include 'eventmesh-security-plugin:eventmesh-security-acl'
@@ -41,6 +45,7 @@ include 'eventmesh-registry-plugin:eventmesh-registry-nacos'
 include 'eventmesh-registry-plugin:eventmesh-registry-etcd'
 include 'eventmesh-registry-plugin:eventmesh-registry-consul'
 include 'eventmesh-registry-plugin:eventmesh-registry-zookeeper'
+
 include 'eventmesh-admin'
 
 include 'eventmesh-protocol-plugin'
