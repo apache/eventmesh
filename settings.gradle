@@ -33,10 +33,6 @@ include 'eventmesh-connector-plugin:eventmesh-connector-standalone'
 include 'eventmesh-connector-plugin:eventmesh-connector-kafka'
 include 'eventmesh-connector-plugin:eventmesh-connector-pulsar'
 include 'eventmesh-connector-plugin:eventmesh-connector-redis'
-<<<<<<< HEAD
-=======
-include 'eventmesh-connector-plugin:eventmesh-connector-qmq'
->>>>>>> origin
 
 include 'eventmesh-security-plugin:eventmesh-security-api'
 include 'eventmesh-security-plugin:eventmesh-security-acl'
