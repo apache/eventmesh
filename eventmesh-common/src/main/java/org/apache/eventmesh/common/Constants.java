@@ -153,6 +153,8 @@ public class Constants {
 
     public static final String AND = "&";
 
+    public static final String EQ = "=";
+
     public static final String EMPTY = "";
 
     public static final int SUCCESS_CODE = 200;

@@ -20,8 +20,8 @@ package org.apache.eventmesh.runtime.admin.handler;
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.APPLICATION_JSON;
 import static org.apache.eventmesh.runtime.constants.EventMeshConstants.CONTENT_TYPE;
 
-import org.apache.eventmesh.admin.rocketmq.util.JsonUtils;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.common.utils.NetUtils;
 import org.apache.eventmesh.webhook.api.WebHookConfig;
 import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
@@ -54,11 +54,11 @@ public class QueryWebHookConfigByIdHandler implements HttpHandler {
 
         // get requestBody and resolve to WebHookConfig
         String requestBody = NetUtils.parsePostBody(httpExchange);
-        WebHookConfig webHookConfig = JsonUtils.toObject(requestBody, WebHookConfig.class);
+        WebHookConfig webHookConfig = JsonUtils.deserialize(requestBody, WebHookConfig.class);
 
         try (OutputStream out = httpExchange.getResponseBody()) {
             WebHookConfig result = operation.queryWebHookConfigById(webHookConfig); // operating result
-            out.write(JsonUtils.toJson(result).getBytes(Constants.DEFAULT_CHARSET));
+            out.write(JsonUtils.serialize(result).getBytes(Constants.DEFAULT_CHARSET));
         } catch (Exception e) {
             logger.error("get WebHookConfigOperation implementation Failed.", e);
         }

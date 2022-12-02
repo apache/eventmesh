@@ -29,7 +29,6 @@ import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
@@ -134,7 +133,7 @@ public class Codec {
                 Package pkg = new Package(header, body);
                 out.add(pkg);
             } catch (Exception e) {
-                log.error("decode error| receive: {}.", deserializeBytes(in.array()));
+                log.error("tcp decoder error: ", e);
                 throw e;
             }
         }
