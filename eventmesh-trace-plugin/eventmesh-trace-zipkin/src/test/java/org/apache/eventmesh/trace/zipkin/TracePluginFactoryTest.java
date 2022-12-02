@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.trace.api;
+package org.apache.eventmesh.trace.zipkin;
 
 import static org.hamcrest.CoreMatchers.is;
 
+import org.apache.eventmesh.trace.api.EventMeshTraceService;
+import org.apache.eventmesh.trace.api.TracePluginFactory;
 import org.apache.eventmesh.trace.zipkin.ZipkinTraceService;
 
 import org.hamcrest.MatcherAssert;
