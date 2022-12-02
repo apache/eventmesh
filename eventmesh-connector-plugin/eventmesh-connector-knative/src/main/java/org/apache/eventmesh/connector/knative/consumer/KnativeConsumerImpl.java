@@ -32,17 +32,19 @@ import io.cloudevents.CloudEvent;
 
 public class KnativeConsumerImpl implements Consumer {
 
-    private PullConsumerImpl pullConsumer;
+    private static final Logger LOG = LoggerFactory.getLogger(KnativeConsumerImpl.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(KnativeConsumerImpl.class);
+    private transient PullConsumerImpl pullConsumer;
+
+
 
     @Override
     public synchronized void init(Properties properties) throws Exception {
         // Load parameters from properties file:
         final ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.init();
-        properties.put("emUrl", clientConfiguration.emurl);
-        properties.put("serviceAddr", clientConfiguration.serviceAddr);
+        properties.put("emUrl", clientConfiguration.getEmurl());
+        properties.put("serviceAddr", clientConfiguration.getServiceAddr());
 
         pullConsumer = new PullConsumerImpl(properties);
     }
@@ -57,7 +59,7 @@ public class KnativeConsumerImpl implements Consumer {
         try {
             pullConsumer.unsubscribe(topic);
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            LOG.error("unsubscribe error", e);
         }
     }
 
