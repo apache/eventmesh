@@ -17,6 +17,7 @@ package queue
 
 import (
 	"context"
+	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
@@ -53,7 +54,8 @@ func (q *inMemoryQueue) Publish(tasks []*model.WorkflowTaskInstance) error {
 	if len(tasks) == 0 {
 		return nil
 	}
-	metrics.Add("task_queue_size", "in_memory", float64(len(tasks)))
+	metrics.Add(constants.MetricsTaskQueue, fmt.Sprintf("%s_%s", q.Name(), constants.MetricsQueueSize),
+		float64(len(tasks)))
 	for _, t := range tasks {
 		q.ch <- rxgo.Of(t)
 	}
@@ -72,7 +74,7 @@ func (q *inMemoryQueue) Observe() {
 			}
 		}()
 		for item := range q.observable.Observe() {
-			metrics.Dec("task_queue_size", "in_memory")
+			metrics.Dec(constants.MetricsTaskQueue, fmt.Sprintf("%s_%s", q.Name(), constants.MetricsQueueSize))
 			q.handle(item)
 		}
 	}()
