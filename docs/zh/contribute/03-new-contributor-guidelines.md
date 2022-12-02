@@ -1,13 +1,16 @@
 
-# 怎么为EventMesh做贡献
+# 如何成为EventMesh的贡献者(Contributor)
 
-如果您是一个想为 eventmesh 社区做贡献的新贡献者，请阅读本文档，它描述了如何为社区做贡献，如果您在文档中发现任何问题，欢迎留下评论或建议。
+如果您想向 eventmesh 社区提交代码，成为的新贡献者(Contributor)，请阅读本文档.
+
+本文档描述了如何向社区提交代码的一般流程。如果您在文档中发现任何问题，欢迎留下评论或建议。
 
 ## 准备工作
 
 ### 开发环境
 
-- 您应该在您的开发环境中安装JDK。
+- 您应该在您的开发环境中安装JDK，建议 JDK 8 及以上版本。
+- 您应该在您的开发环境中安装Gradle，建议 Gradle 7 及以上版本。
 
 ### 代码风格
 
@@ -27,7 +30,7 @@
 
 以下是贡献者提交代码的工作流程:
 
-0. 在提交PR之前需要先创建一个ISSUE，它是用来表达你的想法的，比如你发现了代码中的bug，想修复这个bug，那么需要告知社区管理者或贡献者你的想法，就要创建一个ISSUE用于大家一起交流讨论。在EventMesh社区有ISSUE模板，可根据您提出的ISSUE使用模板。  
+0. 在提交PR之前需要先创建一个ISSUE，它是用来表达你的想法的，比如你发现了代码中的bug，想修复这个bug，那么需要告知社区管理者或贡献者你的想法，就要创建一个ISSUE用于交流讨论。在EventMesh社区有ISSUE模板，可根据您提出的ISSUE中讨论的内容使用相应的模板。  
 
 ISSUE创建示例:  
    a.进入到项目仓库的主页，切换到issue标签，点击New issue  
@@ -51,7 +54,7 @@ ISSUE创建示例:
    ![contributor01](../../images/contributor16.png)  
 
 ISSUE与PR关联：
-   后续提交PR的时候，PR的标题和内容应该跟issue完成关联，这样才符合开源的规范，如下图所示
+   后续提交PR的时候，PR的标题和内容应该跟ISSUE完成关联，这样才符合开源的规范，如下图所示
    
    ![contributor01](../../images/contributor17.png)  
    
@@ -66,7 +69,7 @@ ISSUE与PR关联：
    ![contributor02](../../images/contributor02.png)
    
 
-2. 克隆fork到本地存储库，就是将自己仓库的eventmesh克隆到本地
+2. fork完成后，克隆自己仓库的代码到本地
 ```git
 git clone git@github.com:yourgithub/incubator-eventmesh.git
 ```
@@ -112,8 +115,8 @@ git config --global user.email 你的目标邮箱名
    （注：如果是新添加的文件需要Add一下，再Commit，一般IDEA都会提示，如果没有提示，按下图操作即可，文件由红色变为绿色Add成功）  
    ![contributor09](../../images/contributor09.png)  
    
-6. 推送您的提交到你的fork仓库，将修改先推送到自己的仓库   
-   a.然后需要push到远程仓库当中，也就是您自己的仓库，您需要点击  
+6. 将您的提交推送到自己的fork仓库   
+   a.需要push到远程仓库中，注意是您自己的仓库，您需要点击  
    ![contributor05](../../images/contributor05.png)  
    或者是  
    ![contributor06](../../images/contributor06.png)  
@@ -122,9 +125,9 @@ git config --global user.email 你的目标邮箱名
    c.当您成功push到自己仓库就会出现下图的提示（在IDEA界面的右下角）  
    ![contributor08](../../images/contributor08.png)  
 
-7. 创建一个pull请求  
+7. 创建一个PR  
 例：  
-   a.当您成功push到自己的仓库当中后，会出现下图界面  
+   a.当您成功push到自己的仓库当中后，进入自己的仓库主页，会出现下图界面  
    ![contributor10](../../images/contributor10.png)
    b.点击Compare & pull request，就会出现以下界面，按照图中操作即可创建pull request  
    ![contributor11](../../images/contributor11.png)
@@ -142,21 +145,21 @@ fork库: 从 https://github.com/apache/eventmesh fork到你自己的个人仓库
 
 **EventMesh 当前的开发分支是 master。请向该分支提交 PR。**
 
-- 我们建议您在您的存储库中创建一个新的开发分支，并将该分支提交给 eventmesh 的 master分支。
+- 我们建议您在本地master分支的基础上创建一个新的开发分支，在该开发分支上提交代码，并基于该分支向原始仓库的master分支提交PR。
 
 ## 贡献类别
 
 ### 错误反馈或错误修复
 
-- 无论是bug反馈还是修复，都需要先创建一个问题，对bug进行详细描述，这样社区就可以通过问题记录轻松找到并查看问题和代码。bug反馈问题通常需要包含完整的bug信息描述和可重现的场景。
+- 无论是bug反馈还是修复，都需要先创建一个ISSUE，对bug进行详细描述，这样社区就可以通过问题记录轻松找到并查看问题和代码。bug反馈问题通常需要包含完整的bug信息描述和可重现的场景。
 
 ### 功能的实现，重构
 
-- 如果你计划实现一个新功能（或重构），一定要通过 Issue 或其他方式与 eventmesh 核心开发团队沟通，并在沟通过程中详细描述新功能（或重构）、机制和场景。
+- 如果你计划实现一个新功能（或重构），一定要通过 ISSUE 或其他方式与 eventmesh 核心开发团队沟通，并在沟通过程中详细描述新功能（或重构）、机制和场景。
 
 ### 文档改进
 
-- 您可以在 [eventmesh-docs](https://github.com/apache/incubator-eventmesh/tree/master/docs) 找到 eventmesh 文档，该文档的补充或改进方式对 eventmesh 也是必不可少的。
+- 您可以在 [eventmesh-docs](https://github.com/apache/incubator-eventmesh/tree/master/docs) 找到 eventmesh 文档。文档的补充或改进对 eventmesh 是必不可少的。
 
 ## 贡献方式
 
@@ -164,19 +167,19 @@ fork库: 从 https://github.com/apache/eventmesh fork到你自己的个人仓库
 
 - 如果您在 eventmesh 代码中发现了一个你想修复的 bug，或者你为 eventmesh 提供了一个新功能，请在 eventmesh 中提交一个Issue，并向 eventmesh 提交一份 PR。
 
-- eventmesh 社区中的其他贡献者提出的Issue，这里社区整理的 [`issue for first-time contributors`](https://github.com/apache/incubator-eventmesh/issues/888) 是相对简单的 PR，可以帮助你熟悉向 eventmesh 社区做贡献的过程。
+- eventmesh 社区中有其他贡献者提出的Issue，这里是社区整理的 [`issue for first-time contributors`](https://github.com/apache/incubator-eventmesh/issues/888) 是相对简单的 PR，可以帮助你熟悉向 eventmesh 社区做贡献的过程。
 
 ## 提交Issue指南
 
-- 如果您不知道如何在 eventmesh 上提Issue，请阅读 [about the issue](https://docs.github.com/cn/issues/tracking-your-work-with-issues/quickstart) 。
+- 如果您不知道如何在 eventmesh 上提Issue，请阅读前文，或阅读 [about the issue](https://docs.github.com/cn/issues/tracking-your-work-with-issues/quickstart) 。
 
 - 在 eventmesh 社区，有Issue模板可以参考，如果类型匹配请使用该模板，如果Issue模板不符合你的要求，你可以开一个空的Issue模板，对于问题请带上其匹配的功能标签。
 
 - 对于Issue的名称，请用一句话简要描述你的Issue或目的，为了更好的全球交流，请用英文书写。
 
-##  Pull请求（pr）提交指南
+##  Pull请求（PR）提交指南
 
-- 如果你不知道如何为 eventmesh 发起一个 PR，请详见 [about pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) 。
+- 如果你不知道如何为 eventmesh 发起一个 PR，请阅读前文，或参见 [about pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) 。
 
 - 无论是 bug 修复，还是新功能开发（如果这个 pr 是新功能开发，那么关于新功能的文档更新应该包括在这个 pr 中），请向当前开发分支 master 提交 PR。
 
