@@ -66,7 +66,7 @@ public class QueryRecommendEventMeshHandlerTest {
         QueryRecommendEventMeshHandler handler = new QueryRecommendEventMeshHandler(eventMeshTCPServer, httpHandlerManager);
 
         // case 1: normal case
-        tcpConfiguration.eventMeshServerRegistryEnable = true;
+        tcpConfiguration.setEventMeshServerRegistryEnable(true);
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
             (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn("result"))) {
@@ -86,7 +86,7 @@ public class QueryRecommendEventMeshHandlerTest {
         }
 
         // case 3: registry disable
-        tcpConfiguration.eventMeshServerRegistryEnable = false;
+        tcpConfiguration.setEventMeshServerRegistryEnable(false);
         outputStream = mock(ByteArrayOutputStream.class);
         doThrow(new IOException()).when(outputStream).close();
         when(httpExchange.getResponseBody()).thenReturn(outputStream);

@@ -132,7 +132,7 @@ public class EventMeshGrpcServer {
         grpcRetryer.start();
         server.start();
 
-        if (eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshGrpcConfiguration.isEventMeshServerRegistryEnable()) {
             this.register();
         }
 
@@ -152,7 +152,7 @@ public class EventMeshGrpcServer {
 
         server.shutdown();
 
-        if (eventMeshGrpcConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshGrpcConfiguration.isEventMeshServerRegistryEnable()) {
             this.unRegister();
         }
 
@@ -166,8 +166,9 @@ public class EventMeshGrpcServer {
             String endPoints = IPUtils.getLocalAddress()
                 + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.grpcServerPort;
             EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
-            eventMeshRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.eventMeshCluster);
-            eventMeshRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.eventMeshName + "-" + ConfigurationContextUtil.GRPC);
+            eventMeshRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.getEventMeshCluster());
+            eventMeshRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.getEventMeshName() + "-"
+                    + ConfigurationContextUtil.GRPC);
             eventMeshRegisterInfo.setEndPoint(endPoints);
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.GRPC);
             registerResult = registry.register(eventMeshRegisterInfo);
@@ -182,8 +183,8 @@ public class EventMeshGrpcServer {
         String endPoints = IPUtils.getLocalAddress()
             + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshGrpcConfiguration.grpcServerPort;
         EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();
-        eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.eventMeshCluster);
-        eventMeshUnRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.eventMeshName);
+        eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshGrpcConfiguration.getEventMeshCluster());
+        eventMeshUnRegisterInfo.setEventMeshName(eventMeshGrpcConfiguration.getEventMeshName());
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
         eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.GRPC);
         boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);
@@ -270,7 +271,7 @@ public class EventMeshGrpcServer {
 
     private void initMetricsMonitor() throws Exception {
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
-        Optional.ofNullable(eventMeshGrpcConfiguration.eventMeshMetricsPluginType)
+        Optional.ofNullable(eventMeshGrpcConfiguration.getEventMeshMetricsPluginType())
             .ifPresent(
                 metricsPlugins -> metricsPlugins.forEach(
                     pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));

@@ -59,9 +59,10 @@ public class SubscribeTask extends AbstractTask {
                 SubscriptionItem item = subscriptionInfo.getTopicList().get(i);
 
                 //do acl check for receive msg
-                if (eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerSecurityEnable) {
+                if (eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerSecurityEnable()) {
                     String remoteAddr = RemotingHelper.parseChannelRemoteAddr(ctx.channel());
-                    Acl.doAclCheckInTcpReceive(remoteAddr, session.getClient(), item.getTopic(), Command.SUBSCRIBE_REQUEST.value());
+                    Acl.doAclCheckInTcpReceive(remoteAddr, session.getClient(), item.getTopic(),
+                            Command.SUBSCRIBE_REQUEST.getValue());
                 }
 
                 subscriptionItems.add(item);
@@ -70,8 +71,8 @@ public class SubscribeTask extends AbstractTask {
                 session.subscribe(subscriptionItems);
                 messageLogger.info("SubscribeTask succeed|user={}|topics={}", session.getClient(), subscriptionItems);
             }
-            msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader()
-                    .getSeq()));
+            msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
+                    pkg.getHeader().getSeq()));
         } catch (Exception e) {
             messageLogger.error("SubscribeTask failed|user={}|errMsg={}", session.getClient(), e);
             msg.setHeader(new Header(Command.SUBSCRIBE_RESPONSE, OPStatus.FAIL.getCode(), e.toString(), pkg.getHeader()

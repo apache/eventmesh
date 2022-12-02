@@ -110,13 +110,13 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         builder.addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
         builder.addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
-            handleMsgContext.getEventMeshHTTPServer()
-                .getEventMeshHttpConfiguration().eventMeshCluster);
+                handleMsgContext.getEventMeshHTTPServer()
+                        .getEventMeshHttpConfiguration().getEventMeshCluster());
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, IPUtils.getLocalAddress());
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV,
-            handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshEnv);
+                handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().getEventMeshEnv());
         builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC,
-            handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().eventMeshIDC);
+                handleMsgContext.getEventMeshHTTPServer().getEventMeshHttpConfiguration().getEventMeshIDC());
 
         CloudEvent event = CloudEventBuilder.from(handleMsgContext.getEvent())
             .withExtension(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP,
@@ -185,7 +185,8 @@ public class AsyncHTTPPushRequest extends AbstractHTTPPushRequest {
         String urlAuthType = handleMsgContext.getConsumerGroupConfig().getConsumerGroupTopicConf()
             .get(handleMsgContext.getTopic()).getHttpAuthTypeMap().get(currPushUrl);
 
-        WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(), eventMeshHttpConfiguration.eventMeshWebhookOrigin,
+        WebhookUtil.setWebhookHeaders(builder, httpEntity.getContentType().getValue(),
+                eventMeshHttpConfiguration.getEventMeshWebhookOrigin(),
             urlAuthType);
 
         eventMeshHTTPServer.metrics.getSummaryMetrics().recordPushMsg();

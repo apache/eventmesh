@@ -106,17 +106,18 @@ public class WebhookPushRequest extends AbstractPushRequest {
             builder.addHeader(ProtocolKey.REQUEST_CODE, requestCode);
             builder.addHeader(ProtocolKey.LANGUAGE, Constants.LANGUAGE_JAVA);
             builder.addHeader(ProtocolKey.VERSION, ProtocolVersion.V1.getVersion());
-            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER, eventMeshGrpcConfiguration.eventMeshCluster);
+            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHCLUSTER,
+                    eventMeshGrpcConfiguration.getEventMeshCluster());
             builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIP, eventMeshGrpcConfiguration.eventMeshIp);
-            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshGrpcConfiguration.eventMeshEnv);
-            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshGrpcConfiguration.eventMeshIDC);
+            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHENV, eventMeshGrpcConfiguration.getEventMeshEnv());
+            builder.addHeader(ProtocolKey.EventMeshInstanceKey.EVENTMESHIDC, eventMeshGrpcConfiguration.getEventMeshIDC());
 
             RequestHeader requestHeader = simpleMessage.getHeader();
             builder.addHeader(ProtocolKey.PROTOCOL_TYPE, requestHeader.getProtocolType());
             builder.addHeader(ProtocolKey.PROTOCOL_DESC, requestHeader.getProtocolDesc());
             builder.addHeader(ProtocolKey.PROTOCOL_VERSION, requestHeader.getProtocolVersion());
             builder.addHeader(ProtocolKey.CONTENT_TYPE, simpleMessage.getPropertiesOrDefault(ProtocolKey.CONTENT_TYPE,
-                Constants.CONTENT_TYPE_CLOUDEVENTS_JSON));
+                    Constants.CONTENT_TYPE_CLOUDEVENTS_JSON));
 
             List<NameValuePair> body = new ArrayList<>();
             body.add(new BasicNameValuePair(PushMessageRequestBody.CONTENT, simpleMessage.getContent()));
@@ -234,7 +235,7 @@ public class WebhookPushRequest extends AbstractPushRequest {
     @SuppressWarnings("unchecked")
     private List<String> getUrl() {
         List<String> localIdcUrl = MapUtils.getObject(urls,
-                eventMeshGrpcConfiguration.eventMeshIDC, null);
+                eventMeshGrpcConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(localIdcUrl)) {
             if (subscriptionMode.equals(SubscriptionMode.CLUSTERING)) {
                 return Collections.singletonList(localIdcUrl.get((startIdx + retryTimes) % localIdcUrl.size()));

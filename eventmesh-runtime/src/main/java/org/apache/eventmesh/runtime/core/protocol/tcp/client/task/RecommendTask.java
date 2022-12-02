@@ -49,7 +49,7 @@ public class RecommendTask extends AbstractTask {
         long taskExecuteTime = System.currentTimeMillis();
         Package res = new Package();
         try {
-            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerRegistryEnable) {
+            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerRegistryEnable()) {
                 throw new Exception("registry enable config is false, not support");
             }
             UserAgent user = (UserAgent) pkg.getBody();
@@ -57,7 +57,8 @@ public class RecommendTask extends AbstractTask {
             String group = getGroupOfClient(user);
             EventMeshRecommendStrategy eventMeshRecommendStrategy = new EventMeshRecommendImpl(eventMeshTCPServer);
             String eventMeshRecommendResult = eventMeshRecommendStrategy.calculateRecommendEventMesh(group, user.getPurpose());
-            res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(), pkg.getHeader().getSeq()));
+            res.setHeader(new Header(RECOMMEND_RESPONSE, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
+                    pkg.getHeader().getSeq()));
             res.setBody(eventMeshRecommendResult);
         } catch (Exception e) {
             messageLogger.error("RecommendTask failed|address={}|errMsg={}", ctx.channel().remoteAddress(), e);

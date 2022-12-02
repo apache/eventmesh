@@ -95,7 +95,7 @@ public abstract class AbstractHTTPPushRequest extends RetryContext {
 
     public String getUrl() {
         List<String> localIDCUrl = MapUtils.getObject(urls,
-                eventMeshHttpConfiguration.eventMeshIDC, null);
+                eventMeshHttpConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(localIDCUrl)) {
             return localIDCUrl.get((startIdx + retryTimes) % localIDCUrl.size());
         }

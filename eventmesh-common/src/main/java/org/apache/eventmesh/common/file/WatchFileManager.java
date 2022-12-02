@@ -62,12 +62,19 @@ public class WatchFileManager {
         if (!CLOSED.compareAndSet(false, true)) {
             return;
         }
-        LOGGER.warn("[WatchFileManager] start close");
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("[WatchFileManager] start close");
+        }
+
         for (Map.Entry<String, WatchFileTask> entry : WATCH_FILE_TASK_MAP.entrySet()) {
-            LOGGER.warn("[WatchFileManager] start to shutdown : {}", entry.getKey());
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("[WatchFileManager] start to shutdown : {}", entry.getKey());
+            }
+
             try {
                 entry.getValue().shutdown();
-            } catch (Throwable ex) {
+            } catch (Exception ex) {
                 LOGGER.error("[WatchFileManager] shutdown has error : ", ex);
             }
         }
