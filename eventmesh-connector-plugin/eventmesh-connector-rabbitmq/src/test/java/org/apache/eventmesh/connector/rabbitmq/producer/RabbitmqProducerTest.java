@@ -24,6 +24,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.connector.rabbitmq.RabbitmqServer;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -68,7 +69,7 @@ public class RabbitmqProducerTest extends RabbitmqServer {
                     .withSubject("topic")
                     .withType(String.class.getCanonicalName())
                     .withDataContentType("text/plain")
-                    .withData("data".getBytes())
+                    .withData("data".getBytes(StandardCharsets.UTF_8))
                     .build();
 
             rabbitmqProducer.publish(cloudEvent, new SendCallback() {
