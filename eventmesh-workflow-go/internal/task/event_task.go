@@ -17,6 +17,7 @@ package task
 
 import (
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/flow"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/metrics"
 )
@@ -44,7 +45,7 @@ func NewEventTask(instance *model.WorkflowTaskInstance) Task {
 }
 
 func (t *eventTask) Run() error {
-	metrics.Inc("event_task", "total")
+	metrics.Inc(constants.MetricsEventTask, constants.MetricsTotal)
 	if t.transition == nil {
 		return nil
 	}

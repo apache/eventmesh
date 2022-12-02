@@ -106,7 +106,7 @@ func (s *inlineScheduler) lock(h func() error) error {
 	start := time.Now()
 	l, err := dal.GetLockClient().ObtainTimeout(schedulerLockKey, schedulerLockTimeout)
 	elapsed := time.Since(start).Milliseconds()
-	metrics.RecordLatency("scheduler", "db_lock_acquire_time", float64(elapsed))
+	metrics.RecordLatency(constants.MetricsScheduler, constants.MetricsDbLockAcquireTime, float64(elapsed))
 	if err != nil {
 		return err
 	}

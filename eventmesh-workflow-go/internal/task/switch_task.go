@@ -52,7 +52,7 @@ func NewSwitchTask(instance *model.WorkflowTaskInstance) Task {
 }
 
 func (t *switchTask) Run() error {
-	metrics.Inc("switch_task", "total")
+	metrics.Inc(constants.MetricsSwitchTask, constants.MetricsTotal)
 	if len(t.transitions) == 0 {
 		return nil
 	}
@@ -74,11 +74,11 @@ func (t *switchTask) Run() error {
 			return err
 		}
 		if !boolValue {
-			metrics.Inc("switch_task", "reject")
+			metrics.Inc(constants.MetricsSwitchTask, constants.MetricsSwitchReject)
 			continue
 		}
 
-		metrics.Inc("switch_task", "pass")
+		metrics.Inc(constants.MetricsSwitchTask, constants.MetricsSwitchPass)
 		var taskInstance = model.WorkflowTaskInstance{WorkflowInstanceID: t.workflowInstanceID,
 			WorkflowID: t.workflowID, TaskID: transition.ToTaskID, TaskInstanceID: uuid.New().String(),
 			Status: constants.TaskInstanceWaitStatus, Input: t.baseTask.input}

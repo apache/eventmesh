@@ -45,7 +45,7 @@ func (e *Engine) Validate(ctx context.Context, instanceID string) error {
 
 // Start start workflow
 func (e *Engine) Start(ctx context.Context, param *WorkflowParam) (string, error) {
-	metrics.Inc("engine_request", "start")
+	metrics.Inc(constants.MetricsEngine, constants.MetricsStartRequest)
 	r, err := e.workflowDAL.SelectStartTask(ctx, model.WorkflowTask{WorkflowID: param.ID})
 	if err != nil {
 		return "", err
@@ -68,7 +68,7 @@ func (e *Engine) Start(ctx context.Context, param *WorkflowParam) (string, error
 
 // Transition transition next workflow task
 func (e *Engine) Transition(ctx context.Context, param *WorkflowParam) error {
-	metrics.Inc("engine_request", "transition")
+	metrics.Inc(constants.MetricsEngine, constants.MetricsTransitionRequest)
 	r, err := e.workflowDAL.SelectTransitionTask(ctx, model.WorkflowTaskInstance{WorkflowID: param.ID,
 		WorkflowInstanceID: param.InstanceID, TaskInstanceID: param.TaskInstanceID,
 		Status: constants.TaskInstanceSleepStatus})

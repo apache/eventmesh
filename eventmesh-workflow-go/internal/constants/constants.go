@@ -68,3 +68,23 @@ const (
 	EventPropsWorkflowInstanceID     = "workflowinstanceid"
 	EventPropsWorkflowTaskInstanceID = "workflowtaskinstanceid"
 )
+
+// Metrics Related constants
+const (
+	MetricsEventTask     = "event_task"
+	MetricsOperationTask = "operation_task"
+	MetricsSwitchTask    = "switch_task"
+	MetricsScheduler     = "scheduler"
+	MetricsEngine        = "engine"
+	MetricsTaskQueue     = "task_queue"
+
+	MetricsTotal        = "total"
+	MetricsSwitchReject = "reject"
+	MetricsSwitchPass   = "pass"
+
+	MetricsStartRequest      = "start_request"
+	MetricsTransitionRequest = "transition_request"
+
+	MetricsDbLockAcquireTime = "db_lock_acquire_time"
+	MetricsQueueSize         = "queue_size"
+)

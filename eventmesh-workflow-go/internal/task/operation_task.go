@@ -47,7 +47,7 @@ func NewOperationTask(instance *model.WorkflowTaskInstance) Task {
 }
 
 func (t *operationTask) Run() error {
-	metrics.Inc("operation_task", "total")
+	metrics.Inc(constants.MetricsOperationTask, constants.MetricsTotal)
 	if t.action == nil {
 		return nil
 	}
