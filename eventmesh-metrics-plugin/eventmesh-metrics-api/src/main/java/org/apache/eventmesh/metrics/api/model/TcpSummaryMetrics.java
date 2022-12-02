@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class TcpSummaryMetrics implements Metric {
 
+
     private AtomicInteger client2eventMeshMsgNum;
     private AtomicInteger eventMesh2mqMsgNum;
     private AtomicInteger mq2eventMeshMsgNum;
@@ -44,6 +45,18 @@ public class TcpSummaryMetrics implements Metric {
         this.eventMesh2mqMsgNum = new AtomicInteger(0);
         this.mq2eventMeshMsgNum = new AtomicInteger(0);
         this.eventMesh2clientMsgNum = new AtomicInteger(0);
+    }
+
+    public AtomicInteger getClient2eventMeshMsgNum() {
+        return client2eventMeshMsgNum;
+    }
+
+    public AtomicInteger getEventMesh2mqMsgNum() {
+        return eventMesh2mqMsgNum;
+    }
+
+    public AtomicInteger getMq2eventMeshMsgNum() {
+        return mq2eventMeshMsgNum;
     }
 
 
