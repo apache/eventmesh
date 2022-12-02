@@ -100,7 +100,7 @@ public class StreamPushRequest extends AbstractPushRequest {
 
     private List<EventEmitter<SimpleMessage>> selectEmitter() {
         List<EventEmitter<SimpleMessage>> emitterList = MapUtils.getObject(idcEmitters,
-            eventMeshGrpcConfiguration.eventMeshIDC, null);
+                eventMeshGrpcConfiguration.getEventMeshIDC(), null);
         if (CollectionUtils.isNotEmpty(emitterList)) {
             if (subscriptionMode.equals(SubscriptionMode.CLUSTERING)) {
                 return Collections.singletonList(emitterList.get((startIdx + retryTimes) % emitterList.size()));

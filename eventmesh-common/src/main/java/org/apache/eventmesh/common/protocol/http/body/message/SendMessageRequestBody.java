@@ -51,7 +51,7 @@ public class SendMessageRequestBody extends Body {
 
     private String tag;
 
-    private HashMap<String, String> extFields;
+    private Map<String, String> extFields;
 
     private String producerGroup;
 
@@ -87,11 +87,11 @@ public class SendMessageRequestBody extends Body {
         this.content = content;
     }
 
-    public HashMap<String, String> getExtFields() {
+    public Map<String, String> getExtFields() {
         return extFields;
     }
 
-    public void setExtFields(HashMap<String, String> extFields) {
+    public void setExtFields(Map<String, String> extFields) {
         this.extFields = extFields;
     }
 

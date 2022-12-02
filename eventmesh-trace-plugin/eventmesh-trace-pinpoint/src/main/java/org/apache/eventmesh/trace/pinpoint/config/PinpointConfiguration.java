@@ -104,8 +104,9 @@ public final class PinpointConfiguration {
                     + RandomStringUtils.generateNum(8);
         }
 
-        Properties temporary = new Properties();
-        PropertiesUtils.getPropertiesByPrefix(properties, temporary, PROPERTY_KEY_PREFIX);
+        //Properties temporary = new Properties();
+        Properties temporary = PropertiesUtils.getPropertiesByPrefix(properties, //temporary,
+                PROPERTY_KEY_PREFIX);
 
         // Map to Pinpoint property configuration.
         grpcTransportConfig = convertValue(temporary, GrpcTransportConfig.class);

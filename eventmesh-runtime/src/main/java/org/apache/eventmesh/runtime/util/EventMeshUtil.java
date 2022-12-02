@@ -90,7 +90,7 @@ public class EventMeshUtil {
      * custom fetch stack
      *
      * @param e
-     * @return
+     * @return stack trace
      */
     public static String stackTrace(Throwable e) {
         return stackTrace(e, 0);
@@ -129,7 +129,7 @@ public class EventMeshUtil {
      * print part of the mq message
      *
      * @param eventMeshMessage
-     * @return
+     * @return format message
      */
     public static String printMqMessage(EventMeshMessage eventMeshMessage) {
         Map<String, String> properties = eventMeshMessage.getProperties();
