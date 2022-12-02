@@ -89,7 +89,7 @@ public class SubService implements InitializingBean {
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
-                logger.warn("exception occurred when countDownLatch.await ", e);
+                e.printStackTrace();
             }
             logger.info("stopThread start....");
             throw new RuntimeException();
@@ -103,12 +103,12 @@ public class SubService implements InitializingBean {
         try {
             eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem), url);
         } catch (Exception e) {
-            logger.warn("exception occurred when unsubscribe ", e);
+            e.printStackTrace();
         }
         try (final EventMeshGrpcConsumer ignore = eventMeshGrpcConsumer) {
             // close consumer
         } catch (Exception e) {
-            logger.warn("exception occurred when close consumer ", e);
+            e.printStackTrace();
         }
         logger.info("end destory.");
     }

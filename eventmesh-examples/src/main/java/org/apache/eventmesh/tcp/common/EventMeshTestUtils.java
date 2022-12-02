@@ -45,6 +45,8 @@ public class EventMeshTestUtils {
 
     private static final String ASYNC_MSG_BODY = "testAsyncMessage";
 
+    private static final String DEFAULT_TTL_MS = "30000";
+
     // generate pub-client
     public static UserAgent generateClient1() {
         UserAgent agent = UserAgent.builder()
@@ -120,7 +122,7 @@ public class EventMeshTestUtils {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC);
         mqMsg.getProperties().put(UtilsConstants.MSG_TYPE, "persistent");
-        mqMsg.getProperties().put(UtilsConstants.TTL, "300000");
+        mqMsg.getProperties().put(UtilsConstants.TTL, DEFAULT_TTL_MS);
         mqMsg.getProperties().put(UtilsConstants.KEYS, generateRandomString(16));
         mqMsg.setBody("testSyncRR");
         return mqMsg;
@@ -131,7 +133,7 @@ public class EventMeshTestUtils {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(ExampleConstants.EVENTMESH_TCP_SYNC_TEST_TOPIC);
         mqMsg.getProperties().put(UtilsConstants.REPLY_TO, "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI");
-        mqMsg.getProperties().put(UtilsConstants.TTL, "300000");
+        mqMsg.getProperties().put(UtilsConstants.TTL, DEFAULT_TTL_MS);
         mqMsg.getProperties().put(UtilsConstants.PROPERTY_MESSAGE_REPLY_TO, "notnull");
         mqMsg.setBody("testAsyncRR");
         return mqMsg;
@@ -141,7 +143,7 @@ public class EventMeshTestUtils {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC);
         mqMsg.getProperties().put(UtilsConstants.REPLY_TO, "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI");
-        mqMsg.getProperties().put(UtilsConstants.TTL, "30000");
+        mqMsg.getProperties().put(UtilsConstants.TTL, DEFAULT_TTL_MS);
         mqMsg.getProperties().put(UtilsConstants.PROPERTY_MESSAGE_REPLY_TO, "notnull");
         mqMsg.setBody(ASYNC_MSG_BODY);
         return mqMsg;
@@ -151,7 +153,7 @@ public class EventMeshTestUtils {
         EventMeshMessage mqMsg = new EventMeshMessage();
         mqMsg.setTopic(ExampleConstants.EVENTMESH_TCP_ASYNC_TEST_TOPIC);
         mqMsg.getProperties().put(UtilsConstants.REPLY_TO, "localhost@ProducerGroup-producerPool-9-access#V1_4_0#CI");
-        mqMsg.getProperties().put(UtilsConstants.TTL, "30000");
+        mqMsg.getProperties().put(UtilsConstants.TTL, DEFAULT_TTL_MS);
         mqMsg.getProperties().put(UtilsConstants.PROPERTY_MESSAGE_REPLY_TO, "notnull");
         mqMsg.setBody(ASYNC_MSG_BODY);
         return mqMsg;
@@ -176,7 +178,7 @@ public class EventMeshTestUtils {
                 .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
                 .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
                 .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
-                .withExtension(UtilsConstants.TTL, "30000")
+                .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
                 .build();
     }
 
@@ -191,7 +193,7 @@ public class EventMeshTestUtils {
                 .withDataContentType(ExampleConstants.CLOUDEVENT_CONTENT_TYPE)
                 .withType(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME)
                 .withData(JsonUtils.serialize(content).getBytes(StandardCharsets.UTF_8))
-                .withExtension(UtilsConstants.TTL, "30000")
+                .withExtension(UtilsConstants.TTL, DEFAULT_TTL_MS)
                 .withExtension(UtilsConstants.MSG_TYPE, "persistent")
                 .withExtension(UtilsConstants.KEYS, generateRandomString(16))
                 .build();
