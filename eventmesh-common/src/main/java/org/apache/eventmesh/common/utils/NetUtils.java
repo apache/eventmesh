@@ -15,11 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.runtime.util;
+package org.apache.eventmesh.common.utils;
 
+import static org.apache.eventmesh.common.Constants.SUCCESS_CODE;
+
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.enums.HttpMethod;
+
+import org.apache.http.Consts;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +38,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.net.httpserver.HttpExchange;
+
+/**
+ * NetUtils
+ */
 public class NetUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(NetUtils.class);
@@ -43,13 +58,13 @@ public class NetUtils {
         if (formData == null || formData.trim().length() == 0) {
             return result;
         }
-        final String[] items = formData.split("&");
+        final String[] items = formData.split(Constants.AND);
         Arrays.stream(items).forEach(item -> {
-            final String[] keyAndVal = item.split("=");
+            final String[] keyAndVal = item.split(Constants.EQ);
             if (keyAndVal.length == 2) {
                 try {
-                    final String key = URLDecoder.decode(keyAndVal[0], "utf8");
-                    final String val = URLDecoder.decode(keyAndVal[1], "utf8");
+                    final String key = URLDecoder.decode(keyAndVal[0], StandardCharsets.UTF_8.name());
+                    final String val = URLDecoder.decode(keyAndVal[1], StandardCharsets.UTF_8.name());
                     result.put(key, val);
                 } catch (UnsupportedEncodingException e) {
                     logger.warn("formData2Dic:param decode failed...", e);
@@ -65,8 +80,29 @@ public class NetUtils {
         }
         StringBuilder sb = new StringBuilder();
         for (InetSocketAddress addr : clients) {
-            sb.append(addr).append("|");
+            sb.append(addr).append(Constants.VERTICAL_LINE);
         }
         return sb.toString();
+    }
+
+    public static String parsePostBody(HttpExchange exchange)
+        throws IOException {
+        StringBuilder body = new StringBuilder();
+        if (HttpMethod.POST.name().equalsIgnoreCase(exchange.getRequestMethod())
+            || HttpMethod.PUT.name().equalsIgnoreCase(exchange.getRequestMethod())) {
+            try (InputStreamReader reader =
+                     new InputStreamReader(exchange.getRequestBody(), Consts.UTF_8)) {
+                char[] buffer = new char[256];
+                int read;
+                while ((read = reader.read(buffer)) != -1) {
+                    body.append(buffer, 0, read);
+                }
+            }
+        }
+        return body.toString();
+    }
+
+    public static void sendSuccessResponseHeaders(HttpExchange httpExchange) throws IOException {
+        httpExchange.sendResponseHeaders(SUCCESS_CODE, 0);
     }
 }

@@ -21,9 +21,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class TcpSummaryMetrics implements Metric {
-    private final AtomicInteger client2eventMeshMsgNum;
-    private final AtomicInteger eventMesh2mqMsgNum;
-    private final AtomicInteger mq2eventMeshMsgNum;
+    private  AtomicInteger client2eventMeshMsgNum;
+    private  AtomicInteger eventMesh2mqMsgNum;
+    private  AtomicInteger mq2eventMeshMsgNum;
+    private AtomicInteger eventMesh2clientMsgNum;
+
+    private double client2eventMeshTPS;
+    private double eventMesh2clientTPS;
+    private double eventMesh2mqTPS;
+    private double mq2eventMeshTPS;
+    private int subTopicNum;
+
+    private int allConnections;
+
+    private int retrySize;
+
+    public TcpSummaryMetrics() {
+        this.client2eventMeshMsgNum = new AtomicInteger(0);
+        this.eventMesh2mqMsgNum = new AtomicInteger(0);
+        this.mq2eventMeshMsgNum = new AtomicInteger(0);
+        this.eventMesh2clientMsgNum = new AtomicInteger(0);
+    }
 
     public AtomicInteger getClient2eventMeshMsgNum() {
         return client2eventMeshMsgNum;
@@ -39,25 +57,6 @@ public class TcpSummaryMetrics implements Metric {
 
     public AtomicInteger getEventMesh2clientMsgNum() {
         return eventMesh2clientMsgNum;
-    }
-
-    private final AtomicInteger eventMesh2clientMsgNum;
-
-    private int client2eventMeshTPS;
-    private int eventMesh2clientTPS;
-    private int eventMesh2mqTPS;
-    private int mq2eventMeshTPS;
-    private int subTopicNum;
-
-    private int allConnections;
-
-    private int retrySize;
-
-    public TcpSummaryMetrics() {
-        this.client2eventMeshMsgNum = new AtomicInteger(0);
-        this.eventMesh2mqMsgNum = new AtomicInteger(0);
-        this.mq2eventMeshMsgNum = new AtomicInteger(0);
-        this.eventMesh2clientMsgNum = new AtomicInteger(0);
     }
 
     public int client2eventMeshMsgNum() {
@@ -76,39 +75,55 @@ public class TcpSummaryMetrics implements Metric {
         return eventMesh2clientMsgNum.get();
     }
 
-    public int getClient2eventMeshTPS() {
+    public void resetClient2EventMeshMsgNum() {
+        this.client2eventMeshMsgNum = new AtomicInteger(0);
+    }
+
+    public void resetEventMesh2mqMsgNum() {
+        this.eventMesh2mqMsgNum = new AtomicInteger(0);
+    }
+
+    public void resetMq2eventMeshMsgNum() {
+        this.mq2eventMeshMsgNum = new AtomicInteger(0);
+    }
+
+    public void resetEventMesh2ClientMsgNum() {
+        this.eventMesh2clientMsgNum = new AtomicInteger(0);
+    }
+
+    public double getClient2eventMeshTPS() {
         return client2eventMeshTPS;
     }
 
-    public void setClient2eventMeshTPS(int client2eventMeshTPS) {
+    public void setClient2eventMeshTPS(double client2eventMeshTPS) {
         this.client2eventMeshTPS = client2eventMeshTPS;
     }
 
-    public int getEventMesh2clientTPS() {
+    public double getEventMesh2clientTPS() {
         return eventMesh2clientTPS;
     }
 
-    public void setEventMesh2clientTPS(int eventMesh2clientTPS) {
+    public void setEventMesh2clientTPS(double eventMesh2clientTPS) {
         this.eventMesh2clientTPS = eventMesh2clientTPS;
     }
 
-    public int getEventMesh2mqTPS() {
+    public double getEventMesh2mqTPS() {
         return eventMesh2mqTPS;
     }
 
-    public void setEventMesh2mqTPS(int eventMesh2mqTPS) {
+    public void setEventMesh2mqTPS(double eventMesh2mqTPS) {
         this.eventMesh2mqTPS = eventMesh2mqTPS;
     }
 
-    public int getMq2eventMeshTPS() {
+    public double getMq2eventMeshTPS() {
         return mq2eventMeshTPS;
     }
 
-    public void setMq2eventMeshTPS(int mq2eventMeshTPS) {
+    public void setMq2eventMeshTPS(double mq2eventMeshTPS) {
         this.mq2eventMeshTPS = mq2eventMeshTPS;
     }
 
-    public int getAllTPS() {
+    public double getAllTPS() {
         return client2eventMeshTPS + eventMesh2clientTPS;
     }
 

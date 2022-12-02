@@ -33,7 +33,7 @@ import io.cloudevents.CloudEvent;
  *
  * @since 1.3.0
  */
-@EventMeshSPI(isSingleton = true, eventMeshExtensionType = EventMeshExtensionType.PROTOCOL)
+@EventMeshSPI(eventMeshExtensionType = EventMeshExtensionType.PROTOCOL)
 public interface ProtocolAdaptor<T extends ProtocolTransportObject> {
 
     /**
