@@ -84,6 +84,10 @@ public class WorkflowExpressAsyncSubscribe implements ReceiveMsgHook<EventMeshMe
     @Override
     public Optional<EventMeshMessage> handle(EventMeshMessage msg) throws Exception {
         log.info("receive async msg: {}", msg);
+        if (msg == null) {
+            log.info("async msg is null, workflow end.");
+            return Optional.empty();    
+        }
         Map<String, String> props = msg.getProp();
         String workflowInstanceId = props.get("workflowinstanceid");
         String taskInstanceId = props.get("workflowtaskinstanceid");
