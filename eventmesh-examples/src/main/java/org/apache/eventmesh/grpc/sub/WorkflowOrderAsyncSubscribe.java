@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WorkflowOrderAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static WorkflowOrderAsyncSubscribe handler = new WorkflowOrderAsyncSubscribe();
+    public static final WorkflowOrderAsyncSubscribe handler = new WorkflowOrderAsyncSubscribe();
     public static EventMeshWorkflowClient workflowClient;
 
     public static void main(String[] args) throws Exception {
