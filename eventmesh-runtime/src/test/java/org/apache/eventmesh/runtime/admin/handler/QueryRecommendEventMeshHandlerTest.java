@@ -39,6 +39,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -67,6 +68,7 @@ public class QueryRecommendEventMeshHandlerTest {
 
         // case 1: normal case
         tcpConfiguration.setEventMeshServerRegistryEnable(true);
+        outputStream.write("result".getBytes(StandardCharsets.UTF_8));
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
             (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn("result"))) {
@@ -77,6 +79,7 @@ public class QueryRecommendEventMeshHandlerTest {
 
         // case 2: params illegal
         outputStream = new ByteArrayOutputStream();
+        outputStream.write("params illegal!".getBytes(StandardCharsets.UTF_8));
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedStatic<StringUtils> dummyStatic = mockStatic(StringUtils.class)) {
             dummyStatic.when(() -> StringUtils.isBlank(any())).thenReturn(true);
