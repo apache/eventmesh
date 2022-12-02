@@ -92,7 +92,7 @@ public class SubService implements InitializingBean {
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
-                LOGGER.error("interrupted exception", e);
+                LOGGER.error("exception occurred when countDownLatch.await", e);
             }
             LOGGER.info("stopThread start....");
             throw new RuntimeException();
@@ -110,13 +110,13 @@ public class SubService implements InitializingBean {
             }
             eventMeshHttpConsumer.unsubscribe(unSubList, url);
         } catch (Exception e) {
-            LOGGER.error("unsubscribe exception", e);
+            LOGGER.error("exception occurred when unsubscribe", e);
         }
 
         try (final EventMeshHttpConsumer ignore = eventMeshHttpConsumer) {
             // close consumer
         } catch (Exception e) {
-            LOGGER.error("close exception", e);
+            LOGGER.error("exception occurred when close consumer", e);
         }
 
         LOGGER.info("end destory.");
