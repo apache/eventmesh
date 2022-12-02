@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 import org.apache.eventmesh.common.protocol.tcp.UserAgent;
 import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
@@ -72,7 +73,8 @@ public class RedirectClientByPathHandlerTest {
 
         ClientSessionGroupMapping mapping = mock(ClientSessionGroupMapping.class);
         when(eventMeshTCPServer.getClientSessionGroupMapping()).thenReturn(mapping);
-        RedirectClientByPathHandler redirectClientByPathHandler = new RedirectClientByPathHandler(eventMeshTCPServer);
+        HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
+        RedirectClientByPathHandler redirectClientByPathHandler = new RedirectClientByPathHandler(eventMeshTCPServer, httpHandlerManager);
 
         // mock session map
         ConcurrentHashMap<InetSocketAddress, Session> sessionMap = new ConcurrentHashMap<>();
