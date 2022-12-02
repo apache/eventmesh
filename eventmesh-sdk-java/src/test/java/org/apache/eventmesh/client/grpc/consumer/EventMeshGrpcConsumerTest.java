@@ -66,7 +66,7 @@ public class EventMeshGrpcConsumerTest {
     private EventMeshGrpcConsumer eventMeshGrpcConsumer;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(EventMeshGrpcClientConfig.builder().build());
         eventMeshGrpcConsumer.init();
         eventMeshGrpcConsumer.consumerClient = consumerClient;
