@@ -34,7 +34,9 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 
 public class NacosSelector implements Selector {
+    
     private static final Logger logger = LoggerFactory.getLogger(NacosSelector.class);
+    
     private NamingService namingService;
 
     public void init() throws Exception {
@@ -42,7 +44,7 @@ public class NacosSelector implements Selector {
             Properties properties = Utils.readPropertiesFile(ExampleConstants.CONFIG_FILE_NAME);
             namingService = NamingFactory.createNamingService(properties.getProperty(ExampleConstants.EVENTMESH_SELECTOR_NACOS_ADDRESS));
         } catch (NacosException e) {
-            logger.error("[NacosSelector][init] error", e);
+            logger.error("[NacosSelector][init] error ", e);
             throw new Exception(e.getMessage());
         }
     }
@@ -61,7 +63,7 @@ public class NacosSelector implements Selector {
             serviceInstance.setMetadata(instance.getMetadata());
             return serviceInstance;
         } catch (NacosException e) {
-            logger.error("[NacosSelector][selectOne] error", e);
+            logger.error("[NacosSelector][selectOne] error ", e);
             throw new SelectorException(e.getMessage());
         }
     }

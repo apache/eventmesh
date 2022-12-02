@@ -15,19 +15,24 @@
  * limitations under the License.
  */
 
-dependencies {
-    api project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
-    api 'io.cloudevents:cloudevents-core'
-    api 'io.dropwizard.metrics:metrics-core'
-    api "io.dropwizard.metrics:metrics-healthchecks"
-    api "io.dropwizard.metrics:metrics-annotation"
-    api "io.dropwizard.metrics:metrics-json"
+package org.apache.eventmesh.runtime.admin.handler;
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
+import com.sun.net.httpserver.HttpHandler;
 
+import lombok.Data;
+
+/**
+ * AbstractHttpHandler
+ */
+@Data
+public abstract class AbstractHttpHandler implements HttpHandler {
+
+    private final HttpHandlerManager httpHandlerManager;
+
+    public AbstractHttpHandler(HttpHandlerManager httpHandlerManager) {
+        this.httpHandlerManager = httpHandlerManager;
+        this.httpHandlerManager.register(this);
+    }
 }
