@@ -223,14 +223,14 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
         // The MetricsRegistry is singleton, so we can use factory method to get.
         final List<MetricsRegistry> metricsRegistries = Lists.newArrayList();
-        Optional.ofNullable(eventMeshTCPConfiguration.eventMeshMetricsPluginType)
+        Optional.ofNullable(eventMeshTCPConfiguration.getEventMeshMetricsPluginType())
             .ifPresent(
                 metricsPlugins -> metricsPlugins.forEach(
                     pluginType -> metricsRegistries.add(MetricsPluginFactory.getMetricsRegistry(pluginType))));
         eventMeshTcpMonitor = new EventMeshTcpMonitor(this, metricsRegistries);
         eventMeshTcpMonitor.init();
 
-        if (eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
             eventMeshRebalanceService = new EventMeshRebalanceService(this,
                 new EventmeshRebalanceImpl(this));
             eventMeshRebalanceService.init();
@@ -250,7 +250,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
 
         clientManageController.start();
 
-        if (eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
             this.register();
             eventMeshRebalanceService.start();
         }
@@ -265,7 +265,7 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             logger.info("shutdown bossGroup, no client is allowed to connect access server");
         }
 
-        if (eventMeshTCPConfiguration.eventMeshServerRegistryEnable) {
+        if (eventMeshTCPConfiguration.isEventMeshServerRegistryEnable()) {
             eventMeshRebalanceService.shutdown();
 
             this.unRegister();
@@ -303,8 +303,9 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
             String endPoints = IPUtils.getLocalAddress()
                 + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshTCPConfiguration.eventMeshTcpServerPort;
             EventMeshRegisterInfo eventMeshRegisterInfo = new EventMeshRegisterInfo();
-            eventMeshRegisterInfo.setEventMeshClusterName(eventMeshTCPConfiguration.eventMeshCluster);
-            eventMeshRegisterInfo.setEventMeshName(eventMeshTCPConfiguration.eventMeshName + "-" + ConfigurationContextUtil.TCP);
+            eventMeshRegisterInfo.setEventMeshClusterName(eventMeshTCPConfiguration.getEventMeshCluster());
+            eventMeshRegisterInfo.setEventMeshName(eventMeshTCPConfiguration.getEventMeshName() + "-"
+                    + ConfigurationContextUtil.TCP);
             eventMeshRegisterInfo.setEndPoint(endPoints);
             eventMeshRegisterInfo.setEventMeshInstanceNumMap(clientSessionGroupMapping.prepareProxyClientDistributionData());
             eventMeshRegisterInfo.setProtocolType(ConfigurationContextUtil.TCP);
@@ -320,8 +321,8 @@ public class EventMeshTCPServer extends AbstractRemotingServer {
         String endPoints = IPUtils.getLocalAddress()
             + EventMeshConstants.IP_PORT_SEPARATOR + eventMeshTCPConfiguration.eventMeshTcpServerPort;
         EventMeshUnRegisterInfo eventMeshUnRegisterInfo = new EventMeshUnRegisterInfo();
-        eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshTCPConfiguration.eventMeshCluster);
-        eventMeshUnRegisterInfo.setEventMeshName(eventMeshTCPConfiguration.eventMeshName);
+        eventMeshUnRegisterInfo.setEventMeshClusterName(eventMeshTCPConfiguration.getEventMeshCluster());
+        eventMeshUnRegisterInfo.setEventMeshName(eventMeshTCPConfiguration.getEventMeshName());
         eventMeshUnRegisterInfo.setEndPoint(endPoints);
         eventMeshUnRegisterInfo.setProtocolType(ConfigurationContextUtil.TCP);
         boolean registerResult = registry.unRegister(eventMeshUnRegisterInfo);

@@ -86,8 +86,8 @@ public class EventMeshConsumer {
         this.eventMeshGrpcConfiguration = eventMeshGrpcServer.getEventMeshGrpcConfiguration();
         this.consumerGroup = consumerGroup;
         this.messageHandler = new MessageHandler(consumerGroup, eventMeshGrpcServer.getPushMsgExecutor());
-        this.persistentMqConsumer = new MQConsumerWrapper(eventMeshGrpcConfiguration.eventMeshConnectorPluginType);
-        this.broadcastMqConsumer = new MQConsumerWrapper(eventMeshGrpcConfiguration.eventMeshConnectorPluginType);
+        this.persistentMqConsumer = new MQConsumerWrapper(eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
+        this.broadcastMqConsumer = new MQConsumerWrapper(eventMeshGrpcConfiguration.getEventMeshConnectorPluginType());
     }
 
     /**
@@ -141,9 +141,9 @@ public class EventMeshConsumer {
         Properties keyValue = new Properties();
         keyValue.put(IS_BROADCAST, "false");
         keyValue.put(CONSUMER_GROUP, consumerGroup);
-        keyValue.put(EVENT_MESH_IDC, eventMeshGrpcConfiguration.eventMeshIDC);
+        keyValue.put(EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         keyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroup,
-            eventMeshGrpcConfiguration.eventMeshCluster));
+                eventMeshGrpcConfiguration.getEventMeshCluster()));
         persistentMqConsumer.init(keyValue);
         EventListener clusterEventListner = createEventListener(SubscriptionMode.CLUSTERING);
         persistentMqConsumer.registerEventListener(clusterEventListner);
@@ -151,9 +151,9 @@ public class EventMeshConsumer {
         Properties broadcastKeyValue = new Properties();
         broadcastKeyValue.put(IS_BROADCAST, "true");
         broadcastKeyValue.put(CONSUMER_GROUP, consumerGroup);
-        broadcastKeyValue.put(EVENT_MESH_IDC, eventMeshGrpcConfiguration.eventMeshIDC);
+        broadcastKeyValue.put(EVENT_MESH_IDC, eventMeshGrpcConfiguration.getEventMeshIDC());
         broadcastKeyValue.put(INSTANCE_NAME, EventMeshUtil.buildMeshClientID(consumerGroup,
-            eventMeshGrpcConfiguration.eventMeshCluster));
+                eventMeshGrpcConfiguration.getEventMeshCluster()));
         broadcastMqConsumer.init(broadcastKeyValue);
         EventListener broadcastEventListner = createEventListener(SubscriptionMode.BROADCASTING);
         broadcastMqConsumer.registerEventListener(broadcastEventListner);
@@ -231,8 +231,8 @@ public class EventMeshConsumer {
         return (event, context) -> {
 
             event = CloudEventBuilder.from(event)
-                .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
-                .build();
+                    .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
+                    .build();
 
             String topic = event.getSubject();
             Object bizSeqNo = event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
@@ -255,7 +255,8 @@ public class EventMeshConsumer {
             if (topicConfig != null) {
                 GrpcType grpcType = topicConfig.getGrpcType();
                 HandleMsgContext handleMsgContext = new HandleMsgContext(consumerGroup, event, subscriptionMode, grpcType,
-                    eventMeshAsyncConsumeContext.getAbstractContext(), eventMeshGrpcServer, this, topicConfig);
+                        eventMeshAsyncConsumeContext.getAbstractContext(), eventMeshGrpcServer, this,
+                        topicConfig);
 
                 if (messageHandler.handle(handleMsgContext)) {
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
@@ -279,16 +280,19 @@ public class EventMeshConsumer {
         };
     }
 
-    public void sendMessageBack(String consumerGroup, final CloudEvent event, final String uniqueId, String bizSeqNo) throws Exception {
+    public void sendMessageBack(String consumerGroup, final CloudEvent event,
+                                final String uniqueId, String bizSeqNo) throws Exception {
         EventMeshProducer producer
-            = eventMeshGrpcServer.getProducerManager().getEventMeshProducer(consumerGroup);
+                = eventMeshGrpcServer.getProducerManager().getEventMeshProducer(consumerGroup);
 
         if (producer == null) {
-            logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup, bizSeqNo, uniqueId);
+            logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}",
+                    consumerGroup, bizSeqNo, uniqueId);
             return;
         }
 
-        final SendMessageContext sendMessageBackContext = new SendMessageContext(bizSeqNo, event, producer, eventMeshGrpcServer);
+        final SendMessageContext sendMessageBackContext = new SendMessageContext(bizSeqNo, event,
+                producer, eventMeshGrpcServer);
 
         producer.send(sendMessageBackContext, new SendCallback() {
             @Override
@@ -297,7 +301,8 @@ public class EventMeshConsumer {
 
             @Override
             public void onException(OnExceptionContext context) {
-                logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup, bizSeqNo, uniqueId);
+                logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup,
+                        bizSeqNo, uniqueId);
             }
         });
     }
