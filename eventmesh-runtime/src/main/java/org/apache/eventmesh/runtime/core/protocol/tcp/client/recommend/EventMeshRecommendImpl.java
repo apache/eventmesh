@@ -51,7 +51,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
             logger.warn("EventMeshRecommend failed,params illegal,group:{},purpose:{}", group, purpose);
             return null;
         }
-        final String cluster = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshCluster;
+        final String cluster = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshCluster();
         try {
             eventMeshDataInfoList = eventMeshTCPServer.getRegistry().findEventMeshInfoByCluster(cluster);
         } catch (Exception e) {
@@ -68,7 +68,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
 
         Map<String, String> localEventMeshMap = new HashMap<>();
         Map<String, String> remoteEventMeshMap = new HashMap<>();
-        String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshIDC;
+        String localIdc = eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshIDC();
         for (EventMeshDataInfo eventMeshDataInfo : eventMeshDataInfoList) {
             String idc = eventMeshDataInfo.getEventMeshName().split("-")[0];
             if (StringUtils.isNotBlank(idc)) {
@@ -161,7 +161,7 @@ public class EventMeshRecommendImpl implements EventMeshRecommendStrategy {
         for (Map.Entry<String, Map<String, Integer>> entry : eventMeshClientDistributionDataMap.entrySet()) {
             String idc = entry.getKey().split("-")[0];
             if (StringUtils.isNotBlank(idc)) {
-                if (StringUtils.equals(idc, eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshIDC)) {
+                if (StringUtils.equals(idc, eventMeshTCPServer.getEventMeshTCPConfiguration().getEventMeshIDC())) {
                     localClientDistributionMap.put(entry.getKey(), entry.getValue().get(purpose));
                 } else {
                     remoteClientDistributionMap.put(entry.getKey(), entry.getValue().get(purpose));

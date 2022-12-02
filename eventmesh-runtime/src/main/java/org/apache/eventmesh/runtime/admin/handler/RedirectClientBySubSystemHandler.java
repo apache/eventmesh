@@ -19,7 +19,9 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.EventMeshTcp2Client;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.group.ClientSessionGroupMapping;
@@ -37,18 +39,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 /**
  * redirect subsystem for subsys and dcn
  */
-public class RedirectClientBySubSystemHandler implements HttpHandler {
+@EventHttpHandler(path = "/clientManage/redirectClientBySubSystem")
+public class RedirectClientBySubSystemHandler extends AbstractHttpHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(RedirectClientBySubSystemHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
-    public RedirectClientBySubSystemHandler(EventMeshTCPServer eventMeshTCPServer) {
+    public RedirectClientBySubSystemHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 

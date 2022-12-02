@@ -15,21 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.protocol.grpc.common;
+package org.apache.eventmesh.runtime.admin.handler;
 
-import org.apache.eventmesh.common.protocol.ProtocolTransportObject;
-import org.apache.eventmesh.common.protocol.grpc.protos.BatchMessage;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 
-public class BatchMessageWrapper implements ProtocolTransportObject {
-    public static final long serialVersionUID = 7658452608197650205L;
+import com.sun.net.httpserver.HttpHandler;
 
-    private final BatchMessage batchMessage;
+import lombok.Data;
 
-    public BatchMessageWrapper(BatchMessage batchMessage) {
-        this.batchMessage = batchMessage;
-    }
+/**
+ * AbstractHttpHandler
+ */
+@Data
+public abstract class AbstractHttpHandler implements HttpHandler {
 
-    public BatchMessage getMessage() {
-        return batchMessage;
+    private final HttpHandlerManager httpHandlerManager;
+
+    public AbstractHttpHandler(HttpHandlerManager httpHandlerManager) {
+        this.httpHandlerManager = httpHandlerManager;
+        this.httpHandlerManager.register(this);
     }
 }

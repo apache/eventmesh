@@ -87,12 +87,12 @@ public class EtcdRegistryService implements RegistryService {
             if (null == commonConfiguration) {
                 continue;
             }
-            if (StringUtils.isBlank(commonConfiguration.namesrvAddr)) {
+            if (StringUtils.isBlank(commonConfiguration.getNamesrvAddr())) {
                 throw new RegistryException("namesrvAddr cannot be null");
             }
-            this.serverAddr = commonConfiguration.namesrvAddr;
-            this.username = commonConfiguration.eventMeshRegistryPluginUsername;
-            this.password = commonConfiguration.eventMeshRegistryPluginPassword;
+            this.serverAddr = commonConfiguration.getNamesrvAddr();
+            this.username = commonConfiguration.getEventMeshRegistryPluginUsername();
+            this.password = commonConfiguration.getEventMeshRegistryPluginPassword();
             break;
         }
         etcdRegistryMonitorExecutorService = ThreadPoolFactory.createSingleScheduledExecutor(

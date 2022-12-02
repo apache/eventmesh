@@ -18,6 +18,7 @@
 package org.apache.eventmesh.connector.rabbitmq.cloudevent;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 
 import org.junit.Assert;
@@ -40,7 +41,7 @@ public class RabbitmqCloudEventTest {
                 .withSubject("topic")
                 .withType(String.class.getCanonicalName())
                 .withDataContentType("text/plain")
-                .withData("data".getBytes())
+                .withData("data".getBytes(StandardCharsets.UTF_8))
                 .build();
     }
 

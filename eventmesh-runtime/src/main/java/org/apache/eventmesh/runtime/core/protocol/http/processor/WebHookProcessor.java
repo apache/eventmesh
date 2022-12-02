@@ -30,12 +30,13 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 
-import lombok.Setter;
-
 @EventMeshTrace(isEnable = true)
 public class WebHookProcessor implements HttpProcessor {
 
-    @Setter
+    public void setWebHookController(WebHookController webHookController) {
+        this.webHookController = webHookController;
+    }
+
     private WebHookController webHookController;
 
     @Override

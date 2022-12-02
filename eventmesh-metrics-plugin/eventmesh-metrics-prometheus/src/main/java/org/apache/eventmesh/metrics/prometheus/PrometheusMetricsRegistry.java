@@ -29,6 +29,9 @@ import org.apache.eventmesh.metrics.prometheus.metrics.PrometheusTcpExporter;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.opentelemetry.exporter.prometheus.PrometheusCollector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.prometheus.client.exporter.HTTPServer;
@@ -37,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PrometheusMetricsRegistry implements MetricsRegistry {
+    private static final Logger LOG = LoggerFactory.getLogger(PrometheusMetricsRegistry.class);
 
     private volatile HTTPServer prometheusHttpServer;
 
@@ -47,13 +51,13 @@ public class PrometheusMetricsRegistry implements MetricsRegistry {
                 if (prometheusHttpServer == null) {
                     SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder().buildAndRegisterGlobal();
                     PrometheusCollector
-                        .builder().setMetricProducer(sdkMeterProvider).buildAndRegister();
+                            .builder().setMetricProducer(sdkMeterProvider).buildAndRegister();
                     int port = PrometheusConfiguration.getEventMeshPrometheusPort();
                     try {
                         //Use the daemon thread to start an HTTP server to serve the default Prometheus registry.
                         prometheusHttpServer = new HTTPServer(port, true);
                     } catch (IOException e) {
-                        log.error("failed to start prometheus server, port: {} due to {}", port, e.getMessage());
+                        LOG.error("failed to start prometheus server, port: " + port, e);
                     }
                 }
             }

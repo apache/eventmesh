@@ -29,35 +29,35 @@
 
 
 
-0. 在提交PR之前需要先创建一个ISSUE，它是用来表达你的想法的，比如你发现了代码中的bug，想修复这个bug，那么需要告知社区管理者或贡献者你的想法，就要创建一个ISSUE用于大家一起交流讨论。在EventMesh社区有ISSUE模板，可根据您提出的ISSUE使用模板。
+0. 在提交PR之前需要先创建一个ISSUE，它是用来表达你的想法的，比如你发现了代码中的bug，想修复这个bug，那么需要告知社区管理者或贡献者你的想法，就要创建一个ISSUE用于大家一起交流讨论。在EventMesh社区有ISSUE模板，可根据您提出的ISSUE使用模板。  
 
 ISSUE创建示例:  
-a.进入到项目仓库的主页，切换到issue标签，点击New issue
+   a.进入到项目仓库的主页，切换到issue标签，点击New issue  
 
 
 
-![contributor01](../../images/contributor14.png)
-
-b.就会出现下图界面  
-![contributor01](../../images/contributor15.png)  
-根据你的需要选择不同的ISSUE模板，如果你觉得没有模板合适，你可以选择打开一个空白模板。
-当前EventMesh提供了六种ISSUE模板  
-Bug report: 发现代码bug，请使用此模板  
-Documentation Related: 文档相关的，请使用此模板  
-Enhancement Request: 代码优化，增强代码实现的，请使用此模板  
-Feature Request: 为EventMesh提供新的特性功能的使用此模板  
-Question: 对于EventMesh有疑问的，或者有什么不明白的想要提问的，请使用此模板  
-Unit Test: 想为EventMesh做一些单元测试的，请使用此模板
-
-
-
-c.根据模板的提示，完成issue内容填写。主要是描述清楚问题所在和解决方案就可以了
+   ![contributor01](../../images/contributor14.png)
+   
+   b.就会出现下图界面  
+   ![contributor01](../../images/contributor15.png)  
+   根据你的需要选择不同的ISSUE模板，如果你觉得没有模板合适，你可以选择打开一个空白模板。
+   当前EventMesh提供了六种ISSUE模板  
+   Bug report: 发现代码bug，请使用此模板  
+   Documentation Related: 文档相关的，请使用此模板  
+   Enhancement Request: 代码优化，增强代码实现的，请使用此模板  
+   Feature Request: 为EventMesh提供新的特性功能的使用此模板  
+   Question: 对于EventMesh有疑问的，或者有什么不明白的想要提问的，请使用此模板  
+   Unit Test: 想为EventMesh做一些单元测试的，请使用此模板  
 
 
+   
+   c.根据模板的提示，完成issue内容填写。主要是描述清楚问题所在和解决方案就可以了
+   
 
-[ISSUE实例](https://github.com/apache/incubator-eventmesh/issues/2148)  
-如图：  
-![contributor01](../../images/contributor16.png)
+
+   [ISSUE实例](https://github.com/apache/incubator-eventmesh/issues/2148)  
+   如图：  
+   ![contributor01](../../images/contributor16.png)  
 
 
 
