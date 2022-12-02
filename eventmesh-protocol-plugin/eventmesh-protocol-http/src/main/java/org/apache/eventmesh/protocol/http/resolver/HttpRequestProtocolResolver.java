@@ -65,15 +65,15 @@ public class HttpRequestProtocolResolver {
                 .withDataContentType(HttpProtocolConstant.DATA_CONTENT_TYPE);
 
             // with extensions
-            for (String extensionKey : sysHeaderMap.keySet()) {
-                if (StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_ID, extensionKey)
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, extensionKey)
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_TYPE, extensionKey)
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, extensionKey)) {
+            for (Map.Entry<String,Object> extension : sysHeaderMap.entrySet()) {
+                if (StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_ID, extension.getKey())
+                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, extension.getKey())
+                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_TYPE, extension.getKey())
+                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, extension.getKey())) {
                     continue;
                 }
-                String lowerExtensionKey = extensionKey.toLowerCase();
-                builder.withExtension(lowerExtensionKey, sysHeaderMap.get(extensionKey).toString());
+                String lowerExtensionKey = extension.getKey().toLowerCase();
+                builder.withExtension(lowerExtensionKey, sysHeaderMap.get(extension.getKey()).toString());
             }
 
             byte[] requestBody = httpEventWrapper.getBody();
