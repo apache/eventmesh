@@ -58,6 +58,7 @@ public class NetUtils {
         if (formData == null || formData.trim().length() == 0) {
             return result;
         }
+
         final String[] items = formData.split(Constants.AND);
         Arrays.stream(items).forEach(item -> {
             final String[] keyAndVal = item.split(Constants.EQ);
