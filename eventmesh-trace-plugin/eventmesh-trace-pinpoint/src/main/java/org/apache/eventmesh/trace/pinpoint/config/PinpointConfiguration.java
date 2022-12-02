@@ -52,7 +52,7 @@ public final class PinpointConfiguration {
     private static final String CONFIG_FILE = "pinpoint.properties";
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
     private static final Properties properties = new Properties();
 
@@ -86,7 +86,7 @@ public final class PinpointConfiguration {
         applicationName = properties.getProperty(APPLICATION_NAME_KEY);
         if (StringUtils.isBlank(applicationName)) {
             applicationName = Optional.ofNullable(System.getProperty(APPLICATION_NAME))
-                .orElse(System.getenv(APPLICATION_NAME));
+                    .orElse(System.getenv(APPLICATION_NAME));
         }
 
         requireNonNull(applicationName, String.format("%s can not be null", APPLICATION_NAME_KEY));
@@ -100,8 +100,8 @@ public final class PinpointConfiguration {
         if (StringUtils.isBlank(agentId)) {
             // refer to: com.navercorp.pinpoint.common.util.IdValidateUtils#validateId
             agentId = StringUtils.substring(agentName, 0, 15)
-                + Constants.HYPHEN
-                + RandomStringUtils.generateNum(8);
+                    + Constants.HYPHEN
+                    + RandomStringUtils.generateNum(8);
         }
 
         Properties temporary = new Properties();
@@ -115,7 +115,7 @@ public final class PinpointConfiguration {
         URL resource = PinpointConfiguration.class.getClassLoader().getResource(CONFIG_FILE);
         if (resource != null) {
             try (InputStream inputStream = resource.openStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 if (inputStream.available() > 0) {
                     properties.load(reader);
                 }
@@ -126,9 +126,7 @@ public final class PinpointConfiguration {
         // get from config home
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONFIG_FILE;
-            if (new File(configPath).exists()) {
-                properties.load(new BufferedReader(new FileReader(configPath)));
-            }
+            PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Can not load %s file from conf", CONFIG_FILE));
         }

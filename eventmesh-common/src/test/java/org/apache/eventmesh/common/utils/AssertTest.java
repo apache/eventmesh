@@ -15,19 +15,22 @@
  * limitations under the License.
  */
 
-dependencies {
-    api project(":eventmesh-spi")
-    implementation project(":eventmesh-common")
-    api 'io.cloudevents:cloudevents-core'
-    api 'io.dropwizard.metrics:metrics-core'
-    api "io.dropwizard.metrics:metrics-healthchecks"
-    api "io.dropwizard.metrics:metrics-annotation"
-    api "io.dropwizard.metrics:metrics-json"
+package org.apache.eventmesh.common.utils;
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+import org.junit.Test;
 
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
+/**
+ * test {@link AssertUtils}
+ */
+public class AssertTest {
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testNotNull() {
+        AssertUtils.notNull(null, "error message");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testIsTrue() {
+        AssertUtils.isTrue(false, "error message");
+    }
 }

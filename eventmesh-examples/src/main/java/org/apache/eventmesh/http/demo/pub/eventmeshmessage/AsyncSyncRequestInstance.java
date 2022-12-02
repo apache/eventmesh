@@ -74,26 +74,26 @@ public class AsyncSyncRequestInstance {
             eventMeshHttpProducer.request(eventMeshMessage, new RRCallback<EventMeshMessage>() {
                 @Override
                 public void onSuccess(EventMeshMessage o) {
-                    log.debug("sendmsg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(),
+                    log.debug("async send msg: {}, return: {}, cost: {} ms", eventMeshMessage.getContent(), o.getContent(),
                             System.currentTimeMillis() - startTime);
                 }
 
                 @Override
                 public void onException(Throwable e) {
-                    log.debug("send msg failed", e);
+                    log.debug("async send msg failed ", e);
                 }
             }, 3000);
 
             Thread.sleep(2000);
         } catch (Exception e) {
-            log.warn("async send msg failed", e);
+            log.warn("async send msg failed ", e);
         }
 
         Thread.sleep(30000);
         try (final EventMeshHttpProducer ignore = eventMeshHttpProducer) {
             // close producer
         } catch (Exception e1) {
-            log.warn("producer shutdown exception", e1);
+            log.warn("producer shutdown exception ", e1);
         }
     }
 }
