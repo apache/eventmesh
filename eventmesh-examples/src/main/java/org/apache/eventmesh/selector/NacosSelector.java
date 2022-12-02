@@ -31,6 +31,7 @@ import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 
 public class NacosSelector implements Selector {
+
     private transient NamingService namingService;
 
     public void init() throws Exception {
