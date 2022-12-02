@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
  */
 public class RandomLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
 
-    private final Logger logger = LoggerFactory.getLogger(RandomLoadBalanceSelector.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RandomLoadBalanceSelector.class);
 
-    private final List<T> clusterGroup;
+    private final transient List<T> clusterGroup;
 
     public RandomLoadBalanceSelector(List<T> clusterGroup) {
         this.clusterGroup = clusterGroup;
@@ -44,7 +44,7 @@ public class RandomLoadBalanceSelector<T> implements LoadBalanceSelector<T> {
     @Override
     public T select() {
         if (CollectionUtils.isEmpty(clusterGroup)) {
-            logger.warn("No servers available");
+            LOG.warn("No servers available");
             return null;
         }
         return clusterGroup.get(ThreadLocalRandom.current().nextInt(clusterGroup.size()));

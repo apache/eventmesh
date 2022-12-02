@@ -54,6 +54,7 @@ public class SyncRequest {
             .userAgent(userAgent)
             .build();
         try {
+
             client = EventMeshTCPClientFactory.createEventMeshTCPClient(eventMeshTcpClientConfig, CloudEvent.class);
             client.init();
 

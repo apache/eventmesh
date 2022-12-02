@@ -24,6 +24,8 @@ import com.google.common.base.Objects;
 
 public class SubscriptionItem implements Serializable {
 
+    public static final long serialVersionUID = 2375640521211793028L;
+
     private String topic;
 
     @JsonDeserialize(converter = SubscriptionModeConverter.class)

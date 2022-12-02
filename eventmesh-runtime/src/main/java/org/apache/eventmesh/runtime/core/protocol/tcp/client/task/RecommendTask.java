@@ -49,7 +49,7 @@ public class RecommendTask extends AbstractTask {
         long taskExecuteTime = System.currentTimeMillis();
         Package res = new Package();
         try {
-            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().eventMeshServerRegistryEnable) {
+            if (!eventMeshTCPServer.getEventMeshTCPConfiguration().isEventMeshServerRegistryEnable()) {
                 throw new Exception("registry enable config is false, not support");
             }
             UserAgent user = (UserAgent) pkg.getBody();

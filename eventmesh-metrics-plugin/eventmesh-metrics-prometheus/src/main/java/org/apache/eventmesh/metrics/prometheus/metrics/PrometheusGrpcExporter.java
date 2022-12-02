@@ -25,15 +25,12 @@ import io.opentelemetry.api.metrics.GlobalMeterProvider;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.common.Labels;
 
-import lombok.experimental.UtilityClass;
-
-@UtilityClass
 public class PrometheusGrpcExporter {
 
     private static final String UNIT = "GRPC";
     private static final String METRICS_NAME_PREFIX = "eventmesh.grpc.";
 
-    private void observeOfValue(Meter meter, String name, String desc, Supplier<Long> supplier) {
+    private static void observeOfValue(Meter meter, String name, String desc, Supplier<Long> supplier) {
         meter.doubleValueObserverBuilder(METRICS_NAME_PREFIX + name)
             .setDescription(desc)
             .setUnit(UNIT)

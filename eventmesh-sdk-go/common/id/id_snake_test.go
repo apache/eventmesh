@@ -41,11 +41,14 @@ func TestInit(t *testing.T) {
 				if err := recover(); err != nil {
 					ret = err.(error).Error()
 				}
+
+				So(ret, ShouldEqual, want)
+
 				mockPatches.Reset()
 			}()
 
 			_ = NewFlake()
-			So(ret, ShouldEqual, want)
+
 		})
 	})
 
@@ -72,17 +75,18 @@ func TestNext(t *testing.T) {
 
 			flake := NewFlakeWithSonyflake(aSonyflake)
 
-			want := "over the time limit"
+			want := "test error"
 			var ret string
 			defer func() {
 				if err := recover(); err != nil {
 					ret = err.(error).Error()
 				}
+				So(ret, ShouldEqual, want)
 				mockPatches.Reset()
 			}()
 
 			_ = flake.Next()
-			So(ret, ShouldEqual, want)
+
 		})
 	})
 }

@@ -34,6 +34,9 @@
 
 ISSUE创建示例:  
    a.进入到项目仓库的主页，切换到issue标签，点击New issue  
+
+
+
    ![contributor01](../../images/contributor14.png)
    
    b.就会出现下图界面  
@@ -46,12 +49,18 @@ ISSUE创建示例:
    Feature Request: 为EventMesh提供新的特性功能的使用此模板  
    Question: 对于EventMesh有疑问的，或者有什么不明白的想要提问的，请使用此模板  
    Unit Test: 想为EventMesh做一些单元测试的，请使用此模板  
+
+
    
    c.根据模板的提示，完成issue内容填写。主要是描述清楚问题所在和解决方案就可以了
    
+
+
    [ISSUE实例](https://github.com/apache/incubator-eventmesh/issues/2148)  
    如图：  
    ![contributor01](../../images/contributor16.png)  
+
+
 
 ISSUE与PR关联：
    后续提交PR的时候，PR的标题和内容应该跟ISSUE完成关联，这样才符合开源的规范，如下图所示
@@ -62,6 +71,9 @@ ISSUE与PR关联：
 
 
 1. 在issue创建完成后，将源仓库的项目eventmesh fork到自己仓库当中  
+
+
+
 例：  
    a.点击eventmesh右上角的fork     
    ![contributor01](../../images/contributor01.png)  

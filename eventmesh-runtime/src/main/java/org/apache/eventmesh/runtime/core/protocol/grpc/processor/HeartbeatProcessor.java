@@ -103,7 +103,7 @@ public class HeartbeatProcessor {
 
     private void doAclCheck(Heartbeat heartbeat) throws AclException {
         RequestHeader header = heartbeat.getHeader();
-        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().eventMeshServerSecurityEnable) {
+        if (eventMeshGrpcServer.getEventMeshGrpcConfiguration().isEventMeshServerSecurityEnable()) {
             String remoteAdd = header.getIp();
             String user = header.getUsername();
             String pass = header.getPassword();
