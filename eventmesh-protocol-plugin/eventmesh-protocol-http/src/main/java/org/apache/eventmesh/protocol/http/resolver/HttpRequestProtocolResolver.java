@@ -50,26 +50,26 @@ public class HttpRequestProtocolResolver {
             String id = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_ID, UUID.randomUUID()).toString();
 
             String source =
-                sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, HttpProtocolConstant.CONSTANTS_DEFAULT_SOURCE).toString();
+                    sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, HttpProtocolConstant.CONSTANTS_DEFAULT_SOURCE).toString();
 
             String type = sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_TYPE, HttpProtocolConstant.CONSTANTS_DEFAULT_TYPE).toString();
 
             String subject =
-                sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, HttpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
+                    sysHeaderMap.getOrDefault(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, HttpProtocolConstant.CONSTANTS_DEFAULT_SUBJECT).toString();
 
             // with attributes
             builder.withId(id)
-                .withType(type)
-                .withSource(URI.create(HttpProtocolConstant.CONSTANTS_KEY_SOURCE + ":" + source))
-                .withSubject(subject)
-                .withDataContentType(HttpProtocolConstant.DATA_CONTENT_TYPE);
+                    .withType(type)
+                    .withSource(URI.create(HttpProtocolConstant.CONSTANTS_KEY_SOURCE + ":" + source))
+                    .withSubject(subject)
+                    .withDataContentType(HttpProtocolConstant.DATA_CONTENT_TYPE);
 
             // with extensions
-            for (Map.Entry<String,Object> extension : sysHeaderMap.entrySet()) {
+            for (Map.Entry<String, Object> extension : sysHeaderMap.entrySet()) {
                 if (StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_ID, extension.getKey())
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, extension.getKey())
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_TYPE, extension.getKey())
-                    || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, extension.getKey())) {
+                        || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SOURCE, extension.getKey())
+                        || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_TYPE, extension.getKey())
+                        || StringUtils.equals(HttpProtocolConstant.CONSTANTS_KEY_SUBJECT, extension.getKey())) {
                     continue;
                 }
                 String lowerExtensionKey = extension.getKey().toLowerCase();
@@ -79,7 +79,8 @@ public class HttpRequestProtocolResolver {
             byte[] requestBody = httpEventWrapper.getBody();
 
             Map<String, Object> requestBodyMap = JsonUtils.deserialize(new String(requestBody, Constants.DEFAULT_CHARSET),
-                new TypeReference<HashMap<String, Object>>() {});
+                    new TypeReference<HashMap<String, Object>>() {
+                    });
 
             String requestURI = httpEventWrapper.getRequestURI();
 

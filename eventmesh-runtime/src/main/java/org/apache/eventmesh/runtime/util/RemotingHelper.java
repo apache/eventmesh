@@ -19,6 +19,10 @@
 
 package org.apache.eventmesh.runtime.util;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
@@ -35,10 +39,9 @@ public class RemotingHelper {
             sb.append(e);
 
             StackTraceElement[] stackTrace = e.getStackTrace();
-            if (stackTrace != null && stackTrace.length > 0) {
+            if (ArrayUtils.isNotEmpty(stackTrace)) {
                 StackTraceElement elment = stackTrace[0];
-                sb.append(", ");
-                sb.append(elment.toString());
+                sb.append(", ").append(elment);
             }
         }
 
@@ -60,7 +63,7 @@ public class RemotingHelper {
         SocketAddress remote = channel.remoteAddress();
         final String addr = remote != null ? remote.toString() : "";
 
-        if (addr.length() > 0) {
+        if (StringUtils.isNotBlank(addr)) {
             int index = addr.lastIndexOf("/");
             if (index >= 0) {
                 return addr.substring(index + 1);
