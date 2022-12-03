@@ -69,7 +69,7 @@ public class HeartbeatProcessor {
 
         // only handle heartbeat for consumers
         ClientType clientType = heartbeat.getClientType();
-        if (!ClientType.SUB.equals(clientType)) {
+        if (ClientType.SUB == clientType) {
             ServiceUtils.sendRespAndDone(StatusCode.EVENTMESH_PROTOCOL_BODY_ERR, emitter);
             return;
         }
