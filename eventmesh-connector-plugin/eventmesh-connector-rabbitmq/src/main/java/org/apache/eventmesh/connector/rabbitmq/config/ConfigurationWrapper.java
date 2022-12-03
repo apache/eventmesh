@@ -20,12 +20,14 @@ package org.apache.eventmesh.connector.rabbitmq.config;
 import org.apache.eventmesh.common.Constants;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.utils.PropertiesUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class ConfigurationWrapper {
@@ -54,9 +56,7 @@ public class ConfigurationWrapper {
         }
         try {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONF_FILE;
-            if (new File(configPath).exists()) {
-                PROPERTIES.load(new BufferedReader(new FileReader(configPath)));
-            }
+            PropertiesUtils.loadPropertiesWhenFileExist(PROPERTIES, configPath, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", CONF_FILE));
         }
