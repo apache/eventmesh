@@ -118,15 +118,14 @@ func (c *Consumer) Start() error {
 }
 
 func (c *Consumer) Shutdown() error {
+	c.started.CAS(true, false)
 	if ok := c.started.CAS(true, false); ok {
 		for topicName, _ := range c.subscribes {
 			c.Unsubscribe(topicName)
 			delete(c.subscribes, topicName)
 		}
-		return nil
-	} else {
-		return errors.New("fail to shutdown standalone consumer, consumer is not started")
 	}
+	return nil
 }
 
 func (c *Consumer) IsStarted() bool {

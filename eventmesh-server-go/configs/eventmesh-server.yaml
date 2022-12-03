@@ -36,7 +36,7 @@ server:
     send-message-timeout: 5s
 active-plugins:
   registry: nacos
-  connector: standalone
+  connector: rocketmq
   log: default
 plugins:
   registry:
@@ -45,6 +45,17 @@ plugins:
       cache-dir: "d:\\nacas-cache"
   connector:
     standalone:
+    rocketmq:
+      access_points: 124.221.225.77:9876
+      namespace: grpcnamespace
+      instance_name: grpcinstance
+      group_name: grpcgroupname
+      send_msg_timeout: 5000
+      producer_retry_times: 3
+      compress_msg_body_threshold: 1024
+      consumer_group: grpcconsumergroup
+      max_reconsume_times: 3
+      message_model: CLUSTERING
   log:
     default:                                      
       - writer: console                           

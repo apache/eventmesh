@@ -107,6 +107,7 @@ func (c *ConsumerService) SubscribeStream(stream pb.ConsumerService_SubscribeStr
 }
 
 func (c *ConsumerService) Unsubscribe(ctx context.Context, sub *pb.Subscription) (*pb.Response, error) {
+	log.Infof("cmd=%v|%v|client2eventMesh|from=%v", "unsubscribe", "grpc", sub.Header.Ip)
 	tmCtx, cancel := context.WithTimeout(ctx, defaultAsyncTimeout)
 	defer cancel()
 	var (
