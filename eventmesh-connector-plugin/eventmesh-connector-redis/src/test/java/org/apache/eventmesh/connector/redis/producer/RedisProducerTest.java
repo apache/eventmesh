@@ -23,6 +23,7 @@ import org.apache.eventmesh.api.exception.OnExceptionContext;
 import org.apache.eventmesh.connector.redis.AbstractRedisServer;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Properties;
 import java.util.UUID;
@@ -65,7 +66,7 @@ public class RedisProducerTest extends AbstractRedisServer {
                 .withSubject(RedisProducerTest.class.getSimpleName())
                 .withType(String.class.getCanonicalName())
                 .withDataContentType("text/plain")
-                .withData("data".getBytes())
+                .withData("data".getBytes(StandardCharsets.UTF_8))
                 .build();
 
             redisProducer.publish(cloudEvent, new SendCallback() {
