@@ -59,9 +59,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class EventMeshUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(EventMeshUtil.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventMeshUtil.class);
 
-    private static final Logger tcpLogger = LoggerFactory.getLogger("tcpMonitor");
+    private static final Logger TCPLOGGER = LoggerFactory.getLogger("tcpMonitor");
 
     public static String buildPushMsgSeqNo() {
         return StringUtils.rightPad(String.valueOf(System.currentTimeMillis()), 6) + RandomStringUtils.generateNum(4);
@@ -105,9 +105,10 @@ public class EventMeshUtil {
         level = (level == 0) ? eles.length : level;
         StringBuilder sb = new StringBuilder();
         sb.append(e.getMessage()).append(System.lineSeparator());
+        
         int innerLevel = 0;
         for (StackTraceElement ele : eles) {
-            sb.append(ele.toString()).append(System.lineSeparator());
+            sb.append(ele).append(System.lineSeparator());
             if (++innerLevel >= level) {
                 break;
             }
@@ -165,7 +166,7 @@ public class EventMeshUtil {
     public static String getLocalAddr() {
         //priority of networkInterface when generating client ip
         String priority = System.getProperty("networkInterface.priority", "bond1<eth1<eth0");
-        logger.debug("networkInterface.priority: {}", priority);
+        LOGGER.debug("networkInterface.priority: {}", priority);
         ArrayList<String> preferList = new ArrayList<String>();
         for (String eth : priority.split("<")) {
             preferList.add(eth);
@@ -192,11 +193,11 @@ public class EventMeshUtil {
             ArrayList<String> ipv6Result = new ArrayList<String>();
 
             if (preferNetworkInterface != null) {
-                logger.debug("use preferNetworkInterface:{}", preferNetworkInterface);
+                LOGGER.debug("use preferNetworkInterface:{}", preferNetworkInterface);
                 final Enumeration<InetAddress> en = preferNetworkInterface.getInetAddresses();
                 getIpResult(ipv4Result, ipv6Result, en);
             } else {
-                logger.debug("no preferNetworkInterface");
+                LOGGER.debug("no preferNetworkInterface");
                 Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
                 while (enumeration.hasMoreElements()) {
                     final NetworkInterface networkInterface = enumeration.nextElement();
@@ -266,7 +267,7 @@ public class EventMeshUtil {
     }
 
     public static void printState(ThreadPoolExecutor scheduledExecutorService) {
-        tcpLogger.info("{} [{} {} {} {}]", ((EventMeshThreadFactoryImpl) scheduledExecutorService.getThreadFactory())
+        TCPLOGGER.info("{} [{} {} {} {}]", ((EventMeshThreadFactoryImpl) scheduledExecutorService.getThreadFactory())
             .getThreadNamePrefix(), scheduledExecutorService.getQueue().size(), scheduledExecutorService
             .getPoolSize(), scheduledExecutorService.getActiveCount(), scheduledExecutorService
             .getCompletedTaskCount());
@@ -302,7 +303,7 @@ public class EventMeshUtil {
             }
             return eventMeshCloudEventWriter.getExtensionMap();
         } catch (Throwable e) {
-            logger.warn("getCloudEventExtensionMap fail", e);
+            LOGGER.warn("getCloudEventExtensionMap fail", e);
             return null;
         }
     }
