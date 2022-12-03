@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.connector.rabbitmq.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.Constants;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+@Slf4j
 public class ConfigurationWrapper {
 
     private static final String CONF_FILE = "rabbitmq-client.properties";
@@ -50,6 +52,7 @@ public class ConfigurationWrapper {
                 PROPERTIES.load(resourceAsStream);
             }
         } catch (IOException e) {
+            log.error("load file from classpath exception:", e);
             throw new RuntimeException(String.format("Load %s file from classpath error", CONF_FILE));
         }
         try {
@@ -58,6 +61,7 @@ public class ConfigurationWrapper {
                 PROPERTIES.load(new BufferedReader(new FileReader(configPath)));
             }
         } catch (IOException e) {
+            log.error("load file from conf exception:", e);
             throw new IllegalArgumentException(String.format("Cannot load %s file from conf", CONF_FILE));
         }
     }
