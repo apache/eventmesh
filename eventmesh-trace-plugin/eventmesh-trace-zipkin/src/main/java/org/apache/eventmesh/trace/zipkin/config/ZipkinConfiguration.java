@@ -82,7 +82,7 @@ public class ZipkinConfiguration {
                     properties.load(new BufferedReader(new InputStreamReader(inputStream)));
                 }
             } catch (IOException e) {
-                throw new RuntimeException("Load zipkin.properties file from classpath error");
+                throw new RuntimeException("Load zipkin.properties file from classpath error", e);
             }
         }
         // get from config home
@@ -90,7 +90,7 @@ public class ZipkinConfiguration {
             String configPath = Constants.EVENTMESH_CONF_HOME + File.separator + CONFIG_FILE;
             PropertiesUtils.loadPropertiesWhenFileExist(properties, configPath);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Cannot load zipkin.properties file from conf");
+            throw new IllegalArgumentException("Cannot load zipkin.properties file from conf", e);
         }
     }
 }

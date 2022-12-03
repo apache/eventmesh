@@ -45,19 +45,21 @@ import com.google.common.collect.Lists;
 
 public class PullConsumerImpl {
 
-    private final DefaultConsumer defaultConsumer;
+    private static final Logger LOG = LoggerFactory.getLogger(PullConsumerImpl.class);
+
+    private final transient  DefaultConsumer defaultConsumer;
 
     // Topics to subscribe:
-    private List<SubscriptionItem> topicList = null;
-    private final ConcurrentHashMap<String, AtomicLong> offsetMap;
-    private final AtomicBoolean started = new AtomicBoolean(false);
-    private final Properties properties;
+    private transient List<SubscriptionItem> topicList = null;
+    private final transient ConcurrentHashMap<String, AtomicLong> offsetMap;
+    private final transient AtomicBoolean started = new AtomicBoolean(false);
+    private final transient Properties properties;
 
     // Store received message:
-    public ConcurrentMap<String /* topic */, String /* responseBody */> subscriptionInner;
-    public EventListener eventListener;
+    private transient ConcurrentMap<String /* topic */, String /* responseBody */> subscriptionInner;
+    private transient EventListener eventListener;
 
-    private static final Logger logger = LoggerFactory.getLogger(PullConsumerImpl.class);
+
 
     public PullConsumerImpl(final Properties properties) throws Exception {
         this.properties = properties;
@@ -77,16 +79,17 @@ public class PullConsumerImpl {
             topicList.add(new SubscriptionItem(topic, SubscriptionMode.CLUSTERING, SubscriptionType.ASYNC));
             // Pull event messages iteratively:
             topicList.forEach(
-                item -> {
-                    try {
-                        subscriptionInner.put(item.getTopic(), defaultConsumer.pullMessage(item.getTopic(), properties.getProperty("serviceAddr")));
-                    } catch (Exception e) {
-                        logger.error(e.getMessage());
+                    item -> {
+                        try {
+                            subscriptionInner.put(item.getTopic(),
+                                    defaultConsumer.pullMessage(item.getTopic(), properties.getProperty("serviceAddr")));
+                        } catch (Exception e) {
+                            LOG.error("store received message error", e);
+                        }
                     }
-                }
             );
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            LOG.error("other error", e);
         }
     }
 
@@ -95,14 +98,14 @@ public class PullConsumerImpl {
             // Unsubscribe topic:
             topicList.remove(topic);
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            LOG.error("unsubscribe topic error", e);
         }
     }
 
     // todo: offset
     public void updateOffset(List<CloudEvent> cloudEvents, AbstractContext context) {
         cloudEvents.forEach(cloudEvent -> this.updateOffset(
-            cloudEvent.getSubject(), (Long) cloudEvent.getExtension("offset"))
+                cloudEvent.getSubject(), (Long) cloudEvent.getExtension("offset"))
         );
     }
 
@@ -135,6 +138,7 @@ public class PullConsumerImpl {
 
     // todo: load balancer cluser and broadcast
     private class ClusteringMessageListener extends EventMeshMessageListenerConcurrently {
+        @Override
         public EventMeshConsumeConcurrentlyStatus handleMessage(CloudEvent cloudEvent, EventMeshConsumeConcurrentlyContext context) {
             final Properties contextProperties = new Properties();
             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS, EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
@@ -145,15 +149,15 @@ public class PullConsumerImpl {
                     switch (action) {
                         case CommitMessage:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
+                                    EventMeshConsumeConcurrentlyStatus.CONSUME_SUCCESS.name());
                             break;
                         case ReconsumeLater:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
+                                    EventMeshConsumeConcurrentlyStatus.RECONSUME_LATER.name());
                             break;
                         case ManualAck:
                             contextProperties.put(NonStandardKeys.MESSAGE_CONSUME_STATUS,
-                                EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
+                                    EventMeshConsumeConcurrentlyStatus.CONSUME_FINISH.name());
                             break;
                         default:
                             break;
@@ -167,7 +171,7 @@ public class PullConsumerImpl {
             eventListener.consume(cloudEvent, eventMeshAsyncConsumeContext);
 
             return EventMeshConsumeConcurrentlyStatus.valueOf(
-                contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
+                    contextProperties.getProperty(NonStandardKeys.MESSAGE_CONSUME_STATUS));
         }
     }
 }
