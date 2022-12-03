@@ -39,7 +39,7 @@ import io.grpc.stub.StreamObserver;
 
 public class StreamPushRequest extends AbstractPushRequest {
 
-    private final Logger messageLogger = LoggerFactory.getLogger("message");
+    private static final Logger LOGGER = LoggerFactory.getLogger(StreamPushRequest.class);
 
     private final Map<String, List<EventEmitter<SimpleMessage>>> idcEmitters;
 
@@ -70,9 +70,7 @@ public class StreamPushRequest extends AbstractPushRequest {
         for (EventEmitter<SimpleMessage> eventEmitter : eventEmitters) {
             this.lastPushTime = System.currentTimeMillis();
 
-            simpleMessage = SimpleMessage.newBuilder(simpleMessage)
-                .putProperties(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(lastPushTime))
-                .build();
+            simpleMessage = SimpleMessage.newBuilder(simpleMessage).putProperties(EventMeshConstants.REQ_EVENTMESH2C_TIMESTAMP, String.valueOf(lastPushTime)).build();
             try {
                 // catch the error and retry, don't use eventEmitter.onNext() to hide the error
                 StreamObserver<SimpleMessage> emitter = eventEmitter.getEmitter();
@@ -81,17 +79,11 @@ public class StreamPushRequest extends AbstractPushRequest {
                 }
 
                 long cost = System.currentTimeMillis() - lastPushTime;
-                messageLogger.info(
-                    "message|eventMesh2client|emitter|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", simpleMessage.getTopic(),
-                    simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost);
+                LOGGER.info("message|eventMesh2client|emitter|topic={}|bizSeqNo={}" + "|uniqueId={}|cost={}", simpleMessage.getTopic(), simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost);
                 complete();
             } catch (Throwable t) {
                 long cost = System.currentTimeMillis() - lastPushTime;
-                messageLogger.error(
-                    "message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}"
-                        + "|uniqueId={}|cost={}", t.getMessage(), simpleMessage.getTopic(),
-                    simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost, t);
+                LOGGER.error("message|eventMesh2client|exception={} |emitter|topic={}|bizSeqNo={}" + "|uniqueId={}|cost={}", t.getMessage(), simpleMessage.getTopic(), simpleMessage.getSeqNum(), simpleMessage.getUniqueId(), cost, t);
 
                 delayRetry();
             }
@@ -99,29 +91,30 @@ public class StreamPushRequest extends AbstractPushRequest {
     }
 
     private List<EventEmitter<SimpleMessage>> selectEmitter() {
-        List<EventEmitter<SimpleMessage>> emitterList = MapUtils.getObject(idcEmitters,
-            eventMeshGrpcConfiguration.eventMeshIDC, null);
+        List<EventEmitter<SimpleMessage>> emitterList = MapUtils.getObject(idcEmitters, eventMeshGrpcConfiguration.eventMeshIDC, null);
         if (CollectionUtils.isNotEmpty(emitterList)) {
-            if (subscriptionMode.equals(SubscriptionMode.CLUSTERING)) {
+            if (subscriptionMode == SubscriptionMode.CLUSTERING) {
                 return Collections.singletonList(emitterList.get((startIdx + retryTimes) % emitterList.size()));
-            } else if (subscriptionMode.equals(SubscriptionMode.BROADCASTING)) {
+            } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
                 return emitterList;
             } else {
-                messageLogger.error("Invalid Subscription Mode, no message returning back to subscriber.");
+                LOGGER.error("Invalid Subscription Mode, no message returning back to subscriber.");
                 return Collections.emptyList();
             }
         }
+
         if (CollectionUtils.isNotEmpty(totalEmitters)) {
-            if (subscriptionMode.equals(SubscriptionMode.CLUSTERING)) {
+            if (subscriptionMode == SubscriptionMode.CLUSTERING) {
                 return Collections.singletonList(totalEmitters.get((startIdx + retryTimes) % totalEmitters.size()));
-            } else if (subscriptionMode.equals(SubscriptionMode.BROADCASTING)) {
+            } else if (subscriptionMode == SubscriptionMode.BROADCASTING) {
                 return totalEmitters;
             } else {
-                messageLogger.error("Invalid Subscription Mode, no message returning back to subscriber.");
+                LOGGER.error("Invalid Subscription Mode, no message returning back to subscriber.");
                 return Collections.emptyList();
             }
         }
-        messageLogger.error("No event emitters from subscriber, no message returning.");
+
+        LOGGER.error("No event emitters from subscriber, no message returning.");
         return Collections.emptyList();
     }
 }
