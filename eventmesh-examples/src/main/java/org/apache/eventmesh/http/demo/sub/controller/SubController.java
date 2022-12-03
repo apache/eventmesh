@@ -55,8 +55,7 @@ public class SubController {
     public String subTest(HttpServletRequest request) {
         String content = request.getParameter("content");
         log.info("receive message: {}", content);
-        @SuppressWarnings("unchecked")
-        Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
+        @SuppressWarnings("unchecked") Map<String, String> contentMap = JsonUtils.deserialize(content, HashMap.class);
         if (StringUtils.equals(EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME, contentMap.get(ProtocolKey.PROTOCOL_TYPE))) {
             EventFormat eventFormat = EventFormatProvider.getInstance().resolveFormat(JsonFormat.CONTENT_TYPE);
             if (eventFormat != null) {
