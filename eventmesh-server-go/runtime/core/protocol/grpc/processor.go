@@ -162,7 +162,7 @@ func ProcessSubscribeStream(ctx context.Context, gctx *GRPCContext, emiter *Even
 		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_HEADER_ERR)
 		return err
 	}
-	if err := ValidateSubscription(WEBHOOK, msg); err != nil {
+	if err := ValidateSubscription(STREAM, msg); err != nil {
 		log.Warnf("invalid body:%v", err)
 		emiter.sendStreamResp(hdr, grpc.EVENTMESH_PROTOCOL_BODY_ERR)
 		return err

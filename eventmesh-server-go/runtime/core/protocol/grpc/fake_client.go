@@ -22,7 +22,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
-	"io"
 	"net/http"
 	"testing"
 )
@@ -52,6 +51,14 @@ func newTestClient(t *testing.T) *testClient {
 	}
 }
 
+func (c *testClient) createGRPCServer(t *testing.T) {
+
+}
+
+func (c *testClient) createGRPCClient(t *testing.T) {
+
+}
+
 func (c *testClient) startWebhookServer(t *testing.T) error {
 	router := gin.Default()
 
@@ -70,28 +77,6 @@ func (c *testClient) startWebhookServer(t *testing.T) error {
 	go func() {
 		if err := router.Run(fmt.Sprintf(":%d", 18080)); err != nil {
 			panic(err)
-		}
-	}()
-	return nil
-}
-
-func (c *testClient) startStreamServer(t *testing.T) error {
-	clientCoon, err := grpc.Dial("127.0.0.1:10010", grpc.WithInsecure())
-	assert.NoError(t, err)
-	grpcClient := pb.NewConsumerServiceClient(clientCoon)
-	stream, err := grpcClient.SubscribeStream(context.TODO())
-	assert.NoError(t, err)
-	go func() {
-		for {
-			resp, err := stream.Recv()
-			if err == io.EOF {
-				t.Log("server closed")
-				break
-			}
-			if err != nil {
-				t.Logf("server err:%v", err)
-			}
-			t.Logf("receive:%v", resp.Content)
 		}
 	}()
 	return nil
