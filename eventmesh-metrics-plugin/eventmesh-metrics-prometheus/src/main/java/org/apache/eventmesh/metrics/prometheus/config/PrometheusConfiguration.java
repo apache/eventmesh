@@ -21,8 +21,9 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.eventmesh.common.Constants;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.utils.PropertiesUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
