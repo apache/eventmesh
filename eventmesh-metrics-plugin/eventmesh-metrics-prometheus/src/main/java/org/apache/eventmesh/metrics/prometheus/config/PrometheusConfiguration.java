@@ -17,25 +17,24 @@
 
 package org.apache.eventmesh.metrics.prometheus.config;
 
-import org.apache.eventmesh.common.Constants;
-import org.apache.eventmesh.common.utils.PropertiesUtils;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
+import org.apache.eventmesh.common.Constants;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.utils.PropertiesUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 @UtilityClass
 public class PrometheusConfiguration {
 
-    private static final String     CONFIG_FILE = "prometheus.properties";
-    private static final Properties properties  = new Properties();
+    private static final String CONFIG_FILE = "prometheus.properties";
+    private static final Properties properties = new Properties();
 
     private int eventMeshPrometheusPort = 19090;
 
