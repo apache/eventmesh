@@ -19,41 +19,84 @@ import (
 	"fmt"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/log"
 	conf "github.com/apache/incubator-eventmesh/eventmesh-workflow-go/config"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"sync"
 )
 
-func init() {
-	prometheusMetrics = getPrometheusMetricsByConfig()
-}
-
 var prometheusMetrics *Metrics
 
-func Inc(name string, label string) {
-	collector := prometheusMetrics.loadCollector(name, gauge).(*prometheus.GaugeVec)
-	collector.With(prometheus.Labels{"label": label}).Inc()
+func init() {
+	prometheusMetrics = getPrometheusMetricsByConfig()
+	loadAllCollectors()
 }
 
-func Add(name string, label string, val float64) {
-	collector := prometheusMetrics.loadCollector(name, gauge).(*prometheus.GaugeVec)
-	collector.With(prometheus.Labels{"label": label}).Add(val)
+// loadAllCollectors all collectors used in workflow should register in this function first
+func loadAllCollectors() {
+	prometheusMetrics.registerNewCollector(constants.MetricsEventTask, histogram)
+	prometheusMetrics.registerNewCollector(constants.MetricsEventTask, gauge)
+
+	prometheusMetrics.registerNewCollector(constants.MetricsOperationTask, histogram)
+	prometheusMetrics.registerNewCollector(constants.MetricsOperationTask, gauge)
+
+	prometheusMetrics.registerNewCollector(constants.MetricsSwitchTask, histogram)
+	prometheusMetrics.registerNewCollector(constants.MetricsSwitchTask, gauge)
+
+	prometheusMetrics.registerNewCollector(constants.MetricsScheduler, histogram)
+	prometheusMetrics.registerNewCollector(constants.MetricsScheduler, gauge)
+
+	prometheusMetrics.registerNewCollector(constants.MetricsEngine, histogram)
+	prometheusMetrics.registerNewCollector(constants.MetricsEngine, gauge)
+
+	prometheusMetrics.registerNewCollector(constants.MetricsTaskQueue, histogram)
+	prometheusMetrics.registerNewCollector(constants.MetricsTaskQueue, gauge)
 }
 
-func Sub(name string, label string, val float64) {
-	collector := prometheusMetrics.loadCollector(name, gauge).(*prometheus.GaugeVec)
-	collector.With(prometheus.Labels{"label": label}).Sub(val)
+func Inc(name string, label string) error {
+	collector, err := prometheusMetrics.loadCollector(name, gauge)
+	if err != nil {
+		return err
+	}
+	collector.(*prometheus.GaugeVec).With(prometheus.Labels{"label": label}).Inc()
+	return nil
 }
 
-func Dec(name string, label string) {
-	collector := prometheusMetrics.loadCollector(name, gauge).(*prometheus.GaugeVec)
-	collector.With(prometheus.Labels{"label": label}).Dec()
+func Add(name string, label string, val float64) error {
+	collector, err := prometheusMetrics.loadCollector(name, gauge)
+	if err != nil {
+		return err
+	}
+	collector.(*prometheus.GaugeVec).With(prometheus.Labels{"label": label}).Add(val)
+	return nil
 }
 
-func RecordLatency(name string, label string, latency float64) {
-	collector := prometheusMetrics.loadCollector(name, histogram).(*prometheus.HistogramVec)
-	collector.With(prometheus.Labels{"label": label}).Observe(latency)
+func Sub(name string, label string, val float64) error {
+	collector, err := prometheusMetrics.loadCollector(name, gauge)
+	if err != nil {
+		return err
+	}
+	collector.(*prometheus.GaugeVec).With(prometheus.Labels{"label": label}).Sub(val)
+	return nil
+}
+
+func Dec(name string, label string) error {
+	collector, err := prometheusMetrics.loadCollector(name, gauge)
+	if err != nil {
+		return err
+	}
+	collector.(*prometheus.GaugeVec).With(prometheus.Labels{"label": label}).Dec()
+	return nil
+}
+
+func RecordLatency(name string, label string, latency float64) error {
+	collector, err := prometheusMetrics.loadCollector(name, histogram)
+	if err != nil {
+		return err
+	}
+	collector.(*prometheus.HistogramVec).With(prometheus.Labels{"label": label}).Observe(latency)
+	return nil
 }
 
 func getPrometheusMetricsByConfig() *Metrics {
@@ -121,34 +164,48 @@ func (p *Metrics) exposeEndpoint() {
 }
 
 // loadCollector load collector by name and collectorType
-func (p *Metrics) loadCollector(name string, collectorType int) prometheus.Collector {
-	if collector := p.getCollectorByNameAndType(name, collectorType); collector != nil {
-		return collector
+func (p *Metrics) loadCollector(name string, collectorType int) (prometheus.Collector, error) {
+	collector, err := p.getCollectorByNameAndType(name, collectorType)
+	if err != nil {
+		return nil, err
 	}
-	return p.registerNewCollector(name, collectorType)
+
+	if collector != nil {
+		return collector, nil
+	}
+	return nil, fmt.Errorf("fail to load collector, name: %s", name)
 }
 
-func (p *Metrics) getCollectorByNameAndType(name string, collectorType int) prometheus.Collector {
+func (p *Metrics) getCollectorByNameAndType(name string, collectorType int) (prometheus.Collector, error) {
 	switch collectorType {
 	case histogram:
-		return p.histograms[name]
+		return p.histograms[name], nil
 	case gauge:
-		return p.histograms[name]
+		return p.histograms[name], nil
 	default:
-		panic("prometheus metrics get collector error, illegal collector type")
+		return nil, fmt.Errorf("prometheus metrics get collector error, illegal collector type: %d", collectorType)
 	}
 }
 
 // registerNewCollector create and register new collector of collectorType
-func (p *Metrics) registerNewCollector(name string, collectorType int) prometheus.Collector {
+func (p *Metrics) registerNewCollector(name string, collectorType int) (prometheus.Collector, error) {
 	p.lock.Lock()
 	defer p.lock.Unlock()
 
-	if collector := p.getCollectorByNameAndType(name, collectorType); collector != nil {
-		return collector
+	var (
+		collector prometheus.Collector
+		err       error
+	)
+
+	collector, err = p.getCollectorByNameAndType(name, collectorType)
+	if err != nil {
+		return nil, err
 	}
 
-	var collector prometheus.Collector
+	if collector != nil {
+		return collector, nil
+	}
+
 	switch collectorType {
 	case histogram:
 		collector = prometheus.NewHistogramVec(
@@ -173,5 +230,5 @@ func (p *Metrics) registerNewCollector(name string, collectorType int) prometheu
 		panic("prometheus metrics plugin register collector error, illegal collector type")
 	}
 	prometheus.MustRegister(collector)
-	return collector
+	return collector, nil
 }
