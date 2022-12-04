@@ -217,11 +217,11 @@ public class EventMeshConsumer {
         }
     }
 
-    public void updateOffset(SubscriptionMode subscriptionMode, List<CloudEvent> events,
-                             AbstractContext context) throws Exception {
+    public void updateOffset(SubscriptionMode subscriptionMode, List<CloudEvent> events, AbstractContext context)
+            throws Exception {
         if (SubscriptionMode.CLUSTERING == subscriptionMode) {
             persistentMqConsumer.updateOffset(events, context);
-        } else if (SubscriptionMode.BROADCASTING==subscriptionMode) {
+        } else if (SubscriptionMode.BROADCASTING == subscriptionMode) {
             broadcastMqConsumer.updateOffset(events, context);
         } else {
             LOGGER.error("Subscribe Failed. Incorrect Subscription Mode");
@@ -232,9 +232,8 @@ public class EventMeshConsumer {
     private EventListener createEventListener(SubscriptionMode subscriptionMode) {
         return (event, context) -> {
 
-            event = CloudEventBuilder.from(event)
-                    .withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP, String.valueOf(System.currentTimeMillis()))
-                    .build();
+            event = CloudEventBuilder.from(event).withExtension(EventMeshConstants.REQ_MQ2EVENTMESH_TIMESTAMP,
+                    String.valueOf(System.currentTimeMillis())).build();
 
             String topic = event.getSubject();
             Object bizSeqNo = event.getExtension(Constants.PROPERTY_MESSAGE_SEARCH_KEYS);
@@ -258,8 +257,9 @@ public class EventMeshConsumer {
 
             if (topicConfig != null) {
                 GrpcType grpcType = topicConfig.getGrpcType();
-                HandleMsgContext handleMsgContext = new HandleMsgContext(consumerGroup, event, subscriptionMode, grpcType,
-                        eventMeshAsyncConsumeContext.getAbstractContext(), eventMeshGrpcServer, this, topicConfig);
+                HandleMsgContext handleMsgContext = new HandleMsgContext(consumerGroup, event, subscriptionMode,
+                        grpcType, eventMeshAsyncConsumeContext.getAbstractContext(), eventMeshGrpcServer,
+                        this, topicConfig);
 
                 if (messageHandler.handle(handleMsgContext)) {
                     eventMeshAsyncConsumeContext.commit(EventMeshAction.ManualAck);
@@ -283,18 +283,20 @@ public class EventMeshConsumer {
         };
     }
 
-    public void sendMessageBack(String consumerGroup, final CloudEvent event, final String uniqueId, String bizSeqNo) throws Exception {
-        EventMeshProducer producer
-                = eventMeshGrpcServer.getProducerManager().getEventMeshProducer(consumerGroup);
+    public void sendMessageBack(String consumerGroup, final CloudEvent event, final String uniqueId, String bizSeqNo)
+            throws Exception {
+        EventMeshProducer producer = eventMeshGrpcServer.getProducerManager().getEventMeshProducer(consumerGroup);
 
         if (producer == null) {
             if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup, bizSeqNo, uniqueId);
+                LOGGER.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup,
+                        bizSeqNo, uniqueId);
             }
             return;
         }
 
-        final SendMessageContext sendMessageBackContext = new SendMessageContext(bizSeqNo, event, producer, eventMeshGrpcServer);
+        final SendMessageContext sendMessageBackContext = new SendMessageContext(bizSeqNo, event, producer,
+                eventMeshGrpcServer);
 
         producer.send(sendMessageBackContext, new SendCallback() {
             @Override
@@ -304,7 +306,8 @@ public class EventMeshConsumer {
             @Override
             public void onException(OnExceptionContext context) {
                 if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup, bizSeqNo, uniqueId);
+                    LOGGER.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}", consumerGroup,
+                            bizSeqNo, uniqueId);
                 }
             }
         });
