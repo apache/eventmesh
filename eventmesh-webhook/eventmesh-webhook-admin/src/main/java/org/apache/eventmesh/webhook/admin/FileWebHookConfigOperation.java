@@ -149,7 +149,8 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     }
 
     public boolean writeToFile(File webhookConfigFile, WebHookConfig webHookConfig) {
-        try (FileOutputStream fos = new FileOutputStream(webhookConfigFile); BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
+        try (FileOutputStream fos = new FileOutputStream(webhookConfigFile);
+             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
             // lock this file, and will auto release after fos close
             fos.getChannel().lock();
             bw.write(Objects.requireNonNull(JsonUtils.serialize(webHookConfig)));
