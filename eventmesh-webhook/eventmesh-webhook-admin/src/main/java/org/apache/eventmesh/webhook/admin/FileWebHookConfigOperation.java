@@ -32,8 +32,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -134,8 +136,8 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
 
     private WebHookConfig getWebHookConfigFromFile(File webhookConfigFile) {
         StringBuilder fileContent = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(webhookConfigFile)))) {
-            String line = null;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(webhookConfigFile), StandardCharsets.UTF_8))) {
+            String line;
             while ((line = br.readLine()) != null) {
                 fileContent.append(line);
             }
@@ -147,10 +149,10 @@ public class FileWebHookConfigOperation implements WebHookConfigOperation {
     }
 
     public boolean writeToFile(File webhookConfigFile, WebHookConfig webHookConfig) {
-        try (FileOutputStream fos = new FileOutputStream(webhookConfigFile); BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos))) {
+        try (FileOutputStream fos = new FileOutputStream(webhookConfigFile); BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
             // lock this file, and will auto release after fos close
             fos.getChannel().lock();
-            bw.write(JsonUtils.serialize(webHookConfig));
+            bw.write(Objects.requireNonNull(JsonUtils.serialize(webHookConfig)));
         } catch (IOException e) {
             logger.error("write webhookConfig {} to file error", webHookConfig.getCallbackPath());
             return false;
