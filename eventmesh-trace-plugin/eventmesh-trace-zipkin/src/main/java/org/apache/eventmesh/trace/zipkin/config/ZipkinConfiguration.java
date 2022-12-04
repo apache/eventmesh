@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import com.google.common.base.Preconditions;
@@ -65,7 +66,7 @@ public class ZipkinConfiguration {
     private void initializeConfig() {
         String eventMeshZipkinIPStr = properties.getProperty(ZipkinConstants.KEY_ZIPKIN_IP);
         Preconditions.checkState(StringUtils.isNotEmpty(eventMeshZipkinIPStr),
-                                 String.format("%s error", ZipkinConstants.KEY_ZIPKIN_IP));
+            String.format("%s error", ZipkinConstants.KEY_ZIPKIN_IP));
         eventMeshZipkinIP = StringUtils.deleteWhitespace(eventMeshZipkinIPStr);
 
         String eventMeshZipkinPortStr = properties.getProperty(ZipkinConstants.KEY_ZIPKIN_PORT);
@@ -77,9 +78,10 @@ public class ZipkinConfiguration {
     private void loadProperties() {
         URL resource = ZipkinConfiguration.class.getClassLoader().getResource(CONFIG_FILE);
         if (resource != null) {
-            try (InputStream inputStream = resource.openStream()) {
+            try (InputStream inputStream = resource.openStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 if (inputStream.available() > 0) {
-                    properties.load(new BufferedReader(new InputStreamReader(inputStream)));
+                    properties.load(reader);
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Load zipkin.properties file from classpath error", e);
