@@ -38,33 +38,28 @@ import java.util.Map;
 public class ServiceUtils {
 
     public static boolean validateHeader(RequestHeader header) {
-        return StringUtils.isNotEmpty(header.getIdc())
-            && StringUtils.isNotEmpty(header.getEnv())
-            && StringUtils.isNotEmpty(header.getIp())
-            && StringUtils.isNotEmpty(header.getPid())
-            && StringUtils.isNumeric(header.getPid())
-            && StringUtils.isNotEmpty(header.getSys())
-            && StringUtils.isNotEmpty(header.getUsername())
-            && StringUtils.isNotEmpty(header.getPassword())
-            && StringUtils.isNotEmpty(header.getLanguage());
+        return StringUtils.isNotEmpty(header.getIdc()) && StringUtils.isNotEmpty(header.getEnv())
+                && StringUtils.isNotEmpty(header.getIp()) && StringUtils.isNotEmpty(header.getPid())
+                && StringUtils.isNumeric(header.getPid()) && StringUtils.isNotEmpty(header.getSys())
+                && StringUtils.isNotEmpty(header.getUsername())
+                && StringUtils.isNotEmpty(header.getPassword())
+                && StringUtils.isNotEmpty(header.getLanguage());
     }
 
     public static boolean validateMessage(SimpleMessage message) {
-        return StringUtils.isNotEmpty(message.getUniqueId())
-            && StringUtils.isNotEmpty(message.getProducerGroup())
-            && StringUtils.isNotEmpty(message.getTopic())
-            && StringUtils.isNotEmpty(message.getContent())
-            && StringUtils.isNotEmpty(message.getTtl());
+        return StringUtils.isNotEmpty(message.getUniqueId()) && StringUtils.isNotEmpty(message.getProducerGroup())
+                && StringUtils.isNotEmpty(message.getTopic()) && StringUtils.isNotEmpty(message.getContent())
+                && StringUtils.isNotEmpty(message.getTtl());
     }
 
     public static boolean validateBatchMessage(BatchMessage batchMessage) {
-        if (StringUtils.isEmpty(batchMessage.getTopic())
-            || StringUtils.isEmpty(batchMessage.getProducerGroup())) {
+        if (StringUtils.isEmpty(batchMessage.getTopic()) || StringUtils.isEmpty(batchMessage.getProducerGroup())) {
             return false;
         }
         for (BatchMessage.MessageItem item : batchMessage.getMessageItemList()) {
             if (StringUtils.isEmpty(item.getContent()) || StringUtils.isEmpty(item.getSeqNum())
-                || StringUtils.isEmpty(item.getTtl()) || StringUtils.isEmpty(item.getUniqueId())) {
+                    || StringUtils.isEmpty(item.getTtl())
+                    || StringUtils.isEmpty(item.getUniqueId())) {
                 return false;
             }
         }
@@ -72,17 +67,17 @@ public class ServiceUtils {
     }
 
     public static boolean validateSubscription(GrpcType grpcType, Subscription subscription) {
-        if (GrpcType.WEBHOOK.equals(grpcType) && StringUtils.isEmpty(subscription.getUrl())) {
+        if (GrpcType.WEBHOOK == grpcType && StringUtils.isEmpty(subscription.getUrl())) {
             return false;
         }
         if (CollectionUtils.isEmpty(subscription.getSubscriptionItemsList())
-            || StringUtils.isEmpty(subscription.getConsumerGroup())) {
+                || StringUtils.isEmpty(subscription.getConsumerGroup())) {
             return false;
         }
         for (Subscription.SubscriptionItem item : subscription.getSubscriptionItemsList()) {
             if (StringUtils.isEmpty(item.getTopic())
-                || item.getMode() == Subscription.SubscriptionItem.SubscriptionMode.UNRECOGNIZED
-                || item.getType() == Subscription.SubscriptionItem.SubscriptionType.UNRECOGNIZED) {
+                    || item.getMode() == Subscription.SubscriptionItem.SubscriptionMode.UNRECOGNIZED
+                    || item.getType() == Subscription.SubscriptionItem.SubscriptionType.UNRECOGNIZED) {
                 return false;
             }
         }
@@ -90,12 +85,10 @@ public class ServiceUtils {
     }
 
     public static boolean validateHeartBeat(Heartbeat heartbeat) {
-        if (ClientType.SUB.equals(heartbeat.getClientType())
-            && StringUtils.isEmpty(heartbeat.getConsumerGroup())) {
+        if (ClientType.SUB == heartbeat.getClientType() && StringUtils.isEmpty(heartbeat.getConsumerGroup())) {
             return false;
         }
-        if (ClientType.PUB.equals(heartbeat.getClientType())
-            && StringUtils.isEmpty(heartbeat.getProducerGroup())) {
+        if (ClientType.PUB == heartbeat.getClientType() && StringUtils.isEmpty(heartbeat.getProducerGroup())) {
             return false;
         }
         for (Heartbeat.HeartbeatItem item : heartbeat.getHeartbeatItemsList()) {
@@ -108,51 +101,54 @@ public class ServiceUtils {
 
     public static void sendRespAndDone(StatusCode code, EventEmitter<Response> emitter) {
         Response response = Response.newBuilder()
-            .setRespCode(code.getRetCode())
-            .setRespMsg(code.getErrMsg())
-            .setRespTime(String.valueOf(System.currentTimeMillis()))
-            .build();
+                .setRespCode(code.getRetCode())
+                .setRespMsg(code.getErrMsg())
+                .setRespTime(String.valueOf(System.currentTimeMillis()))
+                .build();
         emitter.onNext(response);
         emitter.onCompleted();
     }
 
     public static void sendRespAndDone(StatusCode code, String message, EventEmitter<Response> emitter) {
         Response response = Response.newBuilder()
-            .setRespCode(code.getRetCode())
-            .setRespMsg(code.getErrMsg() + EventMeshConstants.BLANK_SPACE + message)
-            .setRespTime(String.valueOf(System.currentTimeMillis()))
-            .build();
+                .setRespCode(code.getRetCode())
+                .setRespMsg(code.getErrMsg() + EventMeshConstants.BLANK_SPACE + message)
+                .setRespTime(String.valueOf(System.currentTimeMillis()))
+                .build();
         emitter.onNext(response);
         emitter.onCompleted();
     }
 
-    public static void sendStreamResp(RequestHeader header, StatusCode code, String message, EventEmitter<SimpleMessage> emitter) {
+    public static void sendStreamResp(RequestHeader header, StatusCode code, String message,
+                                      EventEmitter<SimpleMessage> emitter) {
         Map<String, String> resp = new HashMap<>();
         resp.put(EventMeshConstants.RESP_CODE, code.getRetCode());
         resp.put(EventMeshConstants.RESP_MSG, code.getErrMsg() + EventMeshConstants.BLANK_SPACE + message);
 
         SimpleMessage simpleMessage = SimpleMessage.newBuilder()
-            .setHeader(header)
-            .setContent(JsonUtils.serialize(resp))
-            .build();
+                .setHeader(header)
+                .setContent(JsonUtils.serialize(resp))
+                .build();
 
         emitter.onNext(simpleMessage);
     }
 
-    public static void sendStreamRespAndDone(RequestHeader header, StatusCode code, String message, EventEmitter<SimpleMessage> emitter) {
+    public static void sendStreamRespAndDone(RequestHeader header, StatusCode code, String message,
+                                             EventEmitter<SimpleMessage> emitter) {
         sendStreamResp(header, code, message, emitter);
         emitter.onCompleted();
     }
 
-    public static void sendStreamRespAndDone(RequestHeader header, StatusCode code, EventEmitter<SimpleMessage> emitter) {
+    public static void sendStreamRespAndDone(RequestHeader header, StatusCode code,
+                                             EventEmitter<SimpleMessage> emitter) {
         Map<String, String> resp = new HashMap<>();
         resp.put(EventMeshConstants.RESP_CODE, code.getRetCode());
         resp.put(EventMeshConstants.RESP_MSG, code.getErrMsg());
 
         SimpleMessage simpleMessage = SimpleMessage.newBuilder()
-            .setHeader(header)
-            .setContent(JsonUtils.serialize(resp))
-            .build();
+                .setHeader(header)
+                .setContent(JsonUtils.serialize(resp))
+                .build();
 
         emitter.onNext(simpleMessage);
         emitter.onCompleted();
