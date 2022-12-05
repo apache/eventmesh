@@ -290,7 +290,7 @@ public class EventMeshConsumer {
                 = eventMeshGrpcServer.getProducerManager().getEventMeshProducer(consumerGroup);
 
         if (producer == null) {
-            logger.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}",
+            LOGGER.warn("consumer:{} consume fail, sendMessageBack, bizSeqNo:{}, uniqueId:{}",
                     consumerGroup, bizSeqNo, uniqueId);
             return;
         }
