@@ -48,7 +48,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SubService implements InitializingBean {
 
-    public static final Logger logger = LoggerFactory.getLogger(SubService.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(SubService.class);
 
     private EventMeshGrpcConsumer eventMeshGrpcConsumer;
 
@@ -69,11 +69,12 @@ public class SubService implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
 
         EventMeshGrpcClientConfig eventMeshClientConfig = EventMeshGrpcClientConfig.builder()
-            .serverAddr(eventMeshIp)
-            .serverPort(Integer.parseInt(eventMeshGrpcPort))
-            .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
-            .env(ENV).idc(IDC)
-            .sys(SUB_SYS).build();
+                .serverAddr(eventMeshIp)
+                .serverPort(Integer.parseInt(eventMeshGrpcPort))
+                .consumerGroup(ExampleConstants.DEFAULT_EVENTMESH_TEST_CONSUMER_GROUP)
+                .env(ENV).idc(IDC)
+                .sys(SUB_SYS)
+                .build();
 
         eventMeshGrpcConsumer = new EventMeshGrpcConsumer(eventMeshClientConfig);
         eventMeshGrpcConsumer.init();
@@ -89,9 +90,9 @@ public class SubService implements InitializingBean {
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                LOGGER.warn("exception occurred when countDownLatch.await ", e);
             }
-            logger.info("stopThread start....");
+            LOGGER.info("stopThread start....");
             throw new RuntimeException();
         });
         stopThread.start();
@@ -99,26 +100,26 @@ public class SubService implements InitializingBean {
 
     @PreDestroy
     public void cleanup() {
-        logger.info("start destory ....");
+        LOGGER.info("start destory ....");
         try {
             eventMeshGrpcConsumer.unsubscribe(Collections.singletonList(subscriptionItem), url);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.warn("exception occurred when unsubscribe ", e);
         }
         try (final EventMeshGrpcConsumer ignore = eventMeshGrpcConsumer) {
             // close consumer
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.warn("exception occurred when close consumer ", e);
         }
-        logger.info("end destory.");
+        LOGGER.info("end destory.");
     }
 
     /**
      * Count the message already consumed
      */
     public void consumeMessage(String msg) {
-        logger.info("consume message: {}", msg);
+        LOGGER.info("consume message: {}", msg);
         countDownLatch.countDown();
-        logger.info("remaining number of messages to be consumed: {}", countDownLatch.getCount());
+        LOGGER.info("remaining number of messages to be consumed: {}", countDownLatch.getCount());
     }
 }
