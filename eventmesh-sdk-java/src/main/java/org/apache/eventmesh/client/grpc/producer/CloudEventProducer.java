@@ -40,7 +40,8 @@ import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 
 public class CloudEventProducer {
-    private static final Logger logger = LoggerFactory.getLogger(EventMeshGrpcProducer.class);
+    
+    private static final Logger logger = LoggerFactory.getLogger(CloudEventProducer.class);
 
     private static final String PROTOCOL_TYPE = EventMeshCommon.CLOUD_EVENTS_PROTOCOL_NAME;
 
