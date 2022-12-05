@@ -84,16 +84,13 @@ public class PropertiesUtils {
      */
     public static void loadPropertiesWhenFileExist(Properties properties, String path, Charset cs) throws IOException {
         Preconditions.checkNotNull(properties, "Properties can not be null");
-
         File file = new File(path);
         if (!file.exists()) {
             return;
         }
-
-        try (FileInputStream reader = new FileInputStream(file)) {
-            properties.load(new BufferedReader(new InputStreamReader(reader, cs)));
-        } catch (IOException e) {
-            throw e;
+        try (BufferedReader reader = new BufferedReader(
+            new InputStreamReader(new FileInputStream(file), cs))) {
+            properties.load(reader);
         }
     }
 

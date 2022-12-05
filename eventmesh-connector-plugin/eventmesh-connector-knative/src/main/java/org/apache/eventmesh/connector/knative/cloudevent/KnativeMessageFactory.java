@@ -41,7 +41,7 @@ public final class KnativeMessageFactory {
         return new String(message.getData().toBytes(), StandardCharsets.UTF_8);
     }
 
-    public static CloudEvent createWriter(Properties properties) {
-        return new KnativeMessageWriter(properties).message;
+    public static KnativeMessageWriter createWriter(final Properties properties) {
+        return new KnativeMessageWriter(properties);
     }
 }

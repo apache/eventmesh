@@ -34,8 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 public class PrometheusConfiguration {
 
-    private static final String     CONFIG_FILE = "prometheus.properties";
-    private static final Properties properties  = new Properties();
+    private static final String CONFIG_FILE = "prometheus.properties";
+    private static final Properties properties = new Properties();
 
     private int eventMeshPrometheusPort = 19090;
 
