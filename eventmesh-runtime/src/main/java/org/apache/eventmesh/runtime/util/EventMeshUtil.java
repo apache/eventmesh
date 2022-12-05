@@ -90,7 +90,7 @@ public class EventMeshUtil {
      * custom fetch stack
      *
      * @param e
-     * @return
+     * @return stacktrace
      */
     public static String stackTrace(Throwable e) {
         return stackTrace(e, 0);
@@ -130,7 +130,7 @@ public class EventMeshUtil {
      * print part of the mq message
      *
      * @param eventMeshMessage
-     * @return
+     * @return message string
      */
     public static String printMqMessage(EventMeshMessage eventMeshMessage) {
         Map<String, String> properties = eventMeshMessage.getProperties();
@@ -140,9 +140,8 @@ public class EventMeshUtil {
             keys = properties.get(EventMeshConstants.KEYS_LOWERCASE);
         }
 
-        String result = String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage.getTopic(),
+        return String.format("Message [topic=%s,TTL=%s,uniqueId=%s,bizSeq=%s]", eventMeshMessage.getTopic(),
             properties.get(EventMeshConstants.TTL), properties.get(EventMeshConstants.RR_REQUEST_UNIQ_ID), keys);
-        return result;
     }
 
     public static String getMessageBizSeq(CloudEvent event) {
