@@ -17,14 +17,11 @@
 
 package org.apache.eventmesh.connector.rabbitmq.config;
 
-import org.apache.eventmesh.common.Constants;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.PropertiesUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
