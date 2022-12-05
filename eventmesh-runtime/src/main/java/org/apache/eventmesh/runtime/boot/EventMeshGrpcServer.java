@@ -266,7 +266,7 @@ public class EventMeshGrpcServer {
 
     private void initHttpClientPool() {
         httpClientPool = new LinkedList<>();
-        int clientPool = (int) (RandomUtils.nextInt(MIN_LIMIT, MAX_LIMIT);
+        int clientPool = RandomUtils.nextInt(MIN_LIMIT, MAX_LIMIT);
         for (int i = 0; i < clientPool; i++) {
             CloseableHttpClient client = HttpClients.createDefault();
             httpClientPool.add(client);
