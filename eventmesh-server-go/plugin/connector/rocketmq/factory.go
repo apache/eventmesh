@@ -17,7 +17,6 @@ package rocketmq
 
 import (
 	"errors"
-
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 )
@@ -56,6 +55,7 @@ func (f *Factory) Setup(name string, dec plugin.Decoder) error {
 	if err != nil {
 		return err
 	}
+	f.consumer = consumer
 
 	producer := NewProducer()
 	err = producer.InitProducer(f.properties)
@@ -66,6 +66,7 @@ func (f *Factory) Setup(name string, dec plugin.Decoder) error {
 	if err != nil {
 		return err
 	}
+	f.producer = producer
 
 	return nil
 }
