@@ -28,6 +28,8 @@ dependencies {
     implementation "org.apache.httpcomponents:httpclient"
     implementation 'io.netty:netty-all'
 
+    implementation "com.alibaba:fastjson"
+
     implementation 'com.github.seancfoley:ipaddress'
 
     implementation project(":eventmesh-common")
