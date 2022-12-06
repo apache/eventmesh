@@ -17,9 +17,10 @@
 
 package org.apache.eventmesh.connector.rabbitmq.config;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.PropertiesUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
