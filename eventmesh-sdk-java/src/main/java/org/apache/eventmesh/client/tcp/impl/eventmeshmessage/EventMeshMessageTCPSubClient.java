@@ -126,7 +126,7 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
         try {
             super.close();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.warn("exception occurred when close.", ex);
         }
     }
 
