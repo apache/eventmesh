@@ -53,13 +53,13 @@ import io.netty.handler.codec.http.HttpVersion;
 public class WebHookProcessorTest {
 
     @Mock
-    private HookConfigOperationManage hookConfigOperationManage;
+    private transient HookConfigOperationManage hookConfigOperationManage;
     @Mock
-    private WebHookMQProducer webHookMQProducer;
+    private transient WebHookMQProducer webHookMQProducer;
 
-    private WebHookController controller = new WebHookController();
+    private transient WebHookController controller = new WebHookController();
 
-    private ArgumentCaptor<CloudEvent> captor = ArgumentCaptor.forClass(CloudEvent.class);
+    private transient ArgumentCaptor<CloudEvent> captor = ArgumentCaptor.forClass(CloudEvent.class);
 
     @Before
     public void init() throws Exception {
