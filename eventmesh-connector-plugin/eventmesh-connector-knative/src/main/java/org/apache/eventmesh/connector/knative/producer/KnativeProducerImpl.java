@@ -29,7 +29,7 @@ import io.cloudevents.CloudEvent;
 
 public class KnativeProducerImpl implements Producer {
 
-    private ProducerImpl producer;
+    private transient ProducerImpl producer;
 
     @Override
     public synchronized void init(Properties properties) throws Exception {
@@ -37,7 +37,7 @@ public class KnativeProducerImpl implements Producer {
         final ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.init();
 
-        properties.put("url", clientConfiguration.serviceAddr);
+        properties.put("url", clientConfiguration.getServiceAddr());
         producer = new ProducerImpl(properties);
     }
 

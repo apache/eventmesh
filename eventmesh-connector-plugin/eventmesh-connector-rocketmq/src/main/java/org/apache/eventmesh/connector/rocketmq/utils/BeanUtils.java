@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -35,7 +36,7 @@ public final class BeanUtils {
     /**
      * Maps primitive {@code Class}es to their corresponding wrapper {@code Class}.
      */
-    private static Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<>();
+    private static final Map<Class<?>, Class<?>> primitiveWrapperMap = new HashMap<>();
 
     static {
         primitiveWrapperMap.put(Boolean.TYPE, Boolean.class);
@@ -49,15 +50,14 @@ public final class BeanUtils {
         primitiveWrapperMap.put(Void.TYPE, Void.TYPE);
     }
 
-    private static Map<Class<?>, Class<?>> wrapperMap = new HashMap<>();
+    private static final Map<Class<?>, Class<?>> wrapperMap = new HashMap<>();
 
     static {
-        for (final Class<?> primitiveClass : primitiveWrapperMap.keySet()) {
-            final Class<?> wrapperClass = primitiveWrapperMap.get(primitiveClass);
-            if (!primitiveClass.equals(wrapperClass)) {
+        primitiveWrapperMap.forEach((primitiveClass, wrapperClass) -> {
+            if (!Objects.equals(wrapperClass, primitiveClass)) {
                 wrapperMap.put(wrapperClass, primitiveClass);
             }
-        }
+        });
         wrapperMap.put(String.class, String.class);
     }
 

@@ -42,7 +42,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WorkflowExpressAsyncSubscribe implements ReceiveMsgHook<EventMeshMessage> {
 
-    public static WorkflowExpressAsyncSubscribe handler = new WorkflowExpressAsyncSubscribe();
+    public static final WorkflowExpressAsyncSubscribe handler = new WorkflowExpressAsyncSubscribe();
+    
     public static EventMeshWorkflowClient workflowClient;
 
     public static void main(String[] args) throws Exception {
@@ -84,6 +85,10 @@ public class WorkflowExpressAsyncSubscribe implements ReceiveMsgHook<EventMeshMe
     @Override
     public Optional<EventMeshMessage> handle(EventMeshMessage msg) throws Exception {
         log.info("receive async msg: {}", msg);
+        if (msg == null) {
+            log.info("async msg is null, workflow end.");
+            return Optional.empty();    
+        }
         Map<String, String> props = msg.getProp();
         String workflowInstanceId = props.get("workflowinstanceid");
         String taskInstanceId = props.get("workflowtaskinstanceid");

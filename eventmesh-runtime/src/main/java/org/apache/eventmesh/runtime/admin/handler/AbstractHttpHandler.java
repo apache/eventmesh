@@ -15,13 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.knative.domain;
+package org.apache.eventmesh.runtime.admin.handler;
+
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
+
+import com.sun.net.httpserver.HttpHandler;
+
+import lombok.Data;
 
 /**
- * NonStandardKeys
+ * AbstractHttpHandler
  */
-public class NonStandardKeys {
+@Data
+public abstract class AbstractHttpHandler implements HttpHandler {
 
-    public static final String MESSAGE_CONSUME_STATUS = "em.message.consume.status";
+    private final HttpHandlerManager httpHandlerManager;
 
+    public AbstractHttpHandler(HttpHandlerManager httpHandlerManager) {
+        this.httpHandlerManager = httpHandlerManager;
+        this.httpHandlerManager.register(this);
+    }
 }

@@ -19,7 +19,9 @@ package org.apache.eventmesh.runtime.admin.handler;
 
 import org.apache.eventmesh.common.Constants;
 import org.apache.eventmesh.common.utils.NetUtils;
+import org.apache.eventmesh.runtime.admin.controller.HttpHandlerManager;
 import org.apache.eventmesh.runtime.boot.EventMeshTCPServer;
+import org.apache.eventmesh.runtime.common.EventHttpHandler;
 import org.apache.eventmesh.runtime.constants.EventMeshConstants;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendImpl;
 import org.apache.eventmesh.runtime.core.protocol.tcp.client.recommend.EventMeshRecommendStrategy;
@@ -34,18 +36,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
 /**
  * query recommend eventmesh
  */
-public class QueryRecommendEventMeshHandler implements HttpHandler {
+@EventHttpHandler(path = "/eventMesh/recommend")
+public class QueryRecommendEventMeshHandler extends AbstractHttpHandler {
 
-    private Logger logger = LoggerFactory.getLogger(QueryRecommendEventMeshHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(QueryRecommendEventMeshHandler.class);
 
     private final EventMeshTCPServer eventMeshTCPServer;
 
-    public QueryRecommendEventMeshHandler(EventMeshTCPServer eventMeshTCPServer) {
+    public QueryRecommendEventMeshHandler(EventMeshTCPServer eventMeshTCPServer, HttpHandlerManager httpHandlerManager) {
+        super(httpHandlerManager);
         this.eventMeshTCPServer = eventMeshTCPServer;
     }
 

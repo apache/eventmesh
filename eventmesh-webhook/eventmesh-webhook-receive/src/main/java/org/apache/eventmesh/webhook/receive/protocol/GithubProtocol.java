@@ -65,7 +65,7 @@ public class GithubProtocol implements ManufacturerProtocol {
             webHookRequest.setManufacturerEventName(webHookConfig.getManufacturerEventName());
             webHookRequest.setManufacturerSource(getManufacturerName());
         } catch (Exception e) {
-            throw new Exception("webhook-GithubProtocol parse failed");
+            throw new Exception("webhook-GithubProtocol parse failed", e);
         }
     }
 
