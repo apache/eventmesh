@@ -79,7 +79,7 @@ func (c *ConsumerManager) RegisterClient(cli *GroupClient) error {
 			break
 		}
 		if lc.GRPCType == STREAM {
-			// TODO add event emitter
+			lc.Emiter = cli.Emiter
 			lc.LastUPTime = cli.LastUPTime
 			found = true
 			break
