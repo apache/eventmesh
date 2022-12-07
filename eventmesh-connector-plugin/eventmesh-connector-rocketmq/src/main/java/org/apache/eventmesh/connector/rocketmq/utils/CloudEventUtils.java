@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 public class CloudEventUtils {
 
-    private static final Logger log = LoggerFactory.getLogger(CloudEventUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CloudEventUtils.class);
 
     public static SendResult convertSendResult(
         org.apache.rocketmq.client.producer.SendResult rmqResult) {
@@ -125,7 +125,7 @@ public class CloudEventUtils {
 
             message.getProperties().forEach((k, v) -> MessageAccessor.putProperty(rmqMessageExt, k, v));
         } catch (Exception e) {
-            log.error("Error with msgConvertExt", e);
+            LOGGER.error("Error with msgConvertExt", e);
             e.printStackTrace();
         }
         return rmqMessageExt;
