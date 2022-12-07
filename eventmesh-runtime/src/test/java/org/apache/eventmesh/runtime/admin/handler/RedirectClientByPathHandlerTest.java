@@ -59,7 +59,7 @@ import com.sun.net.httpserver.HttpExchange;
 public class RedirectClientByPathHandlerTest {
 
     @Mock
-    private EventMeshTCPServer eventMeshTCPServer;
+    private static transient EventMeshTCPServer eventMeshTCPServer;
 
     @Before
     public void init() {
@@ -93,7 +93,7 @@ public class RedirectClientByPathHandlerTest {
         try (MockedStatic<NetUtils> netUtilsMockedStatic = Mockito.mockStatic(NetUtils.class)) {
             Map<String, String> queryStringInfo = new HashMap<>();
             queryStringInfo.put(EventMeshConstants.MANAGE_PATH, EventMeshConstants.MANAGE_PATH);
-            queryStringInfo.put(EventMeshConstants.MANAGE_DEST_IP, "127.0.0.1");
+            queryStringInfo.put(EventMeshConstants.MANAGE_DEST_IP, "localhost");
             queryStringInfo.put(EventMeshConstants.MANAGE_DEST_PORT, "8080");
             netUtilsMockedStatic.when(() -> NetUtils.formData2Dic(anyString())).thenReturn(queryStringInfo);
 
@@ -101,7 +101,7 @@ public class RedirectClientByPathHandlerTest {
             when(mockExchange.getResponseBody()).thenReturn(outputStream);
             try (MockedStatic<EventMeshTcp2Client> clientMockedStatic = Mockito.mockStatic(EventMeshTcp2Client.class)) {
                 clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
-                    any())).thenReturn("redirectResult");
+                        any())).thenReturn("redirectResult");
                 redirectClientByPathHandler.handle(mockExchange);
                 String response = outputStream.toString(StandardCharsets.UTF_8.name());
                 Assert.assertTrue(response.startsWith("redirectClientByPath success!"));
@@ -122,7 +122,7 @@ public class RedirectClientByPathHandlerTest {
             when(mockExchange.getResponseBody()).thenReturn(outputStream);
             try (MockedStatic<EventMeshTcp2Client> clientMockedStatic = Mockito.mockStatic(EventMeshTcp2Client.class)) {
                 clientMockedStatic.when(() -> EventMeshTcp2Client.redirectClient2NewEventMesh(any(), anyString(), anyInt(), any(),
-                    any())).thenThrow(new RuntimeException());
+                        any())).thenThrow(new RuntimeException());
                 redirectClientByPathHandler.handle(mockExchange);
                 String response = outputStream.toString();
                 Assert.assertTrue(response.startsWith("redirectClientByPath fail!"));
