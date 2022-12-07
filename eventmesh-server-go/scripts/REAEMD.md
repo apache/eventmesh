@@ -1,0 +1,1 @@
+include compile\install\analysis scripts
