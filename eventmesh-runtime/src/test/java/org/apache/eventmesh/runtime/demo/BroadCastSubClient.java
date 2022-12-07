@@ -34,23 +34,26 @@ import io.netty.channel.ChannelHandlerContext;
 
 public class BroadCastSubClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(BroadCastSubClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BroadCastSubClient.class);
 
     public static void main(String[] args) throws Exception {
-        SubClientImpl client = new SubClientImpl("127.0.0.1", 10000, MessageUtils.generateSubServer());
-        client.init();
-        client.heartbeat();
-        client.justSubscribe(ClientConstants.BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
-        client.registerBusiHandler(new ReceiveMsgHook() {
-            @Override
-            public void handle(Package msg, ChannelHandlerContext ctx) {
-                if (msg.getHeader().getCommand() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
-                    if (msg.getBody() instanceof EventMeshMessage) {
-                        String body = ((EventMeshMessage) msg.getBody()).getBody();
-                        logger.error("receive message -------------------------------" + body);
+        try (SubClientImpl client = new SubClientImpl("localhost", 10000, MessageUtils.generateSubServer())) {
+            client.init();
+            client.heartbeat();
+            client.justSubscribe(ClientConstants.BROADCAST_TOPIC, SubscriptionMode.BROADCASTING, SubscriptionType.ASYNC);
+            client.registerBusiHandler(new ReceiveMsgHook() {
+                @Override
+                public void handle(Package msg, ChannelHandlerContext ctx) {
+                    if (msg.getHeader().getCommand() == Command.BROADCAST_MESSAGE_TO_CLIENT) {
+                        if (msg.getBody() instanceof EventMeshMessage) {
+                            String body = ((EventMeshMessage) msg.getBody()).getBody();
+                            if (LOGGER.isInfoEnabled()) {
+                                LOGGER.info("receive message -------------------------------" + body);
+                            }
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 }
