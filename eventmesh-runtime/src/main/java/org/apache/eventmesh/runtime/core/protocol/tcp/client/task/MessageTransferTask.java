@@ -173,7 +173,7 @@ public class MessageTransferTask extends AbstractTask {
                     session.getClient(),
                     e);
 
-            if (!cmd.equals(RESPONSE_TO_SERVER)) {
+            if (cmd != RESPONSE_TO_SERVER) {
                 msg.setHeader(
                         new Header(replyCmd, OPStatus.FAIL.getCode(), e.toString(),
                                 pkg.getHeader()
@@ -188,7 +188,7 @@ public class MessageTransferTask extends AbstractTask {
     }
 
     private CloudEvent addTimestamp(CloudEvent event, Command cmd, long sendTime) {
-        if (cmd.equals(RESPONSE_TO_SERVER)) {
+        if (cmd == RESPONSE_TO_SERVER) {
             event = CloudEventBuilder.from(event)
                     .withExtension(EventMeshConstants.RSP_C2EVENTMESH_TIMESTAMP,
                             String.valueOf(startTime))
@@ -233,10 +233,10 @@ public class MessageTransferTask extends AbstractTask {
             public void onSuccess(SendResult sendResult) {
                 session.getSender().getUpstreamBuff().release();
                 messageLogger.info("upstreamMsg message success|user={}|callback cost={}",
-                        session.getClient(),
-                        System.currentTimeMillis() - createTime);
-                if (replyCmd.equals(Command.BROADCAST_MESSAGE_TO_SERVER_ACK)
-                        || replyCmd.equals(Command.ASYNC_MESSAGE_TO_SERVER_ACK)) {
+                    session.getClient(),
+                    System.currentTimeMillis() - createTime);
+                if (replyCmd == Command.BROADCAST_MESSAGE_TO_SERVER_ACK
+                    || replyCmd == Command.ASYNC_MESSAGE_TO_SERVER_ACK) {
                     msg.setHeader(
                             new Header(replyCmd, OPStatus.SUCCESS.getCode(), OPStatus.SUCCESS.getDesc(),
                                     pkg.getHeader().getSeq()));
@@ -274,7 +274,7 @@ public class MessageTransferTask extends AbstractTask {
                 Utils.writeAndFlush(msg, startTime, taskExecuteTime, session.getContext(), session);
 
                 //both rr request and async request need finish span when reqeust fail
-                if (!replyCmd.equals(RESPONSE_TO_SERVER)) {
+                if (replyCmd != RESPONSE_TO_SERVER) {
                     //upload trace
                     TraceUtils.finishSpanWithException(ctx, event,
                             "upload trace fail in MessageTransferTask.createSendCallback.onException",
