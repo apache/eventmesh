@@ -41,12 +41,12 @@ active-plugins:
 plugins:
   registry:
     nacos:
-      address_list: "124.222.64.248:8848"
-      cache-dir: "d:\\nacas-cache"
+      address_list: your-nacos-addr
+      cache-dir: your-nacos-cache-dir
   connector:
     standalone:
     rocketmq:
-      access_points: 124.221.225.77:9876
+      access_points: your-nameserver-addr
       namespace: grpcnamespace
       instance_name: grpcinstance
       group_name: grpcgroupname
