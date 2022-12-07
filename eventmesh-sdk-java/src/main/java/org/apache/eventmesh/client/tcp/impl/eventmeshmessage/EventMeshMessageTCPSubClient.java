@@ -73,9 +73,11 @@ class EventMeshMessageTCPSubClient extends TcpClient implements EventMeshTCPSubC
             super.reconnect();
             hello();
             if (!CollectionUtils.isEmpty(subscriptionItems)) {
-                for (SubscriptionItem item : subscriptionItems) {
-                    Package request = MessageUtils.subscribe(item.getTopic(), item.getMode(), item.getType());
-                    this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                synchronized (subscriptionItems) {
+                    for (SubscriptionItem item : subscriptionItems) {
+                        Package request = MessageUtils.subscribe(item.getTopic(), item.getMode(), item.getType());
+                        this.io(request, EventMeshCommon.DEFAULT_TIME_OUT_MILLS);
+                    }                 
                 }
             }
             listen();
