@@ -51,31 +51,27 @@ public class Utils {
      * @param session
      */
     public static void writeAndFlush(final Package pkg, long startTime, long taskExecuteTime, ChannelHandlerContext ctx,
-                                     Session
-                                             session) {
+                                     Session session) {
         try {
             UserAgent user = session == null ? null : session.getClient();
-            if (session != null && session.getSessionState().equals(SessionState.CLOSED)) {
+            if (session != null && session.getSessionState() == SessionState.CLOSED) {
                 logFailedMessageFlow(pkg, user, startTime, taskExecuteTime,
-                        new Exception("the session has been closed"));
+                    new Exception("the session has been closed"));
                 return;
             }
             ctx.writeAndFlush(pkg).addListener(
-                    new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future) throws Exception {
-                            if (!future.isSuccess()) {
-                                logFailedMessageFlow(future, pkg, user, startTime, taskExecuteTime);
-                            } else {
-                                logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
+                (ChannelFutureListener) future -> {
+                    if (!future.isSuccess()) {
+                        logFailedMessageFlow(future, pkg, user, startTime, taskExecuteTime);
+                    } else {
+                        logSucceedMessageFlow(pkg, user, startTime, taskExecuteTime);
 
-                                if (session != null) {
-                                    Objects.requireNonNull(session.getClientGroupWrapper().get())
-                                        .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
-                                }
-                            }
+                        if (session != null) {
+                            Objects.requireNonNull(session.getClientGroupWrapper().get())
+                                .getEventMeshTcpMonitor().getTcpSummaryMetrics().getEventMesh2clientMsgNum().incrementAndGet();
                         }
                     }
+                }
             );
         } catch (Exception e) {
             LOGGER.error("exception while sending message to client", e);
@@ -125,6 +121,7 @@ public class Utils {
             MESSAGE_LOGGER
                     .info("pkg|eventMesh2c|cmd={}|pkg={}|user={}|wait={}ms|cost={}ms", pkg.getHeader().getCmd(), pkg,
                             user, taskExecuteTime - startTime, System.currentTimeMillis() - startTime);
+
         }
     }
 
@@ -150,8 +147,8 @@ public class Utils {
         Map<String, Object> headerParam = new HashMap<>();
         for (String key : fullReq.headers().names()) {
             if (StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_TYPE.toString(), key)
-                    || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
-                    || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
+                || StringUtils.equalsIgnoreCase(HttpHeaderNames.ACCEPT_ENCODING.toString(), key)
+                || StringUtils.equalsIgnoreCase(HttpHeaderNames.CONTENT_LENGTH.toString(), key)) {
                 continue;
             }
             headerParam.put(key, fullReq.headers().get(key));
