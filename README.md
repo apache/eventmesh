@@ -24,18 +24,9 @@
 
 **Apache EventMesh (Incubating)** is a dynamic [event-driven](https://en.wikipedia.org/wiki/Event-driven_architecture) application multi-runtime used to decouple the application and backend middleware layer, which supports a wide range of use cases that encompass complex multi-cloud, widely distributed topologies using diverse technology stacks.
 
-### Multi-Runtime Architecture
+### EventMesh Architecture
 
-![EventMesh Architecture](docs/images/eventmesh-architecture.png)
-
-## Core Features
-### Orchestration
-
-![EventMesh Orchestration](docs/images/eventmesh-orchestration.png)
-
-### Data Mesh
-
-![EventMesh Data Mesh](docs/images/eventmesh-bridge.png)
+![EventMesh Architecture](docs/images/eventmesh-architecture-2.png)
 
 ## Components
 
