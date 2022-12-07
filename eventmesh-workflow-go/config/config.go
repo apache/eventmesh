@@ -54,6 +54,9 @@ type Config struct {
 		ConsumerGroup string `yaml:"consumer_group"`
 		TTL           int    `yaml:"ttl"`
 	} `yaml:"eventmesh"`
+	Metrics struct {
+		EndpointPort string `yaml:"endpoint_port"`
+	} `yaml:"metrics"`
 }
 
 // Setup setup config
