@@ -36,7 +36,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 public class RedirectClientByIpPortHandlerTest {
 
-    private RedirectClientByIpPortHandler redirectClientByIpPortHandler;
+    private static transient RedirectClientByIpPortHandler redirectClientByIpPortHandler;
 
     @Before
     public void init() {

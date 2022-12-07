@@ -65,14 +65,16 @@ public class QueryRecommendEventMeshHandlerTest {
         HttpHandlerManager httpHandlerManager = new HttpHandlerManager();
         QueryRecommendEventMeshHandler handler = new QueryRecommendEventMeshHandler(eventMeshTCPServer, httpHandlerManager);
 
+        String returnValue = "result";
+
         // case 1: normal case
         tcpConfiguration.eventMeshServerRegistryEnable = true;
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
-            (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn("result"))) {
+            (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
-            Assert.assertEquals("result", response);
+            Assert.assertEquals(returnValue, response);
         }
 
         // case 2: params illegal
@@ -91,10 +93,10 @@ public class QueryRecommendEventMeshHandlerTest {
         doThrow(new IOException()).when(outputStream).close();
         when(httpExchange.getResponseBody()).thenReturn(outputStream);
         try (MockedConstruction<EventMeshRecommendImpl> ignored = mockConstruction(EventMeshRecommendImpl.class,
-            (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn("result"))) {
+            (mock, context) -> when(mock.calculateRecommendEventMesh(anyString(), anyString())).thenReturn(returnValue))) {
             handler.handle(httpExchange);
             String response = outputStream.toString();
-            Assert.assertNotEquals("result", response);
+            Assert.assertNotEquals(returnValue, response);
         }
     }
 }
