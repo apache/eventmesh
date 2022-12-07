@@ -17,7 +17,6 @@ package rocketmq
 
 import (
 	"errors"
-
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin"
 	"github.com/apache/incubator-eventmesh/eventmesh-server-go/plugin/connector"
 )
@@ -29,6 +28,8 @@ func init() {
 type Factory struct {
 	plugin.Plugin
 	properties map[string]string
+	producer   connector.Producer
+	consumer   connector.Consumer
 }
 
 func (f *Factory) Type() string {
@@ -44,33 +45,38 @@ func (f *Factory) Setup(name string, dec plugin.Decoder) error {
 		return err
 	}
 	f.properties = properties
+
+	consumer := NewConsumer()
+	err := consumer.InitConsumer(f.properties)
+	if err != nil {
+		return err
+	}
+	err = consumer.Start()
+	if err != nil {
+		return err
+	}
+	f.consumer = consumer
+
+	producer := NewProducer()
+	err = producer.InitProducer(f.properties)
+	if err != nil {
+		return err
+	}
+	err = producer.Start()
+	if err != nil {
+		return err
+	}
+	f.producer = producer
+
 	return nil
 }
 
 func (f *Factory) GetProducer() (connector.Producer, error) {
-	producer := NewProducer()
-	err := producer.InitProducer(f.properties)
-	if err != nil {
-		return nil, err
-	}
-	err = producer.Start()
-	if err != nil {
-		return nil, err
-	}
-	return producer, nil
+	return f.producer, nil
 }
 
 func (f *Factory) GetConsumer() (connector.Consumer, error) {
-	consumer := NewConsumer()
-	err := consumer.InitConsumer(f.properties)
-	if err != nil {
-		return nil, err
-	}
-	err = consumer.Start()
-	if err != nil {
-		return nil, err
-	}
-	return consumer, nil
+	return f.consumer, nil
 }
 
 func (f *Factory) GetResource() (connector.Resource, error) {

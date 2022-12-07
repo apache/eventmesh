@@ -103,9 +103,7 @@ func (p *Producer) Start() error {
 }
 
 func (p *Producer) Shutdown() error {
-	if ok := p.started.CAS(true, false); !ok {
-		return errors.New("fail to shutdown standalone producer, producer is not started")
-	}
+	p.started.CAS(true, false)
 	return nil
 }
 

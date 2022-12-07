@@ -82,31 +82,32 @@ func (c *ConsumerService) Subscribe(ctx context.Context, sub *pb.Subscription) (
 // for Recv() goroutine if got err==io.EOF as the client close the stream(即客户端关闭stream)
 // for Send() refers to https://github.com/grpc/grpc-go/issues/444
 func (c *ConsumerService) SubscribeStream(stream pb.ConsumerService_SubscribeStreamServer) error {
-	go func() {
-		for {
-			req, err := stream.Recv()
-			if err == io.EOF {
-				log.Infof("receive io.EOF, exit the recv goroutine")
-				break
-			}
-			if err != nil {
-				log.Warnf("receive err:%v", err)
-				break
-			}
-			if len(req.SubscriptionItems) == 0 {
-				log.Infof("receive reply msg, protocol:GRPC, client:%v", req.Header.Ip)
-				c.handleSubscribeReply(req, stream)
-			} else {
-				log.Infof("receive sub msg, protocol:GRPC, client:%v", req.Header.Ip)
-				c.handleSubscriptionStream(req, stream)
-			}
+	//go func() {
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			log.Infof("receive io.EOF, exit the recv goroutine")
+			break
 		}
-	}()
+		if err != nil {
+			log.Warnf("receive err:%v", err)
+			break
+		}
+		if len(req.SubscriptionItems) == 0 {
+			log.Infof("receive reply msg, protocol:GRPC, client:%v", req.Header.Ip)
+			c.handleSubscribeReply(req, stream)
+		} else {
+			log.Infof("receive sub msg, protocol:GRPC, client:%v", req.Header.Ip)
+			c.handleSubscriptionStream(req, stream)
+		}
+	}
+	//}()
 
 	return nil
 }
 
 func (c *ConsumerService) Unsubscribe(ctx context.Context, sub *pb.Subscription) (*pb.Response, error) {
+	log.Infof("cmd=%v|%v|client2eventMesh|from=%v", "unsubscribe", "grpc", sub.Header.Ip)
 	tmCtx, cancel := context.WithTimeout(ctx, defaultAsyncTimeout)
 	defer cancel()
 	var (
