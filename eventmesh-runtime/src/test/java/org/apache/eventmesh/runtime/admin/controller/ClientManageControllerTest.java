@@ -33,6 +33,7 @@ import org.apache.eventmesh.webhook.api.WebHookConfigOperation;
 
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -42,7 +43,7 @@ import com.sun.net.httpserver.HttpServer;
 public class ClientManageControllerTest {
 
     @Test
-    public void testStart() throws IOException {
+    public void testStart() {
         EventMeshTCPServer eventMeshTCPServer = mock(EventMeshTCPServer.class);
         AdminController adminController = mock(AdminController.class);
         EventMeshTCPConfiguration tcpConfiguration = mock(EventMeshTCPConfiguration.class);
@@ -58,8 +59,13 @@ public class ClientManageControllerTest {
         try (MockedStatic<HttpServer> dummyStatic = Mockito.mockStatic(HttpServer.class)) {
             HttpServer server = mock(HttpServer.class);
             dummyStatic.when(() -> HttpServer.create(any(), anyInt())).thenReturn(server);
-            Mockito.doNothing().when(adminController).run(server);
-            controller.start();
+            try {
+                Mockito.doNothing().when(adminController).run(server);
+                controller.start();
+            } catch (IOException e) {
+                Assert.fail(e.getMessage());
+            }
+
         }
     }
 }
