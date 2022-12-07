@@ -82,7 +82,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     public Package rr(CloudEvent event, long timeout) throws EventMeshException {
         try {
             Package msg = MessageUtils.buildPackage(event, Command.REQUEST_TO_SERVER);
-            log.info("{}|rr|send|type={}|msg={}", clientNo, msg, msg);
+            log.info("{}|rr|send|type={}|msg={}", CLIENTNO, msg, msg);
             return io(msg, timeout);
         } catch (Exception ex) {
             throw new EventMeshException("rr error", ex);
@@ -105,7 +105,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
         try {
             Package msg = MessageUtils.buildPackage(cloudEvent, Command.ASYNC_MESSAGE_TO_SERVER);
             log.info("SimplePubClientImpl cloud event|{}|publish|send|type={}|protocol={}|msg={}",
-                    clientNo, msg.getHeader().getCmd(), msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
+                    CLIENTNO, msg.getHeader().getCmd(), msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             return io(msg, timeout);
         } catch (Exception ex) {
             throw new EventMeshException("publish error", ex);
@@ -116,7 +116,7 @@ class CloudEventTCPPubClient extends TcpClient implements EventMeshTCPPubClient<
     public void broadcast(CloudEvent cloudEvent, long timeout) throws EventMeshException {
         try {
             Package msg = MessageUtils.buildPackage(cloudEvent, Command.BROADCAST_MESSAGE_TO_SERVER);
-            log.info("{}|publish|send|type={}|protocol={}|msg={}", clientNo, msg.getHeader().getCmd(),
+            log.info("{}|publish|send|type={}|protocol={}|msg={}", CLIENTNO, msg.getHeader().getCmd(),
                     msg.getHeader().getProperty(Constants.PROTOCOL_TYPE), msg);
             super.send(msg);
         } catch (Exception ex) {

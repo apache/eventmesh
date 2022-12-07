@@ -69,7 +69,7 @@ class CloudEventTCPSubClient extends TcpClient implements EventMeshTCPSubClient<
             open(new CloudEventTCPSubHandler(contexts));
             hello();
             heartbeat();
-            log.info("SimpleSubClientImpl|{}|started!", clientNo);
+            log.info("SimpleSubClientImpl|{}|started!", CLIENTNO);
         } catch (Exception ex) {
             throw new EventMeshException("Initialize EventMeshMessageTcpSubClient error", ex);
         }
