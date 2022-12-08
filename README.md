@@ -37,7 +37,9 @@ Apache EventMesh (Incubating) has a vast amount of features to help users achiev
 - Rapidty extendsible middleware by connectors such as [Apache RocketMQ](https://rocketmq.apache.org), [Apache Kafka](https://kafka.apache.org), [Apache Pulsar](https://pulsar.apache.org), [RabbitMQ](https://rabbitmq.com), [Redis](https://redis.io), [Pravega](https://cncf.pravega.io), and [RDMS](https://en.wikipedia.org/wiki/Relational_database)(in progress) using [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity).
 - Rapidty extendsible controller such as [Consul](https://consulproject.org/en/), [Nacos](https://nacos.io), [ETCD](https://etcd.io) and [Zookeeper](https://zookeeper.apache.org/).
 - Guaranteed at-least-once delivery.
-- Powerful event orchestration by [Serverless workflow](https://serverlessworkflow.io/).
+- Deliver events between multiple EventMesh deployments.
+- Event schema management by catalog service.
+- Powerful event orchestration by [Serverless workflow](https://serverlessworkflow.io/) engine.
 - Powerful event filtering and transformation.
 - Rapid, seamless scalability to add new machines.
 
