@@ -29,7 +29,7 @@ public class ConfigurationWrapperTest {
     @Test
     public void testGetDefaultConfig() {
         try {
-            URL resource = ConfigurationWrapperTest.class.getClassLoader().getResource("test.properties");
+            URL resource = Thread.currentThread().getContextClassLoader().getResource("test.properties");
             String filePath = resource.getPath();
             File f = new File(filePath);
             String path = f.getParent();

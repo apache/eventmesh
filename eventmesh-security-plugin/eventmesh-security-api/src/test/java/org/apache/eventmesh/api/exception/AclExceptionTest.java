@@ -23,7 +23,7 @@ import org.junit.Test;
 public class AclExceptionTest {
 
     @Test
-    public void TestConstruct1() {
+    public void TestConstructWithMsg() {
         try {
             new AclException("test");
 
@@ -34,7 +34,7 @@ public class AclExceptionTest {
     }
 
     @Test
-    public void TestConstruct2() {
+    public void TestConstructWithMsgAndExption() {
         try {
             new AclException("test", new Exception("test1"));
 

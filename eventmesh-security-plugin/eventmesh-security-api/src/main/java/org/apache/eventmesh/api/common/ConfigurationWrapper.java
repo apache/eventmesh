@@ -37,7 +37,7 @@ public class ConfigurationWrapper {
         String configFilePath;
 
         // get from classpath
-        URL resource = ConfigurationWrapper.class.getClassLoader().getResource(configFile);
+        URL resource = Thread.currentThread().getContextClassLoader().getResource(configFile);
         if (resource != null && new File(resource.getPath()).exists()) {
             configFilePath = resource.getPath();
         } else {
