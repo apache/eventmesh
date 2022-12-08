@@ -69,7 +69,7 @@ public class CommonConfiguration {
         if (configurationWrapper != null) {
             eventMeshEnv = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_ENV);
 
-            sysID = checkNumeric(ConfKeys.KEYS_EVENTMESH_SYSID);
+            sysID = checkNumeric();
 
             eventMeshCluster = checkNotEmpty(ConfKeys.KEYS_EVENTMESH_SERVER_CLUSTER);
 
@@ -123,12 +123,12 @@ public class CommonConfiguration {
         return value;
     }
 
-    private String checkNumeric(String key) {
-        String value = configurationWrapper.getProp(key);
+    private String checkNumeric() {
+        String value = configurationWrapper.getProp(ConfKeys.KEYS_EVENTMESH_SYSID);
         if (value != null) {
             value = StringUtils.deleteWhitespace(value);
         }
-        Preconditions.checkState(StringUtils.isNotEmpty(value) && StringUtils.isNumeric(value), key + " is invalidated");
+        Preconditions.checkState(StringUtils.isNotEmpty(value) && StringUtils.isNumeric(value), ConfKeys.KEYS_EVENTMESH_SYSID + " is invalidated");
         return value;
     }
 
