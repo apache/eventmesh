@@ -33,7 +33,7 @@ public class ConfigurationWrapper {
 
     private static final String EVENTMESH_CONFIG_HOME = System.getProperty("confPath", System.getenv("confPath"));
 
-    public static Properties getConfig(String configFile) {
+    public static Properties getConfig(String configFile) throws IOException {
         String configFilePath;
 
         // get from classpath
@@ -52,10 +52,8 @@ public class ConfigurationWrapper {
         Properties properties = new Properties();
         try (BufferedReader br = new BufferedReader(new FileReader(configFilePath))) {
             properties.load(br);
-        } catch (IOException e) {
-            throw new IllegalArgumentException(
-                    String.format("Cannot load RocketMQ configuration file from :%s", configFilePath));
         }
+
         return properties;
     }
 }

@@ -18,7 +18,9 @@
 package org.apache.eventmesh.auth.http.basic.config;
 
 import org.apache.eventmesh.api.common.ConfigurationWrapper;
+import org.apache.eventmesh.api.exception.AuthException;
 
+import java.io.IOException;
 import java.util.Properties;
 
 public class AuthConfigs {
@@ -35,14 +37,18 @@ public class AuthConfigs {
 
     private static AuthConfigs instance;
 
-    public static synchronized AuthConfigs getConfigs() {
-        if (instance == null) {
-            Properties props = ConfigurationWrapper.getConfig(AUTH_CONFIG_FILE_NAME);
-            instance = new AuthConfigs();
-            instance.username = props.getProperty(AUTH_CONFIG_KEY_USERNAME);
-            instance.password = props.getProperty(AUTH_CONFIG_KEY_PASSWORD);
+    public static synchronized AuthConfigs getConfigs() throws AuthException {
+        try {
+            if (instance == null) {
+                Properties props = ConfigurationWrapper.getConfig(AUTH_CONFIG_FILE_NAME);
+                instance = new AuthConfigs();
+                instance.username = props.getProperty(AUTH_CONFIG_KEY_USERNAME);
+                instance.password = props.getProperty(AUTH_CONFIG_KEY_PASSWORD);
+            }
+            return instance;
+        } catch (IOException e) {
+            throw new AuthException("getConfigs error", e);
         }
-        return instance;
     }
 
     public String getUsername() {
