@@ -72,13 +72,9 @@ public class RemotingHelper {
         return "";
     }
 
-    public static String parseSocketAddressAddr(SocketAddress socketAddress) {
+    public static String parseSocketAddressAddr(InetSocketAddress socketAddress) {
         if (socketAddress != null) {
-            final String addr = socketAddress.toString();
-
-            if (addr.length() > 0) {
-                return addr.substring(1);
-            }
+            return socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort();
         }
         return "";
     }
