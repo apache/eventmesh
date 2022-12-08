@@ -29,9 +29,9 @@ public class AuthConfigs {
 
     private static final String AUTH_CONFIG_KEY_PASSWORD = "auth.password";
 
-    public String username;
+    private String username;
 
-    public String password;
+    private String password;
 
     private static AuthConfigs instance;
 
@@ -43,5 +43,13 @@ public class AuthConfigs {
             instance.password = props.getProperty(AUTH_CONFIG_KEY_PASSWORD);
         }
         return instance;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }
