@@ -1,0 +1,165 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+//package eventmesh.common.protocol.grpc;
+//
+//option java_multiple_files = true;
+//option java_package = "org.apache.eventmesh.common.protocol.grpc.protos";
+//option java_outer_classname = "EventmeshGrpc";
+
+// make sure the protoc and protoc-gen-go is installed on your machine, and has set
+// its directory into path
+// download protoc: https://github.com/protocolbuffers/protobuf/releases
+// install protoc-gen-go: go install google.golang.org/protobuf/cmd/protoc-gen-go
+// generate go code by protoc: protoc --go_out=. eventmesh-client.proto
+
+package eventmesh.common.protocol.grpc;
+
+option go_package= ".;proto";
+
+message RequestHeader {
+  string env = 1;
+  string region = 2;
+  string idc = 3;
+  string ip = 4;
+  string pid = 5;
+  string sys = 6;
+  string username = 7;
+  string password = 8;
+  string language = 9;
+  string protocolType = 10;
+  string protocolVersion = 11;
+  string protocolDesc = 12;
+}
+
+message SimpleMessage {
+  RequestHeader header = 1;
+  string producerGroup = 2;
+  string topic = 3;
+  string content = 4;
+  string ttl = 5;
+  string uniqueId = 6;
+  string seqNum = 7;
+  string tag = 8;
+  map<string, string> properties = 9;
+}
+
+message BatchMessage {
+  RequestHeader header = 1;
+  string producerGroup = 2;
+  string topic = 3;
+
+  message MessageItem {
+    string content = 1;
+    string ttl = 2;
+    string uniqueId = 3;
+    string seqNum = 4;
+    string tag = 5;
+    map<string, string> properties = 6;
+  }
+
+  repeated MessageItem messageItem = 4;
+}
+
+message Response {
+  string respCode = 1;
+  string respMsg = 2;
+  string respTime = 3;
+}
+
+message Subscription {
+  RequestHeader header = 1;
+  string consumerGroup = 2;
+
+  message SubscriptionItem {
+    enum SubscriptionMode {
+      CLUSTERING = 0;
+      BROADCASTING = 1;
+    }
+
+    enum SubscriptionType {
+      ASYNC = 0;
+      SYNC = 1;
+    }
+
+    string topic = 1;
+    SubscriptionMode mode = 2;
+    SubscriptionType type = 3;
+  }
+
+  repeated SubscriptionItem subscriptionItems = 3;
+  string url = 4;
+
+  message Reply {
+    string producerGroup = 1;
+    string topic = 2;
+    string content = 3;
+    string ttl = 4;
+    string uniqueId = 5;
+    string seqNum = 6;
+    string tag = 7;
+    map<string, string> properties = 8;
+  }
+
+  Reply reply = 5;
+}
+
+message Heartbeat {
+  enum ClientType {
+    PUB = 0;
+    SUB = 1;
+  }
+
+  RequestHeader header = 1;
+  ClientType clientType = 2;
+  string producerGroup = 3;
+  string consumerGroup = 4;
+
+  message HeartbeatItem {
+    string topic = 1;
+    string url = 2;
+  }
+
+  repeated HeartbeatItem heartbeatItems = 5;
+}
+
+service PublisherService {
+  // Async event publish
+  rpc publish(SimpleMessage) returns (Response);
+
+  // Sync event publish
+  rpc requestReply(SimpleMessage) returns (SimpleMessage);
+
+  // Async batch event publish
+  rpc batchPublish(BatchMessage) returns (Response);
+}
+
+service ConsumerService {
+  // The subscribed event will be delivered by invoking the webhook url in the Subscription
+  rpc subscribe(Subscription) returns (Response);
+
+  //  The subscribed event will be delivered through stream of Message
+  rpc subscribeStream(stream Subscription) returns (stream SimpleMessage);
+
+  rpc unsubscribe(Subscription) returns (Response);
+}
+
+service HeartbeatService {
+  rpc heartbeat(Heartbeat) returns (Response);
+}

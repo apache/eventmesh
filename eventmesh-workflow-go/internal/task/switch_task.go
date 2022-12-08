@@ -22,6 +22,7 @@ import (
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/constants"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/dal/model"
+	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/metrics"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/internal/queue"
 	"github.com/apache/incubator-eventmesh/eventmesh-workflow-go/third_party/jqer"
 	"github.com/gogf/gf/util/gconv"
@@ -51,6 +52,7 @@ func NewSwitchTask(instance *model.WorkflowTaskInstance) Task {
 }
 
 func (t *switchTask) Run() error {
+	metrics.Inc(constants.MetricsSwitchTask, constants.MetricsTotal)
 	if len(t.transitions) == 0 {
 		return nil
 	}
@@ -72,8 +74,11 @@ func (t *switchTask) Run() error {
 			return err
 		}
 		if !boolValue {
+			metrics.Inc(constants.MetricsSwitchTask, constants.MetricsSwitchReject)
 			continue
 		}
+
+		metrics.Inc(constants.MetricsSwitchTask, constants.MetricsSwitchPass)
 		var taskInstance = model.WorkflowTaskInstance{WorkflowInstanceID: t.workflowInstanceID,
 			WorkflowID: t.workflowID, TaskID: transition.ToTaskID, TaskInstanceID: uuid.New().String(),
 			Status: constants.TaskInstanceWaitStatus, Input: t.baseTask.input}
